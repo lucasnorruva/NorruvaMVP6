@@ -16,7 +16,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 import ProductLifecycleFlowchart, { type LifecyclePhase } from '@/components/products/ProductLifecycleFlowchart';
-import OverallProductCompliance, { type OverallComplianceData } from '@/components/products/OverallProductCompliance';
+import OverallProductCompliance, { type OverallComplianceData, type ProductNotification as OverallProductNotification } from '@/components/products/OverallProductCompliance'; // Updated import
 import ProductAlerts, { type ProductNotification } from '@/components/products/ProductAlerts';
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
@@ -73,7 +73,7 @@ interface MockProductType {
   currentLifecyclePhaseIndex: number;
   lifecyclePhases: LifecyclePhase[];
   overallCompliance: OverallComplianceData;
-  notifications: ProductNotification[];
+  notifications: ProductNotification[]; // Uses ProductNotification from ProductAlerts
 
   // Enhanced Sustainability Data
   materialComposition?: MaterialComposition[];
@@ -217,7 +217,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
       { id: "lc009", name: "Distribution", icon: Truck, status: 'pending', details: "Global distribution network.", complianceMetrics: [], sustainabilityMetrics: [] },
       { id: "lc010", name: "Retail Sale", icon: ShoppingBagIcon, status: 'pending', details: "Available through online and physical stores.", complianceMetrics: [], sustainabilityMetrics: [] },
       { id: "lc011", name: "Use Phase", icon: PackageCheck, status: 'pending', details: "Estimated 3-year useful life for battery component.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }] },
-      { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'pending', details: "Battery designed for easy removal and recycling.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]}
+      { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'issue', details: "Battery designed for easy removal and recycling. Documentation overdue.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]}
     ],
     overallCompliance: {
       gdpr: { status: "not_applicable", lastChecked: "2024-07-01" },
@@ -227,7 +227,8 @@ const MOCK_PRODUCTS: MockProductType[] = [
       csrd: { status: "pending_review", lastChecked: "2024-07-20" }
     },
     notifications: [
-      { id: "n003", type: "error", message: "Battery Regulation documentation overdue!", date: "2024-07-19" }
+      { id: "n003", type: "error", message: "Battery Regulation documentation overdue! Action required.", date: "2024-07-19" },
+      { id: "n004", type: "warning", message: "EPREL registration data needs review by end of week.", date: "2024-07-22" }
     ],
     materialComposition: [
         { name: 'Polycarbonate', value: 40, fill: 'hsl(var(--chart-1))' },
@@ -398,7 +399,10 @@ export default function ProductDetailPage() {
           <CardTitle className="text-2xl font-headline text-primary">Live DPP Status Overview</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6">
-          <OverallProductCompliance complianceData={product.overallCompliance} />
+          <OverallProductCompliance 
+            complianceData={product.overallCompliance} 
+            notifications={product.notifications as OverallProductNotification[]} 
+          />
           {product.notifications && product.notifications.length > 0 && (
             <ProductAlerts notifications={product.notifications} />
           )}

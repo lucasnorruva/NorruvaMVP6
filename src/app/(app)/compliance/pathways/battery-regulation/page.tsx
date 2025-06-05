@@ -36,6 +36,9 @@ export default function BatteryRegulationPathwayPage() {
     step1_batteryModel: "",
     step1_intendedApplication: "",
     step1_safetySheetUrl: "",
+    step2_manufacturerName: "",
+    step2_manufacturerAddress: "",
+    step2_manufacturerContact: "",
   });
   const [isLoadingCopilot, setIsLoadingCopilot] = useState(false);
   const { toast } = useToast();
@@ -63,9 +66,15 @@ export default function BatteryRegulationPathwayPage() {
     //   toast({ variant: "destructive", title: "Co-Pilot Error", description: "Could not get a response."});
     // }
     await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+    let mockResponseDescription = `For ${stepContext}, ensure all data is accurate and verifiable.`;
+    if (stepContext === euBatteryRegulationSteps[0].title) {
+        mockResponseDescription = `For ${stepContext}, ensure you provide accurate model identifiers and clearly define all typical uses. If a safety data sheet is available, linking it strengthens your compliance position. Refer to Annex VI of the regulation for specific data elements.`;
+    } else if (stepContext === euBatteryRegulationSteps[1].title) {
+        mockResponseDescription = `For ${stepContext}, clearly identify the legal manufacturer and provide their registered address. The contact person should be reachable for compliance inquiries. Ensure this information matches official business registries.`;
+    }
      toast({
         title: "AI Co-Pilot (Mock Response)",
-        description: `For ${stepContext}, ensure you provide accurate model identifiers and clearly define all typical uses. If a safety data sheet is available, linking it strengthens your compliance position. Refer to Annex VI of the regulation for specific data elements.`,
+        description: mockResponseDescription,
         duration: 10000,
       });
     setIsLoadingCopilot(false);
@@ -116,17 +125,45 @@ export default function BatteryRegulationPathwayPage() {
             </CardContent>
           </Card>
         );
+      case "step2":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>{euBatteryRegulationSteps[1].title}</CardTitle>
+              <CardDescription>{euBatteryRegulationSteps[1].description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="manufacturerName">Manufacturer Name</Label>
+                <Input id="manufacturerName" value={formData.step2_manufacturerName || ""} onChange={(e) => handleInputChange("step2", "manufacturerName", e.target.value)} placeholder="e.g., ACME Batteries Corp." />
+              </div>
+              <div>
+                <Label htmlFor="manufacturerAddress">Manufacturer Registered Address</Label>
+                <Textarea id="manufacturerAddress" value={formData.step2_manufacturerAddress || ""} onChange={(e) => handleInputChange("step2", "manufacturerAddress", e.target.value)} placeholder="e.g., 123 Battery Lane, Tech City, TC 54321, Country" />
+              </div>
+              <div>
+                <Label htmlFor="manufacturerContact">Responsible Contact Person (Name / Email)</Label>
+                <Input id="manufacturerContact" value={formData.step2_manufacturerContact || ""} onChange={(e) => handleInputChange("step2", "manufacturerContact", e.target.value)} placeholder="e.g., Jane Doe / compliance@acmebatteries.com" />
+              </div>
+              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[1].title)} disabled={isLoadingCopilot}>
+                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+                Ask Co-Pilot about this step
+              </Button>
+            </CardContent>
+          </Card>
+        );
       // Add cases for other steps here as they are developed
       default:
+        const currentStepDetails = euBatteryRegulationSteps.find(s => s.id === stepId);
         return (
             <Card>
                 <CardHeader>
-                    <CardTitle>{euBatteryRegulationSteps.find(s => s.id === stepId)?.title || "Step Details"}</CardTitle>
-                    <CardDescription>{euBatteryRegulationSteps.find(s => s.id === stepId)?.description || "Information for this step."}</CardDescription>
+                    <CardTitle>{currentStepDetails?.title || "Step Details"}</CardTitle>
+                    <CardDescription>{currentStepDetails?.description || "Information for this step."}</CardDescription>
                 </CardHeader>
                 <CardContent>
-                    <p className="text-muted-foreground">Content for {euBatteryRegulationSteps.find(s => s.id === stepId)?.title || "this step"} will be available soon.</p>
-                     <Button className="mt-4" variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps.find(s => s.id === stepId)?.title || "this step")} disabled={isLoadingCopilot}>
+                    <p className="text-muted-foreground">Content for {currentStepDetails?.title || "this step"} will be available soon.</p>
+                     <Button className="mt-4" variant="outline" size="sm" onClick={() => handleAskCopilot(currentStepDetails?.title || "this step")} disabled={isLoadingCopilot}>
                         {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
                         Ask Co-Pilot about this step
                     </Button>

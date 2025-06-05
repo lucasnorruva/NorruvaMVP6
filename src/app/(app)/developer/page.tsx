@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket } from "lucide-react"; // Added Rocket
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers } from "lucide-react"; // Added Settings2, PackageSearch, Layers
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -509,6 +509,30 @@ export default function DeveloperPortalPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
+          <CardTitle className="font-headline flex items-center"><Settings2 className="mr-3 h-6 w-6 text-primary" /> Advanced Features &amp; Customization</CardTitle>
+          <CardDescription>Explore advanced capabilities to tailor your DPP solutions and manage integrations effectively.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <h4 className="font-semibold text-md mb-1 flex items-center"><PackageSearch className="mr-2 h-5 w-5 text-accent"/>Customizable DPP Templates</h4>
+            <p className="text-sm text-muted-foreground">Define custom data schemas and presentation templates for your Digital Product Passports to meet specific industry or product needs. (Coming Soon)</p>
+            <Button variant="outline" size="sm" className="mt-2" disabled>Explore Templates (Soon)</Button>
+          </div>
+          <div className="pt-3 border-t">
+            <h4 className="font-semibold text-md mb-1 flex items-center"><Layers className="mr-2 h-5 w-5 text-accent"/>Advanced Query Options</h4>
+            <p className="text-sm text-muted-foreground">Utilize powerful query capabilities to search and filter DPP data based on complex criteria, enabling sophisticated data analysis and reporting. (Documentation Coming Soon)</p>
+             <Button variant="link" className="p-0 h-auto text-primary hover:underline mt-1" asChild>
+                <Link href="#">View Query Language Docs (Mock)</Link>
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground pt-3 border-t">
+            Information on API Rate Limiting and access to your API Usage & Reporting dashboard (see below) are also key parts of our advanced feature set.
+          </p>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
           <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage &amp; Reporting</CardTitle>
           <CardDescription>Monitor your API usage, view logs, and understand integration performance (Mock Data).</CardDescription>
         </CardHeader>
@@ -604,3 +628,4 @@ export default function DeveloperPortalPage() {
     
 
     
+

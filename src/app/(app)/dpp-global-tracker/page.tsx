@@ -8,8 +8,8 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Slider } from "@/components/ui/slider"; // Added Slider import
-import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers, Filter as FilterIcon, TrendingUp, Map } from "lucide-react"; // Added Map for View Options
+import { Slider } from "@/components/ui/slider";
+import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers, Filter as FilterIcon, TrendingUp, Map, CalendarClock } from "lucide-react"; // Added CalendarClock
 import type { GlobeMethods, GlobeProps } from 'react-globe.gl';
 import { cn } from '@/lib/utils';
 import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
@@ -45,16 +45,36 @@ export interface MockDppPoint {
   manufacturer?: string;
   gtin?: string;
   complianceSummary?: string;
+  timestamp: number; // Year
+}
+
+interface MockArc {
+  startLat: number;
+  startLng: number;
+  endLat: number;
+  endLng: number;
+  color: string;
+  label: string;
+  timestamp: number; // Year
+  arcDashLength?: number;
+  arcDashGap?: number;
+  arcStroke?: number;
 }
 
 const mockDppsOnGlobe: MockDppPoint[] = [
-  { id: "DPP_GLOBE_001", lat: 48.8566, lng: 2.3522, name: "Smart Refrigerator X1 (Paris)", size: 0.6, category: 'Appliances', status: 'compliant', manufacturer: 'GreenTech SAS', gtin: '3123456789012', complianceSummary: 'Fully compliant with EU Ecodesign and Energy Labelling.' },
-  { id: "DPP_GLOBE_002", lat: 52.5200, lng: 13.4050, name: "Eco-Laptop Z2 (Berlin)", size: 0.7, category: 'Electronics', status: 'pending', manufacturer: 'EcoElektronik GmbH', gtin: '3987654321098', complianceSummary: 'Pending battery passport documentation.' },
-  { id: "DPP_GLOBE_003", lat: 41.9028, lng: 12.4964, name: "Recycled Sneakers V1 (Rome)", size: 0.5, category: 'Apparel', status: 'compliant', manufacturer: 'ModaVerde S.p.A.', gtin: '3456789012345', complianceSummary: 'Verified recycled content and ethical production.' },
-  { id: "DPP_GLOBE_004", lat: 51.5074, lng: 0.1278, name: "Sustainable Coffee Machine (London)", size: 0.65, category: 'Appliances', status: 'issue', manufacturer: 'BrewRight Ltd.', gtin: '3567890123456', complianceSummary: 'Repairability score below EU target; awaiting updated schematics.' },
-  { id: "DPP_GLOBE_005", lat: 40.4168, lng: -3.7038, name: "Smart Thermostat G2 (Madrid)", size: 0.55, category: 'Electronics', status: 'compliant', manufacturer: 'CasaInteligente S.L.', gtin: '3678901234567', complianceSummary: 'RoHS and REACH compliant.' },
-  { id: "DPP_GLOBE_006", lat: 59.3293, lng: 18.0686, name: "Wooden Chair Set (Stockholm)", size: 0.6, category: 'Furniture', status: 'pending', manufacturer: 'NordicWood AB', gtin: '3789012345678', complianceSummary: 'FSC certification verification in progress.' },
-  { id: "DPP_GLOBE_007", lat: 53.3498, lng: -6.2603, name: "Outdoor Solar Lamp (Dublin)", size: 0.5, category: 'Outdoor', status: 'compliant', manufacturer: 'SunBright Ltd.', gtin: '3890123456789', complianceSummary: 'IP65 rated, 3-year warranty.' },
+  { id: "DPP_GLOBE_001", lat: 48.8566, lng: 2.3522, name: "Smart Refrigerator X1 (Paris)", size: 0.6, category: 'Appliances', status: 'compliant', manufacturer: 'GreenTech SAS', gtin: '3123456789012', complianceSummary: 'Fully compliant with EU Ecodesign and Energy Labelling.', timestamp: 2022 },
+  { id: "DPP_GLOBE_002", lat: 52.5200, lng: 13.4050, name: "Eco-Laptop Z2 (Berlin)", size: 0.7, category: 'Electronics', status: 'pending', manufacturer: 'EcoElektronik GmbH', gtin: '3987654321098', complianceSummary: 'Pending battery passport documentation.', timestamp: 2023 },
+  { id: "DPP_GLOBE_003", lat: 41.9028, lng: 12.4964, name: "Recycled Sneakers V1 (Rome)", size: 0.5, category: 'Apparel', status: 'compliant', manufacturer: 'ModaVerde S.p.A.', gtin: '3456789012345', complianceSummary: 'Verified recycled content and ethical production.', timestamp: 2023 },
+  { id: "DPP_GLOBE_004", lat: 51.5074, lng: 0.1278, name: "Sustainable Coffee Machine (London)", size: 0.65, category: 'Appliances', status: 'issue', manufacturer: 'BrewRight Ltd.', gtin: '3567890123456', complianceSummary: 'Repairability score below EU target; awaiting updated schematics.', timestamp: 2024 },
+  { id: "DPP_GLOBE_005", lat: 40.4168, lng: -3.7038, name: "Smart Thermostat G2 (Madrid)", size: 0.55, category: 'Electronics', status: 'compliant', manufacturer: 'CasaInteligente S.L.', gtin: '3678901234567', complianceSummary: 'RoHS and REACH compliant.', timestamp: 2022 },
+  { id: "DPP_GLOBE_006", lat: 59.3293, lng: 18.0686, name: "Wooden Chair Set (Stockholm)", size: 0.6, category: 'Furniture', status: 'pending', manufacturer: 'NordicWood AB', gtin: '3789012345678', complianceSummary: 'FSC certification verification in progress.', timestamp: 2024 },
+  { id: "DPP_GLOBE_007", lat: 53.3498, lng: -6.2603, name: "Outdoor Solar Lamp (Dublin)", size: 0.5, category: 'Outdoor', status: 'compliant', manufacturer: 'SunBright Ltd.', gtin: '3890123456789', complianceSummary: 'IP65 rated, 3-year warranty.', timestamp: 2023 },
+];
+
+const mockArcsData: MockArc[] = [
+  { startLat: 48.8566, startLng: 2.3522, endLat: 52.5200, endLng: 13.4050, color: 'rgba(255, 255, 255, 0.4)', label: 'Component Supply (Paris to Berlin)', timestamp: 2022 },
+  { startLat: 41.9028, startLng: 12.4964, endLat: 48.8566, endLng: 2.3522, color: 'rgba(255, 255, 255, 0.4)', label: 'Finished Goods (Rome to Paris)', timestamp: 2023 },
+  { startLat: 52.5200, startLng: 13.4050, endLat: 51.5074, endLng: 0.1278, color: 'rgba(255,255,0,0.5)', label: 'Electronics Sub-Assembly (Berlin to London)', arcDashLength: 0.3, arcDashGap: 0.1, arcStroke:0.8, timestamp: 2024 },
 ];
 
 const statusColors: Record<MockDppPoint['status'], string> = {
@@ -76,13 +96,6 @@ type ActiveLayer = 'status' | 'category';
 type StatusFilter = 'all' | MockDppPoint['status'];
 type CategoryFilter = 'all' | string;
 
-const mockArcsData = [
-  { startLat: 48.8566, startLng: 2.3522, endLat: 52.5200, endLng: 13.4050, color: 'rgba(255, 255, 255, 0.4)', label: 'Component Supply (Paris to Berlin)' }, // Paris to Berlin
-  { startLat: 41.9028, startLng: 12.4964, endLat: 48.8566, endLng: 2.3522, color: 'rgba(255, 255, 255, 0.4)', label: 'Finished Goods (Rome to Paris)' }, // Rome to Paris
-  { startLat: 52.5200, startLng: 13.4050, endLat: 51.5074, endLng: 0.1278, color: 'rgba(255,255,0,0.5)', label: 'Electronics Sub-Assembly (Berlin to London)', arcDashLength: 0.3, arcDashGap: 0.1, arcStroke:0.8 },
-];
-
-
 const GlobeVisualization = ({ 
   points,
   arcs,
@@ -91,7 +104,7 @@ const GlobeVisualization = ({
   pointRadiusAccessor,
 }: { 
   points: MockDppPoint[];
-  arcs: typeof mockArcsData;
+  arcs: MockArc[];
   onPointClick: (point: MockDppPoint) => void;
   pointColorAccessor: (point: MockDppPoint) => string;
   pointRadiusAccessor: (point: MockDppPoint) => number;
@@ -131,9 +144,9 @@ const GlobeVisualization = ({
     arcsData: arcs,
     arcLabel: 'label',
     arcColor: 'color',
-    arcDashLength: d => (d as any).arcDashLength || 0.1, // default if not specified
-    arcDashGap: d => (d as any).arcDashGap || 0.05,     // default if not specified
-    arcStroke: d => (d as any).arcStroke || 0.5,        // default if not specified
+    arcDashLength: d => (d as any).arcDashLength || 0.1,
+    arcDashGap: d => (d as any).arcDashGap || 0.05,
+    arcStroke: d => (d as any).arcStroke || 0.5,
     arcAltitudeAutoScale: 0.5,
   };
 
@@ -148,7 +161,7 @@ const DppGlobalTrackerClientContainer = ({
   pointRadiusAccessor,
 }: { 
   points: MockDppPoint[];
-  arcs: typeof mockArcsData;
+  arcs: MockArc[];
   onPointClick: (point: MockDppPoint) => void;
   pointColorAccessor: (point: MockDppPoint) => string;
   pointRadiusAccessor: (point: MockDppPoint) => number;
@@ -218,9 +231,32 @@ export default function DppGlobalTrackerPage() {
   const [activeLayer, setActiveLayer] = useState<ActiveLayer>('status');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
-  const [pointBaseSize, setPointBaseSize] = useState<number>(1.0); // Default base size multiplier
+  const [pointBaseSize, setPointBaseSize] = useState<number>(1.0);
+
+  const [minYear, setMinYear] = useState(2022);
+  const [maxYear, setMaxYear] = useState(2024);
+  const [currentTime, setCurrentTime] = useState(maxYear);
 
   const conceptDescription = `...`; // Kept for brevity
+
+  useEffect(() => {
+    const allTimestamps = [
+      ...mockDppsOnGlobe.map(p => p.timestamp),
+      ...mockArcsData.map(a => a.timestamp)
+    ].filter(ts => typeof ts === 'number'); // Ensure only numbers are processed
+
+    if (allTimestamps.length > 0) {
+      const newMinYear = Math.min(...allTimestamps);
+      const newMaxYear = Math.max(...allTimestamps);
+      setMinYear(newMinYear);
+      setMaxYear(newMaxYear);
+      // Adjust currentTime only if it's outside the new valid range or not yet set meaningfully
+      if (currentTime < newMinYear || currentTime > newMaxYear || currentTime === 0) { 
+          setCurrentTime(newMaxYear);
+      }
+    }
+  }, []); // Calculate year range on mount
+
 
   const handlePointClick = (point: MockDppPoint) => {
     setSelectedPoint(point);
@@ -235,13 +271,21 @@ export default function DppGlobalTrackerPage() {
     return Array.from(categories).sort();
   }, []);
 
+  const timeFilteredPoints = useMemo(() => {
+    return mockDppsOnGlobe.filter(point => point.timestamp <= currentTime);
+  }, [currentTime]);
+
   const filteredPoints = useMemo(() => {
-    return mockDppsOnGlobe.filter(point => {
+    return timeFilteredPoints.filter(point => {
       const statusMatch = statusFilter === 'all' || point.status === statusFilter;
       const categoryMatch = categoryFilter === 'all' || point.category === categoryFilter;
       return statusMatch && categoryMatch;
     });
-  }, [statusFilter, categoryFilter]);
+  }, [timeFilteredPoints, statusFilter, categoryFilter]);
+  
+  const filteredArcs = useMemo(() => {
+    return mockArcsData.filter(arc => arc.timestamp <= currentTime);
+  }, [currentTime]);
 
   const pointColorAccessor = useMemo(() => {
     return (point: MockDppPoint): string => {
@@ -301,7 +345,7 @@ export default function DppGlobalTrackerPage() {
           <div className="w-full h-[450px] bg-muted/30 rounded-md overflow-hidden border relative">
             <DppGlobalTrackerClientContainer 
               points={filteredPoints} 
-              arcs={mockArcsData}
+              arcs={filteredArcs}
               onPointClick={handlePointClick} 
               pointColorAccessor={pointColorAccessor}
               pointRadiusAccessor={pointRadiusAccessor}
@@ -309,7 +353,7 @@ export default function DppGlobalTrackerPage() {
             {selectedPoint && <PointInfoCard pointData={selectedPoint} onClose={handleCloseInfoCard} />}
           </div>
 
-          <div className="grid md:grid-cols-3 gap-6"> {/* Changed to md:grid-cols-3 */}
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-md font-headline flex items-center">
@@ -367,7 +411,7 @@ export default function DppGlobalTrackerPage() {
                 </div>
               </CardContent>
             </Card>
-            <Card> {/* New card for View Options */}
+            <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-md font-headline flex items-center">
                   <Map className="mr-2 h-4 w-4 text-primary" />
@@ -386,6 +430,24 @@ export default function DppGlobalTrackerPage() {
                     onValueChange={([value]) => setPointBaseSize(value)}
                     className="mt-1"
                   />
+                </div>
+                <div>
+                  <Label htmlFor="time-slider" className="text-xs flex items-center">
+                    <CalendarClock className="mr-1.5 h-3.5 w-3.5" />
+                    Timeline Year: {currentTime}
+                  </Label>
+                  {(minYear < maxYear) && (
+                    <Slider
+                      id="time-slider"
+                      min={minYear}
+                      max={maxYear}
+                      step={1}
+                      value={[currentTime]}
+                      onValueChange={([value]) => setCurrentTime(value)}
+                      className="mt-1"
+                    />
+                  )}
+                  {minYear === maxYear && <p className="text-xs text-muted-foreground mt-1">All data is for {minYear}.</p>}
                 </div>
               </CardContent>
             </Card>
@@ -451,6 +513,3 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
-
-
-    

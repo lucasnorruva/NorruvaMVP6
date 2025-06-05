@@ -62,8 +62,8 @@ export default function AppHeader() {
       <div className="flex items-center gap-4">
         <TooltipProvider>
           <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-2">
+            <TooltipTrigger> {/* Removed asChild */}
+              <div className="flex items-center gap-2"> {/* This div is now the content of the default trigger */}
                 <Users className="h-5 w-5 text-muted-foreground" />
                 <Select value={currentRole} onValueChange={(value) => setCurrentRole(value as UserRole)}>
                   <SelectTrigger className="w-[150px] h-9 text-sm focus:ring-primary">

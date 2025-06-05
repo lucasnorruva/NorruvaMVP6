@@ -19,6 +19,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { ExtractProductDataOutput } from "@/ai/flows/extract-product-data";
+import type { InitialProductFormData } from "@/app/(app)/products/new/page"; // Import the extended type
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Cpu } from "lucide-react";
+import React from "react";
 
 const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
@@ -35,11 +39,30 @@ const formSchema = z.object({
 export type ProductFormData = z.infer<typeof formSchema>;
 
 interface ProductFormProps {
-  initialData?: Partial<ExtractProductDataOutput & ProductFormData>; // Merge with ProductFormData for new fields
+  initialData?: Partial<InitialProductFormData>; 
   onSubmit: (data: ProductFormData) => void;
   isSubmitting?: boolean;
-  isStandalonePage?: boolean; // To conditionally render the Card and Submit button
+  isStandalonePage?: boolean; 
 }
+
+const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: string, fieldName: string }) => {
+  if (fieldOrigin === 'AI_EXTRACTED') {
+    return (
+      <TooltipProvider>
+        <Tooltip delayDuration={100}>
+          <TooltipTrigger type="button" className="ml-2 cursor-help">
+            <Cpu className="h-4 w-4 text-info" />
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
+    );
+  }
+  return null;
+};
+
 
 export default function ProductForm({ initialData, onSubmit, isSubmitting, isStandalonePage = true }: ProductFormProps) {
   const form = useForm<ProductFormData>({
@@ -74,7 +97,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
   }, [initialData, form]);
 
   const formContent = (
-    <Accordion type="multiple" defaultValue={['item-1', 'item-2']} className="w-full">
+    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3']} className="w-full">
       <AccordionItem value="item-1">
         <AccordionTrigger className="text-lg font-semibold">Basic Information</AccordionTrigger>
         <AccordionContent className="space-y-6 pt-4">
@@ -83,7 +106,10 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
             name="productName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Product Name</FormLabel>
+                <FormLabel className="flex items-center">
+                  Product Name 
+                  <AiIndicator fieldOrigin={initialData?.productNameOrigin} fieldName="Product Name" />
+                </FormLabel>
                 <FormControl>
                   <Input placeholder="e.g., EcoBoiler X1" {...field} />
                 </FormControl>
@@ -109,7 +135,10 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
             name="productDescription"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Product Description</FormLabel>
+                <FormLabel className="flex items-center">
+                  Product Description
+                  <AiIndicator fieldOrigin={initialData?.productDescriptionOrigin} fieldName="Product Description" />
+                </FormLabel>
                 <FormControl>
                   <Textarea placeholder="Detailed description of the product..." {...field} rows={4} />
                 </FormControl>
@@ -123,7 +152,10 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
               name="manufacturer"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Manufacturer</FormLabel>
+                  <FormLabel className="flex items-center">
+                    Manufacturer
+                    <AiIndicator fieldOrigin={initialData?.manufacturerOrigin} fieldName="Manufacturer" />
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., GreenTech Inc." {...field} />
                   </FormControl>
@@ -136,7 +168,10 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
               name="modelNumber"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Model Number</FormLabel>
+                  <FormLabel className="flex items-center">
+                    Model Number
+                    <AiIndicator fieldOrigin={initialData?.modelNumberOrigin} fieldName="Model Number" />
+                  </FormLabel>
                   <FormControl>
                     <Input placeholder="e.g., GTX-EB-001" {...field} />
                   </FormControl>
@@ -156,7 +191,10 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
             name="materials"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Key Materials</FormLabel>
+                <FormLabel className="flex items-center">
+                    Key Materials
+                    <AiIndicator fieldOrigin={initialData?.materialsOrigin} fieldName="Key Materials" />
+                </FormLabel>
                 <FormControl>
                   <Textarea placeholder="e.g., Organic Cotton, Recycled PET, Aluminum Alloy" {...field} rows={3}/>
                 </FormControl>
@@ -172,7 +210,10 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
             name="sustainabilityClaims"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Sustainability Claims</FormLabel>
+                <FormLabel className="flex items-center">
+                    Sustainability Claims
+                    <AiIndicator fieldOrigin={initialData?.sustainabilityClaimsOrigin} fieldName="Sustainability Claims" />
+                </FormLabel>
                 <FormControl>
                   <Textarea placeholder="e.g., Made with 70% recycled materials, Carbon neutral certified, Biodegradable packaging" {...field} rows={3}/>
                 </FormControl>
@@ -188,7 +229,10 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
             name="energyLabel"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Energy Label</FormLabel>
+                <FormLabel className="flex items-center">
+                    Energy Label
+                    <AiIndicator fieldOrigin={initialData?.energyLabelOrigin} fieldName="Energy Label" />
+                </FormLabel>
                 <FormControl>
                   <Input placeholder="e.g., A++" {...field} />
                 </FormControl>
@@ -207,7 +251,10 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
               name="specifications"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Specifications (JSON format)</FormLabel>
+                  <FormLabel className="flex items-center">
+                    Specifications (JSON format)
+                    <AiIndicator fieldOrigin={initialData?.specificationsOrigin} fieldName="Specifications" />
+                  </FormLabel>
                   <FormControl>
                     <Textarea placeholder='e.g., { "color": "blue", "weight": "10kg" }' {...field} rows={5} />
                   </FormControl>
@@ -231,7 +278,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="font-headline">Product Information</CardTitle>
-              <CardDescription>Fill in the details for the Digital Product Passport.</CardDescription>
+              <CardDescription>Fill in the details for the Digital Product Passport. Fields suggested by AI will be marked with a <Cpu className="inline h-4 w-4 text-info" /> icon.</CardDescription>
             </CardHeader>
             <CardContent>
               {formContent}
@@ -257,4 +304,3 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
     </Form>
   );
 }
-

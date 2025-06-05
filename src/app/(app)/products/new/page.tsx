@@ -10,8 +10,9 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import ProductForm, { type ProductFormData } from "@/components/products/ProductForm";
 import { extractProductData, type ExtractProductDataOutput } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
-import { UploadCloud, AlertTriangle, CheckCircle2, Loader2, ScanLine, Info } from "lucide-react";
+import { UploadCloud, AlertTriangle, CheckCircle2, Loader2, ScanLine, Info, Cpu } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Helper to convert file to data URI
 const fileToDataUri = (file: File): Promise<string> => {
@@ -23,10 +24,22 @@ const fileToDataUri = (file: File): Promise<string> => {
   });
 };
 
+export interface InitialProductFormData extends ProductFormData {
+  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
+  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
+  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
+  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+}
+
+
 export default function AddNewProductPage() {
   const [file, setFile] = useState<File | null>(null);
   const [documentType, setDocumentType] = useState<string>("invoice"); 
-  const [extractedData, setExtractedData] = useState<Partial<ExtractProductDataOutput & ProductFormData> | null>(null);
+  const [extractedData, setExtractedData] = useState<Partial<InitialProductFormData> | null>(null);
   const [isLoadingAi, setIsLoadingAi] = useState(false);
   const [isSubmittingProduct, setIsSubmittingProduct] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -54,11 +67,36 @@ export default function AddNewProductPage() {
     try {
       const documentDataUri = await fileToDataUri(file);
       const result = await extractProductData({ documentDataUri, documentType });
-      // Ensure the result is compatible with ProductFormData where overlapping
-      const initialFormData: Partial<ExtractProductDataOutput & ProductFormData> = {
-        ...result, // AI extracted data
-        // any specific ProductFormData fields can be mapped here if names differ or need transformation
-      };
+      
+      const initialFormData: Partial<InitialProductFormData> = {};
+      if (result.productName) {
+        initialFormData.productName = result.productName;
+        initialFormData.productNameOrigin = 'AI_EXTRACTED';
+      }
+      if (result.productDescription) {
+        initialFormData.productDescription = result.productDescription;
+        initialFormData.productDescriptionOrigin = 'AI_EXTRACTED';
+      }
+      if (result.manufacturer) {
+        initialFormData.manufacturer = result.manufacturer;
+        initialFormData.manufacturerOrigin = 'AI_EXTRACTED';
+      }
+      if (result.modelNumber) {
+        initialFormData.modelNumber = result.modelNumber;
+        initialFormData.modelNumberOrigin = 'AI_EXTRACTED';
+      }
+      if (result.specifications) {
+        initialFormData.specifications = typeof result.specifications === 'string' ? result.specifications : JSON.stringify(result.specifications, null, 2);
+        initialFormData.specificationsOrigin = 'AI_EXTRACTED';
+      }
+      if (result.energyLabel) {
+        initialFormData.energyLabel = result.energyLabel;
+        initialFormData.energyLabelOrigin = 'AI_EXTRACTED';
+      }
+      // Explicitly setting other fields as manual or leaving undefined if not from AI
+      initialFormData.gtin = initialData.gtin || ""; // Default to manual or existing
+      // materials & sustainabilityClaims are new to ProductForm, so AI won't extract them yet.
+
       setExtractedData(initialFormData);
       toast({
         title: "Data Extracted Successfully",
@@ -66,6 +104,7 @@ export default function AddNewProductPage() {
         variant: "default",
         action: <CheckCircle2 className="text-green-500" />,
       });
+      setActiveTab("manual"); // Switch to manual tab to show the form with data
     } catch (err) {
       console.error("Extraction failed:", err);
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred during extraction.";
@@ -80,12 +119,22 @@ export default function AddNewProductPage() {
       setIsLoadingAi(false);
     }
   };
+  
+  // Example initial data structure if you were loading an existing product for editing
+  const initialData: Partial<InitialProductFormData> = {
+      // productName: "Example Product from DB",
+      // productNameOrigin: "manual", // or "AI_EXTRACTED" if it was originally from AI
+  };
 
   const handleProductFormSubmit = async (data: ProductFormData) => {
     setIsSubmittingProduct(true);
     console.log("Submitting product data:", data);
-    // Here you would typically send the data to your backend API to save the product
-    // For demo purposes, we simulate an API call and show a toast
+    // In a real app, you'd persist data including origins if needed
+    const payload = { ...data }; 
+    // Remove origin fields if they are not part of your backend schema for ProductFormData
+    // delete payload.productNameOrigin; 
+    // ... and so on for other origin fields
+
     await new Promise(resolve => setTimeout(resolve, 1500)); 
     toast({
       title: "Product Saved (Simulated)",
@@ -93,10 +142,6 @@ export default function AddNewProductPage() {
       variant: "default",
       action: <CheckCircle2 className="text-green-500" />,
     });
-    // Optionally reset form or navigate away
-    // setFile(null);
-    // setExtractedData(null);
-    // setActiveTab("manual"); // Or navigate to product list
     setIsSubmittingProduct(false);
   };
 
@@ -119,8 +164,8 @@ export default function AddNewProductPage() {
           <ProductForm 
             onSubmit={handleProductFormSubmit}
             isSubmitting={isSubmittingProduct}
-            initialData={extractedData || {}} // Pass extracted data if available from AI tab
-            isStandalonePage={true} // To render the card and submit button within ProductForm
+            initialData={extractedData || initialData} 
+            isStandalonePage={true}
           />
         </TabsContent>
 
@@ -142,7 +187,7 @@ export default function AddNewProductPage() {
                 {isLoadingAi ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <UploadCloud className="mr-2 h-4 w-4" />
+                  <Cpu className="mr-2 h-4 w-4" /> // Changed icon to Cpu
                 )}
                 {isLoadingAi ? "Extracting Data..." : "Extract Data with AI"}
               </Button>
@@ -155,12 +200,12 @@ export default function AddNewProductPage() {
                 </Alert>
               )}
 
-              {extractedData && (
+              {extractedData && activeTab === 'ai-extraction' && ( // Only show this if user is still on AI tab
                 <Alert variant="default" className="bg-info/10 border-info/50">
                   <Info className="h-4 w-4 text-info" />
                   <AlertTitle className="text-info">Data Extracted</AlertTitle>
                   <AlertDescription>
-                    AI has pre-filled some information. Please switch to the "Manual Entry" tab to review, complete, and save the product.
+                    AI has pre-filled some information. Please switch to the "Manual Entry" tab to review, complete, and save the product. Fields populated by AI will be indicated.
                   </AlertDescription>
                 </Alert>
               )}
@@ -180,4 +225,3 @@ export default function AddNewProductPage() {
     </div>
   );
 }
-

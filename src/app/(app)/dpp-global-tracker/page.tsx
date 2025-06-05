@@ -7,7 +7,8 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers, Filter as FilterIcon } from "lucide-react";
 import type { GlobeMethods, GlobeProps } from 'react-globe.gl';
 import { cn } from '@/lib/utils';
 import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
@@ -65,17 +66,22 @@ const categoryColors: Record<string, string> = {
   Appliances: 'rgba(59, 130, 246, 0.9)', // Blue
   Electronics: 'rgba(168, 85, 247, 0.9)', // Purple
   Apparel: 'rgba(236, 72, 153, 0.9)', // Pink
-  Furniture: 'rgba(161, 98, 7, 0.9)', // Brown (Adjusted from original list)
+  Furniture: 'rgba(161, 98, 7, 0.9)', // Brown
   Outdoor: 'rgba(20, 184, 166, 0.9)', // Teal
   Default: 'rgba(156, 163, 175, 0.9)', // Gray for unknown categories
 };
 
 type ActiveLayer = 'status' | 'category';
+type StatusFilter = 'all' | MockDppPoint['status'];
+type CategoryFilter = 'all' | string;
+
 
 const GlobeVisualization = ({ 
+  points,
   onPointClick, 
   pointColorAccessor 
 }: { 
+  points: MockDppPoint[];
   onPointClick: (point: MockDppPoint) => void;
   pointColorAccessor: (point: MockDppPoint) => string;
 }) => {
@@ -96,14 +102,14 @@ const GlobeVisualization = ({
     globeImageUrl: "//unpkg.com/three-globe/example/img/earth-dark.jpg",
     bumpImageUrl: "//unpkg.com/three-globe/example/img/earth-topology.png",
     backgroundColor: "rgba(0,0,0,0)",
-    width: undefined, // Takes parent width
-    height: 450, // Fixed height for consistency
+    width: undefined, 
+    height: 450, 
     polygonsData: euPolygon.features,
     polygonCapColor: () => 'rgba(0, 100, 255, 0.2)',
     polygonSideColor: () => 'rgba(0, 0, 0, 0.05)',
     polygonStrokeColor: () => 'rgba(0, 50, 150, 0.8)',
     polygonAltitude: 0.01,
-    pointsData: mockDppsOnGlobe,
+    pointsData: points,
     pointLabel: 'name',
     pointColor: d => pointColorAccessor(d as MockDppPoint),
     pointRadius: 'size',
@@ -117,9 +123,11 @@ const GlobeVisualization = ({
 };
 
 const DppGlobalTrackerClientContainer = ({ 
+  points,
   onPointClick,
   pointColorAccessor
 }: { 
+  points: MockDppPoint[];
   onPointClick: (point: MockDppPoint) => void;
   pointColorAccessor: (point: MockDppPoint) => string;
 }) => {
@@ -144,7 +152,7 @@ const DppGlobalTrackerClientContainer = ({
         <span className="ml-2">Loading 3D Globe...</span>
       </div>
     }>
-      <GlobeVisualization onPointClick={onPointClick} pointColorAccessor={pointColorAccessor} />
+      <GlobeVisualization points={points} onPointClick={onPointClick} pointColorAccessor={pointColorAccessor} />
     </Suspense>
   );
 };
@@ -169,12 +177,21 @@ const Legend = ({ title, colorMap }: { title: string; colorMap: Record<string, s
   </Card>
 );
 
+const availableStatuses: Array<{ value: StatusFilter; label: string }> = [
+  { value: "all", label: "All Statuses" },
+  { value: "compliant", label: "Compliant" },
+  { value: "pending", label: "Pending" },
+  { value: "issue", label: "Issue" },
+];
+
 export default function DppGlobalTrackerPage() {
   const [isConceptVisible, setIsConceptVisible] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<MockDppPoint | null>(null);
   const [activeLayer, setActiveLayer] = useState<ActiveLayer>('status');
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
 
-  const conceptDescription = `...`; // Kept for brevity, same as before
+  const conceptDescription = `...`; // Kept for brevity
 
   const handlePointClick = (point: MockDppPoint) => {
     setSelectedPoint(point);
@@ -183,6 +200,19 @@ export default function DppGlobalTrackerPage() {
   const handleCloseInfoCard = () => {
     setSelectedPoint(null);
   };
+  
+  const availableCategories = useMemo(() => {
+    const categories = new Set(mockDppsOnGlobe.map(p => p.category));
+    return Array.from(categories).sort();
+  }, []);
+
+  const filteredPoints = useMemo(() => {
+    return mockDppsOnGlobe.filter(point => {
+      const statusMatch = statusFilter === 'all' || point.status === statusFilter;
+      const categoryMatch = categoryFilter === 'all' || point.category === categoryFilter;
+      return statusMatch && categoryMatch;
+    });
+  }, [statusFilter, categoryFilter]);
 
   const pointColorAccessor = useMemo(() => {
     return (point: MockDppPoint): string => {
@@ -191,14 +221,13 @@ export default function DppGlobalTrackerPage() {
       } else if (activeLayer === 'category') {
         return categoryColors[point.category] || categoryColors.Default;
       }
-      return 'rgba(255, 255, 255, 0.7)'; // Default fallback
+      return 'rgba(255, 255, 255, 0.7)';
     };
   }, [activeLayer]);
 
   const activeLegendMap = useMemo(() => {
     if (activeLayer === 'status') return statusColors;
     if (activeLayer === 'category') {
-        // Create a map only for categories present in the mock data for a cleaner legend
         const presentCategories = new Set(mockDppsOnGlobe.map(p => p.category));
         const relevantCategoryColors: Record<string, string> = {};
         presentCategories.forEach(cat => {
@@ -224,7 +253,7 @@ export default function DppGlobalTrackerPage() {
         <Info className="h-5 w-5 text-info" />
         <AlertTitle className="font-semibold text-info">Interactive Prototype</AlertTitle>
         <AlertDescription>
-          This is an early prototype. Rotate the globe with your mouse. Click points for info. Change data layers using the controls below.
+          This is an early prototype. Rotate the globe. Click points for info. Change data layers and apply filters using the controls below.
         </AlertDescription>
       </Alert>
 
@@ -235,30 +264,69 @@ export default function DppGlobalTrackerPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="w-full h-[450px] bg-muted/30 rounded-md overflow-hidden border relative">
-            <DppGlobalTrackerClientContainer onPointClick={handlePointClick} pointColorAccessor={pointColorAccessor} />
+            <DppGlobalTrackerClientContainer points={filteredPoints} onPointClick={handlePointClick} pointColorAccessor={pointColorAccessor} />
             {selectedPoint && <PointInfoCard pointData={selectedPoint} onClose={handleCloseInfoCard} />}
           </div>
 
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-md font-headline flex items-center">
-                <Layers className="mr-2 h-4 w-4 text-primary" />
-                Data Layers
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <RadioGroup value={activeLayer} onValueChange={(value) => setActiveLayer(value as ActiveLayer)} className="flex flex-col sm:flex-row gap-4">
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="status" id="layer-status" />
-                  <Label htmlFor="layer-status" className="cursor-pointer hover:text-primary">Color by Status</Label>
+          <div className="grid md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-md font-headline flex items-center">
+                  <Layers className="mr-2 h-4 w-4 text-primary" />
+                  Data Layers
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <RadioGroup value={activeLayer} onValueChange={(value) => setActiveLayer(value as ActiveLayer)} className="flex flex-col sm:flex-row gap-4">
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="status" id="layer-status" />
+                    <Label htmlFor="layer-status" className="cursor-pointer hover:text-primary">Color by Status</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="category" id="layer-category" />
+                    <Label htmlFor="layer-category" className="cursor-pointer hover:text-primary">Color by Category</Label>
+                  </div>
+                </RadioGroup>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-md font-headline flex items-center">
+                  <FilterIcon className="mr-2 h-4 w-4 text-primary" />
+                  Filters
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="status-filter" className="text-xs">Filter by Status</Label>
+                  <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
+                    <SelectTrigger id="status-filter" className="w-full h-9">
+                      <SelectValue placeholder="Select status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableStatuses.map(option => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="category" id="layer-category" />
-                  <Label htmlFor="layer-category" className="cursor-pointer hover:text-primary">Color by Category</Label>
+                <div>
+                  <Label htmlFor="category-filter" className="text-xs">Filter by Category</Label>
+                  <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value as CategoryFilter)}>
+                    <SelectTrigger id="category-filter" className="w-full h-9">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {availableCategories.map(category => (
+                        <SelectItem key={category} value={category}>{category}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </RadioGroup>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
           
           <Legend title={activeLegendTitle} colorMap={activeLegendMap} />
         </CardContent>
@@ -320,7 +388,3 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
-
-    
-
-    

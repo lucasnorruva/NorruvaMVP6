@@ -10,7 +10,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import ProductForm, { type ProductFormData } from "@/components/products/ProductForm";
 import { extractProductData, type ExtractProductDataOutput } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
-import { UploadCloud, AlertTriangle, CheckCircle2, Loader2, ScanLine, Info, Cpu } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, ScanLine, Info, Cpu } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
@@ -33,6 +33,11 @@ export interface InitialProductFormData extends ProductFormData {
   sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
   energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
   specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+  // Battery Regulation Origins
+  batteryChemistryOrigin?: 'AI_EXTRACTED' | 'manual';
+  stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
+  carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
+  recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
 }
 
 
@@ -93,9 +98,26 @@ export default function AddNewProductPage() {
         initialFormData.energyLabel = result.energyLabel;
         initialFormData.energyLabelOrigin = 'AI_EXTRACTED';
       }
-      // Explicitly setting other fields as manual or leaving undefined if not from AI
-      initialFormData.gtin = initialData.gtin || ""; // Default to manual or existing
-      // materials & sustainabilityClaims are new to ProductForm, so AI won't extract them yet.
+
+      // Battery Regulation Fields
+      if (result.batteryChemistry) {
+        initialFormData.batteryChemistry = result.batteryChemistry;
+        initialFormData.batteryChemistryOrigin = 'AI_EXTRACTED';
+      }
+      if (result.stateOfHealth) {
+        initialFormData.stateOfHealth = result.stateOfHealth;
+        initialFormData.stateOfHealthOrigin = 'AI_EXTRACTED';
+      }
+      if (result.carbonFootprintManufacturing) {
+        initialFormData.carbonFootprintManufacturing = result.carbonFootprintManufacturing;
+        initialFormData.carbonFootprintManufacturingOrigin = 'AI_EXTRACTED';
+      }
+      if (result.recycledContentPercentage) {
+        initialFormData.recycledContentPercentage = result.recycledContentPercentage;
+        initialFormData.recycledContentPercentageOrigin = 'AI_EXTRACTED';
+      }
+      
+      initialFormData.gtin = initialData.gtin || "";
 
       setExtractedData(initialFormData);
       toast({
@@ -104,7 +126,7 @@ export default function AddNewProductPage() {
         variant: "default",
         action: <CheckCircle2 className="text-green-500" />,
       });
-      setActiveTab("manual"); // Switch to manual tab to show the form with data
+      setActiveTab("manual"); 
     } catch (err) {
       console.error("Extraction failed:", err);
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred during extraction.";
@@ -120,20 +142,14 @@ export default function AddNewProductPage() {
     }
   };
   
-  // Example initial data structure if you were loading an existing product for editing
   const initialData: Partial<InitialProductFormData> = {
-      // productName: "Example Product from DB",
-      // productNameOrigin: "manual", // or "AI_EXTRACTED" if it was originally from AI
   };
 
   const handleProductFormSubmit = async (data: ProductFormData) => {
     setIsSubmittingProduct(true);
     console.log("Submitting product data:", data);
-    // In a real app, you'd persist data including origins if needed
+    
     const payload = { ...data }; 
-    // Remove origin fields if they are not part of your backend schema for ProductFormData
-    // delete payload.productNameOrigin; 
-    // ... and so on for other origin fields
 
     await new Promise(resolve => setTimeout(resolve, 1500)); 
     toast({
@@ -175,6 +191,7 @@ export default function AddNewProductPage() {
               <CardTitle className="font-headline flex items-center"><ScanLine className="mr-2 h-6 w-6 text-primary" />Upload Document for AI Extraction</CardTitle>
               <CardDescription>
                 Select a document file (PDF, DOCX, TXT, PNG, JPG). Max 10MB. AI will attempt to pre-fill the product form.
+                 For battery products, try a 'battery_spec_sheet' document type.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -182,12 +199,16 @@ export default function AddNewProductPage() {
                 <Label htmlFor="document-upload">Document File</Label>
                 <Input id="document-upload" type="file" onChange={handleFileChange} className="file:text-primary file:font-medium" />
               </div>
+               <div className="grid w-full max-w-sm items-center gap-2">
+                <Label htmlFor="document-type">Document Type</Label>
+                <Input id="document-type" value={documentType} onChange={(e) => setDocumentType(e.target.value)} placeholder="e.g., invoice, specification, battery_spec_sheet" />
+              </div>
               
               <Button onClick={handleExtractData} disabled={isLoadingAi || !file} className="bg-accent text-accent-foreground hover:bg-accent/90">
                 {isLoadingAi ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <Cpu className="mr-2 h-4 w-4" /> // Changed icon to Cpu
+                  <Cpu className="mr-2 h-4 w-4" /> 
                 )}
                 {isLoadingAi ? "Extracting Data..." : "Extract Data with AI"}
               </Button>
@@ -200,7 +221,7 @@ export default function AddNewProductPage() {
                 </Alert>
               )}
 
-              {extractedData && activeTab === 'ai-extraction' && ( // Only show this if user is still on AI tab
+              {extractedData && activeTab === 'ai-extraction' && ( 
                 <Alert variant="default" className="bg-info/10 border-info/50">
                   <Info className="h-4 w-4 text-info" />
                   <AlertTitle className="text-info">Data Extracted</AlertTitle>
@@ -213,7 +234,7 @@ export default function AddNewProductPage() {
                 <Card className="border-dashed border-2 border-muted bg-muted/30">
                   <CardContent className="p-6 text-center text-muted-foreground">
                     <ScanLine className="mx-auto h-10 w-10 mb-3" />
-                    <p>Click "Extract Data with AI" to populate product information from the selected file.</p>
+                    <p>Click "Extract Data with AI" to populate product information from the selected file and document type.</p>
                     <p className="text-xs mt-1">You can then review it in the "Manual Entry" tab.</p>
                   </CardContent>
                 </Card>

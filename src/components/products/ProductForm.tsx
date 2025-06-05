@@ -18,10 +18,9 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import type { ExtractProductDataOutput } from "@/ai/flows/extract-product-data";
-import type { InitialProductFormData } from "@/app/(app)/products/new/page"; // Import the extended type
+import type { InitialProductFormData } from "@/app/(app)/products/new/page"; 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu } from "lucide-react";
+import { Cpu, BatteryCharging } from "lucide-react";
 import React from "react";
 
 const formSchema = z.object({
@@ -34,6 +33,11 @@ const formSchema = z.object({
   sustainabilityClaims: z.string().optional().describe("Brief sustainability claims, e.g., 'Made with 50% recycled content', 'Carbon neutral production'."),
   specifications: z.string().optional(), 
   energyLabel: z.string().optional(),
+  // Battery Regulation Fields
+  batteryChemistry: z.string().optional(),
+  stateOfHealth: z.coerce.number().optional(), // Coerce to number
+  carbonFootprintManufacturing: z.coerce.number().optional(), // Coerce to number
+  recycledContentPercentage: z.coerce.number().optional(), // Coerce to number
 });
 
 export type ProductFormData = z.infer<typeof formSchema>;
@@ -77,6 +81,10 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
       sustainabilityClaims: initialData?.sustainabilityClaims || "",
       specifications: initialData?.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
       energyLabel: initialData?.energyLabel || "",
+      batteryChemistry: initialData?.batteryChemistry || "",
+      stateOfHealth: initialData?.stateOfHealth || undefined,
+      carbonFootprintManufacturing: initialData?.carbonFootprintManufacturing || undefined,
+      recycledContentPercentage: initialData?.recycledContentPercentage || undefined,
     },
   });
 
@@ -92,12 +100,16 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
         sustainabilityClaims: initialData.sustainabilityClaims || "",
         specifications: initialData.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
         energyLabel: initialData.energyLabel || "",
+        batteryChemistry: initialData.batteryChemistry || "",
+        stateOfHealth: initialData.stateOfHealth || undefined,
+        carbonFootprintManufacturing: initialData.carbonFootprintManufacturing || undefined,
+        recycledContentPercentage: initialData.recycledContentPercentage || undefined,
       });
     }
   }, [initialData, form]);
 
   const formContent = (
-    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3']} className="w-full">
+    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']} className="w-full">
       <AccordionItem value="item-1">
         <AccordionTrigger className="text-lg font-semibold">Basic Information</AccordionTrigger>
         <AccordionContent className="space-y-6 pt-4">
@@ -267,6 +279,78 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
             />
         </AccordionContent>
       </AccordionItem>
+
+      <AccordionItem value="item-4">
+        <AccordionTrigger className="text-lg font-semibold flex items-center">
+            <BatteryCharging className="mr-2 h-5 w-5 text-primary" /> Battery Passport Details
+        </AccordionTrigger>
+        <AccordionContent className="space-y-6 pt-4">
+            <FormField
+              control={form.control}
+              name="batteryChemistry"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center">
+                    Battery Chemistry
+                    <AiIndicator fieldOrigin={initialData?.batteryChemistryOrigin} fieldName="Battery Chemistry" />
+                  </FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., Li-ion NMC, LFP" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="stateOfHealth"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center">
+                    State of Health (%)
+                    <AiIndicator fieldOrigin={initialData?.stateOfHealthOrigin} fieldName="State of Health" />
+                  </FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="e.g., 98" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="carbonFootprintManufacturing"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center">
+                    Manufacturing Carbon Footprint (kg CO₂e)
+                    <AiIndicator fieldOrigin={initialData?.carbonFootprintManufacturingOrigin} fieldName="Carbon Footprint" />
+                  </FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="e.g., 75.5" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="recycledContentPercentage"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="flex items-center">
+                    Recycled Content (%)
+                    <AiIndicator fieldOrigin={initialData?.recycledContentPercentageOrigin} fieldName="Recycled Content" />
+                  </FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="e.g., 15" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        </AccordionContent>
+      </AccordionItem>
     </Accordion>
   );
 
@@ -292,7 +376,6 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
     );
   }
 
-  // For use within other components, not as a standalone page form
   return (
      <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">

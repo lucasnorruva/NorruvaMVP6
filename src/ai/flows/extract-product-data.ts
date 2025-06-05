@@ -1,3 +1,4 @@
+
 // 'use server';
 /**
  * @fileOverview Extracts and categorizes product information from supplier documents using AI.
@@ -20,7 +21,7 @@ const ExtractProductDataInputSchema = z.object({
     ),
   documentType: z
     .string()
-    .describe("The type of document being uploaded (e.g., 'invoice', 'specification')."),
+    .describe("The type of document being uploaded (e.g., 'invoice', 'specification', 'battery_spec_sheet')."),
 });
 export type ExtractProductDataInput = z.infer<typeof ExtractProductDataInputSchema>;
 
@@ -31,6 +32,11 @@ const ExtractProductDataOutputSchema = z.object({
   modelNumber: z.string().describe("The model number of the product.").optional(),
   specifications: z.record(z.string(), z.string()).describe("A key-value pair of product specifications.").optional(),
   energyLabel: z.string().describe("The energy label of the product, if available.").optional(),
+  // Battery Regulation Fields
+  batteryChemistry: z.string().describe("The chemical composition of the battery (e.g., Li-ion NMC, LFP).").optional(),
+  stateOfHealth: z.number().describe("The state of health of the battery as a percentage (e.g., 98 for 98%).").optional(),
+  carbonFootprintManufacturing: z.number().describe("The carbon footprint of the battery manufacturing process in kg CO2e.").optional(),
+  recycledContentPercentage: z.number().describe("The percentage of recycled content in the battery (e.g., 15 for 15%).").optional(),
 });
 export type ExtractProductDataOutput = z.infer<typeof ExtractProductDataOutputSchema>;
 
@@ -50,13 +56,20 @@ You will be provided with a document and its type. Your goal is to extract relev
 - productDescription: A detailed description of the product.
 - manufacturer: The manufacturer of the product.
 - modelNumber: The model number of the product.
-- specifications: A key-value pair of product specifications.
-- energyLabel: The energy label of the product, if available.
+- specifications: A key-value pair of product specifications (e.g., {"color": "blue", "weight": "10kg"}).
+- energyLabel: The energy label of the product, if available (e.g., A++, B).
+
+If the document appears to be related to a battery (e.g., documentType is 'battery_spec_sheet' or content suggests it), also extract the following:
+- batteryChemistry: The chemical composition of the battery (e.g., Li-ion NMC, LFP).
+- stateOfHealth: The state of health of the battery as a percentage (e.g., 98 for 98%). Extract only the number.
+- carbonFootprintManufacturing: The carbon footprint of the battery manufacturing process in kg CO2e. Extract only the number.
+- recycledContentPercentage: The percentage of recycled content in the battery (e.g., 15 for 15%). Extract only the number.
+
 
 Document Type: {{{documentType}}}
 Document Content: {{media url=documentDataUri}}
 
-Extract the product information and return it in JSON format.
+Extract the product information and return it in JSON format. If a numeric field cannot be found, omit it or return null.
 `,
 });
 

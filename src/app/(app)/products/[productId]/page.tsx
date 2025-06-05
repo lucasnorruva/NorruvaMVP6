@@ -8,9 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Added Tooltip
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 
@@ -59,7 +59,7 @@ const MOCK_PRODUCTS = [
   },
    { 
     productId: "PROD002", 
-    productName: "Smart LED Bulb (4-Pack)", 
+    productName: "Smart LED Bulb (4-Pack) with Battery Backup", 
     productNameOrigin: "AI_EXTRACTED",
     gtin: "98765432109876",
     gtinVerified: false,
@@ -70,21 +70,32 @@ const MOCK_PRODUCTS = [
     lastUpdated: "2024-07-18",
     manufacturer: "BrightSpark Electronics",
     manufacturerVerified: true,
-    modelNumber: "BS-LED-S04",
-    description: "Energy-efficient smart LED bulbs with customizable lighting options and long lifespan. Connects to smart home systems.",
+    modelNumber: "BS-LED-S04B",
+    description: "Energy-efficient smart LED bulbs with customizable lighting options, long lifespan, and integrated battery backup for power outages. Connects to smart home systems.",
     descriptionOrigin: "AI_EXTRACTED",
     imageUrl: "https://placehold.co/600x400.png",
-    imageHint: "led bulbs package",
-    materials: "Polycarbonate, Aluminum, LEDs",
-    sustainabilityClaims: "Uses 85% less energy, Mercury-free, Recyclable packaging.",
+    imageHint: "led bulbs package battery",
+    materials: "Polycarbonate, Aluminum, LEDs, Li-ion Battery Cell",
+    sustainabilityClaims: "Uses 85% less energy, Mercury-free, Recyclable packaging, Conflict-free minerals in battery.",
     sustainabilityClaimsVerified: false,
     energyLabel: "A+",
     specifications: {
       "Lumens": "800 lm per bulb",
       "Color Temperature": "2700K - 6500K tunable",
       "Lifespan": "25,000 hours",
-      "Connectivity": "Wi-Fi, Bluetooth"
+      "Connectivity": "Wi-Fi, Bluetooth",
+      "Battery Backup Time": "2 hours"
     },
+    // Battery Regulation Data
+    batteryChemistry: "Li-ion NMC",
+    batteryChemistryOrigin: "AI_EXTRACTED",
+    stateOfHealth: 99, // As percentage
+    stateOfHealthOrigin: "manual",
+    carbonFootprintManufacturing: 5.2, // kg CO2e
+    carbonFootprintManufacturingOrigin: "AI_EXTRACTED",
+    recycledContentPercentage: 8, // As percentage
+    recycledContentPercentageOrigin: "manual",
+
     lifecycleEvents: [
       { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01", location: "Shenzhen, China", details: "Batch #LEDB456", isBlockchainAnchored: true },
       { id: "EVT005", type: "Imported", timestamp: "2024-03-15", location: "Rotterdam Port", details: "Shipment #SHP0089", isBlockchainAnchored: false },
@@ -92,12 +103,22 @@ const MOCK_PRODUCTS = [
     complianceData: {
       "RoHS": { status: "Compliant", lastChecked: "2024-07-01", reportId: "ROHS-LEDB456-001", isVerified: true },
       "CE Mark": { status: "Compliant", lastChecked: "2024-07-01", reportId: "CE-LEDB456-001", isVerified: true },
+      "Battery Regulation (EU 2023/1542)": { status: "Pending Documentation", lastChecked: "2024-07-20", reportId: "BATREG-LEDB456-PRE", isVerified: false },
     },
     isDppBlockchainAnchored: false,
   },
 ];
 
-type ProductType = typeof MOCK_PRODUCTS[0];
+type ProductType = typeof MOCK_PRODUCTS[0] & {
+  batteryChemistry?: string;
+  batteryChemistryOrigin?: string;
+  stateOfHealth?: number;
+  stateOfHealthOrigin?: string;
+  carbonFootprintManufacturing?: number;
+  carbonFootprintManufacturingOrigin?: string;
+  recycledContentPercentage?: number;
+  recycledContentPercentageOrigin?: string;
+};
 
 const TrustSignalIcon = ({ isVerified, tooltipText, Icon = CheckCircle2 }: {isVerified?: boolean, tooltipText: string, Icon?: React.ElementType}) => {
   if (isVerified === undefined) return null;
@@ -105,7 +126,7 @@ const TrustSignalIcon = ({ isVerified, tooltipText, Icon = CheckCircle2 }: {isVe
     <TooltipProvider>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
-          <span> {/* span is needed for TooltipTrigger when icon is conditional */}
+          <span> 
             {isVerified ? <Icon className="h-4 w-4 text-green-500 ml-1" /> : <Info className="h-4 w-4 text-yellow-500 ml-1" />}
           </span>
         </TooltipTrigger>
@@ -132,7 +153,6 @@ const DataOriginIcon = ({ origin, fieldName }: { origin?: string, fieldName: str
       </TooltipProvider>
     );
   }
-  // Could add other origins later e.g. 'MANUAL_ENTRY', 'SUPPLIER_UPLOADED'
   return null;
 };
 
@@ -146,7 +166,7 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       await new Promise(resolve => setTimeout(resolve, 500)); 
-      const foundProduct = MOCK_PRODUCTS.find(p => p.productId === productId);
+      const foundProduct = MOCK_PRODUCTS.find(p => p.productId === productId) as ProductType | undefined;
       setProduct(foundProduct);
     };
 
@@ -164,6 +184,8 @@ export default function ProductDetailPage() {
     return null; 
   }
   
+  const hasBatteryData = product.batteryChemistry || product.stateOfHealth !== undefined || product.carbonFootprintManufacturing !== undefined || product.recycledContentPercentage !== undefined;
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -268,11 +290,12 @@ export default function ProductDetailPage() {
       </Card>
 
       <Tabs defaultValue="specifications" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
+        <TabsList className={cn("grid w-full", hasBatteryData ? "grid-cols-2 sm:grid-cols-5" : "grid-cols-2 sm:grid-cols-4")}>
           <TabsTrigger value="specifications"><Settings2 className="mr-2 h-4 w-4" />Specifications</TabsTrigger>
+          {hasBatteryData && <TabsTrigger value="battery"><BatteryCharging className="mr-2 h-4 w-4" />Battery Details</TabsTrigger>}
           <TabsTrigger value="compliance"><ShieldCheck className="mr-2 h-4 w-4" />Compliance</TabsTrigger>
           <TabsTrigger value="lifecycle"><GitBranch className="mr-2 h-4 w-4" />Lifecycle</TabsTrigger>
-          <TabsTrigger value="sustainability"><Zap className="mr-2 h-4 w-4" />Sustainability Details</TabsTrigger>
+          <TabsTrigger value="sustainability"><Zap className="mr-2 h-4 w-4" />Sustainability</TabsTrigger>
         </TabsList>
 
         <TabsContent value="specifications" className="mt-4">
@@ -291,6 +314,44 @@ export default function ProductDetailPage() {
           </Card>
         </TabsContent>
 
+        {hasBatteryData && (
+          <TabsContent value="battery" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-primary"/>EU Battery Passport Information</CardTitle>
+                <CardDescription>Key data points relevant to the EU Battery Regulation.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {product.batteryChemistry && (
+                  <div className="flex items-center justify-between text-sm border-b pb-1">
+                    <span className="font-medium text-foreground/90 flex items-center">Battery Chemistry <DataOriginIcon origin={product.batteryChemistryOrigin} fieldName="Battery Chemistry"/></span>
+                    <span className="text-muted-foreground">{product.batteryChemistry}</span>
+                  </div>
+                )}
+                {product.stateOfHealth !== undefined && (
+                  <div className="flex items-center justify-between text-sm border-b pb-1">
+                    <span className="font-medium text-foreground/90 flex items-center">State of Health (SoH) <DataOriginIcon origin={product.stateOfHealthOrigin} fieldName="State of Health"/></span>
+                    <span className="text-muted-foreground">{product.stateOfHealth}%</span>
+                  </div>
+                )}
+                {product.carbonFootprintManufacturing !== undefined && (
+                  <div className="flex items-center justify-between text-sm border-b pb-1">
+                    <span className="font-medium text-foreground/90 flex items-center">Manufacturing Carbon Footprint <DataOriginIcon origin={product.carbonFootprintManufacturingOrigin} fieldName="Manufacturing Carbon Footprint"/></span>
+                    <span className="text-muted-foreground">{product.carbonFootprintManufacturing} kg CO₂e</span>
+                  </div>
+                )}
+                {product.recycledContentPercentage !== undefined && (
+                  <div className="flex items-center justify-between text-sm border-b pb-1">
+                    <span className="font-medium text-foreground/90 flex items-center">Recycled Content <DataOriginIcon origin={product.recycledContentPercentageOrigin} fieldName="Recycled Content"/></span>
+                    <span className="text-muted-foreground">{product.recycledContentPercentage}%</span>
+                  </div>
+                )}
+                 <p className="text-xs text-muted-foreground pt-2">Additional battery passport information such as performance, durability, and detailed material composition would be displayed here as available.</p>
+              </CardContent>
+            </Card>
+          </TabsContent>
+        )}
+
         <TabsContent value="compliance" className="mt-4">
           <Card>
             <CardHeader>
@@ -302,12 +363,15 @@ export default function ProductDetailPage() {
                 <Card key={reg} className="bg-muted/50 p-4 rounded-lg">
                   <CardTitle className="text-md flex items-center justify-between">
                     <span className="flex items-center">{reg} <TrustSignalIcon isVerified={data.isVerified} tooltipText={data.isVerified ? `${reg} Verified` : `${reg} Status Pending Verification`} /></span>
-                    <Badge variant={data.status === "Compliant" ? "default" : "destructive"} className={data.status === "Compliant" ? "bg-green-500/20 text-green-700" : ""}>
+                    <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={
+                        data.status === "Compliant" ? "bg-green-500/20 text-green-700" : 
+                        data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""
+                    }>
                       {data.status}
                     </Badge>
                   </CardTitle>
                   <p className="text-xs text-muted-foreground mt-1">Last Checked: {data.lastChecked}</p>
-                  <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>
+                  {data.reportId && <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>}
                 </Card>
               ))}
             </CardContent>
@@ -354,15 +418,30 @@ export default function ProductDetailPage() {
         <TabsContent value="sustainability" className="mt-4">
            <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><Leaf className="mr-2 h-5 w-5 text-growth-green"/>Detailed Sustainability Information</CardTitle>
+              <CardTitle className="flex items-center"><Zap className="mr-2 h-5 w-5 text-growth-green"/>Detailed Sustainability Information</CardTitle> {/* Changed icon to Zap for variety */}
                <CardDescription>In-depth data on materials, carbon footprint, circularity, etc.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-                <p className="text-sm text-muted-foreground"><strong>Detailed Material Breakdown:</strong> To be populated from BOM or LCA data.</p>
-                <p className="text-sm text-muted-foreground"><strong>Carbon Footprint (Calculated):</strong> [Value] kg CO2e (Scope 1, 2, 3). To be integrated.</p>
-                <p className="text-sm text-muted-foreground"><strong>Recyclability Score:</strong> 95% (Based on material composition and design for disassembly).</p>
-                <p className="text-sm text-muted-foreground"><strong>Repairability Index:</strong> 7.5/10 (To be calculated based on ESPR requirements).</p>
-                <p className="text-sm text-muted-foreground"><strong>Certifications:</strong> Energy Star, EU Ecolabel (Mock).</p>
+                <div className="flex items-center justify-between text-sm border-b pb-1">
+                    <span className="font-medium text-foreground/90 flex items-center"><Leaf className="mr-2 h-4 w-4 text-green-500"/> Detailed Material Breakdown:</span>
+                    <span className="text-muted-foreground">To be populated from BOM or LCA data.</span>
+                </div>
+                 <div className="flex items-center justify-between text-sm border-b pb-1">
+                    <span className="font-medium text-foreground/90 flex items-center"><BarChart3 className="mr-2 h-4 w-4 text-red-500"/> Carbon Footprint (Calculated):</span>
+                    <span className="text-muted-foreground">[Value] kg CO₂e (Scope 1, 2, 3). To be integrated.</span>
+                </div>
+                <div className="flex items-center justify-between text-sm border-b pb-1">
+                    <span className="font-medium text-foreground/90 flex items-center"><Recycle className="mr-2 h-4 w-4 text-blue-500"/> Recyclability Score:</span>
+                    <span className="text-muted-foreground">95% (Based on material composition and design for disassembly).</span>
+                </div>
+                <div className="flex items-center justify-between text-sm border-b pb-1">
+                    <span className="font-medium text-foreground/90 flex items-center"><Settings2 className="mr-2 h-4 w-4 text-orange-500"/> Repairability Index:</span>
+                    <span className="text-muted-foreground">7.5/10 (To be calculated based on ESPR requirements).</span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                    <span className="font-medium text-foreground/90 flex items-center"><CheckCircle2 className="mr-2 h-4 w-4 text-yellow-500"/> Certifications:</span>
+                    <span className="text-muted-foreground">Energy Star, EU Ecolabel (Mock).</span>
+                </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -406,7 +485,7 @@ function ProductDetailSkeleton() {
           </div>
         </div>
       </Card>
-      <Skeleton className="h-10 w-full md:w-1/2" /> 
+      <Skeleton className="h-10 w-full md:w-2/3" /> 
       <Card className="mt-4">
         <CardHeader>
           <Skeleton className="h-7 w-1/3" />

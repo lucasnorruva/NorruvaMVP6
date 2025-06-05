@@ -2,7 +2,7 @@
 "use client"; 
 
 import Link from "next/link";
-import React, { useEffect, useState } from "react"; // Added useEffect and useState
+import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -12,11 +12,22 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { useRole } from "@/contexts/RoleContext"; 
+import { useToast } from "@/hooks/use-toast";
 
-// Define the structure for products listed on this page
 interface ListedProduct {
   id: string;
   name: string;
@@ -39,29 +50,52 @@ const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export default function ProductsPage() {
   const { currentRole } = useRole(); 
   const [displayedProducts, setDisplayedProducts] = useState<ListedProduct[]>(initialMockProducts);
+  const [productToDelete, setProductToDelete] = useState<ListedProduct | null>(null);
+  const [isAlertOpen, setIsAlertOpen] = useState(false);
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Load user-added products from localStorage
     const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
     const userAddedProducts: ListedProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
-
-    // Combine mock products with user-added products
-    // Simple approach: User-added products take precedence if IDs were to clash (unlikely with current ID generation)
-    // More robust: Filter out mocks if their IDs are present in userAddedProducts
+    
     const combinedProducts = [
       ...initialMockProducts.filter(mock => !userAddedProducts.find(userProd => userProd.id === mock.id)),
       ...userAddedProducts
     ];
     
-    // Or a simpler merge if you want user products appended:
-    // const combinedProducts = [...initialMockProducts, ...userAddedProducts];
-
-    setDisplayedProducts(combinedProducts.sort((a, b) => a.id.localeCompare(b.id))); // Sort for consistency
-
+    setDisplayedProducts(combinedProducts.sort((a, b) => a.id.localeCompare(b.id)));
   }, []);
 
+  const openDeleteConfirmDialog = (product: ListedProduct) => {
+    setProductToDelete(product);
+    setIsAlertOpen(true);
+  };
+
+  const handleDeleteProduct = () => {
+    if (!productToDelete) return;
+
+    if (productToDelete.id.startsWith("USER_PROD")) {
+      const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+      let userAddedProducts: ListedProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+      userAddedProducts = userAddedProducts.filter(p => p.id !== productToDelete.id);
+      localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userAddedProducts));
+    }
+
+    setDisplayedProducts(prevProducts => prevProducts.filter(p => p.id !== productToDelete.id));
+    
+    toast({
+      title: "Product Deleted",
+      description: `Product "${productToDelete.name}" has been deleted.`,
+    });
+
+    setIsAlertOpen(false);
+    setProductToDelete(null);
+  };
 
   const canAddProducts = currentRole === 'admin' || currentRole === 'manufacturer';
+  const canEditProducts = currentRole === 'admin' || currentRole === 'manufacturer';
+  const canDeleteProducts = currentRole === 'admin' || currentRole === 'manufacturer';
+
 
   return (
     <div className="space-y-8">
@@ -151,14 +185,24 @@ export default function ProductsPage() {
                             View Details
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => alert(`Edit action for ${product.id} (Not Implemented)`)}> 
-                          <Edit className="mr-2 h-4 w-4" />
-                          Edit (Not Implemented)
-                        </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onClick={() => alert(`Delete action for ${product.id} (Not Implemented)`)}>
-                          <Trash2 className="mr-2 h-4 w-4" />
-                          Delete (Not Implemented)
-                        </DropdownMenuItem>
+                        {canEditProducts && (
+                            <DropdownMenuItem onClick={() => alert(`Edit action for ${product.id} (Not Implemented for this task yet)`)}> 
+                            <Edit className="mr-2 h-4 w-4" />
+                            Edit
+                            </DropdownMenuItem>
+                        )}
+                        {canDeleteProducts && (
+                            <>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem 
+                                className="text-destructive focus:text-destructive focus:bg-destructive/10" 
+                                onClick={() => openDeleteConfirmDialog(product)}
+                            >
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                Delete
+                            </DropdownMenuItem>
+                            </>
+                        )}
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
@@ -175,7 +219,24 @@ export default function ProductsPage() {
           </Table>
         </CardContent>
       </Card>
+
+      <AlertDialog open={isAlertOpen} onOpenChange={setIsAlertOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the product
+              "{productToDelete?.name}".
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setProductToDelete(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteProduct} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
-

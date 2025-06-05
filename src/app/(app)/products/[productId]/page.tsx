@@ -326,36 +326,60 @@ export default function ProductDetailPage() {
     }
   }, [productId]);
 
+  const hasBatteryData = product?.batteryChemistry || product?.stateOfHealth !== undefined || product?.carbonFootprintManufacturing !== undefined || product?.recycledContentPercentage !== undefined;
+
   useEffect(() => {
-    if (product) { // Only run if product data is loaded
-      const hasBatteryData = product.batteryChemistry || product.stateOfHealth !== undefined || product.carbonFootprintManufacturing !== undefined || product.recycledContentPercentage !== undefined;
+    if (product) {
       let newDefaultTab = 'specifications'; // Fallback default
 
-      switch (currentRole) {
-        case 'manufacturer':
-          newDefaultTab = 'specifications';
-          break;
-        case 'supplier':
-          newDefaultTab = 'specifications';
-          break;
-        case 'retailer':
-          newDefaultTab = 'sustainability';
-          break;
-        case 'recycler':
-          newDefaultTab = hasBatteryData ? 'battery' : 'sustainability';
-          break;
-        case 'verifier':
-          newDefaultTab = 'compliance';
-          break;
-        case 'admin':
-          newDefaultTab = 'lifecycle';
-          break;
-        default:
-          newDefaultTab = 'specifications';
+      // 1. Check for critical error notifications that might dictate the default tab
+      const criticalErrorNotification = product.notifications?.find(n => n.type === 'error');
+      let errorDrivenTab: string | null = null;
+
+      if (criticalErrorNotification) {
+        const message = criticalErrorNotification.message.toLowerCase();
+        if (message.includes('battery regulation') || message.includes('battery passport')) {
+          if (hasBatteryData) {
+            errorDrivenTab = 'battery';
+          }
+        }
+        // Add more error-to-tab mappings here if needed
+        if (!errorDrivenTab) { // If not a specific battery error, but still an error
+           errorDrivenTab = 'compliance'; // Default to compliance for general errors
+        }
+      }
+
+      if (errorDrivenTab) {
+        newDefaultTab = errorDrivenTab;
+      } else {
+        // 2. If no critical error dictates the tab, use role-based logic
+        switch (currentRole) {
+          case 'manufacturer':
+            newDefaultTab = 'specifications';
+            break;
+          case 'supplier':
+            newDefaultTab = 'specifications';
+            break;
+          case 'retailer':
+            newDefaultTab = 'sustainability';
+            break;
+          case 'recycler':
+            newDefaultTab = hasBatteryData ? 'battery' : 'sustainability';
+            break;
+          case 'verifier':
+            newDefaultTab = 'compliance';
+            break;
+          case 'admin':
+            newDefaultTab = 'lifecycle';
+            break;
+          default:
+            newDefaultTab = 'specifications';
+        }
       }
       setActiveTab(newDefaultTab);
     }
-  }, [currentRole, product]); // Re-run if role or product changes
+  }, [currentRole, product, hasBatteryData]);
+
 
   if (product === undefined) {
     return <ProductDetailSkeleton />;
@@ -365,8 +389,6 @@ export default function ProductDetailPage() {
     notFound(); // Triggers 404 page
     return null;
   }
-
-  const hasBatteryData = product.batteryChemistry || product.stateOfHealth !== undefined || product.carbonFootprintManufacturing !== undefined || product.recycledContentPercentage !== undefined;
 
   const currentYear = new Date().getFullYear().toString();
   const currentCarbonFootprint = product.historicalCarbonFootprint?.find(p => p.year === currentYear)?.value || product.historicalCarbonFootprint?.[product.historicalCarbonFootprint.length - 1]?.value;
@@ -873,3 +895,4 @@ function ProductDetailSkeleton() {
 }
 
     
+

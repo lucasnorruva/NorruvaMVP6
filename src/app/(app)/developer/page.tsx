@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon, ExternalLink as ExternalLinkIcon } from "lucide-react";
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -192,6 +192,15 @@ export default function DeveloperPortalPage() {
         <h1 className="text-3xl font-headline font-semibold">Developer Portal</h1>
       </div>
 
+      <div className="relative w-full md:max-w-xl">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+        <Input
+          type="search"
+          placeholder="Search Developer Portal (coming soon)..."
+          className="pl-10 bg-background" 
+        />
+      </div>
+
       <Card className="shadow-xl border-primary/20">
         <CardHeader>
           <CardTitle className="font-headline flex items-center"><PlayCircle className="mr-3 h-6 w-6 text-primary" /> Interactive API Playground</CardTitle>
@@ -358,17 +367,17 @@ export default function DeveloperPortalPage() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="font-headline flex items-center"><BookOpen className="mr-3 h-6 w-6 text-primary" /> API Documentation & Guides</CardTitle>
-            <CardDescription>Explore detailed documentation, integration guides, and best practices.</CardDescription>
+            <CardDescription>Explore detailed documentation, integration guides, and best practices for building with Norruva DPP APIs.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-2">
+             <div className="space-y-2">
                 <h4 className="font-semibold">API Reference</h4>
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
-                    <li><Link href="#" className="hover:underline">Authentication</Link></li>
-                    <li><Link href="#" className="hover:underline">Products API Endpoints</Link></li>
-                    <li><Link href="#" className="hover:underline">Lifecycle Events API</Link></li>
-                    <li><Link href="#" className="hover:underline">Compliance Data API</Link></li>
-                    <li><Link href="#" className="hover:underline">Request/Response Formats</Link></li>
+                    <li><Link href="#" className="hover:underline">Authentication</Link> <span className="text-xs text-muted-foreground">(OAuth 2.0, API Keys)</span></li>
+                    <li><Link href="#" className="hover:underline">Products API</Link> <span className="text-xs text-muted-foreground">(CRUD, Search)</span></li>
+                    <li><Link href="#" className="hover:underline">Lifecycle Events API</Link> <span className="text-xs text-muted-foreground">(Add, View)</span></li>
+                    <li><Link href="#" className="hover:underline">Compliance Data API</Link> <span className="text-xs text-muted-foreground">(Query, Update)</span></li>
+                    <li><Link href="#" className="hover:underline">Request/Response Formats</Link> <span className="text-xs text-muted-foreground">(JSON, Schemas)</span></li>
                     <li><Link href="#" className="hover:underline">Error Codes & Handling</Link></li>
                 </ul>
             </div>
@@ -378,7 +387,7 @@ export default function DeveloperPortalPage() {
                     <li><Link href="#" className="hover:underline">Step-by-step Integration Guide</Link></li>
                     <li><Link href="#" className="hover:underline">Regulatory Alignment (ESPR, EPREL, EBSI)</Link></li>
                     <li><Link href="#" className="hover:underline">Best Practices for Data Management</Link></li>
-                    <li><Link href="#" className="hover:underline">Blockchain for Traceability</Link></li>
+                    <li><Link href="#" className="hover:underline">Blockchain for Traceability (How-To)</Link></li>
                 </ul>
             </div>
             <Button variant="default" className="w-full sm:w-auto mt-3" asChild>
@@ -452,28 +461,28 @@ export default function DeveloperPortalPage() {
               <li> <Button variant="outline" className="w-full justify-start" disabled> <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> Python SDK </Button> </li>
               <li> <Button variant="outline" className="w-full justify-start" disabled> <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> Java SDK </Button> </li>
             </ul>
-             <p className="text-xs text-muted-foreground mt-2">Official SDKs are under development.</p>
+             <p className="text-xs text-muted-foreground mt-2">Official SDKs are under development. Check back soon for updates.</p>
           </div>
           <div className="space-y-3">
             <div>
                 <h4 className="font-semibold mb-1">Code Samples & Templates</h4>
-                 <p className="text-sm text-muted-foreground">Access a library of code snippets and project templates for common integration scenarios.</p>
+                 <p className="text-sm text-muted-foreground">Access a library of code snippets and project templates for common integration scenarios like DPP creation, event logging, and compliance checks.</p>
                 <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
                   <Link href="#">Browse Code Samples (Mock)</Link>
                 </Button>
             </div>
             <div>
                 <h4 className="font-semibold mb-1">Tutorials</h4>
-                 <p className="text-sm text-muted-foreground">Follow step-by-step guides to implement specific DPP functionalities and use cases.</p>
+                 <p className="text-sm text-muted-foreground">Follow step-by-step guides to implement specific DPP functionalities and use cases, such as blockchain anchoring or battery passport data submission.</p>
                  <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
                   <Link href="#">View Tutorials (Mock)</Link>
                 </Button>
             </div>
             <div>
                 <h4 className="font-semibold mb-1">GitHub Integration</h4>
-                 <p className="text-sm text-muted-foreground">Explore our open-source repositories, contribute to the ecosystem, and find community projects.</p>
+                 <p className="text-sm text-muted-foreground">Explore our open-source repositories, contribute to the ecosystem, find community projects, and raise issues related to our SDKs or platform.</p>
                  <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
-                  <Link href="#">Norruva on GitHub (Mock) <ExternalLinkIcon className="inline h-3 w-3 ml-1" /></Link>
+                  <Link href="#" target="_blank" rel="noopener noreferrer">Norruva on GitHub (Mock) <ExternalLinkIcon className="inline h-3 w-3 ml-1" /></Link>
                 </Button>
             </div>
           </div>
@@ -507,38 +516,38 @@ export default function DeveloperPortalPage() {
                 </Card>
             </div>
             <ul className="list-disc list-inside text-sm space-y-1">
-                <li>View detailed API call logs (Link to mock page)</li>
-                <li>Webhook delivery success rates and retry attempts (Link to mock page)</li>
-                <li>Export usage reports (Mock button)</li>
+                <li><Link href="#" className="text-primary hover:underline">View detailed API call logs (Mock)</Link></li>
+                <li><Link href="#" className="text-primary hover:underline">Webhook delivery success rates and retry attempts (Mock)</Link></li>
+                <li><Button variant="outline" size="sm" className="mt-1" disabled>Export usage reports (Coming Soon)</Button></li>
             </ul>
-             <Button variant="outline">Access Full Reporting Dashboard (Mock)</Button>
+             <Button variant="outline" disabled>Access Full Reporting Dashboard (Coming Soon)</Button>
         </CardContent>
       </Card>
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="font-headline flex items-center"><ShieldAlert className="mr-3 h-6 w-6 text-primary" /> Support &amp; Community</CardTitle>
-          <CardDescription>Get help, share ideas, and connect with other developers.</CardDescription>
+          <CardTitle className="font-headline flex items-center"><Users className="mr-3 h-6 w-6 text-primary" /> Support & Community</CardTitle>
+          <CardDescription>Get help, share ideas, and connect with other developers building with Norruva.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-           <Link href="#" target="_blank" className="block">
-            <Button variant="outline" className="w-full h-full flex-col py-4">
-                <LifeBuoy className="mb-1 h-6 w-6 text-accent"/> 
-                <span>Help Center / FAQ</span>
+           <Link href="#" target="_blank" rel="noopener noreferrer" className="block">
+            <Button variant="outline" className="w-full h-full flex-col py-4 group hover:border-primary hover:bg-primary/5">
+                <LifeBuoy className="mb-1 h-6 w-6 text-accent group-hover:text-primary transition-colors"/> 
+                <span className="group-hover:text-primary transition-colors">Help Center / FAQ</span>
                 <span className="text-xs text-muted-foreground">(Mock)</span>
             </Button>
            </Link>
-           <Link href="#" target="_blank" className="block">
-            <Button variant="outline" className="w-full h-full flex-col py-4">
-                <LinkIcon className="mb-1 h-6 w-6 text-accent"/> 
-                <span>Community Forum</span>
+           <Link href="#" target="_blank" rel="noopener noreferrer" className="block">
+            <Button variant="outline" className="w-full h-full flex-col py-4 group hover:border-primary hover:bg-primary/5">
+                <Activity className="mb-1 h-6 w-6 text-accent group-hover:text-primary transition-colors"/> 
+                <span className="group-hover:text-primary transition-colors">Community Forum</span>
                 <span className="text-xs text-muted-foreground">(Mock Link)</span>
             </Button>
            </Link>
-           <Link href="#" target="_blank" className="block">
-            <Button variant="outline" className="w-full h-full flex-col py-4">
-                <LifeBuoy className="mb-1 h-6 w-6 text-info"/> 
-                <span>Submit Support Ticket</span>
+           <Link href="#" target="_blank" rel="noopener noreferrer" className="block">
+            <Button variant="outline" className="w-full h-full flex-col py-4 group hover:border-primary hover:bg-primary/5">
+                <FileCog className="mb-1 h-6 w-6 text-accent group-hover:text-primary transition-colors"/> 
+                <span className="group-hover:text-primary transition-colors">Submit Support Ticket</span>
                 <span className="text-xs text-muted-foreground">(Mock Link)</span>
             </Button>
            </Link>
@@ -547,6 +556,8 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+    
+
     
 
     

@@ -36,7 +36,7 @@ const navItems = [
   { href: "/dpp-live-dashboard", label: "Live DPPs", icon: LineChart },
   { href: "/products", label: "Products", icon: Package },
   { href: "/products/new", label: "Add Product", icon: ScanLine },
-  { href: "/dpp-global-tracker", label: "Global Tracker", icon: Globe }, // New Item
+  { href: "/dpp-global-tracker", label: "Global Tracker", icon: Globe },
   { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
   { href: "/compliance/pathways/battery-regulation", label: "Compliance Pathways", icon: ListChecks },
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
@@ -67,7 +67,9 @@ export default function AppSidebarContent() {
       isActive = false;
     } else if (href === "/sustainability" && pathname.startsWith("/sustainability/compare")) {
         isActive = false; // "/sustainability/compare" should not make "/sustainability" active
-    } else if (href === "/dpp-global-tracker" && pathname === href) { // Exact match for new page
+    } else if (href === "/dpp-global-tracker" && pathname === href) { 
+        isActive = true;
+    } else if (href === "/sustainability/compare" && pathname === href) { // Exact match for new page
         isActive = true;
     }
 

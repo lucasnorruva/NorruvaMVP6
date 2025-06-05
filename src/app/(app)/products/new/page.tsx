@@ -216,7 +216,7 @@ export default function AddNewProductPage() {
                 <Input id="document-type" value={documentType} onChange={(e) => setDocumentType(e.target.value)} placeholder="e.g., invoice, specification, battery_spec_sheet" />
               </div>
               
-              <Button onClick={handleExtractData} disabled={isLoadingAi || !file} className="bg-accent text-accent-foreground hover:bg-accent/90">
+              <Button onClick={handleExtractData} disabled={isLoadingAi || !file} variant="secondary">
                 {isLoadingAi ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
@@ -258,3 +258,5 @@ export default function AddNewProductPage() {
     </div>
   );
 }
+
+    

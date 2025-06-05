@@ -86,7 +86,7 @@ export default function DeveloperPortalPage() {
             </TableBody>
           </Table>
           <div className="flex gap-4">
-            <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+            <Button variant="secondary">
               <PlusCircle className="mr-2 h-5 w-5" /> Generate New Sandbox Key (Mock)
             </Button>
             <Button variant="outline">Request Production Key (Mock)</Button>
@@ -145,7 +145,7 @@ export default function DeveloperPortalPage() {
                     ))}
                 </TableBody>
             </Table>
-             <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+             <Button variant="secondary">
               <PlusCircle className="mr-2 h-5 w-5" /> Add New Webhook (Mock)
             </Button>
             <p className="text-xs text-muted-foreground">Get notified about product updates, compliance changes, and more.</p>
@@ -213,3 +213,5 @@ export default function DeveloperPortalPage() {
   );
 }
 
+
+    

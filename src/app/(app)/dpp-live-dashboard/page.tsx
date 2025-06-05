@@ -100,7 +100,7 @@ export default function DPPLiveDashboardPage() {
           Live DPP Dashboard
         </h1>
         <Link href="/products/new" passHref>
-          <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+          <Button variant="secondary">
             <PlusCircle className="mr-2 h-5 w-5" />
             Create New DPP
           </Button>
@@ -164,3 +164,5 @@ export default function DPPLiveDashboardPage() {
     </div>
   );
 }
+
+    

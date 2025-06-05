@@ -87,7 +87,7 @@ const ManufacturerDashboard = () => (
       </CardContent>
     </Card>
     <Link href="/products/new" passHref>
-      <Button className="bg-accent text-accent-foreground hover:bg-accent/90 w-full sm:w-auto">
+      <Button variant="secondary" className="w-full sm:w-auto">
         <PlusCircle className="mr-2 h-5 w-5" />
         Add New Product / Create DPP
       </Button>
@@ -278,7 +278,7 @@ export default function DashboardPage() {
         </h1>
         {currentRole === 'manufacturer' && (
            <Link href="/products/new" passHref>
-             <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+             <Button variant="secondary">
                <PlusCircle className="mr-2 h-5 w-5" />
                Add New Product
              </Button>
@@ -286,7 +286,7 @@ export default function DashboardPage() {
         )}
          {currentRole === 'admin' && (
            <Link href="/products/new" passHref>
-             <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+             <Button variant="default">
                <PlusCircle className="mr-2 h-5 w-5" />
                Platform Product Setup
              </Button>
@@ -297,5 +297,7 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    
 
     

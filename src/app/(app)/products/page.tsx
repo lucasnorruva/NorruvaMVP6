@@ -26,7 +26,7 @@ export default function ProductsPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-headline font-semibold">Products</h1>
         <Link href="/products/new" passHref>
-          <Button className="bg-accent text-accent-foreground hover:bg-accent/90">
+          <Button variant="secondary">
             <PlusCircle className="mr-2 h-5 w-5" />
             Add New Product
           </Button>
@@ -127,3 +127,5 @@ export default function ProductsPage() {
   );
 }
 
+
+    

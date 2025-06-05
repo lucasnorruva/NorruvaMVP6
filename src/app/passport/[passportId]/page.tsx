@@ -52,10 +52,10 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     imageHint: "modern refrigerator kitchen",
     productStory: "Experience the future of refrigeration with the EcoFriendly Refrigerator X2000. Designed with both the planet and your lifestyle in mind, this appliance combines cutting-edge cooling technology with sustainable materials. Its spacious interior, smart energy management, and sleek design make it a perfect addition to any modern, eco-conscious home. We believe in transparency, and this Digital Product Passport gives you insight into its journey and impact. Built to last and designed for efficiency, the X2000 helps you reduce your environmental footprint without compromising on performance or style.",
     sustainabilityHighlights: [
-      { iconName: "Leaf", text: "Energy Star Certified A+++" },
+      { iconName: "Zap", text: "Energy Star Certified A+++" },
       { iconName: "Recycle", text: "Made with 70% recycled steel" },
-      { iconName: "ShieldCheck", text: "95% recyclable at end-of-life" },
-      { iconName: "Cpu", text: "Smart energy consumption features" }
+      { iconName: "Recycle", text: "95% recyclable at end-of-life" },
+      { iconName: "Zap", text: "Smart energy consumption features" }
     ],
     manufacturerName: "GreenTech Appliances",
     manufacturerWebsite: "#", // Placeholder link
@@ -75,7 +75,7 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     sustainabilityHighlights: [
       { iconName: "Zap", text: "Uses 85% less energy than incandescent bulbs" },
       { iconName: "Recycle", text: "Recyclable packaging materials" },
-      { iconName: "ShieldCheck", text: "Mercury-free and RoHS compliant" },
+      { iconName: "Leaf", text: "Mercury-free design" },
     ],
     manufacturerName: "BrightSpark Electronics",
     manufacturerWebsite: "#",

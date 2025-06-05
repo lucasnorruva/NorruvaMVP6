@@ -3,101 +3,122 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif; /* Updated default body font */
 }
 
 @layer base {
   :root {
-    --background: 199 88% 94%; /* Light Desaturated Blue */
-    --foreground: 200 15% 25%; /* Darker for readability */
+    --background: 210 20% 98%; /* #FAFBFC - Off-white / Grey 100 */
+    --foreground: 224 23% 15%; /* #1A202C - Grey 900 */
 
-    --card: 0 0% 100%; /* White cards */
-    --card-foreground: 200 15% 25%;
+    --card: 0 0% 100%; /* #FFFFFF - Pure White */
+    --card-foreground: 224 23% 15%; /* #1A202C - Grey 900 */
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 200 15% 25%;
+    --popover: 0 0% 100%; /* #FFFFFF - Pure White */
+    --popover-foreground: 224 23% 15%; /* #1A202C - Grey 900 */
 
-    --primary: 199 76% 52%; /* Saturated Blue */
-    --primary-foreground: 0 0% 100%; /* White text on primary */
+    --primary: 210 100% 40%; /* #0066CC - Trust Blue */
+    --primary-foreground: 0 0% 100%; /* #FFFFFF - Pure White */
 
-    --secondary: 199 60% 85%; /* Lighter Saturated Blue */
-    --secondary-foreground: 200 15% 25%;
+    --secondary: 220 13% 91%; /* #E2E8F0 - A neutral grey for secondary elements, mapping to Grey 300 for borders or similar */
+    --secondary-foreground: 224 23% 15%; /* #1A202C - Grey 900 */
 
-    --muted: 199 60% 90%;
-    --muted-foreground: 200 10% 45%;
+    --muted: 220 14% 96%; /* #F7FAFC - Grey 100 - for backgrounds or muted text */
+    --muted-foreground: 220 9% 46%; /* #718096 - Grey 500 */
 
-    --accent: 180 100% 25%; /* Vibrant Teal */
-    --accent-foreground: 0 0% 100%; /* White text on accent */
+    --accent: 158 100% 33%; /* #00A86B - Growth Green */
+    --accent-foreground: 0 0% 100%; /* #FFFFFF - Pure White */
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 199 50% 80%;
-    --input: 0 0% 100%; /* White inputs on light blue bg */
-    --ring: 199 76% 52%; /* Saturated Blue for focus rings */
+    --destructive: 0 72% 51%; /* #DC2626 - Error Red */
+    --destructive-foreground: 0 0% 100%; /* #FFFFFF - Pure White */
     
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
+    --warning: 18 100% 60%; /* #FF6B35 - Alert Orange */
+    --warning-foreground: 0 0% 100%; /* #FFFFFF - Pure White */
 
-    /* Sidebar specific theme */
-    --sidebar-background: 199 76% 42%; /* Darker Saturated Blue */
-    --sidebar-foreground: 0 0% 95%; /* Light text for sidebar */
-    --sidebar-primary: 0 0% 100%; /* White/Highlight for active items in sidebar */
-    --sidebar-primary-foreground: 199 76% 42%; /* Sidebar bg color for text on primary */
-    --sidebar-accent: 199 76% 52%; /* Saturated Blue for hover/accent in sidebar */
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 199 76% 35%;
-    --sidebar-ring: 180 100% 25%; /* Teal for ring on sidebar elements */
+    --info: 263 79% 53%; /* #7C3AED - Information Purple */
+    --info-foreground: 0 0% 100%; /* #FFFFFF - Pure White */
+
+    --border: 220 13% 84%; /* #CBD5E0 - Grey 300 */
+    --input: 0 0% 100%; /* #FFFFFF for input background, border will be --border */
+    --ring: 210 100% 40%; /* #0066CC - Trust Blue for focus rings */
+    
+    --chart-1: 210 100% 40%; /* Trust Blue */
+    --chart-2: 158 100% 33%; /* Growth Green */
+    --chart-3: 263 79% 53%; /* Information Purple */
+    --chart-4: 18 100% 60%; /* Alert Orange */
+    --chart-5: 198 93% 43%; /* Teal #06B6D4 */
+    --chart-6: 327 82% 61%; /* Pink #EC4899 */
+
+    --radius: 0.5rem; /* Matches 8px for general rounding, can be fine-tuned */
+
+    /* Sidebar specific theme based on new guidelines */
+    --sidebar-background: 220 14% 96%; /* #F7FAFC - Grey 100 */
+    --sidebar-foreground: 224 23% 15%; /* #1A202C - Grey 900 */
+    --sidebar-primary: 210 100% 40%; /* #0066CC - Trust Blue (for active items) */
+    --sidebar-primary-foreground: 0 0% 100%; /* White text on primary */
+    --sidebar-accent: 210 100% 90%; /* Lighter blue for hover, e.g. #E6F0FA (derived from Trust Blue) */
+    --sidebar-accent-foreground: 210 100% 30%; /* Darker blue text on hover */
+    --sidebar-border: 220 13% 88%; /* #E2E8F0 for sidebar internal borders */
+    --sidebar-ring: 210 100% 40%; /* Trust Blue for focus rings */
   }
 
   .dark {
-    --background: 200 30% 10%; /* Dark Blue */
-    --foreground: 199 88% 90%; /* Light Blueish grey */
+    /* TODO: Define dark mode colors based on guidelines.
+       For now, providing a conceptual mapping. Actual HSL values would need testing.
+       Example: Pure White (#FFFFFF) becomes a dark grey like Grey 900 (#1A202C)
+                Neutral Grey 900 (#1A202C) becomes a light grey like Grey 100/Off-white (#FAFBFC)
+    */
+    --background: 224 23% 15%; /* #1A202C - Grey 900 */
+    --foreground: 210 20% 98%; /* #FAFBFC - Off-white */
 
-    --card: 200 30% 15%;
-    --card-foreground: 199 88% 90%;
+    --card: 222 23% 20%; /* Slightly darker than background #2D3748 (Grey 800ish) */
+    --card-foreground: 210 20% 98%;
 
-    --popover: 200 30% 15%;
-    --popover-foreground: 199 88% 90%;
+    --popover: 222 23% 20%;
+    --popover-foreground: 210 20% 98%;
 
-    --primary: 199 76% 58%; /* Saturated Blue - slightly brighter */
-    --primary-foreground: 200 15% 10%; /* Very dark text */
+    --primary: 210 100% 50%; /* #3385D6 - Trust Blue (slightly lighter for dark mode) */
+    --primary-foreground: 0 0% 100%;
 
-    --secondary: 200 30% 25%;
-    --secondary-foreground: 199 88% 90%;
+    --secondary: 220 14% 30%; /* Darker Grey */
+    --secondary-foreground: 210 20% 98%;
 
-    --muted: 200 30% 20%;
-    --muted-foreground: 199 50% 60%;
+    --muted: 220 14% 25%;
+    --muted-foreground: 220 9% 65%; /* Lighter Grey 500 */
 
-    --accent: 180 100% 35%; /* Vibrant Teal - brighter */
-    --accent-foreground: 0 0% 100%; 
+    --accent: 158 100% 43%; /* #33C490 - Growth Green (slightly lighter) */
+    --accent-foreground: 0 0% 0%; /* Black text for contrast */
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-
-    --border: 200 30% 25%;
-    --input: 200 30% 20%;
-    --ring: 199 76% 58%;
+    --destructive: 0 70% 60%; /* #EF4444 - Error Red (slightly lighter) */
+    --destructive-foreground: 0 0% 100%;
     
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
+    --warning: 18 100% 65%; /* #FF8659 - Alert Orange (slightly lighter) */
+    --warning-foreground: 0 0% 0%; /* Black text for contrast */
 
-    /* Sidebar specific theme */
-    --sidebar-background: 199 76% 12%; /* Even Darker Saturated Blue */
-    --sidebar-foreground: 199 70% 85%; 
-    --sidebar-primary: 0 0% 100%; 
-    --sidebar-primary-foreground: 199 76% 12%; 
-    --sidebar-accent: 199 76% 40%; 
-    --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 199 76% 10%;
-    --sidebar-ring: 180 100% 35%;
+    --info: 263 79% 63%; /* #9333EA - Information Purple (slightly lighter) */
+    --info-foreground: 0 0% 100%;
+
+    --border: 220 13% 40%; /* Darker Grey 300 */
+    --input: 222 23% 25%; /* Darker input background */
+    --ring: 210 100% 50%;
+    
+    /* Chart colors remain visually distinct, might need slight adjustments for dark bg */
+    --chart-1: 210 100% 50%;
+    --chart-2: 158 100% 43%;
+    --chart-3: 263 79% 63%;
+    --chart-4: 18 100% 65%;
+    --chart-5: 198 93% 53%;
+    --chart-6: 327 82% 71%;
+
+    /* Sidebar specific theme for dark mode */
+    --sidebar-background: 224 23% 10%; /* Even darker than main dark bg */
+    --sidebar-foreground: 210 20% 85%; /* Lighter text */
+    --sidebar-primary: 210 100% 50%; 
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 222 23% 25%; /* Hover color */
+    --sidebar-accent-foreground: 210 100% 70%; /* Text on hover */
+    --sidebar-border: 224 23% 20%;
+    --sidebar-ring: 210 100% 50%;
   }
 }
 

@@ -11,7 +11,7 @@ export default {
     extend: {
       fontFamily: {
         body: ['Inter', 'sans-serif'],
-        headline: ['Space Grotesk', 'sans-serif'],
+        headline: ['Inter', 'sans-serif'], // Updated to Inter as per guidelines
         code: ['monospace'],
       },
       colors: {
@@ -45,6 +45,14 @@ export default {
           DEFAULT: 'hsl(var(--destructive))',
           foreground: 'hsl(var(--destructive-foreground))',
         },
+        warning: { // Added Warning color
+          DEFAULT: 'hsl(var(--warning))',
+          foreground: 'hsl(var(--warning-foreground))',
+        },
+        info: { // Added Info color
+          DEFAULT: 'hsl(var(--info))',
+          foreground: 'hsl(var(--info-foreground))',
+        },
         border: 'hsl(var(--border))',
         input: 'hsl(var(--input))',
         ring: 'hsl(var(--ring))',
@@ -54,6 +62,7 @@ export default {
           '3': 'hsl(var(--chart-3))',
           '4': 'hsl(var(--chart-4))',
           '5': 'hsl(var(--chart-5))',
+          '6': 'hsl(var(--chart-6))',
         },
         sidebar: {
           DEFAULT: 'hsl(var(--sidebar-background))',
@@ -67,9 +76,9 @@ export default {
         },
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        lg: 'var(--radius)', // e.g., 12px for cards
+        md: 'calc(var(--radius) - 4px)', // e.g., 8px for buttons
+        sm: 'calc(var(--radius) - 6px)', // e.g., 6px for inputs
       },
       keyframes: {
         'accordion-down': {

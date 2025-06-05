@@ -11,7 +11,8 @@ import {
   FileText,
   Settings,
   Bot, 
-  Info 
+  Info,
+  Code2 // Added Code2 icon for Developer Portal
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import {
@@ -31,11 +32,12 @@ const navItems = [
   { href: "/products", label: "Products", icon: Package },
   { href: "/products/new", label: "AI Data Extraction", icon: ScanLine },
   { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
-  { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck }, // Added GDPR
+  { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck }, 
   { href: "/sustainability", label: "Sustainability", icon: FileText },
 ];
 
 const secondaryNavItems = [
+  { href: "/developer", label: "Developer Portal", icon: Code2 }, // Added Developer Portal
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -106,3 +108,4 @@ export default function AppSidebarContent() {
     </>
   );
 }
+

@@ -4,8 +4,9 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input"; // Added Input import
 import type { DashboardFiltersState } from "@/types/dpp";
-import { Filter, ListFilter } from "lucide-react";
+import { Filter, ListFilter, Search } from "lucide-react"; // Added Search icon
 
 interface DashboardFiltersComponentProps {
   filters: DashboardFiltersState;
@@ -31,7 +32,21 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
   return (
     <Card className="shadow-md">
       <CardContent className="p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end"> {/* Adjusted grid to md:grid-cols-4 */}
+          <div>
+            <Label htmlFor="search-query" className="text-sm font-medium mb-1 flex items-center">
+              <Search className="h-4 w-4 mr-2 text-primary" />
+              Search by Product Name
+            </Label>
+            <Input
+              id="search-query"
+              type="text"
+              placeholder="Enter product name..."
+              value={filters.searchQuery || ""}
+              onChange={(e) => onFiltersChange({ searchQuery: e.target.value })}
+              className="w-full"
+            />
+          </div>
           <div>
             <Label htmlFor="status-filter" className="text-sm font-medium mb-1 flex items-center">
               <Filter className="h-4 w-4 mr-2 text-primary" />

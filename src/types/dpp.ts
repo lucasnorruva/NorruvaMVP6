@@ -19,7 +19,8 @@ export interface DigitalProductPassport {
 export interface DashboardFiltersState {
   status: 'all' | 'draft' | 'published' | 'archived' | 'pending_review';
   regulation: 'all' | 'eu_espr' | 'us_scope3' | 'battery_regulation';
-  category: 'all' | string; // Added category filter
+  category: 'all' | string;
+  searchQuery?: string; // Added for product name search
   // timeRange: '7d' | '30d' | '90d' | 'all';
 }
 

@@ -28,9 +28,11 @@ export default function DPPLiveDashboardPage() {
     status: "all",
     regulation: "all",
     category: "all",
+    searchQuery: "", // Initialize searchQuery
   });
 
   useEffect(() => {
+    // Simulate fetching data
     setTimeout(() => {
       setDpps(MOCK_DPPS);
     }, 500);
@@ -43,10 +45,17 @@ export default function DPPLiveDashboardPage() {
 
   const filteredDPPs = useMemo(() => {
     return dpps.filter((dpp) => {
+      // Search query filter
+      if (filters.searchQuery && !dpp.productName.toLowerCase().includes(filters.searchQuery.toLowerCase())) {
+        return false;
+      }
+
+      // Status filter
       if (filters.status !== "all" && dpp.metadata.status !== filters.status) {
         return false;
       }
 
+      // Regulation filter
       if (filters.regulation !== "all") {
         const complianceData = dpp.compliance[filters.regulation as keyof typeof dpp.compliance];
         if (!complianceData || complianceData.status !== "compliant") {
@@ -54,6 +63,7 @@ export default function DPPLiveDashboardPage() {
         }
       }
 
+      // Category filter
       if (filters.category !== "all" && dpp.category !== filters.category) {
         return false;
       }
@@ -67,8 +77,8 @@ export default function DPPLiveDashboardPage() {
     
     const fullyCompliantDPPsCount = dpps.filter(dpp => {
         const regulationChecks = Object.values(dpp.compliance).filter(Boolean);
-        if (regulationChecks.length === 0 && Object.keys(dpp.compliance).length > 0) return false; // Has compliance keys defined but no actual status
-        if (regulationChecks.length === 0 && Object.keys(dpp.compliance).length === 0) return true; // No regulations apply, so technically compliant
+        if (regulationChecks.length === 0 && Object.keys(dpp.compliance).length > 0) return false; 
+        if (regulationChecks.length === 0 && Object.keys(dpp.compliance).length === 0) return true; 
         return regulationChecks.every(r => r.status === 'compliant');
     }).length;
 
@@ -164,5 +174,3 @@ export default function DPPLiveDashboardPage() {
     </div>
   );
 }
-
-    

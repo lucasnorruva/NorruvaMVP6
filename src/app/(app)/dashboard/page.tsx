@@ -3,9 +3,63 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, BadgeCheck, Building, FileWarning, Eye, Database, SearchCheck, BarChart2, AlertTriangle, MessageSquare, Inbox, History, Settings, ListChecks } from "lucide-react";
+import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, BadgeCheck, Building, FileWarning, Eye, Database, SearchCheck, BarChart2, AlertTriangle, MessageSquare, Inbox, History, Settings, ListChecks, Info } from "lucide-react";
 import Link from "next/link";
 import { useRole } from "@/contexts/RoleContext";
+
+// Mock Data for Regulation Updates
+interface RegulationUpdate {
+  id: string;
+  title: string;
+  summary: string;
+  date: string;
+  source?: string;
+  link?: string;
+}
+
+const mockRegulationUpdates: RegulationUpdate[] = [
+  { id: "reg001", title: "EU ESPR - New Draft v1.3 Published", summary: "Key changes focus on enhanced durability requirements for electronics and mandatory recycled content in packaging.", date: "July 28, 2024", source: "European Commission", link: "#"},
+  { id: "reg002", title: "Updated Guidance on EU Battery Regulation Reporting", summary: "Clarifications on carbon footprint calculation methodologies and data submission for battery passports.", date: "July 22, 2024", source: "ECHA", link: "#"},
+  { id: "reg003", title: "US Scope 3 Emissions - New Industry Sector Benchmarks", summary: "EPA releases updated benchmarks for Scope 3 reporting, impacting supply chain data collection for certain industries.", date: "July 15, 2024", source: "US EPA", link: "#"},
+];
+
+// Reusable Regulation Updates Card Component
+const RegulationUpdatesCard = () => (
+  <Card className="shadow-lg">
+    <CardHeader>
+      <CardTitle className="font-headline flex items-center">
+        <Info className="mr-2 h-5 w-5 text-info" />
+        Recent Regulation Changes
+      </CardTitle>
+      <CardDescription>Stay informed on the latest regulatory developments.</CardDescription>
+    </CardHeader>
+    <CardContent>
+      {mockRegulationUpdates.length > 0 ? (
+        <ul className="space-y-4">
+          {mockRegulationUpdates.map((update) => (
+            <li key={update.id} className="border-b pb-3 last:border-b-0 last:pb-0">
+              <h4 className="font-medium text-sm">{update.title}</h4>
+              <p className="text-xs text-muted-foreground mt-1">
+                {update.date} {update.source && ` - ${update.source}`}
+              </p>
+              <p className="text-sm text-foreground/90 mt-1.5">{update.summary}</p>
+              {update.link && (
+                <Link href={update.link} passHref target="_blank">
+                  <Button variant="link" size="sm" className="p-0 h-auto mt-1 text-primary">
+                    Learn More
+                  </Button>
+                </Link>
+              )}
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-muted-foreground">No recent regulation updates.</p>
+      )}
+    </CardContent>
+  </Card>
+);
+
 
 // General Stats (can be shown to admin or as an overview)
 const AdminDashboardOverview = () => {
@@ -251,6 +305,7 @@ const VerifierDashboard = () => (
       <CardHeader><CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/>System Alerts</CardTitle></CardHeader>
       <CardContent><p className="text-muted-foreground">New regulation update requires re-verification for 'Textile' category. Multiple DPPs flagged for potential data mismatch.</p></CardContent>
     </Card>
+    <RegulationUpdatesCard /> {/* Added Regulation Updates for Verifier */}
   </div>
 );
 
@@ -289,6 +344,7 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </div>
+            <RegulationUpdatesCard /> {/* Added Regulation Updates for Admin */}
           </div>
         );
       case 'manufacturer':

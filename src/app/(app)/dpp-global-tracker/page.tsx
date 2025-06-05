@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers, Filter as FilterIcon, TrendingUp, Map, CalendarClock } from "lucide-react"; // Added CalendarClock
+import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers, Filter as FilterIcon, TrendingUp, Map, CalendarClock, CheckCircle, AlertCircle, ShieldQuestion, ShieldCheck, VenetianMask } from "lucide-react"; // Added new icons
 import type { GlobeMethods, GlobeProps } from 'react-globe.gl';
 import { cn } from '@/lib/utils';
 import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
@@ -41,7 +41,7 @@ export interface MockDppPoint {
   name: string;
   size: number;
   category: string;
-  status: 'compliant' | 'pending' | 'issue'; // General product compliance/readiness status
+  status: 'compliant' | 'pending' | 'issue';
   manufacturer?: string;
   gtin?: string;
   complianceSummary?: string;
@@ -65,7 +65,7 @@ interface MockArc {
   arcDashGap?: number;
   arcStroke?: number;
   transportMode?: 'sea' | 'air' | 'road' | 'rail';
-  productId?: string; // ID of the product being transported
+  productId?: string;
 }
 
 const mockDppsOnGlobe: MockDppPoint[] = [
@@ -107,27 +107,27 @@ const mockDppsOnGlobe: MockDppPoint[] = [
    { 
     id: "DPP_GLOBE_008", lat: 31.2304, lng: 121.4737, name: "Textiles Batch (Shanghai)", size: 0.7, category: 'Apparel', status: 'compliant', 
     manufacturer: 'Global Textiles Co.', gtin: '3890123456999', complianceSummary: 'Pre-certified for EU import, REACH compliant.', timestamp: 2023,
-    originCountry: 'China', destinationCountry: 'Germany (Expected)', currentCheckpoint: 'Shanghai Port', ebsiStatus: 'pending', customsStatus: 'cleared' // Cleared Chinese customs for export
+    originCountry: 'China', destinationCountry: 'Germany (Expected)', currentCheckpoint: 'Shanghai Port', ebsiStatus: 'pending', customsStatus: 'cleared'
   },
 ];
 
 const mockArcsData: MockArc[] = [
   { 
-    startLat: 31.2304, startLng: 121.4737, endLat: 52.5200, endLng: 13.4050, color: 'rgba(255, 255, 0, 0.5)', 
-    label: 'Textiles Shipment (SHA to BER)', timestamp: 2023, productId: "DPP_GLOBE_008", transportMode: 'sea', arcDashLength: 0.2, arcDashGap: 0.1 
+    productId: "DPP_GLOBE_008", startLat: 31.2304, startLng: 121.4737, endLat: 52.5200, endLng: 13.4050, color: 'rgba(255, 255, 0, 0.5)', 
+    label: 'Textiles Shipment (SHA to BER)', timestamp: 2023, transportMode: 'sea', arcDashLength: 0.2, arcDashGap: 0.1 
   },
   { 
-    startLat: 41.9028, startLng: 12.4964, endLat: 48.8566, endLng: 2.3522, color: 'rgba(255, 255, 255, 0.4)', 
-    label: 'Finished Goods (Rome to Paris)', timestamp: 2023, productId: "DPP_GLOBE_003", transportMode: 'road' 
+    productId: "DPP_GLOBE_003", startLat: 41.9028, startLng: 12.4964, endLat: 48.8566, endLng: 2.3522, color: 'rgba(255, 255, 255, 0.4)', 
+    label: 'Finished Goods (Rome to Paris)', timestamp: 2023, transportMode: 'road' 
   },
   { 
-    startLat: 52.5200, startLng: 13.4050, endLat: 51.5074, endLng: 0.1278, color: 'rgba(255,255,0,0.5)', 
+    productId: "DPP_GLOBE_002", startLat: 52.5200, startLng: 13.4050, endLat: 51.5074, endLng: 0.1278, color: 'rgba(255,255,0,0.5)', 
     label: 'Electronics Sub-Assembly (Berlin to London)', arcDashLength: 0.3, arcDashGap: 0.1, arcStroke:0.8, timestamp: 2024, 
-    productId: "DPP_GLOBE_002", transportMode: 'road' 
+    transportMode: 'road' 
   },
   {
-    startLat: 34.0522, startLng: -118.2437, endLat: 48.8566, endLng: 2.3522, color: 'rgba(0, 255, 255, 0.5)',
-    label: 'Solar Panels (LA to Paris)', timestamp: 2024, productId: "DPP_GLOBE_007", transportMode: 'sea', arcDashLength: 0.1, arcDashGap: 0.05, arcStroke: 0.7
+    productId: "DPP_GLOBE_007", startLat: 34.0522, startLng: -118.2437, endLat: 48.8566, endLng: 2.3522, color: 'rgba(0, 255, 255, 0.5)',
+    label: 'Solar Panels (LA to Paris)', timestamp: 2024, transportMode: 'sea', arcDashLength: 0.1, arcDashGap: 0.05, arcStroke: 0.7
   }
 ];
 
@@ -143,12 +143,30 @@ const categoryColors: Record<string, string> = {
   Apparel: 'rgba(236, 72, 153, 0.9)', // Pink
   Furniture: 'rgba(161, 98, 7, 0.9)', // Brown
   Outdoor: 'rgba(20, 184, 166, 0.9)', // Teal
-  Default: 'rgba(156, 163, 175, 0.9)', // Gray for unknown categories
+  Default: 'rgba(156, 163, 175, 0.9)', 
 };
 
-type ActiveLayer = 'status' | 'category';
+const customsStatusColors: Record<NonNullable<MockDppPoint['customsStatus']>, string> = {
+  cleared: 'rgba(74, 222, 128, 0.9)', // Green
+  flagged: 'rgba(245, 158, 11, 0.9)', // Amber
+  pending_inspection: 'rgba(250, 204, 21, 0.9)', // Yellow
+  detained: 'rgba(239, 68, 68, 0.9)', // Red
+  not_applicable: 'rgba(156, 163, 175, 0.9)', // Gray
+};
+
+const ebsiStatusColors: Record<NonNullable<MockDppPoint['ebsiStatus']>, string> = {
+  verified: 'rgba(74, 222, 128, 0.9)', // Green
+  pending: 'rgba(250, 204, 21, 0.9)', // Yellow
+  not_verified: 'rgba(239, 68, 68, 0.9)', // Red
+  unknown: 'rgba(156, 163, 175, 0.9)', // Gray
+};
+
+
+type ActiveLayer = 'status' | 'category' | 'customs' | 'ebsi';
 type StatusFilter = 'all' | MockDppPoint['status'];
 type CategoryFilter = 'all' | string;
+type CustomsStatusFilter = 'all' | NonNullable<MockDppPoint['customsStatus']>;
+type EbsiStatusFilter = 'all' | NonNullable<MockDppPoint['ebsiStatus']>;
 
 const GlobeVisualization = ({ 
   points,
@@ -192,15 +210,15 @@ const GlobeVisualization = ({
     pointColor: d => pointColorAccessor(d as MockDppPoint),
     pointRadius: d => pointRadiusAccessor(d as MockDppPoint),
     pointAltitude: 0.02,
-    onPointClick: (point: any) => { // point is Feature<Point, MockDppPoint>
-      onPointClick(point as MockDppPoint); // Casting to MockDppPoint based on how we construct pointsData
+    onPointClick: (point: any) => { 
+      onPointClick(point as MockDppPoint);
     },
     arcsData: arcs,
     arcLabel: 'label',
     arcColor: 'color',
-    arcDashLength: d => (d as MockArc).arcDashLength || 0.1, // Casting to MockArc
-    arcDashGap: d => (d as MockArc).arcDashGap || 0.05, // Casting to MockArc
-    arcStroke: d => (d as MockArc).arcStroke || 0.5, // Casting to MockArc
+    arcDashLength: d => (d as MockArc).arcDashLength || 0.1, 
+    arcDashGap: d => (d as MockArc).arcDashGap || 0.05, 
+    arcStroke: d => (d as MockArc).arcStroke || 0.5, 
     arcAltitudeAutoScale: 0.5,
   };
 
@@ -273,11 +291,29 @@ const Legend = ({ title, colorMap }: { title: string; colorMap: Record<string, s
 );
 
 const availableStatuses: Array<{ value: StatusFilter; label: string }> = [
-  { value: "all", label: "All Statuses" },
+  { value: "all", label: "All Product Statuses" },
   { value: "compliant", label: "Compliant" },
-  { value: "pending", label: "Pending" },
-  { value: "issue", label: "Issue" },
+  { value: "pending", label: "Pending Review" },
+  { value: "issue", label: "Issue Reported" },
 ];
+
+const availableCustomsStatuses: Array<{ value: CustomsStatusFilter; label: string }> = [
+  { value: "all", label: "All Customs Statuses" },
+  { value: "cleared", label: "Cleared" },
+  { value: "flagged", label: "Flagged" },
+  { value: "pending_inspection", label: "Pending Inspection" },
+  { value: "detained", label: "Detained" },
+  { value: "not_applicable", label: "Not Applicable" },
+];
+
+const availableEbsiStatuses: Array<{ value: EbsiStatusFilter; label: string }> = [
+  { value: "all", label: "All EBSI Statuses" },
+  { value: "verified", label: "Verified" },
+  { value: "pending", label: "Pending" },
+  { value: "not_verified", label: "Not Verified" },
+  { value: "unknown", label: "Unknown" },
+];
+
 
 export default function DppGlobalTrackerPage() {
   const [isConceptVisible, setIsConceptVisible] = useState(false);
@@ -285,6 +321,8 @@ export default function DppGlobalTrackerPage() {
   const [activeLayer, setActiveLayer] = useState<ActiveLayer>('status');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
+  const [customsStatusFilter, setCustomsStatusFilter] = useState<CustomsStatusFilter>('all');
+  const [ebsiStatusFilter, setEbsiStatusFilter] = useState<EbsiStatusFilter>('all');
   const [pointBaseSize, setPointBaseSize] = useState<number>(1.0);
 
   const [minYear, setMinYear] = useState(2022);
@@ -366,9 +404,11 @@ Key Visualization Features:
     return timeFilteredPoints.filter(point => {
       const statusMatch = statusFilter === 'all' || point.status === statusFilter;
       const categoryMatch = categoryFilter === 'all' || point.category === categoryFilter;
-      return statusMatch && categoryMatch;
+      const customsMatch = customsStatusFilter === 'all' || point.customsStatus === customsStatusFilter;
+      const ebsiMatch = ebsiStatusFilter === 'all' || point.ebsiStatus === ebsiStatusFilter;
+      return statusMatch && categoryMatch && customsMatch && ebsiMatch;
     });
-  }, [timeFilteredPoints, statusFilter, categoryFilter]);
+  }, [timeFilteredPoints, statusFilter, categoryFilter, customsStatusFilter, ebsiStatusFilter]);
   
   const filteredArcs = useMemo(() => {
     return mockArcsData.filter(arc => arc.timestamp <= currentTime);
@@ -376,12 +416,18 @@ Key Visualization Features:
 
   const pointColorAccessor = useMemo(() => {
     return (point: MockDppPoint): string => {
-      if (activeLayer === 'status') {
-        return statusColors[point.status] || 'rgba(255, 255, 255, 0.7)';
-      } else if (activeLayer === 'category') {
-        return categoryColors[point.category] || categoryColors.Default;
+      switch (activeLayer) {
+        case 'status':
+          return statusColors[point.status] || 'rgba(255, 255, 255, 0.7)';
+        case 'category':
+          return categoryColors[point.category] || categoryColors.Default;
+        case 'customs':
+          return point.customsStatus ? customsStatusColors[point.customsStatus] : categoryColors.Default;
+        case 'ebsi':
+          return point.ebsiStatus ? ebsiStatusColors[point.ebsiStatus] : categoryColors.Default;
+        default:
+          return 'rgba(255, 255, 255, 0.7)';
       }
-      return 'rgba(255, 255, 255, 0.7)';
     };
   }, [activeLayer]);
 
@@ -392,19 +438,31 @@ Key Visualization Features:
   }, [pointBaseSize]);
 
   const activeLegendMap = useMemo(() => {
-    if (activeLayer === 'status') return statusColors;
-    if (activeLayer === 'category') {
-        const presentCategories = new Set(mockDppsOnGlobe.map(p => p.category));
-        const relevantCategoryColors: Record<string, string> = {};
-        presentCategories.forEach(cat => {
-            relevantCategoryColors[cat] = categoryColors[cat] || categoryColors.Default;
-        });
-        return relevantCategoryColors;
+    switch (activeLayer) {
+        case 'status': return statusColors;
+        case 'category':
+            const presentCategories = new Set(mockDppsOnGlobe.map(p => p.category));
+            const relevantCategoryColors: Record<string, string> = {};
+            presentCategories.forEach(cat => {
+                relevantCategoryColors[cat] = categoryColors[cat] || categoryColors.Default;
+            });
+            return relevantCategoryColors;
+        case 'customs': return customsStatusColors;
+        case 'ebsi': return ebsiStatusColors;
+        default: return {};
     }
-    return {};
   }, [activeLayer]);
 
-  const activeLegendTitle = activeLayer === 'status' ? "Status Legend" : "Category Legend";
+  const activeLegendTitle = useMemo(() => {
+    switch (activeLayer) {
+        case 'status': return "Product Status Legend";
+        case 'category': return "Product Category Legend";
+        case 'customs': return "Customs Status Legend";
+        case 'ebsi': return "EBSI Status Legend";
+        default: return "Legend";
+    }
+  }, [activeLayer]);
+
 
   return (
     <div className="space-y-8">
@@ -449,28 +507,36 @@ Key Visualization Features:
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <RadioGroup value={activeLayer} onValueChange={(value) => setActiveLayer(value as ActiveLayer)} className="flex flex-col sm:flex-row gap-4">
+                <RadioGroup value={activeLayer} onValueChange={(value) => setActiveLayer(value as ActiveLayer)} className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:gap-4">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="status" id="layer-status" />
-                    <Label htmlFor="layer-status" className="cursor-pointer hover:text-primary">Color by Status</Label>
+                    <Label htmlFor="layer-status" className="cursor-pointer hover:text-primary">Product Status</Label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="category" id="layer-category" />
-                    <Label htmlFor="layer-category" className="cursor-pointer hover:text-primary">Color by Category</Label>
+                    <Label htmlFor="layer-category" className="cursor-pointer hover:text-primary">Category</Label>
+                  </div>
+                   <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="customs" id="layer-customs" />
+                    <Label htmlFor="layer-customs" className="cursor-pointer hover:text-primary">Customs</Label>
+                  </div>
+                   <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="ebsi" id="layer-ebsi" />
+                    <Label htmlFor="layer-ebsi" className="cursor-pointer hover:text-primary">EBSI</Label>
                   </div>
                 </RadioGroup>
               </CardContent>
             </Card>
-            <Card>
+            <Card className="lg:col-span-2">
               <CardHeader className="pb-3">
                 <CardTitle className="text-md font-headline flex items-center">
                   <FilterIcon className="mr-2 h-4 w-4 text-primary" />
                   Filters
                 </CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
-                  <Label htmlFor="status-filter" className="text-xs">Filter by Status</Label>
+                  <Label htmlFor="status-filter" className="text-xs">Product Status</Label>
                   <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
                     <SelectTrigger id="status-filter" className="w-full h-9">
                       <SelectValue placeholder="Select status" />
@@ -483,7 +549,7 @@ Key Visualization Features:
                   </Select>
                 </div>
                 <div>
-                  <Label htmlFor="category-filter" className="text-xs">Filter by Category</Label>
+                  <Label htmlFor="category-filter" className="text-xs">Category</Label>
                   <Select value={categoryFilter} onValueChange={(value) => setCategoryFilter(value as CategoryFilter)}>
                     <SelectTrigger id="category-filter" className="w-full h-9">
                       <SelectValue placeholder="Select category" />
@@ -496,51 +562,81 @@ Key Visualization Features:
                     </SelectContent>
                   </Select>
                 </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-md font-headline flex items-center">
-                  <Map className="mr-2 h-4 w-4 text-primary" />
-                  View Options
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <Label htmlFor="point-size-slider" className="text-xs">Point Size Multiplier: {pointBaseSize.toFixed(1)}x</Label>
-                  <Slider
-                    id="point-size-slider"
-                    min={0.2}
-                    max={2}
-                    step={0.1}
-                    value={[pointBaseSize]}
-                    onValueChange={([value]) => setPointBaseSize(value)}
-                    className="mt-1"
-                  />
+                 <div>
+                  <Label htmlFor="customs-filter" className="text-xs">Customs Status</Label>
+                  <Select value={customsStatusFilter} onValueChange={(value) => setCustomsStatusFilter(value as CustomsStatusFilter)}>
+                    <SelectTrigger id="customs-filter" className="w-full h-9">
+                      <SelectValue placeholder="Select customs status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableCustomsStatuses.map(option => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div>
-                  <Label htmlFor="time-slider" className="text-xs flex items-center">
-                    <CalendarClock className="mr-1.5 h-3.5 w-3.5" />
-                    Timeline Year: {currentTime}
-                  </Label>
-                  {(minYear < maxYear) && (
+                  <Label htmlFor="ebsi-filter" className="text-xs">EBSI Status</Label>
+                  <Select value={ebsiStatusFilter} onValueChange={(value) => setEbsiStatusFilter(value as EbsiStatusFilter)}>
+                    <SelectTrigger id="ebsi-filter" className="w-full h-9">
+                      <SelectValue placeholder="Select EBSI status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableEbsiStatuses.map(option => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+            
+          </div>
+          <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-6"> {/* This grid wrapper for View Options and Legend */}
+            <Card className="lg:col-span-1"> {/* View Options takes 1/3rd on large screens */}
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-md font-headline flex items-center">
+                    <Map className="mr-2 h-4 w-4 text-primary" />
+                    View Options
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div>
+                    <Label htmlFor="point-size-slider" className="text-xs">Point Size Multiplier: {pointBaseSize.toFixed(1)}x</Label>
                     <Slider
-                      id="time-slider"
-                      min={minYear}
-                      max={maxYear}
-                      step={1}
-                      value={[currentTime]}
-                      onValueChange={([value]) => setCurrentTime(value)}
+                      id="point-size-slider"
+                      min={0.2}
+                      max={2}
+                      step={0.1}
+                      value={[pointBaseSize]}
+                      onValueChange={([value]) => setPointBaseSize(value)}
                       className="mt-1"
                     />
-                  )}
-                  {minYear === maxYear && <p className="text-xs text-muted-foreground mt-1">All data is for {minYear}.</p>}
-                </div>
-              </CardContent>
-            </Card>
+                  </div>
+                  <div>
+                    <Label htmlFor="time-slider" className="text-xs flex items-center">
+                      <CalendarClock className="mr-1.5 h-3.5 w-3.5" />
+                      Timeline Year: {currentTime}
+                    </Label>
+                    {(minYear < maxYear) && (
+                      <Slider
+                        id="time-slider"
+                        min={minYear}
+                        max={maxYear}
+                        step={1}
+                        value={[currentTime]}
+                        onValueChange={([value]) => setCurrentTime(value)}
+                        className="mt-1"
+                      />
+                    )}
+                    {minYear === maxYear && <p className="text-xs text-muted-foreground mt-1">All data is for {minYear}.</p>}
+                  </div>
+                </CardContent>
+              </Card>
+              <div className="lg:col-span-2"> {/* Legend takes 2/3rd on large screens */}
+                <Legend title={activeLegendTitle} colorMap={activeLegendMap} />
+              </div>
           </div>
-          
-          <Legend title={activeLegendTitle} colorMap={activeLegendMap} />
         </CardContent>
       </Card>
 
@@ -601,3 +697,4 @@ Key Visualization Features:
   );
 }
 
+    

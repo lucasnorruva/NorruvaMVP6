@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { TestTube2, QrCode, Link as LinkIcon, Info, ShieldCheck, ListChecks, UserCheckIcon } from "lucide-react"; // Added more icons
+import { TestTube2, QrCode, Link as LinkIcon, Info, ShieldCheck, ListChecks, UserCheckIcon, DatabaseZap, GitCompareArrows } from "lucide-react"; // Added more icons
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -34,7 +34,7 @@ export default function TestingValidationPage() {
           <section>
             <h3 className="font-semibold text-lg mb-2">QR Code Generation Testing</h3>
             <ul className="list-disc list-inside text-sm space-y-1">
-              <li><strong>Identifier Accuracy:</strong> Verify that the QR code (mock placeholder image for now) correctly represents the unique product identifier (e.g., the URL <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/{'{productId}'}</code>). Test with various <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> values.</li>
+              <li><strong>Identifier Accuracy:</strong> Verify that the QR code (mock placeholder image for now) correctly represents the unique product identifier (e.g., the URL <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/{productId}</code>). Test with various <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> values.</li>
               <li><strong>Uniqueness:</strong> Ensure each product ID generates a distinct QR code representation (conceptually, if real generation were implemented).</li>
               <li><strong>Visual Integrity (Mock):</strong> For the placeholder, ensure it displays consistently and the text within it (e.g., "QR + ProductID") is correct.</li>
             </ul>
@@ -45,7 +45,7 @@ export default function TestingValidationPage() {
               <li><strong>Valid Scan Simulation:</strong>
                 <ul className="list-disc list-inside ml-4">
                     <li>Using the mock "Scan Product QR" dialog on the DPP Live Dashboard, enter known valid product IDs.</li>
-                    <li>Verify that submitting a valid ID redirects to the correct <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/products/{'{productId}'}</code> page.</li>
+                    <li>Verify that submitting a valid ID redirects to the correct <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/products/{productId}</code> page or <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/{productId}</code> (public viewer).</li>
                 </ul>
               </li>
               <li><strong>Invalid/Malformed Scan Simulation:</strong>
@@ -66,19 +66,53 @@ export default function TestingValidationPage() {
             <h3 className="font-semibold text-lg mb-2 mt-4">Content Verification Post-Scan (Conceptual)</h3>
             <ul className="list-disc list-inside text-sm space-y-1">
               <li>After a successful (mock) scan and redirection to the product viewer, verify that the displayed product information matches the scanned product ID.</li>
-              <li>Check key data points: product name, manufacturer, compliance status, blockchain hash (if applicable).</li>
+              <li>Check key data points: product name, manufacturer, compliance status, blockchain hash (if applicable and displayed).</li>
             </ul>
           </section>
         </CardContent>
       </Card>
 
-      {/* Placeholder for Task 76: Blockchain Data Retrieval & Verification */}
-      <Card className="shadow-lg opacity-50">
+      <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center"><LinkIcon className="mr-2 h-5 w-5 text-primary"/>Testing Blockchain Data Retrieval & Verification</CardTitle>
+          <CardTitle className="flex items-center">
+            <DatabaseZap className="mr-2 h-5 w-5 text-primary"/>Testing Blockchain Data Retrieval & Verification (Conceptual)
+          </CardTitle>
         </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Details on testing blockchain data retrieval and verification will be added here. (Coming in Task 76)</p>
+        <CardContent className="space-y-4">
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Blockchain Data Retrieval</h3>
+            <ul className="list-disc list-inside text-sm space-y-1">
+              <li><strong>DPP Anchor Hash Display:</strong> Verify that the <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">dppAnchorTransactionHash</code> (from mock data) is correctly displayed on the public DPP viewer (<code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/*</code>) and the internal product detail page (<code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/products/*</code>) for products that are conceptually "anchored".</li>
+              <li><strong>Lifecycle Event Hashes:</strong> For products with blockchain-anchored lifecycle events, confirm these event-specific transaction hashes are displayed alongside the event details in the UI.</li>
+              <li><strong>Data Consistency:</strong> Ensure the blockchain platform (e.g., "MockChain") is correctly displayed alongside the hash.</li>
+              <li><strong>Non-Anchored Products:</strong> Verify that products not conceptually anchored on the blockchain do not erroneously display anchor hashes or related blockchain information.</li>
+            </ul>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2 mt-4">Data Integrity Verification (Conceptual)</h3>
+            <ul className="list-disc list-inside text-sm space-y-1">
+              <li><strong>Hash Comparison (Mock):</strong> Although actual cryptographic verification is not implemented, conceptually, testing would involve:
+                <ul className="list-disc list-inside ml-4">
+                  <li>Simulating the hashing of the current DPP data (or key sections of it).</li>
+                  <li>Comparing this simulated hash with the mock <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">dppAnchorTransactionHash</code> stored for the product. They should match if the data is meant to be "verified".</li>
+                  <li>Testing scenarios where mock data is "tampered" (client-side simulation) to ensure a conceptual mismatch could be detected.</li>
+                </ul>
+              </li>
+              <li><strong>Signature Verification (Conceptual):</strong> If digital signatures were used for VCs or data anchoring (as per EBSI concepts), testing would involve:
+                <ul className="list-disc list-inside ml-4">
+                  <li>Simulating signature verification using a mock public key against mock signed data.</li>
+                  <li>Ensuring valid signatures verify correctly and invalid/tampered signatures fail verification.</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+           <section>
+            <h3 className="font-semibold text-lg mb-2 mt-4">Event Sequencing and Timestamps</h3>
+            <ul className="list-disc list-inside text-sm space-y-1">
+              <li><strong>Chronological Order:</strong> Verify that lifecycle events, especially those with (mock) blockchain timestamps, are displayed in the correct chronological order on the product viewer pages.</li>
+              <li><strong>Timestamp Accuracy:</strong> Check that timestamps displayed match the mock data.</li>
+            </ul>
+          </section>
         </CardContent>
       </Card>
 
@@ -105,3 +139,4 @@ export default function TestingValidationPage() {
     </div>
   );
 }
+

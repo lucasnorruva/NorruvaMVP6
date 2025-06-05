@@ -104,19 +104,48 @@ The DPP Global Tracker with an interactive 3D EU globe would be a visually engag
               data-ai-hint="globe europe data"
             />
           </div>
-          <div className="prose prose-sm dark:prose-invert max-w-none whitespace-pre-line">
-            {conceptDescription.trim().split('\n\n').map((paragraph, index) => {
-              const lines = paragraph.split('\n');
-              const firstLine = lines[0];
-              if (firstLine.match(/^(\d+\.|-)\s/) || firstLine.startsWith("Core Idea:") || firstLine.startsWith("Key Features") || firstLine.startsWith("Technical Implementation Ideas:") || firstLine.startsWith("Conclusion:")) {
+          <div className="prose prose-sm dark:prose-invert max-w-none">
+            {conceptDescription.trim().split('\n\n').map((paragraphBlock, index) => {
+              const lines = paragraphBlock.split('\n');
+              const firstLine = lines[0].trim();
+
+              const mainHeaders = ["Core Idea:", "Key Features of the DPP Global Tracker:", "Technical Implementation Ideas:", "Conclusion:"];
+              const isMainHeader = mainHeaders.some(header => firstLine.startsWith(header));
+              const isNumberedFeature = firstLine.match(/^(\d+)\.\s+.+/);
+
+              if (isMainHeader) {
                 return (
-                  <div key={index}>
-                    <h3 className="font-semibold text-lg mt-4 mb-2">{firstLine}</h3>
-                    {lines.slice(1).map((line, lineIdx) => <p key={lineIdx}>{line.replace(/^(\s*-\s*)/, '• ')}</p>)}
+                  <div key={index} className="pt-2">
+                    <h2 className="text-xl font-headline text-primary mt-6 mb-3 !no-underline">{firstLine}</h2>
+                    {lines.slice(1).map((line, lineIdx) => <p key={lineIdx} className="my-1">{line}</p>)}
+                  </div>
+                );
+              } else if (isNumberedFeature) {
+                return (
+                  <div key={index} className="mt-1">
+                    <h3 className="text-lg font-semibold text-foreground mt-4 mb-2 !no-underline">{firstLine}</h3>
+                    {lines.slice(1).map((line, lineIdx) => {
+                      const trimmedLine = line.trim();
+                      if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('• ')) {
+                        // This basic list detection might not be perfect with Tailwind Prose
+                        return <p key={lineIdx} className="my-1 ml-4 before:content-['•_'] before:mr-2">{trimmedLine.substring(2)}</p>;
+                      }
+                       // Render sub-bullet points if line starts with multiple spaces then a dash/bullet
+                      if (trimmedLine.match(/^(\s{2,}-\s|\s{2,}\u2022\s)/)) {
+                        return <p key={lineIdx} className="my-1 ml-8 before:content-['\25E6_'] before:mr-2">{trimmedLine.replace(/^(\s{2,}[-\u2022]\s)/, '')}</p>;
+                      }
+                      if (trimmedLine) {
+                        return <p key={lineIdx} className="my-1">{trimmedLine}</p>;
+                      }
+                      return null;
+                    })}
                   </div>
                 );
               }
-              return <p key={index}>{paragraph}</p>;
+              if (paragraphBlock.trim()) {
+                return <p key={index} className="my-2">{paragraphBlock}</p>;
+              }
+              return null;
             })}
           </div>
         </CardContent>

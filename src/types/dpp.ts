@@ -21,6 +21,7 @@ export interface Certification {
   vcId?: string; // Verifiable Credential ID for the certificate
   documentUrl?: string;
   standard?: string; // e.g., "ISO 14024"
+  transactionHash?: string; // Optional: Blockchain transaction hash if the cert doc itself is anchored
 }
 
 // Interface for traceability information
@@ -114,8 +115,8 @@ export interface DigitalProductPassport {
       status: 'compliant' | 'non_compliant' | 'pending'; 
       batteryPassportId?: string; 
       carbonFootprint?: { value: number; unit: string; calculationMethod?: string; vcId?: string };
-      recycledContent?: { material: string; percentage: number; vcId?: string }[];
-      stateOfHealth?: { value: number; unit: '%'; measurementDate: string; vcId?: string};
+      recycledContent?: Array<{ material: string; percentage: number; vcId?: string }>;
+      stateOfHealth?: {value: number; unit: '%'; measurementDate: string; vcId?: string};
       vcId?: string;
     };
   };
@@ -157,7 +158,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     compliance: {
       eprelId: "EPREL_REG_12345",
       esprConformity: { status: "conformant", assessmentId: "ESPR_ASSESS_001", assessmentDate: "2024-07-01" },
-      battery_regulation: { status: "non_compliant" }, // Example, refrigerators don't usually have this directly
+      battery_regulation: { status: "not_applicable" }, 
     },
     ebsiVerification: { status: "verified", verificationId: "EBSI_TX_ABC123", lastChecked: "2024-07-29T00:00:00Z"},
     blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123...abc"},
@@ -166,7 +167,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       {id: "evt1", type: "Manufactured", timestamp: "2024-01-01T00:00:00Z", transactionHash: "0xabc...def"}
     ],
     certifications: [
-      {id: "cert1", name: "Energy Star", issuer: "EPA", issueDate: "2024-01-01", documentUrl: "#"}
+      {id: "cert1", name: "Energy Star", issuer: "EPA", issueDate: "2024-01-01", documentUrl: "#", transactionHash: "0xcertAnchor1"}
     ]
   },
   {
@@ -182,12 +183,11 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       materials: [{name: "Organic Cotton", percentage: 100}]
     },
     compliance: {
-      eu_espr: { status: "pending" }, // old field for example
+      eu_espr: { status: "pending" }, 
     },
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-20T00:00:00Z"},
     consumerScans: 300,
   },
-  // ... other mock DPPs would ideally be updated too, but keeping concise for now
   {
     id: "DPP003",
     productName: "Recycled Polymer Phone Case",
@@ -216,7 +216,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
   {
     id: "DPP005",
     productName: "High-Performance EV Battery",
-    category: "Automotive Parts", // Changed category for relevance
+    category: "Automotive Parts", 
     manufacturer: { name: "PowerVolt"},
     metadata: { last_updated: "2024-07-29T08:00:00Z", status: "pending_review" },
     productDetails: {
@@ -235,8 +235,10 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-29T00:00:00Z"},
     consumerScans: 50,
+    certifications: [
+      {id: "cert_bat_01", name: "UN 38.3 Transport Test", issuer: "TestCert Ltd.", issueDate: "2024-07-01", documentUrl: "#", transactionHash: "0xcertAnchorBat1"}
+    ]
   },
-  // Keep a few more simple ones for variety in the list view
    {
     id: "DPP006",
     productName: "Organic FairTrade Coffee Beans",
@@ -244,7 +246,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     manufacturer: { name: "BeanGood Coffee"},
     metadata: { last_updated: "2024-06-15T18:00:00Z", status: "published" },
     compliance: {
-      eu_espr: { status: "compliant" }, // Assuming ESPR might apply to packaging indirectly
+      eu_espr: { status: "compliant" }, 
       us_scope3: { status: "non_compliant" }, 
     },
     consumerScans: 1520,
@@ -259,7 +261,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     compliance: { 
       eprelId: "EPREL_THERMO_789",
       esprConformity: {status: "conformant"},
-      battery_regulation: { status: "compliant" }, // If it has a small non-rechargeable battery for backup
+      battery_regulation: { status: "compliant" }, 
     },
     ebsiVerification: { status: "verified", lastChecked: "2024-07-11T00:00:00Z"},
     consumerScans: 980,

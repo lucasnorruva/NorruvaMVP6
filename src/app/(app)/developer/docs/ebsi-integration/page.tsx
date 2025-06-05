@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers, QrCode as QrCodeIcon, FileJson } from "lucide-react"; // Added Database, QrCodeIcon, FileJson
+import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers, QrCode as QrCodeIcon, FileJson, CheckCircle } from "lucide-react"; // Added Database, QrCodeIcon, FileJson, CheckCircle
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -49,19 +49,28 @@ export default function EbsiIntegrationOverviewPage() {
         <CardHeader>
           <CardTitle className="flex items-center"><Workflow className="mr-2 h-5 w-5 text-primary"/>Key EBSI Protocols for DPP</CardTitle>
           <CardDescription>
-            Integration with EBSI for DPPs would primarily utilize Verifiable Credentials and potentially the Notarisation API.
+            Integration with EBSI for DPPs would primarily utilize Verifiable Credentials (VCs) and potentially the Notarisation API, all underpinned by ESSIF for decentralized identity.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <p>
-            <strong>Verifiable Credentials (VCs):</strong> Key product attributes, certifications, and lifecycle events can be issued as VCs, making them tamper-proof and easily verifiable across borders.
-          </p>
-          <p>
-            <strong>Notarisation API:</strong> Anchoring DPP data hashes or critical event proofs onto EBSI's ledger to provide immutable timestamps and proof of existence.
-          </p>
-          <p>
-            <strong>ESSIF:</strong> Using decentralized identifiers (DIDs) for manufacturers, products, and other stakeholders to manage access and control over DPP data.
-          </p>
+        <CardContent className="space-y-4">
+          <section>
+            <h3 className="font-semibold text-lg mb-2 flex items-center"><CheckCircle className="mr-2 h-5 w-5 text-green-600" />Verifiable Credentials (VCs)</h3>
+            <p className="text-sm">
+              Key product attributes, certifications, lifecycle events, and compliance statements can be issued as VCs. These digitally signed credentials are tamper-proof and can be easily verified across borders using the EBSI trust framework. This enables reliable cross-border traceability of products and their associated claims.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2 flex items-center"><ShieldCheck className="mr-2 h-5 w-5 text-green-600" />ESSIF & Digital Signatures</h3>
+            <p className="text-sm">
+              The European Self-Sovereign Identity Framework (ESSIF) allows manufacturers, verifiers, and other stakeholders to use Decentralized Identifiers (DIDs). These DIDs are used to issue and verify VCs through digital signatures, adhering to EBSI's cryptographic standards. This ensures the authenticity of data and the integrity of compliance claims within the DPP.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Notarisation API</h3>
+            <p className="text-sm">
+              Anchoring DPP data hashes or critical event proofs onto EBSI's ledger via the Notarisation API provides immutable timestamps and proof of existence, further enhancing data integrity.
+            </p>
+          </section>
         </CardContent>
       </Card>
 
@@ -207,7 +216,7 @@ export default function EbsiIntegrationOverviewPage() {
           <section>
             <h3 className="font-semibold text-lg mb-2">Deployment & EBSI Interaction</h3>
             <p className="text-sm">
-              These smart contracts would be deployed on the conceptually chosen blockchain platform (e.g., a permissioned EVM chain). For EBSI integration, they might interact with EBSI-compliant DIDs, store references to Verifiable Credentials (VCs) anchored on EBSI, or trigger notarisation events.
+              These smart contracts would be deployed on the conceptually chosen blockchain platform (e.g., a permissioned EVM chain). For EBSI integration, they might interact with EBSI-compliant DIDs, store references to Verifiable Credentials (VCs) anchored on EBSI, or trigger notarisation events. This ensures that product data managed by the smart contracts is verifiable within the EBSI ecosystem, leveraging EBSI's trust infrastructure for cross-border operations.
             </p>
             <p className="text-xs text-muted-foreground mt-1">
               This is a high-level conceptual outline. Actual smart contract development is complex and requires careful security auditing.
@@ -275,3 +284,5 @@ export default function EbsiIntegrationOverviewPage() {
     </div>
   );
 }
+
+    

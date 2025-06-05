@@ -24,7 +24,7 @@ import { Cpu, BatteryCharging, Loader2, Sparkles, ImagePlus, Image as ImageIcon 
 import React, { useState } from "react";
 import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow";
 import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
-import { generateProductName } from "@/ai/flows/generate-product-name-flow"; // Added
+import { generateProductName } from "@/ai/flows/generate-product-name-flow.ts"; // Corrected import
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";
 import Image from "next/image";
@@ -104,7 +104,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
   const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(initialData?.imageUrl || null);
-  const [isSuggestingName, setIsSuggestingName] = useState(false); // Added for name suggestion
+  const [isSuggestingName, setIsSuggestingName] = useState(false);
 
 
   React.useEffect(() => {
@@ -141,7 +141,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
     try {
       const result = await generateProductName({ 
         productDescription: productDescription || "", 
-        productCategory: productCategory 
+        productCategory: productCategory || undefined 
       });
       form.setValue("productName", result.productName, { shouldValidate: true });
       toast({ title: "Product Name Suggested!", description: `AI suggested: "${result.productName}"`, variant: "default" });
@@ -236,7 +236,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
                     Product Name 
                     <AiIndicator fieldOrigin={initialData?.productNameOrigin} fieldName="Product Name" />
                   </FormLabel>
-                  <Button type="button" variant="ghost" size="sm" onClick={handleSuggestName} disabled={isSuggestingName}>
+                  <Button type="button" variant="ghost" size="sm" onClick={handleSuggestName} disabled={isSuggestingName || isSubmitting}>
                     {isSuggestingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
                     <span className="ml-2">{isSuggestingName ? "Suggesting..." : "Suggest Name"}</span>
                   </Button>
@@ -273,7 +273,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
                   </FormItem>
                 )}
               />
-            <Button type="button" variant="secondary" onClick={handleGenerateImage} disabled={isGeneratingImage}>
+            <Button type="button" variant="secondary" onClick={handleGenerateImage} disabled={isGeneratingImage || isSubmitting}>
               {isGeneratingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
               <span className="ml-2">{isGeneratingImage ? "Generating..." : "Generate Image with AI"}</span>
             </Button>
@@ -391,7 +391,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
                         Sustainability Claims
                         <AiIndicator fieldOrigin={initialData?.sustainabilityClaimsOrigin} fieldName="Sustainability Claims" />
                     </FormLabel>
-                    <Button type="button" variant="ghost" size="sm" onClick={handleSuggestClaims} disabled={isSuggestingClaims}>
+                    <Button type="button" variant="ghost" size="sm" onClick={handleSuggestClaims} disabled={isSuggestingClaims || isSubmitting}>
                         {isSuggestingClaims ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
                         <span className="ml-2">{isSuggestingClaims ? "Suggesting..." : "Suggest Claims"}</span>
                     </Button>

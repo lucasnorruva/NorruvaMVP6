@@ -26,6 +26,31 @@ import { useRole } from '@/contexts/RoleContext';
 import { useToast } from '@/hooks/use-toast';
 import { checkProductCompliance } from '@/ai/flows/check-product-compliance-flow';
 
+// Local storage key
+const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
+
+// Interface for the product structure stored in localStorage (simpler than MockProductType)
+interface ListedProduct {
+  id: string;
+  name: string;
+  category: string;
+  status: string;
+  compliance: string;
+  lastUpdated: string;
+  gtin?: string;
+  productDescription?: string;
+  manufacturer?: string;
+  modelNumber?: string;
+  materials?: string;
+  sustainabilityClaims?: string;
+  energyLabel?: string;
+  specifications?: string; // Assuming specifications are stored as JSON string
+  batteryChemistry?: string;
+  stateOfHealth?: number;
+  carbonFootprintManufacturing?: number;
+  recycledContentPercentage?: number;
+}
+
 
 // Mock product data - in a real app, this would come from an API
 interface MaterialComposition {
@@ -261,6 +286,43 @@ const MOCK_PRODUCTS: MockProductType[] = [
   },
 ];
 
+// Default values for a MockProductType when mapping from a simpler structure
+const getDefaultMockProductValues = (id: string): MockProductType => ({
+  productId: id,
+  productName: "User Added Product",
+  gtin: "",
+  category: "General",
+  status: "Draft",
+  compliance: "N/A",
+  lastUpdated: new Date().toISOString(),
+  manufacturer: "N/A",
+  modelNumber: "N/A",
+  description: "No description provided.",
+  imageUrl: `https://placehold.co/600x400.png?text=${encodeURIComponent(id)}`,
+  imageHint: "product placeholder",
+  materials: "Not specified",
+  sustainabilityClaims: "None specified",
+  energyLabel: "N/A",
+  specifications: {},
+  lifecycleEvents: [],
+  complianceData: {},
+  currentLifecyclePhaseIndex: 0,
+  lifecyclePhases: [ // Minimal default lifecycle
+    { id: "lc_user_default_1", name: "Created", icon: PackageSearch, status: 'completed', timestamp: new Date().toISOString(), location: "System", details: "Product entry created by user." },
+    { id: "lc_user_default_2", name: "Pending Review", icon: Factory, status: 'in_progress', details: "Awaiting further data input and review." }
+  ],
+  overallCompliance: {
+    gdpr: { status: "pending_review", lastChecked: new Date().toISOString() },
+    eprel: { status: "pending_review", lastChecked: new Date().toISOString() },
+    ebsiVerified: { status: "pending_review", lastChecked: new Date().toISOString() },
+    scip: { status: "pending_review", lastChecked: new Date().toISOString() },
+    csrd: { status: "pending_review", lastChecked: new Date().toISOString() },
+  },
+  notifications: [
+      {id: "user_info_1", type: "info", message: "This product was added by a user and may have incomplete data. Please review and update.", date: new Date().toISOString()}
+  ],
+  // Optional fields are undefined by default
+});
 
 const TrustSignalIcon = ({ isVerified, tooltipText, VerifiedIcon = CheckCircle2, UnverifiedIcon = Info, customClasses }: { isVerified?: boolean, tooltipText: string, VerifiedIcon?: React.ElementType, UnverifiedIcon?: React.ElementType, customClasses?: string }) => {
   if (isVerified === undefined) return null;
@@ -383,8 +445,49 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     const fetchProduct = async () => {
-      await new Promise(resolve => setTimeout(resolve, 500));
-      const foundProduct = MOCK_PRODUCTS.find(p => p.productId === productId);
+      await new Promise(resolve => setTimeout(resolve, 300)); // Simulate network delay
+
+      let foundProduct: MockProductType | undefined;
+
+      if (productId.startsWith("USER_PROD")) {
+        const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+        const userAddedProducts: ListedProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+        const listedProduct = userAddedProducts.find(p => p.id === productId);
+
+        if (listedProduct) {
+          // Map ListedProduct to MockProductType
+          foundProduct = {
+            ...getDefaultMockProductValues(listedProduct.id), // Get defaults
+            productId: listedProduct.id,
+            productName: listedProduct.name,
+            gtin: listedProduct.gtin || "",
+            category: listedProduct.category,
+            status: listedProduct.status,
+            compliance: listedProduct.compliance,
+            lastUpdated: listedProduct.lastUpdated,
+            manufacturer: listedProduct.manufacturer || "N/A",
+            modelNumber: listedProduct.modelNumber || "N/A",
+            description: listedProduct.productDescription || "No description provided.",
+            materials: listedProduct.materials || "Not specified",
+            sustainabilityClaims: listedProduct.sustainabilityClaims || "None specified",
+            energyLabel: listedProduct.energyLabel || "N/A",
+            productNameOrigin: 'manual', // User added data is manual
+            descriptionOrigin: 'manual',
+            batteryChemistry: listedProduct.batteryChemistry,
+            stateOfHealth: listedProduct.stateOfHealth,
+            carbonFootprintManufacturing: listedProduct.carbonFootprintManufacturing,
+            recycledContentPercentage: listedProduct.recycledContentPercentage,
+            specifications: listedProduct.specifications ? JSON.parse(listedProduct.specifications) : {},
+            // For user-added products, complex fields default to empty or placeholder
+            // imageUrl will use the default from getDefaultMockProductValues
+          };
+        }
+      }
+
+      if (!foundProduct) {
+        foundProduct = MOCK_PRODUCTS.find(p => p.productId === productId);
+      }
+      
       setProduct(foundProduct);
     };
 
@@ -720,12 +823,16 @@ export default function ProductDetailPage() {
               <CardTitle>Detailed Specifications</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {Object.entries(product.specifications).map(([key, value]) => (
-                <div key={key} className="flex flex-col sm:flex-row justify-between text-sm border-b pb-1">
-                  <span className="font-medium text-foreground/90">{key}:</span>
-                  <span className="text-muted-foreground text-left sm:text-right">{value}</span>
-                </div>
-              ))}
+              {product.specifications && Object.keys(product.specifications).length > 0 ? (
+                Object.entries(product.specifications).map(([key, value]) => (
+                  <div key={key} className="flex flex-col sm:flex-row justify-between text-sm border-b pb-1">
+                    <span className="font-medium text-foreground/90">{key}:</span>
+                    <span className="text-muted-foreground text-left sm:text-right">{value}</span>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No specifications provided.</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -775,29 +882,33 @@ export default function ProductDetailPage() {
               <CardDescription>Status of compliance with key regulations.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {Object.entries(product.complianceData).map(([reg, data]) => (
-                <Card key={reg} className="bg-muted/50 p-4 rounded-lg">
-                  <CardTitle className="text-md flex items-center justify-between">
-                    <span className="flex items-center">
-                      {reg} 
-                      <TrustSignalIcon 
-                        isVerified={data.isVerified} 
-                        tooltipText={data.isVerified ? `${reg} Verified` : `${reg} Status Pending Verification`}
-                        VerifiedIcon={CheckCircle2}
-                        UnverifiedIcon={Info}
-                       />
-                    </span>
-                    <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={cn(
-                      data.status === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "",
-                        data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""
-                    )}>
-                      {data.status}
-                    </Badge>
-                  </CardTitle>
-                  <p className="text-xs text-muted-foreground mt-1">Last Checked: {new Date(data.lastChecked).toLocaleDateString()}</p>
-                  {data.reportId && <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>}
-                </Card>
-              ))}
+              {product.complianceData && Object.keys(product.complianceData).length > 0 ? (
+                Object.entries(product.complianceData).map(([reg, data]) => (
+                  <Card key={reg} className="bg-muted/50 p-4 rounded-lg">
+                    <CardTitle className="text-md flex items-center justify-between">
+                      <span className="flex items-center">
+                        {reg} 
+                        <TrustSignalIcon 
+                          isVerified={data.isVerified} 
+                          tooltipText={data.isVerified ? `${reg} Verified` : `${reg} Status Pending Verification`}
+                          VerifiedIcon={CheckCircle2}
+                          UnverifiedIcon={Info}
+                        />
+                      </span>
+                      <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={cn(
+                        data.status === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "",
+                          data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""
+                      )}>
+                        {data.status}
+                      </Badge>
+                    </CardTitle>
+                    <p className="text-xs text-muted-foreground mt-1">Last Checked: {new Date(data.lastChecked).toLocaleDateString()}</p>
+                    {data.reportId && <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>}
+                  </Card>
+                ))
+              ) : (
+                <p className="text-sm text-muted-foreground">No specific compliance records available for this product.</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -809,46 +920,50 @@ export default function ProductDetailPage() {
               <CardDescription>Key events in the product's journey.</CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-4">
-                {product.lifecycleEvents.map((event) => (
-                  <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors">
-                    <div className="flex justify-between items-start mb-1">
-                      <p className="font-semibold text-primary flex items-center">
-                        {event.type}
-                        {event.isBlockchainAnchored && (
-                          <TooltipProvider>
-                            <Tooltip delayDuration={100}>
-                              <TooltipTrigger asChild>
-                                <Server className="h-4 w-4 text-primary ml-2 cursor-help" />
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        )}
-                         {event.isBlockchainAnchored && event.transactionHash && (
+              {product.lifecycleEvents && product.lifecycleEvents.length > 0 ? (
+                <ul className="space-y-4">
+                  {product.lifecycleEvents.map((event) => (
+                    <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors">
+                      <div className="flex justify-between items-start mb-1">
+                        <p className="font-semibold text-primary flex items-center">
+                          {event.type}
+                          {event.isBlockchainAnchored && (
                             <TooltipProvider>
                               <Tooltip delayDuration={100}>
                                 <TooltipTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}>
-                                    <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" />
-                                  </Button>
+                                  <Server className="h-4 w-4 text-primary ml-2 cursor-help" />
                                 </TooltipTrigger>
                                 <TooltipContent>
-                                  <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p>
+                                  <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p>
                                 </TooltipContent>
                               </Tooltip>
                             </TooltipProvider>
-                        )}
-                      </p>
-                      <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleDateString()}</p>
-                    </div>
-                    <p className="text-sm text-muted-foreground">Location: {event.location}</p>
-                    <p className="text-sm text-muted-foreground">Details: {event.details}</p>
-                  </li>
-                ))}
-              </ul>
+                          )}
+                          {event.isBlockchainAnchored && event.transactionHash && (
+                              <TooltipProvider>
+                                <Tooltip delayDuration={100}>
+                                  <TooltipTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}>
+                                      <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p>
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                          )}
+                        </p>
+                        <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleDateString()}</p>
+                      </div>
+                      <p className="text-sm text-muted-foreground">Location: {event.location}</p>
+                      <p className="text-sm text-muted-foreground">Details: {event.details}</p>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                 <p className="text-sm text-muted-foreground">No lifecycle events recorded for this product.</p>
+              )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -967,7 +1082,14 @@ export default function ProductDetailPage() {
                   </ul>
                 </div>
               )}
-
+              {(!product.materialComposition || product.materialComposition.length === 0) &&
+               (!product.historicalCarbonFootprint || product.historicalCarbonFootprint.length === 0) &&
+               !product.waterUsage && !product.recyclabilityScore && !product.repairabilityIndex &&
+               (!product.certifications || product.certifications.length === 0) &&
+               (
+                <p className="text-sm text-muted-foreground">Detailed sustainability information is not yet available for this product.</p>
+               )
+              }
             </CardContent>
           </Card>
         </TabsContent>
@@ -1062,6 +1184,3 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
-
-
-    

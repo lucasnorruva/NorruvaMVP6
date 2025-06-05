@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageCheck, CircleDollarSign, Wrench, AlertCircle, PackageSearch, CalendarDays, MapPin } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageCheck, CircleDollarSign, Wrench, AlertCircle, PackageSearch, CalendarDays, MapPin, Droplet, Target } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
@@ -19,8 +19,21 @@ import ProductLifecycleFlowchart, { type LifecyclePhase } from '@/components/pro
 import OverallProductCompliance, { type OverallComplianceData } from '@/components/products/OverallProductCompliance';
 import ProductAlerts, { type ProductNotification } from '@/components/products/ProductAlerts';
 
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
+import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+
 
 // Mock product data - in a real app, this would come from an API
+interface MaterialComposition {
+  name: string;
+  value: number;
+  fill: string;
+}
+
+interface HistoricalDataPoint {
+  year: string;
+  value: number;
+}
 interface MockProductType {
   productId: string;
   productName: string;
@@ -61,6 +74,14 @@ interface MockProductType {
   lifecyclePhases: LifecyclePhase[];
   overallCompliance: OverallComplianceData;
   notifications: ProductNotification[];
+
+  // Enhanced Sustainability Data
+  materialComposition?: MaterialComposition[];
+  historicalCarbonFootprint?: HistoricalDataPoint[];
+  waterUsage?: { value: number; unit: string; trend?: 'up' | 'down' | 'stable'; trendValue?: string };
+  recyclabilityScore?: { value: number; unit: string };
+  repairabilityIndex?: { value: number; scale: number };
+  certifications?: Array<{ name: string, authority: string, link?: string, verified?: boolean}>;
 }
 
 const MOCK_PRODUCTS: MockProductType[] = [
@@ -102,7 +123,6 @@ const MOCK_PRODUCTS: MockProductType[] = [
       "WEEE": { status: "Compliant", lastChecked: "2024-07-01", reportId: "WEEE-X2000-001", isVerified: false },
     },
     isDppBlockchainAnchored: true,
-    // Visual Dashboard Data
     currentLifecyclePhaseIndex: 2,
     lifecyclePhases: [
       { id: "lc001", name: "Raw Materials", icon: PackageSearch, status: 'completed', timestamp: "2023-12-01", details: "Sourcing of verified recycled steel and bio-polymers.", complianceMetrics: [{ name: "Supplier Ethical Audit", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Recycled Content Input", value: 75, unit: "%", targetValue: 70 }] },
@@ -122,6 +142,25 @@ const MOCK_PRODUCTS: MockProductType[] = [
     notifications: [
       { id: "n001", type: "info", message: "Quarterly sustainability report due next month.", date: "2024-07-10" },
       { id: "n002", type: "warning", message: "Supplier 'PolyCore' ethical audit expiring soon.", date: "2024-07-18" }
+    ],
+    materialComposition: [
+      { name: 'Recycled Steel', value: 70, fill: 'hsl(var(--chart-1))' },
+      { name: 'Bio-Polymers', value: 20, fill: 'hsl(var(--chart-2))' },
+      { name: 'Glass', value: 10, fill: 'hsl(var(--chart-5))' },
+    ],
+    historicalCarbonFootprint: [
+      { year: '2021', value: 250 },
+      { year: '2022', value: 220 },
+      { year: '2023', value: 200 },
+      { year: '2024', value: 180 },
+    ],
+    waterUsage: { value: 500, unit: 'L/unit', trend: 'down', trendValue: '-5%' },
+    recyclabilityScore: { value: 95, unit: '%' },
+    repairabilityIndex: { value: 8.5, scale: 10 },
+    certifications: [
+        { name: 'Energy Star', authority: 'EPA', verified: true, link: '#' },
+        { name: 'EU Ecolabel', authority: 'European Commission', verified: true, link: '#' },
+        { name: 'TCO Certified', authority: 'TCO Development', verified: false, link: '#' },
     ]
   },
   {
@@ -132,7 +171,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
     gtinVerified: false,
     category: "Electronics",
     status: "Active",
-    compliance: "Pending",
+    compliance: "Pending Documentation",
     complianceLastChecked: "2024-07-20",
     lastUpdated: "2024-07-18",
     manufacturer: "BrightSpark Electronics",
@@ -155,11 +194,11 @@ const MOCK_PRODUCTS: MockProductType[] = [
     },
     batteryChemistry: "Li-ion NMC",
     batteryChemistryOrigin: "AI_EXTRACTED",
-    stateOfHealth: 99, // As percentage
+    stateOfHealth: 99,
     stateOfHealthOrigin: "manual",
-    carbonFootprintManufacturing: 5.2, // kg CO2e
+    carbonFootprintManufacturing: 5.2,
     carbonFootprintManufacturingOrigin: "AI_EXTRACTED",
-    recycledContentPercentage: 8, // As percentage
+    recycledContentPercentage: 8,
     recycledContentPercentageOrigin: "manual",
     lifecycleEvents: [
       { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01", location: "Shenzhen, China", details: "Batch #LEDB456", isBlockchainAnchored: true },
@@ -171,7 +210,6 @@ const MOCK_PRODUCTS: MockProductType[] = [
       "Battery Regulation (EU 2023/1542)": { status: "Pending Documentation", lastChecked: "2024-07-20", reportId: "BATREG-LEDB456-PRE", isVerified: false },
     },
     isDppBlockchainAnchored: false,
-    // Visual Dashboard Data
     currentLifecyclePhaseIndex: 1,
     lifecyclePhases: [
       { id: "lc007", name: "Materials Sourcing", icon: PackageSearch, status: 'completed', timestamp: "2024-02-01", details: "Sourcing of PC, Al, LED chips, battery components.", complianceMetrics: [{ name: "Conflict Minerals Report", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Supplier Diversity Score", value: 60, unit: "/100", targetValue: 75 }] },
@@ -190,6 +228,24 @@ const MOCK_PRODUCTS: MockProductType[] = [
     },
     notifications: [
       { id: "n003", type: "error", message: "Battery Regulation documentation overdue!", date: "2024-07-19" }
+    ],
+    materialComposition: [
+        { name: 'Polycarbonate', value: 40, fill: 'hsl(var(--chart-1))' },
+        { name: 'Aluminum', value: 30, fill: 'hsl(var(--chart-2))' },
+        { name: 'LEDs & Electronics', value: 20, fill: 'hsl(var(--chart-3))' },
+        { name: 'Li-ion Cell', value: 10, fill: 'hsl(var(--chart-4))' },
+    ],
+    historicalCarbonFootprint: [
+      { year: '2022', value: 6.5 },
+      { year: '2023', value: 5.8 },
+      { year: '2024', value: 5.2 },
+    ],
+    waterUsage: { value: 10, unit: 'L/unit (mfg)' },
+    recyclabilityScore: { value: 75, unit: '%' },
+    repairabilityIndex: { value: 6.0, scale: 10 },
+    certifications: [
+        { name: 'RoHS Compliant', authority: 'Self-declared', verified: true },
+        { name: 'CE Marked', authority: 'Self-declared', verified: true },
     ]
   },
 ];
@@ -201,7 +257,7 @@ const TrustSignalIcon = ({ isVerified, tooltipText, Icon = CheckCircle2 }: { isV
     <TooltipProvider>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
-          <span>
+          <span> 
             {isVerified ? <Icon className="h-4 w-4 text-green-500 ml-1" /> : <Info className="h-4 w-4 text-yellow-500 ml-1" />}
           </span>
         </TooltipTrigger>
@@ -219,7 +275,7 @@ const DataOriginIcon = ({ origin, fieldName }: { origin?: string, fieldName: str
       <TooltipProvider>
         <Tooltip delayDuration={100}>
           <TooltipTrigger asChild>
-            <Cpu className="h-4 w-4 text-info ml-1" />
+             <Cpu className="h-4 w-4 text-info ml-1" />
           </TooltipTrigger>
           <TooltipContent>
             <p>{fieldName} data suggested by AI.</p>
@@ -231,6 +287,11 @@ const DataOriginIcon = ({ origin, fieldName }: { origin?: string, fieldName: str
   return null;
 };
 
+const chartConfig = {
+  carbon: { label: "Carbon Footprint (kg CO₂e)", color: "hsl(var(--chart-1))" },
+  materials: {}, // Will be populated by material names
+} satisfies import("@/components/ui/chart").ChartConfig;
+
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -240,6 +301,7 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     const fetchProduct = async () => {
+      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
       const foundProduct = MOCK_PRODUCTS.find(p => p.productId === productId);
       setProduct(foundProduct);
@@ -255,11 +317,15 @@ export default function ProductDetailPage() {
   }
 
   if (!product) {
-    notFound();
+    notFound(); // Triggers 404 page
     return null;
   }
 
   const hasBatteryData = product.batteryChemistry || product.stateOfHealth !== undefined || product.carbonFootprintManufacturing !== undefined || product.recycledContentPercentage !== undefined;
+
+  const currentYear = new Date().getFullYear().toString();
+  const currentCarbonFootprint = product.historicalCarbonFootprint?.find(p => p.year === currentYear)?.value || product.historicalCarbonFootprint?.[product.historicalCarbonFootprint.length - 1]?.value;
+
 
   return (
     <div className="space-y-8">
@@ -295,16 +361,16 @@ export default function ProductDetailPage() {
                 <TooltipTrigger asChild>
                   <Badge variant={
                     product.compliance === "Compliant" ? "default" :
+                      product.compliance === "Pending Documentation" ? "outline" :
                       product.compliance === "Pending" ? "outline" : "destructive"
                   } className={`
                             ${product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : ""}
-                            ${product.compliance === "Pending" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""}
-                            ${product.compliance.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""}
+                            ${(product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""}
                             cursor-help
                             `}>
                     {product.compliance}
                     {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />}
-                    {(product.compliance === "Pending" || product.compliance.startsWith("Pending")) && <Info className="h-3 w-3 ml-1" />}
+                    {(product.compliance === "Pending" || product.compliance === "Pending Documentation") && <Info className="h-3 w-3 ml-1" />}
                     {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1" />}
                   </Badge>
                 </TooltipTrigger>
@@ -515,27 +581,109 @@ export default function ProductDetailPage() {
               <CardTitle className="flex items-center"><Zap className="mr-2 h-5 w-5 text-accent" />Detailed Sustainability Information</CardTitle>
               <CardDescription>In-depth data on materials, carbon footprint, circularity, etc.</CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between text-sm border-b pb-1">
-                <span className="font-medium text-foreground/90 flex items-center"><Leaf className="mr-2 h-4 w-4 text-green-500" /> Detailed Material Breakdown:</span>
-                <span className="text-muted-foreground">To be populated from BOM or LCA data.</span>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-6">
+                {product.materialComposition && product.materialComposition.length > 0 && (
+                  <Card className="shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center"><Leaf className="mr-2 h-4 w-4 text-green-500" />Material Composition</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <ChartContainer config={chartConfig} className="aspect-square h-[250px] w-full">
+                        <ResponsiveContainer width="100%" height="100%">
+                          <PieChart>
+                            <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} />
+                            <Pie data={product.materialComposition} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+                                const RADIAN = Math.PI / 180;
+                                const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                                const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                                const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                                return (
+                                  <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-medium">
+                                    {`${(percent * 100).toFixed(0)}%`}
+                                  </text>
+                                );
+                              }}>
+                              {product.materialComposition.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                              ))}
+                            </Pie>
+                            <ChartLegend content={<ChartLegendContent nameKey="name" />} className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center" />
+                          </PieChart>
+                        </ResponsiveContainer>
+                      </ChartContainer>
+                    </CardContent>
+                  </Card>
+                )}
+
+                {product.historicalCarbonFootprint && product.historicalCarbonFootprint.length > 0 && (
+                  <Card className="shadow-sm">
+                    <CardHeader>
+                      <CardTitle className="text-lg flex items-center"><BarChart3 className="mr-2 h-4 w-4 text-red-500" />Carbon Footprint Trend</CardTitle>
+                      <CardDescription> (kg CO₂e over time)</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <ChartContainer config={chartConfig} className="aspect-video h-[250px] w-full">
+                         <ResponsiveContainer width="100%" height="100%">
+                          <LineChart data={product.historicalCarbonFootprint} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}>
+                            <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                            <XAxis dataKey="year" stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} dy={5} />
+                            <YAxis stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
+                            <ChartTooltip
+                              cursor={false}
+                              content={<ChartTooltipContent indicator="line" />}
+                            />
+                            <Line type="monotone" dataKey="value" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={true} name="kg CO₂e" />
+                          </LineChart>
+                        </ResponsiveContainer>
+                      </ChartContainer>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
-              <div className="flex items-center justify-between text-sm border-b pb-1">
-                <span className="font-medium text-foreground/90 flex items-center"><BarChart3 className="mr-2 h-4 w-4 text-red-500" /> Carbon Footprint (Calculated):</span>
-                <span className="text-muted-foreground">[Value] kg CO₂e (Scope 1, 2, 3). To be integrated.</span>
+              
+              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t">
+                {product.waterUsage && (
+                  <Card className="bg-muted/50 p-4">
+                    <CardTitle className="text-sm font-medium flex items-center text-foreground/80 mb-1"><Droplet className="mr-2 h-4 w-4 text-blue-500"/>Water Usage</CardTitle>
+                    <p className="text-2xl font-bold">{product.waterUsage.value} <span className="text-sm font-normal text-muted-foreground">{product.waterUsage.unit}</span></p>
+                    {product.waterUsage.trend && <p className={cn("text-xs", product.waterUsage.trend === 'down' ? 'text-green-600' : 'text-red-600')}>{product.waterUsage.trendValue} vs last period</p>}
+                  </Card>
+                )}
+                 {product.recyclabilityScore && (
+                  <Card className="bg-muted/50 p-4">
+                    <CardTitle className="text-sm font-medium flex items-center text-foreground/80 mb-1"><Recycle className="mr-2 h-4 w-4 text-green-600"/>Recyclability Score</CardTitle>
+                    <p className="text-2xl font-bold">{product.recyclabilityScore.value}<span className="text-sm font-normal text-muted-foreground">{product.recyclabilityScore.unit}</span></p>
+                     <p className="text-xs text-muted-foreground">Based on material & design</p>
+                  </Card>
+                )}
+                {product.repairabilityIndex && (
+                  <Card className="bg-muted/50 p-4">
+                    <CardTitle className="text-sm font-medium flex items-center text-foreground/80 mb-1"><Wrench className="mr-2 h-4 w-4 text-orange-500"/>Repairability Index</CardTitle>
+                    <p className="text-2xl font-bold">{product.repairabilityIndex.value}<span className="text-sm font-normal text-muted-foreground"> / {product.repairabilityIndex.scale}</span></p>
+                     <p className="text-xs text-muted-foreground">Based on ESPR draft</p>
+                  </Card>
+                )}
               </div>
-              <div className="flex items-center justify-between text-sm border-b pb-1">
-                <span className="font-medium text-foreground/90 flex items-center"><Recycle className="mr-2 h-4 w-4 text-blue-500" /> Recyclability Score:</span>
-                <span className="text-muted-foreground">95% (Based on material composition and design for disassembly).</span>
-              </div>
-              <div className="flex items-center justify-between text-sm border-b pb-1">
-                <span className="font-medium text-foreground/90 flex items-center"><Settings2 className="mr-2 h-4 w-4 text-orange-500" /> Repairability Index:</span>
-                <span className="text-muted-foreground">7.5/10 (To be calculated based on ESPR requirements).</span>
-              </div>
-              <div className="flex items-center justify-between text-sm">
-                <span className="font-medium text-foreground/90 flex items-center"><CheckCircle2 className="mr-2 h-4 w-4 text-yellow-500" /> Certifications:</span>
-                <span className="text-muted-foreground">Energy Star, EU Ecolabel (Mock).</span>
-              </div>
+
+              {product.certifications && product.certifications.length > 0 && (
+                <div className="pt-4 border-t">
+                  <h4 className="text-md font-semibold mb-2 flex items-center"><CheckCircle2 className="mr-2 h-5 w-5 text-primary"/>Certifications</h4>
+                  <ul className="space-y-2">
+                    {product.certifications.map(cert => (
+                      <li key={cert.name} className="flex items-center justify-between text-sm p-2 bg-background rounded-md border">
+                        <div className="flex items-center">
+                           <TrustSignalIcon isVerified={cert.verified} tooltipText={cert.verified ? "Verified Certification" : "Self-Declared / Pending Verification"} Icon={cert.verified ? CheckCircle2 : Target} />
+                           <span className="ml-2 font-medium">{cert.name}</span>
+                           <span className="text-muted-foreground ml-1 text-xs">({cert.authority})</span>
+                        </div>
+                        {cert.link && <Link href={cert.link} target="_blank" rel="noopener noreferrer"><Button variant="link" size="sm" className="h-auto p-0">Details <ExternalLink className="ml-1 h-3 w-3"/></Button></Link>}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
             </CardContent>
           </Card>
         </TabsContent>
@@ -592,7 +740,7 @@ function ProductDetailSkeleton() {
           </div>
         </div>
       </Card>
-      <Skeleton className="h-10 w-full md:w-2/3" />
+      <Skeleton className="h-10 w-full md:w-2/3" /> {/* TabsList skeleton */}
       <Card className="mt-4">
         <CardHeader>
           <Skeleton className="h-7 w-1/3" />

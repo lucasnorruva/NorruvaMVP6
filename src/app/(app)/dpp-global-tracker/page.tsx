@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers, Filter as FilterIcon } from "lucide-react";
+import { Slider } from "@/components/ui/slider"; // Added Slider import
+import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers, Filter as FilterIcon, TrendingUp, Map } from "lucide-react"; // Added Map for View Options
 import type { GlobeMethods, GlobeProps } from 'react-globe.gl';
 import { cn } from '@/lib/utils';
 import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
@@ -75,15 +76,25 @@ type ActiveLayer = 'status' | 'category';
 type StatusFilter = 'all' | MockDppPoint['status'];
 type CategoryFilter = 'all' | string;
 
+const mockArcsData = [
+  { startLat: 48.8566, startLng: 2.3522, endLat: 52.5200, endLng: 13.4050, color: 'rgba(255, 255, 255, 0.4)', label: 'Component Supply (Paris to Berlin)' }, // Paris to Berlin
+  { startLat: 41.9028, startLng: 12.4964, endLat: 48.8566, endLng: 2.3522, color: 'rgba(255, 255, 255, 0.4)', label: 'Finished Goods (Rome to Paris)' }, // Rome to Paris
+  { startLat: 52.5200, startLng: 13.4050, endLat: 51.5074, endLng: 0.1278, color: 'rgba(255,255,0,0.5)', label: 'Electronics Sub-Assembly (Berlin to London)', arcDashLength: 0.3, arcDashGap: 0.1, arcStroke:0.8 },
+];
+
 
 const GlobeVisualization = ({ 
   points,
+  arcs,
   onPointClick, 
-  pointColorAccessor 
+  pointColorAccessor,
+  pointRadiusAccessor,
 }: { 
   points: MockDppPoint[];
+  arcs: typeof mockArcsData;
   onPointClick: (point: MockDppPoint) => void;
   pointColorAccessor: (point: MockDppPoint) => string;
+  pointRadiusAccessor: (point: MockDppPoint) => number;
 }) => {
   const globeEl = useRef<GlobeMethods | undefined>();
 
@@ -112,11 +123,18 @@ const GlobeVisualization = ({
     pointsData: points,
     pointLabel: 'name',
     pointColor: d => pointColorAccessor(d as MockDppPoint),
-    pointRadius: 'size',
+    pointRadius: d => pointRadiusAccessor(d as MockDppPoint),
     pointAltitude: 0.02,
     onPointClick: (point: any) => {
       onPointClick(point as MockDppPoint);
     },
+    arcsData: arcs,
+    arcLabel: 'label',
+    arcColor: 'color',
+    arcDashLength: d => (d as any).arcDashLength || 0.1, // default if not specified
+    arcDashGap: d => (d as any).arcDashGap || 0.05,     // default if not specified
+    arcStroke: d => (d as any).arcStroke || 0.5,        // default if not specified
+    arcAltitudeAutoScale: 0.5,
   };
 
   return <Globe ref={globeEl} {...globeProps} />;
@@ -124,12 +142,16 @@ const GlobeVisualization = ({
 
 const DppGlobalTrackerClientContainer = ({ 
   points,
+  arcs,
   onPointClick,
-  pointColorAccessor
+  pointColorAccessor,
+  pointRadiusAccessor,
 }: { 
   points: MockDppPoint[];
+  arcs: typeof mockArcsData;
   onPointClick: (point: MockDppPoint) => void;
   pointColorAccessor: (point: MockDppPoint) => string;
+  pointRadiusAccessor: (point: MockDppPoint) => number;
 }) => {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
@@ -152,7 +174,13 @@ const DppGlobalTrackerClientContainer = ({
         <span className="ml-2">Loading 3D Globe...</span>
       </div>
     }>
-      <GlobeVisualization points={points} onPointClick={onPointClick} pointColorAccessor={pointColorAccessor} />
+      <GlobeVisualization 
+        points={points} 
+        arcs={arcs}
+        onPointClick={onPointClick} 
+        pointColorAccessor={pointColorAccessor} 
+        pointRadiusAccessor={pointRadiusAccessor} 
+      />
     </Suspense>
   );
 };
@@ -190,6 +218,7 @@ export default function DppGlobalTrackerPage() {
   const [activeLayer, setActiveLayer] = useState<ActiveLayer>('status');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
+  const [pointBaseSize, setPointBaseSize] = useState<number>(1.0); // Default base size multiplier
 
   const conceptDescription = `...`; // Kept for brevity
 
@@ -224,6 +253,12 @@ export default function DppGlobalTrackerPage() {
       return 'rgba(255, 255, 255, 0.7)';
     };
   }, [activeLayer]);
+
+  const pointRadiusAccessor = useMemo(() => {
+    return (point: MockDppPoint): number => {
+      return (point.size || 0.5) * pointBaseSize;
+    };
+  }, [pointBaseSize]);
 
   const activeLegendMap = useMemo(() => {
     if (activeLayer === 'status') return statusColors;
@@ -264,11 +299,17 @@ export default function DppGlobalTrackerPage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="w-full h-[450px] bg-muted/30 rounded-md overflow-hidden border relative">
-            <DppGlobalTrackerClientContainer points={filteredPoints} onPointClick={handlePointClick} pointColorAccessor={pointColorAccessor} />
+            <DppGlobalTrackerClientContainer 
+              points={filteredPoints} 
+              arcs={mockArcsData}
+              onPointClick={handlePointClick} 
+              pointColorAccessor={pointColorAccessor}
+              pointRadiusAccessor={pointRadiusAccessor}
+            />
             {selectedPoint && <PointInfoCard pointData={selectedPoint} onClose={handleCloseInfoCard} />}
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6">
+          <div className="grid md:grid-cols-3 gap-6"> {/* Changed to md:grid-cols-3 */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-md font-headline flex items-center">
@@ -323,6 +364,28 @@ export default function DppGlobalTrackerPage() {
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+              </CardContent>
+            </Card>
+            <Card> {/* New card for View Options */}
+              <CardHeader className="pb-3">
+                <CardTitle className="text-md font-headline flex items-center">
+                  <Map className="mr-2 h-4 w-4 text-primary" />
+                  View Options
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div>
+                  <Label htmlFor="point-size-slider" className="text-xs">Point Size Multiplier: {pointBaseSize.toFixed(1)}x</Label>
+                  <Slider
+                    id="point-size-slider"
+                    min={0.2}
+                    max={2}
+                    step={0.1}
+                    value={[pointBaseSize]}
+                    onValueChange={([value]) => setPointBaseSize(value)}
+                    className="mt-1"
+                  />
                 </div>
               </CardContent>
             </Card>
@@ -388,3 +451,6 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
+
+
+    

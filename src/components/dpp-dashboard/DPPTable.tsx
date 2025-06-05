@@ -126,7 +126,7 @@ export const DPPTable: React.FC<DPPTableProps> = ({ dpps }) => {
                   <TooltipProvider delayDuration={100}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <span>{complianceDetails.icon}</span>
+                        <span className="cursor-help">{complianceDetails.icon}</span>
                       </TooltipTrigger>
                       <TooltipContent>
                         <p>{complianceDetails.tooltipText}</p>
@@ -181,3 +181,4 @@ export const DPPTable: React.FC<DPPTableProps> = ({ dpps }) => {
     </Table>
   );
 };
+

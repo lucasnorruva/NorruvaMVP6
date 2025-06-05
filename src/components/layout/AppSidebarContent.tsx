@@ -10,10 +10,10 @@ import {
   ShieldCheck,
   FileText,
   Settings,
-  Bot, 
+  Bot,
   Info,
-  Code2, // Added Code2 icon for Developer Portal
-  LineChart // Icon for Live DPP Dashboard
+  Code2,
+  LineChart
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import {
@@ -23,37 +23,55 @@ import {
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
-  useSidebar, 
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator"; 
+import { Separator } from "@/components/ui/separator";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dpp-live-dashboard", label: "Live DPPs", icon: LineChart }, // New Live DPP Dashboard link
-  { href: "/products", label: "Products List", icon: Package }, // Renamed for clarity
-  { href: "/products/new", label: "AI Data Extraction", icon: ScanLine },
+  { href: "/dpp-live-dashboard", label: "Live DPPs", icon: LineChart },
+  { href: "/products", label: "Products", icon: Package }, // Renamed
+  { href: "/products/new", label: "Add Product", icon: ScanLine }, // Renamed
   { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
-  { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck }, 
+  { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
   { href: "/sustainability", label: "Sustainability", icon: FileText },
 ];
 
 const secondaryNavItems = [
-  { href: "/developer", label: "Developer Portal", icon: Code2 }, 
+  { href: "/developer", label: "Developer Portal", icon: Code2 },
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export default function AppSidebarContent() {
   const pathname = usePathname();
-  const { state: sidebarState, isMobile } = useSidebar(); 
+  const { state: sidebarState, isMobile } = useSidebar();
 
-  const commonButtonClass = (href: string) => cn(
-    "w-full text-sm", 
-    (pathname === href || (href !== "/dashboard" && pathname.startsWith(href) && href !== "/products/new" && href !== "/dpp-live-dashboard")) // More specific active state for non-nested main items
-      ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium" 
-      : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-normal text-sidebar-foreground/80",
-     sidebarState === 'collapsed' && !isMobile ? "justify-center" : "justify-start" 
-  );
+  const commonButtonClass = (href: string) => {
+    let isActive = false;
+    if (href === "/products") {
+      // Active if it's the main /products list page OR a product detail page like /products/PROD001
+      // but NOT if it's /products/new (which is a separate link)
+      isActive = pathname === href || (pathname.startsWith(href + "/") && !pathname.endsWith("/new"));
+    } else if (href === "/products/new") {
+      // Active only if it's exactly /products/new
+      isActive = pathname === href;
+    } else if (href === "/settings" || href === "/developer") {
+      // Active if it's the main page or any sub-page (e.g., /settings/users)
+      isActive = pathname === href || pathname.startsWith(href + "/");
+    } else {
+      // For all other top-level items, an exact match is required.
+      isActive = pathname === href;
+    }
+
+    return cn(
+      "w-full text-sm",
+      isActive
+        ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium"
+        : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-normal text-sidebar-foreground/80",
+      sidebarState === 'collapsed' && !isMobile ? "justify-center" : "justify-start"
+    );
+  };
 
   const commonIconClass = cn("h-5 w-5", sidebarState === 'expanded' || isMobile ? "mr-3" : "mr-0");
 
@@ -86,7 +104,7 @@ export default function AppSidebarContent() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <Separator className="bg-sidebar-border my-2" /> 
+      <Separator className="bg-sidebar-border my-2" />
       <SidebarFooter className="p-2 border-t-0">
          <SidebarMenu className="px-2 space-y-1">
            {secondaryNavItems.map((item) => (

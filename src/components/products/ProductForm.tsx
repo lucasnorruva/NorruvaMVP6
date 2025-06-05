@@ -20,11 +20,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page"; 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu, BatteryCharging, Loader2, Sparkles } from "lucide-react"; // Added Sparkles
-import React, { useState } from "react"; // Added useState
-import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow"; // Added import
-import { useToast } from "@/hooks/use-toast"; // Added import
-import { AlertTriangle } from "lucide-react"; // Added import
+import { Cpu, BatteryCharging, Loader2, Sparkles, ImagePlus, Image as ImageIcon } from "lucide-react";
+import React, { useState } from "react";
+import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow";
+import { generateProductImage } from "@/ai/flows/generate-product-image-flow"; // Added
+import { useToast } from "@/hooks/use-toast";
+import { AlertTriangle } from "lucide-react";
+import Image from "next/image"; // Added next/image
+import { AspectRatio } from "@/components/ui/aspect-ratio"; // Added AspectRatio
 
 const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
@@ -36,8 +39,9 @@ const formSchema = z.object({
   sustainabilityClaims: z.string().optional().describe("Brief sustainability claims, e.g., 'Made with 50% recycled content', 'Carbon neutral production'."),
   specifications: z.string().optional(), 
   energyLabel: z.string().optional(),
+  productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
+  imageUrl: z.string().optional().describe("URL or Data URI of the product image."), // Added imageUrl
   // Battery Regulation Fields
-  productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."), // Added for claim suggestions
   batteryChemistry: z.string().optional(),
   stateOfHealth: z.coerce.number().nullable().optional(),
   carbonFootprintManufacturing: z.coerce.number().nullable().optional(),
@@ -47,7 +51,7 @@ const formSchema = z.object({
 export type ProductFormData = z.infer<typeof formSchema>;
 
 interface ProductFormProps {
-  initialData?: Partial<InitialProductFormData & { productCategory?: string}>; 
+  initialData?: Partial<InitialProductFormData & { productCategory?: string; imageUrl?: string }>; 
   onSubmit: (data: ProductFormData) => Promise<void>;
   isSubmitting?: boolean;
   isStandalonePage?: boolean; 
@@ -85,7 +89,8 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
       sustainabilityClaims: initialData?.sustainabilityClaims || "",
       specifications: initialData?.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
       energyLabel: initialData?.energyLabel || "",
-      productCategory: initialData?.productCategory || "", // Added
+      productCategory: initialData?.productCategory || "",
+      imageUrl: initialData?.imageUrl || "", // Added imageUrl
       batteryChemistry: initialData?.batteryChemistry || "",
       stateOfHealth: initialData?.stateOfHealth ?? undefined,
       carbonFootprintManufacturing: initialData?.carbonFootprintManufacturing ?? undefined,
@@ -96,6 +101,9 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
   const { toast } = useToast();
   const [suggestedClaims, setSuggestedClaims] = useState<string[]>([]);
   const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false); // Added for image generation
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(initialData?.imageUrl || null);
+
 
   React.useEffect(() => {
     if (initialData) {
@@ -109,12 +117,14 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
         sustainabilityClaims: initialData.sustainabilityClaims || "",
         specifications: initialData.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
         energyLabel: initialData.energyLabel || "",
-        productCategory: initialData.productCategory || "", // Added
+        productCategory: initialData.productCategory || "",
+        imageUrl: initialData.imageUrl || "", // Added
         batteryChemistry: initialData.batteryChemistry || "",
         stateOfHealth: initialData.stateOfHealth ?? undefined,
         carbonFootprintManufacturing: initialData.carbonFootprintManufacturing ?? undefined,
         recycledContentPercentage: initialData.recycledContentPercentage ?? undefined,
       });
+      setCurrentImageUrl(initialData.imageUrl || null); // Ensure currentImageUrl is also updated
     }
   }, [initialData, form]);
 
@@ -124,7 +134,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
     const formData = form.getValues();
     try {
       const result = await suggestSustainabilityClaims({
-        productCategory: formData.productCategory || "Unknown", // Provide a default if empty
+        productCategory: formData.productCategory || "Unknown",
         productName: formData.productName,
         productDescription: formData.productDescription,
         materials: formData.materials,
@@ -143,6 +153,35 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
       });
     } finally {
       setIsSuggestingClaims(false);
+    }
+  };
+
+  const handleGenerateImage = async () => {
+    setIsGeneratingImage(true);
+    const formData = form.getValues();
+    if (!formData.productName) {
+      toast({title: "Product Name Required", description: "Please enter a product name before generating an image.", variant: "destructive"});
+      setIsGeneratingImage(false);
+      return;
+    }
+    try {
+      const result = await generateProductImage({
+        productName: formData.productName,
+        productCategory: formData.productCategory,
+      });
+      form.setValue("imageUrl", result.imageUrl, { shouldValidate: true });
+      setCurrentImageUrl(result.imageUrl);
+      toast({title: "Image Generated Successfully", description: "The product image has been updated."});
+    } catch (error) {
+      console.error("Failed to generate image:", error);
+      toast({
+        title: "Error Generating Image",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        variant: "destructive",
+        action: <AlertTriangle className="text-white" />,
+      });
+    } finally {
+      setIsGeneratingImage(false);
     }
   };
 
@@ -173,6 +212,37 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
               </FormItem>
             )}
           />
+          <div className="space-y-2">
+             <FormLabel>Product Image</FormLabel>
+            {currentImageUrl ? (
+              <div className="w-full max-w-sm border rounded-md overflow-hidden">
+                <AspectRatio ratio={4/3}>
+                  <Image src={currentImageUrl} alt="Generated product image" layout="fill" objectFit="contain" />
+                </AspectRatio>
+              </div>
+            ) : (
+              <div className="w-full max-w-sm h-40 border border-dashed rounded-md flex flex-col items-center justify-center bg-muted text-muted-foreground">
+                <ImageIcon className="h-10 w-10 mb-2" />
+                <p className="text-sm">No image generated yet.</p>
+              </div>
+            )}
+             <FormField
+                control={form.control}
+                name="imageUrl"
+                render={({ field }) => (
+                  <FormItem className="hidden"> {/* Hidden as it's controlled by button and state */}
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+            <Button type="button" variant="secondary" onClick={handleGenerateImage} disabled={isGeneratingImage}>
+              {isGeneratingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
+              <span className="ml-2">{isGeneratingImage ? "Generating..." : "Generate Image with AI"}</span>
+            </Button>
+            <FormDescription>AI will attempt to generate an image based on product name and category.</FormDescription>
+          </div>
           <FormField
             control={form.control}
             name="gtin"
@@ -451,8 +521,8 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
               {formContent}
             </CardContent>
           </Card>
-          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting || isGeneratingImage || isSuggestingClaims}>
+            {(isSubmitting || isGeneratingImage || isSuggestingClaims) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isSubmitting ? "Saving Product..." : "Save Product"}
           </Button>
         </form>
@@ -464,12 +534,11 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
      <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {formContent}
-           <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting}>
-            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+           <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting || isGeneratingImage || isSuggestingClaims}>
+            {(isSubmitting || isGeneratingImage || isSuggestingClaims) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isSubmitting ? "Saving Changes..." : "Save Changes"}
           </Button>
         </form>
     </Form>
   );
 }
-

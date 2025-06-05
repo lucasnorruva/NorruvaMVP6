@@ -23,7 +23,6 @@ const fileToDataUri = (file: File): Promise<string> => {
   });
 };
 
-// This interface includes all form fields and their optional AI origin markers
 export interface InitialProductFormData extends ProductFormData {
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -37,18 +36,16 @@ export interface InitialProductFormData extends ProductFormData {
   stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
   carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual'; // Added for image generation
 }
 
-// Structure for products stored in localStorage
-// Includes all form data plus necessary metadata
 interface StoredUserProduct extends ProductFormData {
   id: string;
   status: string;
   compliance: string;
   lastUpdated: string;
-  // Include AI origin fields if you want to persist them through edits
-  // For simplicity in this iteration, origin markers are not re-persisted on simple save/update
-  // They are primarily for the initial AI extraction flow.
+  // Persist origins if needed, for now keeping it simple.
+  // AI Origin markers are primarily for initial extraction flow.
 }
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -68,10 +65,10 @@ export default function AddNewProductPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState(isEditMode ? "manual" : "ai-extraction");
   
-  // This state will hold the data for the form, either from AI extraction, new product defaults, or loaded for editing
   const [currentProductDataForForm, setCurrentProductDataForForm] = useState<Partial<InitialProductFormData>>({
     gtin: "", productName: "", productDescription: "", manufacturer: "", modelNumber: "",
     materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
+    imageUrl: "", // Added imageUrl
     batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined
   });
 
@@ -81,11 +78,17 @@ export default function AddNewProductPage() {
       const userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
       const productToEdit = userProducts.find(p => p.id === editProductId);
       if (productToEdit) {
-        setCurrentProductDataForForm(productToEdit); // ProductForm will pick this up as initialData
-        setActiveTab("manual"); // Switch to manual tab for editing
+        // Ensure all fields from StoredUserProduct (which extends ProductFormData) are passed
+        const editData: Partial<InitialProductFormData> = {
+          ...productToEdit, // Spread all fields
+          // Explicitly set any fields that might have different naming or need transformation
+          // For example, if StoredUserProduct had 'name' instead of 'productName'
+        };
+        setCurrentProductDataForForm(editData);
+        setActiveTab("manual");
       } else {
         toast({ title: "Error", description: "Product not found for editing.", variant: "destructive" });
-        router.push("/products/new"); // Redirect to new product if ID is invalid
+        router.push("/products/new");
       }
     }
   }, [isEditMode, editProductId, router, toast]);
@@ -119,13 +122,14 @@ export default function AddNewProductPage() {
       if (result.modelNumber) { aiInitialFormData.modelNumber = result.modelNumber; aiInitialFormData.modelNumberOrigin = 'AI_EXTRACTED'; }
       if (result.specifications && Object.keys(result.specifications).length > 0) { aiInitialFormData.specifications = JSON.stringify(result.specifications, null, 2); aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED'; }
       if (result.energyLabel) { aiInitialFormData.energyLabel = result.energyLabel; aiInitialFormData.energyLabelOrigin = 'AI_EXTRACTED'; }
+      // imageUrl is not typically extracted from documents, so not setting origin here for it
       if (result.batteryChemistry) { aiInitialFormData.batteryChemistry = result.batteryChemistry; aiInitialFormData.batteryChemistryOrigin = 'AI_EXTRACTED'; }
       if (result.stateOfHealth !== undefined && result.stateOfHealth !== null) { aiInitialFormData.stateOfHealth = result.stateOfHealth; aiInitialFormData.stateOfHealthOrigin = 'AI_EXTRACTED'; }
       if (result.carbonFootprintManufacturing !== undefined && result.carbonFootprintManufacturing !== null) { aiInitialFormData.carbonFootprintManufacturing = result.carbonFootprintManufacturing; aiInitialFormData.carbonFootprintManufacturingOrigin = 'AI_EXTRACTED'; }
       if (result.recycledContentPercentage !== undefined && result.recycledContentPercentage !== null) { aiInitialFormData.recycledContentPercentage = result.recycledContentPercentage; aiInitialFormData.recycledContentPercentageOrigin = 'AI_EXTRACTED'; }
       
-      setExtractedData(aiInitialFormData); // Store AI extracted data separately
-      setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData})); // Merge with current form data (e.g. if editing)
+      setExtractedData(aiInitialFormData);
+      setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData}));
       
       toast({
         title: "Data Extracted Successfully",
@@ -152,42 +156,44 @@ export default function AddNewProductPage() {
       let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
 
       if (isEditMode && editProductId) {
-        // Update existing product
         const productIndex = userProducts.findIndex(p => p.id === editProductId);
         if (productIndex > -1) {
           const updatedProduct: StoredUserProduct = {
-            ...userProducts[productIndex], // Retain original id, status, compliance
-            ...data, // Apply all form data
-            productName: data.productName || userProducts[productIndex].productName || "Unnamed Product (edited)", // Ensure productName is updated
+            ...userProducts[productIndex], 
+            ...data, 
+            productName: data.productName || userProducts[productIndex].productName || "Unnamed Product (edited)",
             lastUpdated: new Date().toISOString(),
           };
           userProducts[productIndex] = updatedProduct;
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
           toast({ title: "Product Updated", description: `${updatedProduct.productName} has been updated.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
-          router.push(`/products/${editProductId}`); // Navigate to product detail page after edit
+          router.push(`/products/${editProductId}`);
         } else {
           throw new Error("Product not found for update.");
         }
       } else {
-        // Add new product
         const newProduct: StoredUserProduct = {
-          ...data, // All fields from ProductFormData
+          ...data, 
           id: `USER_PROD${Date.now().toString().slice(-6)}`,
-          productName: data.productName || "Unnamed Product", // Ensure productName is set
+          productName: data.productName || "Unnamed Product",
           status: "Draft", 
           compliance: "N/A", 
           lastUpdated: new Date().toISOString(),
         };
         userProducts.push(newProduct);
         localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
-        toast({ title: "Product Saved", description: `${newProduct.productName} has been saved to local storage.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
+        toast({ title: "Product Saved", description: `${newProduct.productName} has been saved.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
         router.push('/products');
       }
       
-      // Reset state for next operation
       setExtractedData(null);
-      setCurrentProductDataForForm({ /* Reset to defaults */ });
-      if (!isEditMode) setActiveTab("ai-extraction"); // Only switch back if it was a new product
+      setCurrentProductDataForForm({ 
+        gtin: "", productName: "", productDescription: "", manufacturer: "", modelNumber: "",
+        materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
+        imageUrl: "", // Reset imageUrl
+        batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined
+       });
+      if (!isEditMode) setActiveTab("ai-extraction");
       
     } catch (e) {
       console.error("Failed to save/update product:", e);
@@ -222,10 +228,9 @@ export default function AddNewProductPage() {
           <ProductForm 
             onSubmit={handleProductFormSubmit}
             isSubmitting={isSubmittingProduct}
-            // Pass the currentProductDataForForm which includes AI extracted data or loaded edit data
             initialData={currentProductDataForForm} 
             isStandalonePage={true}
-            key={editProductId || 'new'} // Force re-render of form when switching between new/edit
+            key={editProductId || 'new'}
           />
         </TabsContent>
 

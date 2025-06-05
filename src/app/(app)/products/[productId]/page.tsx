@@ -25,25 +25,22 @@ import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Resp
 import { useRole } from '@/contexts/RoleContext';
 import { useToast } from '@/hooks/use-toast';
 import { checkProductCompliance } from '@/ai/flows/check-product-compliance-flow';
-import type { ProductFormData } from '@/components/products/ProductForm'; // Import ProductFormData
+import type { ProductFormData } from '@/components/products/ProductForm';
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 
-// Interface for the product structure stored in localStorage
-// This should align with what's saved by products/new/page.tsx
 interface StoredUserProduct extends ProductFormData {
   id: string;
   status: string;
   compliance: string;
   lastUpdated: string;
-  // Origin fields are optional, if they were persisted from initial AI extraction
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+  imageUrl?: string; // Ensure imageUrl is part of StoredUserProduct if saved by ProductForm
   // ... other origin fields if needed
 }
 
 
-// Mock product data - in a real app, this would come from an API
 interface MaterialComposition {
   name: string;
   value: number;
@@ -54,13 +51,13 @@ interface HistoricalDataPoint {
   year: string;
   value: number;
 }
-export interface MockProductType { // Exporting to allow its use if needed elsewhere, like in tests
+export interface MockProductType { 
   productId: string;
   productName: string;
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   gtin: string;
   gtinVerified?: boolean;
-  category: string; // This is productCategory in form data
+  category: string; 
   status: string;
   compliance: string;
   complianceLastChecked?: string;
@@ -76,7 +73,7 @@ export interface MockProductType { // Exporting to allow its use if needed elsew
   sustainabilityClaims: string;
   sustainabilityClaimsVerified?: boolean;
   energyLabel: string;
-  specifications: Record<string, string>; // From form, it's stringified JSON
+  specifications: Record<string, string>; 
   lifecycleEvents: Array<{ id: string; type: string; timestamp: string; location: string; details: string; isBlockchainAnchored?: boolean; transactionHash?: string }>;
   complianceData: Record<string, { status: string; lastChecked: string; reportId: string; isVerified?: boolean }>;
   isDppBlockchainAnchored?: boolean;
@@ -109,7 +106,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
     productName: "EcoFriendly Refrigerator X2000",
     gtin: "01234567890123",
     gtinVerified: true,
-    category: "Appliances", // This is productCategory
+    category: "Appliances", 
     status: "Active",
     compliance: "Compliant",
     complianceLastChecked: "2024-07-15",
@@ -177,7 +174,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
     productNameOrigin: "AI_EXTRACTED",
     gtin: "98765432109876",
     gtinVerified: false,
-    category: "Electronics", // This is productCategory
+    category: "Electronics", 
     status: "Active",
     compliance: "Pending Documentation",
     complianceLastChecked: "2024-07-20T00:00:00Z",
@@ -281,7 +278,7 @@ const chartConfig = {
 
 const calculateDppCompleteness = (product: MockProductType): { score: number; filledFields: number; totalFields: number; missingFields: string[] } => {
   const essentialFieldsConfig: Array<{ key: keyof MockProductType | string; label: string; check?: (p: MockProductType) => boolean; categoryScope?: string[] }> = [
-    { key: 'productName', label: 'Product Name' }, { key: 'gtin', label: 'GTIN' }, { key: 'category', label: 'Category' }, { key: 'manufacturer', label: 'Manufacturer' }, { key: 'modelNumber', label: 'Model Number' }, { key: 'description', label: 'Description' }, { key: 'imageUrl', label: 'Image' }, { key: 'materials', label: 'Materials' }, { key: 'sustainabilityClaims', label: 'Sustainability Claims' }, { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] }, { key: 'specifications', label: 'Specifications', check: (p) => p.specifications && Object.keys(p.specifications).length > 0 }, { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 }, { key: 'complianceData', label: 'Compliance Data', check: (p) => p.complianceData && Object.keys(p.complianceData).length > 0 },
+    { key: 'productName', label: 'Product Name' }, { key: 'gtin', label: 'GTIN' }, { key: 'category', label: 'Category' }, { key: 'manufacturer', label: 'Manufacturer' }, { key: 'modelNumber', label: 'Model Number' }, { key: 'description', label: 'Description' }, { key: 'imageUrl', label: 'Image URL', check: (p) => p.imageUrl && !p.imageUrl.includes('placehold.co') }, { key: 'materials', label: 'Materials' }, { key: 'sustainabilityClaims', label: 'Sustainability Claims' }, { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] }, { key: 'specifications', label: 'Specifications', check: (p) => p.specifications && Object.keys(p.specifications).length > 0 }, { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 }, { key: 'complianceData', label: 'Compliance Data', check: (p) => p.complianceData && Object.keys(p.complianceData).length > 0 },
   ];
 
   const isBatteryRelevantCategory = product.category?.toLowerCase().includes('electronics') || product.category?.toLowerCase().includes('automotive parts') || product.category?.toLowerCase().includes('battery');
@@ -306,7 +303,7 @@ const calculateDppCompleteness = (product: MockProductType): { score: number; fi
       if (fieldConfig.check(product)) { filledCount++; } else { missingFields.push(fieldConfig.label); }
     } else {
       const value = product[fieldConfig.key as keyof MockProductType];
-      if (value !== null && value !== undefined && String(value).trim() !== '') { filledCount++; } else { missingFields.push(fieldConfig.label); }
+      if (value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A' && !String(value).includes('placehold.co')) { filledCount++; } else { missingFields.push(fieldConfig.label); }
     }
   });
   const score = actualTotalFields > 0 ? Math.round((filledCount / actualTotalFields) * 100) : 0;
@@ -335,35 +332,35 @@ export default function ProductDetailPage() {
         const storedProduct = userAddedProducts.find(p => p.id === productId);
 
         if (storedProduct) {
-          // Map StoredUserProduct to MockProductType
+          const defaults = getDefaultMockProductValues(storedProduct.id);
           foundProduct = {
-            ...getDefaultMockProductValues(storedProduct.id), // Get defaults for complex fields
+            ...defaults,
             productId: storedProduct.id,
             productName: storedProduct.productName || "User Added Product",
             gtin: storedProduct.gtin || "",
-            category: storedProduct.productCategory || "General", // Map productCategory to category
+            category: storedProduct.productCategory || "General",
             status: storedProduct.status,
             compliance: storedProduct.compliance,
             lastUpdated: storedProduct.lastUpdated,
             manufacturer: storedProduct.manufacturer || "N/A",
             modelNumber: storedProduct.modelNumber || "N/A",
             description: storedProduct.productDescription || "No description provided.",
+            imageUrl: storedProduct.imageUrl || defaults.imageUrl, // Use stored imageUrl or default
+            imageHint: storedProduct.imageUrl ? (storedProduct.productName || "product") : defaults.imageHint, // Basic hint if image exists
             materials: storedProduct.materials || "Not specified",
             sustainabilityClaims: storedProduct.sustainabilityClaims || "None specified",
             energyLabel: storedProduct.energyLabel || "N/A",
-            specifications: storedProduct.specifications ? JSON.parse(storedProduct.specifications) : {},
+            specifications: storedProduct.specifications ? (typeof storedProduct.specifications === 'string' ? JSON.parse(storedProduct.specifications) : storedProduct.specifications) : {},
             productNameOrigin: storedProduct.productNameOrigin || 'manual',
             descriptionOrigin: storedProduct.productDescriptionOrigin || 'manual',
             batteryChemistry: storedProduct.batteryChemistry,
-            batteryChemistryOrigin: storedProduct.batteryChemistryOrigin,
+            // batteryChemistryOrigin: storedProduct.batteryChemistryOrigin, // This field is not in StoredUserProduct
             stateOfHealth: storedProduct.stateOfHealth,
-            stateOfHealthOrigin: storedProduct.stateOfHealthOrigin,
+            // stateOfHealthOrigin: storedProduct.stateOfHealthOrigin,
             carbonFootprintManufacturing: storedProduct.carbonFootprintManufacturing,
-            carbonFootprintManufacturingOrigin: storedProduct.carbonFootprintManufacturingOrigin,
+            // carbonFootprintManufacturingOrigin: storedProduct.carbonFootprintManufacturingOrigin,
             recycledContentPercentage: storedProduct.recycledContentPercentage,
-            recycledContentPercentageOrigin: storedProduct.recycledContentPercentageOrigin,
-            // For user-added products, complex fields like lifecycleEvents, complianceData, overallCompliance, notifications, etc.,
-            // will rely on the defaults from getDefaultMockProductValues unless specifically added later.
+            // recycledContentPercentageOrigin: storedProduct.recycledContentPercentageOrigin,
           };
         }
       }
@@ -442,7 +439,7 @@ export default function ProductDetailPage() {
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge variant={ product.status === "Active" ? "default" : product.status === "Archived" ? "secondary" : "outline" } className={cn( product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "" )}> {product.status} </Badge>
-            <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Badge variant={ product.compliance === "Compliant" ? "default" : product.compliance === "Pending Documentation" ? "outline" : product.compliance === "Pending" ? "outline" : "destructive" } className={cn( product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", (product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "", "cursor-help" )}> {product.compliance} {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />} {(product.compliance === "Pending" || product.compliance === "Pending Documentation") && <Info className="h-3 w-3 ml-1" />} {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1" />} </Badge> </TooltipTrigger> <TooltipContent> <p>Overall compliance status. Last checked: {product.complianceLastChecked ? new Date(product.complianceLastChecked).toLocaleDateString() : "N/A"}</p> </TooltipContent> </Tooltip> </TooltipProvider>
+            <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Badge variant={ product.compliance === "Compliant" ? "default" : product.compliance === "Pending Documentation" ? "outline" : product.compliance === "Pending" ? "outline" : product.compliance === "N/A" ? "secondary" : "destructive" } className={cn( product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", (product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "", product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" : "" ,"cursor-help" )}> {product.compliance} {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />} {(product.compliance === "Pending" || product.compliance === "Pending Documentation") && <Info className="h-3 w-3 ml-1" />} {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1" />} </Badge> </TooltipTrigger> <TooltipContent> <p>Overall compliance status. Last checked: {product.complianceLastChecked ? new Date(product.complianceLastChecked).toLocaleDateString() : "N/A"}</p> </TooltipContent> </Tooltip> </TooltipProvider>
             <span className="text-sm text-muted-foreground">Last updated: {new Date(product.lastUpdated).toLocaleDateString()}</span>
           </div>
         </div>
@@ -459,21 +456,32 @@ export default function ProductDetailPage() {
 
       <Card className="shadow-lg overflow-hidden">
         <div className="grid md:grid-cols-3">
-          <div className="md:col-span-1"> <AspectRatio ratio={1}> <Image src={product.imageUrl} alt={product.productName} fill className="object-cover" data-ai-hint={product.imageHint} priority /> </AspectRatio> </div>
+          <div className="md:col-span-1 p-6">
+            <AspectRatio ratio={4/3} className="bg-muted rounded-md overflow-hidden">
+              <Image
+                src={product.imageUrl || "https://placehold.co/600x400.png?text=No+Image"}
+                alt={product.productName}
+                fill
+                className="object-contain"
+                data-ai-hint={product.imageHint || product.productName.split(" ").slice(0,2).join(" ")}
+                priority
+              />
+            </AspectRatio>
+          </div>
           <div className="md:col-span-2 p-6">
             <div className="flex items-center"> <CardTitle className="text-2xl mb-2">{product.productName}</CardTitle> <DataOriginIcon origin={product.productNameOrigin} fieldName="Product Name" /> </div>
             <div className="flex items-start"> <CardDescription className="text-base mb-4">{product.description}</CardDescription> <DataOriginIcon origin={product.descriptionOrigin} fieldName="Description" /> </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center"> <strong className="text-foreground/80 mr-1">GTIN:</strong> {product.gtin}  <TrustSignalIcon  isVerified={product.gtinVerified}  tooltipText={product.gtinVerified ? "GTIN Verified" : "GTIN Not Verified"}  VerifiedIcon={CheckCircle2}  UnverifiedIcon={Info} /> </div>
-              <div><strong className="text-foreground/80">Category:</strong> {product.category}</div>
-              <div className="flex items-center"> <strong className="text-foreground/80 mr-1">Manufacturer:</strong> {product.manufacturer}  <TrustSignalIcon  isVerified={product.manufacturerVerified}  tooltipText={product.manufacturerVerified ? "Manufacturer Verified" : "Manufacturer Not Verified"} VerifiedIcon={CheckCircle2}  UnverifiedIcon={Info} /> </div>
-              <div><strong className="text-foreground/80">Model:</strong> {product.modelNumber}</div>
+              <div className="flex items-center"> <strong className="text-foreground/80 mr-1">GTIN:</strong> {product.gtin || "N/A"}  <TrustSignalIcon  isVerified={product.gtinVerified}  tooltipText={product.gtinVerified ? "GTIN Verified" : "GTIN Not Verified"}  VerifiedIcon={CheckCircle2}  UnverifiedIcon={Info} /> </div>
+              <div><strong className="text-foreground/80">Category:</strong> {product.category || "N/A"}</div>
+              <div className="flex items-center"> <strong className="text-foreground/80 mr-1">Manufacturer:</strong> {product.manufacturer || "N/A"}  <TrustSignalIcon  isVerified={product.manufacturerVerified}  tooltipText={product.manufacturerVerified ? "Manufacturer Verified" : "Manufacturer Not Verified"} VerifiedIcon={CheckCircle2}  UnverifiedIcon={Info} /> </div>
+              <div><strong className="text-foreground/80">Model:</strong> {product.modelNumber || "N/A"}</div>
             </div>
             <div className="mt-4 pt-4 border-t">
               <h4 className="text-md font-semibold mb-2 flex items-center"> <Leaf className="h-5 w-5 mr-2 text-accent" />Key Sustainability Info  <TrustSignalIcon  isVerified={product.sustainabilityClaimsVerified}  tooltipText={product.sustainabilityClaimsVerified ? "Sustainability Claims Verified" : "Sustainability Claims Pending Verification"} VerifiedIcon={CheckCircle2}  UnverifiedIcon={Info} /> </h4>
-              <p className="text-sm text-muted-foreground mb-1"><strong>Materials:</strong> {product.materials}</p>
-              <p className="text-sm text-muted-foreground mb-1"><strong>Claims:</strong> {product.sustainabilityClaims}</p>
-              <p className="text-sm text-muted-foreground"><strong>Energy Label:</strong> <Badge variant="secondary">{product.energyLabel}</Badge></p>
+              <p className="text-sm text-muted-foreground mb-1"><strong>Materials:</strong> {product.materials || "N/A"}</p>
+              <p className="text-sm text-muted-foreground mb-1"><strong>Claims:</strong> {product.sustainabilityClaims || "N/A"}</p>
+              <p className="text-sm text-muted-foreground"><strong>Energy Label:</strong> <Badge variant="secondary">{product.energyLabel || "N/A"}</Badge></p>
             </div>
           </div>
         </div>
@@ -514,6 +522,9 @@ export default function ProductDetailPage() {
                 {product.stateOfHealth !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">State of Health (SoH) <DataOriginIcon origin={product.stateOfHealthOrigin} fieldName="State of Health" /></span> <span className="text-muted-foreground">{product.stateOfHealth}%</span> </div> )}
                 {product.carbonFootprintManufacturing !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Manufacturing Carbon Footprint <DataOriginIcon origin={product.carbonFootprintManufacturingOrigin} fieldName="Manufacturing Carbon Footprint" /></span> <span className="text-muted-foreground">{product.carbonFootprintManufacturing} kg CO₂e</span> </div> )}
                 {product.recycledContentPercentage !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Recycled Content <DataOriginIcon origin={product.recycledContentPercentageOrigin} fieldName="Recycled Content" /></span> <span className="text-muted-foreground">{product.recycledContentPercentage}%</span> </div> )}
+                {!product.batteryChemistry && product.stateOfHealth === undefined && product.carbonFootprintManufacturing === undefined && product.recycledContentPercentage === undefined && (
+                    <p className="text-sm text-muted-foreground">No battery-specific information provided for this product.</p>
+                )}
                 <p className="text-xs text-muted-foreground pt-2">Additional battery passport information such as performance, durability, and detailed material composition would be displayed here as available.</p>
               </CardContent>
             </Card>
@@ -563,11 +574,10 @@ function ProductDetailSkeleton() {
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"> <div> <Skeleton className="h-10 w-3/4 mb-2" /> <Skeleton className="h-6 w-1/2" /> </div> <div className="flex gap-2"> <Skeleton className="h-10 w-40" /> </div> </div>
       <Card className="shadow-xl border-primary/20 bg-muted/30"> <CardHeader> <Skeleton className="h-8 w-1/2 mb-2" /> </CardHeader> <CardContent className="space-y-6"> <Skeleton className="h-24 w-full" />  <Skeleton className="h-16 w-full" />  <Skeleton className="h-48 w-full" />  </CardContent> </Card>
-      <Card className="shadow-lg overflow-hidden"> <div className="grid md:grid-cols-3"> <div className="md:col-span-1"> <AspectRatio ratio={1}> <Skeleton className="h-full w-full" /> </AspectRatio> </div> <div className="md:col-span-2 p-6 space-y-4"> <Skeleton className="h-8 w-3/4" /> <Skeleton className="h-20 w-full" /> <div className="grid grid-cols-2 gap-4"> <Skeleton className="h-6 w-full" /> <Skeleton className="h-6 w-full" /> <Skeleton className="h-6 w-full" /> <Skeleton className="h-6 w-full" /> </div> <div className="mt-4 pt-4 border-t space-y-2"> <Skeleton className="h-6 w-1/3 mb-2" /> <Skeleton className="h-5 w-full" /> <Skeleton className="h-5 w-full" /> <Skeleton className="h-5 w-1/2" /> </div> </div> </div> </Card>
+      <Card className="shadow-lg overflow-hidden"> <div className="grid md:grid-cols-3"> <div className="md:col-span-1 p-6"> <AspectRatio ratio={4/3} className="bg-muted rounded-md overflow-hidden"> <Skeleton className="h-full w-full" /> </AspectRatio> </div> <div className="md:col-span-2 p-6 space-y-4"> <Skeleton className="h-8 w-3/4" /> <Skeleton className="h-20 w-full" /> <div className="grid grid-cols-2 gap-4"> <Skeleton className="h-6 w-full" /> <Skeleton className="h-6 w-full" /> <Skeleton className="h-6 w-full" /> <Skeleton className="h-6 w-full" /> </div> <div className="mt-4 pt-4 border-t space-y-2"> <Skeleton className="h-6 w-1/3 mb-2" /> <Skeleton className="h-5 w-full" /> <Skeleton className="h-5 w-full" /> <Skeleton className="h-5 w-1/2" /> </div> </div> </div> </Card>
       <Card className="shadow-lg"> <CardHeader> <Skeleton className="h-7 w-1/2 mb-1" /> <Skeleton className="h-4 w-3/4" /> </CardHeader> <CardContent> <div className="flex items-center justify-between mb-2"> <Skeleton className="h-8 w-1/4" /> <Skeleton className="h-5 w-1/3" /> </div> <Skeleton className="h-3 w-full" /> <div className="mt-3 space-y-1"> <Skeleton className="h-4 w-1/2" /> <Skeleton className="h-3 w-1/3" /> <Skeleton className="h-3 w-1/3" /> </div> </CardContent> </Card>
       <Skeleton className="h-10 w-full md:w-2/3" /> 
       <Card className="mt-4"> <CardHeader> <Skeleton className="h-7 w-1/3" /> <Skeleton className="h-5 w-2/3" /> </CardHeader> <CardContent className="space-y-3"> <Skeleton className="h-8 w-full" /> <Skeleton className="h-8 w-full" /> <Skeleton className="h-8 w-full" /> </CardContent> </Card>
     </div>
   )
 }
-

@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -9,7 +10,8 @@ import {
   ShieldCheck,
   FileText,
   Settings,
-  Info // Using Info for About/Help as an example
+  Bot, // Added Bot icon for AI Co-Pilot
+  Info 
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import {
@@ -19,58 +21,60 @@ import {
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
-  useSidebar, // Import useSidebar
+  useSidebar, 
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator"; // Import Separator
+import { Separator } from "@/components/ui/separator"; 
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/products", label: "Products", icon: Package },
   { href: "/products/new", label: "AI Data Extraction", icon: ScanLine },
+  { href: "/copilot", label: "AI Co-Pilot", icon: Bot }, // Added AI Co-Pilot
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
   { href: "/sustainability", label: "Sustainability", icon: FileText },
 ];
 
 const secondaryNavItems = [
   { href: "/settings", label: "Settings", icon: Settings },
-  // Add other items like Help/About if needed
-  // { href: "/about", label: "About", icon: Info }, 
 ];
 
 export default function AppSidebarContent() {
   const pathname = usePathname();
-  const { state: sidebarState } = useSidebar(); // Get sidebar state
+  const { state: sidebarState, isMobile } = useSidebar(); 
+
+  const commonButtonClass = (href: string) => cn(
+    "w-full text-sm", 
+    (pathname === href || (href !== "/dashboard" && pathname.startsWith(href)))
+      ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium" 
+      : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-normal text-sidebar-foreground/80",
+     sidebarState === 'collapsed' && !isMobile ? "justify-center" : "justify-start" 
+  );
+
+  const commonIconClass = cn("h-5 w-5", sidebarState === 'expanded' || isMobile ? "mr-3" : "mr-0");
 
   return (
     <>
       <SidebarHeader className="border-b border-sidebar-border h-16 flex items-center px-4">
-        {/* Conditionally render Logo based on sidebar state */}
-        {sidebarState === 'expanded' && (
-          <Link href="/dashboard" className="flex items-center gap-2 text-sidebar-primary-foreground hover:text-sidebar-accent-foreground">
-            <Logo className="h-8 w-auto text-primary" /> {/* Use primary color for logo in sidebar header */}
+        {(sidebarState === 'expanded' || isMobile) && (
+          <Link href="/dashboard" className="flex items-center gap-2 text-primary hover:opacity-80">
+            <Logo className="h-8 w-auto" />
           </Link>
         )}
       </SidebarHeader>
-      <SidebarContent className="flex-1 py-2"> {/* Reduced vertical padding for content area */}
-        <SidebarMenu className="px-2 space-y-1"> {/* Reduced padding for menu, added space-y for items */}
+      <SidebarContent className="flex-1 py-2">
+        <SidebarMenu className="px-2 space-y-1">
           {navItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <Link href={item.href} passHref legacyBehavior>
                 <SidebarMenuButton
-                  className={cn(
-                    "w-full justify-start text-sm", // Ensure consistent text size
-                    (pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href)))
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium" // Active state style
-                      : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-normal text-sidebar-foreground/80", // Default hover and text
-                     sidebarState === 'collapsed' ? "justify-center" : "justify-start" // Center icon when collapsed
-                  )}
-                  tooltip={sidebarState === 'collapsed' ? item.label : undefined} // Tooltip for collapsed state
+                  className={commonButtonClass(item.href)}
+                  tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}
                   asChild
                 >
                   <a>
-                    <item.icon className={cn("h-5 w-5", sidebarState === 'expanded' ? "mr-3" : "mr-0")} />
-                    {sidebarState === 'expanded' && item.label}
+                    <item.icon className={commonIconClass} />
+                    {(sidebarState === 'expanded' || isMobile) && item.label}
                   </a>
                 </SidebarMenuButton>
               </Link>
@@ -78,26 +82,20 @@ export default function AppSidebarContent() {
           ))}
         </SidebarMenu>
       </SidebarContent>
-      <Separator className="bg-sidebar-border my-2" /> {/* Separator before footer items */}
-      <SidebarFooter className="p-2 border-t-0"> {/* Remove top border if separator is used */}
+      <Separator className="bg-sidebar-border my-2" /> 
+      <SidebarFooter className="p-2 border-t-0">
          <SidebarMenu className="px-2 space-y-1">
            {secondaryNavItems.map((item) => (
             <SidebarMenuItem key={item.href}>
               <Link href={item.href} passHref legacyBehavior>
                 <SidebarMenuButton
-                  className={cn(
-                    "w-full justify-start text-sm",
-                    pathname === item.href
-                      ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium"
-                      : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-normal text-sidebar-foreground/80",
-                    sidebarState === 'collapsed' ? "justify-center" : "justify-start"
-                  )}
-                  tooltip={sidebarState === 'collapsed' ? item.label : undefined}
+                  className={commonButtonClass(item.href)}
+                  tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}
                   asChild
                 >
                   <a>
-                    <item.icon className={cn("h-5 w-5", sidebarState === 'expanded' ? "mr-3" : "mr-0")} />
-                    {sidebarState === 'expanded' && item.label}
+                    <item.icon className={commonIconClass} />
+                    {(sidebarState === 'expanded' || isMobile) && item.label}
                   </a>
                 </SidebarMenuButton>
               </Link>

@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon } from 'lucide-react';
+import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react'; 
 import { cn } from '@/lib/utils';
@@ -29,6 +29,13 @@ interface SustainabilityHighlight {
   text: string;
 }
 
+interface LifecycleHighlight {
+  stage: string;
+  date: string;
+  details?: string;
+  isEbsiVerified?: boolean;
+}
+
 interface PublicProductInfo {
   passportId: string;
   productName: string;
@@ -44,11 +51,11 @@ interface PublicProductInfo {
   complianceSummary: string;
   category: string;
   modelNumber: string;
-  // New fields for Blockchain & EBSI Verification
   anchorTransactionHash?: string;
   blockchainPlatform?: string;
   ebsiStatus?: 'verified' | 'pending' | 'not_verified';
   ebsiVerificationId?: string;
+  lifecycleHighlights?: LifecycleHighlight[]; // Added for Task 54
 }
 
 // Mock data for public passports - in a real app, this would come from an API
@@ -77,6 +84,12 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     blockchainPlatform: "MockChain (Ethereum Compatible)",
     ebsiStatus: 'verified',
     ebsiVerificationId: "EBSI-VC-ATTR-XYZ-00123",
+    lifecycleHighlights: [
+      { stage: "Manufactured", date: "2024-01-15", details: "Production batch #PB789 at EcoFactory, Germany.", isEbsiVerified: true },
+      { stage: "Shipped to Distributor", date: "2024-01-20", details: "Container #C0N741N3R.", isEbsiVerified: true },
+      { stage: "Sold to Consumer", date: "2024-02-10", details: "Retail Store, Paris. Warranty activated.", isEbsiVerified: false },
+      { stage: "Scheduled Maintenance", date: "2025-02-15", details: "Filter replacement complete.", isEbsiVerified: false },
+    ]
   },
   "PROD002": {
     passportId: "PROD002",
@@ -100,6 +113,11 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     anchorTransactionHash: "0xdef456ghi789jkl012mno345pqr678stu901vwx234yz567abcdef012345",
     blockchainPlatform: "MockChain (Polygon Layer 2)",
     ebsiStatus: 'pending',
+    lifecycleHighlights: [
+      { stage: "Manufactured", date: "2024-03-01", details: "Batch #LEDB456, Shenzhen.", isEbsiVerified: true },
+      { stage: "Imported to EU", date: "2024-03-15", details: "Rotterdam Port, Netherlands.", isEbsiVerified: false },
+      { stage: "Firmware Update v1.2", date: "2024-08-01", details: "Improved energy efficiency algorithm.", isEbsiVerified: true },
+    ]
   }
 };
 
@@ -115,6 +133,7 @@ export default function PublicPassportPage({ params }: Props) {
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
 
   useEffect(() => {
+    // Simulate API call
     const fetchedProduct = MOCK_PUBLIC_PASSPORTS[params.passportId];
     if (fetchedProduct) {
       setProduct(fetchedProduct);
@@ -255,22 +274,38 @@ export default function PublicPassportPage({ params }: Props) {
                   )}
                 </CardContent>
               </Card>
+              
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-xl text-primary">Compliance Overview</CardTitle>
+                  <CardTitle className="text-xl text-primary flex items-center">
+                     <HistoryIcon className="mr-2 h-6 w-6" /> Product Journey Highlights
+                  </CardTitle>
                 </CardHeader>
-                <CardContent>
-                  <p className="text-foreground">{product.complianceSummary}</p>
-                  {product.learnMoreLink && (
-                    <Link href={product.learnMoreLink} passHref className="mt-3 inline-block">
-                       <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
-                        Learn More About Our Standards
-                       </Button>
-                    </Link>
+                <CardContent className="space-y-3">
+                  {product.lifecycleHighlights && product.lifecycleHighlights.length > 0 ? (
+                    <ul className="space-y-2">
+                      {product.lifecycleHighlights.map((event, index) => (
+                        <li key={index} className="text-sm text-foreground border-b border-border/50 pb-1.5 last:border-b-0">
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">{event.stage}</span>
+                            <span className="text-xs text-muted-foreground">{event.date}</span>
+                          </div>
+                          {event.details && <p className="text-xs text-muted-foreground mt-0.5">{event.details}</p>}
+                          {event.isEbsiVerified && (
+                            <Badge variant="default" className="mt-1 text-xs bg-green-100 text-green-700 border-green-300">
+                              <ShieldCheck className="mr-1 h-3 w-3" /> EBSI Verified
+                            </Badge>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No key lifecycle events available.</p>
                   )}
                 </CardContent>
               </Card>
-              <Card className="lg:col-span-1">
+
+              <Card className="md:col-span-2 lg:col-span-1">
                 <CardHeader>
                   <CardTitle className="text-xl text-primary flex items-center">
                     <Fingerprint className="mr-2 h-6 w-6" /> Blockchain &amp; EBSI Verification
@@ -320,6 +355,21 @@ export default function PublicPassportPage({ params }: Props) {
                 </CardContent>
               </Card>
             </div>
+             <div className="mt-8 pt-6 border-t border-border">
+                <CardHeader className="px-0 pt-0 pb-4">
+                    <CardTitle className="text-xl text-primary">Compliance Overview</CardTitle>
+                </CardHeader>
+                <CardContent className="px-0 pb-0">
+                    <p className="text-foreground">{product.complianceSummary}</p>
+                    {product.learnMoreLink && (
+                        <Link href={product.learnMoreLink} passHref className="mt-3 inline-block">
+                        <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
+                            Learn More About Our Standards
+                        </Button>
+                        </Link>
+                    )}
+                </CardContent>
+            </div>
           </div>
         </div>
       </main>
@@ -333,4 +383,3 @@ export default function PublicPassportPage({ params }: Props) {
     </div>
   );
 }
-

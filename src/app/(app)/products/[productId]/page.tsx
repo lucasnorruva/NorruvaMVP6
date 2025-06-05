@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageCheck, CircleDollarSign, Wrench, AlertCircle, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
@@ -21,6 +21,7 @@ import ProductAlerts, { type ProductNotification } from '@/components/products/P
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
+import { useRole } from '@/contexts/RoleContext';
 
 
 // Mock product data - in a real app, this would come from an API
@@ -114,7 +115,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
       "Warranty": "5 years comprehensive, 10 years on compressor"
     },
     lifecycleEvents: [
-      { id: "EVT001", type: "Manufactured", timestamp: "2024-01-15T08:00:00Z", location: "EcoFactory, Germany", details: "Production batch #PB789. End-of-line quality checks passed. Blockchain anchor event for manufacturing completion.", isBlockchainAnchored: true, transactionHash: "0xabc123def456ghi789jkl0mno1pq" },
+      { id: "EVT001", type: "Manufactured", timestamp: "2024-01-15T08:00:00Z", location: "EcoFactory, Germany", details: "Production batch #PB789. End-of-line quality checks passed. Blockchain anchor event for manufacturing completion. Quality control data recorded; triggers manufacturing completion.", isBlockchainAnchored: true, transactionHash: "0xabc123def456ghi789jkl0mno1pq" },
       { id: "EVT002", type: "Shipped", timestamp: "2024-01-20T14:00:00Z", location: "Hamburg Port, Germany", details: "Container #C0N741N3R to distributor. Shipment data logged, triggers customs declaration prep.", isBlockchainAnchored: true, transactionHash: "0xdef456ghi789jkl0mno1pqrust" },
       { id: "EVT003", type: "Sold", timestamp: "2024-02-10T16:30:00Z", location: "Retail Store, Paris", details: "Invoice #INV00567. Warranty activated. Consumer registration data collected (GDPR compliant).", isBlockchainAnchored: false },
       { id: "EVT00X", type: "Maintenance", timestamp: "2025-02-15T10:00:00Z", location: "Consumer Home, Paris", details: "Scheduled filter replacement by certified technician. Service record updated.", isBlockchainAnchored: false }
@@ -261,7 +262,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
 const TrustSignalIcon = ({ isVerified, tooltipText, VerifiedIcon = CheckCircle2, UnverifiedIcon = Info, customClasses }: { isVerified?: boolean, tooltipText: string, VerifiedIcon?: React.ElementType, UnverifiedIcon?: React.ElementType, customClasses?: string }) => {
   if (isVerified === undefined) return null;
   const IconToRender = isVerified ? VerifiedIcon : UnverifiedIcon;
-  const colorClass = isVerified ? 'text-green-500' : 'text-yellow-600'; // Using yellow-600 for unverified Target icon
+  const colorClass = isVerified ? 'text-green-500' : 'text-yellow-600'; 
 
   return (
     <TooltipProvider>
@@ -309,6 +310,8 @@ export default function ProductDetailPage() {
   const productId = params.productId as string;
   const [product, setProduct] = useState<MockProductType | null | undefined>(undefined);
   const router = useRouter();
+  const { currentRole } = useRole();
+  const [activeTab, setActiveTab] = useState('specifications'); // Default initial tab
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -322,6 +325,37 @@ export default function ProductDetailPage() {
       fetchProduct();
     }
   }, [productId]);
+
+  useEffect(() => {
+    if (product) { // Only run if product data is loaded
+      const hasBatteryData = product.batteryChemistry || product.stateOfHealth !== undefined || product.carbonFootprintManufacturing !== undefined || product.recycledContentPercentage !== undefined;
+      let newDefaultTab = 'specifications'; // Fallback default
+
+      switch (currentRole) {
+        case 'manufacturer':
+          newDefaultTab = 'specifications';
+          break;
+        case 'supplier':
+          newDefaultTab = 'specifications';
+          break;
+        case 'retailer':
+          newDefaultTab = 'sustainability';
+          break;
+        case 'recycler':
+          newDefaultTab = hasBatteryData ? 'battery' : 'sustainability';
+          break;
+        case 'verifier':
+          newDefaultTab = 'compliance';
+          break;
+        case 'admin':
+          newDefaultTab = 'lifecycle';
+          break;
+        default:
+          newDefaultTab = 'specifications';
+      }
+      setActiveTab(newDefaultTab);
+    }
+  }, [currentRole, product]); // Re-run if role or product changes
 
   if (product === undefined) {
     return <ProductDetailSkeleton />;
@@ -501,7 +535,7 @@ export default function ProductDetailPage() {
         </div>
       </Card>
 
-      <Tabs defaultValue="specifications" className="w-full">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className={cn("grid w-full", hasBatteryData ? "grid-cols-2 sm:grid-cols-5" : "grid-cols-2 sm:grid-cols-4")}>
           <TabsTrigger value="specifications"><Settings2 className="mr-2 h-4 w-4" />Specifications</TabsTrigger>
           {hasBatteryData && <TabsTrigger value="battery"><BatteryCharging className="mr-2 h-4 w-4" />Battery Details</TabsTrigger>}
@@ -752,6 +786,7 @@ export default function ProductDetailPage() {
                              tooltipText={cert.verified ? "Verified Certification" : "Self-Declared / Pending Verification"}
                              VerifiedIcon={CheckCircle2}
                              UnverifiedIcon={Target}
+                             customClasses={cn(cert.verified ? 'text-green-500' : 'text-yellow-600')} // Ensure color consistency
                            />
                            <span className="ml-2 font-medium">{cert.name}</span>
                            <span className="text-muted-foreground ml-1 text-xs">({cert.authority})</span>
@@ -837,3 +872,5 @@ function ProductDetailSkeleton() {
   )
 }
 
+
+    

@@ -29,14 +29,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRole } from "@/contexts/RoleContext";
 import { useToast } from "@/hooks/use-toast";
-import type { ProductFormData } from "@/components/products/ProductForm";
+import type { ProductFormData as ProductFormDataType } from "@/components/products/ProductForm"; // Renamed to avoid conflict
 
 // Represents product data stored by user interactions (e.g., via ProductForm)
-interface StoredUserProduct extends ProductFormData {
+// Aligned with ProductFormDataType and includes origin fields.
+interface StoredUserProduct extends ProductFormDataType {
   id: string;
-  status: string;
-  compliance: string;
+  status: string; // Overall status of product (Draft, Active)
+  compliance: string; // Overall compliance status (Compliant, Pending)
   lastUpdated: string;
+  // productCategory and imageUrl are part of ProductFormDataType
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
   manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -44,36 +46,34 @@ interface StoredUserProduct extends ProductFormData {
   materialsOrigin?: 'AI_EXTRACTED' | 'manual';
   sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
   energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
-  specificationsOrigin?: 'AI_EXTRACTED' | 'manual'; // Stored as string
+  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
   batteryChemistryOrigin?: 'AI_EXTRACTED' | 'manual';
   stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
   carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  // productCategory is already in ProductFormData
-  // imageUrl is already in ProductFormData
 }
 
 // Represents the structure for initial mock products, with potentially richer data
 interface RichMockProduct {
-  id: string;
-  productId: string; // For compatibility with MockProductType
+  id: string; // This will be the same as productId for mocks
+  productId: string;
   productName: string;
-  category: string;
+  category?: string; // Note: ProductFormDataType uses 'productCategory'
   status: string;
   compliance: string;
   lastUpdated: string;
   gtin?: string;
   manufacturer?: string;
   modelNumber?: string;
-  description?: string;
+  description?: string; // Note: ProductFormDataType uses 'productDescription'
   imageUrl?: string;
   materials?: string;
   sustainabilityClaims?: string;
   energyLabel?: string;
-  specifications?: Record<string, string> | string; // Can be object for rich mock, string for stored
-  lifecycleEvents?: Array<any>; // Simplified for list
-  complianceData?: Record<string, any>; // Simplified for list
+  specifications?: Record<string, string> | string;
+  lifecycleEvents?: Array<any>;
+  complianceData?: Record<string, any>;
   batteryChemistry?: string;
   stateOfHealth?: number;
   carbonFootprintManufacturing?: number;
@@ -81,16 +81,31 @@ interface RichMockProduct {
 }
 
 // A unified type for products displayed in the list
-export interface DisplayableProduct extends Omit<StoredUserProduct, 'specifications'>, Omit<RichMockProduct, 'id' | 'productId' | 'productName' | 'category' | 'status' | 'compliance' | 'lastUpdated' | 'specifications'> {
+export interface DisplayableProduct {
   id: string;
-  productId?: string; // Keep productId for consistency if it comes from RichMockProduct
-  productName: string;
+  productId?: string; // From RichMockProduct for consistency
+  productName?: string; // From ProductFormDataType & RichMockProduct
   category?: string; // From RichMockProduct
-  productCategory?: string; // From StoredUserProduct (ProductFormData)
+  productCategory?: string; // From ProductFormDataType (used for StoredUserProduct)
   status: string;
   compliance: string;
   lastUpdated: string;
+  gtin?: string;
+  manufacturer?: string;
+  modelNumber?: string;
+  description?: string; // From RichMockProduct
+  productDescription?: string; // From ProductFormDataType
+  imageUrl?: string;
+  materials?: string;
+  sustainabilityClaims?: string;
+  energyLabel?: string;
   specifications?: Record<string, string> | string; // Allow both
+  lifecycleEvents?: Array<any>; // Simplified for list
+  complianceData?: Record<string, any>; // Simplified for list
+  batteryChemistry?: string;
+  stateOfHealth?: number | null; // Allow null
+  carbonFootprintManufacturing?: number | null; // Allow null
+  recycledContentPercentage?: number | null; // Allow null
 }
 
 
@@ -124,12 +139,23 @@ const initialMockProducts: RichMockProduct[] = [
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 
 const calculateDppCompletenessForList = (product: DisplayableProduct): { score: number; filledFields: number; totalFields: number; missingFields: string[] } => {
-  const essentialFieldsConfig: Array<{ key: keyof DisplayableProduct | string; label: string; check?: (p: DisplayableProduct) => boolean; categoryScope?: string[] }> = [
-    { key: 'productName', label: 'Product Name' }, { key: 'gtin', label: 'GTIN' }, { key: 'category', label: 'Category', check: p => !!(p.category || p.productCategory) }, { key: 'manufacturer', label: 'Manufacturer' }, { key: 'modelNumber', label: 'Model Number' }, { key: 'description', label: 'Description', check: p => !!(p.description || p.productDescription)}, { key: 'imageUrl', label: 'Image URL', check: (p) => !!p.imageUrl && !p.imageUrl.includes('placehold.co') && !p.imageUrl.includes('?text=') }, { key: 'materials', label: 'Materials' }, { key: 'sustainabilityClaims', label: 'Sustainability Claims' }, { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] }, { key: 'specifications', label: 'Specifications', check: (p) => {
-      if (typeof p.specifications === 'string') return !!p.specifications && p.specifications !== '{}' && p.specifications.trim() !== '';
-      if (typeof p.specifications === 'object' && p.specifications !== null) return Object.keys(p.specifications).length > 0;
-      return false;
-    }},
+  const essentialFieldsConfig: Array<{ key: keyof DisplayableProduct; label: string; check?: (p: DisplayableProduct) => boolean; categoryScope?: string[] }> = [
+    { key: 'productName', label: 'Product Name' },
+    { key: 'gtin', label: 'GTIN' },
+    { key: 'category', label: 'Category', check: p => !!(p.category || p.productCategory) },
+    { key: 'manufacturer', label: 'Manufacturer' },
+    { key: 'modelNumber', label: 'Model Number' },
+    { key: 'description', label: 'Description', check: p => !!(p.description || p.productDescription) },
+    { key: 'imageUrl', label: 'Image URL', check: (p) => !!p.imageUrl && !p.imageUrl.includes('placehold.co') && !p.imageUrl.includes('?text=') },
+    { key: 'materials', label: 'Materials' },
+    { key: 'sustainabilityClaims', label: 'Sustainability Claims' },
+    { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] },
+    { key: 'specifications', label: 'Specifications', check: (p) => {
+        if (typeof p.specifications === 'string') return !!p.specifications && p.specifications.trim() !== '' && p.specifications.trim() !== '{}';
+        if (typeof p.specifications === 'object' && p.specifications !== null) return Object.keys(p.specifications).length > 0;
+        return false;
+      }
+    },
     { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 },
     { key: 'complianceData', label: 'Compliance Data', check: (p) => p.complianceData && Object.keys(p.complianceData).length > 0 },
   ];
@@ -155,16 +181,23 @@ const calculateDppCompletenessForList = (product: DisplayableProduct): { score: 
     }
     actualTotalFields++;
 
-    const value = product[fieldConfig.key as keyof DisplayableProduct];
+    const value = product[fieldConfig.key];
+    let isFieldFilled = false;
 
     if (fieldConfig.check) {
-      if (fieldConfig.check(product)) { filledCount++; } else { missingFields.push(fieldConfig.label); }
+      isFieldFilled = fieldConfig.check(product);
     } else {
-      if (value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A') {
-        filledCount++;
+      if (typeof value === 'object' && value !== null) { // For specifications if it's an object
+        isFieldFilled = Object.keys(value).length > 0;
       } else {
-        missingFields.push(fieldConfig.label);
+        isFieldFilled = value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A';
       }
+    }
+
+    if (isFieldFilled) {
+      filledCount++;
+    } else {
+      missingFields.push(fieldConfig.label);
     }
   });
 
@@ -185,16 +218,18 @@ export default function ProductsPage() {
     const userAddedStoredProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
 
     const userAddedDisplayableProducts: DisplayableProduct[] = userAddedStoredProducts.map(p => ({
-      ...p, 
-      id: p.id,
-      productId: p.id, 
-      productName: p.productName || "Unnamed Product",
+      ...p, // Spread all fields from StoredUserProduct
+      id: p.id, // Ensure id is present
+      productId: p.id, // For consistency with RichMockProduct structure
+      // productCategory is already in p from ProductFormDataType
+      // productDescription is already in p
     }));
 
     const initialDisplayableProducts: DisplayableProduct[] = initialMockProducts.map(mock => ({
-        ...mock,
+      ...mock, // Spread all fields from RichMockProduct
+      // category is already in mock
+      // description is already in mock
     }));
-
 
     const combinedProducts = [
       ...initialDisplayableProducts.filter(mock => !userAddedDisplayableProducts.find(userProd => userProd.id === mock.id)),
@@ -270,6 +305,8 @@ export default function ProductsPage() {
             <TableBody>
               {displayedProducts.map((product) => {
                 const completeness = calculateDppCompletenessForList(product);
+                const currentProductName = product.productName || "Unnamed Product";
+                const currentCategory = product.category || product.productCategory || "N/A";
                 return (
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">
@@ -279,10 +316,10 @@ export default function ProductsPage() {
                   </TableCell>
                   <TableCell>
                      <Link href={`/products/${product.id}`} className="hover:underline">
-                        {product.productName}
+                        {currentProductName}
                      </Link>
                   </TableCell>
-                  <TableCell>{product.category || product.productCategory}</TableCell>
+                  <TableCell>{currentCategory}</TableCell>
                   <TableCell>
                     <Badge variant={
                       product.status === "Active" ? "default" :
@@ -290,7 +327,7 @@ export default function ProductsPage() {
                     } className={
                       product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" :
                       product.status === "Archived" ? "bg-muted text-muted-foreground border-border" :
-                      "bg-yellow-500/20 text-yellow-700 border-yellow-500/30"
+                      "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" // Draft or other pending states
                     }>
                       {product.status}
                     </Badge>
@@ -304,7 +341,7 @@ export default function ProductsPage() {
                         product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" :
                         product.compliance === "Pending" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" :
                         product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" :
-                        "bg-red-500/20 text-red-700 border-red-500/30"
+                        "bg-red-500/20 text-red-700 border-red-500/30" // Non-Compliant
                       }>
                        {product.compliance}
                      </Badge>
@@ -313,7 +350,7 @@ export default function ProductsPage() {
                     <TooltipProvider>
                       <Tooltip delayDuration={100}>
                         <TooltipTrigger asChild>
-                          <div className="flex items-center w-28"> {/* Increased width for progress and text */}
+                          <div className="flex items-center w-28 cursor-help">
                             <Progress value={completeness.score} className="h-2.5 flex-grow" />
                             <span className="text-xs text-muted-foreground ml-2">{completeness.score}%</span>
                           </div>
@@ -341,7 +378,7 @@ export default function ProductsPage() {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
                           <MoreHorizontal className="h-5 w-5" />
-                           <span className="sr-only">Product Actions</span>
+                           <span className="sr-only">Product Actions for {currentProductName}</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
@@ -394,7 +431,7 @@ export default function ProductsPage() {
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This action cannot be undone. This will permanently delete the product
-              "{productToDelete?.productName}".
+              "{productToDelete?.productName || productToDelete?.id}".
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -408,6 +445,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-
-
-    

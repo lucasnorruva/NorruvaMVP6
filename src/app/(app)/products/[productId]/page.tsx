@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageCheck, CircleDollarSign, Wrench, AlertCircle, PackageSearch, CalendarDays, MapPin, Droplet, Target } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageCheck, CircleDollarSign, Wrench, AlertCircle, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
@@ -114,9 +114,10 @@ const MOCK_PRODUCTS: MockProductType[] = [
       "Warranty": "5 years comprehensive, 10 years on compressor"
     },
     lifecycleEvents: [
-      { id: "EVT001", type: "Manufactured", timestamp: "2024-01-15", location: "EcoFactory, Germany", details: "Production batch #PB789", isBlockchainAnchored: true, transactionHash: "0xabc123def456ghi789jkl0mno1pq" },
-      { id: "EVT002", type: "Shipped", timestamp: "2024-01-20", location: "Hamburg Port", details: "Container #C0N741N3R", isBlockchainAnchored: true, transactionHash: "0xdef456ghi789jkl0mno1pqrust" },
-      { id: "EVT003", type: "Sold", timestamp: "2024-02-10", location: "Retail Store, Paris", details: "Invoice #INV00567", isBlockchainAnchored: false },
+      { id: "EVT001", type: "Manufactured", timestamp: "2024-01-15T08:00:00Z", location: "EcoFactory, Germany", details: "Production batch #PB789. End-of-line quality checks passed. Blockchain anchor event for manufacturing completion.", isBlockchainAnchored: true, transactionHash: "0xabc123def456ghi789jkl0mno1pq" },
+      { id: "EVT002", type: "Shipped", timestamp: "2024-01-20T14:00:00Z", location: "Hamburg Port, Germany", details: "Container #C0N741N3R to distributor. Shipment data logged, triggers customs declaration prep.", isBlockchainAnchored: true, transactionHash: "0xdef456ghi789jkl0mno1pqrust" },
+      { id: "EVT003", type: "Sold", timestamp: "2024-02-10T16:30:00Z", location: "Retail Store, Paris", details: "Invoice #INV00567. Warranty activated. Consumer registration data collected (GDPR compliant).", isBlockchainAnchored: false },
+      { id: "EVT00X", type: "Maintenance", timestamp: "2025-02-15T10:00:00Z", location: "Consumer Home, Paris", details: "Scheduled filter replacement by certified technician. Service record updated.", isBlockchainAnchored: false }
     ],
     complianceData: {
       "REACH": { status: "Compliant", lastChecked: "2024-07-01", reportId: "REACH-X2000-001", isVerified: true },
@@ -127,23 +128,23 @@ const MOCK_PRODUCTS: MockProductType[] = [
     dppAnchorTransactionHash: "0x123mainanchor789xyzabc001",
     currentLifecyclePhaseIndex: 2, // Shipment is in_progress
     lifecyclePhases: [
-      { id: "lc001", name: "Raw Materials", icon: PackageSearch, status: 'completed', timestamp: "2023-12-01T10:00:00Z", location: "Verified Suppliers", details: "Sourcing of verified recycled steel and bio-polymers.", complianceMetrics: [{ name: "Supplier Ethical Audit", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Recycled Content Input", value: 75, unit: "%", targetValue: 70 }] },
-      { id: "lc002", name: "Manufacturing", icon: Factory, status: 'completed', timestamp: "2024-01-15T10:00:00Z", location: "EcoFactory, Germany", details: "Assembly at EcoFactory, Germany. Production batch #PB789.", complianceMetrics: [{ name: "ISO 14001 Certification", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Energy Used", value: 50, unit: "kWh/unit", targetValue: 55 }, { name: "Waste Generated", value: 2, unit: "kg/unit", targetValue: 3 }] },
-      { id: "lc003", name: "Shipment", icon: Truck, status: 'in_progress', timestamp: "2024-01-20T10:00:00Z", location: "En route to Distributor", details: "Shipping to distribution center via low-emission freight. Container #C0N741N3R.", complianceMetrics: [{ name: "Carbon Offset Cert.", status: "pending_review", reportLink: "#" }], sustainabilityMetrics: [{ name: "Transport Emissions", value: 15, unit: "kg CO2e", targetValue: 12 }] },
-      { id: "lc004", name: "Retail", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-02-10T10:00:00Z", location: "Authorized Retailers", details: "Product available at certified retail partners.", complianceMetrics: [], sustainabilityMetrics: [] },
-      { id: "lc005", name: "Consumer Use", icon: PackageCheck, status: 'upcoming', details: "Estimated 10-year lifespan with smart energy monitoring.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Avg. Energy Use", value: 150, unit: "kWh/yr (est.)" }] },
-      { id: "lc006", name: "End-of-Life", icon: Recycle, status: 'upcoming', details: "Designated for 95% recyclability through partner network.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Recyclability Potential", value: 95, unit: "%"}] }
+      { id: "lc001", name: "Raw Materials", icon: PackageSearch, status: 'completed', timestamp: "2023-12-01T10:00:00Z", location: "Verified Suppliers Network", details: "Sourcing of certified recycled steel and bio-polymers. Supplier compliance data recorded and verified.", complianceMetrics: [{ name: "Supplier Ethical Audit", status: "compliant", reportLink: "#" }, { name: "Material Origin Traceability", status: "compliant"}], sustainabilityMetrics: [{ name: "Recycled Content Input", value: 75, unit: "%", targetValue: 70 }, { name: "Conflict Minerals Free", status: "compliant"}] },
+      { id: "lc002", name: "Manufacturing", icon: Factory, status: 'completed', timestamp: "2024-01-15T08:00:00Z", location: "EcoFactory, Germany", details: "Assembly at EcoFactory. Production batch #PB789 logged. Energy & waste data captured for sustainability reporting. Quality control passed, triggers blockchain anchor.", complianceMetrics: [{ name: "ISO 14001 Certification", status: "compliant", reportLink: "#" }, { name: "Factory Safety Standards", status: "compliant"}], sustainabilityMetrics: [{ name: "Energy Used", value: 50, unit: "kWh/unit", targetValue: 55 }, { name: "Waste Generated", value: 2, unit: "kg/unit", targetValue: 3 }, {name: "Water Usage", value: 15, unit: "L/unit", targetValue: 20}] },
+      { id: "lc003", name: "Distribution", icon: Truck, status: 'in_progress', timestamp: "2024-01-20T14:00:00Z", location: "Global Logistics Network", details: "Shipping to distribution centers via low-emission freight. Container #C0N741N3R. Carbon offset calculation in progress.", complianceMetrics: [{ name: "Carbon Offset Cert.", status: "pending_review", reportLink: "#" }, { name: "Customs Compliance (EU)", status: "compliant"}], sustainabilityMetrics: [{ name: "Transport Emissions", value: 15, unit: "kg CO2e/unit", targetValue: 12 }] },
+      { id: "lc004", name: "Retail & Sale", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-02-10T16:30:00Z", location: "Authorized Retailers", details: "Product available at certified retail partners. Point-of-sale data syncs warranty info. EPREL data accessible to consumers.", complianceMetrics: [{ name: "EPREL Data Sync", status: "compliant"}], sustainabilityMetrics: [{ name: "Packaging Recyclability", value: 100, unit: "%" }] },
+      { id: "lc005", name: "Consumer Use", icon: Users, status: 'upcoming', timestamp: "2024-02-11T00:00:00Z", location: "Consumer Homes", details: "Estimated 10-year lifespan. Smart models provide energy usage data. Repairability info available via DPP.", sustainabilityMetrics: [{ name: "Avg. Energy Use (est.)", value: 150, unit: "kWh/yr" }, {name: "Repairability Score", value: 8.5, unit: "/10"}] },
+      { id: "lc006", name: "End-of-Life", icon: Recycle, status: 'upcoming', timestamp: "2034-02-10T00:00:00Z", location: "Certified Recycling Partners", details: "Designated for 95% recyclability. Take-back program details in DPP. Disassembly instructions available to recyclers.", complianceMetrics: [{name: "WEEE Compliance", status: "compliant"}], sustainabilityMetrics: [{ name: "Recyclability Potential", value: 95, unit: "%"}, {name: "Material Recovery Rate (target)", value: 90, unit: "%"}]}
     ],
     overallCompliance: {
       gdpr: { status: "compliant", lastChecked: "2024-07-01T10:00:00Z" },
       eprel: { status: "compliant", entryId: "EPREL12345", lastChecked: "2024-06-20T10:00:00Z" },
       ebsiVerified: { status: "compliant", verificationId: "EBSI-TX-ABCDEF0123", lastChecked: "2024-07-15T10:00:00Z" },
-      scip: { status: "not_applicable", lastChecked: "2024-07-01T10:00:00Z" },
+      scip: { status: "not_applicable", lastChecked: "2024-07-01T10:00:00Z" }, // Assuming not applicable for this appliance
       csrd: { status: "in_progress", lastChecked: "2024-07-20T10:00:00Z" }
     },
     notifications: [
       { id: "n001", type: "info", message: "Quarterly sustainability report due next month.", date: "2024-07-10T10:00:00Z" },
-      { id: "n002", type: "warning", message: "Supplier 'PolyCore' ethical audit expiring soon.", date: "2024-07-18T10:00:00Z" }
+      { id: "n002", type: "warning", message: "Supplier 'PolyCore' ethical audit expiring soon. Action recommended.", date: "2024-07-18T10:00:00Z" }
     ],
     materialComposition: [
       { name: 'Recycled Steel', value: 70, fill: 'hsl(var(--chart-1))' },
@@ -203,34 +204,36 @@ const MOCK_PRODUCTS: MockProductType[] = [
     recycledContentPercentage: 8,
     recycledContentPercentageOrigin: "manual",
     lifecycleEvents: [
-      { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Batch #LEDB456", isBlockchainAnchored: true, transactionHash: "0xghi789jkl0mno1pqrustvwx" },
-      { id: "EVT005", type: "Imported", timestamp: "2024-03-15T10:00:00Z", location: "Rotterdam Port", details: "Shipment #SHP0089", isBlockchainAnchored: false },
+      { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Batch #LEDB456. Battery passport data generated. SCIP database notified of components.", isBlockchainAnchored: true, transactionHash: "0xghi789jkl0mno1pqrustvwx" },
+      { id: "EVT005", type: "Imported", timestamp: "2024-03-15T10:00:00Z", location: "Rotterdam Port, Netherlands", details: "Shipment #SHP0089. EU customs cleared. Triggers CE marking verification.", isBlockchainAnchored: false },
+      { id: "EVT006", type: "Software Update", timestamp: "2024-08-01T00:00:00Z", location: "OTA Server", details: "Firmware v1.2 deployed. Improves energy efficiency algorithm. Update logged to DPP.", isBlockchainAnchored: true, transactionHash: "0xotaUpdateHash123xyz" }
     ],
     complianceData: {
       "RoHS": { status: "Compliant", lastChecked: "2024-07-01T10:00:00Z", reportId: "ROHS-LEDB456-001", isVerified: true },
       "CE Mark": { status: "Compliant", lastChecked: "2024-07-01T10:00:00Z", reportId: "CE-LEDB456-001", isVerified: true },
       "Battery Regulation (EU 2023/1542)": { status: "Pending Documentation", lastChecked: "2024-07-20T10:00:00Z", reportId: "BATREG-LEDB456-PRE", isVerified: false },
     },
-    isDppBlockchainAnchored: false,
+    isDppBlockchainAnchored: false, // This product's DPP itself might not be anchored, but events can be.
     currentLifecyclePhaseIndex: 1, // Manufacturing & Assembly is in_progress
     lifecyclePhases: [
-      { id: "lc007", name: "Materials Sourcing", icon: PackageSearch, status: 'completed', timestamp: "2024-02-01T10:00:00Z", location: "Global Suppliers", details: "Sourcing of PC, Al, LED chips, battery components.", complianceMetrics: [{ name: "Conflict Minerals Report", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Supplier Diversity Score", value: 60, unit: "/100", targetValue: 75 }] },
-      { id: "lc008", name: "Manufacturing & Assembly", icon: Factory, status: 'in_progress', timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Assembly in Shenzhen, China. Batch #LEDB456.", complianceMetrics: [{ name: "Factory Safety Audit", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Carbon Footprint (Mfg.)", value: 5.2, unit: "kg CO2e", targetValue: 5.0 }, { name: "Recycled Packaging Used", value: 90, unit: "%", targetValue: 100}] },
-      { id: "lc009", name: "Distribution", icon: Truck, status: 'pending', details: "Global distribution network.", complianceMetrics: [], sustainabilityMetrics: [] },
-      { id: "lc010", name: "Retail Sale", icon: ShoppingBagIcon, status: 'pending', details: "Available through online and physical stores.", complianceMetrics: [], sustainabilityMetrics: [] },
-      { id: "lc011", name: "Use Phase", icon: PackageCheck, status: 'upcoming', details: "Estimated 3-year useful life for battery component.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }] },
-      { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'issue', details: "Battery designed for easy removal and recycling. Documentation for EU Battery Regulation (EU 2023/1542) is overdue.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]}
+      { id: "lc007", name: "Materials Sourcing", icon: PackageSearch, status: 'completed', timestamp: "2024-02-01T10:00:00Z", location: "Global Suppliers", details: "Sourcing of PC, Al, LED chips, battery components. Conflict minerals check completed. Supplier data for battery chemistry recorded.", complianceMetrics: [{ name: "Conflict Minerals Report", status: "compliant", reportLink: "#" }, { name: "Supplier Chemical Safety Data Sheets", status: "compliant" }], sustainabilityMetrics: [{ name: "Supplier Diversity Score", value: 60, unit: "/100", targetValue: 75 }, {name: "Battery Component Traceability", status: "compliant"}] },
+      { id: "lc008", name: "Manufacturing", icon: Factory, status: 'in_progress', timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Assembly in Shenzhen. Batch #LEDB456. Initial battery SoH recorded. SCIP notification for SVHC in components submitted.", complianceMetrics: [{ name: "Factory Safety Audit (ISO 45001)", status: "compliant", reportLink: "#" }, {name: "SCIP Database Submission", status: "compliant", reportLink: "#"}], sustainabilityMetrics: [{ name: "Carbon Footprint (Mfg.)", value: 5.2, unit: "kg CO2e/pack", targetValue: 5.0 }, { name: "Recycled Packaging Used", value: 90, unit: "%", targetValue: 100}] },
+      { id: "lc009", name: "Distribution", icon: Truck, status: 'pending', timestamp: "2024-03-15T10:00:00Z", location: "Global Distribution Network", details: "Global distribution. Awaiting final packaging data for carbon footprint update.", complianceMetrics: [], sustainabilityMetrics: [{name: "Logistics Efficiency Score", value: 7, unit:"/10 (target)"}] },
+      { id: "lc010", name: "Retail Sale", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-04-01T00:00:00Z", location: "Online & Physical Stores", details: "Available through various retail channels. EPREL data to be displayed at point of sale.", complianceMetrics: [{name: "EPREL Label Display", status: "pending_review"}], sustainabilityMetrics: [] },
+      { id: "lc011", name: "Use & Maintenance", icon: Users, status: 'upcoming', timestamp: "2024-04-02T00:00:00Z", location: "Consumer Homes & Businesses", details: "Estimated 3-year useful life for battery. OTA firmware updates enhance performance and security. Battery replacement guide in DPP.", sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }, {name: "Firmware Update Frequency", value: 2, unit: "updates/yr (avg)"}] },
+      { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'issue', timestamp: "2027-04-01T00:00:00Z", location: "Designated Collection Points", details: "Battery designed for removal. Documentation for EU Battery Regulation (EU 2023/1542) is overdue, impacting certified recycling.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}, {name: "EU Battery Reg. Documentation", status: "non_compliant", reportLink: "#"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]}
     ],
     overallCompliance: {
-      gdpr: { status: "not_applicable", lastChecked: "2024-07-01T10:00:00Z" },
+      gdpr: { status: "not_applicable", lastChecked: "2024-07-01T10:00:00Z" }, // Assuming no personal data collected directly by bulbs
       eprel: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" },
-      ebsiVerified: { status: "pending_review", verificationId: "PENDING_EBSI_CHECK", lastChecked: "2024-07-20T10:00:00Z" },
+      ebsiVerified: { status: "pending_review", verificationId: "PENDING_EBSI_CHECK", lastChecked: "2024-07-20T10:00:00Z" }, // If individual events are anchored, this might eventually become compliant
       scip: { status: "compliant", declarationId: "SCIP-XYZ789", lastChecked: "2024-07-01T10:00:00Z" },
       csrd: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" }
     },
     notifications: [
       { id: "n003", type: "error", message: "Battery Regulation documentation overdue! Action required.", date: "2024-07-19T10:00:00Z" },
-      { id: "n004", type: "warning", message: "EPREL registration data needs review by end of week.", date: "2024-07-22T10:00:00Z" }
+      { id: "n004", type: "warning", message: "EPREL registration data needs review by end of week.", date: "2024-07-22T10:00:00Z" },
+      { id: "n005", type: "info", message: "Firmware update v1.2 successfully deployed.", date: "2024-08-01T02:00:00Z"}
     ],
     materialComposition: [
         { name: 'Polycarbonate', value: 40, fill: 'hsl(var(--chart-1))' },
@@ -249,6 +252,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
     certifications: [
         { name: 'RoHS Compliant', authority: 'Self-declared', verified: true },
         { name: 'CE Marked', authority: 'Self-declared', verified: true },
+        { name: 'UL Listed', authority: 'Underwriters Laboratories', verified: false, link: '#'},
     ]
   },
 ];
@@ -791,3 +795,6 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
+
+
+    

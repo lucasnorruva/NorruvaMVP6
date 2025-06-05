@@ -6,38 +6,39 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import type { DigitalProductPassport } from "@/types/dpp";
-import { MoreHorizontal, Eye, Edit, Trash2, ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon } from "lucide-react";
+import { MoreHorizontal, Eye, Edit, Trash2, ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation"; 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
+type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance';
+
 interface DPPTableProps {
   dpps: DigitalProductPassport[];
+  onSort: (key: SortableKeys) => void;
+  sortConfig: { key: SortableKeys | null; direction: 'ascending' | 'descending' | null };
 }
 
-type ComplianceDetails = {
+interface ComplianceDetails {
   text: string;
   variant: "default" | "destructive" | "outline" | "secondary";
   icon: JSX.Element;
   tooltipText: string;
-};
+}
 
 const getOverallComplianceDetails = (dpp: DigitalProductPassport): ComplianceDetails => {
   let compliantCount = 0;
   let pendingCount = 0;
   let nonCompliantCount = 0;
-  // Ensure that we only count regulations that have a status object
   const regulationsChecked = Object.values(dpp.compliance).filter(
     (reg): reg is { status: string } => typeof reg === 'object' && reg !== null && 'status' in reg
   );
 
-
   if (regulationsChecked.length === 0) {
-    if (Object.keys(dpp.compliance).length === 0) { // No regulations defined at all
+    if (Object.keys(dpp.compliance).length === 0) {
       return { text: "N/A", variant: "secondary", icon: <ShieldQuestion className="h-5 w-5 text-muted-foreground" />, tooltipText: "No regulations applicable or tracked for this product." };
     }
-    // Regulations might be defined as keys (e.g. eu_espr: undefined) but no actual status object
     return { text: "No Data", variant: "outline", icon: <ShieldQuestion className="h-5 w-5 text-muted-foreground" />, tooltipText: "Compliance data not yet available for defined regulations." };
   }
 
@@ -56,12 +57,29 @@ const getOverallComplianceDetails = (dpp: DigitalProductPassport): ComplianceDet
   if (compliantCount === regulationsChecked.length && regulationsChecked.length > 0) {
     return { text: "Fully Compliant", variant: "default", icon: <ShieldCheck className="h-5 w-5 text-green-500" />, tooltipText: "All tracked regulations are compliant." };
   }
-  // Fallback for mixed or unexpected states, though ideally covered by above.
   return { text: "Review Needed", variant: "outline", icon: <ShieldQuestion className="h-5 w-5 text-muted-foreground" />, tooltipText: "Compliance status requires review." };
 };
 
+const SortableHeader: React.FC<{
+  columnKey: SortableKeys;
+  title: string;
+  onSort: (key: SortableKeys) => void;
+  sortConfig: DPPTableProps['sortConfig'];
+  className?: string;
+}> = ({ columnKey, title, onSort, sortConfig, className }) => {
+  const isSorted = sortConfig.key === columnKey;
+  const Icon = isSorted ? (sortConfig.direction === 'ascending' ? ArrowUp : ArrowDown) : ChevronsUpDown;
+  return (
+    <TableHead className={cn("cursor-pointer hover:bg-muted/50 transition-colors", className)} onClick={() => onSort(columnKey)}>
+      <div className="flex items-center gap-2">
+        {title}
+        <Icon className={cn("h-4 w-4", isSorted ? "text-primary" : "text-muted-foreground/50")} />
+      </div>
+    </TableHead>
+  );
+};
 
-export const DPPTable: React.FC<DPPTableProps> = ({ dpps }) => {
+export const DPPTable: React.FC<DPPTableProps> = ({ dpps, onSort, sortConfig }) => {
   const router = useRouter();
 
   const handleDPPDelete = (dppId: string) => {
@@ -76,12 +94,12 @@ export const DPPTable: React.FC<DPPTableProps> = ({ dpps }) => {
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>ID</TableHead>
-          <TableHead>Product Name</TableHead>
-          <TableHead>Category</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Overall Compliance</TableHead>
-          <TableHead>Last Updated</TableHead>
+          <SortableHeader columnKey="id" title="ID" onSort={onSort} sortConfig={sortConfig} />
+          <SortableHeader columnKey="productName" title="Product Name" onSort={onSort} sortConfig={sortConfig} />
+          <SortableHeader columnKey="category" title="Category" onSort={onSort} sortConfig={sortConfig} />
+          <SortableHeader columnKey="metadata.status" title="Status" onSort={onSort} sortConfig={sortConfig} />
+          <TableHead>Overall Compliance</TableHead> {/* Compliance sorting can be complex due to object structure, not made sortable here */}
+          <SortableHeader columnKey="metadata.last_updated" title="Last Updated" onSort={onSort} sortConfig={sortConfig} />
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
@@ -181,4 +199,3 @@ export const DPPTable: React.FC<DPPTableProps> = ({ dpps }) => {
     </Table>
   );
 };
-

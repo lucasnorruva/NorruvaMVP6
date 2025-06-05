@@ -7,4 +7,6 @@ import '@/ai/flows/generate-product-summary.ts';
 import '@/ai/flows/compliance-copilot-flow.ts';
 import '@/ai/flows/check-product-compliance-flow.ts';
 import '@/ai/flows/suggest-sustainability-claims-flow.ts';
-import '@/ai/flows/generate-product-image-flow.ts'; // Added new image generation flow
+import '@/ai/flows/generate-product-image-flow.ts';
+import '@/ai/flows/sync-eprel-data-flow.ts'; // Added new EPREL sync flow
+

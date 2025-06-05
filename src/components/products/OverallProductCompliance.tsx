@@ -3,8 +3,8 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle, AlertCircle, Info, ShieldQuestion, ShieldCheck, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { CheckCircle, AlertCircle, Info, ShieldQuestion, ShieldCheck, AlertTriangle, ExternalLink, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '../ui/button';
@@ -36,9 +36,11 @@ export interface ProductNotification {
 interface OverallProductComplianceProps {
   complianceData: OverallComplianceData;
   notifications?: ProductNotification[];
+  onSyncEprel?: () => Promise<void>; // Callback for EPREL sync
+  isSyncingEprel?: boolean; // Loading state for EPREL sync
 }
 
-const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus }> = ({ title, data }) => {
+const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionButton?: React.ReactNode }> = ({ title, data, actionButton }) => {
   let IconComponent = Info;
   let badgeVariant: "default" | "secondary" | "destructive" | "outline" = "outline";
   let badgeClasses = "bg-muted text-muted-foreground";
@@ -78,7 +80,7 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus }> = ({ t
       IconComponent = ShieldQuestion;
       badgeVariant = "secondary";
       badgeClasses = "bg-gray-500/20 text-gray-700 border-gray-500/30";
-      detailsText = `Not applicable for this product.`; // Overwrite lastChecked for N/A
+      detailsText = `Not applicable for this product. Last checked: ${new Date(data.lastChecked).toLocaleDateString()}`; // Keep lastChecked for N/A
       break;
   }
 
@@ -97,19 +99,44 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus }> = ({ t
           {detailsText && <span className="block text-xs text-muted-foreground">{detailsText}</span>}
         </div>
       </div>
-      <Badge variant={badgeVariant} className={cn("text-xs capitalize", badgeClasses)}>
-        {data.status.replace('_', ' ')}
-      </Badge>
+      <div className="flex items-center gap-2">
+        {actionButton}
+        <Badge variant={badgeVariant} className={cn("text-xs capitalize", badgeClasses)}>
+          {data.status.replace('_', ' ')}
+        </Badge>
+      </div>
     </div>
   );
 };
 
-const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ complianceData, notifications }) => {
+const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ complianceData, notifications, onSyncEprel, isSyncingEprel }) => {
   if (!complianceData) {
     return <p className="text-muted-foreground">Overall compliance data not available.</p>;
   }
 
   const hasErrorNotifications = notifications?.some(n => n.type === 'error');
+
+  const eprelSyncButton = onSyncEprel ? (
+    <TooltipProvider>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={onSyncEprel}
+            disabled={isSyncingEprel}
+            className="h-7 w-7"
+          >
+            {isSyncingEprel ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+            <span className="sr-only">Sync with EPREL</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>Sync with EPREL Database</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  ) : null;
 
   return (
     <Card className={cn("shadow-md", hasErrorNotifications && "border-destructive border-2")}>
@@ -125,7 +152,7 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
       </CardHeader>
       <CardContent className="space-y-3">
         <ComplianceItem title="GDPR Data Privacy" data={complianceData.gdpr} />
-        <ComplianceItem title="EPREL Energy Label" data={complianceData.eprel} />
+        <ComplianceItem title="EPREL Energy Label" data={complianceData.eprel} actionButton={eprelSyncButton} />
         <ComplianceItem title="EBSI/Blockchain Verification" data={complianceData.ebsiVerified} />
         <ComplianceItem title="SCIP Database (Substances of Concern)" data={complianceData.scip} />
         <ComplianceItem title="CSRD Reporting Alignment" data={complianceData.csrd} />

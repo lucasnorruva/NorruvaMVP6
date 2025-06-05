@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
@@ -17,7 +17,7 @@ import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 
 import ProductLifecycleFlowchart, { type LifecyclePhase } from '@/components/products/ProductLifecycleFlowchart';
-import OverallProductCompliance, { type OverallComplianceData, type ProductNotification as OverallProductNotification } from '@/components/products/OverallProductCompliance';
+import OverallProductCompliance, { type OverallComplianceData, type ProductNotification as OverallProductNotification, type ComplianceStatus } from '@/components/products/OverallProductCompliance';
 import ProductAlerts, { type ProductNotification } from '@/components/products/ProductAlerts';
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
@@ -25,14 +25,15 @@ import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Resp
 import { useRole } from '@/contexts/RoleContext';
 import { useToast } from '@/hooks/use-toast';
 import { checkProductCompliance } from '@/ai/flows/check-product-compliance-flow';
+import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow'; // Added
 import type { ProductFormData } from '@/components/products/ProductForm';
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 
 interface StoredUserProduct extends ProductFormData {
   id: string;
-  status: string;
-  compliance: string;
+  status: string; // Overall status of product (Draft, Active)
+  compliance: string; // Overall compliance status (Compliant, Pending)
   lastUpdated: string;
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -215,13 +216,13 @@ const getDefaultMockProductValues = (id: string): MockProductType => ({
   productName: "User Added Product",
   gtin: "",
   category: "General",
-  status: "Draft",
-  compliance: "N/A",
+  status: "Draft", // Default status for user-added products
+  compliance: "N/A", // Default compliance for user-added
   lastUpdated: new Date().toISOString(),
   manufacturer: "N/A",
   modelNumber: "N/A",
   description: "No description provided.",
-  imageUrl: `https://placehold.co/600x400.png?text=${encodeURIComponent(id)}`,
+  imageUrl: `https://placehold.co/600x400.png?text=${encodeURIComponent(id.replace("USER_PROD", "P"))}`,
   imageHint: "product placeholder",
   materials: "Not specified",
   sustainabilityClaims: "None specified",
@@ -230,9 +231,15 @@ const getDefaultMockProductValues = (id: string): MockProductType => ({
   lifecycleEvents: [],
   complianceData: {},
   currentLifecyclePhaseIndex: 0,
-  lifecyclePhases: [ { id: "lc_user_default_1", name: "Created", icon: PackageSearch, status: 'completed', timestamp: new Date().toISOString(), location: "System", details: "Product entry created by user." }, { id: "lc_user_default_2", name: "Pending Review", icon: Factory, status: 'in_progress', details: "Awaiting further data input and review." } ],
-  overallCompliance: { gdpr: { status: "pending_review", lastChecked: new Date().toISOString() }, eprel: { status: "pending_review", lastChecked: new Date().toISOString() }, ebsiVerified: { status: "pending_review", lastChecked: new Date().toISOString() }, scip: { status: "pending_review", lastChecked: new Date().toISOString() }, csrd: { status: "pending_review", lastChecked: new Date().toISOString() }, },
-  notifications: [ {id: "user_info_1", type: "info", message: "This product was added by a user and may have incomplete data. Please review and update.", date: new Date().toISOString()} ],
+  lifecyclePhases: [ { id: `lc_user_${id}_1`, name: "Created", icon: PackageSearch, status: 'completed', timestamp: new Date().toISOString(), location: "System", details: "Product entry created by user." }, { id: `lc_user_${id}_2`, name: "Pending Review", icon: Factory, status: 'in_progress', details: "Awaiting further data input and review." } ],
+  overallCompliance: { 
+    gdpr: { status: "pending_review", lastChecked: new Date().toISOString() }, 
+    eprel: { status: "pending_review", lastChecked: new Date().toISOString() }, 
+    ebsiVerified: { status: "pending_review", lastChecked: new Date().toISOString() }, 
+    scip: { status: "pending_review", lastChecked: new Date().toISOString() }, 
+    csrd: { status: "pending_review", lastChecked: new Date().toISOString() }, 
+  },
+  notifications: [ {id: `user_info_${id}`, type: "info", message: "This product was added by a user and may have incomplete data. Please review and update.", date: new Date().toISOString()} ],
 });
 
 const TrustSignalIcon = ({ isVerified, tooltipText, VerifiedIcon = CheckCircle2, UnverifiedIcon = Info, customClasses }: { isVerified?: boolean, tooltipText: string, VerifiedIcon?: React.ElementType, UnverifiedIcon?: React.ElementType, customClasses?: string }) => {
@@ -256,7 +263,7 @@ const TrustSignalIcon = ({ isVerified, tooltipText, VerifiedIcon = CheckCircle2,
   )
 };
 
-const DataOriginIcon = ({ origin, fieldName }: { origin?: string, fieldName: string }) => {
+const DataOriginIcon = ({ origin, fieldName }: { origin?: 'AI_EXTRACTED' | 'manual', fieldName: string }) => {
   if (origin === 'AI_EXTRACTED') {
     return (
       <TooltipProvider>
@@ -322,6 +329,7 @@ export default function ProductDetailPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('specifications'); 
   const [isCheckingCompliance, setIsCheckingCompliance] = useState(false);
+  const [isSyncingEprel, setIsSyncingEprel] = useState(false); // Added
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -337,30 +345,35 @@ export default function ProductDetailPage() {
         if (storedProduct) {
           const defaults = getDefaultMockProductValues(storedProduct.id);
           foundProduct = {
-            ...defaults,
+            ...defaults, // Start with defaults to ensure all MockProductType fields are present
             productId: storedProduct.id,
             productName: storedProduct.productName || "User Added Product",
             productNameOrigin: storedProduct.productNameOrigin,
             gtin: storedProduct.gtin || "",
             category: storedProduct.productCategory || "General",
-            status: storedProduct.status,
-            compliance: storedProduct.compliance,
-            lastUpdated: storedProduct.lastUpdated,
+            status: storedProduct.status || "Draft",
+            compliance: storedProduct.compliance || "N/A",
+            lastUpdated: storedProduct.lastUpdated || new Date().toISOString(),
             manufacturer: storedProduct.manufacturer || "N/A",
             modelNumber: storedProduct.modelNumber || "N/A",
             description: storedProduct.productDescription || "No description provided.",
             descriptionOrigin: storedProduct.productDescriptionOrigin,
             imageUrl: storedProduct.imageUrl || defaults.imageUrl,
             imageUrlOrigin: storedProduct.imageUrlOrigin,
-            imageHint: storedProduct.imageUrl ? (storedProduct.productName || "product") : defaults.imageHint, 
+            imageHint: storedProduct.imageUrl && !storedProduct.imageUrl.includes('placehold.co') && !storedProduct.imageUrl.includes('?text=') ? (storedProduct.productName || "product image") : defaults.imageHint, 
             materials: storedProduct.materials || "Not specified",
             sustainabilityClaims: storedProduct.sustainabilityClaims || "None specified",
             energyLabel: storedProduct.energyLabel || "N/A",
-            specifications: storedProduct.specifications ? (typeof storedProduct.specifications === 'string' ? JSON.parse(storedProduct.specifications) : storedProduct.specifications) : {},
+            specifications: storedProduct.specifications ? (typeof storedProduct.specifications === 'string' ? JSON.parse(storedProduct.specifications) : storedProduct.specifications as Record<string,string>) : {},
             batteryChemistry: storedProduct.batteryChemistry,
+            batteryChemistryOrigin: initialData?.batteryChemistryOrigin,
             stateOfHealth: storedProduct.stateOfHealth,
+            stateOfHealthOrigin: initialData?.stateOfHealthOrigin,
             carbonFootprintManufacturing: storedProduct.carbonFootprintManufacturing,
+            carbonFootprintManufacturingOrigin: initialData?.carbonFootprintManufacturingOrigin,
             recycledContentPercentage: storedProduct.recycledContentPercentage,
+            recycledContentPercentageOrigin: initialData?.recycledContentPercentageOrigin,
+            // Keep default lifecycleEvents, complianceData, overallCompliance, notifications from defaults if not in StoredUserProduct
           };
         }
       }
@@ -426,12 +439,71 @@ export default function ProductDetailPage() {
     } finally { setIsCheckingCompliance(false); }
   };
 
+  const handleSyncEprel = async () => {
+    if (!product) return;
+    setIsSyncingEprel(true);
+    try {
+      const result = await syncEprelData({
+        productId: product.productId,
+        productName: product.productName,
+        modelNumber: product.modelNumber,
+      });
+
+      let newEprelStatus: ComplianceStatus['status'] = 'pending_review';
+      if (result.syncStatus === 'Synced Successfully') {
+        newEprelStatus = 'compliant';
+      } else if (result.syncStatus === 'Product Not Found in EPREL') {
+        newEprelStatus = 'not_applicable'; // Or 'non_compliant' depending on business rule
+      } else if (result.syncStatus === 'Data Mismatch' || result.syncStatus === 'Error During Sync') {
+        newEprelStatus = 'pending_review'; // Or a custom status like 'requires_attention'
+      }
+
+      setProduct(prevProduct => {
+        if (!prevProduct) return null;
+        return {
+          ...prevProduct,
+          overallCompliance: {
+            ...prevProduct.overallCompliance,
+            eprel: {
+              ...prevProduct.overallCompliance.eprel,
+              status: newEprelStatus,
+              entryId: result.eprelId || prevProduct.overallCompliance.eprel.entryId,
+              lastChecked: result.lastChecked,
+            },
+          },
+        };
+      });
+
+      toast({
+        title: "EPREL Sync Attempted",
+        description: (
+          <div>
+            <p>Status: <strong>{result.syncStatus}</strong></p>
+            {result.eprelId && <p>EPREL ID: {result.eprelId}</p>}
+            <p className="text-xs mt-1">{result.message}</p>
+          </div>
+        ),
+        variant: result.syncStatus === 'Synced Successfully' ? 'default' : (result.syncStatus.includes('Error') || result.syncStatus.includes('Mismatch') ? 'destructive' : 'default'),
+        duration: 7000,
+      });
+
+    } catch (error) {
+      console.error("EPREL Sync failed:", error);
+      toast({ title: "Error Syncing with EPREL", description: error instanceof Error ? error.message : "An unknown error occurred.", variant: "destructive" });
+    } finally {
+      setIsSyncingEprel(false);
+    }
+  };
+
+
   if (product === undefined) { return <ProductDetailSkeleton />; }
   if (!product) { notFound(); return null; }
 
   const currentYear = new Date().getFullYear().toString();
   const currentCarbonFootprint = product.historicalCarbonFootprint?.find(p => p.year === currentYear)?.value || product.historicalCarbonFootprint?.[product.historicalCarbonFootprint.length - 1]?.value;
   const dppCompleteness = calculateDppCompleteness(product);
+  const canEditProduct = (currentRole === 'admin' || currentRole === 'manufacturer') && product.productId.startsWith("USER_PROD");
+
 
   return (
     <div className="space-y-8">
@@ -444,20 +516,36 @@ export default function ProductDetailPage() {
             {product.isDppBlockchainAnchored && product.dppAnchorTransactionHash && ( <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}> <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" /> </Button> </TooltipTrigger> <TooltipContent> <p>View on Blockchain Explorer (mock). Tx: {product.dppAnchorTransactionHash}</p> </TooltipContent> </Tooltip> </TooltipProvider> )}
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
-            <Badge variant={ product.status === "Active" ? "default" : product.status === "Archived" ? "secondary" : "outline" } className={cn( product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "" )}> {product.status} </Badge>
+            <Badge variant={ product.status === "Active" ? "default" : product.status === "Archived" ? "secondary" : "outline" } className={cn( product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", product.status === "Draft" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {product.status} </Badge>
             <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Badge variant={ product.compliance === "Compliant" ? "default" : product.compliance === "Pending Documentation" ? "outline" : product.compliance === "Pending" ? "outline" : product.compliance === "N/A" ? "secondary" : "destructive" } className={cn( product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", (product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "", product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" : "" ,"cursor-help" )}> {product.compliance} {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />} {(product.compliance === "Pending" || product.compliance === "Pending Documentation") && <Info className="h-3 w-3 ml-1" />} {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1" />} </Badge> </TooltipTrigger> <TooltipContent> <p>Overall compliance status. Last checked: {product.complianceLastChecked ? new Date(product.complianceLastChecked).toLocaleDateString() : "N/A"}</p> </TooltipContent> </Tooltip> </TooltipProvider>
             <span className="text-sm text-muted-foreground">Last updated: {new Date(product.lastUpdated).toLocaleDateString()}</span>
           </div>
         </div>
-        <div className="flex gap-2"> <Link href={`/passport/${product.productId}`} passHref target="_blank"> <Button variant="outline"> <ExternalLink className="mr-2 h-4 w-4" /> View Public Passport </Button> </Link> </div>
+        <div className="flex gap-2 items-center">
+          {canEditProduct && (
+            <Link href={`/products/new?edit=${product.productId}`} passHref>
+              <Button variant="outline" size="sm"> <Edit3 className="mr-2 h-4 w-4" /> Edit Product </Button>
+            </Link>
+          )}
+          <Link href={`/passport/${product.productId}`} passHref target="_blank"> <Button variant="outline"> <ExternalLink className="mr-2 h-4 w-4" /> View Public Passport </Button> </Link> 
+        </div>
       </div>
       
       <Card className="shadow-xl border-primary/20 bg-muted/30">
-        <CardHeader className="flex flex-row justify-between items-start">
+        <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div> <CardTitle className="text-2xl font-headline text-primary">Live DPP Status Overview</CardTitle> <CardDescription>Dynamic summary of product compliance, alerts, and lifecycle progress.</CardDescription> </div>
            <Button  onClick={handleSimulateComplianceCheck}  disabled={isCheckingCompliance || product.currentLifecyclePhaseIndex >= product.lifecyclePhases.length -1} variant="secondary" size="sm" > {isCheckingCompliance ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Workflow className="mr-2 h-4 w-4" />} Simulate Next Stage & Check Compliance </Button>
         </CardHeader>
-        <CardContent className="space-y-6"> <OverallProductCompliance  complianceData={product.overallCompliance}  notifications={product.notifications as OverallProductNotification[]}  /> {product.notifications && product.notifications.length > 0 && ( <ProductAlerts notifications={product.notifications} /> )} <ProductLifecycleFlowchart phases={product.lifecyclePhases} currentPhaseIndex={product.currentLifecyclePhaseIndex} /> </CardContent>
+        <CardContent className="space-y-6"> 
+            <OverallProductCompliance  
+                complianceData={product.overallCompliance}  
+                notifications={product.notifications as OverallProductNotification[]}
+                onSyncEprel={handleSyncEprel}
+                isSyncingEprel={isSyncingEprel}
+            /> 
+            {product.notifications && product.notifications.length > 0 && ( <ProductAlerts notifications={product.notifications} /> )} 
+            <ProductLifecycleFlowchart phases={product.lifecyclePhases} currentPhaseIndex={product.currentLifecyclePhaseIndex} /> 
+        </CardContent>
       </Card>
 
       <Card className="shadow-lg overflow-hidden">
@@ -470,7 +558,7 @@ export default function ProductDetailPage() {
                 fill
                 className="object-contain"
                 data-ai-hint={product.imageHint || product.productName.split(" ").slice(0,2).join(" ")}
-                priority
+                priority={!product.imageUrl?.startsWith("data:")} // Don't prioritize large data URIs
               />
             </AspectRatio>
             <DataOriginIcon origin={product.imageUrlOrigin} fieldName="Product Image"/>
@@ -605,6 +693,3 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
-
-
-    

@@ -41,11 +41,16 @@ export interface MockDppPoint {
   name: string;
   size: number;
   category: string;
-  status: 'compliant' | 'pending' | 'issue';
+  status: 'compliant' | 'pending' | 'issue'; // General product compliance/readiness status
   manufacturer?: string;
   gtin?: string;
   complianceSummary?: string;
   timestamp: number; // Year
+  originCountry?: string;
+  destinationCountry?: string;
+  currentCheckpoint?: string;
+  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'unknown';
+  customsStatus?: 'cleared' | 'flagged' | 'pending_inspection' | 'detained' | 'not_applicable';
 }
 
 interface MockArc {
@@ -59,22 +64,71 @@ interface MockArc {
   arcDashLength?: number;
   arcDashGap?: number;
   arcStroke?: number;
+  transportMode?: 'sea' | 'air' | 'road' | 'rail';
+  productId?: string; // ID of the product being transported
 }
 
 const mockDppsOnGlobe: MockDppPoint[] = [
-  { id: "DPP_GLOBE_001", lat: 48.8566, lng: 2.3522, name: "Smart Refrigerator X1 (Paris)", size: 0.6, category: 'Appliances', status: 'compliant', manufacturer: 'GreenTech SAS', gtin: '3123456789012', complianceSummary: 'Fully compliant with EU Ecodesign and Energy Labelling.', timestamp: 2022 },
-  { id: "DPP_GLOBE_002", lat: 52.5200, lng: 13.4050, name: "Eco-Laptop Z2 (Berlin)", size: 0.7, category: 'Electronics', status: 'pending', manufacturer: 'EcoElektronik GmbH', gtin: '3987654321098', complianceSummary: 'Pending battery passport documentation.', timestamp: 2023 },
-  { id: "DPP_GLOBE_003", lat: 41.9028, lng: 12.4964, name: "Recycled Sneakers V1 (Rome)", size: 0.5, category: 'Apparel', status: 'compliant', manufacturer: 'ModaVerde S.p.A.', gtin: '3456789012345', complianceSummary: 'Verified recycled content and ethical production.', timestamp: 2023 },
-  { id: "DPP_GLOBE_004", lat: 51.5074, lng: 0.1278, name: "Sustainable Coffee Machine (London)", size: 0.65, category: 'Appliances', status: 'issue', manufacturer: 'BrewRight Ltd.', gtin: '3567890123456', complianceSummary: 'Repairability score below EU target; awaiting updated schematics.', timestamp: 2024 },
-  { id: "DPP_GLOBE_005", lat: 40.4168, lng: -3.7038, name: "Smart Thermostat G2 (Madrid)", size: 0.55, category: 'Electronics', status: 'compliant', manufacturer: 'CasaInteligente S.L.', gtin: '3678901234567', complianceSummary: 'RoHS and REACH compliant.', timestamp: 2022 },
-  { id: "DPP_GLOBE_006", lat: 59.3293, lng: 18.0686, name: "Wooden Chair Set (Stockholm)", size: 0.6, category: 'Furniture', status: 'pending', manufacturer: 'NordicWood AB', gtin: '3789012345678', complianceSummary: 'FSC certification verification in progress.', timestamp: 2024 },
-  { id: "DPP_GLOBE_007", lat: 53.3498, lng: -6.2603, name: "Outdoor Solar Lamp (Dublin)", size: 0.5, category: 'Outdoor', status: 'compliant', manufacturer: 'SunBright Ltd.', gtin: '3890123456789', complianceSummary: 'IP65 rated, 3-year warranty.', timestamp: 2023 },
+  { 
+    id: "DPP_GLOBE_001", lat: 48.8566, lng: 2.3522, name: "Smart Refrigerator X1 (Paris)", size: 0.6, category: 'Appliances', status: 'compliant', 
+    manufacturer: 'GreenTech SAS', gtin: '3123456789012', complianceSummary: 'Fully compliant with EU Ecodesign and Energy Labelling.', timestamp: 2022,
+    originCountry: 'Germany', destinationCountry: 'France', currentCheckpoint: 'Retail Warehouse, Paris', ebsiStatus: 'verified', customsStatus: 'cleared'
+  },
+  { 
+    id: "DPP_GLOBE_002", lat: 52.5200, lng: 13.4050, name: "Eco-Laptop Z2 (Berlin)", size: 0.7, category: 'Electronics', status: 'pending', 
+    manufacturer: 'EcoElektronik GmbH', gtin: '3987654321098', complianceSummary: 'Pending battery passport documentation.', timestamp: 2023,
+    originCountry: 'China', destinationCountry: 'Germany', currentCheckpoint: 'Berlin Logistics Hub', ebsiStatus: 'pending', customsStatus: 'pending_inspection'
+  },
+  { 
+    id: "DPP_GLOBE_003", lat: 41.9028, lng: 12.4964, name: "Recycled Sneakers V1 (Rome)", size: 0.5, category: 'Apparel', status: 'compliant', 
+    manufacturer: 'ModaVerde S.p.A.', gtin: '3456789012345', complianceSummary: 'Verified recycled content and ethical production.', timestamp: 2023,
+    originCountry: 'Portugal', destinationCountry: 'Italy', currentCheckpoint: 'Rome Central Distribution', ebsiStatus: 'verified', customsStatus: 'cleared'
+  },
+  { 
+    id: "DPP_GLOBE_004", lat: 51.5074, lng: 0.1278, name: "Sustainable Coffee Machine (London)", size: 0.65, category: 'Appliances', status: 'issue', 
+    manufacturer: 'BrewRight Ltd.', gtin: '3567890123456', complianceSummary: 'Repairability score below EU target; awaiting updated schematics.', timestamp: 2024,
+    originCountry: 'Italy', destinationCountry: 'UK', currentCheckpoint: 'Port of Felixstowe, UK', ebsiStatus: 'not_verified', customsStatus: 'flagged' 
+  },
+  { 
+    id: "DPP_GLOBE_005", lat: 40.4168, lng: -3.7038, name: "Smart Thermostat G2 (Madrid)", size: 0.55, category: 'Electronics', status: 'compliant', 
+    manufacturer: 'CasaInteligente S.L.', gtin: '3678901234567', complianceSummary: 'RoHS and REACH compliant.', timestamp: 2022,
+    originCountry: 'Spain', destinationCountry: 'Spain', currentCheckpoint: 'Madrid Fulfillment Center', ebsiStatus: 'verified', customsStatus: 'not_applicable'
+  },
+  { 
+    id: "DPP_GLOBE_006", lat: 59.3293, lng: 18.0686, name: "Wooden Chair Set (Stockholm)", size: 0.6, category: 'Furniture', status: 'pending', 
+    manufacturer: 'NordicWood AB', gtin: '3789012345678', complianceSummary: 'FSC certification verification in progress.', timestamp: 2024,
+    originCountry: 'Sweden', destinationCountry: 'Sweden', currentCheckpoint: 'Local Workshop, Stockholm', ebsiStatus: 'unknown', customsStatus: 'not_applicable' 
+  },
+  { 
+    id: "DPP_GLOBE_007", lat: 34.0522, lng: -118.2437, name: "US Solar Panels (Los Angeles)", size: 0.8, category: 'Electronics', status: 'pending', 
+    manufacturer: 'SunPower US', gtin: '3890123456789', complianceSummary: 'Awaiting EU compliance check for import.', timestamp: 2024,
+    originCountry: 'USA', destinationCountry: 'EU (Expected)', currentCheckpoint: 'Port of Los Angeles', ebsiStatus: 'unknown', customsStatus: 'pending_inspection'
+  },
+   { 
+    id: "DPP_GLOBE_008", lat: 31.2304, lng: 121.4737, name: "Textiles Batch (Shanghai)", size: 0.7, category: 'Apparel', status: 'compliant', 
+    manufacturer: 'Global Textiles Co.', gtin: '3890123456999', complianceSummary: 'Pre-certified for EU import, REACH compliant.', timestamp: 2023,
+    originCountry: 'China', destinationCountry: 'Germany (Expected)', currentCheckpoint: 'Shanghai Port', ebsiStatus: 'pending', customsStatus: 'cleared' // Cleared Chinese customs for export
+  },
 ];
 
 const mockArcsData: MockArc[] = [
-  { startLat: 48.8566, startLng: 2.3522, endLat: 52.5200, endLng: 13.4050, color: 'rgba(255, 255, 255, 0.4)', label: 'Component Supply (Paris to Berlin)', timestamp: 2022 },
-  { startLat: 41.9028, startLng: 12.4964, endLat: 48.8566, endLng: 2.3522, color: 'rgba(255, 255, 255, 0.4)', label: 'Finished Goods (Rome to Paris)', timestamp: 2023 },
-  { startLat: 52.5200, startLng: 13.4050, endLat: 51.5074, endLng: 0.1278, color: 'rgba(255,255,0,0.5)', label: 'Electronics Sub-Assembly (Berlin to London)', arcDashLength: 0.3, arcDashGap: 0.1, arcStroke:0.8, timestamp: 2024 },
+  { 
+    startLat: 31.2304, startLng: 121.4737, endLat: 52.5200, endLng: 13.4050, color: 'rgba(255, 255, 0, 0.5)', 
+    label: 'Textiles Shipment (SHA to BER)', timestamp: 2023, productId: "DPP_GLOBE_008", transportMode: 'sea', arcDashLength: 0.2, arcDashGap: 0.1 
+  },
+  { 
+    startLat: 41.9028, startLng: 12.4964, endLat: 48.8566, endLng: 2.3522, color: 'rgba(255, 255, 255, 0.4)', 
+    label: 'Finished Goods (Rome to Paris)', timestamp: 2023, productId: "DPP_GLOBE_003", transportMode: 'road' 
+  },
+  { 
+    startLat: 52.5200, startLng: 13.4050, endLat: 51.5074, endLng: 0.1278, color: 'rgba(255,255,0,0.5)', 
+    label: 'Electronics Sub-Assembly (Berlin to London)', arcDashLength: 0.3, arcDashGap: 0.1, arcStroke:0.8, timestamp: 2024, 
+    productId: "DPP_GLOBE_002", transportMode: 'road' 
+  },
+  {
+    startLat: 34.0522, startLng: -118.2437, endLat: 48.8566, endLng: 2.3522, color: 'rgba(0, 255, 255, 0.5)',
+    label: 'Solar Panels (LA to Paris)', timestamp: 2024, productId: "DPP_GLOBE_007", transportMode: 'sea', arcDashLength: 0.1, arcDashGap: 0.05, arcStroke: 0.7
+  }
 ];
 
 const statusColors: Record<MockDppPoint['status'], string> = {
@@ -138,15 +192,15 @@ const GlobeVisualization = ({
     pointColor: d => pointColorAccessor(d as MockDppPoint),
     pointRadius: d => pointRadiusAccessor(d as MockDppPoint),
     pointAltitude: 0.02,
-    onPointClick: (point: any) => {
-      onPointClick(point as MockDppPoint);
+    onPointClick: (point: any) => { // point is Feature<Point, MockDppPoint>
+      onPointClick(point as MockDppPoint); // Casting to MockDppPoint based on how we construct pointsData
     },
     arcsData: arcs,
     arcLabel: 'label',
     arcColor: 'color',
-    arcDashLength: d => (d as any).arcDashLength || 0.1,
-    arcDashGap: d => (d as any).arcDashGap || 0.05,
-    arcStroke: d => (d as any).arcStroke || 0.5,
+    arcDashLength: d => (d as MockArc).arcDashLength || 0.1, // Casting to MockArc
+    arcDashGap: d => (d as MockArc).arcDashGap || 0.05, // Casting to MockArc
+    arcStroke: d => (d as MockArc).arcStroke || 0.5, // Casting to MockArc
     arcAltitudeAutoScale: 0.5,
   };
 
@@ -237,25 +291,58 @@ export default function DppGlobalTrackerPage() {
   const [maxYear, setMaxYear] = useState(2024);
   const [currentTime, setCurrentTime] = useState(maxYear);
 
-  const conceptDescription = `...`; // Kept for brevity
+  const conceptDescription = `
+Core Idea:
+The EU Digital Product Passport (DPP) visualization tool is a dynamic, real-time, global tracker. It enables stakeholders to monitor and manage product compliance within the EU and from external regions. The tool tracks whether products meet EU regulatory standards, helps customs officers identify flagged items, and supports inventory and supply chain managers in efficiently managing compliant products.
+
+Key Features of the DPP Global Tracker:
+1. Global Map Visualization: Interactive globe for visualizing global product movement and compliance status.
+2. Compliance Tracking: Real-time display of compliance status (e.g., compliant, non-compliant, under review).
+3. Customizable Views: Future potential for role-based access with customized views.
+4. Detailed Product Information: Access to key product compliance data via interactive elements.
+5. Product Journey Tracking: Visualize a product's journey across the globe and its compliance status at checkpoints.
+6. Real-time Updates (Simulated): Simulate continuous tracking of new products, customs inspections, and regulatory changes.
+
+User Personas & Their Needs (Conceptual):
+- Customs Officers: Track incoming products, verify EU regulation compliance, flag non-compliant items, quickly access compliance data.
+- Inventory Managers: Manage compliant products in warehouses, track stock, ensure EU standards are met before distribution.
+- Compliance Officers: Oversee compliance across regions, audit certifications, ensure proper documentation for EU market entry.
+- Supply Chain Managers: Monitor supply chain compliance from production to delivery.
+- End-Consumers (Indirectly): Scan QR codes to view product passports, verify compliance, trace origin, and check safety.
+
+System Architecture & Data Flow (Conceptual High-Level):
+- Backend System: Product database (details, certifications, compliance status like EPREL, EBSI), tracking system (product journey via unique IDs), customs integration (simulated for now), real-time compliance checks (mock APIs).
+- Data Layer: Geospatial data for tracking, product lifecycle data, QR code/blockchain linkage (conceptual).
+- Frontend System (This Visualization Tool): Interactive globe, data overlays (compliance status, flags), real-time data streaming simulation.
+
+Key Visualization Features:
+- Global Map with Dynamic Data Layers: Toggle layers for compliance status, product categories, etc.
+- Product Flow Animation: Show product movement along trade routes with compliance status changes (conceptual).
+- Zoom and Drill-Down: Explore specific regions for detailed compliance data.
+- Product Journey Visualization: Track a product from manufacturer to retail, showing compliance at each stage.
+- Interactive Product Information: Click on products/routes for details (certifications, customs data - simulated).
+- Real-Time Alerts (Simulated): Flag non-compliant products with recommendations.
+- Analytics and Reporting (Future): Trends in compliance, supply chain visibility.
+  `;
+
 
   useEffect(() => {
     const allTimestamps = [
       ...mockDppsOnGlobe.map(p => p.timestamp),
       ...mockArcsData.map(a => a.timestamp)
-    ].filter(ts => typeof ts === 'number'); // Ensure only numbers are processed
+    ].filter(ts => typeof ts === 'number'); 
 
     if (allTimestamps.length > 0) {
       const newMinYear = Math.min(...allTimestamps);
       const newMaxYear = Math.max(...allTimestamps);
       setMinYear(newMinYear);
       setMaxYear(newMaxYear);
-      // Adjust currentTime only if it's outside the new valid range or not yet set meaningfully
+      
       if (currentTime < newMinYear || currentTime > newMaxYear || currentTime === 0) { 
           setCurrentTime(newMaxYear);
       }
     }
-  }, []); // Calculate year range on mount
+  }, []); 
 
 
   const handlePointClick = (point: MockDppPoint) => {
@@ -473,20 +560,20 @@ export default function DppGlobalTrackerPage() {
                 {conceptDescription.trim().split('\n\n').map((paragraphBlock, index) => {
                   const lines = paragraphBlock.split('\n');
                   const firstLine = lines[0].trim();
-                  const mainHeaders = ["Core Idea:", "Key Features of the DPP Global Tracker:", "Technical Implementation Ideas:", "Conclusion:"];
+                  const mainHeaders = ["Core Idea:", "Key Features of the DPP Global Tracker:", "Technical Implementation Ideas:", "Conclusion:", "User Personas & Their Needs (Conceptual):", "System Architecture & Data Flow (Conceptual High-Level):", "Key Visualization Features:"];
                   const isMainHeader = mainHeaders.some(header => firstLine.startsWith(header));
 
                   if (isMainHeader) {
                     return (
                       <div key={index} className="pt-2">
                         <h2 className="text-lg font-semibold text-primary mt-4 mb-2 !no-underline">{firstLine}</h2>
-                        {lines.slice(1).map((line, lineIdx) => <p key={lineIdx} className="my-1 text-sm">{line}</p>)}
+                        {lines.slice(1).map((line, lineIdx) => <p key={lineIdx} className="my-1 text-sm">{line.replace(/^- /, '• ')}</p>)}
                       </div>
                     );
-                  } else if (firstLine.match(/^(\d+)\.\s+.+/)) {
+                  } else if (firstLine.match(/^(\d+)\.\s+.+/) || firstLine.startsWith('- ') || firstLine.startsWith('• ')) {
                      return (
                       <div key={index} className="mt-1">
-                        <h3 className="text-md font-medium text-foreground/90 mt-3 mb-1 !no-underline">{firstLine}</h3>
+                        <h3 className="text-md font-medium text-foreground/90 mt-3 mb-1 !no-underline">{firstLine.replace(/^- /, '• ').replace(/^(\d+)\.\s*/, '$1. ')}</h3>
                         {lines.slice(1).map((line, lineIdx) => {
                           const trimmedLine = line.trim();
                            if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('• ')) {
@@ -513,3 +600,4 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
+

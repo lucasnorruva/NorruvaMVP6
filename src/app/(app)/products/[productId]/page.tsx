@@ -568,6 +568,7 @@ export default function ProductDetailPage() {
 
 
   return (
+    <TooltipProvider>
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -575,50 +576,46 @@ export default function ProductDetailPage() {
             <h1 className="text-3xl font-headline font-semibold">{product.productName}</h1>
             <DataOriginIcon origin={product.productNameOrigin} fieldName="Product Name" />
             {product.isDppBlockchainAnchored && ( 
-              <TooltipProvider> 
+              
                 <Tooltip delayDuration={100}> 
                   <TooltipTrigger asChild> 
                     <span><Fingerprint className="h-6 w-6 text-primary ml-2 cursor-help" /></span> 
                   </TooltipTrigger> 
                   <TooltipContent> <p>This Digital Product Passport is anchored on the blockchain, ensuring its integrity and authenticity.</p> </TooltipContent> 
                 </Tooltip> 
-              </TooltipProvider> 
+              
             )}
             {product.isDppBlockchainAnchored && product.dppAnchorTransactionHash && ( 
-              <TooltipProvider> 
+              
                 <Tooltip delayDuration={100}> 
                   <TooltipTrigger asChild>
-                     <span>
-                        <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}> 
-                            <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" /> 
-                        </Button> 
-                     </span>
+                    <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}> 
+                        <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" /> 
+                    </Button> 
                   </TooltipTrigger> 
                   <TooltipContent> <p>View on Blockchain Explorer (mock). Tx: {product.dppAnchorTransactionHash}</p> </TooltipContent> 
                 </Tooltip> 
-              </TooltipProvider> 
+              
             )}
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge variant={ product.status === "Active" ? "default" : product.status === "Archived" ? "secondary" : "outline" } className={cn( product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", product.status === "Draft" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {product.status} </Badge>
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
-                <span>
-                  <Badge
-                    variant={ product.compliance === "Compliant" ? "default" : product.compliance === "Pending Documentation" ? "outline" : product.compliance === "Pending" ? "outline" : product.compliance === "N/A" ? "secondary" : "destructive" }
-                    className={cn(
-                      product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "",
-                      (product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "",
-                      product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" : "",
-                      "cursor-help"
-                    )}
-                  >
-                    {product.compliance}
-                    {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />}
-                    {(product.compliance === "Pending" || product.compliance === "Pending Documentation") && <Info className="h-3 w-3 ml-1" />}
-                    {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1" />}
-                  </Badge>
-                </span>
+                <Badge
+                  variant={ product.compliance === "Compliant" ? "default" : product.compliance === "Pending Documentation" ? "outline" : product.compliance === "Pending" ? "outline" : product.compliance === "N/A" ? "secondary" : "destructive" }
+                  className={cn(
+                    product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "",
+                    (product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "",
+                    product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" : "",
+                    "cursor-help"
+                  )}
+                >
+                  {product.compliance}
+                  {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />}
+                  {(product.compliance === "Pending" || product.compliance === "Pending Documentation") && <Info className="h-3 w-3 ml-1" />}
+                  {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1" />}
+                </Badge>
               </TooltipTrigger>
               <TooltipContent>
                 <p>Overall compliance status. Last checked: {product.complianceLastChecked ? new Date(product.complianceLastChecked).toLocaleDateString() : "N/A"}</p>
@@ -703,7 +700,7 @@ export default function ProductDetailPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <TooltipProvider>
+            
               <Tooltip delayDuration={100}>
                 <TooltipTrigger asChild>
                   <div className="cursor-help">
@@ -731,7 +728,7 @@ export default function ProductDetailPage() {
                   )}
                 </TooltipContent>
               </Tooltip>
-            </TooltipProvider>
+            
           </CardContent>
         </Card>
         <Card className="shadow-lg">
@@ -832,7 +829,7 @@ export default function ProductDetailPage() {
         <TabsContent value="lifecycle" className="mt-4">
           <Card> <CardHeader> <CardTitle>Product Lifecycle Events</CardTitle> <CardDescription>Key events in the product's journey.</CardDescription> </CardHeader>
             <CardContent>
-              {product.lifecycleEvents && product.lifecycleEvents.length > 0 ? ( <ul className="space-y-4"> {product.lifecycleEvents.map((event) => ( <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors"> <div className="flex justify-between items-start mb-1"> <p className="font-semibold text-primary flex items-center"> {event.type} {event.isBlockchainAnchored && ( <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> <span className="cursor-help"><Server className="h-4 w-4 text-primary ml-2" /></span> </TooltipTrigger> <TooltipContent> <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p> </TooltipContent> </Tooltip> </TooltipProvider> )} {event.isBlockchainAnchored && event.transactionHash && ( <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> <span className="cursor-help"><Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}> <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" /> </Button></span> </TooltipTrigger> <TooltipContent> <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p> </TooltipContent> </Tooltip> </TooltipProvider> )} </p> <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleDateString()}</p> </div> <p className="text-sm text-muted-foreground">Location: {event.location}</p> <p className="text-sm text-muted-foreground">Details: {event.details}</p> </li> ))} </ul> ) : ( <p className="text-sm text-muted-foreground">No lifecycle events recorded for this product.</p> )}
+              {product.lifecycleEvents && product.lifecycleEvents.length > 0 ? ( <ul className="space-y-4"> {product.lifecycleEvents.map((event) => ( <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors"> <div className="flex justify-between items-start mb-1"> <p className="font-semibold text-primary flex items-center"> {event.type} {event.isBlockchainAnchored && ( <Tooltip delayDuration={100}> <TooltipTrigger asChild> <span className="cursor-help"><Server className="h-4 w-4 text-primary ml-2" /></span> </TooltipTrigger> <TooltipContent> <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p> </TooltipContent> </Tooltip> )} {event.isBlockchainAnchored && event.transactionHash && ( <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}> <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" /> </Button> </TooltipTrigger> <TooltipContent> <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p> </TooltipContent> </Tooltip> )} </p> <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleDateString()}</p> </div> <p className="text-sm text-muted-foreground">Location: {event.location}</p> <p className="text-sm text-muted-foreground">Details: {event.details}</p> </li> ))} </ul> ) : ( <p className="text-sm text-muted-foreground">No lifecycle events recorded for this product.</p> )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -856,6 +853,7 @@ export default function ProductDetailPage() {
         </TabsContent>
       </Tabs>
     </div>
+    </TooltipProvider>
   );
 }
 

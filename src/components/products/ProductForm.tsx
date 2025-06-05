@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -15,16 +16,18 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { ExtractProductDataOutput } from "@/ai/flows/extract-product-data";
 
 const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
+  gtin: z.string().optional().describe("Global Trade Item Number"),
   productDescription: z.string().optional(),
   manufacturer: z.string().optional(),
   modelNumber: z.string().optional(),
-  // For simplicity, specifications will be a string for now.
-  // In a real app, this would be a more complex field (e.g., array of key-value pairs).
+  materials: z.string().optional().describe("Key materials used in the product, e.g., Cotton, Recycled Polyester, Aluminum."),
+  sustainabilityClaims: z.string().optional().describe("Brief sustainability claims, e.g., 'Made with 50% recycled content', 'Carbon neutral production'."),
   specifications: z.string().optional(), 
   energyLabel: z.string().optional(),
 });
@@ -32,102 +35,174 @@ const formSchema = z.object({
 export type ProductFormData = z.infer<typeof formSchema>;
 
 interface ProductFormProps {
-  initialData?: Partial<ExtractProductDataOutput>;
+  initialData?: Partial<ExtractProductDataOutput & ProductFormData>; // Merge with ProductFormData for new fields
   onSubmit: (data: ProductFormData) => void;
   isSubmitting?: boolean;
+  isStandalonePage?: boolean; // To conditionally render the Card and Submit button
 }
 
-export default function ProductForm({ initialData, onSubmit, isSubmitting }: ProductFormProps) {
+export default function ProductForm({ initialData, onSubmit, isSubmitting, isStandalonePage = true }: ProductFormProps) {
   const form = useForm<ProductFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       productName: initialData?.productName || "",
+      gtin: initialData?.gtin || "",
       productDescription: initialData?.productDescription || "",
       manufacturer: initialData?.manufacturer || "",
       modelNumber: initialData?.modelNumber || "",
-      specifications: initialData?.specifications ? JSON.stringify(initialData.specifications, null, 2) : "",
+      materials: initialData?.materials || "",
+      sustainabilityClaims: initialData?.sustainabilityClaims || "",
+      specifications: initialData?.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
       energyLabel: initialData?.energyLabel || "",
     },
   });
 
-  // Update form values if initialData changes (e.g., after AI extraction)
   React.useEffect(() => {
     if (initialData) {
       form.reset({
         productName: initialData.productName || "",
+        gtin: initialData.gtin || "",
         productDescription: initialData.productDescription || "",
         manufacturer: initialData.manufacturer || "",
         modelNumber: initialData.modelNumber || "",
-        specifications: initialData.specifications ? JSON.stringify(initialData.specifications, null, 2) : "",
+        materials: initialData.materials || "",
+        sustainabilityClaims: initialData.sustainabilityClaims || "",
+        specifications: initialData.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
         energyLabel: initialData.energyLabel || "",
       });
     }
   }, [initialData, form]);
 
+  const formContent = (
+    <Accordion type="multiple" defaultValue={['item-1', 'item-2']} className="w-full">
+      <AccordionItem value="item-1">
+        <AccordionTrigger className="text-lg font-semibold">Basic Information</AccordionTrigger>
+        <AccordionContent className="space-y-6 pt-4">
+          <FormField
+            control={form.control}
+            name="productName"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Product Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., EcoBoiler X1" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="gtin"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>GTIN (Global Trade Item Number)</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., 01234567890123" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="productDescription"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Product Description</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Detailed description of the product..." {...field} rows={4} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid md:grid-cols-2 gap-6">
+            <FormField
+              control={form.control}
+              name="manufacturer"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Manufacturer</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., GreenTech Inc." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="modelNumber"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Model Number</FormLabel>
+                  <FormControl>
+                    <Input placeholder="e.g., GTX-EB-001" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        </AccordionContent>
+      </AccordionItem>
 
-  return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="font-headline">Product Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <FormField
-              control={form.control}
-              name="productName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Product Name</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., EcoBoiler X1" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="productDescription"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Product Description</FormLabel>
-                  <FormControl>
-                    <Textarea placeholder="Detailed description of the product..." {...field} rows={4} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <div className="grid md:grid-cols-2 gap-6">
-              <FormField
-                control={form.control}
-                name="manufacturer"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Manufacturer</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., GreenTech Inc." {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="modelNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Model Number</FormLabel>
-                    <FormControl>
-                      <Input placeholder="e.g., GTX-EB-001" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <FormField
+      <AccordionItem value="item-2">
+        <AccordionTrigger className="text-lg font-semibold">Sustainability & Compliance</AccordionTrigger>
+        <AccordionContent className="space-y-6 pt-4">
+           <FormField
+            control={form.control}
+            name="materials"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Key Materials</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="e.g., Organic Cotton, Recycled PET, Aluminum Alloy" {...field} rows={3}/>
+                </FormControl>
+                <FormDescription>
+                  List the primary materials used in the product.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="sustainabilityClaims"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Sustainability Claims</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="e.g., Made with 70% recycled materials, Carbon neutral certified, Biodegradable packaging" {...field} rows={3}/>
+                </FormControl>
+                 <FormDescription>
+                  Highlight key sustainability features of the product.
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="energyLabel"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Energy Label</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., A++" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </AccordionContent>
+      </AccordionItem>
+      
+      <AccordionItem value="item-3">
+        <AccordionTrigger className="text-lg font-semibold">Technical Specifications</AccordionTrigger>
+        <AccordionContent className="pt-4">
+           <FormField
               control={form.control}
               name="specifications"
               render={({ field }) => (
@@ -137,31 +212,49 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting }: Pro
                     <Textarea placeholder='e.g., { "color": "blue", "weight": "10kg" }' {...field} rows={5} />
                   </FormControl>
                   <FormDescription>
-                    Enter product specifications as a JSON object.
+                    Enter detailed product specifications as a JSON object.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <FormField
-              control={form.control}
-              name="energyLabel"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Energy Label</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., A++" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </CardContent>
-        </Card>
-        <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={isSubmitting}>
-          {isSubmitting ? "Saving..." : "Save Product"}
-        </Button>
-      </form>
+        </AccordionContent>
+      </AccordionItem>
+    </Accordion>
+  );
+
+
+  if (isStandalonePage) {
+    return (
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="font-headline">Product Information</CardTitle>
+              <CardDescription>Fill in the details for the Digital Product Passport.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              {formContent}
+            </CardContent>
+          </Card>
+          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : "Save Product"}
+          </Button>
+        </form>
+      </Form>
+    );
+  }
+
+  // For use within other components, not as a standalone page form
+  return (
+     <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          {formContent}
+           <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={isSubmitting}>
+            {isSubmitting ? "Saving..." : "Save Changes"}
+          </Button>
+        </form>
     </Form>
   );
 }
+

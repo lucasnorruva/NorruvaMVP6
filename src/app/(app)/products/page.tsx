@@ -1,3 +1,4 @@
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -35,7 +36,7 @@ export default function ProductsPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="font-headline">Product Inventory</CardTitle>
-          <CardDescription>Manage and track all products in your system.</CardDescription>
+          <CardDescription>Manage and track all products in your system and their Digital Product Passports.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -53,8 +54,16 @@ export default function ProductsPage() {
             <TableBody>
               {products.map((product) => (
                 <TableRow key={product.id}>
-                  <TableCell className="font-medium">{product.id}</TableCell>
-                  <TableCell>{product.name}</TableCell>
+                  <TableCell className="font-medium">
+                     <Link href={`/products/${product.id}`} className="hover:underline text-primary">
+                        {product.id}
+                     </Link>
+                  </TableCell>
+                  <TableCell>
+                     <Link href={`/products/${product.id}`} className="hover:underline">
+                        {product.name}
+                     </Link>
+                  </TableCell>
                   <TableCell>{product.category}</TableCell>
                   <TableCell>
                     <Badge variant={
@@ -62,8 +71,8 @@ export default function ProductsPage() {
                       product.status === "Archived" ? "secondary" : "outline"
                     } className={
                       product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" :
-                      product.status === "Archived" ? "bg-gray-500/20 text-gray-700 border-gray-500/30" :
-                      "bg-yellow-500/20 text-yellow-700 border-yellow-500/30"
+                      product.status === "Archived" ? "bg-muted text-muted-foreground border-border" : // Adjusted archived style
+                      "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" // Draft style
                     }>
                       {product.status}
                     </Badge>
@@ -75,7 +84,8 @@ export default function ProductsPage() {
                       } className={
                         product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" :
                         product.compliance === "Pending" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" :
-                        "bg-red-500/20 text-red-700 border-red-500/30"
+                        product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" : // N/A style
+                        "bg-red-500/20 text-red-700 border-red-500/30" // Non-Compliant
                       }>
                        {product.compliance}
                      </Badge>
@@ -86,20 +96,23 @@ export default function ProductsPage() {
                       <DropdownMenuTrigger asChild>
                         <Button variant="ghost" size="icon">
                           <MoreHorizontal className="h-5 w-5" />
+                           <span className="sr-only">Product Actions</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
-                          <Eye className="mr-2 h-4 w-4" />
-                          View Details
+                        <DropdownMenuItem asChild>
+                          <Link href={`/products/${product.id}`}>
+                            <Eye className="mr-2 h-4 w-4" />
+                            View Details
+                          </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem> {/* Consider linking to an edit page /products/[id]/edit later */}
                           <Edit className="mr-2 h-4 w-4" />
-                          Edit
+                          Edit (Not Implemented)
                         </DropdownMenuItem>
                         <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
                           <Trash2 className="mr-2 h-4 w-4" />
-                          Delete
+                          Delete (Not Implemented)
                         </DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
@@ -113,3 +126,4 @@ export default function ProductsPage() {
     </div>
   );
 }
+

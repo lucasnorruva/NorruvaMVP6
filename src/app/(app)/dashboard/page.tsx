@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, BadgeCheck, Building, FileWarning } from "lucide-react";
+import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, BadgeCheck, Building, FileWarning, Eye, Database, SearchCheck, BarChart2, AlertTriangle, MessageSquare, Inbox, History } from "lucide-react";
 import Link from "next/link";
 import { useRole } from "@/contexts/RoleContext";
 
@@ -63,7 +63,6 @@ const AdminQuickActions = () => {
   )
 }
 
-// Placeholder for Manufacturer Dashboard
 const ManufacturerDashboard = () => (
   <div className="space-y-6">
     <Card className="shadow-lg">
@@ -86,20 +85,31 @@ const ManufacturerDashboard = () => (
         </Card>
       </CardContent>
     </Card>
-    <Link href="/products/new" passHref>
-      <Button variant="secondary" className="w-full sm:w-auto">
-        <PlusCircle className="mr-2 h-5 w-5" />
-        Add New Product / Create DPP
-      </Button>
-    </Link>
+    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        <Link href="/products/new" passHref>
+          <Button variant="secondary" className="w-full h-full">
+            <PlusCircle className="mr-2 h-5 w-5" />
+            Add New Product / Create DPP
+          </Button>
+        </Link>
+        <Link href="/products" passHref>
+          <Button variant="outline" className="w-full h-full">
+            <Eye className="mr-2 h-5 w-5" />
+            View My Products
+          </Button>
+        </Link>
+        <Button variant="outline" className="w-full h-full">
+            <Layers className="mr-2 h-5 w-5" />
+            Manage Supply Chain Data (Mock)
+        </Button>
+    </div>
     <Card>
-      <CardHeader><CardTitle>Recent Activity</CardTitle></CardHeader>
-      <CardContent><p className="text-muted-foreground">Product 'EcoBoiler X1' updated. New batch data for 'SolarPanel ZP' added.</p></CardContent>
+      <CardHeader><CardTitle className="flex items-center"><History className="mr-2 h-5 w-5"/>Recent Activity</CardTitle></CardHeader>
+      <CardContent><p className="text-muted-foreground">Product 'EcoBoiler X1' updated. New batch data for 'SolarPanel ZP' added. Supplier 'GreenParts Co' confirmed new material specs.</p></CardContent>
     </Card>
   </div>
 );
 
-// Placeholder for Supplier Dashboard
 const SupplierDashboard = () => (
   <div className="space-y-6">
     <Card className="shadow-lg">
@@ -118,18 +128,23 @@ const SupplierDashboard = () => (
         </Card>
       </CardContent>
     </Card>
-    <Button variant="outline" className="w-full sm:w-auto">
-      <ScanLine className="mr-2 h-5 w-5" />
-      Upload Compliance Document
-    </Button>
+     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Button variant="secondary" className="w-full h-full">
+          <ScanLine className="mr-2 h-5 w-5" />
+          Upload Compliance Document
+        </Button>
+         <Button variant="outline" className="w-full h-full">
+            <FileText className="mr-2 h-5 w-5" />
+            View Material Specifications (Mock)
+        </Button>
+    </div>
      <Card>
-      <CardHeader><CardTitle>Notifications</CardTitle></CardHeader>
-      <CardContent><p className="text-muted-foreground">Manufacturer 'GreenTech' requests updated specs for 'Component X'.</p></CardContent>
+      <CardHeader><CardTitle className="flex items-center"><Inbox className="mr-2 h-5 w-5"/>Notifications</CardTitle></CardHeader>
+      <CardContent><p className="text-muted-foreground">Manufacturer 'GreenTech' requests updated specs for 'Component X'. Reminder: 'Polymer Z' safety data sheet due next week.</p></CardContent>
     </Card>
   </div>
 );
 
-// Placeholder for Retailer Dashboard
 const RetailerDashboard = () => (
   <div className="space-y-6">
     <Card className="shadow-lg">
@@ -148,18 +163,25 @@ const RetailerDashboard = () => (
         </Card>
       </CardContent>
     </Card>
-     <Button variant="outline" className="w-full sm:w-auto">
-      <FileText className="mr-2 h-5 w-5" />
-      Download Product Data Sheets
-    </Button>
+     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Button variant="secondary" className="w-full h-full">
+          <FileText className="mr-2 h-5 w-5" />
+          Download Product Data Sheets
+        </Button>
+        <Link href="/dpp-live-dashboard" passHref> {}
+            <Button variant="outline" className="w-full h-full">
+                <Eye className="mr-2 h-5 w-5" />
+                Access Public DPPs
+            </Button>
+        </Link>
+    </div>
     <Card>
-      <CardHeader><CardTitle>Market Alerts</CardTitle></CardHeader>
-      <CardContent><p className="text-muted-foreground">New sustainability claim verified for 'Eco T-Shirt'.</p></CardContent>
+      <CardHeader><CardTitle className="flex items-center"><MessageSquare className="mr-2 h-5 w-5"/>Market Alerts</CardTitle></CardHeader>
+      <CardContent><p className="text-muted-foreground">New sustainability claim verified for 'Eco T-Shirt'. Upcoming regulation update for 'Electronics' category.</p></CardContent>
     </Card>
   </div>
 );
 
-// Placeholder for Recycler Dashboard
 const RecyclerDashboard = () => (
   <div className="space-y-6">
     <Card className="shadow-lg">
@@ -178,18 +200,23 @@ const RecyclerDashboard = () => (
         </Card>
       </CardContent>
     </Card>
-    <Button variant="outline" className="w-full sm:w-auto">
-      <ScanLine className="mr-2 h-5 w-5" />
-      Scan Product for Disassembly Info
-    </Button>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Button variant="secondary" className="w-full h-full">
+          <ScanLine className="mr-2 h-5 w-5" />
+          Scan Product for Disassembly Info
+        </Button>
+        <Button variant="outline" className="w-full h-full">
+            <Database className="mr-2 h-5 w-5" />
+            View Material Composition DB (Mock)
+        </Button>
+    </div>
      <Card>
-      <CardHeader><CardTitle>Material Alerts</CardTitle></CardHeader>
-      <CardContent><p className="text-muted-foreground">High volume of 'Recycled PET' available from recent batch.</p></CardContent>
+      <CardHeader><CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-5 w-5"/>Material Alerts</CardTitle></CardHeader>
+      <CardContent><p className="text-muted-foreground">High volume of 'Recycled PET' available from recent batch. Low stock of 'Lithium Carbonate' for battery recycling.</p></CardContent>
     </Card>
   </div>
 );
 
-// Placeholder for Verifier/Authenticator Dashboard
 const VerifierDashboard = () => (
   <div className="space-y-6">
     <Card className="shadow-lg">
@@ -208,13 +235,19 @@ const VerifierDashboard = () => (
         </Card>
       </CardContent>
     </Card>
-     <Button variant="outline" className="w-full sm:w-auto">
-      <FileText className="mr-2 h-5 w-5" />
-      Access Audit Trail Database
-    </Button>
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <Button variant="secondary" className="w-full h-full">
+          <FileText className="mr-2 h-5 w-5" />
+          Access Audit Trail Database
+        </Button>
+        <Button variant="outline" className="w-full h-full">
+            <SearchCheck className="mr-2 h-5 w-5" />
+            Review Submitted Claims (Mock)
+        </Button>
+    </div>
     <Card>
-      <CardHeader><CardTitle>System Alerts</CardTitle></CardHeader>
-      <CardContent><p className="text-muted-foreground">New regulation update requires re-verification for 'Textile' category.</p></CardContent>
+      <CardHeader><CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/>System Alerts</CardTitle></CardHeader>
+      <CardContent><p className="text-muted-foreground">New regulation update requires re-verification for 'Textile' category. Multiple DPPs flagged for potential data mismatch.</p></CardContent>
     </Card>
   </div>
 );
@@ -243,6 +276,7 @@ export default function DashboardPage() {
                       {text: "Regulation Module 'EU Battery Reg v1.1' deployed.", time: "3 hours ago"},
                       {text: "System maintenance scheduled for Sunday 2 AM.", time: "1 day ago"},
                       {text: "Product PROD002 updated with new battery data.", time: "2 days ago"},
+                      {text: "Verifier 'CertifyAll' completed 5 audits.", time: "3 days ago"} 
                     ].map(activity => (
                       <li key={activity.text} className="flex items-center justify-between text-sm">
                         <span>{activity.text}</span>
@@ -285,7 +319,7 @@ export default function DashboardPage() {
            </Link>
         )}
          {currentRole === 'admin' && (
-           <Link href="/products/new" passHref>
+           <Link href="/products/new" passHref> {}
              <Button variant="default">
                <PlusCircle className="mr-2 h-5 w-5" />
                Platform Product Setup
@@ -297,7 +331,5 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    
 
     

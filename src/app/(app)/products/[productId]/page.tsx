@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,9 @@ interface StoredUserProduct extends ProductFormData {
   lastUpdated: string;
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageUrl?: string; // Ensure imageUrl is part of StoredUserProduct if saved by ProductForm
+  imageUrl?: string; 
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  productCategory?: string;
   // ... other origin fields if needed
 }
 
@@ -68,6 +70,7 @@ export interface MockProductType {
   description: string;
   descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
   imageUrl: string;
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
   imageHint: string;
   materials: string;
   sustainabilityClaims: string;
@@ -278,7 +281,7 @@ const chartConfig = {
 
 const calculateDppCompleteness = (product: MockProductType): { score: number; filledFields: number; totalFields: number; missingFields: string[] } => {
   const essentialFieldsConfig: Array<{ key: keyof MockProductType | string; label: string; check?: (p: MockProductType) => boolean; categoryScope?: string[] }> = [
-    { key: 'productName', label: 'Product Name' }, { key: 'gtin', label: 'GTIN' }, { key: 'category', label: 'Category' }, { key: 'manufacturer', label: 'Manufacturer' }, { key: 'modelNumber', label: 'Model Number' }, { key: 'description', label: 'Description' }, { key: 'imageUrl', label: 'Image URL', check: (p) => p.imageUrl && !p.imageUrl.includes('placehold.co') }, { key: 'materials', label: 'Materials' }, { key: 'sustainabilityClaims', label: 'Sustainability Claims' }, { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] }, { key: 'specifications', label: 'Specifications', check: (p) => p.specifications && Object.keys(p.specifications).length > 0 }, { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 }, { key: 'complianceData', label: 'Compliance Data', check: (p) => p.complianceData && Object.keys(p.complianceData).length > 0 },
+    { key: 'productName', label: 'Product Name' }, { key: 'gtin', label: 'GTIN' }, { key: 'category', label: 'Category' }, { key: 'manufacturer', label: 'Manufacturer' }, { key: 'modelNumber', label: 'Model Number' }, { key: 'description', label: 'Description' }, { key: 'imageUrl', label: 'Image URL', check: (p) => p.imageUrl && !p.imageUrl.includes('placehold.co') && !p.imageUrl.includes('?text=') }, { key: 'materials', label: 'Materials' }, { key: 'sustainabilityClaims', label: 'Sustainability Claims' }, { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] }, { key: 'specifications', label: 'Specifications', check: (p) => p.specifications && Object.keys(p.specifications).length > 0 }, { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 }, { key: 'complianceData', label: 'Compliance Data', check: (p) => p.complianceData && Object.keys(p.complianceData).length > 0 },
   ];
 
   const isBatteryRelevantCategory = product.category?.toLowerCase().includes('electronics') || product.category?.toLowerCase().includes('automotive parts') || product.category?.toLowerCase().includes('battery');
@@ -303,7 +306,7 @@ const calculateDppCompleteness = (product: MockProductType): { score: number; fi
       if (fieldConfig.check(product)) { filledCount++; } else { missingFields.push(fieldConfig.label); }
     } else {
       const value = product[fieldConfig.key as keyof MockProductType];
-      if (value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A' && !String(value).includes('placehold.co')) { filledCount++; } else { missingFields.push(fieldConfig.label); }
+      if (value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A') { filledCount++; } else { missingFields.push(fieldConfig.label); }
     }
   });
   const score = actualTotalFields > 0 ? Math.round((filledCount / actualTotalFields) * 100) : 0;
@@ -337,6 +340,7 @@ export default function ProductDetailPage() {
             ...defaults,
             productId: storedProduct.id,
             productName: storedProduct.productName || "User Added Product",
+            productNameOrigin: storedProduct.productNameOrigin,
             gtin: storedProduct.gtin || "",
             category: storedProduct.productCategory || "General",
             status: storedProduct.status,
@@ -345,22 +349,18 @@ export default function ProductDetailPage() {
             manufacturer: storedProduct.manufacturer || "N/A",
             modelNumber: storedProduct.modelNumber || "N/A",
             description: storedProduct.productDescription || "No description provided.",
-            imageUrl: storedProduct.imageUrl || defaults.imageUrl, // Use stored imageUrl or default
-            imageHint: storedProduct.imageUrl ? (storedProduct.productName || "product") : defaults.imageHint, // Basic hint if image exists
+            descriptionOrigin: storedProduct.productDescriptionOrigin,
+            imageUrl: storedProduct.imageUrl || defaults.imageUrl,
+            imageUrlOrigin: storedProduct.imageUrlOrigin,
+            imageHint: storedProduct.imageUrl ? (storedProduct.productName || "product") : defaults.imageHint, 
             materials: storedProduct.materials || "Not specified",
             sustainabilityClaims: storedProduct.sustainabilityClaims || "None specified",
             energyLabel: storedProduct.energyLabel || "N/A",
             specifications: storedProduct.specifications ? (typeof storedProduct.specifications === 'string' ? JSON.parse(storedProduct.specifications) : storedProduct.specifications) : {},
-            productNameOrigin: storedProduct.productNameOrigin || 'manual',
-            descriptionOrigin: storedProduct.productDescriptionOrigin || 'manual',
             batteryChemistry: storedProduct.batteryChemistry,
-            // batteryChemistryOrigin: storedProduct.batteryChemistryOrigin, // This field is not in StoredUserProduct
             stateOfHealth: storedProduct.stateOfHealth,
-            // stateOfHealthOrigin: storedProduct.stateOfHealthOrigin,
             carbonFootprintManufacturing: storedProduct.carbonFootprintManufacturing,
-            // carbonFootprintManufacturingOrigin: storedProduct.carbonFootprintManufacturingOrigin,
             recycledContentPercentage: storedProduct.recycledContentPercentage,
-            // recycledContentPercentageOrigin: storedProduct.recycledContentPercentageOrigin,
           };
         }
       }
@@ -404,6 +404,12 @@ export default function ProductDetailPage() {
       setActiveTab(newDefaultTab);
     }
   }, [currentRole, product, hasBatteryData]);
+
+  const handleAskCopilotForRegulation = (regulationName: string, regulationStatus: string) => {
+    if (!product) return;
+    const query = `What are the key requirements for ${regulationName} compliance for a product like '${product.productName}' in the '${product.category}' category? The current status is noted as '${regulationStatus}'.`;
+    router.push(`/copilot?contextQuery=${encodeURIComponent(query)}`);
+  };
 
   const handleSimulateComplianceCheck = async () => {
     if (!product) return;
@@ -467,6 +473,7 @@ export default function ProductDetailPage() {
                 priority
               />
             </AspectRatio>
+            <DataOriginIcon origin={product.imageUrlOrigin} fieldName="Product Image"/>
           </div>
           <div className="md:col-span-2 p-6">
             <div className="flex items-center"> <CardTitle className="text-2xl mb-2">{product.productName}</CardTitle> <DataOriginIcon origin={product.productNameOrigin} fieldName="Product Name" /> </div>
@@ -534,7 +541,24 @@ export default function ProductDetailPage() {
         <TabsContent value="compliance" className="mt-4">
           <Card> <CardHeader> <CardTitle>Compliance Records</CardTitle> <CardDescription>Status of compliance with key regulations.</CardDescription> </CardHeader>
             <CardContent className="space-y-4">
-              {product.complianceData && Object.keys(product.complianceData).length > 0 ? ( Object.entries(product.complianceData).map(([reg, data]) => ( <Card key={reg} className="bg-muted/50 p-4 rounded-lg"> <CardTitle className="text-md flex items-center justify-between"> <span className="flex items-center"> {reg}  <TrustSignalIcon  isVerified={data.isVerified}  tooltipText={data.isVerified ? `${reg} Verified` : `${reg} Status Pending Verification`} VerifiedIcon={CheckCircle2} UnverifiedIcon={Info} /> </span> <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={cn( data.status === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {data.status} </Badge> </CardTitle> <p className="text-xs text-muted-foreground mt-1">Last Checked: {new Date(data.lastChecked).toLocaleDateString()}</p> {data.reportId && <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>} </Card> )) ) : ( <p className="text-sm text-muted-foreground">No specific compliance records available for this product.</p> )}
+              {product.complianceData && Object.keys(product.complianceData).length > 0 ? ( Object.entries(product.complianceData).map(([reg, data]) => ( 
+              <Card key={reg} className="bg-muted/50 p-4 rounded-lg"> 
+                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                    <div>
+                        <CardTitle className="text-md flex items-center"> 
+                            <span className="flex items-center"> {reg}  <TrustSignalIcon  isVerified={data.isVerified}  tooltipText={data.isVerified ? `${reg} Verified` : `${reg} Status Pending Verification`} VerifiedIcon={CheckCircle2} UnverifiedIcon={Info} /> </span> 
+                        </CardTitle> 
+                        <p className="text-xs text-muted-foreground mt-1">Last Checked: {new Date(data.lastChecked).toLocaleDateString()}</p> 
+                        {data.reportId && <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>} 
+                    </div>
+                    <div className="flex flex-col items-start sm:items-end gap-2 mt-2 sm:mt-0">
+                        <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={cn( data.status === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {data.status} </Badge> 
+                        <Button variant="outline" size="sm" onClick={() => handleAskCopilotForRegulation(reg, data.status)}>
+                            <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" /> Ask AI Copilot
+                        </Button>
+                    </div>
+                </div>
+              </Card> )) ) : ( <p className="text-sm text-muted-foreground">No specific compliance records available for this product.</p> )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -581,3 +605,6 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
+
+
+    

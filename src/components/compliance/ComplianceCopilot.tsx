@@ -2,10 +2,11 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'next/navigation'; // Import useSearchParams
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Bot, User, Send, Loader2 } from 'lucide-react';
 import { queryComplianceCopilot } from '@/ai/flows/compliance-copilot-flow';
 import { useToast } from '@/hooks/use-toast';
@@ -18,6 +19,7 @@ interface Message {
 }
 
 export default function ComplianceCopilot() {
+  const searchParams = useSearchParams(); // Get search params
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -32,6 +34,19 @@ export default function ComplianceCopilot() {
       }
     }
   };
+
+  useEffect(() => {
+    // Check for contextQuery parameter on mount
+    const contextQuery = searchParams.get('contextQuery');
+    if (contextQuery) {
+      setInputValue(decodeURIComponent(contextQuery));
+      // Optionally, you could auto-send this message or add a "Send Pre-filled Query?" button
+      toast({
+        title: "Context Query Loaded",
+        description: "Your question from the product page has been pre-filled. Press send to ask the Co-Pilot.",
+      });
+    }
+  }, [searchParams, toast]);
 
   useEffect(() => {
     scrollToBottom();
@@ -173,3 +188,5 @@ export default function ComplianceCopilot() {
   );
 }
 
+
+    

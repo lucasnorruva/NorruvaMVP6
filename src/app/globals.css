@@ -8,7 +8,7 @@ body {
 
 @layer base {
   :root {
-    --background: 210 20% 98%; /* #FAFBFC - Off-white / Grey 100 */
+    --background: 210 20% 98%; /* #FAFBFC - Off-white / Light Desaturated Blue-like */
     --foreground: 224 23% 15%; /* #1A202C - Grey 900 */
 
     --card: 0 0% 100%; /* #FFFFFF - Pure White */
@@ -17,16 +17,16 @@ body {
     --popover: 0 0% 100%; /* #FFFFFF - Pure White */
     --popover-foreground: 224 23% 15%; /* #1A202C - Grey 900 */
 
-    --primary: 210 100% 40%; /* #0066CC - Trust Blue */
+    --primary: 197 71% 53%; /* #29ABE2 - Saturated Blue (PRD) */
     --primary-foreground: 0 0% 100%; /* #FFFFFF - Pure White */
 
-    --secondary: 220 13% 91%; /* #E2E8F0 - A neutral grey for secondary elements, mapping to Grey 300 for borders or similar */
+    --secondary: 220 13% 91%; /* #E2E8F0 - A neutral grey for secondary elements */
     --secondary-foreground: 224 23% 15%; /* #1A202C - Grey 900 */
 
     --muted: 220 14% 96%; /* #F7FAFC - Grey 100 - for backgrounds or muted text */
     --muted-foreground: 220 9% 46%; /* #718096 - Grey 500 */
 
-    --accent: 158 100% 33%; /* #00A86B - Growth Green */
+    --accent: 180 100% 25%; /* #008080 - Vibrant Teal (PRD) */
     --accent-foreground: 0 0% 100%; /* #FFFFFF - Pure White */
 
     --destructive: 0 72% 51%; /* #DC2626 - Error Red */
@@ -40,34 +40,30 @@ body {
 
     --border: 220 13% 84%; /* #CBD5E0 - Grey 300 */
     --input: 0 0% 100%; /* #FFFFFF for input background, border will be --border */
-    --ring: 210 100% 40%; /* #0066CC - Trust Blue for focus rings */
+    --ring: 197 71% 53%; /* #29ABE2 - Saturated Blue for focus rings */
     
-    --chart-1: 210 100% 40%; /* Trust Blue */
-    --chart-2: 158 100% 33%; /* Growth Green */
+    --chart-1: 197 71% 53%; /* Saturated Blue */
+    --chart-2: 180 100% 25%; /* Vibrant Teal */
     --chart-3: 263 79% 53%; /* Information Purple */
     --chart-4: 18 100% 60%; /* Alert Orange */
-    --chart-5: 198 93% 43%; /* Teal #06B6D4 */
-    --chart-6: 327 82% 61%; /* Pink #EC4899 */
+    --chart-5: 198 93% 43%; /* A distinct teal/cyan for charts */
+    --chart-6: 327 82% 61%; /* Pink for charts */
 
     --radius: 0.5rem; /* Matches 8px for general rounding, can be fine-tuned */
 
     /* Sidebar specific theme based on new guidelines */
     --sidebar-background: 220 14% 96%; /* #F7FAFC - Grey 100 */
     --sidebar-foreground: 224 23% 15%; /* #1A202C - Grey 900 */
-    --sidebar-primary: 210 100% 40%; /* #0066CC - Trust Blue (for active items) */
+    --sidebar-primary: 197 71% 53%; /* Saturated Blue (for active items) */
     --sidebar-primary-foreground: 0 0% 100%; /* White text on primary */
-    --sidebar-accent: 210 100% 90%; /* Lighter blue for hover, e.g. #E6F0FA (derived from Trust Blue) */
-    --sidebar-accent-foreground: 210 100% 30%; /* Darker blue text on hover */
+    --sidebar-accent: 197 71% 90%; /* Lighter Saturated Blue for hover, e.g. derived from primary */
+    --sidebar-accent-foreground: 197 71% 43%; /* Darker Saturated Blue text on hover */
     --sidebar-border: 220 13% 88%; /* #E2E8F0 for sidebar internal borders */
-    --sidebar-ring: 210 100% 40%; /* Trust Blue for focus rings */
+    --sidebar-ring: 197 71% 53%; /* Saturated Blue for focus rings */
   }
 
   .dark {
-    /* TODO: Define dark mode colors based on guidelines.
-       For now, providing a conceptual mapping. Actual HSL values would need testing.
-       Example: Pure White (#FFFFFF) becomes a dark grey like Grey 900 (#1A202C)
-                Neutral Grey 900 (#1A202C) becomes a light grey like Grey 100/Off-white (#FAFBFC)
-    */
+    /* Dark Mode: Using inverted logic & adjusted lightness/saturation for PRD colors */
     --background: 224 23% 15%; /* #1A202C - Grey 900 */
     --foreground: 210 20% 98%; /* #FAFBFC - Off-white */
 
@@ -77,7 +73,7 @@ body {
     --popover: 222 23% 20%;
     --popover-foreground: 210 20% 98%;
 
-    --primary: 210 100% 50%; /* #3385D6 - Trust Blue (slightly lighter for dark mode) */
+    --primary: 197 71% 63%; /* Lighter Saturated Blue #29ABE2 for dark mode */
     --primary-foreground: 0 0% 100%;
 
     --secondary: 220 14% 30%; /* Darker Grey */
@@ -86,8 +82,8 @@ body {
     --muted: 220 14% 25%;
     --muted-foreground: 220 9% 65%; /* Lighter Grey 500 */
 
-    --accent: 158 100% 43%; /* #33C490 - Growth Green (slightly lighter) */
-    --accent-foreground: 0 0% 0%; /* Black text for contrast */
+    --accent: 180 100% 35%; /* Lighter Vibrant Teal #008080 for dark mode */
+    --accent-foreground: 0 0% 100%; 
 
     --destructive: 0 70% 60%; /* #EF4444 - Error Red (slightly lighter) */
     --destructive-foreground: 0 0% 100%;
@@ -100,11 +96,11 @@ body {
 
     --border: 220 13% 40%; /* Darker Grey 300 */
     --input: 222 23% 25%; /* Darker input background */
-    --ring: 210 100% 50%;
+    --ring: 197 71% 63%; /* Lighter Saturated Blue for focus rings */
     
     /* Chart colors remain visually distinct, might need slight adjustments for dark bg */
-    --chart-1: 210 100% 50%;
-    --chart-2: 158 100% 43%;
+    --chart-1: 197 71% 63%;
+    --chart-2: 180 100% 35%;
     --chart-3: 263 79% 63%;
     --chart-4: 18 100% 65%;
     --chart-5: 198 93% 53%;
@@ -113,12 +109,12 @@ body {
     /* Sidebar specific theme for dark mode */
     --sidebar-background: 224 23% 10%; /* Even darker than main dark bg */
     --sidebar-foreground: 210 20% 85%; /* Lighter text */
-    --sidebar-primary: 210 100% 50%; 
+    --sidebar-primary: 197 71% 63%; 
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 23% 25%; /* Hover color */
-    --sidebar-accent-foreground: 210 100% 70%; /* Text on hover */
+    --sidebar-accent-foreground: 197 71% 73%; /* Text on hover */
     --sidebar-border: 224 23% 20%;
-    --sidebar-ring: 210 100% 50%;
+    --sidebar-ring: 197 71% 63%;
   }
 }
 

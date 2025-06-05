@@ -122,25 +122,25 @@ export default async function PublicPassportPage({ params }: Props) {
   }
 
   return (
-    <div className="min-h-screen bg-off-white text-grey-900 flex flex-col">
-      <header className="py-6 bg-white shadow-sm">
+    <div className="min-h-screen bg-background text-foreground flex flex-col">
+      <header className="py-6 bg-card shadow-sm">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center">
           <Link href="/" passHref>
-            <Logo className="h-10 w-auto text-trust-blue" />
+            <Logo className="h-10 w-auto text-primary" />
           </Link>
-          <Badge variant="outline" className="border-trust-blue text-trust-blue text-sm">Digital Product Passport</Badge>
+          <Badge variant="outline" className="border-primary text-primary text-sm">Digital Product Passport</Badge>
         </div>
       </header>
 
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
-        <div className="bg-white p-6 sm:p-8 rounded-xl shadow-xl">
+        <div className="bg-card p-6 sm:p-8 rounded-xl shadow-xl">
           {/* Product Header Section */}
           <div className="text-center mb-8">
-            <h1 className="font-headline text-3xl md:text-4xl font-semibold text-trust-blue mb-2">
+            <h1 className="font-headline text-3xl md:text-4xl font-semibold text-primary mb-2">
               {product.productName}
             </h1>
-            <p className="text-lg md:text-xl text-grey-700">{product.tagline}</p>
-            <div className="mt-3 text-sm text-grey-500">
+            <p className="text-lg md:text-xl text-muted-foreground">{product.tagline}</p>
+            <div className="mt-3 text-sm text-muted-foreground">
                 <span>Category: {product.category}</span> | <span>Model: {product.modelNumber}</span>
             </div>
           </div>
@@ -159,18 +159,18 @@ export default async function PublicPassportPage({ params }: Props) {
               />
             </div>
             <div className="space-y-6">
-              <Card className="bg-grey-100 border-grey-300">
+              <Card className="bg-muted border-border">
                 <CardHeader>
-                  <CardTitle className="text-xl text-trust-blue">Product Story</CardTitle>
+                  <CardTitle className="text-xl text-primary">Product Story</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-grey-700 leading-relaxed">{product.productStory}</p>
+                  <p className="text-foreground leading-relaxed">{product.productStory}</p>
                 </CardContent>
               </Card>
 
-              <Card className="border-growth-green/50">
+              <Card className="border-accent/50">
                 <CardHeader>
-                  <CardTitle className="text-xl text-growth-green flex items-center">
+                  <CardTitle className="text-xl text-accent flex items-center">
                     <Leaf className="mr-2 h-6 w-6" /> Sustainability Highlights
                   </CardTitle>
                 </CardHeader>
@@ -179,8 +179,8 @@ export default async function PublicPassportPage({ params }: Props) {
                     {product.sustainabilityHighlights.map((highlight, index) => {
                       const IconComponent = iconMap[highlight.iconName];
                       return (
-                        <li key={index} className="flex items-center text-grey-700">
-                          <IconComponent className="h-5 w-5 mr-3 text-growth-green flex-shrink-0" />
+                        <li key={index} className="flex items-center text-foreground">
+                          <IconComponent className="h-5 w-5 mr-3 text-accent flex-shrink-0" />
                           <span>{highlight.text}</span>
                         </li>
                       );
@@ -192,23 +192,23 @@ export default async function PublicPassportPage({ params }: Props) {
           </div>
 
           {/* Manufacturer & Compliance Section */}
-          <div className="mt-10 pt-8 border-t border-grey-300">
+          <div className="mt-10 pt-8 border-t border-border">
             <div className="grid md:grid-cols-2 gap-8">
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-xl text-trust-blue flex items-center">
+                  <CardTitle className="text-xl text-primary flex items-center">
                     <Building className="mr-2 h-6 w-6" /> Manufacturer Information
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2">
-                  <h3 className="text-lg font-semibold text-grey-900">{product.manufacturerName}</h3>
+                  <h3 className="text-lg font-semibold text-foreground">{product.manufacturerName}</h3>
                   {product.brandLogoUrl && (
                      <div className="my-3">
                         <Image src={product.brandLogoUrl} alt={`${product.manufacturerName} Logo`} width={150} height={50} className="object-contain" data-ai-hint="brand logo" />
                      </div>
                   )}
                   {product.manufacturerWebsite && (
-                    <Link href={product.manufacturerWebsite} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-trust-blue hover:underline">
+                    <Link href={product.manufacturerWebsite} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-primary hover:underline">
                       Visit Website <ExternalLink className="ml-1 h-4 w-4" />
                     </Link>
                   )}
@@ -216,13 +216,13 @@ export default async function PublicPassportPage({ params }: Props) {
               </Card>
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-xl text-trust-blue">Compliance Overview</CardTitle>
+                  <CardTitle className="text-xl text-primary">Compliance Overview</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-grey-700">{product.complianceSummary}</p>
+                  <p className="text-foreground">{product.complianceSummary}</p>
                   {product.learnMoreLink && (
                     <Link href={product.learnMoreLink} passHref className="mt-3 inline-block">
-                       <Button variant="outline" className="border-trust-blue text-trust-blue hover:bg-trust-blue/10">
+                       <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
                         Learn More About Our Standards
                        </Button>
                     </Link>
@@ -234,14 +234,12 @@ export default async function PublicPassportPage({ params }: Props) {
         </div>
       </main>
 
-      <footer className="py-8 bg-grey-900 text-grey-100 text-center mt-12">
+      <footer className="py-8 bg-foreground text-background text-center mt-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <p>&copy; {new Date().getFullYear()} Norruva. All rights reserved.</p>
-          <p className="text-sm text-grey-300 mt-1">Empowering Transparent & Sustainable Commerce.</p>
+          <p className="text-sm text-muted-foreground mt-1">Empowering Transparent & Sustainable Commerce.</p>
         </div>
       </footer>
     </div>
   );
 }
-
-    

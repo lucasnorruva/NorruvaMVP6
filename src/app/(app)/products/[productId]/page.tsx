@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,8 @@ import ProductAlerts, { type ProductNotification } from '@/components/products/P
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { useRole } from '@/contexts/RoleContext';
+import { useToast } from '@/hooks/use-toast';
+import { checkProductCompliance } from '@/ai/flows/check-product-compliance-flow';
 
 
 // Mock product data - in a real app, this would come from an API
@@ -311,11 +313,13 @@ export default function ProductDetailPage() {
   const [product, setProduct] = useState<MockProductType | null | undefined>(undefined);
   const router = useRouter();
   const { currentRole } = useRole();
-  const [activeTab, setActiveTab] = useState('specifications'); // Default initial tab
+  const { toast } = useToast();
+  const [activeTab, setActiveTab] = useState('specifications'); 
+  const [isCheckingCompliance, setIsCheckingCompliance] = useState(false);
+
 
   useEffect(() => {
     const fetchProduct = async () => {
-      // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 500));
       const foundProduct = MOCK_PRODUCTS.find(p => p.productId === productId);
       setProduct(foundProduct);
@@ -330,9 +334,8 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     if (product) {
-      let newDefaultTab = 'specifications'; // Fallback default
+      let newDefaultTab = 'specifications'; 
 
-      // 1. Check for critical error notifications that might dictate the default tab
       const criticalErrorNotification = product.notifications?.find(n => n.type === 'error');
       let errorDrivenTab: string | null = null;
 
@@ -343,42 +346,80 @@ export default function ProductDetailPage() {
             errorDrivenTab = 'battery';
           }
         }
-        // Add more error-to-tab mappings here if needed
-        if (!errorDrivenTab) { // If not a specific battery error, but still an error
-           errorDrivenTab = 'compliance'; // Default to compliance for general errors
+        if (!errorDrivenTab && (message.includes('compliance') || message.includes('regulation'))) {
+           errorDrivenTab = 'compliance'; 
         }
       }
 
       if (errorDrivenTab) {
         newDefaultTab = errorDrivenTab;
       } else {
-        // 2. If no critical error dictates the tab, use role-based logic
         switch (currentRole) {
-          case 'manufacturer':
-            newDefaultTab = 'specifications';
-            break;
-          case 'supplier':
-            newDefaultTab = 'specifications';
-            break;
-          case 'retailer':
-            newDefaultTab = 'sustainability';
-            break;
-          case 'recycler':
-            newDefaultTab = hasBatteryData ? 'battery' : 'sustainability';
-            break;
-          case 'verifier':
-            newDefaultTab = 'compliance';
-            break;
-          case 'admin':
-            newDefaultTab = 'lifecycle';
-            break;
-          default:
-            newDefaultTab = 'specifications';
+          case 'manufacturer': newDefaultTab = 'specifications'; break;
+          case 'supplier': newDefaultTab = 'specifications'; break;
+          case 'retailer': newDefaultTab = 'sustainability'; break;
+          case 'recycler': newDefaultTab = hasBatteryData ? 'battery' : 'sustainability'; break;
+          case 'verifier': newDefaultTab = 'compliance'; break;
+          case 'admin': newDefaultTab = 'lifecycle'; break;
+          default: newDefaultTab = 'specifications';
         }
       }
       setActiveTab(newDefaultTab);
     }
   }, [currentRole, product, hasBatteryData]);
+
+  const handleSimulateComplianceCheck = async () => {
+    if (!product) return;
+    
+    const currentStageIndex = product.currentLifecyclePhaseIndex;
+    const currentStage = product.lifecyclePhases[currentStageIndex];
+    let nextStageIndex = currentStageIndex + 1;
+    let nextStage = product.lifecyclePhases[nextStageIndex];
+
+    if (!nextStage) { // If it's the last stage, maybe loop or pick a specific one for demo
+        toast({
+            title: "End of Lifecycle",
+            description: "This product is already at its final defined lifecycle stage.",
+            variant: "default"
+        });
+        return;
+    }
+
+    setIsCheckingCompliance(true);
+    try {
+      const output = await checkProductCompliance({
+        productId: product.productId,
+        currentLifecycleStageName: currentStage.name,
+        newLifecycleStageName: nextStage.name,
+        productCategory: product.category,
+      });
+
+      toast({
+        title: `Compliance Re-Check for ${product.productName}`,
+        description: (
+          <div>
+            <p>Moved to Stage: <strong>{output.newLifecycleStageName}</strong></p>
+            <p>New Overall Status: <strong>{output.simulatedOverallStatus}</strong></p>
+            <p className="mt-2 text-xs">{output.simulatedReport}</p>
+          </div>
+        ),
+        duration: 9000, // Allow more time to read
+      });
+      // In a real app, you might want to update the product state here
+      // For this simulation, we'll just show the toast.
+      // You could update product.currentLifecyclePhaseIndex here if you want the UI to reflect the change.
+      // setProduct(prev => prev ? {...prev, currentLifecyclePhaseIndex: nextStageIndex } : null);
+    } catch (error) {
+      console.error("Compliance check simulation failed:", error);
+      toast({
+        title: "Error Simulating Compliance Check",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCheckingCompliance(false);
+    }
+  };
 
 
   if (product === undefined) {
@@ -386,7 +427,7 @@ export default function ProductDetailPage() {
   }
 
   if (!product) {
-    notFound(); // Triggers 404 page
+    notFound(); 
     return null;
   }
 
@@ -473,10 +514,22 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {}
+      
       <Card className="shadow-xl border-primary/20 bg-muted/30">
-        <CardHeader>
-          <CardTitle className="text-2xl font-headline text-primary">Live DPP Status Overview</CardTitle>
+        <CardHeader className="flex flex-row justify-between items-start">
+          <div>
+            <CardTitle className="text-2xl font-headline text-primary">Live DPP Status Overview</CardTitle>
+            <CardDescription>Dynamic summary of product compliance, alerts, and lifecycle progress.</CardDescription>
+          </div>
+           <Button 
+              onClick={handleSimulateComplianceCheck} 
+              disabled={isCheckingCompliance || product.currentLifecyclePhaseIndex >= product.lifecyclePhases.length -1}
+              variant="secondary"
+              size="sm"
+            >
+              {isCheckingCompliance ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Workflow className="mr-2 h-4 w-4" />}
+              Simulate Next Stage & Check Compliance
+            </Button>
         </CardHeader>
         <CardContent className="space-y-6">
           <OverallProductCompliance 
@@ -846,9 +899,9 @@ function ProductDetailSkeleton() {
           <Skeleton className="h-8 w-1/2 mb-2" />
         </CardHeader>
         <CardContent className="space-y-6">
-          <Skeleton className="h-24 w-full" /> {}
-          <Skeleton className="h-16 w-full" /> {}
-          <Skeleton className="h-48 w-full" /> {}
+          <Skeleton className="h-24 w-full" /> 
+          <Skeleton className="h-16 w-full" /> 
+          <Skeleton className="h-48 w-full" /> 
         </CardContent>
       </Card>
 
@@ -878,7 +931,7 @@ function ProductDetailSkeleton() {
           </div>
         </div>
       </Card>
-      <Skeleton className="h-10 w-full md:w-2/3" /> {}
+      <Skeleton className="h-10 w-full md:w-2/3" /> 
       <Card className="mt-4">
         <CardHeader>
           <Skeleton className="h-7 w-1/3" />
@@ -893,7 +946,3 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
-
-    
-
-    

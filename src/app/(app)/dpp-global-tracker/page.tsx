@@ -1,11 +1,13 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle } from "lucide-react";
 import type { GlobeMethods, GlobeProps } from 'react-globe.gl';
+import { cn } from '@/lib/utils';
 
 // Lazy load the Globe component
 const Globe = React.lazy(() => import('react-globe.gl'));
@@ -29,48 +31,65 @@ const euPolygon = {
   ]
 };
 
+interface MockDppPoint {
+  lat: number;
+  lng: number;
+  name: string;
+  size: number;
+  category: string;
+  status: 'compliant' | 'pending' | 'issue';
+}
+
 // Mock DPP data points for the globe
-const mockDppsOnGlobe = [
-  { lat: 48.8566, lng: 2.3522, name: "Smart Refrigerator X1 (Paris)", color: 'rgba(255, 100, 100, 0.85)', size: 0.6, category: 'Appliances' },
-  { lat: 52.5200, lng: 13.4050, name: "Eco-Friendly Laptop Z2 (Berlin)", color: 'rgba(100, 255, 100, 0.85)', size: 0.7, category: 'Electronics' },
-  { lat: 41.9028, lng: 12.4964, name: "Recycled Material Sneakers (Rome)", color: 'rgba(100, 100, 255, 0.85)', size: 0.5, category: 'Apparel' },
-  { lat: 51.5074, lng: 0.1278, name: "Sustainable Coffee Maker (London)", color: 'rgba(255, 255, 100, 0.85)', size: 0.65, category: 'Appliances' }
+const mockDppsOnGlobe: MockDppPoint[] = [
+  { lat: 48.8566, lng: 2.3522, name: "Smart Refrigerator X1 (Paris)", size: 0.6, category: 'Appliances', status: 'compliant' },
+  { lat: 52.5200, lng: 13.4050, name: "Eco-Friendly Laptop Z2 (Berlin)", size: 0.7, category: 'Electronics', status: 'pending' },
+  { lat: 41.9028, lng: 12.4964, name: "Recycled Material Sneakers (Rome)", size: 0.5, category: 'Apparel', status: 'compliant' },
+  { lat: 51.5074, lng: 0.1278, name: "Sustainable Coffee Maker (London)", size: 0.65, category: 'Appliances', status: 'issue' },
+  { lat: 40.4168, lng: -3.7038, name: "Smart Thermostat G2 (Madrid)", size: 0.55, category: 'Electronics', status: 'compliant' },
+  { lat: 59.3293, lng: 18.0686, name: "Wooden Chair Set (Stockholm)", size: 0.6, category: 'Furniture', status: 'pending' },
 ];
+
+const statusColors: Record<MockDppPoint['status'], string> = {
+  compliant: 'rgba(74, 222, 128, 0.9)', // Green
+  pending: 'rgba(250, 204, 21, 0.9)',  // Yellow
+  issue: 'rgba(239, 68, 68, 0.9)',     // Red
+};
 
 
 const GlobeVisualization = () => {
   const globeEl = useRef<GlobeMethods | undefined>();
 
   useEffect(() => {
-    // Auto-rotate and zoom
     if (globeEl.current) {
-      globeEl.current.pointOfView({ lat: 50, lng: 10, altitude: 1.8 }); // Adjusted altitude
+      globeEl.current.pointOfView({ lat: 50, lng: 10, altitude: 1.8 });
       globeEl.current.controls().autoRotate = true;
       globeEl.current.controls().autoRotateSpeed = 0.3;
       globeEl.current.controls().enableZoom = true;
-      globeEl.current.controls().minDistance = 100; 
-      globeEl.current.controls().maxDistance = 800; 
+      globeEl.current.controls().minDistance = 100;
+      globeEl.current.controls().maxDistance = 800;
     }
   }, []);
 
   const globeProps: GlobeProps = {
     globeImageUrl: "//unpkg.com/three-globe/example/img/earth-dark.jpg",
     bumpImageUrl: "//unpkg.com/three-globe/example/img/earth-topology.png",
-    backgroundColor: "rgba(0,0,0,0)", 
-    width: undefined, 
+    backgroundColor: "rgba(0,0,0,0)",
+    width: undefined,
     height: 450,
     polygonsData: euPolygon.features,
-    polygonCapColor: () => 'rgba(0, 100, 255, 0.2)', // Semi-transparent blue for EU
+    polygonCapColor: () => 'rgba(0, 100, 255, 0.2)',
     polygonSideColor: () => 'rgba(0, 0, 0, 0.05)',
     polygonStrokeColor: () => 'rgba(0, 50, 150, 0.8)',
     polygonAltitude: 0.01,
     pointsData: mockDppsOnGlobe,
     pointLabel: 'name',
-    pointColor: 'color', // Use color from data
-    pointRadius: 'size', // Use size from data
-    pointAltitude: 0.02, // Slightly elevate points
-    onPointClick: (point: any) => { // Type 'any' for simplicity with mock data
-      alert(`Clicked on: ${point.name}\nCategory: ${point.category}`);
+    pointColor: d => statusColors[(d as MockDppPoint).status] || 'rgba(255, 255, 255, 0.7)',
+    pointRadius: 'size',
+    pointAltitude: 0.02,
+    onPointClick: (point: any) => {
+      const p = point as MockDppPoint;
+      alert(`Clicked on: ${p.name}\nCategory: ${p.category}\nStatus: ${p.status}`);
     },
   };
 
@@ -104,6 +123,26 @@ const DppGlobalTrackerClientContainer = () => {
     </Suspense>
   );
 };
+
+const Legend = () => (
+  <Card className="mt-6 shadow-md">
+    <CardHeader className="pb-3">
+      <CardTitle className="text-md font-headline">Legend</CardTitle>
+    </CardHeader>
+    <CardContent className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+      {Object.entries(statusColors).map(([status, color]) => (
+        <div key={status} className="flex items-center">
+          <Circle className="h-3.5 w-3.5 mr-2" style={{ color: color, fill: color }} />
+          <span className="capitalize text-foreground/90">{status}</span>
+        </div>
+      ))}
+       <div className="flex items-center">
+          <GlobeIconLucide className="h-3.5 w-3.5 mr-2 text-blue-400" />
+          <span className="text-foreground/90">EU Region Outline</span>
+        </div>
+    </CardContent>
+  </Card>
+);
 
 
 export default function DppGlobalTrackerPage() {
@@ -200,6 +239,7 @@ The DPP Global Tracker with an interactive 3D EU globe would be a visually engag
           <div className="w-full h-[450px] bg-muted/30 rounded-md overflow-hidden border">
             <DppGlobalTrackerClientContainer />
           </div>
+          <Legend />
         </CardContent>
       </Card>
 
@@ -229,7 +269,7 @@ The DPP Global Tracker with an interactive 3D EU globe would be a visually engag
                         {lines.slice(1).map((line, lineIdx) => <p key={lineIdx} className="my-1 text-sm">{line}</p>)}
                       </div>
                     );
-                  } else if (firstLine.match(/^(\d+)\.\s+.+/)) { 
+                  } else if (firstLine.match(/^(\d+)\.\s+.+/)) {
                      return (
                       <div key={index} className="mt-1">
                         <h3 className="text-md font-medium text-foreground/90 mt-3 mb-1 !no-underline">{firstLine}</h3>

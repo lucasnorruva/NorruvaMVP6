@@ -1,7 +1,8 @@
 
-"use client"; // Make it a client component to use hooks
+"use client"; 
 
 import Link from "next/link";
+import React, { useEffect, useState } from "react"; // Added useEffect and useState
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -13,9 +14,19 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useRole } from "@/contexts/RoleContext"; // Import useRole
+import { useRole } from "@/contexts/RoleContext"; 
 
-const products = [
+// Define the structure for products listed on this page
+interface ListedProduct {
+  id: string;
+  name: string;
+  category: string;
+  status: string;
+  compliance: string;
+  lastUpdated: string;
+}
+
+const initialMockProducts: ListedProduct[] = [
   { id: "PROD001", name: "EcoFriendly Refrigerator X2000", category: "Appliances", status: "Active", compliance: "Compliant", lastUpdated: "2024-07-20" },
   { id: "PROD002", name: "Smart LED Bulb Pack (4-pack)", category: "Electronics", status: "Active", compliance: "Pending", lastUpdated: "2024-07-18" },
   { id: "PROD003", name: "Organic Cotton T-Shirt", category: "Apparel", status: "Archived", compliance: "Compliant", lastUpdated: "2024-06-10" },
@@ -23,8 +34,32 @@ const products = [
   { id: "PROD005", name: "Solar Powered Garden Light", category: "Outdoor", status: "Draft", compliance: "N/A", lastUpdated: "2024-07-22" },
 ];
 
+const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
+
 export default function ProductsPage() {
-  const { currentRole } = useRole(); // Get the current role
+  const { currentRole } = useRole(); 
+  const [displayedProducts, setDisplayedProducts] = useState<ListedProduct[]>(initialMockProducts);
+
+  useEffect(() => {
+    // Load user-added products from localStorage
+    const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+    const userAddedProducts: ListedProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+
+    // Combine mock products with user-added products
+    // Simple approach: User-added products take precedence if IDs were to clash (unlikely with current ID generation)
+    // More robust: Filter out mocks if their IDs are present in userAddedProducts
+    const combinedProducts = [
+      ...initialMockProducts.filter(mock => !userAddedProducts.find(userProd => userProd.id === mock.id)),
+      ...userAddedProducts
+    ];
+    
+    // Or a simpler merge if you want user products appended:
+    // const combinedProducts = [...initialMockProducts, ...userAddedProducts];
+
+    setDisplayedProducts(combinedProducts.sort((a, b) => a.id.localeCompare(b.id))); // Sort for consistency
+
+  }, []);
+
 
   const canAddProducts = currentRole === 'admin' || currentRole === 'manufacturer';
 
@@ -32,7 +67,7 @@ export default function ProductsPage() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-headline font-semibold">Products</h1>
-        {canAddProducts && ( // Conditionally render the button
+        {canAddProducts && ( 
           <Link href="/products/new" passHref>
             <Button variant="secondary">
               <PlusCircle className="mr-2 h-5 w-5" />
@@ -61,7 +96,7 @@ export default function ProductsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.map((product) => (
+              {displayedProducts.map((product) => (
                 <TableRow key={product.id}>
                   <TableCell className="font-medium">
                      <Link href={`/products/${product.id}`} className="hover:underline text-primary">
@@ -116,11 +151,11 @@ export default function ProductsPage() {
                             View Details
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem> 
+                        <DropdownMenuItem onClick={() => alert(`Edit action for ${product.id} (Not Implemented)`)}> 
                           <Edit className="mr-2 h-4 w-4" />
                           Edit (Not Implemented)
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10">
+                        <DropdownMenuItem className="text-destructive focus:text-destructive focus:bg-destructive/10" onClick={() => alert(`Delete action for ${product.id} (Not Implemented)`)}>
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete (Not Implemented)
                         </DropdownMenuItem>
@@ -129,6 +164,13 @@ export default function ProductsPage() {
                   </TableCell>
                 </TableRow>
               ))}
+               {displayedProducts.length === 0 && (
+                <TableRow>
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+                    No products found. Start by adding a new product.
+                    </TableCell>
+                </TableRow>
+                )}
             </TableBody>
           </Table>
         </CardContent>
@@ -136,3 +178,4 @@ export default function ProductsPage() {
     </div>
   );
 }
+

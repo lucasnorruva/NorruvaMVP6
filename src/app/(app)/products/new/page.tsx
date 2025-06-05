@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { useRouter } from "next/navigation"; // Added for redirection
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,7 @@ export interface InitialProductFormData extends ProductFormData {
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
 }
 
+const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 
 export default function AddNewProductPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -48,7 +50,8 @@ export default function AddNewProductPage() {
   const [isSubmittingProduct, setIsSubmittingProduct] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("ai-extraction"); // Default to AI extraction tab
+  const [activeTab, setActiveTab] = useState("ai-extraction");
+  const router = useRouter();
 
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -117,6 +120,7 @@ export default function AddNewProductPage() {
       }
       
       initialFormData.gtin = initialData.gtin || "";
+      // productCategory will be handled by initialData or user input in the form
 
       setExtractedData(initialFormData);
       toast({
@@ -125,7 +129,7 @@ export default function AddNewProductPage() {
         variant: "default",
         action: <CheckCircle2 className="text-green-500" />,
       });
-      setActiveTab("manual"); // Automatically switch to manual entry tab
+      setActiveTab("manual"); 
     } catch (err) {
       console.error("Extraction failed:", err);
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred during extraction.";
@@ -151,26 +155,61 @@ export default function AddNewProductPage() {
     sustainabilityClaims: "",
     specifications: "",
     energyLabel: "",
+    productCategory: "", // Added for explicit initialization
     batteryChemistry: "",
   };
 
   const handleProductFormSubmit = async (data: ProductFormData) => {
     setIsSubmittingProduct(true);
-    console.log("Submitting product data:", data);
+    console.log("Submitting product data to save:", data);
     
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
-    toast({
-      title: "Product Saved (Simulated)",
-      description: `${data.productName || "The new product"} has been saved.`,
-      variant: "default",
-      action: <CheckCircle2 className="text-green-500" />,
-    });
-    setIsSubmittingProduct(false);
-    // Potentially reset form or navigate away
-    // form.reset(); // Reset form on successful submission
-    // setExtractedData(null); // Clear extracted data
-    // setActiveTab("ai-extraction"); // Optionally switch back
+    try {
+      const existingProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+      const existingProducts = existingProductsString ? JSON.parse(existingProductsString) : [];
+      
+      const newProduct = {
+        id: `USER_PROD${Date.now().toString().slice(-6)}`, // Simple unique ID
+        name: data.productName || "Unnamed Product",
+        category: data.productCategory || "General",
+        status: "Draft", // Default status for new products
+        compliance: "N/A", // Default compliance
+        lastUpdated: new Date().toISOString().split('T')[0],
+        // Include other fields from ProductFormData if the listing page table is updated to show them
+        // For now, keeping it compatible with the existing `products/page.tsx` structure
+        gtin: data.gtin,
+        productDescription: data.productDescription,
+        manufacturer: data.manufacturer,
+        modelNumber: data.modelNumber,
+        // ... etc. if you want to store more comprehensive data
+      };
+
+      const updatedProducts = [...existingProducts, newProduct];
+      localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(updatedProducts));
+
+      toast({
+        title: "Product Saved to Local Storage",
+        description: `${newProduct.name} has been saved.`,
+        variant: "default",
+        action: <CheckCircle2 className="text-green-500" />,
+      });
+      
+      // Optionally reset form or navigate away
+      setExtractedData(null); // Clear any AI extracted data
+      setActiveTab("ai-extraction"); // Switch back to AI tab
+      // Reset the actual form fields via its own mechanism if ProductForm component exposes a reset
+      // For now, redirecting to product list
+      router.push('/products');
+
+    } catch (e) {
+      console.error("Failed to save product to localStorage", e);
+      toast({
+        title: "Save Failed",
+        description: "Could not save the product to local storage.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmittingProduct(false);
+    }
   };
 
   return (
@@ -185,14 +224,14 @@ export default function AddNewProductPage() {
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
           <TabsTrigger value="ai-extraction">AI Data Extraction</TabsTrigger>
-          <TabsTrigger value="manual">Manual Entry</TabsTrigger>
+          <TabsTrigger value="manual">Manual Entry / Review</TabsTrigger>
         </TabsList>
         
         <TabsContent value="manual" className="mt-6">
           <ProductForm 
             onSubmit={handleProductFormSubmit}
             isSubmitting={isSubmittingProduct}
-            initialData={extractedData || initialData} 
+            initialData={{...initialData, ...extractedData}} // Merge initialData with extractedData
             isStandalonePage={true}
           />
         </TabsContent>
@@ -238,7 +277,7 @@ export default function AddNewProductPage() {
                   <CardContent className="p-6 text-center text-muted-foreground">
                     <ScanLine className="mx-auto h-10 w-10 mb-3" />
                     <p>Click "Extract Data with AI" above to populate product information from the selected file and document type.</p>
-                    <p className="text-xs mt-1">You will then be taken to the "Manual Entry" tab to review it.</p>
+                    <p className="text-xs mt-1">You will then be taken to the "Manual Entry / Review" tab to review it.</p>
                   </CardContent>
                 </Card>
               )}

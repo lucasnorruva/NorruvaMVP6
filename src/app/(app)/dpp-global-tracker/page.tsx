@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle } from "lucide-react";
 import type { GlobeMethods, GlobeProps } from 'react-globe.gl';
 import { cn } from '@/lib/utils';
+import PointInfoCard from '@/components/dpp-tracker/PointInfoCard'; // Import the new component
 
 // Lazy load the Globe component
 const Globe = React.lazy(() => import('react-globe.gl'));
@@ -31,23 +32,27 @@ const euPolygon = {
   ]
 };
 
-interface MockDppPoint {
+export interface MockDppPoint { // Export interface for PointInfoCard
+  id: string;
   lat: number;
   lng: number;
   name: string;
   size: number;
   category: string;
   status: 'compliant' | 'pending' | 'issue';
+  manufacturer?: string;
+  gtin?: string;
+  complianceSummary?: string;
 }
 
 // Mock DPP data points for the globe
 const mockDppsOnGlobe: MockDppPoint[] = [
-  { lat: 48.8566, lng: 2.3522, name: "Smart Refrigerator X1 (Paris)", size: 0.6, category: 'Appliances', status: 'compliant' },
-  { lat: 52.5200, lng: 13.4050, name: "Eco-Friendly Laptop Z2 (Berlin)", size: 0.7, category: 'Electronics', status: 'pending' },
-  { lat: 41.9028, lng: 12.4964, name: "Recycled Material Sneakers (Rome)", size: 0.5, category: 'Apparel', status: 'compliant' },
-  { lat: 51.5074, lng: 0.1278, name: "Sustainable Coffee Maker (London)", size: 0.65, category: 'Appliances', status: 'issue' },
-  { lat: 40.4168, lng: -3.7038, name: "Smart Thermostat G2 (Madrid)", size: 0.55, category: 'Electronics', status: 'compliant' },
-  { lat: 59.3293, lng: 18.0686, name: "Wooden Chair Set (Stockholm)", size: 0.6, category: 'Furniture', status: 'pending' },
+  { id: "DPP_GLOBE_001", lat: 48.8566, lng: 2.3522, name: "Smart Refrigerator X1 (Paris)", size: 0.6, category: 'Appliances', status: 'compliant', manufacturer: 'GreenTech SAS', gtin: '3123456789012', complianceSummary: 'Fully compliant with EU Ecodesign and Energy Labelling.' },
+  { id: "DPP_GLOBE_002", lat: 52.5200, lng: 13.4050, name: "Eco-Laptop Z2 (Berlin)", size: 0.7, category: 'Electronics', status: 'pending', manufacturer: 'EcoElektronik GmbH', gtin: '3987654321098', complianceSummary: 'Pending battery passport documentation.' },
+  { id: "DPP_GLOBE_003", lat: 41.9028, lng: 12.4964, name: "Recycled Sneakers V1 (Rome)", size: 0.5, category: 'Apparel', status: 'compliant', manufacturer: 'ModaVerde S.p.A.', gtin: '3456789012345', complianceSummary: 'Verified recycled content and ethical production.' },
+  { id: "DPP_GLOBE_004", lat: 51.5074, lng: 0.1278, name: "Sustainable Coffee Machine (London)", size: 0.65, category: 'Appliances', status: 'issue', manufacturer: 'BrewRight Ltd.', gtin: '3567890123456', complianceSummary: 'Repairability score below EU target; awaiting updated schematics.' },
+  { id: "DPP_GLOBE_005", lat: 40.4168, lng: -3.7038, name: "Smart Thermostat G2 (Madrid)", size: 0.55, category: 'Electronics', status: 'compliant', manufacturer: 'CasaInteligente S.L.', gtin: '3678901234567', complianceSummary: 'RoHS and REACH compliant.' },
+  { id: "DPP_GLOBE_006", lat: 59.3293, lng: 18.0686, name: "Wooden Chair Set (Stockholm)", size: 0.6, category: 'Furniture', status: 'pending', manufacturer: 'NordicWood AB', gtin: '3789012345678', complianceSummary: 'FSC certification verification in progress.' },
 ];
 
 const statusColors: Record<MockDppPoint['status'], string> = {
@@ -57,7 +62,7 @@ const statusColors: Record<MockDppPoint['status'], string> = {
 };
 
 
-const GlobeVisualization = () => {
+const GlobeVisualization = ({ onPointClick }: { onPointClick: (point: MockDppPoint) => void }) => {
   const globeEl = useRef<GlobeMethods | undefined>();
 
   useEffect(() => {
@@ -87,9 +92,8 @@ const GlobeVisualization = () => {
     pointColor: d => statusColors[(d as MockDppPoint).status] || 'rgba(255, 255, 255, 0.7)',
     pointRadius: 'size',
     pointAltitude: 0.02,
-    onPointClick: (point: any) => {
-      const p = point as MockDppPoint;
-      alert(`Clicked on: ${p.name}\nCategory: ${p.category}\nStatus: ${p.status}`);
+    onPointClick: (point: any) => { // globe.gl type is generic, cast to MockDppPoint
+      onPointClick(point as MockDppPoint);
     },
   };
 
@@ -97,7 +101,7 @@ const GlobeVisualization = () => {
 };
 
 
-const DppGlobalTrackerClientContainer = () => {
+const DppGlobalTrackerClientContainer = ({ onPointClick }: { onPointClick: (point: MockDppPoint) => void }) => {
   const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     setIsClient(true);
@@ -119,7 +123,7 @@ const DppGlobalTrackerClientContainer = () => {
         <span className="ml-2">Loading 3D Globe...</span>
       </div>
     }>
-      <GlobeVisualization />
+      <GlobeVisualization onPointClick={onPointClick} />
     </Suspense>
   );
 };
@@ -147,6 +151,8 @@ const Legend = () => (
 
 export default function DppGlobalTrackerPage() {
   const [isConceptVisible, setIsConceptVisible] = useState(false);
+  const [selectedPoint, setSelectedPoint] = useState<MockDppPoint | null>(null);
+
   const conceptDescription = `
 Core Idea:
 Create an interactive 3D globe centered around the European Union that dynamically displays data from the Digital Product Passports (DPPs) across different regions. This globe could act as a “Digital Pulse” of product movement, ownership, lifecycle, certifications, and compliance in real-time.
@@ -213,6 +219,14 @@ Conclusion:
 The DPP Global Tracker with an interactive 3D EU globe would be a visually engaging and immersive tool for tracking digital product passports, lifecycle data, and compliance across Europe. This concept moves beyond traditional numbers and tables, leveraging dynamic visuals and real-time interactivity to create a compelling and user-friendly experience. By combining real-time data, geographical visualization, and blockchain integration, you’ll have an engaging tool that shows the full scope of product movements and compliance statuses in a highly dynamic, intuitive way.
   `;
 
+  const handlePointClick = (point: MockDppPoint) => {
+    setSelectedPoint(point);
+  };
+
+  const handleCloseInfoCard = () => {
+    setSelectedPoint(null);
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -226,7 +240,7 @@ The DPP Global Tracker with an interactive 3D EU globe would be a visually engag
         <Info className="h-5 w-5 text-info" />
         <AlertTitle className="font-semibold text-info">Interactive Prototype</AlertTitle>
         <AlertDescription>
-          This is an early prototype of the DPP Global Tracker. Features are being added incrementally. Rotate the globe with your mouse. Click on data points for more info (mock).
+          This is an early prototype of the DPP Global Tracker. Features are being added incrementally. Rotate the globe with your mouse. Click on data points for more info.
         </AlertDescription>
       </Alert>
 
@@ -236,8 +250,9 @@ The DPP Global Tracker with an interactive 3D EU globe would be a visually engag
           <CardDescription>An interactive globe displaying mock DPP data points and flows across Europe.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="w-full h-[450px] bg-muted/30 rounded-md overflow-hidden border">
-            <DppGlobalTrackerClientContainer />
+          <div className="w-full h-[450px] bg-muted/30 rounded-md overflow-hidden border relative">
+            <DppGlobalTrackerClientContainer onPointClick={handlePointClick} />
+            {selectedPoint && <PointInfoCard pointData={selectedPoint} onClose={handleCloseInfoCard} />}
           </div>
           <Legend />
         </CardContent>
@@ -299,3 +314,4 @@ The DPP Global Tracker with an interactive 3D EU globe would be a visually engag
     </div>
   );
 }
+

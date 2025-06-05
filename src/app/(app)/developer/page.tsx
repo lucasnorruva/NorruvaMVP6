@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog } from "lucide-react";
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, FileSearch } from "lucide-react"; // Added Scale, FileSearch
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -198,6 +198,7 @@ export default function DeveloperPortalPage() {
           type="search"
           placeholder="Search Developer Portal (coming soon)..."
           className="pl-10 bg-background" 
+          disabled 
         />
       </div>
 
@@ -366,7 +367,7 @@ export default function DeveloperPortalPage() {
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="font-headline flex items-center"><BookOpen className="mr-3 h-6 w-6 text-primary" /> API Documentation & Guides</CardTitle>
+            <CardTitle className="font-headline flex items-center"><BookOpen className="mr-3 h-6 w-6 text-primary" /> API Documentation &amp; Guides</CardTitle>
             <CardDescription>Explore detailed documentation, integration guides, and best practices for building with Norruva DPP APIs.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -378,11 +379,11 @@ export default function DeveloperPortalPage() {
                     <li><Link href="#" className="hover:underline">Lifecycle Events API</Link> <span className="text-xs text-muted-foreground">(Add, View)</span></li>
                     <li><Link href="#" className="hover:underline">Compliance Data API</Link> <span className="text-xs text-muted-foreground">(Query, Update)</span></li>
                     <li><Link href="#" className="hover:underline">Request/Response Formats</Link> <span className="text-xs text-muted-foreground">(JSON, Schemas)</span></li>
-                    <li><Link href="#" className="hover:underline">Error Codes & Handling</Link></li>
+                    <li><Link href="#" className="hover:underline">Error Codes &amp; Handling</Link></li>
                 </ul>
             </div>
              <div className="space-y-2 pt-3 border-t">
-                <h4 className="font-semibold">Integration & Best Practices</h4>
+                <h4 className="font-semibold">Integration Guides &amp; Best Practices</h4>
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
                     <li><Link href="#" className="hover:underline">Step-by-step Integration Guide</Link></li>
                     <li><Link href="#" className="hover:underline">Regulatory Alignment (ESPR, EPREL, EBSI)</Link></li>
@@ -465,7 +466,7 @@ export default function DeveloperPortalPage() {
           </div>
           <div className="space-y-3">
             <div>
-                <h4 className="font-semibold mb-1">Code Samples & Templates</h4>
+                <h4 className="font-semibold mb-1">Code Samples &amp; Templates</h4>
                  <p className="text-sm text-muted-foreground">Access a library of code snippets and project templates for common integration scenarios like DPP creation, event logging, and compliance checks.</p>
                 <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
                   <Link href="#">Browse Code Samples (Mock)</Link>
@@ -491,7 +492,7 @@ export default function DeveloperPortalPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage & Reporting</CardTitle>
+          <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage &amp; Reporting</CardTitle>
           <CardDescription>Monitor your API usage, view logs, and understand integration performance (Mock Data).</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -523,10 +524,31 @@ export default function DeveloperPortalPage() {
              <Button variant="outline" disabled>Access Full Reporting Dashboard (Coming Soon)</Button>
         </CardContent>
       </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="font-headline flex items-center"><Scale className="mr-3 h-6 w-6 text-primary" /> Regulatory Updates &amp; Compliance Tools</CardTitle>
+          <CardDescription>Stay informed on EU regulations and access tools to help validate your DPP solutions.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <h4 className="font-semibold mb-1">Latest Regulatory News</h4>
+            <p className="text-sm text-muted-foreground">This section will feature updates on ESPR, EPREL, EBSI, and other relevant EU directives impacting Digital Product Passports. Check back for timelines, guidance documents, and summaries.</p>
+            <Button variant="link" className="p-0 h-auto text-primary hover:underline mt-1" asChild>
+                <Link href="#">View All Updates (Mock)</Link>
+            </Button>
+          </div>
+          <div className="pt-3 border-t">
+            <h4 className="font-semibold mb-1">Compliance Validation Tools (Coming Soon)</h4>
+            <p className="text-sm text-muted-foreground">We are developing tools to help you check your DPP data structures and API integrations against common regulatory requirements. These tools will provide feedback and suggestions for improvement.</p>
+            <Button variant="outline" size="sm" className="mt-2" disabled>Access Validation Tools (Soon)</Button>
+          </div>
+        </CardContent>
+      </Card>
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="font-headline flex items-center"><Users className="mr-3 h-6 w-6 text-primary" /> Support & Community</CardTitle>
+          <CardTitle className="font-headline flex items-center"><Users className="mr-3 h-6 w-6 text-primary" /> Support &amp; Community</CardTitle>
           <CardDescription>Get help, share ideas, and connect with other developers building with Norruva.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -556,6 +578,8 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+    
+
     
 
     

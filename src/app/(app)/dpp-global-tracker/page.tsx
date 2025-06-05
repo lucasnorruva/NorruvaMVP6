@@ -9,31 +9,46 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers, Filter as FilterIcon, TrendingUp, Map, CalendarClock, CheckCircle, AlertCircle, ShieldQuestion, ShieldCheck, VenetianMask, GitBranch } from "lucide-react"; // Added GitBranch for ArcInfoCard
+import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers, Filter as FilterIcon, TrendingUp, Map, CalendarClock, CheckCircle, AlertCircle, ShieldQuestion, ShieldCheck, VenetianMask, GitBranch } from "lucide-react";
 import type { GlobeMethods, GlobeProps } from 'react-globe.gl';
 import { cn } from '@/lib/utils';
 import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
-import ArcInfoCard from '@/components/dpp-tracker/ArcInfoCard'; // Import ArcInfoCard
+import ArcInfoCard from '@/components/dpp-tracker/ArcInfoCard';
 
 const Globe = React.lazy(() => import('react-globe.gl'));
 
-const euPolygon = {
+const europeanCountriesPolygons = {
   type: "FeatureCollection",
   features: [
     {
       type: "Feature",
-      properties: { name: "EU Approximation" },
-      geometry: {
-        type: "Polygon",
-        coordinates: [
-          [
-            [-10, 35], [30, 35], [30, 60], [15, 70], [-5, 60], [-10, 35]
-          ]
-        ]
-      }
+      properties: { name: "France (Simplified)" },
+      geometry: { type: "Polygon", coordinates: [[[2.35, 48.85], [-2, 48], [-3, 45], [1, 43], [5, 44], [7, 47], [2.35, 48.85]]] }
+    },
+    {
+      type: "Feature",
+      properties: { name: "Germany (Simplified)" },
+      geometry: { type: "Polygon", coordinates: [[[10, 54], [14, 52], [13, 48], [6, 49], [7, 52], [10, 54]]] }
+    },
+    {
+      type: "Feature",
+      properties: { name: "Italy (Simplified)" },
+      geometry: { type: "Polygon", coordinates: [[[12.5, 45.5], [13, 42], [15, 40.5], [12, 38], [9, 41], [8, 44], [12.5, 45.5]]] }
+    },
+    {
+      type: "Feature",
+      properties: { name: "Spain (Simplified)" },
+      geometry: { type: "Polygon", coordinates: [[[-4, 42], [2, 42], [0, 37], [-7, 37], [-9, 40], [-4, 42]]] }
+    },
+    // Adding UK for better context, though not EU
+    {
+      type: "Feature",
+      properties: { name: "UK (Simplified)" },
+      geometry: { type: "Polygon", coordinates: [[[-2, 59], [1.5, 59], [2, 50], [-5, 50], [-6, 54], [-2, 59]]] }
     }
   ]
 };
+
 
 export interface MockDppPoint {
   id: string;
@@ -54,7 +69,7 @@ export interface MockDppPoint {
   customsStatus?: 'cleared' | 'flagged' | 'pending_inspection' | 'detained' | 'not_applicable';
 }
 
-export interface MockArc { // Made MockArc exportable
+export interface MockArc {
   startLat: number;
   startLng: number;
   endLat: number;
@@ -173,14 +188,14 @@ const GlobeVisualization = ({
   points,
   arcs,
   onPointClick, 
-  onArcClick, // Added onArcClick prop
+  onArcClick,
   pointColorAccessor,
   pointRadiusAccessor,
 }: { 
   points: MockDppPoint[];
   arcs: MockArc[];
   onPointClick: (point: MockDppPoint) => void;
-  onArcClick?: (arc: any, event: MouseEvent) => void; // Updated prop type
+  onArcClick?: (arc: any, event: MouseEvent) => void;
   pointColorAccessor: (point: MockDppPoint) => string;
   pointRadiusAccessor: (point: MockDppPoint) => number;
 }) => {
@@ -189,8 +204,8 @@ const GlobeVisualization = ({
   useEffect(() => {
     if (globeEl.current) {
       globeEl.current.pointOfView({ lat: 50, lng: 10, altitude: 1.8 });
-      globeEl.current.controls().autoRotate = true;
-      globeEl.current.controls().autoRotateSpeed = 0.3;
+      globeEl.current.controls().autoRotate = false; // Stopped auto-rotation
+      // globeEl.current.controls().autoRotateSpeed = 0.3; // No longer needed
       globeEl.current.controls().enableZoom = true;
       globeEl.current.controls().minDistance = 100;
       globeEl.current.controls().maxDistance = 800;
@@ -203,10 +218,10 @@ const GlobeVisualization = ({
     backgroundColor: "rgba(0,0,0,0)",
     width: undefined, 
     height: 450, 
-    polygonsData: euPolygon.features,
-    polygonCapColor: () => 'rgba(0, 100, 255, 0.2)',
-    polygonSideColor: () => 'rgba(0, 0, 0, 0.05)',
-    polygonStrokeColor: () => 'rgba(0, 50, 150, 0.8)',
+    polygonsData: europeanCountriesPolygons.features,
+    polygonCapColor: () => 'rgba(0, 100, 255, 0.15)', // Slightly adjusted cap color
+    polygonSideColor: () => 'rgba(0, 0, 0, 0.03)',
+    polygonStrokeColor: () => 'rgba(50, 150, 255, 1)', // Made stroke more opaque
     polygonAltitude: 0.01,
     pointsData: points,
     pointLabel: 'name',
@@ -223,7 +238,7 @@ const GlobeVisualization = ({
     arcDashGap: d => (d as MockArc).arcDashGap || 0.05, 
     arcStroke: d => (d as MockArc).arcStroke || 0.5, 
     arcAltitudeAutoScale: 0.5,
-    onArcClick: onArcClick, // Passed to Globe
+    onArcClick: onArcClick,
   };
 
   return <Globe ref={globeEl} {...globeProps} />;
@@ -233,14 +248,14 @@ const DppGlobalTrackerClientContainer = ({
   points,
   arcs,
   onPointClick,
-  onArcClick, // Added onArcClick prop
+  onArcClick,
   pointColorAccessor,
   pointRadiusAccessor,
 }: { 
   points: MockDppPoint[];
   arcs: MockArc[];
   onPointClick: (point: MockDppPoint) => void;
-  onArcClick?: (arc: any, event: MouseEvent) => void; // Updated prop type
+  onArcClick?: (arc: any, event: MouseEvent) => void;
   pointColorAccessor: (point: MockDppPoint) => string;
   pointRadiusAccessor: (point: MockDppPoint) => number;
 }) => {
@@ -269,7 +284,7 @@ const DppGlobalTrackerClientContainer = ({
         points={points} 
         arcs={arcs}
         onPointClick={onPointClick} 
-        onArcClick={onArcClick} // Passed to GlobeVisualization
+        onArcClick={onArcClick}
         pointColorAccessor={pointColorAccessor} 
         pointRadiusAccessor={pointRadiusAccessor} 
       />
@@ -291,7 +306,7 @@ const Legend = ({ title, colorMap }: { title: string; colorMap: Record<string, s
       ))}
       <div className="flex items-center">
         <GlobeIconLucide className="h-3.5 w-3.5 mr-2 text-blue-400" />
-        <span className="text-foreground/90">EU Region Outline</span>
+        <span className="text-foreground/90">European Countries Outline</span>
       </div>
     </CardContent>
   </Card>
@@ -325,7 +340,7 @@ const availableEbsiStatuses: Array<{ value: EbsiStatusFilter; label: string }> =
 export default function DppGlobalTrackerPage() {
   const [isConceptVisible, setIsConceptVisible] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<MockDppPoint | null>(null);
-  const [selectedArc, setSelectedArc] = useState<MockArc | null>(null); // State for selected arc
+  const [selectedArc, setSelectedArc] = useState<MockArc | null>(null);
   const [activeLayer, setActiveLayer] = useState<ActiveLayer>('status');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
@@ -350,8 +365,8 @@ Key Features of the DPP Global Tracker:
 6. Real-time Updates (Simulated): Simulate continuous tracking of new products, customs inspections, and regulatory changes.
 
 User Personas & Their Needs (Conceptual):
-- Customs Officers: Track incoming products, verify EU regulation compliance, flag non-compliant items, quickly access compliance data.
-- Inventory Managers: Manage compliant products in warehouses, track stock, ensure EU standards are met before distribution.
+- Customs Officers: Track incoming products at the border, ensure products comply with EU regulations, flag non-compliant products, access product compliance data quickly.
+- Inventory Managers: Manage compliant products in warehouses, track stock levels, ensure EU standards are met before distribution.
 - Compliance Officers: Oversee compliance across regions, audit certifications, ensure proper documentation for EU market entry.
 - Supply Chain Managers: Monitor supply chain compliance from production to delivery.
 - End-Consumers (Indirectly): Scan QR codes to view product passports, verify compliance, trace origin, and check safety.
@@ -393,16 +408,16 @@ Key Visualization Features:
 
   const handlePointClick = (point: MockDppPoint) => {
     setSelectedPoint(point);
-    setSelectedArc(null); // Close arc info if a point is clicked
+    setSelectedArc(null);
   };
 
   const handleCloseInfoCard = () => {
     setSelectedPoint(null);
   };
 
-  const handleArcClick = (arc: any) => { // arc type is 'any' from react-globe.gl
+  const handleArcClick = (arc: any) => {
     setSelectedArc(arc as MockArc);
-    setSelectedPoint(null); // Close point info if an arc is clicked
+    setSelectedPoint(null);
   };
 
   const handleCloseArcInfoCard = () => {
@@ -510,12 +525,12 @@ Key Visualization Features:
               points={filteredPoints} 
               arcs={filteredArcs}
               onPointClick={handlePointClick} 
-              onArcClick={handleArcClick} // Pass arc click handler
+              onArcClick={handleArcClick}
               pointColorAccessor={pointColorAccessor}
               pointRadiusAccessor={pointRadiusAccessor}
             />
             {selectedPoint && <PointInfoCard pointData={selectedPoint} onClose={handleCloseInfoCard} />}
-            {selectedArc && <ArcInfoCard arcData={selectedArc} onClose={handleCloseArcInfoCard} />} {/* Render ArcInfoCard */}
+            {selectedArc && <ArcInfoCard arcData={selectedArc} onClose={handleCloseArcInfoCard} />}
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -554,7 +569,7 @@ Key Visualization Features:
                   Filters
                 </CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4"> {/* Changed to md:grid-cols-2 for filters */}
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="status-filter" className="text-xs">Product Status</Label>
                   <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>
@@ -612,8 +627,8 @@ Key Visualization Features:
             </Card>
             
           </div>
-          <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-6"> {/* This grid wrapper for View Options and Legend */}
-            <Card className="lg:col-span-1"> {/* View Options takes 1/3rd on large screens */}
+          <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="lg:col-span-1">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-md font-headline flex items-center">
                     <Map className="mr-2 h-4 w-4 text-primary" />
@@ -653,7 +668,7 @@ Key Visualization Features:
                   </div>
                 </CardContent>
               </Card>
-              <div className="lg:col-span-2"> {/* Legend takes 2/3rd on large screens */}
+              <div className="lg:col-span-2">
                 <Legend title={activeLegendTitle} colorMap={activeLegendMap} />
               </div>
           </div>
@@ -716,5 +731,3 @@ Key Visualization Features:
     </div>
   );
 }
-
-    

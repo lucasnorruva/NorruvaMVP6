@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock } from "lucide-react"; // Added Lock
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -209,8 +209,8 @@ export default function DeveloperPortalPage() {
         </CardHeader>
         <CardContent>
           <Button variant="default" asChild>
-            <Link href="#">
-              Read Quick Start Guide (Mock)
+            <Link href="/developer/guides/quick-start">
+              Read Quick Start Guide
             </Link>
           </Button>
           <p className="text-xs text-muted-foreground mt-3">
@@ -391,7 +391,7 @@ export default function DeveloperPortalPage() {
              <div className="space-y-2">
                 <h4 className="font-semibold">API Reference</h4>
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
-                    <li><Link href="#" className="hover:underline">Authentication</Link> <span className="text-xs text-muted-foreground">(OAuth 2.0, API Keys)</span></li>
+                    <li><Link href="/developer/docs/authentication" className="hover:underline">Authentication</Link> <span className="text-xs text-muted-foreground">(OAuth 2.0, API Keys)</span></li>
                     <li><Link href="#" className="hover:underline">Products API</Link> <span className="text-xs text-muted-foreground">(CRUD, Search)</span></li>
                     <li><Link href="#" className="hover:underline">Lifecycle Events API</Link> <span className="text-xs text-muted-foreground">(Add, View)</span></li>
                     <li><Link href="#" className="hover:underline">Compliance Data API</Link> <span className="text-xs text-muted-foreground">(Query, Update)</span></li>
@@ -622,28 +622,38 @@ export default function DeveloperPortalPage() {
           <CardTitle className="font-headline flex items-center"><Users className="mr-3 h-6 w-6 text-primary" /> Support &amp; Community</CardTitle>
           <CardDescription>Get help, share ideas, and connect with other developers building with Norruva.</CardDescription>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-           <Link href="#" target="_blank" rel="noopener noreferrer" className="block">
-            <Button variant="outline" className="w-full h-full flex-col py-4 group hover:border-primary hover:bg-primary/5">
-                <LifeBuoy className="mb-1 h-6 w-6 text-accent group-hover:text-primary transition-colors"/> 
-                <span className="group-hover:text-primary transition-colors">Help Center / FAQ</span>
-                <span className="text-xs text-muted-foreground">(Mock)</span>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+             <Link href="#" target="_blank" rel="noopener noreferrer" className="block">
+              <Button variant="outline" className="w-full h-full flex-col py-4 group hover:border-primary hover:bg-primary/5">
+                  <LifeBuoy className="mb-1 h-6 w-6 text-accent group-hover:text-primary transition-colors"/> 
+                  <span className="group-hover:text-primary transition-colors">Help Center / FAQ</span>
+                  <span className="text-xs text-muted-foreground">(Mock)</span>
+              </Button>
+             </Link>
+             <Link href="#" target="_blank" rel="noopener noreferrer" className="block">
+              <Button variant="outline" className="w-full h-full flex-col py-4 group hover:border-primary hover:bg-primary/5">
+                  <Activity className="mb-1 h-6 w-6 text-accent group-hover:text-primary transition-colors"/> 
+                  <span className="group-hover:text-primary transition-colors">Community Forum</span>
+                  <span className="text-xs text-muted-foreground">(Mock Link)</span>
+              </Button>
+             </Link>
+             <Link href="#" target="_blank" rel="noopener noreferrer" className="block">
+              <Button variant="outline" className="w-full h-full flex-col py-4 group hover:border-primary hover:bg-primary/5">
+                  <FileCog className="mb-1 h-6 w-6 text-accent group-hover:text-primary transition-colors"/> 
+                  <span className="group-hover:text-primary transition-colors">Submit Support Ticket</span>
+                  <span className="text-xs text-muted-foreground">(Mock Link)</span>
+              </Button>
+             </Link>
+          </div>
+          <div className="pt-4 border-t border-border">
+            <Button variant="link" asChild className="p-0 h-auto text-primary hover:underline">
+              <a href="mailto:dev-feedback@norruva.com">
+                <MessageSquare className="mr-2 h-4 w-4"/> Provide Feedback (dev-feedback@norruva.com)
+              </a>
             </Button>
-           </Link>
-           <Link href="#" target="_blank" rel="noopener noreferrer" className="block">
-            <Button variant="outline" className="w-full h-full flex-col py-4 group hover:border-primary hover:bg-primary/5">
-                <Activity className="mb-1 h-6 w-6 text-accent group-hover:text-primary transition-colors"/> 
-                <span className="group-hover:text-primary transition-colors">Community Forum</span>
-                <span className="text-xs text-muted-foreground">(Mock Link)</span>
-            </Button>
-           </Link>
-           <Link href="#" target="_blank" rel="noopener noreferrer" className="block">
-            <Button variant="outline" className="w-full h-full flex-col py-4 group hover:border-primary hover:bg-primary/5">
-                <FileCog className="mb-1 h-6 w-6 text-accent group-hover:text-primary transition-colors"/> 
-                <span className="group-hover:text-primary transition-colors">Submit Support Ticket</span>
-                <span className="text-xs text-muted-foreground">(Mock Link)</span>
-            </Button>
-           </Link>
+            <p className="text-xs text-muted-foreground mt-1">Help us improve the Developer Portal by sharing your thoughts and suggestions.</p>
+          </div>
         </CardContent>
       </Card>
     </div>

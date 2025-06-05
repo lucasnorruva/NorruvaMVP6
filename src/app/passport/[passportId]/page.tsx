@@ -1,13 +1,17 @@
 
+"use client"; // Converted to client component for state management
+
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap } from 'lucide-react';
-import type { Metadata, ResolvingMetadata } from 'next';
+import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp } from 'lucide-react';
+// Removed Metadata and ResolvingMetadata imports as they are for Server Components
+// import type { Metadata, ResolvingMetadata } from 'next'; 
 import { Logo } from '@/components/icons/Logo';
+import React, { useState, useEffect } from 'react'; // Added useState and useEffect
 
 // Define a type for icon mapping
 type IconName = "Leaf" | "Recycle" | "ShieldCheck" | "Cpu" | "Zap";
@@ -50,7 +54,7 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     tagline: "Sustainable Cooling, Smart Living.",
     imageUrl: "https://placehold.co/800x600.png",
     imageHint: "modern refrigerator kitchen",
-    productStory: "Experience the future of refrigeration with the EcoFriendly Refrigerator X2000. Designed with both the planet and your lifestyle in mind, this appliance combines cutting-edge cooling technology with sustainable materials. Its spacious interior, smart energy management, and sleek design make it a perfect addition to any modern, eco-conscious home. We believe in transparency, and this Digital Product Passport gives you insight into its journey and impact. Built to last and designed for efficiency, the X2000 helps you reduce your environmental footprint without compromising on performance or style.",
+    productStory: "Experience the future of refrigeration with the EcoFriendly Refrigerator X2000. Designed with both the planet and your lifestyle in mind, this appliance combines cutting-edge cooling technology with sustainable materials. Its spacious interior, smart energy management, and sleek design make it a perfect addition to any modern, eco-conscious home. We believe in transparency, and this Digital Product Passport gives you insight into its journey and impact. Built to last and designed for efficiency, the X2000 helps you reduce your environmental footprint without compromising on performance or style. More details include advanced frost-free systems, optimized airflow for even temperature distribution, and compartments designed for specific food types to prolong freshness. The user interface is intuitive, allowing easy control over temperature settings and special modes like vacation mode or quick cool.",
     sustainabilityHighlights: [
       { iconName: "Zap", text: "Energy Star Certified A+++" },
       { iconName: "Recycle", text: "Made with 70% recycled steel" },
@@ -71,7 +75,7 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     tagline: "Illuminate Your World, Sustainably.",
     imageUrl: "https://placehold.co/800x600.png",
     imageHint: "led bulbs packaging",
-    productStory: "Brighten your home responsibly with our Smart LED Bulb pack. These energy-efficient bulbs offer customizable lighting while consuming significantly less power than traditional bulbs. Connect them to your smart home system for voice control and scheduling. Each bulb is designed for a long lifespan, reducing waste and replacement frequency. This passport details their energy savings and material composition.",
+    productStory: "Brighten your home responsibly with our Smart LED Bulb pack. These energy-efficient bulbs offer customizable lighting while consuming significantly less power than traditional bulbs. Connect them to your smart home system for voice control and scheduling. Each bulb is designed for a long lifespan, reducing waste and replacement frequency. This passport details their energy savings and material composition. Furthermore, these bulbs support a wide range of colors and tunable white light, from warm to cool, allowing you to create the perfect ambiance for any occasion. Firmware updates are delivered over-the-air to enhance features and security.",
     sustainabilityHighlights: [
       { iconName: "Zap", text: "Uses 85% less energy than incandescent bulbs" },
       { iconName: "Recycle", text: "Recyclable packaging materials" },
@@ -91,35 +95,49 @@ type Props = {
   params: { passportId: string }
 }
 
-export async function generateMetadata(
-  { params }: Props,
-  parent: ResolvingMetadata
-): Promise<Metadata> {
-  const passportId = params.passportId;
-  const product = MOCK_PUBLIC_PASSPORTS[passportId];
+// generateMetadata needs to be removed or handled differently for client components if dynamic,
+// or moved to a parent Server Component layout. For now, removing it.
+// export async function generateMetadata(
+//   { params }: Props,
+//   parent: ResolvingMetadata
+// ): Promise<Metadata> { ... }
 
-  if (!product) {
-    return {
-      title: 'Product Passport Not Found',
+const STORY_TRUNCATE_LENGTH = 250;
+
+export default function PublicPassportPage({ params }: Props) {
+  const [product, setProduct] = useState<PublicProductInfo | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isStoryExpanded, setIsStoryExpanded] = useState(false);
+
+  useEffect(() => {
+    // Simulate fetching data
+    const fetchedProduct = MOCK_PUBLIC_PASSPORTS[params.passportId];
+    if (fetchedProduct) {
+      setProduct(fetchedProduct);
     }
-  }
+    setIsLoading(false);
+  }, [params.passportId]);
 
-  return {
-    title: `${product.productName} - Digital Product Passport | Norruva`,
-    description: product.tagline,
-    // openGraph: {
-    //   images: [product.imageUrl],
-    // },
+  if (isLoading) {
+    // Basic loading state, can be replaced with a skeleton loader
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading product passport...</p>
+      </div>
+    );
   }
-}
-
-export default async function PublicPassportPage({ params }: Props) {
-  const passportId = params.passportId;
-  const product = MOCK_PUBLIC_PASSPORTS[passportId];
 
   if (!product) {
     notFound();
   }
+
+  const toggleStoryExpansion = () => {
+    setIsStoryExpanded(!isStoryExpanded);
+  };
+
+  const displayProductStory = isStoryExpanded 
+    ? product.productStory 
+    : `${product.productStory.substring(0, STORY_TRUNCATE_LENGTH)}...`;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -164,7 +182,17 @@ export default async function PublicPassportPage({ params }: Props) {
                   <CardTitle className="text-xl text-primary">Product Story</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-foreground leading-relaxed">{product.productStory}</p>
+                  <p className="text-foreground leading-relaxed">{displayProductStory}</p>
+                  {product.productStory.length > STORY_TRUNCATE_LENGTH && (
+                    <Button 
+                      variant="link" 
+                      onClick={toggleStoryExpansion} 
+                      className="p-0 h-auto mt-2 text-primary hover:text-primary/80"
+                    >
+                      {isStoryExpanded ? "Read Less" : "Read More"}
+                      {isStoryExpanded ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />}
+                    </Button>
+                  )}
                 </CardContent>
               </Card>
 

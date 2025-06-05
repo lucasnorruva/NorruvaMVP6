@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef, Suspense } from 'react';
@@ -11,13 +10,41 @@ import type { GlobeMethods, GlobeProps } from 'react-globe.gl';
 // Lazy load the Globe component
 const Globe = React.lazy(() => import('react-globe.gl'));
 
+// Define a simple GeoJSON-like structure for the EU area polygon
+const euPolygon = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      properties: { name: "EU Approximation" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [ // A very rough polygon covering parts of Western/Central Europe
+            [-10, 35], [30, 35], [30, 60], [15, 70], [-5, 60], [-10, 35]
+          ]
+        ]
+      }
+    }
+  ]
+};
+
+// Mock DPP data points for the globe
+const mockDppsOnGlobe = [
+  { lat: 48.8566, lng: 2.3522, name: "Smart Refrigerator X1 (Paris)", color: 'rgba(255, 100, 100, 0.85)', size: 0.6, category: 'Appliances' },
+  { lat: 52.5200, lng: 13.4050, name: "Eco-Friendly Laptop Z2 (Berlin)", color: 'rgba(100, 255, 100, 0.85)', size: 0.7, category: 'Electronics' },
+  { lat: 41.9028, lng: 12.4964, name: "Recycled Material Sneakers (Rome)", color: 'rgba(100, 100, 255, 0.85)', size: 0.5, category: 'Apparel' },
+  { lat: 51.5074, lng: 0.1278, name: "Sustainable Coffee Maker (London)", color: 'rgba(255, 255, 100, 0.85)', size: 0.65, category: 'Appliances' }
+];
+
+
 const GlobeVisualization = () => {
   const globeEl = useRef<GlobeMethods | undefined>();
 
   useEffect(() => {
     // Auto-rotate and zoom
     if (globeEl.current) {
-      globeEl.current.pointOfView({ lat: 50, lng: 10, altitude: 2.2 }); // Focus on Europe
+      globeEl.current.pointOfView({ lat: 50, lng: 10, altitude: 1.8 }); // Adjusted altitude
       globeEl.current.controls().autoRotate = true;
       globeEl.current.controls().autoRotateSpeed = 0.3;
       globeEl.current.controls().enableZoom = true;
@@ -31,7 +58,20 @@ const GlobeVisualization = () => {
     bumpImageUrl: "//unpkg.com/three-globe/example/img/earth-topology.png",
     backgroundColor: "rgba(0,0,0,0)", 
     width: undefined, 
-    height: 450, 
+    height: 450,
+    polygonsData: euPolygon.features,
+    polygonCapColor: () => 'rgba(0, 100, 255, 0.2)', // Semi-transparent blue for EU
+    polygonSideColor: () => 'rgba(0, 0, 0, 0.05)',
+    polygonStrokeColor: () => 'rgba(0, 50, 150, 0.8)',
+    polygonAltitude: 0.01,
+    pointsData: mockDppsOnGlobe,
+    pointLabel: 'name',
+    pointColor: 'color', // Use color from data
+    pointRadius: 'size', // Use size from data
+    pointAltitude: 0.02, // Slightly elevate points
+    onPointClick: (point: any) => { // Type 'any' for simplicity with mock data
+      alert(`Clicked on: ${point.name}\nCategory: ${point.category}`);
+    },
   };
 
   return <Globe ref={globeEl} {...globeProps} />;
@@ -147,7 +187,7 @@ The DPP Global Tracker with an interactive 3D EU globe would be a visually engag
         <Info className="h-5 w-5 text-info" />
         <AlertTitle className="font-semibold text-info">Interactive Prototype</AlertTitle>
         <AlertDescription>
-          This is an early prototype of the DPP Global Tracker. Features are being added incrementally. Rotate the globe with your mouse.
+          This is an early prototype of the DPP Global Tracker. Features are being added incrementally. Rotate the globe with your mouse. Click on data points for more info (mock).
         </AlertDescription>
       </Alert>
 

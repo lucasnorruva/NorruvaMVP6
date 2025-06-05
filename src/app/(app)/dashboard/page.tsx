@@ -168,7 +168,7 @@ const RetailerDashboard = () => (
           <FileText className="mr-2 h-5 w-5" />
           Download Product Data Sheets
         </Button>
-        <Link href="/dpp-live-dashboard" passHref> {}
+        <Link href="/dpp-live-dashboard" passHref>
             <Button variant="outline" className="w-full h-full">
                 <Eye className="mr-2 h-5 w-5" />
                 Access Public DPPs
@@ -319,7 +319,7 @@ export default function DashboardPage() {
            </Link>
         )}
          {currentRole === 'admin' && (
-           <Link href="/products/new" passHref> {}
+           <Link href="/products/new" passHref>
              <Button variant="default">
                <PlusCircle className="mr-2 h-5 w-5" />
                Platform Product Setup
@@ -331,5 +331,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-
-    

@@ -578,4 +578,3 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
     </Form>
   );
 }
-

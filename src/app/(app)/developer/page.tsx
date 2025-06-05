@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText } from "lucide-react";
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -393,7 +393,7 @@ export default function DeveloperPortalPage() {
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
                     <li><Link href="/developer/docs/api-reference" className="hover:underline flex items-center"><BookText className="mr-1.5 h-4 w-4 inline-block"/>API Reference</Link> <span className="text-xs text-muted-foreground">(Endpoints, Schemas)</span></li>
                     <li><Link href="/developer/docs/authentication" className="hover:underline">Authentication</Link> <span className="text-xs text-muted-foreground">(OAuth 2.0, API Keys)</span></li>
-                    <li><Link href="#" className="hover:underline">Rate Limiting & Usage</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
+                    <li><Link href="#" className="hover:underline">Rate Limiting &amp; Usage</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
                     <li><Link href="#" className="hover:underline">Error Codes &amp; Handling</Link></li>
                 </ul>
             </div>
@@ -524,7 +524,7 @@ export default function DeveloperPortalPage() {
             </Button>
           </div>
           <p className="text-sm text-muted-foreground pt-3 border-t">
-            Information on API Rate Limiting and access to your API Usage & Reporting dashboard (see below) are also key parts of our advanced feature set.
+            Information on API Rate Limiting and access to your API Usage &amp; Reporting dashboard (see below) are also key parts of our advanced feature set.
           </p>
         </CardContent>
       </Card>
@@ -599,10 +599,10 @@ export default function DeveloperPortalPage() {
             </Button>
           </div>
           <div className="pt-3 border-t">
-            <h4 className="font-semibold text-md mb-1">GDPR Compliance for Developers</h4>
+            <h4 className="font-semibold text-md mb-1 flex items-center"><VenetianMask className="mr-2 h-4 w-4 text-accent"/>GDPR Compliance for Developers</h4>
             <p className="text-sm text-muted-foreground">Understand your responsibilities under GDPR when processing personal data associated with Digital Product Passports. Access guidelines and checklists.</p>
              <Button variant="link" className="p-0 h-auto text-primary hover:underline mt-1" asChild>
-                <Link href="#">View GDPR Resources (Mock)</Link>
+                <Link href="/developer/docs/data-privacy">View GDPR Resources</Link>
             </Button>
           </div>
            <div className="pt-3 border-t">

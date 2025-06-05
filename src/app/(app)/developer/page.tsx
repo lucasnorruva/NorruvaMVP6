@@ -362,7 +362,7 @@ export default function DeveloperPortalPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-                <h4 className="font-semibold">Core API Reference</h4>
+                <h4 className="font-semibold">API Reference</h4>
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
                     <li><Link href="#" className="hover:underline">Authentication</Link></li>
                     <li><Link href="#" className="hover:underline">Products API Endpoints</Link></li>
@@ -517,7 +517,7 @@ export default function DeveloperPortalPage() {
       
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="font-headline flex items-center"><ShieldAlert className="mr-3 h-6 w-6 text-primary" /> Support & Community</CardTitle>
+          <CardTitle className="font-headline flex items-center"><ShieldAlert className="mr-3 h-6 w-6 text-primary" /> Support &amp; Community</CardTitle>
           <CardDescription>Get help, share ideas, and connect with other developers.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -547,6 +547,8 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+    
+
     
 
     

@@ -392,18 +392,18 @@ export default function DeveloperPortalPage() {
                 <h4 className="font-semibold">Core Documentation</h4>
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
                     <li><Link href="/developer/docs/api-reference" className="hover:underline flex items-center"><BookText className="mr-1.5 h-4 w-4 inline-block"/>API Reference</Link> <span className="text-xs text-muted-foreground">(Endpoints, Schemas)</span></li>
-                    <li><Link href="/developer/docs/authentication" className="hover:underline">Authentication</Link> <span className="text-xs text-muted-foreground">(OAuth 2.0, API Keys)</span></li>
-                    <li><Link href="#" className="hover:underline">Rate Limiting &amp; Usage</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
-                    <li><Link href="#" className="hover:underline">Error Codes &amp; Handling</Link></li>
+                    <li><Link href="/developer/docs/authentication" className="hover:underline flex items-center"><KeyRound className="mr-1.5 h-4 w-4 inline-block"/>Authentication</Link> <span className="text-xs text-muted-foreground">(API Keys, OAuth 2.0)</span></li>
+                    <li><Link href="#" className="hover:underline text-muted-foreground line-through flex items-center"><LinkIconPath className="mr-1.5 h-4 w-4 inline-block"/>Rate Limiting &amp; Usage</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
+                    <li><Link href="#" className="hover:underline text-muted-foreground line-through flex items-center"><FileCog className="mr-1.5 h-4 w-4 inline-block"/>Error Codes &amp; Handling</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
                 </ul>
             </div>
              <div className="space-y-2 pt-3 border-t">
                 <h4 className="font-semibold">Integration Guides & Best Practices</h4>
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
-                    <li><Link href="/developer/guides/quick-start" className="hover:underline">Quick Start Integration Guide</Link></li>
-                    <li><Link href="/developer/docs/ebsi-integration" className="hover:underline">EBSI Integration Overview</Link> <Share2 className="inline h-3 w-3 ml-1 text-muted-foreground"/></li>
-                    <li><Link href="#" className="hover:underline">Regulatory Alignment (ESPR, EPREL)</Link></li>
-                    <li><Link href="#" className="hover:underline">Best Practices for Data Management</Link></li>
+                    <li><Link href="/developer/guides/quick-start" className="hover:underline flex items-center"><Rocket className="mr-1.5 h-4 w-4 inline-block"/>Quick Start Integration Guide</Link></li>
+                    <li><Link href="/developer/docs/ebsi-integration" className="hover:underline flex items-center"><Share2 className="mr-1.5 h-4 w-4 inline-block"/>EBSI Integration Overview</Link></li>
+                    <li><Link href="#" className="hover:underline text-muted-foreground line-through flex items-center"><Scale className="mr-1.5 h-4 w-4 inline-block"/>Regulatory Alignment (ESPR, EPREL)</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
+                    <li><Link href="#" className="hover:underline text-muted-foreground line-through flex items-center"><Layers className="mr-1.5 h-4 w-4 inline-block"/>Best Practices for Data Management</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
                 </ul>
             </div>
             <div className="space-y-2 pt-3 border-t">
@@ -419,8 +419,8 @@ export default function DeveloperPortalPage() {
                  </ul>
             </div>
             <Button variant="default" className="w-full sm:w-auto mt-3" asChild>
-                <Link href="#">
-                    <FileJson className="mr-2 h-5 w-5" /> View Full OpenAPI Specification (Mock)
+                <Link href="/developer/docs/api-reference">
+                    <FileJson className="mr-2 h-5 w-5" /> View Full API Reference
                 </Link>
             </Button>
           </CardContent>
@@ -688,5 +688,6 @@ export default function DeveloperPortalPage() {
     
 
     
+
 
 

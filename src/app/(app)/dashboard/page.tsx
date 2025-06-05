@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, BadgeCheck, Building, FileWarning, Eye, Database, SearchCheck, BarChart2, AlertTriangle, MessageSquare, Inbox, History, Settings, ListChecks, Info } from "lucide-react";
+import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, BadgeCheck, Building, FileWarning, Eye, Database, SearchCheck, BarChart2, AlertTriangle, MessageSquare, Inbox, History, Settings, ListChecks, Info, SlidersHorizontal, Activity, UploadCloud, FileSearch, DownloadCloud, Leaf, ClipboardCheck } from "lucide-react";
 import Link from "next/link";
 import { useRole } from "@/contexts/RoleContext";
 
@@ -99,7 +99,10 @@ const AdminQuickActions = () => {
   return (
      <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="font-headline">Admin Quick Actions</CardTitle>
+          <CardTitle className="font-headline flex items-center">
+            <SlidersHorizontal className="mr-2 h-5 w-5 text-primary" />
+            Admin Quick Actions
+          </CardTitle>
           <CardDescription>Access key administrative functions quickly.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -118,6 +121,157 @@ const AdminQuickActions = () => {
       </Card>
   )
 }
+
+const ManufacturerQuickActionsCard = () => {
+  const actions = [
+    { label: "Add New Product", href: "/products/new", icon: PlusCircle, description: "Create a new DPP for your product." },
+    { label: "View My Products", href: "/products", icon: Eye, description: "See all your managed products." },
+    { label: "Manage Supply Chain Data", href: "#", icon: Layers, description: "Input or update supplier information (mock)." },
+    { label: "Sustainability Insights", href: "/sustainability", icon: Leaf, description: "View your sustainability reports." },
+  ];
+  return (
+    <Card className="shadow-lg">
+      <CardHeader>
+        <CardTitle className="font-headline flex items-center"><Activity className="mr-2 h-5 w-5 text-primary" />Quick Actions</CardTitle>
+        <CardDescription>Your frequently used actions.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {actions.map((action) => (
+          <Link key={action.label} href={action.href} passHref>
+            <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
+              <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
+              <div>
+                <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
+                <p className="text-xs text-muted-foreground">{action.description}</p>
+              </div>
+            </Button>
+          </Link>
+        ))}
+      </CardContent>
+    </Card>
+  );
+};
+
+const SupplierQuickActionsCard = () => {
+  const actions = [
+    { label: "Upload Compliance Document", href: "/products/new", icon: UploadCloud, description: "Submit new or updated documents." },
+    { label: "View Data Requests", href: "#", icon: Inbox, description: "Check requests from manufacturers (mock)." },
+    { label: "Manage Material Specs", href: "#", icon: FileText, description: "Update your material specifications (mock)." },
+    { label: "Respond to Queries", href: "#", icon: MessageSquare, description: "Answer manufacturer questions (mock)." },
+  ];
+   return (
+    <Card className="shadow-lg">
+      <CardHeader>
+        <CardTitle className="font-headline flex items-center"><Activity className="mr-2 h-5 w-5 text-primary" />Quick Actions</CardTitle>
+        <CardDescription>Key tasks for suppliers.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {actions.map((action) => (
+          <Link key={action.label} href={action.href} passHref>
+            <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
+              <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
+              <div>
+                <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
+                <p className="text-xs text-muted-foreground">{action.description}</p>
+              </div>
+            </Button>
+          </Link>
+        ))}
+      </CardContent>
+    </Card>
+  );
+};
+
+const RetailerQuickActionsCard = () => {
+  const actions = [
+    { label: "Access Public DPPs", href: "/dpp-live-dashboard", icon: ScanLine, description: "View DPPs for products you sell." },
+    { label: "Download Product Data", href: "#", icon: DownloadCloud, description: "Get data sheets for marketing (mock)." },
+    { label: "View Consumer Insights", href: "#", icon: Users, description: "See consumer interaction data (mock)." },
+    { label: "Manage Point-of-Sale Info", href: "#", icon: ShoppingBag, description: "Update POS display information (mock)." },
+  ];
+   return (
+    <Card className="shadow-lg">
+      <CardHeader>
+        <CardTitle className="font-headline flex items-center"><Activity className="mr-2 h-5 w-5 text-primary" />Quick Actions</CardTitle>
+        <CardDescription>Essential tools for retailers.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {actions.map((action) => (
+          <Link key={action.label} href={action.href} passHref>
+            <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
+              <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
+              <div>
+                <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
+                <p className="text-xs text-muted-foreground">{action.description}</p>
+              </div>
+            </Button>
+          </Link>
+        ))}
+      </CardContent>
+    </Card>
+  );
+};
+
+const RecyclerQuickActionsCard = () => {
+  const actions = [
+    { label: "Scan for Disassembly Info", href: "#", icon: ScanLine, description: "Access EOL data via product scan (mock)." },
+    { label: "View Material Composition DB", href: "#", icon: Database, description: "Check material details for recovery (mock)." },
+    { label: "Report Recovered Materials", href: "#", icon: RecycleIcon, description: "Log recovered materials and quantities (mock)." },
+    { label: "Check EOL Instructions", href: "/products/PROD001", icon: ListChecks, description: "Review end-of-life procedures." },
+  ];
+   return (
+    <Card className="shadow-lg">
+      <CardHeader>
+        <CardTitle className="font-headline flex items-center"><Activity className="mr-2 h-5 w-5 text-primary" />Quick Actions</CardTitle>
+        <CardDescription>Tools for efficient material recovery.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {actions.map((action) => (
+          <Link key={action.label} href={action.href} passHref>
+            <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
+              <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
+              <div>
+                <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
+                <p className="text-xs text-muted-foreground">{action.description}</p>
+              </div>
+            </Button>
+          </Link>
+        ))}
+      </CardContent>
+    </Card>
+  );
+};
+
+const VerifierQuickActionsCard = () => {
+  const actions = [
+    { label: "Review Pending Verifications", href: "/products", icon: FileWarning, description: "Access DPPs awaiting verification." },
+    { label: "Access Audit Trails", href: "#", icon: History, description: "Review historical verification data (mock)." },
+    { label: "Submit Verification Report", href: "#", icon: ClipboardCheck, description: "File new verification outcomes (mock)." },
+    { label: "Query Compliance Standards", href: "/copilot", icon: SearchCheck, description: "Use AI to check regulations." },
+  ];
+  return (
+    <Card className="shadow-lg">
+      <CardHeader>
+        <CardTitle className="font-headline flex items-center"><Activity className="mr-2 h-5 w-5 text-primary" />Quick Actions</CardTitle>
+        <CardDescription>Key functions for verifiers and auditors.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {actions.map((action) => (
+          <Link key={action.label} href={action.href} passHref>
+            <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
+              <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
+              <div>
+                <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
+                <p className="text-xs text-muted-foreground">{action.description}</p>
+              </div>
+            </Button>
+          </Link>
+        ))}
+      </CardContent>
+    </Card>
+  );
+};
+
 
 const ManufacturerDashboard = () => (
   <div className="space-y-6">
@@ -141,6 +295,7 @@ const ManufacturerDashboard = () => (
         </Card>
       </CardContent>
     </Card>
+    <ManufacturerQuickActionsCard /> {/* Added Quick Actions Card */}
     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
         <Link href="/products/new" passHref>
           <Button variant="secondary" className="w-full h-full">
@@ -184,6 +339,7 @@ const SupplierDashboard = () => (
         </Card>
       </CardContent>
     </Card>
+    <SupplierQuickActionsCard /> {/* Added Quick Actions Card */}
      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Button variant="secondary" className="w-full h-full">
           <ScanLine className="mr-2 h-5 w-5" />
@@ -219,6 +375,7 @@ const RetailerDashboard = () => (
         </Card>
       </CardContent>
     </Card>
+    <RetailerQuickActionsCard /> {/* Added Quick Actions Card */}
      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Button variant="secondary" className="w-full h-full">
           <FileText className="mr-2 h-5 w-5" />
@@ -256,6 +413,7 @@ const RecyclerDashboard = () => (
         </Card>
       </CardContent>
     </Card>
+    <RecyclerQuickActionsCard /> {/* Added Quick Actions Card */}
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Button variant="secondary" className="w-full h-full">
           <ScanLine className="mr-2 h-5 w-5" />
@@ -291,6 +449,7 @@ const VerifierDashboard = () => (
         </Card>
       </CardContent>
     </Card>
+    <VerifierQuickActionsCard /> {/* Added Quick Actions Card */}
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Button variant="secondary" className="w-full h-full">
           <FileText className="mr-2 h-5 w-5" />
@@ -305,7 +464,7 @@ const VerifierDashboard = () => (
       <CardHeader><CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/>System Alerts</CardTitle></CardHeader>
       <CardContent><p className="text-muted-foreground">New regulation update requires re-verification for 'Textile' category. Multiple DPPs flagged for potential data mismatch.</p></CardContent>
     </Card>
-    <RegulationUpdatesCard /> {/* Added Regulation Updates for Verifier */}
+    <RegulationUpdatesCard /> 
   </div>
 );
 
@@ -344,7 +503,7 @@ export default function DashboardPage() {
                 </CardContent>
               </Card>
             </div>
-            <RegulationUpdatesCard /> {/* Added Regulation Updates for Admin */}
+            <RegulationUpdatesCard /> 
           </div>
         );
       case 'manufacturer':

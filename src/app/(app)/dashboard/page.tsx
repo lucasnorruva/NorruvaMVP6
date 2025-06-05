@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, CheckBadge } from "lucide-react"; // Added more icons
+import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, BadgeCheck } from "lucide-react"; // Changed CheckBadge to BadgeCheck
 import Link from "next/link";
 import { useRole } from "@/contexts/RoleContext";
 
@@ -170,7 +170,7 @@ const RecyclerDashboard = () => (
         </Card>
         <Card className="bg-muted/50">
           <CardHeader><CardTitle className="text-lg">Material Recovery Rate</CardTitle></CardHeader>
-          <CardContent><p className="text-3xl font-bold text-growth-green">85%</p></CardContent>
+          <CardContent><p className="text-3xl font-bold text-accent">85%</p></CardContent>
         </Card>
       </CardContent>
     </Card>
@@ -190,7 +190,7 @@ const VerifierDashboard = () => (
   <div className="space-y-6">
     <Card className="shadow-lg">
       <CardHeader>
-        <CardTitle className="font-headline flex items-center"><CheckBadge className="mr-2 text-primary"/>Verification & Audit</CardTitle>
+        <CardTitle className="font-headline flex items-center"><BadgeCheck className="mr-2 text-primary"/>Verification & Audit</CardTitle>
         <CardDescription>Verify product claims and audit Digital Product Passports.</CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -292,3 +292,5 @@ export default function DashboardPage() {
     </div>
   );
 }
+
+    

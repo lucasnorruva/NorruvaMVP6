@@ -114,29 +114,29 @@ export default function DPPLiveDashboardPage() {
         <MetricCard
           title="Total DPPs"
           value={metrics.totalDPPs}
-          // trend="+2%" // Placeholder trend
-          // trendDirection="up"
+          trend="+2%" 
+          trendDirection="up"
           icon={BarChart3}
         />
         <MetricCard
           title="Overall Compliant"
           value={metrics.compliantDPPs}
-          // trend="+1.5%"
-          // trendDirection="up"
+          trend="+1.5%"
+          trendDirection="up"
           icon={CheckSquare}
         />
         <MetricCard
           title="Pending Review"
           value={metrics.pendingReviewDPPs}
-          // trend="-0.5%"
-          // trendDirection={metrics.pendingReviewDPPs > 0 ? "up" : "neutral"}
+          trend={metrics.pendingReviewDPPs > 0 ? "+1" : "0"} // Example: count change
+          trendDirection={metrics.pendingReviewDPPs > 1 ? "up" : (metrics.pendingReviewDPPs === 1 ? "up" : "neutral")} // 'up' if increasing and >0, else neutral
           icon={Clock}
         />
         <MetricCard
           title="Consumer Scans (Total)"
           value={metrics.totalConsumerScans.toLocaleString()}
-          // trend="+8%"
-          // trendDirection="up"
+          trend="+8%"
+          trendDirection="up"
           icon={ScanEye}
         />
       </div>
@@ -159,3 +159,4 @@ export default function DPPLiveDashboardPage() {
     </div>
   );
 }
+

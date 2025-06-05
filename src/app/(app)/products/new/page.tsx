@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import ProductForm, { type ProductFormData } from "@/components/products/ProductForm";
 import { extractProductData } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
-import { AlertTriangle, CheckCircle2, Loader2, ScanLine, Info, Cpu, Edit } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, ScanLine, Info, Cpu, Edit, FileWarning } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const fileToDataUri = (file: File): Promise<string> => {
@@ -36,7 +36,7 @@ export interface InitialProductFormData extends ProductFormData {
   stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
   carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual'; // Added for image generation
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
 }
 
 interface StoredUserProduct extends ProductFormData {
@@ -44,8 +44,21 @@ interface StoredUserProduct extends ProductFormData {
   status: string;
   compliance: string;
   lastUpdated: string;
-  // Persist origins if needed, for now keeping it simple.
-  // AI Origin markers are primarily for initial extraction flow.
+  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
+  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
+  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
+  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+  batteryChemistryOrigin?: 'AI_EXTRACTED' | 'manual';
+  stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
+  carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
+  recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  productCategory?: string;
+  imageUrl?: string;
 }
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -64,11 +77,12 @@ export default function AddNewProductPage() {
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState(isEditMode ? "manual" : "ai-extraction");
+  const [aiExtractionAppliedSuccessfully, setAiExtractionAppliedSuccessfully] = useState(false);
   
   const [currentProductDataForForm, setCurrentProductDataForForm] = useState<Partial<InitialProductFormData>>({
     gtin: "", productName: "", productDescription: "", manufacturer: "", modelNumber: "",
     materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
-    imageUrl: "", // Added imageUrl
+    imageUrl: "",
     batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined
   });
 
@@ -78,14 +92,12 @@ export default function AddNewProductPage() {
       const userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
       const productToEdit = userProducts.find(p => p.id === editProductId);
       if (productToEdit) {
-        // Ensure all fields from StoredUserProduct (which extends ProductFormData) are passed
         const editData: Partial<InitialProductFormData> = {
-          ...productToEdit, // Spread all fields
-          // Explicitly set any fields that might have different naming or need transformation
-          // For example, if StoredUserProduct had 'name' instead of 'productName'
+          ...productToEdit,
         };
         setCurrentProductDataForForm(editData);
         setActiveTab("manual");
+        setAiExtractionAppliedSuccessfully(false); // Reset AI banner in edit mode
       } else {
         toast({ title: "Error", description: "Product not found for editing.", variant: "destructive" });
         router.push("/products/new");
@@ -99,6 +111,7 @@ export default function AddNewProductPage() {
       setFile(event.target.files[0]);
       setExtractedData(null); 
       setError(null);
+      setAiExtractionAppliedSuccessfully(false);
     }
   };
 
@@ -110,6 +123,7 @@ export default function AddNewProductPage() {
     setIsLoadingAi(true);
     setError(null);
     setExtractedData(null);
+    setAiExtractionAppliedSuccessfully(false);
 
     try {
       const documentDataUri = await fileToDataUri(file);
@@ -122,7 +136,6 @@ export default function AddNewProductPage() {
       if (result.modelNumber) { aiInitialFormData.modelNumber = result.modelNumber; aiInitialFormData.modelNumberOrigin = 'AI_EXTRACTED'; }
       if (result.specifications && Object.keys(result.specifications).length > 0) { aiInitialFormData.specifications = JSON.stringify(result.specifications, null, 2); aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED'; }
       if (result.energyLabel) { aiInitialFormData.energyLabel = result.energyLabel; aiInitialFormData.energyLabelOrigin = 'AI_EXTRACTED'; }
-      // imageUrl is not typically extracted from documents, so not setting origin here for it
       if (result.batteryChemistry) { aiInitialFormData.batteryChemistry = result.batteryChemistry; aiInitialFormData.batteryChemistryOrigin = 'AI_EXTRACTED'; }
       if (result.stateOfHealth !== undefined && result.stateOfHealth !== null) { aiInitialFormData.stateOfHealth = result.stateOfHealth; aiInitialFormData.stateOfHealthOrigin = 'AI_EXTRACTED'; }
       if (result.carbonFootprintManufacturing !== undefined && result.carbonFootprintManufacturing !== null) { aiInitialFormData.carbonFootprintManufacturing = result.carbonFootprintManufacturing; aiInitialFormData.carbonFootprintManufacturingOrigin = 'AI_EXTRACTED'; }
@@ -130,10 +143,11 @@ export default function AddNewProductPage() {
       
       setExtractedData(aiInitialFormData);
       setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData}));
+      setAiExtractionAppliedSuccessfully(true);
       
       toast({
         title: "Data Extracted Successfully",
-        description: "Review and complete the extracted information in the form now shown in 'Manual Entry / Review'.",
+        description: "Review and complete the extracted information in the form now shown in 'Manual Entry / Review'. Fields suggested by AI are marked.",
         variant: "default",
         action: <CheckCircle2 className="text-green-500" />,
       });
@@ -155,14 +169,23 @@ export default function AddNewProductPage() {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
       let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
 
+      // Preserve origins if they exist on currentProductDataForForm, merge with new form data
+      const dataToSave = {
+        ...initialData, // carry over original fields including origins
+        ...currentProductDataForForm, // carry over fields that AI might have populated, with their origins
+        ...data, // finally, override with the latest form data from submission
+      };
+
+
       if (isEditMode && editProductId) {
         const productIndex = userProducts.findIndex(p => p.id === editProductId);
         if (productIndex > -1) {
           const updatedProduct: StoredUserProduct = {
             ...userProducts[productIndex], 
-            ...data, 
-            productName: data.productName || userProducts[productIndex].productName || "Unnamed Product (edited)",
+            ...dataToSave, 
+            productName: dataToSave.productName || userProducts[productIndex].productName || "Unnamed Product (edited)",
             lastUpdated: new Date().toISOString(),
+            id: editProductId, // ensure id remains the same
           };
           userProducts[productIndex] = updatedProduct;
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
@@ -173,9 +196,9 @@ export default function AddNewProductPage() {
         }
       } else {
         const newProduct: StoredUserProduct = {
-          ...data, 
+          ...dataToSave, 
           id: `USER_PROD${Date.now().toString().slice(-6)}`,
-          productName: data.productName || "Unnamed Product",
+          productName: dataToSave.productName || "Unnamed Product",
           status: "Draft", 
           compliance: "N/A", 
           lastUpdated: new Date().toISOString(),
@@ -190,9 +213,10 @@ export default function AddNewProductPage() {
       setCurrentProductDataForForm({ 
         gtin: "", productName: "", productDescription: "", manufacturer: "", modelNumber: "",
         materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
-        imageUrl: "", // Reset imageUrl
+        imageUrl: "",
         batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined
        });
+      setAiExtractionAppliedSuccessfully(false);
       if (!isEditMode) setActiveTab("ai-extraction");
       
     } catch (e) {
@@ -218,19 +242,36 @@ export default function AddNewProductPage() {
         </p>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs value={activeTab} onValueChange={(newTab) => {
+          setActiveTab(newTab);
+          // Optionally, reset the AI banner if user navigates away from manual tab after AI extraction
+          // if (newTab !== "manual" && aiExtractionAppliedSuccessfully) {
+          //   setAiExtractionAppliedSuccessfully(false); 
+          // }
+      }} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
           <TabsTrigger value="ai-extraction" disabled={isEditMode}>AI Data Extraction</TabsTrigger>
           <TabsTrigger value="manual">{isEditMode ? "Edit Product Details" : "Manual Entry / Review"}</TabsTrigger>
         </TabsList>
         
         <TabsContent value="manual" className="mt-6">
+           {aiExtractionAppliedSuccessfully && activeTab === 'manual' && (
+            <Alert className="mb-6 border-info bg-info/10 text-info-foreground">
+              <FileWarning className="h-5 w-5 text-info" />
+              <AlertTitle className="font-semibold text-info">AI Data Populated</AlertTitle>
+              <AlertDescription>
+                Some fields below have been pre-filled based on the AI data extraction. 
+                Please review all fields carefully and complete any missing information. 
+                AI-suggested fields are marked with a <Cpu className="inline h-4 w-4 align-middle" /> icon.
+              </AlertDescription>
+            </Alert>
+          )}
           <ProductForm 
             onSubmit={handleProductFormSubmit}
             isSubmitting={isSubmittingProduct}
             initialData={currentProductDataForForm} 
             isStandalonePage={true}
-            key={editProductId || 'new'}
+            key={editProductId || 'new'} // Re-mount form if ID changes
           />
         </TabsContent>
 

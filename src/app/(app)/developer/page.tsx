@@ -1,13 +1,14 @@
 
 "use client";
 
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2 } from "lucide-react";
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -22,8 +23,48 @@ const mockWebhooks = [
   { id: "wh_2", url: "https://api.example.com/webhook/compliance-changes", events: ["compliance.status.changed"], status: "Disabled" },
 ];
 
+// Simplified mock product data for API responses
+const MOCK_API_PRODUCTS: Record<string, any> = {
+  "PROD001": {
+    productId: "PROD001",
+    productName: "EcoFriendly Refrigerator X2000",
+    category: "Appliances",
+    status: "Active",
+    manufacturer: "GreenTech Appliances",
+    modelNumber: "X2000-ECO",
+    gtin: "01234567890123",
+    energyLabel: "A+++",
+    compliance: {
+      REACH: "Compliant",
+      RoHS: "Compliant"
+    }
+  },
+  "PROD002": {
+    productId: "PROD002",
+    productName: "Smart LED Bulb (4-Pack)",
+    category: "Electronics",
+    status: "Active",
+    manufacturer: "BrightSpark Electronics",
+    modelNumber: "BS-LED-S04B",
+    gtin: "98765432109876",
+    energyLabel: "A+",
+    compliance: {
+      RoHS: "Compliant",
+      CE_Mark: "Compliant",
+      Battery_Regulation: "Pending Documentation"
+    }
+  }
+};
+
 export default function DeveloperPortalPage() {
   const { toast } = useToast();
+
+  const [getProductId, setGetProductId] = useState<string>("PROD001");
+  const [getProductResponse, setGetProductResponse] = useState<string | null>(null);
+  const [isGetProductLoading, setIsGetProductLoading] = useState(false);
+
+  const [listProductsResponse, setListProductsResponse] = useState<string | null>(null);
+  const [isListProductsLoading, setIsListProductsLoading] = useState(false);
 
   const handleCopyKey = (apiKey: string) => {
     navigator.clipboard.writeText(apiKey);
@@ -32,6 +73,35 @@ export default function DeveloperPortalPage() {
       description: "The API key has been copied to your clipboard.",
     });
   };
+
+  const handleMockGetProductDetails = async () => {
+    setIsGetProductLoading(true);
+    setGetProductResponse(null);
+    await new Promise(resolve => setTimeout(resolve, 700)); // Simulate API delay
+    const product = MOCK_API_PRODUCTS[getProductId];
+    if (product) {
+      setGetProductResponse(JSON.stringify(product, null, 2));
+    } else {
+      setGetProductResponse(JSON.stringify({ error: "Product not found", productId: getProductId }, null, 2));
+    }
+    setIsGetProductLoading(false);
+  };
+
+  const handleMockListProducts = async () => {
+    setIsListProductsLoading(true);
+    setListProductsResponse(null);
+    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+    const response = {
+      data: [MOCK_API_PRODUCTS["PROD001"], MOCK_API_PRODUCTS["PROD002"]],
+      pageInfo: {
+        totalCount: 2,
+        hasNextPage: false,
+      }
+    };
+    setListProductsResponse(JSON.stringify(response, null, 2));
+    setIsListProductsLoading(false);
+  };
+
 
   return (
     <div className="space-y-8">
@@ -44,6 +114,69 @@ export default function DeveloperPortalPage() {
           </Button>
         </Link>
       </div>
+
+      {/* API Playground Section */}
+      <Card className="shadow-xl border-primary/20">
+        <CardHeader>
+          <CardTitle className="font-headline flex items-center"><PlayCircle className="mr-3 h-6 w-6 text-primary" /> Interactive API Playground</CardTitle>
+          <CardDescription>Test out mock API endpoints directly in your browser. (Simulated responses)</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {/* Get Product Details Endpoint */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center"><ServerIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products/{'{productId}'}</CardTitle>
+              <CardDescription>Retrieve details for a specific product by its ID.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="productIdInput">Product ID</Label>
+                <Input 
+                  id="productIdInput" 
+                  value={getProductId} 
+                  onChange={(e) => setGetProductId(e.target.value)} 
+                  placeholder="e.g., PROD001" 
+                />
+              </div>
+              <Button onClick={handleMockGetProductDetails} disabled={isGetProductLoading} variant="secondary">
+                {isGetProductLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                {isGetProductLoading ? "Fetching..." : "Send Request"}
+              </Button>
+              {getProductResponse && (
+                <div className="mt-4">
+                  <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                  <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60">
+                    <code>{getProductResponse}</code>
+                  </pre>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* List Products Endpoint */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center"><ServerIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products</CardTitle>
+              <CardDescription>Retrieve a list of products. (Mock returns first 2 products)</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+               <Button onClick={handleMockListProducts} disabled={isListProductsLoading} variant="secondary">
+                {isListProductsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                {isListProductsLoading ? "Fetching..." : "Send Request"}
+              </Button>
+              {listProductsResponse && (
+                <div className="mt-4">
+                  <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                  <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60">
+                    <code>{listProductsResponse}</code>
+                  </pre>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </CardContent>
+      </Card>
+
 
       <Card className="shadow-lg">
         <CardHeader>
@@ -226,5 +359,7 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+
+    
 
     

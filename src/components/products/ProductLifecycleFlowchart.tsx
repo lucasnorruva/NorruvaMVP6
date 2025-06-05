@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertCircle, Info as InfoIcon, ExternalLink, BarChartHorizontal, TrendingUp, TrendingDown, Minus, LucideIcon, CalendarDays, MapPin } from 'lucide-react';
+import { CheckCircle, AlertCircle, Info as InfoIcon, ExternalLink, TrendingUp, TrendingDown, Minus, LucideIcon, CalendarDays, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip } from 'recharts';
 
@@ -59,7 +59,6 @@ const getStatusClasses = (status: LifecyclePhase['status'], isCurrent: boolean) 
     borderColor = 'border-yellow-500/70';
   }
 
-
   if (isCurrent) {
     borderColor = 'border-primary ring-2 ring-primary ring-offset-2 dark:ring-offset-background';
     bgColor = status === 'in_progress' ? 'bg-primary/20 dark:bg-primary/30' : bgColor;
@@ -75,7 +74,9 @@ const MetricStatusIcon = ({ status }: { status: Metric['status'] }) => {
 };
 
 const SustainabilityMetricChart = ({ metric }: { metric: Metric }) => {
-  if (typeof metric.value !== 'number') return null;
+  if (typeof metric.value !== 'number') {
+    return null;
+  }
 
   const data = [{ name: metric.name, value: metric.value, target: metric.targetValue }];
 
@@ -83,25 +84,29 @@ const SustainabilityMetricChart = ({ metric }: { metric: Metric }) => {
     <div className="my-1 h-16 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart layout="vertical" data={data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
-          <XAxis type="number" hide />
-          <YAxis type="category" dataKey="name" hide />
+          <XAxis type="number" hide={true} />
+          <YAxis type="category" dataKey="name" hide={true} />
           <RechartsTooltip
             cursor={{ fill: 'hsl(var(--muted))' }}
             contentStyle={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)'}}
             labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
             itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
-            formatter={(value: number, name: string) => [`${value}${metric.unit || ''}`, name === 'target' ? 'Target' : metric.name ]}
+            formatter={(value: number, name: string, props) => {
+              const currentMetric = (props.payload && (props.payload as any).metric) ? (props.payload as any).metric as Metric : metric;
+              const valStr = `${value}${currentMetric.unit || ''}`;
+              const nameStr = name === 'target' ? 'Target' : currentMetric.name;
+              return [valStr, nameStr];
+            }}
           />
           {metric.targetValue !== undefined && (
             <Bar dataKey="target" fill="hsl(var(--muted))" background={{ fill: 'hsl(var(--background))' }} radius={[4, 4, 4, 4]} barSize={12} />
           )}
-          <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 4, 4]} barSize={12}/>
+          <Bar dataKey="value" fill="hsl(var(--primary))" radius={[4, 4, 4, 4]} barSize={12} />
         </BarChart>
       </ResponsiveContainer>
     </div>
   );
 };
-
 
 const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ phases, currentPhaseIndex }) => {
   if (!phases || phases.length === 0) {
@@ -196,7 +201,7 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
                                   {typeof metric.value === 'number' && <SustainabilityMetricChart metric={metric} />}
                                 </div>
                               ))}
-                            </ul>
+                            </div>
                           </div>
                         )}
                       </div>
@@ -217,3 +222,5 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
 };
 
 export default ProductLifecycleFlowchart;
+
+    

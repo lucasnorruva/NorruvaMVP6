@@ -4,9 +4,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
+import { X, ExternalLink } from "lucide-react";
 import { type MockDppPoint } from '@/app/(app)/dpp-global-tracker/page'; // Import the type
 import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 interface PointInfoCardProps {
   pointData: MockDppPoint;
@@ -39,9 +40,17 @@ export default function PointInfoCard({ pointData, onClose }: PointInfoCardProps
           {pointData.gtin && <p><strong>GTIN:</strong> {pointData.gtin}</p>}
           {pointData.complianceSummary && <p><strong>Compliance Note:</strong> {pointData.complianceSummary}</p>}
           {pointData.id && <p className="text-xs text-muted-foreground mt-2">Product System ID: {pointData.id}</p>}
+          
+          <div className="pt-3 border-t border-border">
+            <Link href={`/products/${pointData.id}`} passHref>
+              <Button className="w-full mt-2" variant="outline">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                View Full Passport
+              </Button>
+            </Link>
+          </div>
         </CardContent>
       </Card>
     </div>
   );
 }
-

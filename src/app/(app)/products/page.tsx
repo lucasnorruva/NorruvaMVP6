@@ -1,4 +1,6 @@
 
+"use client"; // Make it a client component to use hooks
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,6 +13,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useRole } from "@/contexts/RoleContext"; // Import useRole
 
 const products = [
   { id: "PROD001", name: "EcoFriendly Refrigerator X2000", category: "Appliances", status: "Active", compliance: "Compliant", lastUpdated: "2024-07-20" },
@@ -21,16 +24,22 @@ const products = [
 ];
 
 export default function ProductsPage() {
+  const { currentRole } = useRole(); // Get the current role
+
+  const canAddProducts = currentRole === 'admin' || currentRole === 'manufacturer';
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-headline font-semibold">Products</h1>
-        <Link href="/products/new" passHref>
-          <Button variant="secondary">
-            <PlusCircle className="mr-2 h-5 w-5" />
-            Add New Product
-          </Button>
-        </Link>
+        {canAddProducts && ( // Conditionally render the button
+          <Link href="/products/new" passHref>
+            <Button variant="secondary">
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Add New Product
+            </Button>
+          </Link>
+        )}
       </div>
 
       <Card className="shadow-lg">
@@ -71,8 +80,8 @@ export default function ProductsPage() {
                       product.status === "Archived" ? "secondary" : "outline"
                     } className={
                       product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" :
-                      product.status === "Archived" ? "bg-muted text-muted-foreground border-border" : // Adjusted archived style
-                      "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" // Draft style
+                      product.status === "Archived" ? "bg-muted text-muted-foreground border-border" : 
+                      "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" 
                     }>
                       {product.status}
                     </Badge>
@@ -80,12 +89,13 @@ export default function ProductsPage() {
                   <TableCell>
                      <Badge variant={
                         product.compliance === "Compliant" ? "default" :
-                        product.compliance === "Pending" ? "outline" : "destructive"
+                        product.compliance === "Pending" ? "outline" : 
+                        product.compliance === "N/A" ? "secondary" : "destructive"
                       } className={
                         product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" :
                         product.compliance === "Pending" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" :
-                        product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" : // N/A style
-                        "bg-red-500/20 text-red-700 border-red-500/30" // Non-Compliant
+                        product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" : 
+                        "bg-red-500/20 text-red-700 border-red-500/30" 
                       }>
                        {product.compliance}
                      </Badge>
@@ -106,7 +116,7 @@ export default function ProductsPage() {
                             View Details
                           </Link>
                         </DropdownMenuItem>
-                        <DropdownMenuItem> {/* Consider linking to an edit page /products/[id]/edit later */}
+                        <DropdownMenuItem> 
                           <Edit className="mr-2 h-4 w-4" />
                           Edit (Not Implemented)
                         </DropdownMenuItem>
@@ -126,6 +136,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-
-
-    

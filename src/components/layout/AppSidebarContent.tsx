@@ -10,7 +10,7 @@ import {
   ShieldCheck,
   FileText,
   Settings,
-  Bot, // Added Bot icon for AI Co-Pilot
+  Bot, 
   Info 
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
@@ -30,8 +30,8 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/products", label: "Products", icon: Package },
   { href: "/products/new", label: "AI Data Extraction", icon: ScanLine },
-  { href: "/copilot", label: "AI Co-Pilot", icon: Bot }, // Added AI Co-Pilot
-  { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
+  { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
+  { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck }, // Added GDPR
   { href: "/sustainability", label: "Sustainability", icon: FileText },
 ];
 

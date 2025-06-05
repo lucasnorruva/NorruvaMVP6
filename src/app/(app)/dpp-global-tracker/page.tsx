@@ -74,12 +74,9 @@ const mockArcsData: MockArc[] = [
   { productId: "DPP_GLOBE_007", startLat: 39.9042, startLng: 116.4074, endLat: 52.2297, endLng: 21.0122, color: 'rgba(0,0,255,0.5)', label: 'CHN to POL (Rail)', timestamp: 2023, transportMode: 'rail'}
 ];
 
-const euMemberCountryCodes = [ // ISO A2 Codes
-  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU',
-  'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'
-];
-const candidateCountryCodes = ['UA', 'MD', 'AL', 'BA', 'GE', 'ME', 'MK', 'RS', 'TR', 'XK']; // Conceptual examples, XK is Kosovo
-const otherEuropeanCountryCodes = ['CH', 'NO', 'GB', 'IS', 'BY', 'AD', 'LI', 'MC', 'SM', 'VA']; // Non-EU European (Belarus, Microstates)
+const euMemberCountryCodes = ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'];
+const candidateCountryCodes = ['AL', 'BA', 'GE', 'MD', 'ME', 'MK', 'RS', 'TR', 'UA', 'XK']; // Kosovo is XK
+const otherEuropeanCountryCodes = ['AD', 'BY', 'CH', 'FO', 'GB', 'GG', 'GI', 'IM', 'IS', 'JE', 'LI', 'MC', 'NO', 'RU', 'SM', 'SJ', 'VA'];
 
 
 const GlobeVisualization = ({
@@ -94,7 +91,7 @@ const GlobeVisualization = ({
 }: {
   points: MockDppPoint[];
   arcs: MockArc[];
-  labels: any[]; 
+  labels: any[];
   polygonsData: any[];
   onPointClick: (point: MockDppPoint) => void;
   onArcClick: (arc: MockArc) => void;
@@ -102,17 +99,18 @@ const GlobeVisualization = ({
   pointRadiusAccessor: (d: any) => number;
 }) => {
   const globeEl = useRef<GlobeMethods | undefined>();
-  console.log("GlobeVisualization rendering/re-rendering. Polygons count:", polygonsData.length);
+  console.log("GlobeVisualization rendering/re-rendering. Polygons count:", polygonsData.length, "Points count:", points.length);
 
   useEffect(() => {
     console.log("GlobeVisualization: useEffect triggered.");
     if (globeEl.current) {
       console.log("GlobeVisualization: Globe instance available. Setting initial view and controls.");
-      globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 1.5 }); // Centered more on Europe
+      globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 1.7 });
       globeEl.current.controls().autoRotate = false;
+      // globeEl.current.controls().autoRotateSpeed = 0.3; // Kept commented
       globeEl.current.controls().enableZoom = true;
-      globeEl.current.controls().minDistance = 70; // Allow closer zoom
-      globeEl.current.controls().maxDistance = 1000; 
+      globeEl.current.controls().minDistance = 100;
+      globeEl.current.controls().maxDistance = 1000;
       console.log("GlobeVisualization: Globe controls configured.");
     } else {
       console.warn("GlobeVisualization: Globe instance (globeEl.current) not available in useEffect.");
@@ -120,58 +118,55 @@ const GlobeVisualization = ({
   }, []);
 
   const globeProps: GlobeProps = {
-    globeImageUrl: null, 
-    backgroundColor: "rgba(222, 237, 250, 1)", // Very Light Blue for oceans
+    // globeImageUrl: '//unpkg.com/three-globe/example/img/earth-political.jpg',
+    // bumpImageUrl: '//unpkg.com/three-globe/example/img/earth-topology.png',
+    globeImageUrl: null, // No base texture for plain sphere initially
+    backgroundColor: "rgba(222, 237, 250, 1)", // Light blue ocean
 
-    // Points, Arcs, and Labels are temporarily disabled for base map styling focus
-    // pointsData: points,
-    // pointLabel: 'name',
-    // pointColor: pointColorAccessor,
-    // pointRadius: pointRadiusAccessor,
-    // pointAltitude: 0.02,
-    // onPointClick: (point: any) => {
-    //   console.log("Globe point clicked:", point);
-    //   onPointClick(point as MockDppPoint);
-    // },
+    pointsData: points, // Temporarily re-enabled
+    pointLabel: 'name', // Temporarily re-enabled
+    pointColor: pointColorAccessor, // Temporarily re-enabled
+    pointRadius: pointRadiusAccessor, // Temporarily re-enabled
+    pointAltitude: 0.02, // Temporarily re-enabled
+    onPointClick: (point: any) => { // Temporarily re-enabled
+      console.log("Globe point clicked:", point);
+      onPointClick(point as MockDppPoint);
+    },
 
-    // arcsData: arcs,
-    // arcLabel: 'label',
-    // arcColor: 'color',
-    // arcDashLength: 0.4,
-    // arcDashGap: 0.1,
-    // arcStroke: 0.8,
-    // onArcClick: (arc: any) => {
-    //   console.log("Globe arc clicked: ", arc);
-    //   onArcClick(arc as MockArc);
-    // },
+    arcsData: arcs, // Temporarily re-enabled
+    arcLabel: 'label', // Temporarily re-enabled
+    arcColor: 'color', // Temporarily re-enabled
+    arcDashLength: 0.4, // Temporarily re-enabled
+    arcDashGap: 0.1, // Temporarily re-enabled
+    arcStroke: 0.8, // Temporarily re-enabled
+    onArcClick: (arc: any) => { // Temporarily re-enabled
+      console.log("Globe arc clicked: ", arc);
+      onArcClick(arc as MockArc);
+    },
 
     labelsData: labels,
-    labelText: (d:any) => d.name,
-    labelSize: () => 0.20, // Slightly smaller city labels
-    labelColor: () => 'rgba(255, 255, 255, 0.95)', // White city labels
+    labelText: (d: any) => d.name,
+    labelSize: () => 0.20,
+    labelColor: () => 'rgba(255, 255, 255, 0.95)',
     labelDotRadius: () => 0.15,
-    labelAltitude: 0.015, // Keep labels close to surface
+    labelAltitude: 0.015,
 
     polygonsData: polygonsData,
     polygonCapColor: (feat: any) => {
         const countryCode = feat.properties.ISO_A2_EH || feat.properties.ISO_A2 || feat.properties.ADM0_A3;
-        if (euMemberCountryCodes.includes(countryCode)) {
-            return 'rgba(0, 51, 153, 0.85)'; // EU Blue (Pantone 286C approximate)
-        } else if (candidateCountryCodes.includes(countryCode)) {
-            return 'rgba(173, 216, 230, 0.85)'; // Soft Blue/Green for candidates (was soft green)
-        } else if (otherEuropeanCountryCodes.includes(countryCode)) {
-             return 'rgba(225, 225, 210, 0.85)'; // Light Beige for other European non-EU
-        }
-        return 'rgba(200, 200, 200, 0.85)'; // Pale Gray for other non-EU countries
+        if (euMemberCountryCodes.includes(countryCode)) return 'rgba(0, 51, 153, 0.85)'; // EU Blue
+        if (candidateCountryCodes.includes(countryCode)) return 'rgba(173, 216, 230, 0.85)'; // Soft Blue/Green for candidates
+        if (otherEuropeanCountryCodes.includes(countryCode)) return 'rgba(225, 225, 210, 0.85)'; // Light Beige for other European
+        return 'rgba(200, 200, 200, 0.85)'; // Pale Gray for other non-EU
     },
-    polygonSideColor: () => 'rgba(0, 0, 0, 0)', 
-    polygonStrokeColor: () => 'rgba(30, 30, 30, 0.7)', // Darker gray for borders
-    polygonAltitude: 0.008, 
+    polygonSideColor: () => 'rgba(0, 0, 0, 0)',
+    polygonStrokeColor: () => 'rgba(50, 50, 50, 0.7)', // Darker gray for borders
+    polygonAltitude: 0.008,
   };
   console.log("GlobeVisualization: GlobeProps prepared:", globeProps);
 
   return (
-    <div className="w-full h-full border-2 border-dashed border-red-500"> 
+    <div className="w-full h-full border-2 border-dashed border-red-500">
       <Globe ref={globeEl} {...globeProps} />
     </div>
   );
@@ -239,13 +234,13 @@ const DppGlobalTrackerClientContainer = ({
 };
 
 const statusColors: Record<MockDppPoint['status'], string> = {
-  compliant: 'rgba(74, 222, 128, 0.9)', 
-  pending: 'rgba(250, 204, 21, 0.9)',  
-  issue: 'rgba(239, 68, 68, 0.9)',    
+  compliant: 'rgba(74, 222, 128, 0.9)',
+  pending: 'rgba(250, 204, 21, 0.9)',
+  issue: 'rgba(239, 68, 68, 0.9)',
 };
 
 const categoryColors: Record<string, string> = {
-  Appliances: 'rgba(59, 130, 246, 0.9)', 
+  Appliances: 'rgba(59, 130, 246, 0.9)',
   Electronics: 'rgba(168, 85, 247, 0.9)',
   Textiles: 'rgba(236, 72, 153, 0.9)',
   Fashion: 'rgba(236, 72, 153, 0.9)',
@@ -322,7 +317,7 @@ const availableEbsiStatuses: Array<{ value: EbsiStatusFilter; label: string }> =
 ];
 
 
-const majorEuropeanCities = [ 
+const majorEuropeanCities = [
   { lat: 48.8566, lng: 2.3522, name: "Paris", size: 0.3 }, { lat: 52.5200, lng: 13.4050, name: "Berlin", size: 0.3 },
   { lat: 41.9028, lng: 12.4964, name: "Rome", size: 0.3 }, { lat: 40.4168, lng: -3.7038, name: "Madrid", size: 0.3 },
   { lat: 51.5074, lng: -0.1278, name: "London", size: 0.3 }, { lat: 50.8503, lng: 4.3517, name: "Brussels", size: 0.25 },
@@ -339,13 +334,13 @@ export default function DppGlobalTrackerPage() {
   const [isConceptVisible, setIsConceptVisible] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<MockDppPoint | null>(null);
   const [selectedArc, setSelectedArc] = useState<MockArc | null>(null);
-  
+
   const [activeLayer, setActiveLayer] = useState<ActiveLayer>('status');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
   const [customsStatusFilter, setCustomsStatusFilter] = useState<CustomsStatusFilter>('all');
   const [ebsiStatusFilter, setEbsiStatusFilter] = useState<EbsiStatusFilter>('all');
-  const [pointBaseSize, setPointBaseSize] = useState<number>(0.6); 
+  const [pointBaseSize, setPointBaseSize] = useState<number>(0.6);
 
   const [minYear, setMinYear] = useState(2022);
   const [maxYear, setMaxYear] = useState(2024);
@@ -398,12 +393,12 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
           console.log("Countries GeoJSON data.features processed and set to state. Count:", data.features.length);
         } else {
           console.error("Fetched countries data is not in expected GeoJSON format or has no features:", data);
-          setCountriesData([]); 
+          setCountriesData([]);
         }
       })
       .catch(err => {
         console.error("Error fetching or processing countries GeoJSON data:", err);
-        setCountriesData([]); 
+        setCountriesData([]);
       });
   }, []);
 
@@ -470,12 +465,33 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
   }, [pointBaseSize]);
 
   const currentMapColorScheme: Record<string, string> = {
-    "EU Members": 'rgba(0, 51, 153, 0.85)', 
+    "EU Members": 'rgba(0, 51, 153, 0.85)',
     "Candidate Countries": 'rgba(173, 216, 230, 0.85)',
     "Other European": 'rgba(225, 225, 210, 0.85)',
     "Other Landmass": 'rgba(200, 200, 200, 0.85)',
     "Oceans": 'rgba(222, 237, 250, 1)'
   };
+
+  const activeLegendMap = useMemo(() => {
+    switch (activeLayer) {
+      case 'category': return categoryColors;
+      case 'customs': return customsStatusColors;
+      case 'ebsi': return ebsiStatusColors;
+      case 'status':
+      default: return statusColors;
+    }
+  }, [activeLayer]);
+
+  const activeLegendTitle = useMemo(() => {
+    switch (activeLayer) {
+      case 'category': return "Product Category Colors";
+      case 'customs': return "Customs Status Colors";
+      case 'ebsi': return "EBSI Status Colors";
+      case 'status':
+      default: return "Product Status Colors";
+    }
+  }, [activeLayer]);
+
 
   return (
     <div className="space-y-8">
@@ -490,7 +506,7 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
         <Info className="h-5 w-5 text-info" />
         <AlertTitle className="font-semibold text-info">Stylized Globe View</AlertTitle>
         <AlertDescription>
-          Globe visualization styled to highlight EU and other regions. Points, arcs are temporarily disabled for map styling focus. City labels are active. Check browser console for logs.
+          Globe visualization styled to highlight EU and other regions. Points and arcs are temporarily re-enabled. City labels are active. Check browser console for logs.
         </AlertDescription>
       </Alert>
 
@@ -500,7 +516,7 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
           <CardDescription>Interactive globe focused on European Union regions, candidate countries, and global context.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="w-full h-[600px] rounded-md overflow-hidden border relative">
+          <div className="w-full h-[600px] rounded-md overflow-hidden border relative bg-card">
             <DppGlobalTrackerClientContainer
               points={filteredPoints}
               arcs={filteredArcs}
@@ -519,12 +535,11 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
             <Card className="lg:col-span-1">
               <CardHeader className="pb-3">
                 <CardTitle className="text-md font-headline flex items-center">
-                  <Layers className="mr-2 h-4 w-4 text-primary" /> Data Layers & Filters
+                  <Layers className="mr-2 h-4 w-4 text-primary" /> Data Layers
                 </CardTitle>
-                 <CardDescription className="text-xs">Points/Arcs disabled for map styling focus.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                <RadioGroup value={activeLayer} onValueChange={(value) => setActiveLayer(value as ActiveLayer)} className="flex flex-col space-y-2" disabled>
+                <RadioGroup value={activeLayer} onValueChange={(value) => setActiveLayer(value as ActiveLayer)} className="flex flex-col space-y-2">
                   <Label className="font-medium text-sm">Color Points By:</Label>
                   <div className="flex items-center space-x-2"><RadioGroupItem value="status" id="layer-status" /><Label htmlFor="layer-status" className="text-xs">Product Status</Label></div>
                   <div className="flex items-center space-x-2"><RadioGroupItem value="category" id="layer-category" /><Label htmlFor="layer-category" className="text-xs">Category</Label></div>
@@ -534,7 +549,50 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
               </CardContent>
             </Card>
             
-            <div className="lg:col-span-2 grid grid-cols-1 gap-6 md:grid-cols-2">
+            <Card className="lg:col-span-2">
+              <CardHeader className="pb-3">
+                 <CardTitle className="text-md font-headline flex items-center">
+                    <FilterIcon className="mr-2 h-4 w-4 text-primary" /> Filters
+                 </CardTitle>
+              </CardHeader>
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="status-filter" className="text-xs">Product Status</Label>
+                  <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+                    <SelectTrigger id="status-filter"><SelectValue /></SelectTrigger>
+                    <SelectContent>{availableStatuses.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                 <div>
+                  <Label htmlFor="category-filter" className="text-xs">Product Category</Label>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger id="category-filter"><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All Categories</SelectItem>
+                      {availableCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                 <div>
+                  <Label htmlFor="customs-status-filter" className="text-xs">Customs Status</Label>
+                  <Select value={customsStatusFilter} onValueChange={(v) => setCustomsStatusFilter(v as CustomsStatusFilter)}>
+                    <SelectTrigger id="customs-status-filter"><SelectValue /></SelectTrigger>
+                    <SelectContent>{availableCustomsStatuses.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+                 <div>
+                  <Label htmlFor="ebsi-status-filter" className="text-xs">EBSI Status</Label>
+                  <Select value={ebsiStatusFilter} onValueChange={(v) => setEbsiStatusFilter(v as EbsiStatusFilter)}>
+                    <SelectTrigger id="ebsi-status-filter"><SelectValue /></SelectTrigger>
+                    <SelectContent>{availableEbsiStatuses.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
+                  </Select>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+          
+          <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="lg:col-span-1">
               <Card>
                 <CardHeader className="pb-3">
                   <CardTitle className="text-md font-headline flex items-center">
@@ -543,17 +601,20 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
                 </CardHeader>
                 <CardContent className="space-y-3">
                   <div>
-                    <Label htmlFor="point-size-slider" className="text-xs">Point Size (Disabled): {pointBaseSize.toFixed(1)}x</Label>
-                    <Slider id="point-size-slider" min={0.2} max={2} step={0.1} value={[pointBaseSize]} onValueChange={([v]) => setPointBaseSize(v)} className="mt-1" disabled />
+                    <Label htmlFor="point-size-slider" className="text-xs">Point Size: {pointBaseSize.toFixed(1)}x</Label>
+                    <Slider id="point-size-slider" min={0.2} max={2} step={0.1} value={[pointBaseSize]} onValueChange={([v]) => setPointBaseSize(v)} className="mt-1" />
                   </div>
                   <div>
                     <Label htmlFor="time-slider" className="text-xs flex items-center"><CalendarClock className="mr-1.5 h-3.5 w-3.5" />Timeline Year: {currentTime}</Label>
-                    {(minYear < maxYear) && <Slider id="time-slider" min={minYear} max={maxYear} step={1} value={[currentTime]} onValueChange={([v]) => setCurrentTime(v)} className="mt-1" disabled />}
+                    {(minYear < maxYear) && <Slider id="time-slider" min={minYear} max={maxYear} step={1} value={[currentTime]} onValueChange={([v]) => setCurrentTime(v)} className="mt-1" />}
                     {minYear === maxYear && <p className="text-xs text-muted-foreground mt-1">Data for {minYear}.</p>}
                   </div>
                 </CardContent>
               </Card>
-              <Legend title="Region Color Key" colorMap={currentMapColorScheme} />
+            </div>
+            <div className="lg:col-span-2">
+                <Legend title={activeLegendTitle} colorMap={activeLegendMap} />
+                 <Legend title="Region Color Key" colorMap={currentMapColorScheme} />
             </div>
           </div>
         </CardContent>
@@ -573,4 +634,3 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
     </div>
   );
 }
-

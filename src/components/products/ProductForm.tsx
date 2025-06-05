@@ -23,11 +23,12 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Cpu, BatteryCharging, Loader2, Sparkles, ImagePlus, Image as ImageIcon } from "lucide-react";
 import React, { useState } from "react";
 import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow";
-import { generateProductImage } from "@/ai/flows/generate-product-image-flow"; // Added
+import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
+import { generateProductName } from "@/ai/flows/generate-product-name-flow"; // Added
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";
-import Image from "next/image"; // Added next/image
-import { AspectRatio } from "@/components/ui/aspect-ratio"; // Added AspectRatio
+import Image from "next/image";
+import { AspectRatio } from "@/components/ui/aspect-ratio";
 
 const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
@@ -40,7 +41,7 @@ const formSchema = z.object({
   specifications: z.string().optional(), 
   energyLabel: z.string().optional(),
   productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
-  imageUrl: z.string().optional().describe("URL or Data URI of the product image."), // Added imageUrl
+  imageUrl: z.string().optional().describe("URL or Data URI of the product image."),
   // Battery Regulation Fields
   batteryChemistry: z.string().optional(),
   stateOfHealth: z.coerce.number().nullable().optional(),
@@ -90,7 +91,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
       specifications: initialData?.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
       energyLabel: initialData?.energyLabel || "",
       productCategory: initialData?.productCategory || "",
-      imageUrl: initialData?.imageUrl || "", // Added imageUrl
+      imageUrl: initialData?.imageUrl || "",
       batteryChemistry: initialData?.batteryChemistry || "",
       stateOfHealth: initialData?.stateOfHealth ?? undefined,
       carbonFootprintManufacturing: initialData?.carbonFootprintManufacturing ?? undefined,
@@ -101,8 +102,9 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
   const { toast } = useToast();
   const [suggestedClaims, setSuggestedClaims] = useState<string[]>([]);
   const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false); // Added for image generation
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(initialData?.imageUrl || null);
+  const [isSuggestingName, setIsSuggestingName] = useState(false); // Added for name suggestion
 
 
   React.useEffect(() => {
@@ -118,15 +120,43 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
         specifications: initialData.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
         energyLabel: initialData.energyLabel || "",
         productCategory: initialData.productCategory || "",
-        imageUrl: initialData.imageUrl || "", // Added
+        imageUrl: initialData.imageUrl || "",
         batteryChemistry: initialData.batteryChemistry || "",
         stateOfHealth: initialData.stateOfHealth ?? undefined,
         carbonFootprintManufacturing: initialData.carbonFootprintManufacturing ?? undefined,
         recycledContentPercentage: initialData.recycledContentPercentage ?? undefined,
       });
-      setCurrentImageUrl(initialData.imageUrl || null); // Ensure currentImageUrl is also updated
+      setCurrentImageUrl(initialData.imageUrl || null);
     }
   }, [initialData, form]);
+
+  const handleSuggestName = async () => {
+    setIsSuggestingName(true);
+    const { productDescription, productCategory } = form.getValues();
+    if (!productDescription && !productCategory) {
+      toast({ title: "Input Required", description: "Please provide a product description or category to suggest a name.", variant: "destructive" });
+      setIsSuggestingName(false);
+      return;
+    }
+    try {
+      const result = await generateProductName({ 
+        productDescription: productDescription || "", 
+        productCategory: productCategory 
+      });
+      form.setValue("productName", result.productName, { shouldValidate: true });
+      toast({ title: "Product Name Suggested!", description: `AI suggested: "${result.productName}"`, variant: "default" });
+    } catch (error) {
+      console.error("Failed to suggest product name:", error);
+      toast({
+        title: "Error Suggesting Name",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        variant: "destructive",
+        action: <AlertTriangle className="text-white" />,
+      });
+    } finally {
+      setIsSuggestingName(false);
+    }
+  };
 
   const handleSuggestClaims = async () => {
     setIsSuggestingClaims(true);
@@ -201,10 +231,16 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
             name="productName"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="flex items-center">
-                  Product Name 
-                  <AiIndicator fieldOrigin={initialData?.productNameOrigin} fieldName="Product Name" />
-                </FormLabel>
+                <div className="flex items-center justify-between">
+                  <FormLabel className="flex items-center">
+                    Product Name 
+                    <AiIndicator fieldOrigin={initialData?.productNameOrigin} fieldName="Product Name" />
+                  </FormLabel>
+                  <Button type="button" variant="ghost" size="sm" onClick={handleSuggestName} disabled={isSuggestingName}>
+                    {isSuggestingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
+                    <span className="ml-2">{isSuggestingName ? "Suggesting..." : "Suggest Name"}</span>
+                  </Button>
+                </div>
                 <FormControl>
                   <Input placeholder="e.g., EcoBoiler X1" {...field} />
                 </FormControl>
@@ -521,8 +557,8 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
               {formContent}
             </CardContent>
           </Card>
-          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting || isGeneratingImage || isSuggestingClaims}>
-            {(isSubmitting || isGeneratingImage || isSuggestingClaims) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName}>
+            {(isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isSubmitting ? "Saving Product..." : "Save Product"}
           </Button>
         </form>
@@ -534,11 +570,12 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
      <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {formContent}
-           <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting || isGeneratingImage || isSuggestingClaims}>
-            {(isSubmitting || isGeneratingImage || isSuggestingClaims) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+           <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName}>
+            {(isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isSubmitting ? "Saving Changes..." : "Save Changes"}
           </Button>
         </form>
     </Form>
   );
 }
+

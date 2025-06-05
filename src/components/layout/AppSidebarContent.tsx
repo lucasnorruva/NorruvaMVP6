@@ -13,7 +13,8 @@ import {
   Bot,
   Info,
   Code2,
-  LineChart
+  LineChart,
+  ListChecks // Added for Compliance Pathways
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import {
@@ -31,9 +32,10 @@ import { Separator } from "@/components/ui/separator";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/dpp-live-dashboard", label: "Live DPPs", icon: LineChart },
-  { href: "/products", label: "Products", icon: Package }, // Renamed
-  { href: "/products/new", label: "Add Product", icon: ScanLine }, // Renamed
+  { href: "/products", label: "Products", icon: Package },
+  { href: "/products/new", label: "Add Product", icon: ScanLine },
   { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
+  { href: "/compliance/pathways/battery-regulation", label: "Compliance Pathways", icon: ListChecks }, // Added New Pathway Link
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
   { href: "/sustainability", label: "Sustainability", icon: FileText },
 ];
@@ -50,17 +52,12 @@ export default function AppSidebarContent() {
   const commonButtonClass = (href: string) => {
     let isActive = false;
     if (href === "/products") {
-      // Active if it's the main /products list page OR a product detail page like /products/PROD001
-      // but NOT if it's /products/new (which is a separate link)
       isActive = pathname === href || (pathname.startsWith(href + "/") && !pathname.endsWith("/new"));
     } else if (href === "/products/new") {
-      // Active only if it's exactly /products/new
       isActive = pathname === href;
-    } else if (href === "/settings" || href === "/developer") {
-      // Active if it's the main page or any sub-page (e.g., /settings/users)
-      isActive = pathname === href || pathname.startsWith(href + "/");
+    } else if (href === "/settings" || href === "/developer" || href.startsWith("/compliance/pathways")) { // Updated for pathways
+      isActive = pathname === href || pathname.startsWith(href);
     } else {
-      // For all other top-level items, an exact match is required.
       isActive = pathname === href;
     }
 

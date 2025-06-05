@@ -9,10 +9,11 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers, Filter as FilterIcon, TrendingUp, Map, CalendarClock, CheckCircle, AlertCircle, ShieldQuestion, ShieldCheck, VenetianMask } from "lucide-react"; // Added new icons
+import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers, Filter as FilterIcon, TrendingUp, Map, CalendarClock, CheckCircle, AlertCircle, ShieldQuestion, ShieldCheck, VenetianMask, GitBranch } from "lucide-react"; // Added GitBranch for ArcInfoCard
 import type { GlobeMethods, GlobeProps } from 'react-globe.gl';
 import { cn } from '@/lib/utils';
 import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
+import ArcInfoCard from '@/components/dpp-tracker/ArcInfoCard'; // Import ArcInfoCard
 
 const Globe = React.lazy(() => import('react-globe.gl'));
 
@@ -53,7 +54,7 @@ export interface MockDppPoint {
   customsStatus?: 'cleared' | 'flagged' | 'pending_inspection' | 'detained' | 'not_applicable';
 }
 
-interface MockArc {
+export interface MockArc { // Made MockArc exportable
   startLat: number;
   startLng: number;
   endLat: number;
@@ -114,20 +115,20 @@ const mockDppsOnGlobe: MockDppPoint[] = [
 const mockArcsData: MockArc[] = [
   { 
     productId: "DPP_GLOBE_008", startLat: 31.2304, startLng: 121.4737, endLat: 52.5200, endLng: 13.4050, color: 'rgba(255, 255, 0, 0.5)', 
-    label: 'Textiles Shipment (SHA to BER)', timestamp: 2023, transportMode: 'sea', arcDashLength: 0.2, arcDashGap: 0.1 
+    label: 'Textiles Shipment (SHA to BER) for DPP_GLOBE_008', timestamp: 2023, transportMode: 'sea', arcDashLength: 0.2, arcDashGap: 0.1 
   },
   { 
     productId: "DPP_GLOBE_003", startLat: 41.9028, startLng: 12.4964, endLat: 48.8566, endLng: 2.3522, color: 'rgba(255, 255, 255, 0.4)', 
-    label: 'Finished Goods (Rome to Paris)', timestamp: 2023, transportMode: 'road' 
+    label: 'Finished Goods (Rome to Paris) for DPP_GLOBE_003', timestamp: 2023, transportMode: 'road' 
   },
   { 
     productId: "DPP_GLOBE_002", startLat: 52.5200, startLng: 13.4050, endLat: 51.5074, endLng: 0.1278, color: 'rgba(255,255,0,0.5)', 
-    label: 'Electronics Sub-Assembly (Berlin to London)', arcDashLength: 0.3, arcDashGap: 0.1, arcStroke:0.8, timestamp: 2024, 
+    label: 'Electronics Sub-Assembly (BER to LON) for DPP_GLOBE_002', arcDashLength: 0.3, arcDashGap: 0.1, arcStroke:0.8, timestamp: 2024, 
     transportMode: 'road' 
   },
   {
     productId: "DPP_GLOBE_007", startLat: 34.0522, startLng: -118.2437, endLat: 48.8566, endLng: 2.3522, color: 'rgba(0, 255, 255, 0.5)',
-    label: 'Solar Panels (LA to Paris)', timestamp: 2024, transportMode: 'sea', arcDashLength: 0.1, arcDashGap: 0.05, arcStroke: 0.7
+    label: 'Solar Panels (LA to Paris) for DPP_GLOBE_007', timestamp: 2024, transportMode: 'sea', arcDashLength: 0.1, arcDashGap: 0.05, arcStroke: 0.7
   }
 ];
 
@@ -172,12 +173,14 @@ const GlobeVisualization = ({
   points,
   arcs,
   onPointClick, 
+  onArcClick, // Added onArcClick prop
   pointColorAccessor,
   pointRadiusAccessor,
 }: { 
   points: MockDppPoint[];
   arcs: MockArc[];
   onPointClick: (point: MockDppPoint) => void;
+  onArcClick?: (arc: any, event: MouseEvent) => void; // Updated prop type
   pointColorAccessor: (point: MockDppPoint) => string;
   pointRadiusAccessor: (point: MockDppPoint) => number;
 }) => {
@@ -220,6 +223,7 @@ const GlobeVisualization = ({
     arcDashGap: d => (d as MockArc).arcDashGap || 0.05, 
     arcStroke: d => (d as MockArc).arcStroke || 0.5, 
     arcAltitudeAutoScale: 0.5,
+    onArcClick: onArcClick, // Passed to Globe
   };
 
   return <Globe ref={globeEl} {...globeProps} />;
@@ -229,12 +233,14 @@ const DppGlobalTrackerClientContainer = ({
   points,
   arcs,
   onPointClick,
+  onArcClick, // Added onArcClick prop
   pointColorAccessor,
   pointRadiusAccessor,
 }: { 
   points: MockDppPoint[];
   arcs: MockArc[];
   onPointClick: (point: MockDppPoint) => void;
+  onArcClick?: (arc: any, event: MouseEvent) => void; // Updated prop type
   pointColorAccessor: (point: MockDppPoint) => string;
   pointRadiusAccessor: (point: MockDppPoint) => number;
 }) => {
@@ -263,6 +269,7 @@ const DppGlobalTrackerClientContainer = ({
         points={points} 
         arcs={arcs}
         onPointClick={onPointClick} 
+        onArcClick={onArcClick} // Passed to GlobeVisualization
         pointColorAccessor={pointColorAccessor} 
         pointRadiusAccessor={pointRadiusAccessor} 
       />
@@ -318,6 +325,7 @@ const availableEbsiStatuses: Array<{ value: EbsiStatusFilter; label: string }> =
 export default function DppGlobalTrackerPage() {
   const [isConceptVisible, setIsConceptVisible] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<MockDppPoint | null>(null);
+  const [selectedArc, setSelectedArc] = useState<MockArc | null>(null); // State for selected arc
   const [activeLayer, setActiveLayer] = useState<ActiveLayer>('status');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
@@ -385,10 +393,20 @@ Key Visualization Features:
 
   const handlePointClick = (point: MockDppPoint) => {
     setSelectedPoint(point);
+    setSelectedArc(null); // Close arc info if a point is clicked
   };
 
   const handleCloseInfoCard = () => {
     setSelectedPoint(null);
+  };
+
+  const handleArcClick = (arc: any) => { // arc type is 'any' from react-globe.gl
+    setSelectedArc(arc as MockArc);
+    setSelectedPoint(null); // Close point info if an arc is clicked
+  };
+
+  const handleCloseArcInfoCard = () => {
+    setSelectedArc(null);
   };
   
   const availableCategories = useMemo(() => {
@@ -477,7 +495,7 @@ Key Visualization Features:
         <Info className="h-5 w-5 text-info" />
         <AlertTitle className="font-semibold text-info">Interactive Prototype</AlertTitle>
         <AlertDescription>
-          This is an early prototype. Rotate the globe. Click points for info. Change data layers and apply filters using the controls below.
+          This is an early prototype. Rotate the globe. Click points or arcs for info. Change data layers and apply filters using the controls below.
         </AlertDescription>
       </Alert>
 
@@ -492,14 +510,16 @@ Key Visualization Features:
               points={filteredPoints} 
               arcs={filteredArcs}
               onPointClick={handlePointClick} 
+              onArcClick={handleArcClick} // Pass arc click handler
               pointColorAccessor={pointColorAccessor}
               pointRadiusAccessor={pointRadiusAccessor}
             />
             {selectedPoint && <PointInfoCard pointData={selectedPoint} onClose={handleCloseInfoCard} />}
+            {selectedArc && <ArcInfoCard arcData={selectedArc} onClose={handleCloseArcInfoCard} />} {/* Render ArcInfoCard */}
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card>
+            <Card className="lg:col-span-1">
               <CardHeader className="pb-3">
                 <CardTitle className="text-md font-headline flex items-center">
                   <Layers className="mr-2 h-4 w-4 text-primary" />
@@ -507,7 +527,7 @@ Key Visualization Features:
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <RadioGroup value={activeLayer} onValueChange={(value) => setActiveLayer(value as ActiveLayer)} className="flex flex-col space-y-2 sm:space-y-0 sm:flex-row sm:gap-4">
+                <RadioGroup value={activeLayer} onValueChange={(value) => setActiveLayer(value as ActiveLayer)} className="flex flex-col space-y-2">
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="status" id="layer-status" />
                     <Label htmlFor="layer-status" className="cursor-pointer hover:text-primary">Product Status</Label>
@@ -518,11 +538,11 @@ Key Visualization Features:
                   </div>
                    <div className="flex items-center space-x-2">
                     <RadioGroupItem value="customs" id="layer-customs" />
-                    <Label htmlFor="layer-customs" className="cursor-pointer hover:text-primary">Customs</Label>
+                    <Label htmlFor="layer-customs" className="cursor-pointer hover:text-primary">Customs Status</Label>
                   </div>
                    <div className="flex items-center space-x-2">
                     <RadioGroupItem value="ebsi" id="layer-ebsi" />
-                    <Label htmlFor="layer-ebsi" className="cursor-pointer hover:text-primary">EBSI</Label>
+                    <Label htmlFor="layer-ebsi" className="cursor-pointer hover:text-primary">EBSI Status</Label>
                   </div>
                 </RadioGroup>
               </CardContent>
@@ -534,7 +554,7 @@ Key Visualization Features:
                   Filters
                 </CardTitle>
               </CardHeader>
-              <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4"> {/* Changed to md:grid-cols-2 for filters */}
                 <div>
                   <Label htmlFor="status-filter" className="text-xs">Product Status</Label>
                   <Select value={statusFilter} onValueChange={(value) => setStatusFilter(value as StatusFilter)}>

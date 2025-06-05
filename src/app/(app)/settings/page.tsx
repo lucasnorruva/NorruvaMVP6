@@ -4,7 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { UserCircle, Bell, Lock, Briefcase, FileCog } from "lucide-react"; // Added FileCog
+import { UserCircle, Bell, Lock, Briefcase, FileCog, Users } from "lucide-react"; // Added Users icon
+import Link from "next/link"; // Added Link import
 
 export default function SettingsPage() {
   return (
@@ -84,7 +85,12 @@ export default function SettingsPage() {
             <Label htmlFor="orgName">Organization Name</Label>
             <Input id="orgName" defaultValue="Acme Corp" />
           </div>
-           <Button variant="outline">Manage Users</Button>
+           <Link href="/settings/users" passHref>
+            <Button variant="outline" className="w-full sm:w-auto">
+              <Users className="mr-2 h-4 w-4" />
+              Manage Users
+            </Button>
+           </Link>
            <Button variant="outline">API Keys</Button>
            <Button variant="outline">
             <FileCog className="mr-2 h-4 w-4" />

@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2 } from "lucide-react";
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -389,13 +389,11 @@ export default function DeveloperPortalPage() {
           </CardHeader>
           <CardContent className="space-y-4">
              <div className="space-y-2">
-                <h4 className="font-semibold">API Reference</h4>
+                <h4 className="font-semibold">Core Documentation</h4>
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
+                    <li><Link href="/developer/docs/api-reference" className="hover:underline flex items-center"><BookText className="mr-1.5 h-4 w-4 inline-block"/>API Reference</Link> <span className="text-xs text-muted-foreground">(Endpoints, Schemas)</span></li>
                     <li><Link href="/developer/docs/authentication" className="hover:underline">Authentication</Link> <span className="text-xs text-muted-foreground">(OAuth 2.0, API Keys)</span></li>
-                    <li><Link href="#" className="hover:underline">Products API</Link> <span className="text-xs text-muted-foreground">(CRUD, Search)</span></li>
-                    <li><Link href="#" className="hover:underline">Lifecycle Events API</Link> <span className="text-xs text-muted-foreground">(Add, View)</span></li>
-                    <li><Link href="#" className="hover:underline">Compliance Data API</Link> <span className="text-xs text-muted-foreground">(Query, Update)</span></li>
-                    <li><Link href="#" className="hover:underline">Request/Response Formats & Schemas</Link> <span className="text-xs text-muted-foreground">(JSON, JSON-LD)</span></li>
+                    <li><Link href="#" className="hover:underline">Rate Limiting & Usage</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
                     <li><Link href="#" className="hover:underline">Error Codes &amp; Handling</Link></li>
                 </ul>
             </div>
@@ -674,5 +672,7 @@ export default function DeveloperPortalPage() {
     
 
 
+
+    
 
     

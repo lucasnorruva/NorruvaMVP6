@@ -133,7 +133,7 @@ const ManufacturerQuickActionsCard = () => {
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle className="font-headline flex items-center"><Activity className="mr-2 h-5 w-5 text-primary" />Quick Actions</CardTitle>
-        <CardDescription>Your frequently used actions.</CardDescription>
+        <CardDescription>Key actions for managing your products and sustainability data.</CardDescription>
       </CardHeader>
       <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {actions.map((action) => (

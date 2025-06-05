@@ -94,13 +94,13 @@ export const DPPTable: React.FC<DPPTableProps> = ({ dpps, onSort, sortConfig }) 
     <Table>
       <TableHeader>
         <TableRow>
-          <SortableHeader columnKey="id" title="ID" onSort={onSort} sortConfig={sortConfig} />
-          <SortableHeader columnKey="productName" title="Product Name" onSort={onSort} sortConfig={sortConfig} />
-          <SortableHeader columnKey="category" title="Category" onSort={onSort} sortConfig={sortConfig} />
-          <SortableHeader columnKey="metadata.status" title="Status" onSort={onSort} sortConfig={sortConfig} />
-          <TableHead>Overall Compliance</TableHead> {/* Compliance sorting can be complex due to object structure, not made sortable here */}
-          <SortableHeader columnKey="metadata.last_updated" title="Last Updated" onSort={onSort} sortConfig={sortConfig} />
-          <TableHead className="text-right">Actions</TableHead>
+          <SortableHeader columnKey="id" title="ID" onSort={onSort} sortConfig={sortConfig} />{/*
+          */}<SortableHeader columnKey="productName" title="Product Name" onSort={onSort} sortConfig={sortConfig} />{/*
+          */}<SortableHeader columnKey="category" title="Category" onSort={onSort} sortConfig={sortConfig} />{/*
+          */}<SortableHeader columnKey="metadata.status" title="Status" onSort={onSort} sortConfig={sortConfig} />{/*
+          */}<TableHead>Overall Compliance</TableHead>{/*
+          */}<SortableHeader columnKey="metadata.last_updated" title="Last Updated" onSort={onSort} sortConfig={sortConfig} />{/*
+          */}<TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>

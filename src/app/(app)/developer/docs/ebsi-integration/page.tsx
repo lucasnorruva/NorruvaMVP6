@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon } from "lucide-react";
+import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -65,6 +65,37 @@ export default function EbsiIntegrationOverviewPage() {
         </CardContent>
       </Card>
 
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center"><Layers className="mr-2 h-5 w-5 text-primary"/>Blockchain Platform Selection for Norruva DPP</CardTitle>
+          <CardDescription>
+            Choosing a suitable blockchain platform is critical for a successful and compliant EBSI integration.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Key Selection Criteria</h3>
+            <ul className="list-disc list-inside space-y-1 text-sm">
+              <li><strong>Scalability:</strong> The platform must handle a large volume of DPPs and transactions efficiently.</li>
+              <li><strong>Security:</strong> Robust security features to protect sensitive product data and prevent fraud.</li>
+              <li><strong>Transaction Costs:</strong> Predictable and manageable transaction fees.</li>
+              <li><strong>Regulatory Compliance & EBSI Interoperability:</strong> Must support EBSI standards and EU regulations (e.g., GDPR).</li>
+              <li><strong>Smart Contract Capabilities:</strong> Advanced smart contract functionality for DPP logic and lifecycle management.</li>
+              <li><strong>Ecosystem & Support:</strong> Active developer community and available enterprise support.</li>
+            </ul>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Conceptual Choice for Norruva</h3>
+            <p className="text-sm">
+              For the Norruva DPP system, a conceptual alignment with a <strong>permissioned EVM-compatible blockchain (e.g., a private Ethereum instance or a Layer 2 solution like Polygon with enterprise features)</strong> is considered. This approach aims to balance the transparency and immutability of blockchain with the control required for enterprise applications and regulatory compliance.
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              The specific choice would involve further in-depth analysis and proof-of-concepts in a real-world scenario.
+            </p>
+          </section>
+        </CardContent>
+      </Card>
+
        <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center"><Database className="mr-2 h-5 w-5 text-primary"/>Relevant Blockchain Standards</CardTitle>
@@ -107,5 +138,3 @@ export default function EbsiIntegrationOverviewPage() {
     </div>
   );
 }
-
-    

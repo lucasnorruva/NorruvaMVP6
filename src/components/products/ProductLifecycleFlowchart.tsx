@@ -80,7 +80,7 @@ const SustainabilityMetricChart = ({ metric }: { metric: Metric }) => {
   const data = [{ name: metric.name, value: metric.value, target: metric.targetValue }];
 
   return (
-    <div className="my-1 h-16 w-full"> {}
+    <div className="my-1 h-16 w-full">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart layout="vertical" data={data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
           <XAxis type="number" hide />

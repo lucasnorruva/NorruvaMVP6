@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers } from "lucide-react";
+import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers } from "lucide-react"; // Added Database icon
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -98,22 +98,38 @@ export default function EbsiIntegrationOverviewPage() {
 
        <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center"><Database className="mr-2 h-5 w-5 text-primary"/>Relevant Blockchain Standards</CardTitle>
+          <CardTitle className="flex items-center"><Database className="mr-2 h-5 w-5 text-primary"/>Digital Product Passport Data Structure on Blockchain</CardTitle>
           <CardDescription>
-            Alignment with established blockchain standards is crucial for robust and interoperable DPPs.
+            Defining a robust and interoperable data structure for DPPs is crucial for blockchain integration and EBSI compliance.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <p>
+            The Norruva platform's DPP data structure is designed to be comprehensive, covering all necessary information from product origin to end-of-life, while ensuring it can be efficiently managed on a blockchain and verified via EBSI.
+          </p>
           <section>
-            <h3 className="font-semibold text-lg mb-1">Smart Contracts</h3>
-            <p className="text-sm">
-              Smart contracts would govern the lifecycle of a DPP on the chosen blockchain, managing registration, updates, ownership transfers (if applicable), and access permissions. They would also interact with EBSI bridge services for anchoring or VC issuance.
+            <h3 className="font-semibold text-lg mb-2">Key Data Elements (Conceptual)</h3>
+            <p className="text-sm">Our conceptual data model for a blockchain-based DPP includes, but is not limited to:</p>
+            <ul className="list-disc list-inside space-y-1 text-sm mt-2">
+              <li><strong>Unique DPP Identifier:</strong> Could be a UUID, an NFT ID, or an EBSI-compatible DID.</li>
+              <li><strong>Product Master Data:</strong> Name, GTIN, category, manufacturer (with DID), model number, description.</li>
+              <li><strong>Blockchain Identifiers:</strong> Platform, contract address, token ID, anchor transaction hash.</li>
+              <li><strong>Lifecycle Events:</strong> Timestamped records of key events (manufacturing, shipping, sale, repair, recycling) with optional blockchain transaction hashes and Verifiable Credential (VC) references for each event.</li>
+              <li><strong>Certifications & Declarations:</strong> Details of compliance certificates, standards met, with references to VCs or verifiable documents.</li>
+              <li><strong>Traceability Information:</strong> Batch/serial numbers, origin data, supply chain actor DIDs, and event hashes.</li>
+              <li><strong>Sustainability Attributes:</strong> Material composition (including recycled content), carbon footprint, energy efficiency, repairability scores, waste data.</li>
+              <li><strong>Regulatory Compliance Data:</strong> Status for specific regulations (e.g., ESPR, Battery Regulation), links to EPREL, SCIP database IDs, relevant VCs.</li>
+              <li><strong>Verifiable Credentials Store:</strong> A collection of VCs related to the product's claims, attestations, and lifecycle events.</li>
+              <li><strong>Access Control & GDPR:</strong> Data controller information, links to access policies.</li>
+            </ul>
+            <p className="text-xs text-muted-foreground mt-1">
+              This structure is versioned and aims for alignment with evolving EU standards (e.g., CIRPASS recommendations).
             </p>
           </section>
-           <section>
-            <h3 className="font-semibold text-lg mb-1">Data Formats & Storage</h3>
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Data Interoperability</h3>
             <p className="text-sm">
-              DPP data itself might be stored off-chain (e.g., IPFS, secure databases) with hashes and VCs on-chain. Data formats should align with EU standards (e.g., based on CIRPASS, specific product group requirements) and be representable as JSON-LD for semantic interoperability.
+              To ensure interoperability within the EBSI ecosystem and beyond, data elements are structured to be compatible with semantic web technologies. We aim for JSON-LD (JSON for Linked Data) representation where appropriate, allowing DPP data to be machine-readable and linkable across different systems and data sources.
             </p>
           </section>
         </CardContent>

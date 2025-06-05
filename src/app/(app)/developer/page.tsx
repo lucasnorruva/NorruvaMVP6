@@ -10,10 +10,11 @@ import { Badge } from "@/components/ui/badge";
 import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 const mockApiKeys = [
   { id: "key_sandbox_1", key: "sand_sk_xxxx1234ABCD...", type: "Sandbox", created: "2024-07-01", lastUsed: "2024-07-28", status: "Active" },
-  { id: "key_prod_1", key: "prod_sk_xxxx5678EFGH...", type: "Production (Pending)", created: "2024-07-15", lastUsed: "N/A", status: "Pending Approval" },
+  { id: "key_prod_1", key: "prod_sk_xxxx5678EFGH...", type: "Production", created: "2024-07-15", lastUsed: "N/A", status: "Pending Approval" },
 ];
 
 const mockWebhooks = [
@@ -69,7 +70,13 @@ export default function DeveloperPortalPage() {
                   <TableCell>{apiKey.created}</TableCell>
                   <TableCell>{apiKey.lastUsed}</TableCell>
                   <TableCell>
-                    <Badge variant={apiKey.status === "Active" ? "default" : "outline"} className={apiKey.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "bg-yellow-500/20 text-yellow-700 border-yellow-500/30"}>
+                    <Badge 
+                      variant={apiKey.status === "Active" ? "default" : "outline"} 
+                      className={cn(
+                        apiKey.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "",
+                        apiKey.status === "Pending Approval" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""
+                      )}
+                    >
                       {apiKey.status}
                     </Badge>
                   </TableCell>
@@ -133,7 +140,14 @@ export default function DeveloperPortalPage() {
                         <TableRow key={wh.id}>
                             <TableCell className="truncate max-w-[200px] text-sm">{wh.url}</TableCell>
                             <TableCell>
-                                <Badge variant={wh.status === "Active" ? "default" : "outline"}  className={wh.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : ""}>{wh.status}</Badge>
+                                <Badge 
+                                  variant={wh.status === "Active" ? "default" : "outline"}  
+                                  className={cn(
+                                    wh.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "bg-muted text-muted-foreground border-border"
+                                  )}
+                                >
+                                  {wh.status}
+                                </Badge>
                             </TableCell>
                             <TableCell className="text-right space-x-1">
                                 <Button variant="ghost" size="sm">Edit (Mock)</Button>
@@ -212,6 +226,3 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
-
-
-    

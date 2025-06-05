@@ -150,7 +150,21 @@ export default function EbsiIntegrationOverviewPage() {
             </p>
           </section>
           <section>
-            <h3 className="font-semibold text-lg mb-2">Node Configuration (Mock Considerations)</h3>
+            <h3 className="font-semibold text-lg mb-2">Storing Product Data Immutably</h3>
+            <p className="text-sm">
+              While the full DPP data might reside off-chain (e.g., in a secure database) for performance and scalability, key data points or their cryptographic hashes would be recorded on the blockchain. This includes:
+            </p>
+            <ul className="list-disc list-inside space-y-1 text-sm ml-4">
+                <li><strong>DPP Anchor:</strong> A hash of the complete DPP document (or its core sections) can be stored on-chain to prove its existence and integrity at a point in time.</li>
+                <li><strong>Critical Lifecycle Events:</strong> Hashes or key details of significant events like manufacturing completion, ownership transfer, or disposal can be recorded as transactions.</li>
+                <li><strong>Certification Anchors:</strong> Hashes of important certifications can be linked to the product's on-chain record.</li>
+            </ul>
+            <p className="text-sm mt-1">
+                This hybrid approach ensures data immutability and an auditable trail for critical information without overwhelming the blockchain with large data blobs. Smart contracts would manage the pointers and hashes.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2 mt-3">Node Configuration (Mock Considerations)</h3>
             <ul className="list-disc list-inside space-y-1 text-sm">
               <li><strong>Security:</strong> Nodes would require robust security measures, including network firewalls, access control lists, and regular security audits. Private key management would be critical.</li>
               <li><strong>Reliability & Scalability:</strong> High availability setups (e.g., multiple redundant nodes) and a scalable architecture to handle growing numbers of DPPs and transactions.</li>

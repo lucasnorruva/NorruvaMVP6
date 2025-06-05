@@ -70,8 +70,8 @@ export default function DeveloperPortalPage() {
                   <TableCell>{apiKey.created}</TableCell>
                   <TableCell>{apiKey.lastUsed}</TableCell>
                   <TableCell>
-                    <Badge 
-                      variant={apiKey.status === "Active" ? "default" : "outline"} 
+                    <Badge
+                      variant={apiKey.status === "Active" ? "default" : "outline"}
                       className={cn(
                         apiKey.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "",
                         apiKey.status === "Pending Approval" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""
@@ -140,8 +140,8 @@ export default function DeveloperPortalPage() {
                         <TableRow key={wh.id}>
                             <TableCell className="truncate max-w-[200px] text-sm">{wh.url}</TableCell>
                             <TableCell>
-                                <Badge 
-                                  variant={wh.status === "Active" ? "default" : "outline"}  
+                                <Badge
+                                  variant={wh.status === "Active" ? "default" : "outline"}
                                   className={cn(
                                     wh.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "bg-muted text-muted-foreground border-border"
                                   )}
@@ -226,3 +226,5 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+
+    

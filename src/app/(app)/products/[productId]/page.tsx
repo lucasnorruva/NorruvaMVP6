@@ -1,16 +1,19 @@
 
 "use client";
 
-import { useParams, notFound } from 'next/navigation';
+import { useParams, notFound, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Separator } from '@/components/ui/separator';
+import { Button } from '@/components/ui/button'; // Added Button
+import Link from 'next/link';
+
 
 // Mock product data - in a real app, this would come from an API
 const MOCK_PRODUCTS = [
@@ -48,7 +51,37 @@ const MOCK_PRODUCTS = [
       "WEEE": { status: "Compliant", lastChecked: "2024-07-01", reportId: "WEEE-X2000-001" },
     }
   },
-  // Add more mock products if needed for testing navigation
+   { 
+    productId: "PROD002", 
+    productName: "Smart LED Bulb (4-Pack)", 
+    gtin: "98765432109876",
+    category: "Electronics", 
+    status: "Active", 
+    compliance: "Pending", 
+    lastUpdated: "2024-07-18",
+    manufacturer: "BrightSpark Electronics",
+    modelNumber: "BS-LED-S04",
+    description: "Energy-efficient smart LED bulbs with customizable lighting options and long lifespan. Connects to smart home systems.",
+    imageUrl: "https://placehold.co/600x400.png",
+    imageHint: "led bulbs package",
+    materials: "Polycarbonate, Aluminum, LEDs",
+    sustainabilityClaims: "Uses 85% less energy, Mercury-free, Recyclable packaging.",
+    energyLabel: "A+",
+    specifications: {
+      "Lumens": "800 lm per bulb",
+      "Color Temperature": "2700K - 6500K tunable",
+      "Lifespan": "25,000 hours",
+      "Connectivity": "Wi-Fi, Bluetooth"
+    },
+    lifecycleEvents: [
+      { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01", location: "Shenzhen, China", details: "Batch #LEDB456" },
+      { id: "EVT005", type: "Imported", timestamp: "2024-03-15", location: "Rotterdam Port", details: "Shipment #SHP0089" },
+    ],
+    complianceData: {
+      "RoHS": { status: "Compliant", lastChecked: "2024-07-01", reportId: "ROHS-LEDB456-001" },
+      "CE Mark": { status: "Compliant", lastChecked: "2024-07-01", reportId: "CE-LEDB456-001" },
+    }
+  },
 ];
 
 type ProductType = typeof MOCK_PRODUCTS[0];
@@ -57,6 +90,7 @@ export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.productId as string;
   const [product, setProduct] = useState<ProductType | null | undefined>(undefined); // undefined for loading state
+  const router = useRouter();
 
   useEffect(() => {
     // Simulate API call
@@ -77,7 +111,7 @@ export default function ProductDetailPage() {
 
   if (!product) {
     notFound();
-    return null; // notFound() should handle this, but for type safety
+    return null; 
   }
   
   const complianceStatusIcon = product.compliance === "Compliant" 
@@ -91,7 +125,7 @@ export default function ProductDetailPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-headline font-semibold">{product.productName}</h1>
-          <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge variant={
               product.status === "Active" ? "default" : 
               product.status === "Archived" ? "secondary" : "outline"
@@ -113,7 +147,15 @@ export default function ProductDetailPage() {
             <span className="text-sm text-muted-foreground">Last updated: {product.lastUpdated}</span>
           </div>
         </div>
-         {/* Add Action Buttons here later e.g. Edit, Generate Report */}
+        <div className="flex gap-2">
+            <Link href={`/passport/${product.productId}`} passHref target="_blank">
+              <Button variant="outline">
+                <ExternalLink className="mr-2 h-4 w-4" />
+                View Public Passport
+              </Button>
+            </Link>
+            {/* Add Edit Button here later e.g. Edit, Generate Report */}
+         </div>
       </div>
 
       {/* Primary Disclosure: Overview Card */}
@@ -126,7 +168,8 @@ export default function ProductDetailPage() {
                 alt={product.productName} 
                 fill 
                 className="object-cover"
-                data-ai-hint={product.imageHint} 
+                data-ai-hint={product.imageHint}
+                priority 
               />
             </AspectRatio>
           </div>
@@ -140,7 +183,7 @@ export default function ProductDetailPage() {
               <div><strong className="text-foreground/80">Model:</strong> {product.modelNumber}</div>
             </div>
              <div className="mt-4 pt-4 border-t">
-                <h4 className="text-md font-semibold mb-2 flex items-center"><Leaf className="h-5 w-5 mr-2 text-green-600"/>Key Sustainability Info</h4>
+                <h4 className="text-md font-semibold mb-2 flex items-center"><Leaf className="h-5 w-5 mr-2 text-growth-green"/>Key Sustainability Info</h4>
                 <p className="text-sm text-muted-foreground mb-1"><strong>Materials:</strong> {product.materials}</p>
                 <p className="text-sm text-muted-foreground mb-1"><strong>Claims:</strong> {product.sustainabilityClaims}</p>
                 <p className="text-sm text-muted-foreground"><strong>Energy Label:</strong> <Badge variant="secondary">{product.energyLabel}</Badge></p>
@@ -151,7 +194,7 @@ export default function ProductDetailPage() {
 
       {/* Secondary Disclosure: Tabs */}
       <Tabs defaultValue="specifications" className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4">
           <TabsTrigger value="specifications"><Settings2 className="mr-2 h-4 w-4" />Specifications</TabsTrigger>
           <TabsTrigger value="compliance"><ShieldCheck className="mr-2 h-4 w-4" />Compliance</TabsTrigger>
           <TabsTrigger value="lifecycle"><GitBranch className="mr-2 h-4 w-4" />Lifecycle</TabsTrigger>
@@ -165,9 +208,9 @@ export default function ProductDetailPage() {
             </CardHeader>
             <CardContent className="space-y-2">
               {Object.entries(product.specifications).map(([key, value]) => (
-                <div key={key} className="flex justify-between text-sm border-b pb-1">
+                <div key={key} className="flex flex-col sm:flex-row justify-between text-sm border-b pb-1">
                   <span className="font-medium text-foreground/90">{key}:</span>
-                  <span className="text-muted-foreground">{value}</span>
+                  <span className="text-muted-foreground text-left sm:text-right">{value}</span>
                 </div>
               ))}
             </CardContent>
@@ -182,14 +225,14 @@ export default function ProductDetailPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               {Object.entries(product.complianceData).map(([reg, data]) => (
-                <Card key={reg} className="bg-muted/50 p-4">
+                <Card key={reg} className="bg-muted/50 p-4 rounded-lg">
                   <CardTitle className="text-md flex items-center justify-between">
                     {reg}
                     <Badge variant={data.status === "Compliant" ? "default" : "destructive"} className={data.status === "Compliant" ? "bg-green-500/20 text-green-700" : ""}>
                       {data.status}
                     </Badge>
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground">Last Checked: {data.lastChecked}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Last Checked: {data.lastChecked}</p>
                   <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>
                 </Card>
               ))}
@@ -223,15 +266,14 @@ export default function ProductDetailPage() {
         <TabsContent value="sustainability" className="mt-4">
            <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><Leaf className="mr-2 h-5 w-5 text-green-600"/>Detailed Sustainability Information</CardTitle>
+              <CardTitle className="flex items-center"><Leaf className="mr-2 h-5 w-5 text-growth-green"/>Detailed Sustainability Information</CardTitle>
                <CardDescription>In-depth data on materials, carbon footprint, circularity, etc.</CardDescription>
             </CardHeader>
-            <CardContent>
-                {/* Placeholder for more detailed sustainability data */}
-                <p className="text-sm text-muted-foreground mb-2"><strong>Detailed Material Breakdown:</strong> To be populated from BOM or LCA data.</p>
-                <p className="text-sm text-muted-foreground mb-2"><strong>Carbon Footprint (Calculated):</strong> [Value] kg CO2e (Scope 1, 2, 3). To be integrated.</p>
-                <p className="text-sm text-muted-foreground mb-2"><strong>Recyclability Score:</strong> 95% (Based on material composition and design for disassembly).</p>
-                <p className="text-sm text-muted-foreground mb-2"><strong>Repairability Index:</strong> 7.5/10 (To be calculated based on ESPR requirements).</p>
+            <CardContent className="space-y-3">
+                <p className="text-sm text-muted-foreground"><strong>Detailed Material Breakdown:</strong> To be populated from BOM or LCA data.</p>
+                <p className="text-sm text-muted-foreground"><strong>Carbon Footprint (Calculated):</strong> [Value] kg CO2e (Scope 1, 2, 3). To be integrated.</p>
+                <p className="text-sm text-muted-foreground"><strong>Recyclability Score:</strong> 95% (Based on material composition and design for disassembly).</p>
+                <p className="text-sm text-muted-foreground"><strong>Repairability Index:</strong> 7.5/10 (To be calculated based on ESPR requirements).</p>
                 <p className="text-sm text-muted-foreground"><strong>Certifications:</strong> Energy Star, EU Ecolabel (Mock).</p>
             </CardContent>
           </Card>
@@ -244,9 +286,12 @@ export default function ProductDetailPage() {
 function ProductDetailSkeleton() {
   return (
     <div className="space-y-8">
-      <div>
-        <Skeleton className="h-10 w-3/4 mb-2" />
-        <Skeleton className="h-6 w-1/2" />
+      <div className="flex justify-between items-center">
+        <div>
+          <Skeleton className="h-10 w-3/4 mb-2" />
+          <Skeleton className="h-6 w-1/2" />
+        </div>
+        <Skeleton className="h-10 w-40" /> {/* Button Skeleton */}
       </div>
       <Card className="shadow-lg overflow-hidden">
         <div className="grid md:grid-cols-3">
@@ -288,3 +333,5 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
+
+    

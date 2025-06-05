@@ -1,9 +1,10 @@
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { UserCircle, Bell, Lock, Briefcase } from "lucide-react";
+import { UserCircle, Bell, Lock, Briefcase, FileCog } from "lucide-react"; // Added FileCog
 
 export default function SettingsPage() {
   return (
@@ -85,6 +86,10 @@ export default function SettingsPage() {
           </div>
            <Button variant="outline">Manage Users</Button>
            <Button variant="outline">API Keys</Button>
+           <Button variant="outline">
+            <FileCog className="mr-2 h-4 w-4" />
+            Customize Compliance Profile (Mock)
+            </Button>
         </CardContent>
       </Card>
     </div>

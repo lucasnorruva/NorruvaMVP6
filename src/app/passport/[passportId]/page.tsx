@@ -7,7 +7,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon } from 'lucide-react';
+import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award } from 'lucide-react'; // Added Award icon
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react'; 
 import { cn } from '@/lib/utils';
@@ -36,6 +36,14 @@ interface LifecycleHighlight {
   isEbsiVerified?: boolean;
 }
 
+interface PublicCertification {
+  name: string;
+  authority: string;
+  expiryDate?: string;
+  link?: string;
+  isVerified?: boolean; // General verification status for UI
+}
+
 interface PublicProductInfo {
   passportId: string;
   productName: string;
@@ -55,7 +63,8 @@ interface PublicProductInfo {
   blockchainPlatform?: string;
   ebsiStatus?: 'verified' | 'pending' | 'not_verified';
   ebsiVerificationId?: string;
-  lifecycleHighlights?: LifecycleHighlight[]; // Added for Task 54
+  lifecycleHighlights?: LifecycleHighlight[];
+  certifications?: PublicCertification[]; // Added for certifications
 }
 
 // Mock data for public passports - in a real app, this would come from an API
@@ -89,6 +98,11 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { stage: "Shipped to Distributor", date: "2024-01-20", details: "Container #C0N741N3R.", isEbsiVerified: true },
       { stage: "Sold to Consumer", date: "2024-02-10", details: "Retail Store, Paris. Warranty activated.", isEbsiVerified: false },
       { stage: "Scheduled Maintenance", date: "2025-02-15", details: "Filter replacement complete.", isEbsiVerified: false },
+    ],
+    certifications: [
+      { name: "EU Energy Label", authority: "European Commission", expiryDate: "N/A", link: "#", isVerified: true },
+      { name: "CE Marking", authority: "Self-Certified (Manufacturer)", expiryDate: "N/A", isVerified: true },
+      { name: "ISO 9001:2015", authority: "TUV SUD", expiryDate: "2026-05-20", link: "#", isVerified: false },
     ]
   },
   "PROD002": {
@@ -117,6 +131,10 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { stage: "Manufactured", date: "2024-03-01", details: "Batch #LEDB456, Shenzhen.", isEbsiVerified: true },
       { stage: "Imported to EU", date: "2024-03-15", details: "Rotterdam Port, Netherlands.", isEbsiVerified: false },
       { stage: "Firmware Update v1.2", date: "2024-08-01", details: "Improved energy efficiency algorithm.", isEbsiVerified: true },
+    ],
+    certifications: [
+      { name: "RoHS Compliance", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
+      { name: "CE Marking", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
     ]
   }
 };
@@ -305,55 +323,99 @@ export default function PublicPassportPage({ params }: Props) {
                 </CardContent>
               </Card>
 
-              <Card className="md:col-span-2 lg:col-span-1">
+              <Card>
                 <CardHeader>
                   <CardTitle className="text-xl text-primary flex items-center">
-                    <Fingerprint className="mr-2 h-6 w-6" /> Blockchain &amp; EBSI Verification
+                    <Award className="mr-2 h-6 w-6" /> Product Certifications
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3 text-sm">
-                  {product.anchorTransactionHash && (
-                    <div className="flex flex-col">
-                      <span className="text-muted-foreground">Product Record Hash:</span>
-                      <TooltipProvider>
-                        <Tooltip delayDuration={100}>
-                          <TooltipTrigger asChild>
-                            <span className="font-mono text-xs break-all text-foreground truncate cursor-help">
-                              {product.anchorTransactionHash}
-                            </span>
-                          </TooltipTrigger>
-                          <TooltipContent side="top" align="start">
-                            <p className="max-w-xs break-all">{product.anchorTransactionHash}</p>
-                          </TooltipContent>
-                        </Tooltip>
-                      </TooltipProvider>
-                    </div>
-                  )}
-                  {product.blockchainPlatform && (
-                    <div className="flex flex-col">
-                      <span className="text-muted-foreground">Platform:</span>
-                      <span className="text-foreground">{product.blockchainPlatform}</span>
-                    </div>
-                  )}
-                  {product.ebsiStatus && (
-                     <div className="flex flex-col">
-                        <span className="text-muted-foreground">EBSI Verification Status:</span>
-                        <div className="flex items-center">
-                            {getEbsiStatusBadge(product.ebsiStatus)}
-                        </div>
-                    </div>
-                  )}
-                  {product.ebsiStatus === 'verified' && product.ebsiVerificationId && (
-                     <div className="flex flex-col">
-                        <span className="text-muted-foreground">EBSI Verification ID:</span>
-                        <span className="font-mono text-xs text-foreground break-all">{product.ebsiVerificationId}</span>
-                    </div>
-                  )}
-                  {(!product.anchorTransactionHash && !product.ebsiStatus) && (
-                     <p className="text-muted-foreground">No specific blockchain or EBSI verification details available for this product.</p>
+                <CardContent className="space-y-3">
+                  {product.certifications && product.certifications.length > 0 ? (
+                    <ul className="space-y-2">
+                      {product.certifications.map((cert, index) => (
+                        <li key={index} className="text-sm text-foreground border-b border-border/50 pb-1.5 last:border-b-0">
+                          <div className="flex justify-between items-center">
+                            <span className="font-medium">{cert.name}</span>
+                            {cert.isVerified && (
+                              <TooltipProvider>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <span className="cursor-help">
+                                      <ShieldCheck className="h-4 w-4 text-green-500" />
+                                    </span>
+                                  </TooltipTrigger>
+                                  <TooltipContent><p>Verified Certification</p></TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            )}
+                          </div>
+                          <p className="text-xs text-muted-foreground mt-0.5">Authority: {cert.authority}</p>
+                          {cert.expiryDate && <p className="text-xs text-muted-foreground">Expires: {cert.expiryDate}</p>}
+                          {cert.link && (
+                            <Link href={cert.link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline inline-flex items-center">
+                              View Details <ExternalLink className="ml-1 h-3 w-3" />
+                            </Link>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-muted-foreground">No certifications listed for this product.</p>
                   )}
                 </CardContent>
               </Card>
+            </div>
+
+            <div className="mt-8 pt-6 border-t border-border">
+                 <Card className="md:col-span-2 lg:col-span-1 border-0 shadow-none">
+                    <CardHeader className="px-0 pt-0 pb-4">
+                    <CardTitle className="text-xl text-primary flex items-center">
+                        <Fingerprint className="mr-2 h-6 w-6" /> Blockchain &amp; EBSI Verification
+                    </CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3 text-sm px-0 pb-0">
+                    {product.anchorTransactionHash && (
+                        <div className="flex flex-col">
+                        <span className="text-muted-foreground">Product Record Hash:</span>
+                        <TooltipProvider>
+                            <Tooltip delayDuration={100}>
+                            <TooltipTrigger asChild>
+                                <span className="font-mono text-xs break-all text-foreground truncate cursor-help">
+                                {product.anchorTransactionHash}
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" align="start">
+                                <p className="max-w-xs break-all">{product.anchorTransactionHash}</p>
+                            </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
+                        </div>
+                    )}
+                    {product.blockchainPlatform && (
+                        <div className="flex flex-col">
+                        <span className="text-muted-foreground">Platform:</span>
+                        <span className="text-foreground">{product.blockchainPlatform}</span>
+                        </div>
+                    )}
+                    {product.ebsiStatus && (
+                        <div className="flex flex-col">
+                            <span className="text-muted-foreground">EBSI Verification Status:</span>
+                            <div className="flex items-center">
+                                {getEbsiStatusBadge(product.ebsiStatus)}
+                            </div>
+                        </div>
+                    )}
+                    {product.ebsiStatus === 'verified' && product.ebsiVerificationId && (
+                        <div className="flex flex-col">
+                            <span className="text-muted-foreground">EBSI Verification ID:</span>
+                            <span className="font-mono text-xs text-foreground break-all">{product.ebsiVerificationId}</span>
+                        </div>
+                    )}
+                    {(!product.anchorTransactionHash && !product.ebsiStatus) && (
+                        <p className="text-muted-foreground">No specific blockchain or EBSI verification details available for this product.</p>
+                    )}
+                    </CardContent>
+                </Card>
             </div>
              <div className="mt-8 pt-6 border-t border-border">
                 <CardHeader className="px-0 pt-0 pb-4">
@@ -383,3 +445,4 @@ export default function PublicPassportPage({ params }: Props) {
     </div>
   );
 }
+

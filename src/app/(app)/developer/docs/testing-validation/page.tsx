@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { TestTube2, QrCode, Link as LinkIcon, Info, ShieldCheck, ListChecks, UserCheckIcon, DatabaseZap, GitCompareArrows, GlobeLock, FileBadge, AlertTriangle as AlertTriangleIcon } from "lucide-react"; // Added more icons
+import { TestTube2, QrCode, Link as LinkIconPath, Info, ShieldCheck, ListChecks, UserCheckIcon, DatabaseZap, GitCompareArrows, GlobeLock, FileBadge, AlertTriangle as AlertTriangleIcon, SearchCheck, Palette, SmartphoneDevice } from "lucide-react"; // Added more icons
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -153,18 +153,83 @@ export default function TestingValidationPage() {
         </CardContent>
       </Card>
 
-      {/* Placeholder for Task 78: User Acceptance Testing (UAT) */}
-      <Card className="shadow-lg opacity-50">
+      <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center"><UserCheckIcon className="mr-2 h-5 w-5 text-primary"/>User Acceptance Testing (UAT) for DPP Viewer</CardTitle>
+          <CardTitle className="flex items-center"><UserCheckIcon className="mr-2 h-5 w-5 text-primary"/>User Acceptance Testing (UAT) for DPP Viewer (Conceptual)</CardTitle>
+          <CardDescription>Ensuring the public DPP viewer is intuitive, informative, and accessible for various stakeholders.</CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-muted-foreground">Outline for User Acceptance Testing scope and criteria will be added here. (Coming in Task 78)</p>
+        <CardContent className="space-y-4">
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Scope</h3>
+            <p className="text-sm">
+              Primary focus is on the public Digital Product Passport viewer page (e.g., <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/{'{passportId}'}</code>).
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2 mt-4">Key UAT Areas</h3>
+            <ul className="list-disc list-inside text-sm space-y-2">
+              <li>
+                <strong className="flex items-center"><Info className="mr-1.5 h-4 w-4 text-accent"/>Intuitiveness & Understandability:</strong>
+                <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
+                  <li>Is the information presented clearly and easy for different user personas (consumers, retailers, recyclers, auditors) to understand?</li>
+                  <li>Are technical terms (like blockchain hashes, EBSI IDs) explained or contextualized appropriately (e.g., via tooltips)?</li>
+                  <li>Is the purpose of each section (Product Story, Sustainability, Compliance, etc.) clear?</li>
+                </ul>
+              </li>
+              <li>
+                <strong className="flex items-center"><Palette className="mr-1.5 h-4 w-4 text-accent"/>Navigation & Layout:</strong>
+                 <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
+                  <li>Is the viewer easy to navigate and scroll through?</li>
+                  <li>Is the layout logical and does it prioritize key information effectively?</li>
+                  <li>Are interactive elements (like "Read More" buttons or links) obvious and functional?</li>
+                </ul>
+              </li>
+              <li>
+                <strong className="flex items-center"><SmartphoneDevice className="mr-1.5 h-4 w-4 text-accent"/>Responsiveness & Accessibility:</strong>
+                 <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
+                  <li>Does the viewer adapt well to various screen sizes (desktop, tablet, mobile)?</li>
+                  <li>Are there any display issues on common web browsers?</li>
+                  <li>(Conceptual) Are accessibility standards (e.g., WCAG) considered in terms of color contrast, keyboard navigation, and screen reader compatibility?</li>
+                </ul>
+              </li>
+              <li>
+                <strong className="flex items-center"><SearchCheck className="mr-1.5 h-4 w-4 text-accent"/>Accuracy of (Mock) Information:</strong>
+                 <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
+                  <li>Does the data displayed on the viewer accurately reflect the mock data defined for the product?</li>
+                  <li>Are all relevant sections (e.g., certifications, lifecycle events, blockchain details) populated correctly based on the mock product data?</li>
+                </ul>
+              </li>
+              <li>
+                <strong className="flex items-center"><QrCode className="mr-1.5 h-4 w-4 text-accent"/>QR Code Path (Conceptual):</strong>
+                 <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
+                  <li>Does simulating a QR scan (e.g., via the DPP Live Dashboard mock scanner) correctly lead to the corresponding public DPP viewer page?</li>
+                  <li>Does the QR code displayed on the internal product page link to the correct public passport?</li>
+                </ul>
+              </li>
+              <li>
+                <strong className="flex items-center"><ShieldCheck className="mr-1.5 h-4 w-4 text-accent"/>Clarity of Compliance & Verification Indicators:</strong>
+                 <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
+                  <li>Are EBSI status, blockchain anchor presence, and certification verification statuses visually clear and easy to understand?</li>
+                  <li>Do tooltips or contextual help adequately explain these indicators?</li>
+                </ul>
+              </li>
+            </ul>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2 mt-4">Target User Groups (Conceptual)</h3>
+            <p className="text-sm">
+              UAT should ideally involve representatives from various stakeholder groups that would interact with the public DPP, such as:
+            </p>
+            <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
+              <li>Consumers</li>
+              <li>Retailers</li>
+              <li>Repairers</li>
+              <li>Recyclers</li>
+              <li>Market Surveillance Authorities / Verifiers</li>
+            </ul>
+          </section>
         </CardContent>
       </Card>
-
     </div>
   );
 }
-
-    

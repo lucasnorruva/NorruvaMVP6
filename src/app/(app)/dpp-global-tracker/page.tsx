@@ -19,7 +19,13 @@ console.log("DPPGlobalTrackerPage: Script start");
 
 const Globe = React.lazy(() => {
   console.log("DPPGlobalTrackerPage: Attempting to lazy load react-globe.gl");
-  return import('react-globe.gl');
+  return import('react-globe.gl').then(module => {
+    console.log("DPPGlobalTrackerPage: react-globe.gl module loaded successfully.");
+    return module;
+  }).catch(err => {
+    console.error("DPPGlobalTrackerPage: Error lazy loading react-globe.gl", err);
+    return { default: () => <div>Error loading globe.</div> }; // Fallback component
+  });
 });
 
 export interface MockDppPoint {
@@ -33,7 +39,7 @@ export interface MockDppPoint {
   manufacturer?: string;
   gtin?: string;
   complianceSummary?: string;
-  timestamp: number; // Year
+  timestamp: number; 
   originCountry?: string;
   destinationCountry?: string;
   currentCheckpoint?: string;
@@ -48,7 +54,7 @@ export interface MockArc {
   endLng: number;
   color: string;
   label: string;
-  timestamp: number; // Year
+  timestamp: number; 
   arcDashLength?: number;
   arcDashGap?: number;
   arcStroke?: number;
@@ -56,116 +62,103 @@ export interface MockArc {
   productId?: string;
 }
 
-const mockDppsOnGlobe: MockDppPoint[] = [
-  { id: "DPP_GLOBE_001", lat: 48.8566, lng: 2.3522, name: "French Eco-Appliance X10", size: 0.3, category: 'Appliances', status: 'compliant', manufacturer: 'GreenTech SAS', gtin: '3123456789012', complianceSummary: 'Fully compliant with EU Ecodesign.', timestamp: 2022, originCountry: 'Germany', destinationCountry: 'France', currentCheckpoint: 'Retail Warehouse, Paris', ebsiStatus: 'verified', customsStatus: 'cleared' },
-  { id: "DPP_GLOBE_002", lat: 52.5200, lng: 13.4050, name: "German Eco-Laptop Z2", size: 0.3, category: 'Electronics', status: 'pending', manufacturer: 'EcoElektronik GmbH', gtin: '3987654321098', complianceSummary: 'Pending battery passport docs.', timestamp: 2023, originCountry: 'China', destinationCountry: 'Germany', currentCheckpoint: 'Berlin Logistics Hub', ebsiStatus: 'pending', customsStatus: 'pending_inspection'},
-  { id: "DPP_GLOBE_003", lat: 41.9028, lng: 12.4964, name: "Italian Leather Goods Shipment", size: 0.25, category: 'Fashion', status: 'compliant', timestamp: 2023, originCountry: 'Italy', destinationCountry: 'USA', currentCheckpoint: 'Port of Genoa', ebsiStatus: 'verified', customsStatus: 'cleared' },
-  { id: "DPP_GLOBE_004", lat: 35.6895, lng: 139.6917, name: "Japanese Coffee Machine Import", size: 0.28, category: 'Appliances', status: 'issue', timestamp: 2024, originCountry: 'Japan', destinationCountry: 'Netherlands', currentCheckpoint: 'Customs, Port of Rotterdam', ebsiStatus: 'not_verified', customsStatus: 'flagged' },
-  { id: "DPP_GLOBE_005", lat: 34.0522, lng: -118.2437, name: "US Organic Textiles", size: 0.32, category: 'Textiles', status: 'compliant', timestamp: 2022, originCountry: 'USA', destinationCountry: 'Spain', currentCheckpoint: 'Barcelona Distribution Center', ebsiStatus: 'verified', customsStatus: 'cleared' },
-  { id: "DPP_GLOBE_006", lat: -33.8688, lng: 151.2093, name: "Australian Wine Export", size: 0.2, category: 'Beverages', status: 'pending', timestamp: 2024, originCountry: 'Australia', destinationCountry: 'United Kingdom', currentCheckpoint: 'UK Customs Check', ebsiStatus: 'pending', customsStatus: 'pending_inspection' },
-  { id: "DPP_GLOBE_007", lat: 39.9042, lng: 116.4074, name: "Chinese Solar Panels Batch", size: 0.35, category: 'Electronics', status: 'compliant', timestamp: 2023, originCountry: 'China', destinationCountry: 'Poland', currentCheckpoint: 'Warsaw Solar Farm Site', ebsiStatus: 'verified', customsStatus: 'cleared'},
-  { id: "DPP_GLOBE_008", lat: 51.5074, lng: -0.1278, name: "UK Pharma Supplies", size: 0.22, category: 'Pharmaceuticals', status: 'compliant', timestamp: 2024, originCountry: 'United Kingdom', destinationCountry: 'Ireland', currentCheckpoint: 'Dublin Medical Storage', ebsiStatus: 'verified', customsStatus: 'cleared'}
+// DRASTICALLY SIMPLIFIED MOCK DATA FOR DIAGNOSIS
+const diagnosticPoints: MockDppPoint[] = [
+  { id: "DIAG_001", lat: 48.8566, lng: 2.3522, name: "Test Point Paris", size: 0.5, category: 'Test', status: 'compliant', timestamp: 2023 },
+  { id: "DIAG_002", lat: 52.5200, lng: 13.4050, name: "Test Point Berlin", size: 0.5, category: 'Test', status: 'compliant', timestamp: 2023 },
 ];
-
-const mockArcsData: MockArc[] = [
-  { productId: "DPP_GLOBE_001", startLat: 52.5200, startLng: 13.4050, endLat: 48.8566, endLng: 2.3522, color: 'rgba(0, 255, 0, 0.5)', label: 'GER to FRA (Road)', timestamp: 2023, transportMode: 'road' },
-  { productId: "DPP_GLOBE_002", startLat: 22.3193, startLng: 114.1694, endLat: 52.5200, endLng: 13.4050, color: 'rgba(255, 0, 0, 0.5)', label: 'CHN to GER (Sea/Rail)', timestamp: 2023, transportMode: 'sea' },
-  { productId: "DPP_GLOBE_004", startLat: 35.6895, startLng: 139.6917, endLat: 51.9225, endLng: 4.47917, color: 'rgba(255,165,0,0.5)', label: 'JPN to NLD (Sea)', timestamp: 2024, transportMode: 'sea'},
-  { productId: "DPP_GLOBE_007", startLat: 39.9042, startLng: 116.4074, endLat: 52.2297, endLng: 21.0122, color: 'rgba(0,0,255,0.5)', label: 'CHN to POL (Rail)', timestamp: 2023, transportMode: 'rail'}
-];
-
-const euMemberCountryCodes = [ 'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE' ];
-const candidateCountryCodes = ['AL', 'BA', 'GE', 'MD', 'ME', 'MK', 'RS', 'TR', 'UA', 'XK']; // XK is Kosovo
-const otherEuropeanCountryCodes = [ 'AD', 'BY', 'CH', 'FO', 'GB', 'GG', 'GI', 'IM', 'IS', 'JE', 'LI', 'MC', 'NO', 'RU', 'SM', 'SJ', 'VA' ];
+const diagnosticArcs: MockArc[] = []; // No arcs for now
+const diagnosticLabels: any[] = []; // No labels for now
+const diagnosticPolygons: any[] = []; // No polygons for now
 
 
 const GlobeVisualization = ({
   points,
-  arcs,
-  labels,
-  polygonsData,
+  // arcs, // Temporarily disabled
+  // labels, // Temporarily disabled
+  // polygonsData, // Temporarily disabled
   onPointClick,
   onArcClick,
   pointColorAccessor,
   pointRadiusAccessor,
 }: {
   points: MockDppPoint[];
-  arcs: MockArc[];
-  labels: any[];
-  polygonsData: any[];
+  // arcs: MockArc[]; // Temporarily disabled
+  // labels: any[]; // Temporarily disabled
+  // polygonsData: any[]; // Temporarily disabled
   onPointClick: (point: MockDppPoint) => void;
   onArcClick: (arc: MockArc) => void;
   pointColorAccessor: (d: any) => string;
   pointRadiusAccessor: (d: any) => number;
 }) => {
   const globeEl = useRef<GlobeMethods | undefined>();
-  console.log("GlobeVisualization rendering/re-rendering. Polygons count:", polygonsData.length, "Points count:", points.length);
+  console.log("GlobeVisualization: Rendering. Points count:", points.length);
 
   useEffect(() => {
     console.log("GlobeVisualization: useEffect triggered.");
     if (globeEl.current) {
-      console.log("GlobeVisualization: Globe instance available. Setting initial view and controls.");
-      globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 1.7 });
-      globeEl.current.controls().autoRotate = false;
-      // globeEl.current.controls().autoRotateSpeed = 0.3; // Rotation is off
-      globeEl.current.controls().enableZoom = true;
-      globeEl.current.controls().minDistance = 100; // Allow closer zoom
-      globeEl.current.controls().maxDistance = 1000; // Limit zoom out
-      console.log("GlobeVisualization: Globe controls configured.");
+      console.log("GlobeVisualization: Globe instance (globeEl.current) IS available.");
+      try {
+        globeEl.current.pointOfView({ lat: 40, lng: 0, altitude: 4.5 }); // Zoomed out further, looking at Europe/Africa
+        console.log("GlobeVisualization: pointOfView set successfully.");
+        globeEl.current.controls().autoRotate = false;
+        console.log("GlobeVisualization: autoRotate set to false.");
+        globeEl.current.controls().enableZoom = true;
+        console.log("GlobeVisualization: enableZoom set to true.");
+        globeEl.current.controls().minDistance = 50; 
+        globeEl.current.controls().maxDistance = 1500;
+        console.log("GlobeVisualization: Globe controls configured.");
+      } catch (e) {
+        console.error("GlobeVisualization: Error configuring globe controls or POV", e);
+      }
     } else {
-      console.warn("GlobeVisualization: Globe instance (globeEl.current) not available in useEffect.");
+      console.warn("GlobeVisualization: Globe instance (globeEl.current) NOT available in useEffect.");
     }
   }, []);
 
   const globeProps: GlobeProps = {
-    globeImageUrl: '//unpkg.com/three-globe/example/img/earth-political.jpg',
-    bumpImageUrl: '//unpkg.com/three-globe/example/img/earth-topology.png',
-    backgroundColor: "rgba(222, 237, 250, 1)", // Light blue ocean
+    // globeImageUrl: '//unpkg.com/three-globe/example/img/earth-night.jpg', // Temporarily disabled for plain sphere
+    // bumpImageUrl: '//unpkg.com/three-globe/example/img/earth-topology.png', // Temporarily disabled
+    backgroundColor: "rgba(10, 10, 30, 1)", // Very dark ocean for contrast
 
     pointsData: points,
     pointLabel: 'name',
-    pointColor: pointColorAccessor,
-    pointRadius: pointRadiusAccessor,
+    pointColor: pointColorAccessor, // Will be bright red
+    pointRadius: pointRadiusAccessor, // Will be fixed small size
     pointAltitude: 0.02,
     onPointClick: (point: any) => {
-      console.log("Globe point clicked:", point);
+      console.log("GlobeVisualization: Globe point clicked:", point);
       onPointClick(point as MockDppPoint);
     },
 
-    arcsData: arcs,
-    arcLabel: 'label',
-    arcColor: 'color',
-    arcDashLength: 0.4,
-    arcDashGap: 0.1,
-    arcStroke: 0.8,
-    onArcClick: (arc: any) => {
-      console.log("Globe arc clicked: ", arc);
-      onArcClick(arc as MockArc);
-    },
+    // arcsData: arcs, // Temporarily disabled
+    // arcLabel: 'label',
+    // arcColor: 'color',
+    // arcDashLength: 0.4,
+    // arcDashGap: 0.1,
+    // arcStroke: 0.8,
+    // onArcClick: (arc: any) => {
+    //   console.log("GlobeVisualization: Globe arc clicked: ", arc);
+    //   onArcClick(arc as MockArc);
+    // },
 
-    labelsData: labels,
-    labelText: (d: any) => d.name,
-    labelSize: () => 0.20,
-    labelColor: () => 'rgba(255, 255, 255, 0.95)', // White labels for cities
-    labelDotRadius: () => 0.15,
-    labelAltitude: 0.015,
+    // labelsData: labels, // Temporarily disabled
+    // labelText: (d: any) => d.name,
+    // labelSize: () => 0.20,
+    // labelColor: () => 'rgba(255, 255, 255, 0.95)',
+    // labelDotRadius: () => 0.15,
+    // labelAltitude: 0.015,
 
-    polygonsData: polygonsData,
-    polygonCapColor: (feat: any) => {
-        const countryCode = feat.properties.ISO_A2_EH || feat.properties.ISO_A2 || feat.properties.ADM0_A3;
-        if (euMemberCountryCodes.includes(countryCode)) return 'rgba(0, 51, 153, 0.85)'; // EU Blue (Pantone 286C approximate)
-        if (candidateCountryCodes.includes(countryCode)) return 'rgba(173, 216, 230, 0.85)'; // Soft Blue/Green for candidates
-        if (otherEuropeanCountryCodes.includes(countryCode)) return 'rgba(225, 225, 210, 0.85)'; // Light Beige for other European
-        return 'rgba(200, 200, 200, 0.85)'; // Pale Gray for other non-EU
-    },
-    polygonSideColor: () => 'rgba(0, 0, 0, 0)', // Transparent sides
-    polygonStrokeColor: () => 'rgba(50, 50, 50, 0.7)', // Darker gray for borders
-    polygonAltitude: 0.008, // Keep polygons flat
+    // polygonsData: polygonsData, // Temporarily disabled
+    // polygonCapColor: () => 'rgba(0,0,0,0)', // Fully transparent fill
+    // polygonSideColor: () => 'rgba(0, 0, 0, 0)', 
+    // polygonStrokeColor: () => 'rgba(200, 200, 200, 0.5)', // Light stroke for borders
+    // polygonAltitude: 0.01,
   };
-  console.log("GlobeVisualization: GlobeProps prepared:", globeProps);
+  console.log("GlobeVisualization: GlobeProps prepared for rendering:", globeProps);
 
   return (
-    <div className="w-full h-full border-2 border-dashed border-red-500">
+    <div className="w-full h-full border-4 border-dashed border-red-700" style={{ position: 'relative', zIndex: 20 }}>
       <Globe ref={globeEl} {...globeProps} />
     </div>
   );
@@ -174,25 +167,25 @@ const GlobeVisualization = ({
 
 const DppGlobalTrackerClientContainer = ({
   points,
-  arcs,
-  labels,
-  polygonsData,
+  // arcs, // Temporarily disabled
+  // labels, // Temporarily disabled
+  // polygonsData, // Temporarily disabled
   onPointClick,
   onArcClick,
   pointColorAccessor,
   pointRadiusAccessor,
 }: {
   points: MockDppPoint[];
-  arcs: MockArc[];
-  labels: any[];
-  polygonsData: any[];
+  // arcs: MockArc[]; // Temporarily disabled
+  // labels: any[]; // Temporarily disabled
+  // polygonsData: any[]; // Temporarily disabled
   onPointClick: (point: MockDppPoint) => void;
   onArcClick: (arc: MockArc) => void;
   pointColorAccessor: (d: any) => string;
   pointRadiusAccessor: (d: any) => number;
 }) => {
   const [isClient, setIsClient] = useState(false);
-  console.log("DppGlobalTrackerClientContainer rendering. isClient:", isClient);
+  console.log("DppGlobalTrackerClientContainer: Rendering. isClient:", isClient);
 
   useEffect(() => {
     console.log("DppGlobalTrackerClientContainer: useEffect triggered. Setting isClient to true.");
@@ -204,24 +197,24 @@ const DppGlobalTrackerClientContainer = ({
     return (
       <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Loading Globe Context...</span>
+        <span className="ml-2">Loading Globe Context (Client Check)...</span>
       </div>
     );
   }
   console.log("DppGlobalTrackerClientContainer: Client is true, preparing to render Suspense for GlobeVisualization.");
   return (
-    <div className="w-full h-full border-2 border-dashed border-blue-500">
+    <div className="w-full h-full border-4 border-dashed border-blue-700" style={{ position: 'relative', zIndex: 10 }}>
       <Suspense fallback={
         <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2">Loading 3D Globe Visualization...</span>
+          <span className="ml-2">Loading 3D Globe Visualization (Suspense)...</span>
         </div>
       }>
         <GlobeVisualization
           points={points}
-          arcs={arcs}
-          labels={labels}
-          polygonsData={polygonsData}
+          // arcs={arcs} // Temporarily disabled
+          // labels={labels} // Temporarily disabled
+          // polygonsData={polygonsData} // Temporarily disabled
           onPointClick={onPointClick}
           onArcClick={onArcClick}
           pointColorAccessor={pointColorAccessor}
@@ -232,38 +225,6 @@ const DppGlobalTrackerClientContainer = ({
   );
 };
 
-const statusColors: Record<MockDppPoint['status'], string> = {
-  compliant: 'rgba(74, 222, 128, 0.9)',
-  pending: 'rgba(250, 204, 21, 0.9)',
-  issue: 'rgba(239, 68, 68, 0.9)',
-};
-
-const categoryColors: Record<string, string> = {
-  Appliances: 'rgba(59, 130, 246, 0.9)',
-  Electronics: 'rgba(168, 85, 247, 0.9)',
-  Textiles: 'rgba(236, 72, 153, 0.9)',
-  Fashion: 'rgba(236, 72, 153, 0.9)',
-  Automotive: 'rgba(245, 158, 11, 0.9)',
-  Furniture: 'rgba(161, 98, 7, 0.9)',
-  Beverages: 'rgba(34, 197, 94, 0.9)',
-  Pharmaceuticals: 'rgba(14, 165, 233, 0.9)',
-  Default: 'rgba(156, 163, 175, 0.9)',
-};
-
-const customsStatusColors: Record<NonNullable<MockDppPoint['customsStatus']>, string> = {
-  cleared: 'rgba(74, 222, 128, 0.9)',
-  flagged: 'rgba(245, 158, 11, 0.9)',
-  pending_inspection: 'rgba(250, 204, 21, 0.9)',
-  detained: 'rgba(239, 68, 68, 0.9)',
-  not_applicable: 'rgba(156, 163, 175, 0.9)',
-};
-
-const ebsiStatusColors: Record<NonNullable<MockDppPoint['ebsiStatus']>, string> = {
-  verified: 'rgba(74, 222, 128, 0.9)',
-  pending: 'rgba(250, 204, 21, 0.9)',
-  not_verified: 'rgba(239, 68, 68, 0.9)',
-  unknown: 'rgba(156, 163, 175, 0.9)',
-};
 
 const Legend = ({ title, colorMap }: { title: string; colorMap: Record<string, string> }) => (
   <Card className="mt-6 shadow-md">
@@ -278,132 +239,37 @@ const Legend = ({ title, colorMap }: { title: string; colorMap: Record<string, s
         </div>
       ))}
        <div className="flex items-center">
-        <Landmark className="h-3.5 w-3.5 mr-2 text-white" /> {/* Changed to text-white to show on various backgrounds */}
+        <Landmark className="h-3.5 w-3.5 mr-2 text-gray-700 dark:text-gray-300" />
         <span className="text-foreground/90">Major Cities</span>
       </div>
     </CardContent>
   </Card>
 );
 
-type ActiveLayer = 'status' | 'category' | 'customs' | 'ebsi';
-type StatusFilter = 'all' | MockDppPoint['status'];
-type CategoryFilter = 'all' | string;
-type CustomsStatusFilter = 'all' | NonNullable<MockDppPoint['customsStatus']>;
-type EbsiStatusFilter = 'all' | NonNullable<MockDppPoint['ebsiStatus']>;
-
-const availableStatuses: Array<{ value: StatusFilter; label: string }> = [
-  { value: "all", label: "All Product Statuses" },
-  { value: "compliant", label: "Compliant" },
-  { value: "pending", label: "Pending Review" },
-  { value: "issue", label: "Issue Reported" },
-];
-
-const availableCustomsStatuses: Array<{ value: CustomsStatusFilter; label: string }> = [
-  { value: "all", label: "All Customs Statuses" },
-  { value: "cleared", label: "Cleared" },
-  { value: "flagged", label: "Flagged" },
-  { value: "pending_inspection", label: "Pending Inspection" },
-  { value: "detained", label: "Detained" },
-  { value: "not_applicable", label: "Not Applicable" },
-];
-
-const availableEbsiStatuses: Array<{ value: EbsiStatusFilter; label: string }> = [
-  { value: "all", label: "All EBSI Statuses" },
-  { value: "verified", label: "Verified" },
-  { value: "pending", label: "Pending" },
-  { value: "not_verified", label: "Not Verified" },
-  { value: "unknown", label: "Unknown" },
-];
-
-
-const majorEuropeanCities = [
-  { lat: 48.8566, lng: 2.3522, name: "Paris", size: 0.3 }, { lat: 52.5200, lng: 13.4050, name: "Berlin", size: 0.3 },
-  { lat: 41.9028, lng: 12.4964, name: "Rome", size: 0.3 }, { lat: 40.4168, lng: -3.7038, name: "Madrid", size: 0.3 },
-  { lat: 51.5074, lng: -0.1278, name: "London", size: 0.3 }, { lat: 50.8503, lng: 4.3517, name: "Brussels", size: 0.25 },
-  { lat: 52.3676, lng: 4.9041, name: "Amsterdam", size: 0.25 }, { lat: 53.3498, lng: -6.2603, name: "Dublin", size: 0.25 },
-  { lat: 38.7223, lng: -9.1393, name: "Lisbon", size: 0.25 }, { lat: 48.2082, lng: 16.3738, name: "Vienna", size: 0.25 },
-  { lat: 50.0755, lng: 14.4378, name: "Prague", size: 0.25 }, { lat: 52.2297, lng: 21.0122, name: "Warsaw", size: 0.25 },
-  { lat: 47.4979, lng: 19.0402, name: "Budapest", size: 0.25 }, { lat: 55.6761, lng: 12.5683, name: "Copenhagen", size: 0.25 },
-  { lat: 59.3293, lng: 18.0686, name: "Stockholm", size: 0.25 }, { lat: 60.1699, lng: 24.9384, name: "Helsinki", size: 0.25 },
-  { lat: 37.9838, lng: 23.7275, name: "Athens", size: 0.25 },
-];
+// Not used in diagnostic mode
+const euMemberCountryCodes: string[] = [];
+const candidateCountryCodes: string[] = [];
+const otherEuropeanCountryCodes: string[] = [];
 
 export default function DppGlobalTrackerPage() {
-  console.log("DppGlobalTrackerPage rendering/re-rendering.");
-  const [isConceptVisible, setIsConceptVisible] = useState(false);
+  console.log("DppGlobalTrackerPage: Rendering/re-rendering.");
   const [selectedPoint, setSelectedPoint] = useState<MockDppPoint | null>(null);
   const [selectedArc, setSelectedArc] = useState<MockArc | null>(null);
-
-  const [activeLayer, setActiveLayer] = useState<ActiveLayer>('status');
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilter>('all');
-  const [customsStatusFilter, setCustomsStatusFilter] = useState<CustomsStatusFilter>('all');
-  const [ebsiStatusFilter, setEbsiStatusFilter] = useState<EbsiStatusFilter>('all');
-  const [pointBaseSize, setPointBaseSize] = useState<number>(0.6);
-
-  const [minYear, setMinYear] = useState(2022);
-  const [maxYear, setMaxYear] = useState(2024);
-  const [currentTime, setCurrentTime] = useState(maxYear);
-  const [countriesData, setCountriesData] = useState<any[]>([]);
-
-  const conceptDescription = `
-Core Idea:
-The EU Digital Product Passport (DPP) visualization tool is a dynamic, real-time, global tracker that enables stakeholders to monitor and manage the compliance of products within the EU and from external regions. This tool is designed to track whether products meet EU regulatory standards, help customs officers identify flagged items, and support inventory and supply chain managers in managing compliant products efficiently.
-
-Key Features:
-Global Map Visualization: Interactive globe for visualizing global product movement and compliance.
-Compliance Tracking: Real-time compliance status (compliant, non-compliant, under review).
-Customizable Views: Role-based access with customized views for different stakeholders.
-Detailed Product Information: Access product compliance documentation and data with a simple click.
-Product Journey Tracking: Track a product's journey across the globe and its compliance status at each checkpoint.
-Real-time Updates: Continuous tracking of new products, customs inspections, and regulatory changes.
-(Further details from expanded concept omitted for brevity in this mock UI section)
-`;
+  const [countriesData, setCountriesData] = useState<any[]>([]); // Keep for eventual re-enablement
 
   useEffect(() => {
-    console.log("DppGlobalTrackerPage: useEffect for timestamps and country data fetch triggered.");
-    const allTimestamps = [
-      ...mockDppsOnGlobe.map(p => p.timestamp),
-      ...mockArcsData.map(a => a.timestamp)
-    ].filter(ts => typeof ts === 'number');
-
-    if (allTimestamps.length > 0) {
-      const newMinYear = Math.min(...allTimestamps);
-      const newMaxYear = Math.max(...allTimestamps);
-      setMinYear(newMinYear);
-      setMaxYear(newMaxYear);
-      if (currentTime < newMinYear || currentTime > newMaxYear || currentTime === 0) {
-          setCurrentTime(newMaxYear);
-      }
-      console.log("Timestamps processed: minYear, maxYear, currentTime", newMinYear, newMaxYear, currentTime);
-    }
-
-    fetch('https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
-      .then(res => {
-        console.log("Countries GeoJSON response received.");
-        if (!res.ok) {
-          throw new Error(`HTTP error! status: ${res.status}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (data && data.features) {
-          setCountriesData(data.features);
-          console.log("Countries GeoJSON data.features processed and set to state. Count:", data.features.length);
-        } else {
-          console.error("Fetched countries data is not in expected GeoJSON format or has no features:", data);
-          setCountriesData([]);
-        }
-      })
-      .catch(err => {
-        console.error("Error fetching or processing countries GeoJSON data:", err);
-        setCountriesData([]);
-      });
+    console.log("DppGlobalTrackerPage: Main useEffect for data fetching triggered.");
+    // GeoJSON fetching is disabled for diagnostic mode.
+    // fetch('https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
+    //   .then(res => { /* ... */ })
+    //   .catch(err => { /* ... */ });
+    console.log("DppGlobalTrackerPage: GeoJSON fetching SKIPPED for diagnostic mode.");
+    setCountriesData(diagnosticPolygons); // Use empty diagnostic polygons
   }, []);
 
 
   const handlePointClick = useCallback((point: MockDppPoint) => {
-    console.log("Point clicked in DppGlobalTrackerPage:", point);
+    console.log("DppGlobalTrackerPage: Point clicked:", point);
     setSelectedPoint(point);
     setSelectedArc(null);
   }, []);
@@ -413,7 +279,7 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
   }, []);
 
   const handleArcClick = useCallback((arc: any) => {
-    console.log("Arc clicked in DppGlobalTrackerPage:", arc);
+    console.log("DppGlobalTrackerPage: Arc clicked:", arc);
     setSelectedArc(arc as MockArc);
     setSelectedPoint(null);
   }, []);
@@ -422,105 +288,54 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
     setSelectedArc(null);
   }, []);
 
-  const availableCategories = useMemo(() => {
-    const categories = new Set(mockDppsOnGlobe.map(p => p.category));
-    return Array.from(categories).sort();
-  }, []);
+  const pointColorAccessor = useCallback(() => 'rgba(255, 0, 0, 1)', []); // All points bright red
+  const pointRadiusAccessor = useCallback(() => 0.3, []); // Fixed small size for all points
 
-  const timeFilteredPoints = useMemo(() => {
-    console.log("Filtering points by time. Current time:", currentTime);
-    return mockDppsOnGlobe.filter(point => point.timestamp <= currentTime);
-  }, [currentTime]);
+  // Controls and complex filters are disabled for diagnostic mode
+  const [activeLayer, setActiveLayer] = useState<'status' | 'category' | 'customs' | 'ebsi'>('status');
+  const [statusFilter, setStatusFilter] = useState<'all' | MockDppPoint['status']>('all');
+  const [categoryFilter, setCategoryFilter] = useState<'all' | string>('all');
+  const [customsStatusFilter, setCustomsStatusFilter] = useState<'all' | NonNullable<MockDppPoint['customsStatus']>>('all');
+  const [ebsiStatusFilter, setEbsiStatusFilter] = useState<'all' | NonNullable<MockDppPoint['ebsiStatus']>>('all');
+  const [pointBaseSize, setPointBaseSize] = useState<number>(0.6);
+  const [minYear, setMinYear] = useState(2022);
+  const [maxYear, setMaxYear] = useState(2024);
+  const [currentTime, setCurrentTime] = useState(maxYear);
 
-  const filteredPoints = useMemo(() => {
-    return timeFilteredPoints.filter(point => {
-      if (statusFilter !== 'all' && point.status !== statusFilter) return false;
-      if (categoryFilter !== 'all' && point.category !== categoryFilter) return false;
-      if (customsStatusFilter !== 'all' && point.customsStatus !== customsStatusFilter) return false;
-      if (ebsiStatusFilter !== 'all' && point.ebsiStatus !== ebsiStatusFilter) return false;
-      return true;
-    });
-  }, [timeFilteredPoints, statusFilter, categoryFilter, customsStatusFilter, ebsiStatusFilter]);
-
-  const filteredArcs = useMemo(() => {
-    console.log("Filtering arcs by time. Current time:", currentTime);
-    return mockArcsData.filter(arc => arc.timestamp <= currentTime);
-  }, [currentTime]);
-
-  const pointColorAccessor = useCallback((d: any) => {
-    const point = d as MockDppPoint;
-    switch (activeLayer) {
-      case 'category': return categoryColors[point.category] || categoryColors.Default;
-      case 'customs': return point.customsStatus ? customsStatusColors[point.customsStatus] : categoryColors.Default;
-      case 'ebsi': return point.ebsiStatus ? ebsiStatusColors[point.ebsiStatus] : categoryColors.Default;
-      case 'status':
-      default:
-        return statusColors[point.status] || categoryColors.Default;
-    }
-  }, [activeLayer]);
-
-  const pointRadiusAccessor = useCallback((d: any) => {
-    return ((d as MockDppPoint).size || 0.5) * pointBaseSize;
-  }, [pointBaseSize]);
-
-  const currentMapColorScheme: Record<string, string> = {
-    "EU Members": 'rgba(0, 51, 153, 0.85)', // EU Blue
-    "Candidate Countries": 'rgba(173, 216, 230, 0.85)', // Soft Blue/Green
-    "Other European": 'rgba(225, 225, 210, 0.85)', // Light Beige
-    "Other Landmass": 'rgba(200, 200, 200, 0.85)', // Pale Gray
-    "Oceans": 'rgba(222, 237, 250, 1)' // Light Blue
-  };
-
-  const activeLegendMap = useMemo(() => {
-    switch (activeLayer) {
-      case 'category': return categoryColors;
-      case 'customs': return customsStatusColors;
-      case 'ebsi': return ebsiStatusColors;
-      case 'status':
-      default: return statusColors;
-    }
-  }, [activeLayer]);
-
-  const activeLegendTitle = useMemo(() => {
-    switch (activeLayer) {
-      case 'category': return "Product Category Colors";
-      case 'customs': return "Customs Status Colors";
-      case 'ebsi': return "EBSI Status Colors";
-      case 'status':
-      default: return "Product Status Colors";
-    }
-  }, [activeLayer]);
-
+  const diagnosticLegendMap: Record<string,string> = { "Test Point": "rgba(255,0,0,1)"};
 
   return (
-    <div className="space-y-8"> {/* Removed bg-card from here to use default app background */}
+    <div className="space-y-8 bg-background">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-headline font-semibold flex items-center">
           <GlobeIconLucide className="mr-3 h-8 w-8 text-primary" />
-          DPP Global Tracker
+          DPP Global Tracker (Diagnostic Mode)
         </h1>
       </div>
 
-      <Alert variant="default" className="bg-info/10 border-info/50 text-info-foreground">
-        <Info className="h-5 w-5 text-info" />
-        <AlertTitle className="font-semibold text-info">Stylized Globe View</AlertTitle>
+      <Alert variant="destructive" className="border-red-500/50 text-red-700">
+        <Info className="h-5 w-5" />
+        <AlertTitle className="font-semibold">Diagnostic Mode Active</AlertTitle>
         <AlertDescription>
-          Globe visualization styled to highlight EU and other regions. Points and arcs are re-enabled. City labels are active. Check browser console for logs.
+          Globe visualization is highly simplified to diagnose rendering issues. Textures, country polygons, arcs, and labels are disabled. Points are bright red. Ocean is dark. Container backgrounds/borders are prominent. Check browser console for logs.
         </AlertDescription>
       </Alert>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>EU Digital Product Passport Visualization</CardTitle>
-          <CardDescription>Interactive globe focused on European Union regions, candidate countries, and global context.</CardDescription>
+          <CardTitle>Globe Visualization Container</CardTitle>
+          <CardDescription>The globe should appear within the blue dashed border below. The globe itself will have a red dashed border.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="w-full h-[600px] rounded-md overflow-hidden border relative bg-card"> {/* bg-card here makes the globe container white */}
+          <div 
+            className="w-full h-[600px] rounded-md overflow-hidden border relative bg-lime-300 dark:bg-lime-700" 
+            style={{ position: 'relative', zIndex: 1 }}
+          > {/* Bright background for the globe's parent */}
             <DppGlobalTrackerClientContainer
-              points={filteredPoints}
-              arcs={filteredArcs}
-              labels={majorEuropeanCities}
-              polygonsData={countriesData}
+              points={diagnosticPoints} // Use simplified diagnostic points
+              // arcs={diagnosticArcs} // Temporarily disabled
+              // labels={diagnosticLabels} // Temporarily disabled
+              // polygonsData={countriesData} // Temporarily disabled for diagnostics
               onPointClick={handlePointClick}
               onArcClick={handleArcClick}
               pointColorAccessor={pointColorAccessor}
@@ -529,107 +344,55 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
             {selectedPoint && <PointInfoCard pointData={selectedPoint} onClose={handleCloseInfoCard} />}
             {selectedArc && <ArcInfoCard arcData={selectedArc} onClose={handleCloseArcInfoCard} />}
           </div>
-
-          <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-6">
-            <Card className="lg:col-span-1">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-md font-headline flex items-center">
-                  <Layers className="mr-2 h-4 w-4 text-primary" /> Data Layers
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <RadioGroup value={activeLayer} onValueChange={(value) => setActiveLayer(value as ActiveLayer)} className="flex flex-col space-y-2">
-                  <Label className="font-medium text-sm">Color Points By:</Label>
-                  <div className="flex items-center space-x-2"><RadioGroupItem value="status" id="layer-status" /><Label htmlFor="layer-status" className="text-xs">Product Status</Label></div>
-                  <div className="flex items-center space-x-2"><RadioGroupItem value="category" id="layer-category" /><Label htmlFor="layer-category" className="text-xs">Category</Label></div>
-                  <div className="flex items-center space-x-2"><RadioGroupItem value="customs" id="layer-customs" /><Label htmlFor="layer-customs" className="text-xs">Customs Status</Label></div>
-                  <div className="flex items-center space-x-2"><RadioGroupItem value="ebsi" id="layer-ebsi" /><Label htmlFor="layer-ebsi" className="text-xs">EBSI Status</Label></div>
-                </RadioGroup>
-              </CardContent>
-            </Card>
-            
-            <Card className="lg:col-span-2">
-              <CardHeader className="pb-3">
-                 <CardTitle className="text-md font-headline flex items-center">
-                    <FilterIcon className="mr-2 h-4 w-4 text-primary" /> Filters
-                 </CardTitle>
-              </CardHeader>
-              <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
-                <div>
-                  <Label htmlFor="status-filter" className="text-xs">Product Status</Label>
-                  <Select value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
-                    <SelectTrigger id="status-filter"><SelectValue /></SelectTrigger>
-                    <SelectContent>{availableStatuses.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                 <div>
-                  <Label htmlFor="category-filter" className="text-xs">Product Category</Label>
-                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                    <SelectTrigger id="category-filter"><SelectValue /></SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {availableCategories.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
-                 <div>
-                  <Label htmlFor="customs-status-filter" className="text-xs">Customs Status</Label>
-                  <Select value={customsStatusFilter} onValueChange={(v) => setCustomsStatusFilter(v as CustomsStatusFilter)}>
-                    <SelectTrigger id="customs-status-filter"><SelectValue /></SelectTrigger>
-                    <SelectContent>{availableCustomsStatuses.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                 <div>
-                  <Label htmlFor="ebsi-status-filter" className="text-xs">EBSI Status</Label>
-                  <Select value={ebsiStatusFilter} onValueChange={(v) => setEbsiStatusFilter(v as EbsiStatusFilter)}>
-                    <SelectTrigger id="ebsi-status-filter"><SelectValue /></SelectTrigger>
-                    <SelectContent>{availableEbsiStatuses.map(s => <SelectItem key={s.value} value={s.value}>{s.label}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
           
-          <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-1">
-              <Card>
+          {/* Controls are disabled for diagnostic mode to simplify rendering */}
+          <div className="opacity-50 pointer-events-none">
+            <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-6">
+              <Card className="lg:col-span-1">
                 <CardHeader className="pb-3">
                   <CardTitle className="text-md font-headline flex items-center">
-                    <MapIcon className="mr-2 h-4 w-4 text-primary" />View Options
+                    <Layers className="mr-2 h-4 w-4 text-primary" /> Data Layers (Disabled)
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
-                  <div>
-                    <Label htmlFor="point-size-slider" className="text-xs">Point Size: {pointBaseSize.toFixed(1)}x</Label>
-                    <Slider id="point-size-slider" min={0.2} max={2} step={0.1} value={[pointBaseSize]} onValueChange={([v]) => setPointBaseSize(v)} className="mt-1" />
-                  </div>
-                  <div>
-                    <Label htmlFor="time-slider" className="text-xs flex items-center"><CalendarClock className="mr-1.5 h-3.5 w-3.5" />Timeline Year: {currentTime}</Label>
-                    {(minYear < maxYear) && <Slider id="time-slider" min={minYear} max={maxYear} step={1} value={[currentTime]} onValueChange={([v]) => setCurrentTime(v)} className="mt-1" />}
-                    {minYear === maxYear && <p className="text-xs text-muted-foreground mt-1">Data for {minYear}.</p>}
-                  </div>
+                <CardContent className="space-y-4">
+                  <RadioGroup value={activeLayer} disabled><Label className="text-xs">Color Points By: ...</Label></RadioGroup>
+                </CardContent>
+              </Card>
+              <Card className="lg:col-span-2">
+                <CardHeader className="pb-3">
+                  <CardTitle className="text-md font-headline flex items-center">
+                      <FilterIcon className="mr-2 h-4 w-4 text-primary" /> Filters (Disabled)
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-4">
+                  <div><Label htmlFor="status-filter" className="text-xs">Product Status</Label><Select disabled><SelectTrigger><SelectValue/></SelectTrigger></Select></div>
+                  <div><Label htmlFor="category-filter" className="text-xs">Product Category</Label><Select disabled><SelectTrigger><SelectValue/></SelectTrigger></Select></div>
                 </CardContent>
               </Card>
             </div>
-            <div className="lg:col-span-2">
-                <Legend title={activeLegendTitle} colorMap={activeLegendMap} />
-                 <Legend title="Region Color Key" colorMap={currentMapColorScheme} />
+            <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+              <div className="lg:col-span-1">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-md font-headline flex items-center">
+                      <MapIcon className="mr-2 h-4 w-4 text-primary" />View Options (Disabled)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3">
+                    <div><Label className="text-xs">Point Size: ...</Label><Slider disabled /></div>
+                    <div><Label className="text-xs flex items-center"><CalendarClock className="mr-1.5 h-3.5 w-3.5" />Timeline Year: ...</Label><Slider disabled /></div>
+                  </CardContent>
+                </Card>
+              </div>
+              <div className="lg:col-span-2">
+                  <Legend title="Diagnostic Legend" colorMap={diagnosticLegendMap} />
+              </div>
             </div>
           </div>
+
         </CardContent>
       </Card>
 
-      <Card className="shadow-lg">
-        <CardHeader className="flex flex-row justify-between items-center cursor-pointer" onClick={() => setIsConceptVisible(!isConceptVisible)}>
-          <div><CardTitle className="font-headline">About This Concept</CardTitle><CardDescription>Vision for the DPP Global Tracker.</CardDescription></div>
-          <Button variant="ghost" size="icon">{isConceptVisible ? <ChevronUp /> : <ChevronDown />}</Button>
-        </CardHeader>
-        {isConceptVisible && (
-          <CardContent className="pt-0">
-             <div className="prose prose-sm dark:prose-invert max-w-none max-h-96 overflow-y-auto"><pre>{conceptDescription}</pre></div>
-          </CardContent>
-        )}
-      </Card>
     </div>
   );
 }

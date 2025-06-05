@@ -75,7 +75,7 @@ const mockArcsData: MockArc[] = [
 ];
 
 const euMemberCountryCodes = ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'];
-const candidateCountryCodes = ['AL', 'BA', 'GE', 'MD', 'ME', 'MK', 'RS', 'TR', 'UA', 'XK']; // Kosovo is XK
+const candidateCountryCodes = ['AL', 'BA', 'GE', 'MD', 'ME', 'MK', 'RS', 'TR', 'UA', 'XK'];
 const otherEuropeanCountryCodes = ['AD', 'BY', 'CH', 'FO', 'GB', 'GG', 'GI', 'IM', 'IS', 'JE', 'LI', 'MC', 'NO', 'RU', 'SM', 'SJ', 'VA'];
 
 
@@ -107,7 +107,6 @@ const GlobeVisualization = ({
       console.log("GlobeVisualization: Globe instance available. Setting initial view and controls.");
       globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 1.7 });
       globeEl.current.controls().autoRotate = false;
-      // globeEl.current.controls().autoRotateSpeed = 0.3; // Kept commented
       globeEl.current.controls().enableZoom = true;
       globeEl.current.controls().minDistance = 100;
       globeEl.current.controls().maxDistance = 1000;
@@ -118,28 +117,27 @@ const GlobeVisualization = ({
   }, []);
 
   const globeProps: GlobeProps = {
-    // globeImageUrl: '//unpkg.com/three-globe/example/img/earth-political.jpg',
-    // bumpImageUrl: '//unpkg.com/three-globe/example/img/earth-topology.png',
-    globeImageUrl: null, // No base texture for plain sphere initially
+    globeImageUrl: '//unpkg.com/three-globe/example/img/earth-political.jpg', // Using a political map texture
+    bumpImageUrl: '//unpkg.com/three-globe/example/img/earth-topology.png',
     backgroundColor: "rgba(222, 237, 250, 1)", // Light blue ocean
 
-    pointsData: points, // Temporarily re-enabled
-    pointLabel: 'name', // Temporarily re-enabled
-    pointColor: pointColorAccessor, // Temporarily re-enabled
-    pointRadius: pointRadiusAccessor, // Temporarily re-enabled
-    pointAltitude: 0.02, // Temporarily re-enabled
-    onPointClick: (point: any) => { // Temporarily re-enabled
+    pointsData: points,
+    pointLabel: 'name',
+    pointColor: pointColorAccessor,
+    pointRadius: pointRadiusAccessor,
+    pointAltitude: 0.02,
+    onPointClick: (point: any) => {
       console.log("Globe point clicked:", point);
       onPointClick(point as MockDppPoint);
     },
 
-    arcsData: arcs, // Temporarily re-enabled
-    arcLabel: 'label', // Temporarily re-enabled
-    arcColor: 'color', // Temporarily re-enabled
-    arcDashLength: 0.4, // Temporarily re-enabled
-    arcDashGap: 0.1, // Temporarily re-enabled
-    arcStroke: 0.8, // Temporarily re-enabled
-    onArcClick: (arc: any) => { // Temporarily re-enabled
+    arcsData: arcs,
+    arcLabel: 'label',
+    arcColor: 'color',
+    arcDashLength: 0.4,
+    arcDashGap: 0.1,
+    arcStroke: 0.8,
+    onArcClick: (arc: any) => {
       console.log("Globe arc clicked: ", arc);
       onArcClick(arc as MockArc);
     },
@@ -159,7 +157,7 @@ const GlobeVisualization = ({
         if (otherEuropeanCountryCodes.includes(countryCode)) return 'rgba(225, 225, 210, 0.85)'; // Light Beige for other European
         return 'rgba(200, 200, 200, 0.85)'; // Pale Gray for other non-EU
     },
-    polygonSideColor: () => 'rgba(0, 0, 0, 0)',
+    polygonSideColor: () => 'rgba(0, 0, 0, 0)', // Transparent sides
     polygonStrokeColor: () => 'rgba(50, 50, 50, 0.7)', // Darker gray for borders
     polygonAltitude: 0.008,
   };
@@ -279,7 +277,7 @@ const Legend = ({ title, colorMap }: { title: string; colorMap: Record<string, s
         </div>
       ))}
        <div className="flex items-center">
-        <Landmark className="h-3.5 w-3.5 mr-2 text-white" />
+        <Landmark className="h-3.5 w-3.5 mr-2 text-white" /> {/* Changed to text-white to show on various backgrounds */}
         <span className="text-foreground/90">Major Cities</span>
       </div>
     </CardContent>
@@ -494,7 +492,7 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
 
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-card"> {/* Added bg-card here for white background */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-headline font-semibold flex items-center">
           <GlobeIconLucide className="mr-3 h-8 w-8 text-primary" />
@@ -506,7 +504,7 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
         <Info className="h-5 w-5 text-info" />
         <AlertTitle className="font-semibold text-info">Stylized Globe View</AlertTitle>
         <AlertDescription>
-          Globe visualization styled to highlight EU and other regions. Points and arcs are temporarily re-enabled. City labels are active. Check browser console for logs.
+          Globe visualization styled to highlight EU and other regions. Points and arcs are re-enabled. City labels are active. Check browser console for logs.
         </AlertDescription>
       </Alert>
 

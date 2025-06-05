@@ -601,7 +601,29 @@ export default function ProductDetailPage() {
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge variant={ product.status === "Active" ? "default" : product.status === "Archived" ? "secondary" : "outline" } className={cn( product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", product.status === "Draft" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {product.status} </Badge>
-            <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> <span><Badge variant={ product.compliance === "Compliant" ? "default" : product.compliance === "Pending Documentation" ? "outline" : product.compliance === "Pending" ? "outline" : product.compliance === "N/A" ? "secondary" : "destructive" } className={cn( product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", (product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "", product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" : "" ,"cursor-help" )}> {product.compliance} {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />} {(product.compliance === "Pending" || product.compliance === "Pending Documentation") && <Info className="h-3 w-3 ml-1" />} {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1" />} </Badge></span> </TooltipTrigger> <TooltipContent> <p>Overall compliance status. Last checked: {product.complianceLastChecked ? new Date(product.complianceLastChecked).toLocaleDateString() : "N/A"}</p> </TooltipContent> </Tooltip> </TooltipProvider>
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <span>
+                  <Badge
+                    variant={ product.compliance === "Compliant" ? "default" : product.compliance === "Pending Documentation" ? "outline" : product.compliance === "Pending" ? "outline" : product.compliance === "N/A" ? "secondary" : "destructive" }
+                    className={cn(
+                      product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "",
+                      (product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "",
+                      product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" : "",
+                      "cursor-help"
+                    )}
+                  >
+                    {product.compliance}
+                    {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />}
+                    {(product.compliance === "Pending" || product.compliance === "Pending Documentation") && <Info className="h-3 w-3 ml-1" />}
+                    {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1" />}
+                  </Badge>
+                </span>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Overall compliance status. Last checked: {product.complianceLastChecked ? new Date(product.complianceLastChecked).toLocaleDateString() : "N/A"}</p>
+              </TooltipContent>
+            </Tooltip>
             <span className="text-sm text-muted-foreground">Last updated: {new Date(product.lastUpdated).toLocaleDateString()}</span>
           </div>
         </div>
@@ -852,3 +874,6 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
+
+
+    

@@ -74,9 +74,9 @@ const mockArcsData: MockArc[] = [
   { productId: "DPP_GLOBE_007", startLat: 39.9042, startLng: 116.4074, endLat: 52.2297, endLng: 21.0122, color: 'rgba(0,0,255,0.5)', label: 'CHN to POL (Rail)', timestamp: 2023, transportMode: 'rail'}
 ];
 
-const euMemberCountryCodes = ['AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'];
-const candidateCountryCodes = ['AL', 'BA', 'GE', 'MD', 'ME', 'MK', 'RS', 'TR', 'UA', 'XK'];
-const otherEuropeanCountryCodes = ['AD', 'BY', 'CH', 'FO', 'GB', 'GG', 'GI', 'IM', 'IS', 'JE', 'LI', 'MC', 'NO', 'RU', 'SM', 'SJ', 'VA'];
+const euMemberCountryCodes = [ 'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE' ];
+const candidateCountryCodes = ['AL', 'BA', 'GE', 'MD', 'ME', 'MK', 'RS', 'TR', 'UA', 'XK']; // XK is Kosovo
+const otherEuropeanCountryCodes = [ 'AD', 'BY', 'CH', 'FO', 'GB', 'GG', 'GI', 'IM', 'IS', 'JE', 'LI', 'MC', 'NO', 'RU', 'SM', 'SJ', 'VA' ];
 
 
 const GlobeVisualization = ({
@@ -107,9 +107,10 @@ const GlobeVisualization = ({
       console.log("GlobeVisualization: Globe instance available. Setting initial view and controls.");
       globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 1.7 });
       globeEl.current.controls().autoRotate = false;
+      // globeEl.current.controls().autoRotateSpeed = 0.3; // Rotation is off
       globeEl.current.controls().enableZoom = true;
-      globeEl.current.controls().minDistance = 100;
-      globeEl.current.controls().maxDistance = 1000;
+      globeEl.current.controls().minDistance = 100; // Allow closer zoom
+      globeEl.current.controls().maxDistance = 1000; // Limit zoom out
       console.log("GlobeVisualization: Globe controls configured.");
     } else {
       console.warn("GlobeVisualization: Globe instance (globeEl.current) not available in useEffect.");
@@ -117,7 +118,7 @@ const GlobeVisualization = ({
   }, []);
 
   const globeProps: GlobeProps = {
-    globeImageUrl: '//unpkg.com/three-globe/example/img/earth-political.jpg', // Using a political map texture
+    globeImageUrl: '//unpkg.com/three-globe/example/img/earth-political.jpg',
     bumpImageUrl: '//unpkg.com/three-globe/example/img/earth-topology.png',
     backgroundColor: "rgba(222, 237, 250, 1)", // Light blue ocean
 
@@ -145,21 +146,21 @@ const GlobeVisualization = ({
     labelsData: labels,
     labelText: (d: any) => d.name,
     labelSize: () => 0.20,
-    labelColor: () => 'rgba(255, 255, 255, 0.95)',
+    labelColor: () => 'rgba(255, 255, 255, 0.95)', // White labels for cities
     labelDotRadius: () => 0.15,
     labelAltitude: 0.015,
 
     polygonsData: polygonsData,
     polygonCapColor: (feat: any) => {
         const countryCode = feat.properties.ISO_A2_EH || feat.properties.ISO_A2 || feat.properties.ADM0_A3;
-        if (euMemberCountryCodes.includes(countryCode)) return 'rgba(0, 51, 153, 0.85)'; // EU Blue
+        if (euMemberCountryCodes.includes(countryCode)) return 'rgba(0, 51, 153, 0.85)'; // EU Blue (Pantone 286C approximate)
         if (candidateCountryCodes.includes(countryCode)) return 'rgba(173, 216, 230, 0.85)'; // Soft Blue/Green for candidates
         if (otherEuropeanCountryCodes.includes(countryCode)) return 'rgba(225, 225, 210, 0.85)'; // Light Beige for other European
         return 'rgba(200, 200, 200, 0.85)'; // Pale Gray for other non-EU
     },
     polygonSideColor: () => 'rgba(0, 0, 0, 0)', // Transparent sides
     polygonStrokeColor: () => 'rgba(50, 50, 50, 0.7)', // Darker gray for borders
-    polygonAltitude: 0.008,
+    polygonAltitude: 0.008, // Keep polygons flat
   };
   console.log("GlobeVisualization: GlobeProps prepared:", globeProps);
 
@@ -463,11 +464,11 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
   }, [pointBaseSize]);
 
   const currentMapColorScheme: Record<string, string> = {
-    "EU Members": 'rgba(0, 51, 153, 0.85)',
-    "Candidate Countries": 'rgba(173, 216, 230, 0.85)',
-    "Other European": 'rgba(225, 225, 210, 0.85)',
-    "Other Landmass": 'rgba(200, 200, 200, 0.85)',
-    "Oceans": 'rgba(222, 237, 250, 1)'
+    "EU Members": 'rgba(0, 51, 153, 0.85)', // EU Blue
+    "Candidate Countries": 'rgba(173, 216, 230, 0.85)', // Soft Blue/Green
+    "Other European": 'rgba(225, 225, 210, 0.85)', // Light Beige
+    "Other Landmass": 'rgba(200, 200, 200, 0.85)', // Pale Gray
+    "Oceans": 'rgba(222, 237, 250, 1)' // Light Blue
   };
 
   const activeLegendMap = useMemo(() => {
@@ -492,7 +493,7 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
 
 
   return (
-    <div className="space-y-8 bg-card"> {/* Added bg-card here for white background */}
+    <div className="space-y-8"> {/* Removed bg-card from here to use default app background */}
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-headline font-semibold flex items-center">
           <GlobeIconLucide className="mr-3 h-8 w-8 text-primary" />
@@ -514,7 +515,7 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
           <CardDescription>Interactive globe focused on European Union regions, candidate countries, and global context.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="w-full h-[600px] rounded-md overflow-hidden border relative bg-card">
+          <div className="w-full h-[600px] rounded-md overflow-hidden border relative bg-card"> {/* bg-card here makes the globe container white */}
             <DppGlobalTrackerClientContainer
               points={filteredPoints}
               arcs={filteredArcs}
@@ -632,3 +633,4 @@ Real-time Updates: Continuous tracking of new products, customs inspections, and
     </div>
   );
 }
+

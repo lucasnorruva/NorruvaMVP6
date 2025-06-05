@@ -14,7 +14,8 @@ import {
   Info,
   Code2,
   LineChart,
-  ListChecks // Added for Compliance Pathways
+  ListChecks,
+  BarChartHorizontal // Added for Compare Sustainability
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import {
@@ -35,9 +36,10 @@ const navItems = [
   { href: "/products", label: "Products", icon: Package },
   { href: "/products/new", label: "Add Product", icon: ScanLine },
   { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
-  { href: "/compliance/pathways/battery-regulation", label: "Compliance Pathways", icon: ListChecks }, // Added New Pathway Link
+  { href: "/compliance/pathways/battery-regulation", label: "Compliance Pathways", icon: ListChecks },
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
-  { href: "/sustainability", label: "Sustainability", icon: FileText },
+  { href: "/sustainability", label: "Sustainability Reporting", icon: FileText },
+  { href: "/sustainability/compare", label: "Compare Sustainability", icon: BarChartHorizontal }, // New Item
 ];
 
 const secondaryNavItems = [
@@ -51,15 +53,20 @@ export default function AppSidebarContent() {
 
   const commonButtonClass = (href: string) => {
     let isActive = false;
-    if (href === "/products") {
-      isActive = pathname === href || (pathname.startsWith(href + "/") && !pathname.endsWith("/new"));
-    } else if (href === "/products/new") {
-      isActive = pathname === href;
-    } else if (href === "/settings" || href === "/developer" || href.startsWith("/compliance/pathways")) { // Updated for pathways
-      isActive = pathname === href || pathname.startsWith(href);
-    } else {
-      isActive = pathname === href;
+    // General rule: active if current path starts with item's href
+    isActive = pathname.startsWith(href);
+
+    // Specific overrides for more precise matching if needed
+    if (href === "/products" && pathname.startsWith("/products/") && pathname.endsWith("/new")) {
+      isActive = false; // "/products/new" should not make "/products" active
+    } else if (href === "/products" && (pathname === href || (pathname.startsWith(href + "/") && !pathname.endsWith("/new")))) {
+       isActive = true;
+    } else if (href === "/dashboard" && pathname !== href) { // Exact match for dashboard
+      isActive = false;
+    } else if (href === "/sustainability" && pathname.startsWith("/sustainability/compare")) {
+        isActive = false; // "/sustainability/compare" should not make "/sustainability" active
     }
+
 
     return cn(
       "w-full text-sm",

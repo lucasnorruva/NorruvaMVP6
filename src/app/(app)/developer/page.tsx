@@ -6,21 +6,24 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon } from "lucide-react";
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
 const mockApiKeys = [
   { id: "key_sandbox_1", key: "sand_sk_xxxx1234ABCD...", type: "Sandbox", created: "2024-07-01", lastUsed: "2024-07-28", status: "Active" },
-  { id: "key_prod_1", key: "prod_sk_xxxx5678EFGH...", type: "Production", created: "2024-07-15", lastUsed: "N/A", status: "Pending Approval" },
+  { id: "key_prod_req_1", key: "N/A (Request Pending)", type: "Production", created: "2024-07-25", lastUsed: "N/A", status: "Pending Approval" },
+  { id: "key_prod_active_1", key: "prod_sk_xxxx5678EFGH...", type: "Production", created: "2024-06-15", lastUsed: "2024-07-29", status: "Active" },
 ];
 
 const mockWebhooks = [
-  { id: "wh_1", url: "https://api.example.com/webhook/product-updates", events: ["product.created", "product.updated"], status: "Active" },
+  { id: "wh_1", url: "https://api.example.com/webhook/product-updates", events: ["product.created", "product.updated", "dpp.status.changed"], status: "Active" },
   { id: "wh_2", url: "https://api.example.com/webhook/compliance-changes", events: ["compliance.status.changed"], status: "Disabled" },
+  { id: "wh_3", url: "https://user.integrations.com/norruva/events", events: ["product.lifecycle.event.added", "product.deleted"], status: "Active" },
 ];
 
 // Simplified mock product data for API responses
@@ -35,9 +38,12 @@ const MOCK_API_PRODUCTS: Record<string, any> = {
     gtin: "01234567890123",
     energyLabel: "A+++",
     compliance: {
-      REACH: "Compliant",
-      RoHS: "Compliant"
-    }
+      REACH: { status: "Compliant", lastChecked: "2024-07-01" },
+      RoHS: { status: "Compliant", lastChecked: "2024-07-01" }
+    },
+    lifecycleEvents: [
+        { eventId: "EVT001", type: "Manufactured", timestamp: "2024-01-15T08:00:00Z", location: "EcoFactory, Germany" }
+    ]
   },
   "PROD002": {
     productId: "PROD002",
@@ -49,12 +55,36 @@ const MOCK_API_PRODUCTS: Record<string, any> = {
     gtin: "98765432109876",
     energyLabel: "A+",
     compliance: {
-      RoHS: "Compliant",
-      CE_Mark: "Compliant",
-      Battery_Regulation: "Pending Documentation"
-    }
+      RoHS: { status: "Compliant", lastChecked: "2024-07-01" },
+      CE_Mark: { status: "Compliant", lastChecked: "2024-07-01" },
+      Battery_Regulation: { status: "Pending Documentation", lastChecked: "2024-07-20"}
+    },
+    lifecycleEvents: []
   }
 };
+
+const MOCK_COMPLIANCE_SUMMARIES: Record<string, any> = {
+    "PROD001": {
+        productId: "PROD001",
+        overallStatus: "Compliant",
+        details: [
+            { regulation: "REACH", status: "Compliant", lastChecked: "2024-07-01", evidenceLink: "/docs/PROD001/REACH.pdf" },
+            { regulation: "RoHS", status: "Compliant", lastChecked: "2024-07-01", evidenceLink: "/docs/PROD001/RoHS.pdf" },
+            { regulation: "WEEE", status: "Compliant", lastChecked: "2024-07-01", evidenceLink: "/docs/PROD001/WEEE.pdf" }
+        ],
+        nextReviewDate: "2025-07-01"
+    },
+    "PROD002": {
+        productId: "PROD002",
+        overallStatus: "Pending Documentation",
+        details: [
+            { regulation: "RoHS", status: "Compliant", lastChecked: "2024-07-01" },
+            { regulation: "CE Mark", status: "Compliant", lastChecked: "2024-07-01" },
+            { regulation: "EU Battery Regulation", status: "Pending Documentation", lastChecked: "2024-07-20", notes: "Awaiting battery chemistry details from supplier." }
+        ],
+        nextReviewDate: "2024-08-15"
+    }
+}
 
 export default function DeveloperPortalPage() {
   const { toast } = useToast();
@@ -65,8 +95,24 @@ export default function DeveloperPortalPage() {
 
   const [listProductsResponse, setListProductsResponse] = useState<string | null>(null);
   const [isListProductsLoading, setIsListProductsLoading] = useState(false);
+  
+  const [postLifecycleEventProductId, setPostLifecycleEventProductId] = useState<string>("PROD001");
+  const [postLifecycleEventBody, setPostLifecycleEventBody] = useState<string>(
+    JSON.stringify({ eventType: "Shipped", location: "Warehouse B", details: "Order #SO12345" }, null, 2)
+  );
+  const [postLifecycleEventResponse, setPostLifecycleEventResponse] = useState<string | null>(null);
+  const [isPostLifecycleEventLoading, setIsPostLifecycleEventLoading] = useState(false);
+
+  const [getComplianceProductId, setGetComplianceProductId] = useState<string>("PROD001");
+  const [getComplianceResponse, setGetComplianceResponse] = useState<string | null>(null);
+  const [isGetComplianceLoading, setIsGetComplianceLoading] = useState(false);
+
 
   const handleCopyKey = (apiKey: string) => {
+    if (apiKey.startsWith("N/A")) {
+        toast({ title: "Key Not Available", description: "This key is pending approval or not yet generated."});
+        return;
+    }
     navigator.clipboard.writeText(apiKey);
     toast({
       title: "API Key Copied!",
@@ -77,7 +123,7 @@ export default function DeveloperPortalPage() {
   const handleMockGetProductDetails = async () => {
     setIsGetProductLoading(true);
     setGetProductResponse(null);
-    await new Promise(resolve => setTimeout(resolve, 700)); // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 700)); 
     const product = MOCK_API_PRODUCTS[getProductId];
     if (product) {
       setGetProductResponse(JSON.stringify(product, null, 2));
@@ -90,11 +136,11 @@ export default function DeveloperPortalPage() {
   const handleMockListProducts = async () => {
     setIsListProductsLoading(true);
     setListProductsResponse(null);
-    await new Promise(resolve => setTimeout(resolve, 500)); // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 500)); 
     const response = {
-      data: [MOCK_API_PRODUCTS["PROD001"], MOCK_API_PRODUCTS["PROD002"]],
+      data: Object.values(MOCK_API_PRODUCTS),
       pageInfo: {
-        totalCount: 2,
+        totalCount: Object.keys(MOCK_API_PRODUCTS).length,
         hasNextPage: false,
       }
     };
@@ -102,20 +148,56 @@ export default function DeveloperPortalPage() {
     setIsListProductsLoading(false);
   };
 
+  const handleMockPostLifecycleEvent = async () => {
+    setIsPostLifecycleEventLoading(true);
+    setPostLifecycleEventResponse(null);
+    await new Promise(resolve => setTimeout(resolve, 600));
+    try {
+        const requestBody = JSON.parse(postLifecycleEventBody);
+        if (!MOCK_API_PRODUCTS[postLifecycleEventProductId]) {
+            setPostLifecycleEventResponse(JSON.stringify({ error: "Product not found", productId: postLifecycleEventProductId }, null, 2));
+            return;
+        }
+        const response = {
+            success: true,
+            eventId: `EVT_MOCK_${Date.now().toString().slice(-5)}`,
+            productId: postLifecycleEventProductId,
+            message: "Lifecycle event added successfully (mock).",
+            receivedData: requestBody
+        };
+        setPostLifecycleEventResponse(JSON.stringify(response, null, 2));
+    } catch (e) {
+        setPostLifecycleEventResponse(JSON.stringify({ error: "Invalid JSON in request body.", details: e instanceof Error ? e.message : String(e) }, null, 2));
+    } finally {
+        setIsPostLifecycleEventLoading(false);
+    }
+  };
+
+  const handleMockGetComplianceSummary = async () => {
+    setIsGetComplianceLoading(true);
+    setGetComplianceResponse(null);
+    await new Promise(resolve => setTimeout(resolve, 650));
+    const summary = MOCK_COMPLIANCE_SUMMARIES[getComplianceProductId];
+    if (summary) {
+      setGetComplianceResponse(JSON.stringify(summary, null, 2));
+    } else {
+      setGetComplianceResponse(JSON.stringify({ error: "Compliance summary not found for product", productId: getComplianceProductId }, null, 2));
+    }
+    setIsGetComplianceLoading(false);
+  }
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-headline font-semibold">Developer Portal</h1>
-        <Link href="#" target="_blank"> {/* Replace with actual main docs link */}
+        <Link href="#" target="_blank">
           <Button variant="outline">
             <BookOpen className="mr-2 h-5 w-5" />
-            View Full Documentation
+            View Full API Documentation
           </Button>
         </Link>
       </div>
 
-      {/* API Playground Section */}
       <Card className="shadow-xl border-primary/20">
         <CardHeader>
           <CardTitle className="font-headline flex items-center"><PlayCircle className="mr-3 h-6 w-6 text-primary" /> Interactive API Playground</CardTitle>
@@ -130,13 +212,8 @@ export default function DeveloperPortalPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="productIdInput">Product ID</Label>
-                <Input 
-                  id="productIdInput" 
-                  value={getProductId} 
-                  onChange={(e) => setGetProductId(e.target.value)} 
-                  placeholder="e.g., PROD001" 
-                />
+                <Label htmlFor="productIdInput-get">Product ID</Label>
+                <Input id="productIdInput-get" value={getProductId} onChange={(e) => setGetProductId(e.target.value)} placeholder="e.g., PROD001" />
               </div>
               <Button onClick={handleMockGetProductDetails} disabled={isGetProductLoading} variant="secondary">
                 {isGetProductLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
@@ -145,9 +222,7 @@ export default function DeveloperPortalPage() {
               {getProductResponse && (
                 <div className="mt-4">
                   <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
-                  <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60">
-                    <code>{getProductResponse}</code>
-                  </pre>
+                  <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getProductResponse}</code></pre>
                 </div>
               )}
             </CardContent>
@@ -157,7 +232,7 @@ export default function DeveloperPortalPage() {
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center"><ServerIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products</CardTitle>
-              <CardDescription>Retrieve a list of products. (Mock returns first 2 products)</CardDescription>
+              <CardDescription>Retrieve a list of products. (Mock returns all available mock products)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
                <Button onClick={handleMockListProducts} disabled={isListProductsLoading} variant="secondary">
@@ -167,16 +242,66 @@ export default function DeveloperPortalPage() {
               {listProductsResponse && (
                 <div className="mt-4">
                   <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
-                  <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60">
-                    <code>{listProductsResponse}</code>
-                  </pre>
+                  <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{listProductsResponse}</code></pre>
                 </div>
               )}
             </CardContent>
           </Card>
+
+          {/* POST Lifecycle Event Endpoint */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center"><ServerIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/products/{'{productId}'}/lifecycle-events</CardTitle>
+              <CardDescription>Add a new lifecycle event to a product.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="productIdInput-post-event">Product ID</Label>
+                <Input id="productIdInput-post-event" value={postLifecycleEventProductId} onChange={(e) => setPostLifecycleEventProductId(e.target.value)} placeholder="e.g., PROD001"/>
+              </div>
+              <div>
+                <Label htmlFor="postLifecycleEventBody">Request Body (JSON)</Label>
+                <Textarea id="postLifecycleEventBody" value={postLifecycleEventBody} onChange={(e) => setPostLifecycleEventBody(e.target.value)} rows={5} className="font-mono text-xs"/>
+              </div>
+              <Button onClick={handleMockPostLifecycleEvent} disabled={isPostLifecycleEventLoading} variant="secondary">
+                {isPostLifecycleEventLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                {isPostLifecycleEventLoading ? "Sending..." : "Send Request"}
+              </Button>
+              {postLifecycleEventResponse && (
+                <div className="mt-4">
+                  <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                  <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postLifecycleEventResponse}</code></pre>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* GET Compliance Summary Endpoint */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg flex items-center"><ServerIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products/{'{productId}'}/compliance-summary</CardTitle>
+              <CardDescription>Retrieve a compliance summary for a specific product.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="productIdInput-get-compliance">Product ID</Label>
+                <Input id="productIdInput-get-compliance" value={getComplianceProductId} onChange={(e) => setGetComplianceProductId(e.target.value)} placeholder="e.g., PROD001" />
+              </div>
+              <Button onClick={handleMockGetComplianceSummary} disabled={isGetComplianceLoading} variant="secondary">
+                {isGetComplianceLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                {isGetComplianceLoading ? "Fetching..." : "Send Request"}
+              </Button>
+              {getComplianceResponse && (
+                <div className="mt-4">
+                  <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                  <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getComplianceResponse}</code></pre>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
         </CardContent>
       </Card>
-
 
       <Card className="shadow-lg">
         <CardHeader>
@@ -214,7 +339,7 @@ export default function DeveloperPortalPage() {
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right space-x-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleCopyKey(apiKey.key)} title="Copy Key">
+                    <Button variant="ghost" size="icon" onClick={() => handleCopyKey(apiKey.key)} title="Copy Key" disabled={apiKey.status === 'Pending Approval'}>
                       <Copy className="h-4 w-4" />
                     </Button>
                     <Button variant="ghost" size="icon" title="Delete Key (Mock)" className="text-destructive hover:text-destructive">
@@ -225,7 +350,7 @@ export default function DeveloperPortalPage() {
               ))}
             </TableBody>
           </Table>
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-4">
             <Button variant="secondary">
               <PlusCircle className="mr-2 h-5 w-5" /> Generate New Sandbox Key (Mock)
             </Button>
@@ -239,7 +364,7 @@ export default function DeveloperPortalPage() {
         <Card className="shadow-lg">
           <CardHeader>
             <CardTitle className="font-headline flex items-center"><BookOpen className="mr-3 h-6 w-6 text-primary" /> API Reference</CardTitle>
-            <CardDescription>Explore detailed documentation for our APIs.</CardDescription>
+            <CardDescription>Explore detailed documentation for our APIs. We follow OpenAPI standards.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-3">
             <ul className="list-disc list-inside text-primary space-y-1">
@@ -247,10 +372,14 @@ export default function DeveloperPortalPage() {
               <li><Link href="#" className="hover:underline">Lifecycle Events API</Link></li>
               <li><Link href="#" className="hover:underline">Compliance API</Link></li>
               <li><Link href="#" className="hover:underline">Sustainability API</Link></li>
-              <li><Link href="#" className="hover:underline">Authentication</Link></li>
+              <li><Link href="#" className="hover:underline">Authentication & Rate Limits</Link></li>
             </ul>
-            <p className="text-sm text-muted-foreground">Our APIs follow RESTful principles and use standard HTTP response codes. All API requests must be authenticated.</p>
-             <Button variant="link" className="p-0 h-auto">View OpenAPI Specification (Mock)</Button>
+            <Button variant="default" className="w-full sm:w-auto" asChild>
+                <Link href="#"> {/* Replace with actual link to Swagger UI or OpenAPI spec file */}
+                    <FileJson className="mr-2 h-5 w-5" /> View OpenAPI Specification (Mock)
+                </Link>
+            </Button>
+            <p className="text-sm text-muted-foreground mt-2">Our APIs follow RESTful principles and use standard HTTP response codes. All API requests must be authenticated using API keys.</p>
           </CardContent>
         </Card>
 
@@ -264,6 +393,7 @@ export default function DeveloperPortalPage() {
                 <TableHeader>
                     <TableRow>
                         <TableHead>Endpoint URL</TableHead>
+                        <TableHead>Events</TableHead>
                         <TableHead>Status</TableHead>
                         <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
@@ -271,7 +401,8 @@ export default function DeveloperPortalPage() {
                 <TableBody>
                     {mockWebhooks.map(wh => (
                         <TableRow key={wh.id}>
-                            <TableCell className="truncate max-w-[200px] text-sm">{wh.url}</TableCell>
+                            <TableCell className="truncate max-w-[150px] sm:max-w-[200px] text-sm font-mono">{wh.url}</TableCell>
+                            <TableCell className="text-xs max-w-[120px] truncate">{wh.events.join(', ')}</TableCell>
                             <TableCell>
                                 <Badge
                                   variant={wh.status === "Active" ? "default" : "outline"}
@@ -283,7 +414,9 @@ export default function DeveloperPortalPage() {
                                 </Badge>
                             </TableCell>
                             <TableCell className="text-right space-x-1">
-                                <Button variant="ghost" size="sm">Edit (Mock)</Button>
+                                <Button variant="ghost" size="icon" title="Edit Webhook (Mock)">
+                                  <Edit2 className="h-4 w-4" />
+                                </Button>
                                  <Button variant="ghost" size="icon" title="Delete Webhook (Mock)" className="text-destructive hover:text-destructive">
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
@@ -295,10 +428,46 @@ export default function DeveloperPortalPage() {
              <Button variant="secondary">
               <PlusCircle className="mr-2 h-5 w-5" /> Add New Webhook (Mock)
             </Button>
-            <p className="text-xs text-muted-foreground">Get notified about product updates, compliance changes, and more.</p>
+            <p className="text-xs text-muted-foreground">Get notified about product updates, compliance changes, and more by registering webhook endpoints.</p>
           </CardContent>
         </Card>
       </div>
+      
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage & Reporting</CardTitle>
+          <CardDescription>Monitor your API usage, view logs, and understand integration performance (Mock Data).</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+                <Card className="bg-muted/50">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-md font-medium flex items-center"><FileClock className="mr-2 h-4 w-4 text-info"/>Recent API Calls</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-2xl font-bold">1,234</p>
+                        <p className="text-xs text-muted-foreground">in the last 24 hours</p>
+                    </CardContent>
+                </Card>
+                 <Card className="bg-muted/50">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-md font-medium flex items-center"><ShieldAlert className="mr-2 h-4 w-4 text-destructive"/>Error Rate</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-2xl font-bold">0.15%</p>
+                        <p className="text-xs text-muted-foreground">Average over the last 7 days</p>
+                    </CardContent>
+                </Card>
+            </div>
+            <ul className="list-disc list-inside text-sm space-y-1">
+                <li>View detailed API call logs (Link to mock page)</li>
+                <li>Webhook delivery success rates and retry attempts (Link to mock page)</li>
+                <li>Export usage reports (Mock button)</li>
+            </ul>
+             <Button variant="outline">Access Full Reporting Dashboard (Mock)</Button>
+        </CardContent>
+      </Card>
+
 
       <Card className="shadow-lg">
         <CardHeader>
@@ -311,29 +480,31 @@ export default function DeveloperPortalPage() {
             <ul className="list-disc list-inside text-primary space-y-1">
               <li><Link href="#" className="hover:underline">Getting Started Guide</Link></li>
               <li><Link href="#" className="hover:underline">Authenticating Your Requests</Link></li>
-              <li><Link href="#" className="hover:underline">Managing Digital Product Passports</Link></li>
-              <li><Link href="#" className="hover:underline">Working with Webhooks</Link></li>
+              <li><Link href="#" className="hover:underline">Managing Digital Product Passports via API</Link></li>
+              <li><Link href="#" className="hover:underline">Understanding Webhook Signatures</Link></li>
+              <li><Link href="#" className="hover:underline">Best Practices for API Integration</Link></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-semibold mb-2">SDKs</h4>
+            <h4 className="font-semibold mb-2">SDKs (Coming Soon)</h4>
             <ul className="space-y-2">
               <li>
-                <Button variant="outline" className="w-full justify-start">
-                  <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> JavaScript SDK (Mock)
+                <Button variant="outline" className="w-full justify-start" disabled>
+                  <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> JavaScript SDK
                 </Button>
               </li>
               <li>
-                <Button variant="outline" className="w-full justify-start">
-                  <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> Python SDK (Mock)
+                <Button variant="outline" className="w-full justify-start" disabled>
+                  <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> Python SDK
                 </Button>
               </li>
                <li>
-                <Button variant="outline" className="w-full justify-start">
-                  <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> Java SDK (Mock)
+                <Button variant="outline" className="w-full justify-start" disabled>
+                  <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> Java SDK
                 </Button>
               </li>
             </ul>
+             <p className="text-xs text-muted-foreground mt-2">Official SDKs are under development to simplify your integration.</p>
           </div>
         </CardContent>
       </Card>
@@ -351,7 +522,7 @@ export default function DeveloperPortalPage() {
            </Link>
            <Link href="#" target="_blank" className="flex-1">
             <Button variant="outline" className="w-full">
-                <LifeBuoy className="mr-2 h-5 w-5 text-accent"/> Contact Support (Mock)
+                <LifeBuoy className="mr-2 h-5 w-5 text-accent"/> Contact Developer Support (Mock)
             </Button>
            </Link>
         </CardContent>
@@ -359,7 +530,5 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
-
-    
 
     

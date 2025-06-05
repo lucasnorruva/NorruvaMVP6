@@ -48,7 +48,7 @@ export default function AddNewProductPage() {
   const [isSubmittingProduct, setIsSubmittingProduct] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("manual");
+  const [activeTab, setActiveTab] = useState("ai-extraction"); // Default to AI extraction tab
 
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -121,11 +121,11 @@ export default function AddNewProductPage() {
       setExtractedData(initialFormData);
       toast({
         title: "Data Extracted Successfully",
-        description: "Review and complete the extracted information in the form below.",
+        description: "Review and complete the extracted information in the form now shown in 'Manual Entry'.",
         variant: "default",
         action: <CheckCircle2 className="text-green-500" />,
       });
-      setActiveTab("manual"); 
+      setActiveTab("manual"); // Automatically switch to manual entry tab
     } catch (err) {
       console.error("Extraction failed:", err);
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred during extraction.";
@@ -178,14 +178,14 @@ export default function AddNewProductPage() {
       <div>
         <h1 className="text-3xl font-headline font-semibold">Add New Product</h1>
         <p className="text-muted-foreground">
-          Create a Digital Product Passport by filling the form manually or by extracting data from a document using AI.
+          Create a Digital Product Passport by extracting data from a document using AI, or by filling the form manually.
         </p>
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
-          <TabsTrigger value="manual">Manual Entry</TabsTrigger>
           <TabsTrigger value="ai-extraction">AI Data Extraction</TabsTrigger>
+          <TabsTrigger value="manual">Manual Entry</TabsTrigger>
         </TabsList>
         
         <TabsContent value="manual" className="mt-6">
@@ -233,21 +233,12 @@ export default function AddNewProductPage() {
                 </Alert>
               )}
 
-              {extractedData && activeTab === 'ai-extraction' && ( 
-                <Alert variant="default" className="bg-info/10 border-info/50">
-                  <Info className="h-4 w-4 text-info" />
-                  <AlertTitle className="text-info">Data Extracted</AlertTitle>
-                  <AlertDescription>
-                    AI has pre-filled some information. Please switch to the <strong>Manual Entry</strong> tab to review, complete, and save the product. Fields populated by AI will be indicated with a <Cpu className="inline h-4 w-4 align-middle" /> icon.
-                  </AlertDescription>
-                </Alert>
-              )}
-               {!extractedData && !isLoadingAi && file && (
+              {!extractedData && !isLoadingAi && file && (
                 <Card className="border-dashed border-2 border-muted bg-muted/30">
                   <CardContent className="p-6 text-center text-muted-foreground">
                     <ScanLine className="mx-auto h-10 w-10 mb-3" />
-                    <p>Click "Extract Data with AI" to populate product information from the selected file and document type.</p>
-                    <p className="text-xs mt-1">You can then review it in the "Manual Entry" tab.</p>
+                    <p>Click "Extract Data with AI" above to populate product information from the selected file and document type.</p>
+                    <p className="text-xs mt-1">You will then be taken to the "Manual Entry" tab to review it.</p>
                   </CardContent>
                 </Card>
               )}
@@ -259,4 +250,3 @@ export default function AddNewProductPage() {
   );
 }
 
-    

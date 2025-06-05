@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2 } from "lucide-react";
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerLucideIcon } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -412,6 +412,12 @@ export default function DeveloperPortalPage() {
                     <li><Link href="/developer/docs/testing-validation" className="hover:underline flex items-center"><TestTube2 className="mr-1.5 h-4 w-4 inline-block"/>Testing & Validation Guide</Link></li>
                  </ul>
             </div>
+             <div className="space-y-2 pt-3 border-t">
+                <h4 className="font-semibold">Operations</h4>
+                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
+                    <li><Link href="/developer/docs/deployment-monitoring" className="hover:underline flex items-center"><ServerLucideIcon className="mr-1.5 h-4 w-4 inline-block"/>Deployment & Monitoring Guide</Link></li>
+                 </ul>
+            </div>
             <Button variant="default" className="w-full sm:w-auto mt-3" asChild>
                 <Link href="#">
                     <FileJson className="mr-2 h-5 w-5" /> View Full OpenAPI Specification (Mock)
@@ -682,4 +688,5 @@ export default function DeveloperPortalPage() {
     
 
     
+
 

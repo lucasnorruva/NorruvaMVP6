@@ -307,7 +307,19 @@ const chartConfig = {
 
 const calculateDppCompleteness = (product: MockProductType): { score: number; filledFields: number; totalFields: number; missingFields: string[] } => {
   const essentialFieldsConfig: Array<{ key: keyof MockProductType | string; label: string; check?: (p: MockProductType) => boolean; categoryScope?: string[] }> = [
-    { key: 'productName', label: 'Product Name' }, { key: 'gtin', label: 'GTIN' }, { key: 'category', label: 'Category' }, { key: 'manufacturer', label: 'Manufacturer' }, { key: 'modelNumber', label: 'Model Number' }, { key: 'description', label: 'Description' }, { key: 'imageUrl', label: 'Image URL', check: (p) => !!p.imageUrl && !p.imageUrl.includes('placehold.co') && !p.imageUrl.includes('?text=') }, { key: 'materials', label: 'Materials' }, { key: 'sustainabilityClaims', label: 'Sustainability Claims' }, { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] }, { key: 'specifications', label: 'Specifications', check: (p) => p.specifications && Object.keys(p.specifications).length > 0 }, { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 }, { key: 'complianceData', label: 'Compliance Data', check: (p) => p.complianceData && Object.keys(p.complianceData).length > 0 },
+    { key: 'productName', label: 'Product Name' },
+    { key: 'gtin', label: 'GTIN' },
+    { key: 'category', label: 'Category' },
+    { key: 'manufacturer', label: 'Manufacturer' },
+    { key: 'modelNumber', label: 'Model Number' },
+    { key: 'description', label: 'Description' },
+    { key: 'imageUrl', label: 'Image URL', check: (p) => !!p.imageUrl && !p.imageUrl.includes('placehold.co') && !p.imageUrl.includes('?text=') },
+    { key: 'materials', label: 'Materials' },
+    { key: 'sustainabilityClaims', label: 'Sustainability Claims' },
+    { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] },
+    { key: 'specifications', label: 'Specifications', check: (p) => p.specifications && Object.keys(p.specifications).length > 0 },
+    { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 },
+    { key: 'complianceData', label: 'Compliance Data', check: (p) => p.complianceData && Object.keys(p.complianceData).length > 0 },
   ];
 
   const isBatteryRelevantCategory = product.category?.toLowerCase().includes('electronics') || product.category?.toLowerCase().includes('automotive parts') || product.category?.toLowerCase().includes('battery');
@@ -325,14 +337,26 @@ const calculateDppCompleteness = (product: MockProductType): { score: number; fi
   essentialFieldsConfig.forEach(fieldConfig => {
     if (fieldConfig.categoryScope) {
       const productCategoryLower = product.category?.toLowerCase();
-      if (!productCategoryLower || !fieldConfig.categoryScope.some(scope => productCategoryLower.includes(scope.toLowerCase()))) { return; }
+      if (!productCategoryLower || !fieldConfig.categoryScope.some(scope => productCategoryLower.includes(scope.toLowerCase()))) {
+        return;
+      }
     }
     actualTotalFields++;
+    let isFieldFilled = false;
     if (fieldConfig.check) {
-      if (fieldConfig.check(product)) { filledCount++; } else { missingFields.push(fieldConfig.label); }
+      isFieldFilled = fieldConfig.check(product);
     } else {
       const value = product[fieldConfig.key as keyof MockProductType];
-      if (value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A') { filledCount++; } else { missingFields.push(fieldConfig.label); }
+      if (typeof value === 'object' && value !== null) { // For specifications if it's an object
+        isFieldFilled = Object.keys(value).length > 0;
+      } else {
+        isFieldFilled = value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A';
+      }
+    }
+    if (isFieldFilled) {
+      filledCount++;
+    } else {
+      missingFields.push(fieldConfig.label);
     }
   });
   const score = actualTotalFields > 0 ? Math.round((filledCount / actualTotalFields) * 100) : 0;
@@ -363,6 +387,21 @@ export default function ProductDetailPage() {
 
         if (storedProduct) {
           const defaults = getDefaultMockProductValues(storedProduct.id);
+          
+          let parsedSpecifications: Record<string, string> = {};
+          if (storedProduct.specifications && typeof storedProduct.specifications === 'string') {
+            try {
+              parsedSpecifications = JSON.parse(storedProduct.specifications);
+            } catch (e) {
+              console.warn("Failed to parse specifications for user product:", storedProduct.id, e);
+              // Keep specifications as string if parsing fails, or handle as empty object
+              // For MockProductType, it expects Record<string, string>, so defaulting to empty.
+            }
+          } else if (typeof storedProduct.specifications === 'object' && storedProduct.specifications !== null) {
+            parsedSpecifications = storedProduct.specifications as Record<string, string>;
+          }
+
+
           foundProduct = {
             ...defaults, 
             productId: storedProduct.id,
@@ -383,7 +422,7 @@ export default function ProductDetailPage() {
             materials: storedProduct.materials || "Not specified",
             sustainabilityClaims: storedProduct.sustainabilityClaims || "None specified",
             energyLabel: storedProduct.energyLabel || "N/A",
-            specifications: storedProduct.specifications ? (typeof storedProduct.specifications === 'string' ? JSON.parse(storedProduct.specifications) : storedProduct.specifications as Record<string,string>) : {},
+            specifications: parsedSpecifications,
             batteryChemistry: storedProduct.batteryChemistry,
             batteryChemistryOrigin: storedProduct.batteryChemistryOrigin,
             stateOfHealth: storedProduct.stateOfHealth,
@@ -642,26 +681,35 @@ export default function ProductDetailPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-lg font-semibold text-primary">{dppCompleteness.score}% Complete</span>
-              <span className="text-sm text-muted-foreground">
-                {dppCompleteness.filledFields} / {dppCompleteness.totalFields} essential fields filled
-              </span>
-            </div>
-            <Progress value={dppCompleteness.score} className="w-full h-3" />
-            {dppCompleteness.missingFields.length > 0 && (
-              <div className="mt-3">
-                <p className="text-xs text-muted-foreground">Missing or incomplete essential fields:</p>
-                <ul className="list-disc list-inside text-xs text-muted-foreground pl-2 max-h-20 overflow-y-auto">
-                  {dppCompleteness.missingFields.map(field => <li key={field}>{field}</li>)}
-                </ul>
-              </div>
-            )}
-            {dppCompleteness.score === 100 && (
-              <p className="text-sm text-green-600 mt-3 flex items-center">
-                <CheckCircle2 className="mr-2 h-4 w-4" /> All essential data points are present!
-              </p>
-            )}
+            <TooltipProvider>
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <div className="cursor-help">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-lg font-semibold text-primary">{dppCompleteness.score}% Complete</span>
+                      <span className="text-sm text-muted-foreground">
+                        {dppCompleteness.filledFields} / {dppCompleteness.totalFields} essential fields filled
+                      </span>
+                    </div>
+                    <Progress value={dppCompleteness.score} className="w-full h-3" />
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="bg-background shadow-lg p-3 rounded-md border max-w-xs">
+                  {dppCompleteness.missingFields.length > 0 ? (
+                    <>
+                      <p className="text-xs font-semibold">Missing or incomplete essential fields:</p>
+                      <ul className="list-disc list-inside text-xs text-muted-foreground mt-1">
+                        {dppCompleteness.missingFields.map(field => <li key={field}>{field}</li>)}
+                      </ul>
+                    </>
+                  ) : (
+                    <p className="text-xs text-green-600 flex items-center">
+                      <CheckCircle2 className="mr-1 h-3 w-3"/> All essential data points appear to be present!
+                    </p>
+                  )}
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </CardContent>
         </Card>
         <Card className="shadow-lg">
@@ -804,7 +852,3 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
-
-    
-
-

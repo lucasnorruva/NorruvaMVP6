@@ -9,9 +9,13 @@ import { DashboardFiltersComponent } from "@/components/dpp-dashboard/DashboardF
 import { DPPTable } from "@/components/dpp-dashboard/DPPTable";
 import type { DigitalProductPassport, DashboardFiltersState } from "@/types/dpp";
 import { MOCK_DPPS } from "@/types/dpp"; // Import mock data
-import { BarChart3, CheckSquare, Clock, Eye, PlusCircle, ScanEye, Percent, Users } from "lucide-react";
+import { BarChart3, CheckSquare, Clock, Eye, PlusCircle, ScanEye, Percent, Users, QrCode, Camera } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
 
 const availableRegulations = [
   { value: "all", label: "All Regulations" },
@@ -29,6 +33,7 @@ interface SortConfig {
 
 export default function DPPLiveDashboardPage() {
   const router = useRouter();
+  const { toast } = useToast();
   const [dpps, setDpps] = useState<DigitalProductPassport[]>([]);
   const [filters, setFilters] = useState<DashboardFiltersState>({
     status: "all",
@@ -37,6 +42,8 @@ export default function DPPLiveDashboardPage() {
     searchQuery: "",
   });
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
+  const [manualProductId, setManualProductId] = useState("");
+  const [isScanDialogOpen, setIsScanDialogOpen] = useState(false);
 
   useEffect(() => {
     setTimeout(() => {
@@ -144,18 +151,85 @@ export default function DPPLiveDashboardPage() {
     setSortConfig({ key, direction });
   };
 
+  const handleFindProductFromScan = () => {
+    if (manualProductId.trim()) {
+      // Check if product exists in MOCK_DPPS or a more robust check in a real app
+      const productExists = MOCK_DPPS.some(p => p.id === manualProductId.trim());
+      if (productExists) {
+        router.push(`/products/${manualProductId.trim()}`);
+        setIsScanDialogOpen(false);
+        setManualProductId("");
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Product Not Found",
+          description: `Product with ID "${manualProductId.trim()}" was not found.`,
+        });
+      }
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Input Required",
+        description: "Please enter a Product ID to find.",
+      });
+    }
+  };
+
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-headline font-semibold text-primary">
           Live DPP Dashboard
         </h1>
-        <Link href="/products/new" passHref>
-          <Button variant="secondary">
-            <PlusCircle className="mr-2 h-5 w-5" />
-            Create New DPP
-          </Button>
-        </Link>
+        <div className="flex gap-2">
+           <Dialog open={isScanDialogOpen} onOpenChange={setIsScanDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline">
+                <QrCode className="mr-2 h-5 w-5" />
+                Scan Product QR (Mock)
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px]">
+              <DialogHeader>
+                <DialogTitle>Scan Product QR Code</DialogTitle>
+                <DialogDescription>
+                  This is a mock scanner. In a real app, you could use your camera. For now, enter a Product ID manually.
+                </DialogDescription>
+              </DialogHeader>
+              <div className="my-4 h-48 bg-muted border-2 border-dashed border-border rounded-md flex flex-col items-center justify-center">
+                <Camera className="h-12 w-12 text-muted-foreground mb-2" />
+                <p className="text-sm text-muted-foreground">Camera feed would appear here.</p>
+                <p className="text-xs text-muted-foreground">(Camera access not implemented)</p>
+              </div>
+              <div className="grid gap-4 py-4">
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="manual-product-id" className="text-right col-span-1">
+                    Product ID
+                  </Label>
+                  <Input
+                    id="manual-product-id"
+                    value={manualProductId}
+                    onChange={(e) => setManualProductId(e.target.value)}
+                    placeholder="e.g., DPP001"
+                    className="col-span-3"
+                  />
+                </div>
+              </div>
+              <DialogFooter>
+                <DialogClose asChild>
+                  <Button type="button" variant="outline">Cancel</Button>
+                </DialogClose>
+                <Button type="button" onClick={handleFindProductFromScan}>Find Product</Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+          <Link href="/products/new" passHref>
+            <Button variant="secondary">
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Create New DPP
+            </Button>
+          </Link>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
@@ -185,3 +259,4 @@ export default function DPPLiveDashboardPage() {
     </div>
   );
 }
+

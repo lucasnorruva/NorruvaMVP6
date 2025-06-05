@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -293,8 +294,13 @@ const ChartLegendContent = React.forwardRef<
             <div
               key={item.value}
               className={cn(
-                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground"
+                "flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 [&>svg]:text-muted-foreground",
+                "cursor-pointer hover:opacity-80 transition-opacity" // Added for interactivity
               )}
+              onClick={() => { // Added onClick for mock interaction
+                // In a real app, this would trigger a state change or callback
+                alert(`Legend item clicked: ${itemConfig?.label || item.value}. Implement drill-down here.`);
+              }}
             >
               {itemConfig?.icon && !hideIcon ? (
                 <itemConfig.icon />

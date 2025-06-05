@@ -195,10 +195,10 @@ export default function EbsiIntegrationOverviewPage() {
           <section>
             <h3 className="font-semibold text-lg mb-2">Security Considerations for QR Generation</h3>
             <ul className="list-disc list-inside space-y-1 text-sm">
-              <li>QR codes themselves should not contain sensitive personal data or private keys.</li>
-              <li>The endpoint the QR code resolves to must be secure (HTTPS).</li>
-              <li>Access to detailed or private DPP data via the QR code's link should be protected by appropriate authentication and authorization mechanisms, especially if it involves more than publicly mandated information.</li>
-              <li>Consider measures against QR code tampering or phishing if the QR codes are physically placed on products.</li>
+              <li>QR codes themselves <strong>must not</strong> contain sensitive personal data or private keys.</li>
+              <li>The endpoint the QR code resolves to <strong>must be secure (HTTPS)</strong> and interact with a trusted backend system.</li>
+              <li>Access to detailed or private DPP data via the QR code's link <strong>must be protected by robust authentication and authorization mechanisms</strong>, especially for information beyond publicly mandated data.</li>
+              <li>Consider measures against QR code tampering or phishing (e.g., signed QR codes if standards emerge, user education) if the QR codes are physically placed on products.</li>
             </ul>
           </section>
           <section>
@@ -208,13 +208,13 @@ export default function EbsiIntegrationOverviewPage() {
             </p>
             <ul className="list-disc list-inside space-y-1 text-sm ml-4">
               <li>The scanner (e.g., a mobile app or a dedicated scanning device) decodes the unique identifier.</li>
-              <li>The identifier is used to query the Norruva platform's backend API.</li>
-              <li>The API retrieves the relevant DPP data, potentially fetching/verifying information from the underlying blockchain and EBSI infrastructure (conceptually).</li>
+              <li>The identifier is used to query the Norruva platform's <strong>secure backend API</strong>.</li>
+              <li>The API retrieves the relevant DPP data, potentially fetching/verifying information from the underlying blockchain and EBSI infrastructure (conceptually). Access to sensitive data is conditional based on user roles and permissions.</li>
               <li>The DPP Viewer displays the product information, including its (mock) blockchain data and EBSI compliance status.</li>
-              <li>For sensitive data sections within the DPP, user authentication might be required.</li>
+              <li>For sensitive data sections within the DPP, user authentication (and authorization) <strong>will be required</strong>.</li>
             </ul>
             <p className="text-sm mt-1">
-              The goal is to provide a seamless experience from scan to information retrieval, ensuring data integrity and compliance.
+              The goal is to provide a seamless experience from scan to information retrieval, ensuring data integrity, security, and compliance.
             </p>
           </section>
         </CardContent>

@@ -539,7 +539,22 @@ export default function ProductDetailPage() {
                 </Tooltip> 
               </TooltipProvider> 
             )}
-            {product.isDppBlockchainAnchored && product.dppAnchorTransactionHash && ( <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}> <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" /> </Button> </TooltipTrigger> <TooltipContent> <p>View on Blockchain Explorer (mock). Tx: {product.dppAnchorTransactionHash}</p> </TooltipContent> </Tooltip> </TooltipProvider> )}
+            {product.isDppBlockchainAnchored && product.dppAnchorTransactionHash && ( 
+              <TooltipProvider> 
+                <Tooltip delayDuration={100}> 
+                  <TooltipTrigger asChild> 
+                    <span> {/* Wrapped Button in a span for TooltipTrigger asChild */}
+                      <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}> 
+                        <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" /> 
+                      </Button> 
+                    </span>
+                  </TooltipTrigger> 
+                  <TooltipContent> 
+                    <p>View on Blockchain Explorer (mock). Tx: {product.dppAnchorTransactionHash}</p> 
+                  </TooltipContent> 
+                </Tooltip> 
+              </TooltipProvider> 
+            )}
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge variant={ product.status === "Active" ? "default" : product.status === "Archived" ? "secondary" : "outline" } className={cn( product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", product.status === "Draft" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {product.status} </Badge>

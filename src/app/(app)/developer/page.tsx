@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon } from "lucide-react";
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon, ExternalLink as ExternalLinkIcon } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -357,8 +357,8 @@ export default function DeveloperPortalPage() {
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="font-headline flex items-center"><BookOpen className="mr-3 h-6 w-6 text-primary" /> API Documentation</CardTitle>
-            <CardDescription>Explore detailed documentation for our APIs and integration best practices.</CardDescription>
+            <CardTitle className="font-headline flex items-center"><BookOpen className="mr-3 h-6 w-6 text-primary" /> API Documentation & Guides</CardTitle>
+            <CardDescription>Explore detailed documentation, integration guides, and best practices.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
@@ -441,6 +441,47 @@ export default function DeveloperPortalPage() {
       
       <Card className="shadow-lg">
         <CardHeader>
+          <CardTitle className="font-headline flex items-center"><Lightbulb className="mr-3 h-6 w-6 text-primary" /> Developer Resources</CardTitle>
+          <CardDescription>Find SDKs, code samples, templates, tutorials, and GitHub resources to accelerate your DPP integration.</CardDescription>
+        </CardHeader>
+        <CardContent className="grid md:grid-cols-2 gap-6">
+          <div>
+            <h4 className="font-semibold mb-2">SDKs (Coming Soon)</h4>
+            <ul className="space-y-2">
+              <li> <Button variant="outline" className="w-full justify-start" disabled> <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> JavaScript SDK </Button> </li>
+              <li> <Button variant="outline" className="w-full justify-start" disabled> <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> Python SDK </Button> </li>
+              <li> <Button variant="outline" className="w-full justify-start" disabled> <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> Java SDK </Button> </li>
+            </ul>
+             <p className="text-xs text-muted-foreground mt-2">Official SDKs are under development.</p>
+          </div>
+          <div className="space-y-3">
+            <div>
+                <h4 className="font-semibold mb-1">Code Samples & Templates</h4>
+                 <p className="text-sm text-muted-foreground">Access a library of code snippets and project templates for common integration scenarios.</p>
+                <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
+                  <Link href="#">Browse Code Samples (Mock)</Link>
+                </Button>
+            </div>
+            <div>
+                <h4 className="font-semibold mb-1">Tutorials</h4>
+                 <p className="text-sm text-muted-foreground">Follow step-by-step guides to implement specific DPP functionalities and use cases.</p>
+                 <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
+                  <Link href="#">View Tutorials (Mock)</Link>
+                </Button>
+            </div>
+            <div>
+                <h4 className="font-semibold mb-1">GitHub Integration</h4>
+                 <p className="text-sm text-muted-foreground">Explore our open-source repositories, contribute to the ecosystem, and find community projects.</p>
+                 <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
+                  <Link href="#">Norruva on GitHub (Mock) <ExternalLinkIcon className="inline h-3 w-3 ml-1" /></Link>
+                </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
           <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage & Reporting</CardTitle>
           <CardDescription>Monitor your API usage, view logs, and understand integration performance (Mock Data).</CardDescription>
         </CardHeader>
@@ -471,48 +512,6 @@ export default function DeveloperPortalPage() {
                 <li>Export usage reports (Mock button)</li>
             </ul>
              <Button variant="outline">Access Full Reporting Dashboard (Mock)</Button>
-        </CardContent>
-      </Card>
-
-
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="font-headline flex items-center"><Lightbulb className="mr-3 h-6 w-6 text-primary" /> Developer Resources</CardTitle>
-          <CardDescription>Find SDKs, code samples, and tutorials to accelerate your DPP integration.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="font-semibold mb-2">SDKs (Coming Soon)</h4>
-            <ul className="space-y-2">
-              <li> <Button variant="outline" className="w-full justify-start" disabled> <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> JavaScript SDK </Button> </li>
-              <li> <Button variant="outline" className="w-full justify-start" disabled> <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> Python SDK </Button> </li>
-              <li> <Button variant="outline" className="w-full justify-start" disabled> <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> Java SDK </Button> </li>
-            </ul>
-             <p className="text-xs text-muted-foreground mt-2">Official SDKs are under development.</p>
-          </div>
-          <div className="space-y-3">
-            <div>
-                <h4 className="font-semibold mb-1">Code Samples & Templates</h4>
-                 <p className="text-sm text-muted-foreground">Placeholder for links to various code examples.</p>
-                <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
-                  <Link href="#">Browse Code Samples (Mock)</Link>
-                </Button>
-            </div>
-            <div>
-                <h4 className="font-semibold mb-1">Tutorials</h4>
-                 <p className="text-sm text-muted-foreground">Step-by-step guides for common use cases.</p>
-                 <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
-                  <Link href="#">View Tutorials (Mock)</Link>
-                </Button>
-            </div>
-            <div>
-                <h4 className="font-semibold mb-1">GitHub Integration</h4>
-                 <p className="text-sm text-muted-foreground">Access open-source resources and contribute.</p>
-                 <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
-                  <Link href="#">Norruva on GitHub (Mock)</Link>
-                </Button>
-            </div>
-          </div>
         </CardContent>
       </Card>
       
@@ -548,4 +547,6 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+    
+
     

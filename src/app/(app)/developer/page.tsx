@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare } from "lucide-react";
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -402,10 +402,10 @@ export default function DeveloperPortalPage() {
              <div className="space-y-2 pt-3 border-t">
                 <h4 className="font-semibold">Integration Guides & Best Practices</h4>
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
-                    <li><Link href="#" className="hover:underline">Step-by-step Integration Guide</Link></li>
-                    <li><Link href="#" className="hover:underline">Regulatory Alignment (ESPR, EPREL, EBSI)</Link></li>
+                    <li><Link href="/developer/guides/quick-start" className="hover:underline">Quick Start Integration Guide</Link></li>
+                    <li><Link href="/developer/docs/ebsi-integration" className="hover:underline">EBSI Integration Overview</Link> <Share2 className="inline h-3 w-3 ml-1 text-muted-foreground"/></li>
+                    <li><Link href="#" className="hover:underline">Regulatory Alignment (ESPR, EPREL)</Link></li>
                     <li><Link href="#" className="hover:underline">Best Practices for Data Management</Link></li>
-                    <li><Link href="#" className="hover:underline">Blockchain for Traceability (How-To)</Link></li>
                 </ul>
             </div>
             <Button variant="default" className="w-full sm:w-auto mt-3" asChild>
@@ -673,3 +673,6 @@ export default function DeveloperPortalPage() {
 
     
 
+
+
+    

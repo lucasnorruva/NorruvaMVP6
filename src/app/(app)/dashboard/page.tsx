@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, BadgeCheck, Building, FileWarning, Eye, Database, SearchCheck, BarChart2, AlertTriangle, MessageSquare, Inbox, History } from "lucide-react";
+import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, BadgeCheck, Building, FileWarning, Eye, Database, SearchCheck, BarChart2, AlertTriangle, MessageSquare, Inbox, History, Settings, ListChecks } from "lucide-react";
 import Link from "next/link";
 import { useRole } from "@/contexts/RoleContext";
 
@@ -35,10 +35,12 @@ const AdminDashboardOverview = () => {
 
 const AdminQuickActions = () => {
    const quickActions = [
-    { label: "Manage Users", href: "/settings/users", icon: Users, description: "Add, edit, or remove users." },
-    { label: "View All Products", href: "/products", icon: Package, description: "Oversee all product entries." },
-    { label: "System Health Check", href: "#", icon: ShieldCheck, description: "Monitor platform status." }, // Placeholder
-    { label: "Regulation Management", href: "/copilot", icon: FileText, description: "Access compliance tools." }, // Pointing to copilot as a compliance tool area
+    { label: "Manage Users", href: "/settings/users", icon: Users, description: "Add, edit, or remove platform users." },
+    { label: "View All Products", href: "/products", icon: Package, description: "Oversee all product entries and DPPs." },
+    { label: "Platform Configuration", href: "/settings", icon: Settings, description: "Adjust global platform settings and integrations." },
+    { label: "Compliance Copilot", href: "/copilot", icon: FileText, description: "Access AI tools for regulation queries." },
+    { label: "System Health", href: "#", icon: ShieldCheck, description: "Monitor platform status and performance." },
+    { label: "Audit Logs", href: "#", icon: ListChecks, description: "Review system and user activity logs (mock)." },
   ];
   return (
      <Card className="shadow-lg">
@@ -331,3 +333,4 @@ export default function DashboardPage() {
     </div>
   );
 }
+

@@ -66,11 +66,11 @@ export default function BatteryRegulationPathwayPage() {
     //   toast({ variant: "destructive", title: "Co-Pilot Error", description: "Could not get a response."});
     // }
     await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
-    let mockResponseDescription = `For ${stepContext}, ensure all data is accurate and verifiable.`;
+    let mockResponseDescription = `For ${stepContext}, ensure all data is accurate and verifiable according to the EU Battery Regulation. Specific guidance can be found in the relevant annexes of the regulation.`;
     if (stepContext === euBatteryRegulationSteps[0].title) {
-        mockResponseDescription = `For ${stepContext}, ensure you provide accurate model identifiers and clearly define all typical uses. If a safety data sheet is available, linking it strengthens your compliance position. Refer to Annex VI of the regulation for specific data elements.`;
+        mockResponseDescription = `For General Information, ensure you provide accurate battery model identifiers and clearly define all typical intended uses. If a safety data sheet (SDS) is available, linking its URL strengthens your compliance position. Refer to Annex VI of the EU Battery Regulation for specific data elements required under this section.`;
     } else if (stepContext === euBatteryRegulationSteps[1].title) {
-        mockResponseDescription = `For ${stepContext}, clearly identify the legal manufacturer and provide their registered address. The contact person should be reachable for compliance inquiries. Ensure this information matches official business registries.`;
+        mockResponseDescription = `For Manufacturer Details, clearly identify the legal manufacturer, including their registered trade name and postal address. The contact person (name, email, phone) should be easily reachable for compliance inquiries. Ensure this information precisely matches official business registries.`;
     }
      toast({
         title: "AI Co-Pilot (Mock Response)",
@@ -183,11 +183,15 @@ export default function BatteryRegulationPathwayPage() {
         </CardHeader>
         <CardContent>
             <div className="mb-6 p-4 border rounded-lg bg-muted/50">
-                <h3 className="font-semibold text-lg mb-2">Current Step: {euBatteryRegulationSteps[currentStepIndex].title}</h3>
+                <h3 className="font-semibold text-lg mb-2 text-primary">Current Step: {euBatteryRegulationSteps[currentStepIndex].title}</h3>
                 <p className="text-sm text-muted-foreground">{euBatteryRegulationSteps[currentStepIndex].description}</p>
                 <div className="mt-3 flex items-center space-x-2">
                     {euBatteryRegulationSteps.map((step, index) => (
-                        <div key={step.id} className={`h-2.5 flex-1 rounded-full ${index <= currentStepIndex ? 'bg-primary' : 'bg-muted'}`} title={step.title}></div>
+                        <div 
+                          key={step.id} 
+                          className={`h-2.5 flex-1 rounded-full transition-colors duration-300 ${index <= currentStepIndex ? 'bg-primary' : 'bg-muted-foreground/30'}`} 
+                          title={step.title}>
+                        </div>
                     ))}
                 </div>
                 <p className="text-xs text-muted-foreground mt-1 text-right">Step {currentStepIndex + 1} of {euBatteryRegulationSteps.length}</p>
@@ -200,7 +204,7 @@ export default function BatteryRegulationPathwayPage() {
                     Previous Step
                 </Button>
                 {currentStepIndex === euBatteryRegulationSteps.length -1 ? (
-                    <Button onClick={() => alert("Mock: Final Review & Submission")} className="bg-green-600 hover:bg-green-700 text-white">
+                    <Button onClick={() => alert("Mock: Final Review & Submission")} className="bg-accent text-accent-foreground hover:bg-accent/90">
                         <CheckCircle className="mr-2 h-4 w-4"/>
                         Final Review & Submit
                     </Button>

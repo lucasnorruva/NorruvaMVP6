@@ -8,5 +8,6 @@ import '@/ai/flows/compliance-copilot-flow.ts';
 import '@/ai/flows/check-product-compliance-flow.ts';
 import '@/ai/flows/suggest-sustainability-claims-flow.ts';
 import '@/ai/flows/generate-product-image-flow.ts';
-import '@/ai/flows/sync-eprel-data-flow.ts'; // Added new EPREL sync flow
+import '@/ai/flows/sync-eprel-data-flow.ts';
+import '@/ai/flows/generate-csrd-summary-flow.ts'; // Added new CSRD summary flow
 

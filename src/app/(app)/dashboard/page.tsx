@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, BadgeCheck } from "lucide-react"; // Changed CheckBadge to BadgeCheck
+import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, BadgeCheck, Building, FileWarning } from "lucide-react";
 import Link from "next/link";
 import { useRole } from "@/contexts/RoleContext";
 
@@ -11,9 +11,9 @@ import { useRole } from "@/contexts/RoleContext";
 const AdminDashboardOverview = () => {
   const overviewStats = [
     { title: "Total Products Managed", value: "1,234", icon: Package, color: "text-primary" },
-    { title: "Overall Compliance Rate", value: "98.7%", icon: ShieldCheck, color: "text-green-500" },
-    { title: "Active Data Extractions", value: "12", icon: ScanLine, color: "text-orange-500" },
-    { title: "Generated Reports", value: "5", icon: FileText, color: "text-blue-500" },
+    { title: "Registered Companies", value: "78", icon: Building, color: "text-accent" },
+    { title: "DPPs Awaiting Verification", value: "42", icon: FileWarning, color: "text-orange-500" },
+    { title: "Active Data Extractions", value: "12", icon: ScanLine, color: "text-info" },
   ];
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -35,22 +35,26 @@ const AdminDashboardOverview = () => {
 
 const AdminQuickActions = () => {
    const quickActions = [
-    { label: "Manage Users", href: "/settings", icon: Users }, // Assuming settings might have user management
-    { label: "View All Products", href: "/products", icon: Package },
-    { label: "System Health", href: "#", icon: ShieldCheck }, // Placeholder
-    { label: "Generate Platform Report", href: "/sustainability", icon: FileText },
+    { label: "Manage Users", href: "/settings/users", icon: Users, description: "Add, edit, or remove users." },
+    { label: "View All Products", href: "/products", icon: Package, description: "Oversee all product entries." },
+    { label: "System Health Check", href: "#", icon: ShieldCheck, description: "Monitor platform status." }, // Placeholder
+    { label: "Regulation Management", href: "/copilot", icon: FileText, description: "Access compliance tools." }, // Pointing to copilot as a compliance tool area
   ];
   return (
      <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="font-headline">Admin Quick Actions</CardTitle>
+          <CardDescription>Access key administrative functions quickly.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {quickActions.map((action) => (
             <Link key={action.label} href={action.href} passHref>
-              <Button variant="outline" className="w-full justify-start text-left h-auto py-3">
-                <action.icon className="mr-3 h-5 w-5 text-primary" />
-                <div><p className="font-medium">{action.label}</p></div>
+              <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
+                <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
+                <div>
+                  <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
+                  <p className="text-xs text-muted-foreground">{action.description}</p>
+                </div>
               </Button>
             </Link>
           ))}
@@ -238,6 +242,7 @@ export default function DashboardPage() {
                       {text: "New Manufacturer 'EcoGoods Inc.' onboarded.", time: "1 hour ago"},
                       {text: "Regulation Module 'EU Battery Reg v1.1' deployed.", time: "3 hours ago"},
                       {text: "System maintenance scheduled for Sunday 2 AM.", time: "1 day ago"},
+                      {text: "Product PROD002 updated with new battery data.", time: "2 days ago"},
                     ].map(activity => (
                       <li key={activity.text} className="flex items-center justify-between text-sm">
                         <span>{activity.text}</span>
@@ -280,7 +285,7 @@ export default function DashboardPage() {
            </Link>
         )}
          {currentRole === 'admin' && (
-           <Link href="/products/new" passHref> {/* Admin might also add products or manage system ones */}
+           <Link href="/products/new" passHref>
              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
                <PlusCircle className="mr-2 h-5 w-5" />
                Platform Product Setup

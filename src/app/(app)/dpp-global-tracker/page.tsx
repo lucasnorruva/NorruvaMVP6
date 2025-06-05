@@ -17,8 +17,6 @@ import ArcInfoCard from '@/components/dpp-tracker/ArcInfoCard';
 
 const Globe = React.lazy(() => import('react-globe.gl'));
 
-// Removed europeanCountriesPolygons as we will fetch global data
-
 const majorEuropeanCities = [
   { lat: 48.8566, lng: 2.3522, name: "Paris", size: 0.5 },
   { lat: 52.5200, lng: 13.4050, name: "Berlin", size: 0.5 },
@@ -75,61 +73,61 @@ export interface MockArc {
 }
 
 const mockDppsOnGlobe: MockDppPoint[] = [
-  { 
-    id: "DPP_GLOBE_001", lat: 48.8566, lng: 2.3522, name: "Smart Refrigerator X1 (Paris)", size: 0.6, category: 'Appliances', status: 'compliant', 
+  {
+    id: "DPP_GLOBE_001", lat: 48.8566, lng: 2.3522, name: "Smart Refrigerator X1 (Paris)", size: 0.6, category: 'Appliances', status: 'compliant',
     manufacturer: 'GreenTech SAS', gtin: '3123456789012', complianceSummary: 'Fully compliant with EU Ecodesign and Energy Labelling.', timestamp: 2022,
     originCountry: 'Germany', destinationCountry: 'France', currentCheckpoint: 'Retail Warehouse, Paris', ebsiStatus: 'verified', customsStatus: 'cleared'
   },
-  { 
-    id: "DPP_GLOBE_002", lat: 52.5200, lng: 13.4050, name: "Eco-Laptop Z2 (Berlin)", size: 0.7, category: 'Electronics', status: 'pending', 
+  {
+    id: "DPP_GLOBE_002", lat: 52.5200, lng: 13.4050, name: "Eco-Laptop Z2 (Berlin)", size: 0.7, category: 'Electronics', status: 'pending',
     manufacturer: 'EcoElektronik GmbH', gtin: '3987654321098', complianceSummary: 'Pending battery passport documentation.', timestamp: 2023,
     originCountry: 'China', destinationCountry: 'Germany', currentCheckpoint: 'Berlin Logistics Hub', ebsiStatus: 'pending', customsStatus: 'pending_inspection'
   },
-  { 
-    id: "DPP_GLOBE_003", lat: 41.9028, lng: 12.4964, name: "Recycled Sneakers V1 (Rome)", size: 0.5, category: 'Apparel', status: 'compliant', 
+  {
+    id: "DPP_GLOBE_003", lat: 41.9028, lng: 12.4964, name: "Recycled Sneakers V1 (Rome)", size: 0.5, category: 'Apparel', status: 'compliant',
     manufacturer: 'ModaVerde S.p.A.', gtin: '3456789012345', complianceSummary: 'Verified recycled content and ethical production.', timestamp: 2023,
     originCountry: 'Portugal', destinationCountry: 'Italy', currentCheckpoint: 'Rome Central Distribution', ebsiStatus: 'verified', customsStatus: 'cleared'
   },
-  { 
-    id: "DPP_GLOBE_004", lat: 51.5074, lng: 0.1278, name: "Sustainable Coffee Machine (London)", size: 0.65, category: 'Appliances', status: 'issue', 
+  {
+    id: "DPP_GLOBE_004", lat: 51.5074, lng: 0.1278, name: "Sustainable Coffee Machine (London)", size: 0.65, category: 'Appliances', status: 'issue',
     manufacturer: 'BrewRight Ltd.', gtin: '3567890123456', complianceSummary: 'Repairability score below EU target; awaiting updated schematics.', timestamp: 2024,
-    originCountry: 'Italy', destinationCountry: 'UK', currentCheckpoint: 'Port of Felixstowe, UK', ebsiStatus: 'not_verified', customsStatus: 'flagged' 
+    originCountry: 'Italy', destinationCountry: 'UK', currentCheckpoint: 'Port of Felixstowe, UK', ebsiStatus: 'not_verified', customsStatus: 'flagged'
   },
-  { 
-    id: "DPP_GLOBE_005", lat: 40.4168, lng: -3.7038, name: "Smart Thermostat G2 (Madrid)", size: 0.55, category: 'Electronics', status: 'compliant', 
+  {
+    id: "DPP_GLOBE_005", lat: 40.4168, lng: -3.7038, name: "Smart Thermostat G2 (Madrid)", size: 0.55, category: 'Electronics', status: 'compliant',
     manufacturer: 'CasaInteligente S.L.', gtin: '3678901234567', complianceSummary: 'RoHS and REACH compliant.', timestamp: 2022,
     originCountry: 'Spain', destinationCountry: 'Spain', currentCheckpoint: 'Madrid Fulfillment Center', ebsiStatus: 'verified', customsStatus: 'not_applicable'
   },
-  { 
-    id: "DPP_GLOBE_006", lat: 59.3293, lng: 18.0686, name: "Wooden Chair Set (Stockholm)", size: 0.6, category: 'Furniture', status: 'pending', 
+  {
+    id: "DPP_GLOBE_006", lat: 59.3293, lng: 18.0686, name: "Wooden Chair Set (Stockholm)", size: 0.6, category: 'Furniture', status: 'pending',
     manufacturer: 'NordicWood AB', gtin: '3789012345678', complianceSummary: 'FSC certification verification in progress.', timestamp: 2024,
-    originCountry: 'Sweden', destinationCountry: 'Sweden', currentCheckpoint: 'Local Workshop, Stockholm', ebsiStatus: 'unknown', customsStatus: 'not_applicable' 
+    originCountry: 'Sweden', destinationCountry: 'Sweden', currentCheckpoint: 'Local Workshop, Stockholm', ebsiStatus: 'unknown', customsStatus: 'not_applicable'
   },
-  { 
-    id: "DPP_GLOBE_007", lat: 34.0522, lng: -118.2437, name: "US Solar Panels (Los Angeles)", size: 0.8, category: 'Electronics', status: 'pending', 
+  {
+    id: "DPP_GLOBE_007", lat: 34.0522, lng: -118.2437, name: "US Solar Panels (Los Angeles)", size: 0.8, category: 'Electronics', status: 'pending',
     manufacturer: 'SunPower US', gtin: '3890123456789', complianceSummary: 'Awaiting EU compliance check for import.', timestamp: 2024,
     originCountry: 'USA', destinationCountry: 'EU (Expected)', currentCheckpoint: 'Port of Los Angeles', ebsiStatus: 'unknown', customsStatus: 'pending_inspection'
   },
-   { 
-    id: "DPP_GLOBE_008", lat: 31.2304, lng: 121.4737, name: "Textiles Batch (Shanghai)", size: 0.7, category: 'Apparel', status: 'compliant', 
+   {
+    id: "DPP_GLOBE_008", lat: 31.2304, lng: 121.4737, name: "Textiles Batch (Shanghai)", size: 0.7, category: 'Apparel', status: 'compliant',
     manufacturer: 'Global Textiles Co.', gtin: '3890123456999', complianceSummary: 'Pre-certified for EU import, REACH compliant.', timestamp: 2023,
     originCountry: 'China', destinationCountry: 'Germany (Expected)', currentCheckpoint: 'Shanghai Port', ebsiStatus: 'pending', customsStatus: 'cleared'
   },
 ];
 
 const mockArcsData: MockArc[] = [
-  { 
-    productId: "DPP_GLOBE_008", startLat: 31.2304, startLng: 121.4737, endLat: 52.5200, endLng: 13.4050, color: 'rgba(255, 255, 0, 0.5)', 
-    label: 'Textiles Shipment (SHA to BER) for DPP_GLOBE_008', timestamp: 2023, transportMode: 'sea', arcDashLength: 0.2, arcDashGap: 0.1 
+  {
+    productId: "DPP_GLOBE_008", startLat: 31.2304, startLng: 121.4737, endLat: 52.5200, endLng: 13.4050, color: 'rgba(255, 255, 0, 0.5)',
+    label: 'Textiles Shipment (SHA to BER) for DPP_GLOBE_008', timestamp: 2023, transportMode: 'sea', arcDashLength: 0.2, arcDashGap: 0.1
   },
-  { 
-    productId: "DPP_GLOBE_003", startLat: 41.9028, startLng: 12.4964, endLat: 48.8566, endLng: 2.3522, color: 'rgba(255, 255, 255, 0.4)', 
-    label: 'Finished Goods (Rome to Paris) for DPP_GLOBE_003', timestamp: 2023, transportMode: 'road' 
+  {
+    productId: "DPP_GLOBE_003", startLat: 41.9028, startLng: 12.4964, endLat: 48.8566, endLng: 2.3522, color: 'rgba(255, 255, 255, 0.4)',
+    label: 'Finished Goods (Rome to Paris) for DPP_GLOBE_003', timestamp: 2023, transportMode: 'road'
   },
-  { 
-    productId: "DPP_GLOBE_002", startLat: 52.5200, startLng: 13.4050, endLat: 51.5074, endLng: 0.1278, color: 'rgba(255,255,0,0.5)', 
-    label: 'Electronics Sub-Assembly (BER to LON) for DPP_GLOBE_002', arcDashLength: 0.3, arcDashGap: 0.1, arcStroke:0.8, timestamp: 2024, 
-    transportMode: 'road' 
+  {
+    productId: "DPP_GLOBE_002", startLat: 52.5200, startLng: 13.4050, endLat: 51.5074, endLng: 0.1278, color: 'rgba(255,255,0,0.5)',
+    label: 'Electronics Sub-Assembly (BER to LON) for DPP_GLOBE_002', arcDashLength: 0.3, arcDashGap: 0.1, arcStroke:0.8, timestamp: 2024,
+    transportMode: 'road'
   },
   {
     productId: "DPP_GLOBE_007", startLat: 34.0522, startLng: -118.2437, endLat: 48.8566, endLng: 2.3522, color: 'rgba(0, 255, 255, 0.5)',
@@ -149,7 +147,7 @@ const categoryColors: Record<string, string> = {
   Apparel: 'rgba(236, 72, 153, 0.9)', // Pink
   Furniture: 'rgba(161, 98, 7, 0.9)', // Brown
   Outdoor: 'rgba(20, 184, 166, 0.9)', // Teal
-  Default: 'rgba(156, 163, 175, 0.9)', 
+  Default: 'rgba(156, 163, 175, 0.9)',
 };
 
 const customsStatusColors: Record<NonNullable<MockDppPoint['customsStatus']>, string> = {
@@ -189,17 +187,17 @@ type CategoryFilter = 'all' | string;
 type CustomsStatusFilter = 'all' | NonNullable<MockDppPoint['customsStatus']>;
 type EbsiStatusFilter = 'all' | NonNullable<MockDppPoint['ebsiStatus']>;
 
-const GlobeVisualization = ({ 
-  polygonsData, // New prop for country polygons
+const GlobeVisualization = ({
+  polygonsData,
   points,
   arcs,
   labels,
-  onPointClick, 
+  onPointClick,
   onArcClick,
   pointColorAccessor,
   pointRadiusAccessor,
-}: { 
-  polygonsData: any[]; // GeoJSON features for countries
+}: {
+  polygonsData: any[];
   points: MockDppPoint[];
   arcs: MockArc[];
   labels: typeof majorEuropeanCities;
@@ -215,36 +213,34 @@ const GlobeVisualization = ({
       globeEl.current.pointOfView({ lat: 50, lng: 10, altitude: 1.8 });
       globeEl.current.controls().autoRotate = false;
       globeEl.current.controls().enableZoom = true;
-      globeEl.current.controls().minDistance = 100; 
-      globeEl.current.controls().maxDistance = 1000; 
+      globeEl.current.controls().minDistance = 100;
+      globeEl.current.controls().maxDistance = 1000;
     }
   }, []);
 
   const globeProps: GlobeProps = {
-    globeImageUrl: "//unpkg.com/three-globe/example/img/earth-political.jpg", // More detailed texture
+    globeImageUrl: "//unpkg.com/three-globe/example/img/earth-political.jpg",
     bumpImageUrl: "//unpkg.com/three-globe/example/img/earth-topology.png",
     backgroundColor: "rgba(0,0,0,0)",
-    width: undefined, 
-    height: 450, 
     polygonsData: polygonsData,
     polygonCapColor: (feat: any) => getColorByContinent(feat.properties.CONTINENT),
-    polygonSideColor: () => 'rgba(0, 0, 0, 0)', // Transparent sides
-    polygonStrokeColor: () => 'rgba(50, 50, 50, 0.6)', // Darker, slightly transparent stroke for borders
+    polygonSideColor: () => 'rgba(0, 0, 0, 0)',
+    polygonStrokeColor: () => 'rgba(50, 50, 50, 0.6)',
     polygonAltitude: 0.01,
     pointsData: points,
     pointLabel: 'name',
     pointColor: d => pointColorAccessor(d as MockDppPoint),
     pointRadius: d => pointRadiusAccessor(d as MockDppPoint),
     pointAltitude: 0.02,
-    onPointClick: (point: any) => { 
+    onPointClick: (point: any) => {
       onPointClick(point as MockDppPoint);
     },
     arcsData: arcs,
     arcLabel: 'label',
     arcColor: 'color',
-    arcDashLength: d => (d as MockArc).arcDashLength || 0.1, 
-    arcDashGap: d => (d as MockArc).arcDashGap || 0.05, 
-    arcStroke: d => (d as MockArc).arcStroke || 0.5, 
+    arcDashLength: d => (d as MockArc).arcDashLength || 0.1,
+    arcDashGap: d => (d as MockArc).arcDashGap || 0.05,
+    arcStroke: d => (d as MockArc).arcStroke || 0.5,
     arcAltitudeAutoScale: 0.5,
     onArcClick: onArcClick,
     labelsData: labels,
@@ -258,10 +254,14 @@ const GlobeVisualization = ({
     labelResolution: 3,
   };
 
-  return <Globe ref={globeEl} {...globeProps} />;
+  return (
+    <div className="w-full h-full"> {/* Ensure this div takes full space */}
+      <Globe ref={globeEl} {...globeProps} />
+    </div>
+  );
 };
 
-const DppGlobalTrackerClientContainer = ({ 
+const DppGlobalTrackerClientContainer = ({
   polygonsData,
   points,
   arcs,
@@ -270,7 +270,7 @@ const DppGlobalTrackerClientContainer = ({
   onArcClick,
   pointColorAccessor,
   pointRadiusAccessor,
-}: { 
+}: {
   polygonsData: any[];
   points: MockDppPoint[];
   arcs: MockArc[];
@@ -287,7 +287,7 @@ const DppGlobalTrackerClientContainer = ({
 
   if (!isClient) {
     return (
-      <div className="w-full h-[450px] bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
+      <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
         <span className="ml-2">Loading 3D Globe...</span>
       </div>
@@ -295,23 +295,25 @@ const DppGlobalTrackerClientContainer = ({
   }
 
   return (
-    <Suspense fallback={
-      <div className="w-full h-[450px] bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Loading 3D Globe...</span>
-      </div>
-    }>
-      <GlobeVisualization 
-        polygonsData={polygonsData}
-        points={points} 
-        arcs={arcs}
-        labels={labels}
-        onPointClick={onPointClick} 
-        onArcClick={onArcClick}
-        pointColorAccessor={pointColorAccessor} 
-        pointRadiusAccessor={pointRadiusAccessor} 
-      />
-    </Suspense>
+    <div className="w-full h-full"> {/* Ensure this div also takes full space */}
+      <Suspense fallback={
+        <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <span className="ml-2">Loading 3D Globe...</span>
+        </div>
+      }>
+        <GlobeVisualization
+          polygonsData={polygonsData}
+          points={points}
+          arcs={arcs}
+          labels={labels}
+          onPointClick={onPointClick}
+          onArcClick={onArcClick}
+          pointColorAccessor={pointColorAccessor}
+          pointRadiusAccessor={pointRadiusAccessor}
+        />
+      </Suspense>
+    </div>
   );
 };
 
@@ -415,27 +417,26 @@ Key Visualization Features:
     const allTimestamps = [
       ...mockDppsOnGlobe.map(p => p.timestamp),
       ...mockArcsData.map(a => a.timestamp)
-    ].filter(ts => typeof ts === 'number'); 
+    ].filter(ts => typeof ts === 'number');
 
     if (allTimestamps.length > 0) {
       const newMinYear = Math.min(...allTimestamps);
       const newMaxYear = Math.max(...allTimestamps);
       setMinYear(newMinYear);
       setMaxYear(newMaxYear);
-      
-      if (currentTime < newMinYear || currentTime > newMaxYear || currentTime === 0) { 
+
+      if (currentTime < newMinYear || currentTime > newMaxYear || currentTime === 0) {
           setCurrentTime(newMaxYear);
       }
     }
 
-    // Fetch world countries GeoJSON data
     fetch('https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
       .then(res => res.json())
       .then(data => {
         setCountriesData(data.features);
       })
       .catch(err => console.error("Error fetching countries data:", err));
-  }, []); 
+  }, []);
 
 
   const handlePointClick = (point: MockDppPoint) => {
@@ -455,7 +456,7 @@ Key Visualization Features:
   const handleCloseArcInfoCard = () => {
     setSelectedArc(null);
   };
-  
+
   const availableCategories = useMemo(() => {
     const categories = new Set(mockDppsOnGlobe.map(p => p.category));
     return Array.from(categories).sort();
@@ -474,7 +475,7 @@ Key Visualization Features:
       return statusMatch && categoryMatch && customsMatch && ebsiMatch;
     });
   }, [timeFilteredPoints, statusFilter, categoryFilter, customsStatusFilter, ebsiStatusFilter]);
-  
+
   const filteredArcs = useMemo(() => {
     return mockArcsData.filter(arc => arc.timestamp <= currentTime);
   }, [currentTime]);
@@ -553,12 +554,12 @@ Key Visualization Features:
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="w-full h-[450px] bg-muted/30 rounded-md overflow-hidden border relative">
-            <DppGlobalTrackerClientContainer 
+            <DppGlobalTrackerClientContainer
               polygonsData={countriesData}
-              points={filteredPoints} 
+              points={filteredPoints}
               arcs={filteredArcs}
               labels={majorEuropeanCities}
-              onPointClick={handlePointClick} 
+              onPointClick={handlePointClick}
               onArcClick={handleArcClick}
               pointColorAccessor={pointColorAccessor}
               pointRadiusAccessor={pointRadiusAccessor}
@@ -659,7 +660,7 @@ Key Visualization Features:
                 </div>
               </CardContent>
             </Card>
-            
+
           </div>
           <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="lg:col-span-1">
@@ -765,5 +766,6 @@ Key Visualization Features:
     </div>
   );
 }
+    
 
     

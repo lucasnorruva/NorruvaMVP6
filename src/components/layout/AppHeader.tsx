@@ -1,14 +1,25 @@
+
 "use client";
 
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, UserCircle } from "lucide-react";
+import { Menu, UserCircle, Users } from "lucide-react";
 import AppSidebarContent from "./AppSidebarContent"; 
-import { Logo } from "@/components/icons/Logo"; // Import Logo
+import { Logo } from "@/components/icons/Logo";
+import { useRole, type UserRole } from "@/contexts/RoleContext";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 export default function AppHeader() {
   const { isMobile, state: sidebarState } = useSidebar();
+  const { currentRole, setCurrentRole, availableRoles } = useRole();
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b border-border bg-card px-4 backdrop-blur-md md:px-6">
@@ -21,21 +32,44 @@ export default function AppHeader() {
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
             </SheetTrigger>
-            <SheetContent side="left" className="flex flex-col p-0 bg-sidebar text-sidebar-foreground w-[240px]"> {/* Width from guidelines */}
+            <SheetContent side="left" className="flex flex-col p-0 bg-sidebar text-sidebar-foreground w-[--sidebar-width-mobile]">
               <AppSidebarContent />
             </SheetContent>
           </Sheet>
         ) : (
           <SidebarTrigger className="hidden md:flex" />
         )}
-        {/* Show logo in header if sidebar is collapsed on desktop */}
         {!isMobile && sidebarState === 'collapsed' && (
           <Logo className="h-8 w-auto text-primary" />
         )}
       </div>
       
       <div className="flex items-center gap-4">
-        {/* Future elements like search, notifications, user menu can go here */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <div className="flex items-center gap-2">
+                <Users className="h-5 w-5 text-muted-foreground" />
+                <Select value={currentRole} onValueChange={(value) => setCurrentRole(value as UserRole)}>
+                  <SelectTrigger className="w-[150px] h-9 text-sm focus:ring-primary">
+                    <SelectValue placeholder="Select Role" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableRoles.map(role => (
+                      <SelectItem key={role} value={role} className="capitalize">
+                        {role.charAt(0).toUpperCase() + role.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">
+              <p>Simulate User Role (Prototype)</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+        
         <Button variant="ghost" size="icon" className="rounded-full">
           <UserCircle className="h-6 w-6" />
           <span className="sr-only">User Profile</span>

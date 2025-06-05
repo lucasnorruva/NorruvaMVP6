@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers } from "lucide-react"; // Added Database icon
+import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers, QrCode as QrCodeIcon } from "lucide-react"; // Added Database icon and QrCodeIcon
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -137,20 +137,74 @@ export default function EbsiIntegrationOverviewPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center"><Share2 className="mr-2 h-5 w-5 text-primary"/>Conceptual Interaction with Selected Blockchain Technologies</CardTitle>
+          <CardTitle className="flex items-center"><Share2 className="mr-2 h-5 w-5 text-primary"/>Conceptual Blockchain Network and Node Setup</CardTitle>
           <CardDescription>
-            While EBSI itself provides a foundational layer, specific product data might reside on or interact with other DLTs.
+            This section outlines the conceptual approach for setting up the blockchain network and nodes that would interact with EBSI.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-2">
-          <p>
-            The choice of blockchain (e.g., a permissioned chain like Hyperledger Fabric for enterprise data, or a public chain like Ethereum/Polygon for certain public attestations) would dictate the specific smart contract languages and tools.
+        <CardContent className="space-y-4">
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Network Type</h3>
+            <p className="text-sm">
+              For enterprise-grade DPP management, a <strong>permissioned blockchain network</strong> (e.g., Hyperledger Fabric, or a private/consortium EVM chain) is conceptually preferred. This allows for controlled access, better performance for enterprise workloads, and easier governance regarding data privacy and compliance. Interaction with EBSI might involve anchoring proofs or VCs to an EBSI-conformant ledger.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Node Configuration (Mock Considerations)</h3>
+            <ul className="list-disc list-inside space-y-1 text-sm">
+              <li><strong>Security:</strong> Nodes would require robust security measures, including network firewalls, access control lists, and regular security audits. Private key management would be critical.</li>
+              <li><strong>Reliability & Scalability:</strong> High availability setups (e.g., multiple redundant nodes) and a scalable architecture to handle growing numbers of DPPs and transactions.</li>
+              <li><strong>Compliance:</strong> Nodes handling EU citizen data or DPPs for the EU market would need to be hosted and operated in compliance with GDPR and other relevant EU data sovereignty regulations.</li>
+              <li><strong>EBSI Interaction Point:</strong> Specific nodes might be designated as gateways or adaptors for communicating with the EBSI network, handling credential exchange, or notarisation requests.</li>
+            </ul>
+          </section>
+           <p className="text-xs text-muted-foreground mt-2">
+            Actual deployment would require careful planning with infrastructure experts and adherence to EBSI's technical specifications.
           </p>
-           <p className="text-sm text-muted-foreground">
-            Norruva's approach will prioritize platforms that offer robust security, scalability for a large number of DPPs, cost-effectiveness for transactions, and strong support for interoperability standards required by EBSI.
-           </p>
         </CardContent>
       </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center"><QrCodeIcon className="mr-2 h-5 w-5 text-primary"/>QR Code Integration for DPP Access (Conceptual)</CardTitle>
+          <CardDescription>
+            Details on how QR codes would be generated and used to access Digital Product Passports.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Data to Encode</h3>
+            <p className="text-sm">
+              Each QR code should encode a unique identifier that reliably links to the specific product's Digital Product Passport. This could be:
+            </p>
+            <ul className="list-disc list-inside space-y-1 text-sm ml-4">
+              <li>A URL pointing to the public passport viewer, e.g., <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">https://norruva.com/passport/{'{productId}'}</code>.</li>
+              <li>A Decentralized Identifier (DID) for the product, which can then be resolved to its DPP data.</li>
+              <li>A unique hash or reference to the product's record on the blockchain.</li>
+            </ul>
+            <p className="text-sm mt-1">
+              The preferred method is often a URL that resolves through a secure backend, allowing for flexibility and updates.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Fallback URL Considerations</h3>
+            <p className="text-sm">
+              It's crucial to have a fallback mechanism. If a QR code scanner cannot directly interpret advanced data formats (like a DID), the encoded data should at least resolve to a human-readable web page providing product information and instructions.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Security Considerations</h3>
+            <ul className="list-disc list-inside space-y-1 text-sm">
+              <li>QR codes themselves should not contain sensitive personal data or private keys.</li>
+              <li>The endpoint the QR code resolves to must be secure (HTTPS).</li>
+              <li>Access to detailed or private DPP data via the QR code's link should be protected by appropriate authentication and authorization mechanisms, especially if it involves more than publicly mandated information.</li>
+              <li>Consider measures against QR code tampering or phishing if the QR codes are physically placed on products.</li>
+            </ul>
+          </section>
+        </CardContent>
+      </Card>
+
     </div>
   );
 }
+

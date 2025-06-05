@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon } from 'lucide-react'; // Added QrCodeIcon
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
@@ -25,7 +25,7 @@ import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, Resp
 import { useRole } from '@/contexts/RoleContext';
 import { useToast } from '@/hooks/use-toast';
 import { checkProductCompliance } from '@/ai/flows/check-product-compliance-flow';
-import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow'; // Added
+import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow';
 import type { ProductFormData } from '@/components/products/ProductForm';
 import type { InitialProductFormData } from '@/app/(app)/products/new/page';
 
@@ -81,9 +81,9 @@ export interface MockProductType {
   modelNumber: string;
   description: string;
   descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageUrl?: string; // Changed from mandatory to optional
+  imageUrl?: string;
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageHint?: string; // Changed from mandatory to optional
+  imageHint?: string;
   materials: string;
   sustainabilityClaims: string;
   sustainabilityClaimsVerified?: boolean;
@@ -280,7 +280,9 @@ const DataOriginIcon = ({ origin, fieldName }: { origin?: 'AI_EXTRACTED' | 'manu
       <TooltipProvider>
         <Tooltip delayDuration={100}>
           <TooltipTrigger asChild>
-             <Cpu className="h-4 w-4 text-info ml-1 cursor-help" />
+             <span className="cursor-help">
+                <Cpu className="h-4 w-4 text-info ml-1" />
+             </span>
           </TooltipTrigger>
           <TooltipContent>
             <p>{fieldName} data suggested by AI.</p>
@@ -529,8 +531,8 @@ export default function ProductDetailPage() {
               <TooltipProvider> 
                 <Tooltip delayDuration={100}> 
                   <TooltipTrigger asChild> 
-                    <span> {/* Wrapped Fingerprint in a span */}
-                      <Fingerprint className="h-6 w-6 text-primary ml-2 cursor-help" /> 
+                    <span className="cursor-help">
+                      <Fingerprint className="h-6 w-6 text-primary ml-2" /> 
                     </span>
                   </TooltipTrigger> 
                   <TooltipContent> 
@@ -543,7 +545,7 @@ export default function ProductDetailPage() {
               <TooltipProvider> 
                 <Tooltip delayDuration={100}> 
                   <TooltipTrigger asChild> 
-                    <span> {/* Wrapped Button in a span for TooltipTrigger asChild */}
+                    <span className="cursor-help">
                       <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}> 
                         <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" /> 
                       </Button> 
@@ -626,39 +628,75 @@ export default function ProductDetailPage() {
         </div>
       </Card>
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center">
-            <ListChecks className="mr-2 h-5 w-5 text-primary" />
-            DPP Data Completeness
-          </CardTitle>
-          <CardDescription>
-            Indicates how complete the information for this Digital Product Passport is.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-lg font-semibold text-primary">{dppCompleteness.score}% Complete</span>
-            <span className="text-sm text-muted-foreground">
-              {dppCompleteness.filledFields} / {dppCompleteness.totalFields} essential fields filled
-            </span>
-          </div>
-          <Progress value={dppCompleteness.score} className="w-full h-3" />
-          {dppCompleteness.missingFields.length > 0 && (
-            <div className="mt-3">
-              <p className="text-xs text-muted-foreground">Missing or incomplete essential fields:</p>
-              <ul className="list-disc list-inside text-xs text-muted-foreground pl-2 max-h-20 overflow-y-auto">
-                {dppCompleteness.missingFields.map(field => <li key={field}>{field}</li>)}
-              </ul>
+      <div className="grid md:grid-cols-2 gap-8">
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <ListChecks className="mr-2 h-5 w-5 text-primary" />
+              DPP Data Completeness
+            </CardTitle>
+            <CardDescription>
+              Indicates how complete the information for this Digital Product Passport is.
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-lg font-semibold text-primary">{dppCompleteness.score}% Complete</span>
+              <span className="text-sm text-muted-foreground">
+                {dppCompleteness.filledFields} / {dppCompleteness.totalFields} essential fields filled
+              </span>
             </div>
-          )}
-          {dppCompleteness.score === 100 && (
-            <p className="text-sm text-green-600 mt-3 flex items-center">
-              <CheckCircle2 className="mr-2 h-4 w-4" /> All essential data points are present!
-            </p>
-          )}
-        </CardContent>
-      </Card>
+            <Progress value={dppCompleteness.score} className="w-full h-3" />
+            {dppCompleteness.missingFields.length > 0 && (
+              <div className="mt-3">
+                <p className="text-xs text-muted-foreground">Missing or incomplete essential fields:</p>
+                <ul className="list-disc list-inside text-xs text-muted-foreground pl-2 max-h-20 overflow-y-auto">
+                  {dppCompleteness.missingFields.map(field => <li key={field}>{field}</li>)}
+                </ul>
+              </div>
+            )}
+            {dppCompleteness.score === 100 && (
+              <p className="text-sm text-green-600 mt-3 flex items-center">
+                <CheckCircle2 className="mr-2 h-4 w-4" /> All essential data points are present!
+              </p>
+            )}
+          </CardContent>
+        </Card>
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center">
+              <QrCodeIcon className="mr-2 h-5 w-5 text-primary" />
+              DPP Access QR Code
+            </CardTitle>
+            <CardDescription>
+              Scan this QR code to view the public Digital Product Passport for this product.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col items-center sm:items-start sm:flex-row gap-4">
+            <div className="p-2 border rounded-md bg-white">
+              <Image
+                src={`https://placehold.co/150x150.png?text=QR+${product.productId}`}
+                alt={`QR Code for ${product.productName}`}
+                width={150}
+                height={150}
+                className="object-contain"
+                data-ai-hint="QR code"
+              />
+            </div>
+            <div className="space-y-2 text-center sm:text-left">
+              <p className="text-sm text-muted-foreground">
+                Provides quick access to key product information, sustainability details, and compliance status.
+              </p>
+              <Link href={`/passport/${product.productId}`} passHref target="_blank">
+                <Button variant="outline" size="sm">
+                  <ExternalLink className="mr-2 h-4 w-4" />
+                  View Public Passport
+                </Button>
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className={cn("grid w-full", hasBatteryData ? "grid-cols-2 sm:grid-cols-5" : "grid-cols-2 sm:grid-cols-4")}>
@@ -722,7 +760,7 @@ export default function ProductDetailPage() {
         <TabsContent value="lifecycle" className="mt-4">
           <Card> <CardHeader> <CardTitle>Product Lifecycle Events</CardTitle> <CardDescription>Key events in the product's journey.</CardDescription> </CardHeader>
             <CardContent>
-              {product.lifecycleEvents && product.lifecycleEvents.length > 0 ? ( <ul className="space-y-4"> {product.lifecycleEvents.map((event) => ( <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors"> <div className="flex justify-between items-start mb-1"> <p className="font-semibold text-primary flex items-center"> {event.type} {event.isBlockchainAnchored && ( <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Server className="h-4 w-4 text-primary ml-2 cursor-help" /> </TooltipTrigger> <TooltipContent> <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p> </TooltipContent> </Tooltip> </TooltipProvider> )} {event.isBlockchainAnchored && event.transactionHash && ( <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}> <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" /> </Button> </TooltipTrigger> <TooltipContent> <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p> </TooltipContent> </Tooltip> </TooltipProvider> )} </p> <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleDateString()}</p> </div> <p className="text-sm text-muted-foreground">Location: {event.location}</p> <p className="text-sm text-muted-foreground">Details: {event.details}</p> </li> ))} </ul> ) : ( <p className="text-sm text-muted-foreground">No lifecycle events recorded for this product.</p> )}
+              {product.lifecycleEvents && product.lifecycleEvents.length > 0 ? ( <ul className="space-y-4"> {product.lifecycleEvents.map((event) => ( <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors"> <div className="flex justify-between items-start mb-1"> <p className="font-semibold text-primary flex items-center"> {event.type} {event.isBlockchainAnchored && ( <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> <span className="cursor-help"><Server className="h-4 w-4 text-primary ml-2" /></span> </TooltipTrigger> <TooltipContent> <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p> </TooltipContent> </Tooltip> </TooltipProvider> )} {event.isBlockchainAnchored && event.transactionHash && ( <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> <span className="cursor-help"><Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}> <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" /> </Button></span> </TooltipTrigger> <TooltipContent> <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p> </TooltipContent> </Tooltip> </TooltipProvider> )} </p> <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleDateString()}</p> </div> <p className="text-sm text-muted-foreground">Location: {event.location}</p> <p className="text-sm text-muted-foreground">Details: {event.details}</p> </li> ))} </ul> ) : ( <p className="text-sm text-muted-foreground">No lifecycle events recorded for this product.</p> )}
             </CardContent>
           </Card>
         </TabsContent>
@@ -755,7 +793,10 @@ function ProductDetailSkeleton() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"> <div> <Skeleton className="h-10 w-3/4 mb-2" /> <Skeleton className="h-6 w-1/2" /> </div> <div className="flex gap-2"> <Skeleton className="h-10 w-40" /> </div> </div>
       <Card className="shadow-xl border-primary/20 bg-muted/30"> <CardHeader> <Skeleton className="h-8 w-1/2 mb-2" /> </CardHeader> <CardContent className="space-y-6"> <Skeleton className="h-24 w-full" />  <Skeleton className="h-16 w-full" />  <Skeleton className="h-48 w-full" />  </CardContent> </Card>
       <Card className="shadow-lg overflow-hidden"> <div className="grid md:grid-cols-3"> <div className="md:col-span-1 p-6"> <AspectRatio ratio={4/3} className="bg-muted rounded-md overflow-hidden"> <Skeleton className="h-full w-full" /> </AspectRatio> </div> <div className="md:col-span-2 p-6 space-y-4"> <Skeleton className="h-8 w-3/4" /> <Skeleton className="h-20 w-full" /> <div className="grid grid-cols-2 gap-4"> <Skeleton className="h-6 w-full" /> <Skeleton className="h-6 w-full" /> <Skeleton className="h-6 w-full" /> <Skeleton className="h-6 w-full" /> </div> <div className="mt-4 pt-4 border-t space-y-2"> <Skeleton className="h-6 w-1/3 mb-2" /> <Skeleton className="h-5 w-full" /> <Skeleton className="h-5 w-full" /> <Skeleton className="h-5 w-1/2" /> </div> </div> </div> </Card>
-      <Card className="shadow-lg"> <CardHeader> <Skeleton className="h-7 w-1/2 mb-1" /> <Skeleton className="h-4 w-3/4" /> </CardHeader> <CardContent> <div className="flex items-center justify-between mb-2"> <Skeleton className="h-8 w-1/4" /> <Skeleton className="h-5 w-1/3" /> </div> <Skeleton className="h-3 w-full" /> <div className="mt-3 space-y-1"> <Skeleton className="h-4 w-1/2" /> <Skeleton className="h-3 w-1/3" /> <Skeleton className="h-3 w-1/3" /> </div> </CardContent> </Card>
+      <div className="grid md:grid-cols-2 gap-8">
+        <Card className="shadow-lg"> <CardHeader> <Skeleton className="h-7 w-1/2 mb-1" /> <Skeleton className="h-4 w-3/4" /> </CardHeader> <CardContent> <div className="flex items-center justify-between mb-2"> <Skeleton className="h-8 w-1/4" /> <Skeleton className="h-5 w-1/3" /> </div> <Skeleton className="h-3 w-full" /> <div className="mt-3 space-y-1"> <Skeleton className="h-4 w-1/2" /> <Skeleton className="h-3 w-1/3" /> <Skeleton className="h-3 w-1/3" /> </div> </CardContent> </Card>
+        <Card className="shadow-lg"> <CardHeader> <Skeleton className="h-7 w-1/2 mb-1" /> <Skeleton className="h-4 w-3/4" /> </CardHeader> <CardContent className="flex flex-col items-center sm:items-start sm:flex-row gap-4"> <Skeleton className="h-[150px] w-[150px]" /> <div className="space-y-2 flex-1"> <Skeleton className="h-5 w-full" /> <Skeleton className="h-8 w-1/2" /></div> </CardContent> </Card>
+      </div>
       <Skeleton className="h-10 w-full md:w-2/3" /> 
       <Card className="mt-4"> <CardHeader> <Skeleton className="h-7 w-1/3" /> <Skeleton className="h-5 w-2/3" /> </CardHeader> <CardContent className="space-y-3"> <Skeleton className="h-8 w-full" /> <Skeleton className="h-8 w-full" /> <Skeleton className="h-8 w-full" /> </CardContent> </Card>
     </div>

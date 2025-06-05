@@ -3,9 +3,11 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertCircle, Info, ShieldQuestion, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { Badge } from "@/components/ui/badge";
+import { CheckCircle, AlertCircle, Info, ShieldQuestion, ShieldCheck, AlertTriangle, ExternalLink } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from '../ui/button';
 
 export interface ComplianceStatus {
   status: 'compliant' | 'non_compliant' | 'pending_review' | 'not_applicable' | 'in_progress';
@@ -42,12 +44,17 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus }> = ({ t
   let IconComponent = Info;
   let badgeVariant: "default" | "secondary" | "destructive" | "outline" = "outline";
   let badgeClasses = "bg-muted text-muted-foreground";
+  let titleText = title;
+  let detailsText = "";
 
   switch (data.status) {
     case 'compliant':
       IconComponent = ShieldCheck;
       badgeVariant = "default";
       badgeClasses = "bg-green-500/20 text-green-700 border-green-500/30";
+      if (title.includes("EBSI") && data.verificationId) {
+        detailsText = `Verified (ID: ${data.verificationId})`;
+      }
       break;
     case 'non_compliant':
       IconComponent = AlertCircle;
@@ -58,6 +65,9 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus }> = ({ t
       IconComponent = Info;
       badgeVariant = "outline";
       badgeClasses = "bg-yellow-500/20 text-yellow-700 border-yellow-500/30";
+       if (title.includes("EBSI") && data.verificationId === "PENDING_EBSI_CHECK") {
+         detailsText = `Verification Pending`;
+      }
       break;
     case 'in_progress':
       IconComponent = Info; // Or a specific "in progress" icon
@@ -81,7 +91,10 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus }> = ({ t
           data.status === 'in_progress' && 'text-blue-500',
           data.status === 'not_applicable' && 'text-gray-500'
         )} />
-        <span className="text-sm font-medium">{title}</span>
+        <div>
+          <span className="text-sm font-medium">{titleText}</span>
+          {detailsText && <span className="block text-xs text-muted-foreground">{detailsText}</span>}
+        </div>
       </div>
       <Badge variant={badgeVariant} className={cn("text-xs", badgeClasses)}>
         {data.status.replace('_', ' ').toUpperCase()}
@@ -121,3 +134,4 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
 };
 
 export default OverallProductCompliance;
+

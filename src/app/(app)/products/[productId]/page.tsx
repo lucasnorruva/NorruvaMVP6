@@ -16,7 +16,7 @@ import Link from 'next/link';
 import { cn } from '@/lib/utils';
 
 import ProductLifecycleFlowchart, { type LifecyclePhase } from '@/components/products/ProductLifecycleFlowchart';
-import OverallProductCompliance, { type OverallComplianceData, type ProductNotification as OverallProductNotification } from '@/components/products/OverallProductCompliance'; // Updated import
+import OverallProductCompliance, { type OverallComplianceData, type ProductNotification as OverallProductNotification } from '@/components/products/OverallProductCompliance';
 import ProductAlerts, { type ProductNotification } from '@/components/products/ProductAlerts';
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
@@ -57,9 +57,10 @@ interface MockProductType {
   sustainabilityClaimsVerified?: boolean;
   energyLabel: string;
   specifications: Record<string, string>;
-  lifecycleEvents: Array<{ id: string; type: string; timestamp: string; location: string; details: string; isBlockchainAnchored?: boolean }>;
+  lifecycleEvents: Array<{ id: string; type: string; timestamp: string; location: string; details: string; isBlockchainAnchored?: boolean; transactionHash?: string }>;
   complianceData: Record<string, { status: string; lastChecked: string; reportId: string; isVerified?: boolean }>;
   isDppBlockchainAnchored?: boolean;
+  dppAnchorTransactionHash?: string;
   batteryChemistry?: string;
   batteryChemistryOrigin?: string;
   stateOfHealth?: number;
@@ -113,8 +114,8 @@ const MOCK_PRODUCTS: MockProductType[] = [
       "Warranty": "5 years comprehensive, 10 years on compressor"
     },
     lifecycleEvents: [
-      { id: "EVT001", type: "Manufactured", timestamp: "2024-01-15", location: "EcoFactory, Germany", details: "Production batch #PB789", isBlockchainAnchored: true },
-      { id: "EVT002", type: "Shipped", timestamp: "2024-01-20", location: "Hamburg Port", details: "Container #C0N741N3R", isBlockchainAnchored: true },
+      { id: "EVT001", type: "Manufactured", timestamp: "2024-01-15", location: "EcoFactory, Germany", details: "Production batch #PB789", isBlockchainAnchored: true, transactionHash: "0xabc123..." },
+      { id: "EVT002", type: "Shipped", timestamp: "2024-01-20", location: "Hamburg Port", details: "Container #C0N741N3R", isBlockchainAnchored: true, transactionHash: "0xdef456..." },
       { id: "EVT003", type: "Sold", timestamp: "2024-02-10", location: "Retail Store, Paris", details: "Invoice #INV00567", isBlockchainAnchored: false },
     ],
     complianceData: {
@@ -123,6 +124,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
       "WEEE": { status: "Compliant", lastChecked: "2024-07-01", reportId: "WEEE-X2000-001", isVerified: false },
     },
     isDppBlockchainAnchored: true,
+    dppAnchorTransactionHash: "0x123mainanchor789",
     currentLifecyclePhaseIndex: 2,
     lifecyclePhases: [
       { id: "lc001", name: "Raw Materials", icon: PackageSearch, status: 'completed', timestamp: "2023-12-01", details: "Sourcing of verified recycled steel and bio-polymers.", complianceMetrics: [{ name: "Supplier Ethical Audit", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Recycled Content Input", value: 75, unit: "%", targetValue: 70 }] },
@@ -135,7 +137,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
     overallCompliance: {
       gdpr: { status: "compliant", lastChecked: "2024-07-01" },
       eprel: { status: "compliant", entryId: "EPREL12345", lastChecked: "2024-06-20" },
-      ebsiVerified: { status: "compliant", verificationId: "EBSI-TX-ABC", lastChecked: "2024-07-15" },
+      ebsiVerified: { status: "compliant", verificationId: "EBSI-TX-ABCDEF0123", lastChecked: "2024-07-15" },
       scip: { status: "not_applicable", lastChecked: "2024-07-01" },
       csrd: { status: "in_progress", lastChecked: "2024-07-20" }
     },
@@ -201,7 +203,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
     recycledContentPercentage: 8,
     recycledContentPercentageOrigin: "manual",
     lifecycleEvents: [
-      { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01", location: "Shenzhen, China", details: "Batch #LEDB456", isBlockchainAnchored: true },
+      { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01", location: "Shenzhen, China", details: "Batch #LEDB456", isBlockchainAnchored: true, transactionHash: "0xghi789..." },
       { id: "EVT005", type: "Imported", timestamp: "2024-03-15", location: "Rotterdam Port", details: "Shipment #SHP0089", isBlockchainAnchored: false },
     ],
     complianceData: {
@@ -217,12 +219,12 @@ const MOCK_PRODUCTS: MockProductType[] = [
       { id: "lc009", name: "Distribution", icon: Truck, status: 'pending', details: "Global distribution network.", complianceMetrics: [], sustainabilityMetrics: [] },
       { id: "lc010", name: "Retail Sale", icon: ShoppingBagIcon, status: 'pending', details: "Available through online and physical stores.", complianceMetrics: [], sustainabilityMetrics: [] },
       { id: "lc011", name: "Use Phase", icon: PackageCheck, status: 'pending', details: "Estimated 3-year useful life for battery component.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }] },
-      { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'issue', details: "Battery designed for easy removal and recycling. Documentation overdue.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]}
+      { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'issue', details: "Battery designed for easy removal and recycling. Documentation for EU Battery Regulation (EU 2023/1542) is overdue.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]}
     ],
     overallCompliance: {
       gdpr: { status: "not_applicable", lastChecked: "2024-07-01" },
       eprel: { status: "pending_review", lastChecked: "2024-07-20" },
-      ebsiVerified: { status: "pending_review", lastChecked: "2024-07-20" },
+      ebsiVerified: { status: "pending_review", verificationId: "PENDING_EBSI_CHECK", lastChecked: "2024-07-20" },
       scip: { status: "compliant", declarationId: "SCIP-XYZ", lastChecked: "2024-07-01" },
       csrd: { status: "pending_review", lastChecked: "2024-07-20" }
     },
@@ -342,10 +344,25 @@ export default function ProductDetailPage() {
                     <Fingerprint className="h-6 w-6 text-primary ml-2" />
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>This Digital Product Passport is anchored on the blockchain.</p>
+                    <p>This Digital Product Passport is anchored on the blockchain, ensuring its integrity and authenticity.</p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
+            )}
+            {product.isDppBlockchainAnchored && product.dppAnchorTransactionHash && (
+                <TooltipProvider>
+                  <Tooltip delayDuration={100}>
+                    <TooltipTrigger asChild>
+                      {/* Using a non-functional button for mock display, replace with Link for real use */}
+                      <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}>
+                        <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>View on Blockchain Explorer (mock). Tx: {product.dppAnchorTransactionHash}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
             )}
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -552,7 +569,7 @@ export default function ProductDetailPage() {
               <ul className="space-y-4">
                 {product.lifecycleEvents.map((event) => (
                   <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors">
-                    <div className="flex justify-between items-center mb-1">
+                    <div className="flex justify-between items-start mb-1">
                       <p className="font-semibold text-primary flex items-center">
                         {event.type}
                         {event.isBlockchainAnchored && (
@@ -562,10 +579,24 @@ export default function ProductDetailPage() {
                                 <Server className="h-4 w-4 text-primary ml-2" />
                               </TooltipTrigger>
                               <TooltipContent>
-                                <p>Event anchored on blockchain.</p>
+                                <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
+                        )}
+                         {event.isBlockchainAnchored && event.transactionHash && (
+                            <TooltipProvider>
+                              <Tooltip delayDuration={100}>
+                                <TooltipTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}>
+                                    <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                         )}
                       </p>
                       <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleDateString()}</p>

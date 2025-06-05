@@ -75,7 +75,7 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     tagline: "Illuminate Your World, Sustainably.",
     imageUrl: "https://placehold.co/800x600.png",
     imageHint: "led bulbs packaging",
-    productStory: "Brighten your home responsibly with our Smart LED Bulb pack. These energy-efficient bulbs offer customizable lighting while consuming significantly less power than traditional bulbs. Connect them to your smart home system for voice control and scheduling. Each bulb is designed for a long lifespan, reducing waste and replacement frequency. This passport details their energy savings and material composition. Furthermore, these bulbs support a wide range of colors and tunable white light, from warm to cool, allowing you to create the perfect ambiance for any occasion. Firmware updates are delivered over-the-air to enhance features and security.",
+    productStory: "Brighten your home responsibly with our Smart LED Bulb pack. These energy-efficient bulbs offer customizable lighting and connect to smart home systems. Designed for a long lifespan, reducing waste. This passport details their energy savings.", // Story shortened
     sustainabilityHighlights: [
       { iconName: "Zap", text: "Uses 85% less energy than incandescent bulbs" },
       { iconName: "Recycle", text: "Recyclable packaging materials" },

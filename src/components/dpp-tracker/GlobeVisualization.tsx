@@ -4,7 +4,7 @@
 
 "use client";
 
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react'; // Added useState here
 // Note: 'react-globe.gl' will be required inside the component to ensure client-side only.
 
 // Import types from the page, or define them here if preferred
@@ -71,15 +71,18 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
     // Dynamically import react-globe.gl only on the client-side
     import('react-globe.gl').then(module => {
       setGlobeComponent(() => module.default);
+    }).catch(error => {
+      console.error("Failed to load react-globe.gl:", error);
+      // Optionally, set an error state or render a fallback UI here
     });
   }, []);
   
-  console.log("GlobeVisualization (dynamic component): Rendering. Minimal props for parsing test.");
+  console.log("GlobeVisualization (dynamic component): Rendering. Current GlobeComponent state:", GlobeComponent ? "Loaded" : "Not Loaded");
 
   useEffect(() => {
-    console.log("GlobeVisualization (dynamic component): useEffect triggered.");
-    if (globeEl.current && GlobeComponent) { // Ensure GlobeComponent is loaded
-      console.log("GlobeVisualization (dynamic component): Globe instance (globeEl.current) IS available.");
+    console.log("GlobeVisualization (dynamic component): useEffect for globeEl triggered.");
+    if (globeEl.current && GlobeComponent) { 
+      console.log("GlobeVisualization (dynamic component): Globe instance (globeEl.current) AND GlobeComponent ARE available.");
       try {
         globeEl.current.pointOfView({ lat: 20, lng: 0, altitude: 3.5 }); 
         console.log("GlobeVisualization (dynamic component): pointOfView set.");
@@ -88,7 +91,7 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
         if (controls) {
             controls.autoRotate = false;
             controls.enableZoom = true;
-            controls.minDistance = 50;
+            controls.minDistance = 50; 
             controls.maxDistance = 1500;
             console.log("GlobeVisualization (dynamic component): Globe controls configured.");
         } else {
@@ -100,11 +103,11 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
     } else {
       console.warn("GlobeVisualization (dynamic component): Globe instance (globeEl.current) or GlobeComponent NOT available in useEffect.", { hasGlobeEl: !!globeEl.current, hasGlobeComponent: !!GlobeComponent });
     }
-  }, [GlobeComponent]); // Re-run if GlobeComponent changes (i.e., loads)
+  }, [GlobeComponent]); 
 
   const globeProps = {
-    backgroundColor: "rgba(10, 10, 30, 1)", // Dark ocean
-    // globeImageUrl: undefined, // Default grey sphere
+    backgroundColor: "rgba(10, 10, 30, 1)", // Dark ocean for diagnostic
+    // globeImageUrl: undefined, // Default grey sphere for diagnostic
 
     pointsData: pointsData,
     pointLabel: 'name',
@@ -113,38 +116,38 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
     pointAltitude: 0.02,
     onPointClick: onPointClick,
     
-    arcsData: arcsData,
-    arcLabel: 'label',
-    arcColor: arcColorAccessor,
-    arcStroke: arcStrokeAccessor,
-    arcDashLength: 0.4,
-    arcDashGap: 0.2,
-    arcDashAnimateTime: 2000,
-    arcAltitudeAutoScale: 0.3,
-    onArcClick: onArcClick,
+    arcsData: arcsData, // Pass empty or diagnostic data
+    // arcLabel: 'label',
+    // arcColor: arcColorAccessor,
+    // arcStroke: arcStrokeAccessor,
+    // arcDashLength: 0.4,
+    // arcDashGap: 0.2,
+    // arcDashAnimateTime: 2000,
+    // arcAltitudeAutoScale: 0.3,
+    // onArcClick: onArcClick,
 
-    labelsData: labelsData,
-    labelLat: (d: any) => d.lat,
-    labelLng: (d: any) => d.lng,
-    labelText: (d: any) => d.name,
-    labelSize: 0.22,
-    labelDotRadius: 0.18,
-    labelColor: () => 'rgba(255, 255, 255, 0.95)',
-    labelResolution: 2,
-    labelAltitude: 0.018,
+    labelsData: labelsData, // Pass empty or diagnostic data
+    // labelLat: (d: any) => d.lat,
+    // labelLng: (d: any) => d.lng,
+    // labelText: (d: any) => d.name,
+    // labelSize: 0.20, 
+    // labelDotRadius: 0.15, 
+    // labelColor: () => 'rgba(255, 255, 255, 0.95)',
+    // labelResolution: 2,
+    // labelAltitude: 0.015,
 
-    polygonsData: polygonsData,
-    polygonCapColor: () => 'rgba(200, 200, 200, 0.7)', // Default grey for polygons for this test
-    polygonSideColor: () => 'rgba(0,0,0,0)',
-    polygonStrokeColor: () => 'rgba(50,50,50,0.7)',
-    polygonAltitude: 0.01,
+    polygonsData: polygonsData, // Pass empty or diagnostic data
+    // polygonCapColor: () => 'rgba(200, 200, 200, 0.1)', 
+    // polygonSideColor: () => 'rgba(0,0,0,0)',
+    // polygonStrokeColor: () => 'rgba(50,50,50,0.3)',
+    // polygonAltitude: 0.01,
   };
   
   if (!GlobeComponent) {
-    // You can return a loader here if needed, or null
-    return <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">Loading Globe Library...</div>;
+    return <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">Loading Globe Library... (This might take a moment)</div>;
   }
 
+  console.log("GlobeVisualization (dynamic component): Rendering GlobeComponent with props:", globeProps);
   return (
     <div className="w-full h-full" style={{ position: 'relative', zIndex: 20, border: '2px dashed green' }}>
       <GlobeComponent ref={globeEl} {...globeProps} />

@@ -9,7 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
-import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers, Filter as FilterIcon, TrendingUp, Map, CalendarClock, CheckCircle, AlertCircle, ShieldQuestion, ShieldCheck, VenetianMask, GitBranch, Landmark } from "lucide-react";
+import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2, Circle, Layers, Filter as FilterIcon, Map, CalendarClock, Landmark } from "lucide-react";
 import type { GlobeMethods, GlobeProps } from 'react-globe.gl';
 import { cn } from '@/lib/utils';
 import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
@@ -17,68 +17,7 @@ import ArcInfoCard from '@/components/dpp-tracker/ArcInfoCard';
 
 const Globe = React.lazy(() => import('react-globe.gl'));
 
-// More comprehensive (but still simplified) EU country polygons
-const europeanCountriesPolygons = {
-  type: "FeatureCollection",
-  features: [
-    // Austria
-    { type: "Feature", properties: { name: "Austria" }, geometry: { type: "Polygon", coordinates: [[[13.0, 48.0], [17.0, 48.0], [17.0, 46.5], [13.0, 46.5], [13.0, 48.0]]] } },
-    // Belgium
-    { type: "Feature", properties: { name: "Belgium" }, geometry: { type: "Polygon", coordinates: [[[3.0, 51.0], [6.0, 51.0], [6.0, 49.5], [3.0, 49.5], [3.0, 51.0]]] } },
-    // Bulgaria
-    { type: "Feature", properties: { name: "Bulgaria" }, geometry: { type: "Polygon", coordinates: [[[22.5, 43.5], [28.0, 43.5], [28.0, 41.5], [22.5, 41.5], [22.5, 43.5]]] } },
-    // Croatia
-    { type: "Feature", properties: { name: "Croatia" }, geometry: { type: "Polygon", coordinates: [[[14.0, 46.0], [19.0, 46.0], [19.0, 42.5], [14.0, 42.5], [14.0, 46.0]]] } },
-    // Cyprus
-    { type: "Feature", properties: { name: "Cyprus" }, geometry: { type: "Polygon", coordinates: [[[32.5, 35.5], [34.5, 35.5], [34.5, 34.5], [32.5, 34.5], [32.5, 35.5]]] } },
-    // Czech Republic
-    { type: "Feature", properties: { name: "Czech Republic" }, geometry: { type: "Polygon", coordinates: [[[12.5, 50.5], [18.5, 50.5], [18.5, 48.5], [12.5, 48.5], [12.5, 50.5]]] } },
-    // Denmark
-    { type: "Feature", properties: { name: "Denmark" }, geometry: { type: "Polygon", coordinates: [[[8.0, 57.0], [12.0, 57.0], [12.0, 54.5], [8.0, 54.5], [8.0, 57.0]]] } },
-    // Estonia
-    { type: "Feature", properties: { name: "Estonia" }, geometry: { type: "Polygon", coordinates: [[[22.0, 59.5], [28.0, 59.5], [28.0, 57.5], [22.0, 57.5], [22.0, 59.5]]] } },
-    // Finland
-    { type: "Feature", properties: { name: "Finland" }, geometry: { type: "Polygon", coordinates: [[[21.0, 69.0], [31.0, 69.0], [31.0, 60.0], [21.0, 60.0], [21.0, 69.0]]] } },
-    // France
-    { type: "Feature", properties: { name: "France" }, geometry: { type: "Polygon", coordinates: [[[-4.0, 51.0], [8.0, 51.0], [8.0, 42.0], [-4.0, 42.0], [-4.0, 51.0]]] } },
-    // Germany
-    { type: "Feature", properties: { name: "Germany" }, geometry: { type: "Polygon", coordinates: [[[6.0, 55.0], [15.0, 55.0], [15.0, 47.0], [6.0, 47.0], [6.0, 55.0]]] } },
-    // Greece
-    { type: "Feature", properties: { name: "Greece" }, geometry: { type: "Polygon", coordinates: [[[19.5, 41.5], [26.5, 41.5], [26.5, 35.0], [19.5, 35.0], [19.5, 41.5]]] } },
-    // Hungary
-    { type: "Feature", properties: { name: "Hungary" }, geometry: { type: "Polygon", coordinates: [[[16.0, 48.0], [22.5, 48.0], [22.5, 45.5], [16.0, 45.5], [16.0, 48.0]]] } },
-    // Ireland
-    { type: "Feature", properties: { name: "Ireland" }, geometry: { type: "Polygon", coordinates: [[[-10.5, 55.0], [-6.0, 55.0], [-6.0, 51.5], [-10.5, 51.5], [-10.5, 55.0]]] } },
-    // Italy
-    { type: "Feature", properties: { name: "Italy" }, geometry: { type: "Polygon", coordinates: [[[7.0, 47.0], [18.0, 47.0], [18.0, 37.0], [7.0, 37.0], [7.0, 47.0]]] } },
-    // Latvia
-    { type: "Feature", properties: { name: "Latvia" }, geometry: { type: "Polygon", coordinates: [[[21.0, 58.0], [28.0, 58.0], [28.0, 55.5], [21.0, 55.5], [21.0, 58.0]]] } },
-    // Lithuania
-    { type: "Feature", properties: { name: "Lithuania" }, geometry: { type: "Polygon", coordinates: [[[21.0, 56.0], [26.5, 56.0], [26.5, 53.5], [21.0, 53.5], [21.0, 56.0]]] } },
-    // Luxembourg
-    { type: "Feature", properties: { name: "Luxembourg" }, geometry: { type: "Polygon", coordinates: [[[5.75, 50.0], [6.5, 50.0], [6.5, 49.5], [5.75, 49.5], [5.75, 50.0]]] } },
-    // Malta
-    { type: "Feature", properties: { name: "Malta" }, geometry: { type: "Polygon", coordinates: [[[14.25, 36.0], [14.6, 36.0], [14.6, 35.75], [14.25, 35.75], [14.25, 36.0]]] } },
-    // Netherlands
-    { type: "Feature", properties: { name: "Netherlands" }, geometry: { type: "Polygon", coordinates: [[[3.5, 53.0], [7.0, 53.0], [7.0, 50.75], [3.5, 50.75], [3.5, 53.0]]] } },
-    // Poland
-    { type: "Feature", properties: { name: "Poland" }, geometry: { type: "Polygon", coordinates: [[[14.0, 54.0], [24.0, 54.0], [24.0, 49.0], [14.0, 49.0], [14.0, 54.0]]] } },
-    // Portugal
-    { type: "Feature", properties: { name: "Portugal" }, geometry: { type: "Polygon", coordinates: [[[-9.5, 42.0], [-6.0, 42.0], [-6.0, 37.0], [-9.5, 37.0], [-9.5, 42.0]]] } },
-    // Romania
-    { type: "Feature", properties: { name: "Romania" }, geometry: { type: "Polygon", coordinates: [[[20.0, 48.0], [30.0, 48.0], [30.0, 43.5], [20.0, 43.5], [20.0, 48.0]]] } },
-    // Slovakia
-    { type: "Feature", properties: { name: "Slovakia" }, geometry: { type: "Polygon", coordinates: [[[17.0, 49.0], [22.0, 49.0], [22.0, 47.75], [17.0, 47.75], [17.0, 49.0]]] } },
-    // Slovenia
-    { type: "Feature", properties: { name: "Slovenia" }, geometry: { type: "Polygon", coordinates: [[[13.5, 46.5], [16.5, 46.5], [16.5, 45.25], [13.5, 45.25], [13.5, 46.5]]] } },
-    // Spain
-    { type: "Feature", properties: { name: "Spain" }, geometry: { type: "Polygon", coordinates: [[[-9.0, 43.0], [3.0, 43.0], [3.0, 36.0], [-9.0, 36.0], [-9.0, 43.0]]] } },
-    // Sweden
-    { type: "Feature", properties: { name: "Sweden" }, geometry: { type: "Polygon", coordinates: [[[11.0, 69.0], [24.0, 69.0], [24.0, 55.0], [11.0, 55.0], [11.0, 69.0]]] } },
-    // UK (for context, not EU)
-    { type: "Feature", properties: { name: "UK" }, geometry: { type: "Polygon", coordinates: [[[-8.0, 59.0], [2.0, 59.0], [2.0, 50.0], [-8.0, 50.0], [-8.0, 59.0]]] } },
-  ]
-};
+// Removed europeanCountriesPolygons as we will fetch global data
 
 const majorEuropeanCities = [
   { lat: 48.8566, lng: 2.3522, name: "Paris", size: 0.5 },
@@ -228,6 +167,21 @@ const ebsiStatusColors: Record<NonNullable<MockDppPoint['ebsiStatus']>, string> 
   unknown: 'rgba(156, 163, 175, 0.9)', // Gray
 };
 
+const continentColors: Record<string, string> = {
+  "Europe": "rgba(59, 130, 246, 0.1)",    // Light Blue
+  "Asia": "rgba(239, 68, 68, 0.1)",      // Light Red
+  "Africa": "rgba(250, 204, 21, 0.1)",   // Light Yellow
+  "North America": "rgba(74, 222, 128, 0.1)", // Light Green
+  "South America": "rgba(168, 85, 247, 0.1)",// Light Purple
+  "Oceania": "rgba(245, 158, 11, 0.1)",   // Light Orange
+  "Antarctica": "rgba(200, 200, 200, 0.1)", // Light Grey
+  "Default": "rgba(100, 100, 100, 0.05)"
+};
+
+const getColorByContinent = (continentName: string | undefined) => {
+  return continentName ? (continentColors[continentName] || continentColors.Default) : continentColors.Default;
+};
+
 
 type ActiveLayer = 'status' | 'category' | 'customs' | 'ebsi';
 type StatusFilter = 'all' | MockDppPoint['status'];
@@ -236,6 +190,7 @@ type CustomsStatusFilter = 'all' | NonNullable<MockDppPoint['customsStatus']>;
 type EbsiStatusFilter = 'all' | NonNullable<MockDppPoint['ebsiStatus']>;
 
 const GlobeVisualization = ({ 
+  polygonsData, // New prop for country polygons
   points,
   arcs,
   labels,
@@ -244,6 +199,7 @@ const GlobeVisualization = ({
   pointColorAccessor,
   pointRadiusAccessor,
 }: { 
+  polygonsData: any[]; // GeoJSON features for countries
   points: MockDppPoint[];
   arcs: MockArc[];
   labels: typeof majorEuropeanCities;
@@ -259,21 +215,21 @@ const GlobeVisualization = ({
       globeEl.current.pointOfView({ lat: 50, lng: 10, altitude: 1.8 });
       globeEl.current.controls().autoRotate = false;
       globeEl.current.controls().enableZoom = true;
-      globeEl.current.controls().minDistance = 100; // Allow closer zoom
-      globeEl.current.controls().maxDistance = 1000; // Allow further zoom out
+      globeEl.current.controls().minDistance = 100; 
+      globeEl.current.controls().maxDistance = 1000; 
     }
   }, []);
 
   const globeProps: GlobeProps = {
-    globeImageUrl: "//unpkg.com/three-globe/example/img/earth-dark.jpg",
+    globeImageUrl: "//unpkg.com/three-globe/example/img/earth-political.jpg", // More detailed texture
     bumpImageUrl: "//unpkg.com/three-globe/example/img/earth-topology.png",
     backgroundColor: "rgba(0,0,0,0)",
     width: undefined, 
     height: 450, 
-    polygonsData: europeanCountriesPolygons.features,
-    polygonCapColor: () => 'rgba(0, 100, 255, 0.15)',
-    polygonSideColor: () => 'rgba(0, 0, 0, 0.03)',
-    polygonStrokeColor: () => 'rgba(50, 150, 255, 1)',
+    polygonsData: polygonsData,
+    polygonCapColor: (feat: any) => getColorByContinent(feat.properties.CONTINENT),
+    polygonSideColor: () => 'rgba(0, 0, 0, 0)', // Transparent sides
+    polygonStrokeColor: () => 'rgba(50, 50, 50, 0.6)', // Darker, slightly transparent stroke for borders
     polygonAltitude: 0.01,
     pointsData: points,
     pointLabel: 'name',
@@ -295,7 +251,7 @@ const GlobeVisualization = ({
     labelLat: d => (d as typeof majorEuropeanCities[0]).lat,
     labelLng: d => (d as typeof majorEuropeanCities[0]).lng,
     labelText: d => (d as typeof majorEuropeanCities[0]).name,
-    labelSize: d => (d as typeof majorEuropeanCities[0]).size * 0.7, // Adjusted size
+    labelSize: d => (d as typeof majorEuropeanCities[0]).size * 0.7,
     labelColor: () => 'rgba(255, 255, 255, 0.85)',
     labelDotRadius: 0.2,
     labelAltitude: 0.025,
@@ -306,6 +262,7 @@ const GlobeVisualization = ({
 };
 
 const DppGlobalTrackerClientContainer = ({ 
+  polygonsData,
   points,
   arcs,
   labels,
@@ -314,6 +271,7 @@ const DppGlobalTrackerClientContainer = ({
   pointColorAccessor,
   pointRadiusAccessor,
 }: { 
+  polygonsData: any[];
   points: MockDppPoint[];
   arcs: MockArc[];
   labels: typeof majorEuropeanCities;
@@ -344,6 +302,7 @@ const DppGlobalTrackerClientContainer = ({
       </div>
     }>
       <GlobeVisualization 
+        polygonsData={polygonsData}
         points={points} 
         arcs={arcs}
         labels={labels}
@@ -368,10 +327,6 @@ const Legend = ({ title, colorMap }: { title: string; colorMap: Record<string, s
           <span className="capitalize text-foreground/90">{key.replace(/_/g, ' ')}</span>
         </div>
       ))}
-      <div className="flex items-center">
-        <GlobeIconLucide className="h-3.5 w-3.5 mr-2 text-blue-400" />
-        <span className="text-foreground/90">EU Countries Outline</span>
-      </div>
        <div className="flex items-center">
         <Landmark className="h-3.5 w-3.5 mr-2 text-gray-300" />
         <span className="text-foreground/90">Major Cities</span>
@@ -419,6 +374,7 @@ export default function DppGlobalTrackerPage() {
   const [minYear, setMinYear] = useState(2022);
   const [maxYear, setMaxYear] = useState(2024);
   const [currentTime, setCurrentTime] = useState(maxYear);
+  const [countriesData, setCountriesData] = useState<any[]>([]);
 
   const conceptDescription = `
 Core Idea:
@@ -471,6 +427,14 @@ Key Visualization Features:
           setCurrentTime(newMaxYear);
       }
     }
+
+    // Fetch world countries GeoJSON data
+    fetch('https://raw.githubusercontent.com/vasturiano/react-globe.gl/master/example/datasets/ne_110m_admin_0_countries.geojson')
+      .then(res => res.json())
+      .then(data => {
+        setCountriesData(data.features);
+      })
+      .catch(err => console.error("Error fetching countries data:", err));
   }, []); 
 
 
@@ -590,6 +554,7 @@ Key Visualization Features:
         <CardContent className="space-y-6">
           <div className="w-full h-[450px] bg-muted/30 rounded-md overflow-hidden border relative">
             <DppGlobalTrackerClientContainer 
+              polygonsData={countriesData}
               points={filteredPoints} 
               arcs={filteredArcs}
               labels={majorEuropeanCities}
@@ -800,6 +765,5 @@ Key Visualization Features:
     </div>
   );
 }
-
 
     

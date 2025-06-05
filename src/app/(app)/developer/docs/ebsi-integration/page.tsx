@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers, QrCode as QrCodeIcon } from "lucide-react"; // Added Database icon and QrCodeIcon
+import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers, QrCode as QrCodeIcon, FileJson } from "lucide-react"; // Added Database, QrCodeIcon, FileJson
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -180,6 +180,44 @@ export default function EbsiIntegrationOverviewPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
+          <CardTitle className="flex items-center"><FileJson className="mr-2 h-5 w-5 text-primary"/>Smart Contracts for DPP Management (Conceptual)</CardTitle>
+          <CardDescription>
+            Outlining the role and key functions of smart contracts in the DPP ecosystem.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Purpose of Smart Contracts</h3>
+            <p className="text-sm">
+              Smart contracts would automate and enforce the rules governing Digital Product Passports on the blockchain. They manage the registration, updates, and lifecycle transitions of DPPs, ensuring data integrity and controlled access.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Key Conceptual Functions</h3>
+            <p className="text-sm">While specific implementation would vary, core functions might include:</p>
+            <ul className="list-disc list-inside space-y-1 text-sm mt-2">
+              <li><code>registerDPP(productId: string, dppHash: bytes32, initialMetadata: string)</code>: Creates a new DPP record on-chain, linking to off-chain data via its hash.</li>
+              <li><code>updateDPPHash(productId: string, newDppHash: bytes32)</code>: Updates the hash pointer for a DPP, effectively versioning it.</li>
+              <li><code>addLifecycleEvent(productId: string, eventType: string, eventDataHash: bytes32, eventTimestamp: uint256)</code>: Logs a new lifecycle event hash for a product.</li>
+              <li><code>transferOwnership(productId: string, newOwnerDID: string)</code>: Records a change in product ownership, potentially using DIDs.</li>
+              <li><code>addCertification(productId: string, certificationId: string, certHash: bytes32, issuerDID: string)</code>: Links a new certification to the DPP.</li>
+              <li><code>verifyDPP(productId: string) returns (bool)</code>: Checks the validity or status of a DPP based on on-chain rules.</li>
+            </ul>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Deployment & EBSI Interaction</h3>
+            <p className="text-sm">
+              These smart contracts would be deployed on the conceptually chosen blockchain platform (e.g., a permissioned EVM chain). For EBSI integration, they might interact with EBSI-compliant DIDs, store references to Verifiable Credentials (VCs) anchored on EBSI, or trigger notarisation events.
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              This is a high-level conceptual outline. Actual smart contract development is complex and requires careful security auditing.
+            </p>
+          </section>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
           <CardTitle className="flex items-center"><QrCodeIcon className="mr-2 h-5 w-5 text-primary"/>QR Code Integration for DPP Access (Conceptual)</CardTitle>
           <CardDescription>
             Details on how QR codes would be generated and used to access Digital Product Passports.
@@ -237,4 +275,3 @@ export default function EbsiIntegrationOverviewPage() {
     </div>
   );
 }
-

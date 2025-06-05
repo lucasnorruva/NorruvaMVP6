@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers } from "lucide-react"; // Added Settings2, PackageSearch, Layers
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock } from "lucide-react"; // Added Lock
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -586,6 +586,36 @@ export default function DeveloperPortalPage() {
           </div>
         </CardContent>
       </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="font-headline flex items-center"><Lock className="mr-3 h-6 w-6 text-primary" /> Security &amp; Data Privacy</CardTitle>
+          <CardDescription>Resources on securing DPP applications, GDPR compliance, and data integrity.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <div>
+            <h4 className="font-semibold text-md mb-1">Securing DPP Applications</h4>
+            <p className="text-sm text-muted-foreground">Best practices for API key management, authentication, authorization, and secure data handling when building applications that interact with DPPs.</p>
+            <Button variant="link" className="p-0 h-auto text-primary hover:underline mt-1" asChild>
+                <Link href="#">Read Security Guide (Mock)</Link>
+            </Button>
+          </div>
+          <div className="pt-3 border-t">
+            <h4 className="font-semibold text-md mb-1">GDPR Compliance for Developers</h4>
+            <p className="text-sm text-muted-foreground">Understand your responsibilities under GDPR when processing personal data associated with Digital Product Passports. Access guidelines and checklists.</p>
+             <Button variant="link" className="p-0 h-auto text-primary hover:underline mt-1" asChild>
+                <Link href="#">View GDPR Resources (Mock)</Link>
+            </Button>
+          </div>
+           <div className="pt-3 border-t">
+            <h4 className="font-semibold text-md mb-1">Blockchain for Data Integrity</h4>
+            <p className="text-sm text-muted-foreground">Learn how Norruva leverages blockchain (or similar distributed ledger technologies) to enhance the integrity and traceability of DPP data, and how to interact with these features.</p>
+             <Button variant="link" className="p-0 h-auto text-primary hover:underline mt-1" asChild>
+                <Link href="#">Blockchain Integration Docs (Mock)</Link>
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
       
       <Card className="shadow-lg">
         <CardHeader>
@@ -629,3 +659,6 @@ export default function DeveloperPortalPage() {
 
     
 
+
+
+    

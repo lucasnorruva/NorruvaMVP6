@@ -7,11 +7,11 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp } from 'lucide-react';
-// Removed Metadata and ResolvingMetadata imports as they are for Server Components
-// import type { Metadata, ResolvingMetadata } from 'next'; 
+import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
-import React, { useState, useEffect } from 'react'; // Added useState and useEffect
+import React, { useState, useEffect } from 'react'; 
+import { cn } from '@/lib/utils';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 // Define a type for icon mapping
 type IconName = "Leaf" | "Recycle" | "ShieldCheck" | "Cpu" | "Zap";
@@ -44,6 +44,11 @@ interface PublicProductInfo {
   complianceSummary: string;
   category: string;
   modelNumber: string;
+  // New fields for Blockchain & EBSI Verification
+  anchorTransactionHash?: string;
+  blockchainPlatform?: string;
+  ebsiStatus?: 'verified' | 'pending' | 'not_verified';
+  ebsiVerificationId?: string;
 }
 
 // Mock data for public passports - in a real app, this would come from an API
@@ -62,12 +67,16 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { iconName: "Zap", text: "Smart energy consumption features" }
     ],
     manufacturerName: "GreenTech Appliances",
-    manufacturerWebsite: "#", // Placeholder link
+    manufacturerWebsite: "#", 
     brandLogoUrl: "https://placehold.co/150x50.png?text=GreenTech",
-    learnMoreLink: "#", // Placeholder link
+    learnMoreLink: "#", 
     complianceSummary: "Fully compliant with EU Ecodesign and Energy Labelling regulations.",
     category: "Home Appliances",
     modelNumber: "X2000-ECO",
+    anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef",
+    blockchainPlatform: "MockChain (Ethereum Compatible)",
+    ebsiStatus: 'verified',
+    ebsiVerificationId: "EBSI-VC-ATTR-XYZ-00123",
   },
   "PROD002": {
     passportId: "PROD002",
@@ -75,7 +84,7 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     tagline: "Illuminate Your World, Sustainably.",
     imageUrl: "https://placehold.co/800x600.png",
     imageHint: "led bulbs packaging",
-    productStory: "Brighten your home responsibly with our Smart LED Bulb pack. These energy-efficient bulbs offer customizable lighting and connect to smart home systems. Designed for a long lifespan, reducing waste. This passport details their energy savings.", // Story shortened
+    productStory: "Brighten your home responsibly with our Smart LED Bulb pack. These energy-efficient bulbs offer customizable lighting and connect to smart home systems. Designed for a long lifespan, reducing waste.", // Shortened story
     sustainabilityHighlights: [
       { iconName: "Zap", text: "Uses 85% less energy than incandescent bulbs" },
       { iconName: "Recycle", text: "Recyclable packaging materials" },
@@ -88,19 +97,15 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     complianceSummary: "Complies with EU energy efficiency and hazardous substance directives.",
     category: "Electronics",
     modelNumber: "BS-LED-S04",
+    anchorTransactionHash: "0xdef456ghi789jkl012mno345pqr678stu901vwx234yz567abcdef012345",
+    blockchainPlatform: "MockChain (Polygon Layer 2)",
+    ebsiStatus: 'pending',
   }
 };
 
 type Props = {
   params: { passportId: string }
 }
-
-// generateMetadata needs to be removed or handled differently for client components if dynamic,
-// or moved to a parent Server Component layout. For now, removing it.
-// export async function generateMetadata(
-//   { params }: Props,
-//   parent: ResolvingMetadata
-// ): Promise<Metadata> { ... }
 
 const STORY_TRUNCATE_LENGTH = 250;
 
@@ -110,7 +115,6 @@ export default function PublicPassportPage({ params }: Props) {
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
 
   useEffect(() => {
-    // Simulate fetching data
     const fetchedProduct = MOCK_PUBLIC_PASSPORTS[params.passportId];
     if (fetchedProduct) {
       setProduct(fetchedProduct);
@@ -119,7 +123,6 @@ export default function PublicPassportPage({ params }: Props) {
   }, [params.passportId]);
 
   if (isLoading) {
-    // Basic loading state, can be replaced with a skeleton loader
     return (
       <div className="min-h-screen flex items-center justify-center">
         <p>Loading product passport...</p>
@@ -135,9 +138,22 @@ export default function PublicPassportPage({ params }: Props) {
     setIsStoryExpanded(!isStoryExpanded);
   };
 
-  const displayProductStory = isStoryExpanded 
+  const displayProductStory = isStoryExpanded || product.productStory.length <= STORY_TRUNCATE_LENGTH
     ? product.productStory 
     : `${product.productStory.substring(0, STORY_TRUNCATE_LENGTH)}...`;
+
+  const getEbsiStatusBadge = (status?: 'verified' | 'pending' | 'not_verified') => {
+    switch (status) {
+      case 'verified':
+        return <Badge variant="default" className="bg-green-500/20 text-green-700 border-green-500/30"><ShieldCheck className="mr-1.5 h-3.5 w-3.5" />Verified</Badge>;
+      case 'pending':
+        return <Badge variant="outline" className="bg-yellow-500/20 text-yellow-700 border-yellow-500/30"><InfoIcon className="mr-1.5 h-3.5 w-3.5" />Pending</Badge>;
+      case 'not_verified':
+        return <Badge variant="destructive"><AlertCircle className="mr-1.5 h-3.5 w-3.5" />Not Verified</Badge>;
+      default:
+        return <Badge variant="secondary">Unknown</Badge>;
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -152,7 +168,6 @@ export default function PublicPassportPage({ params }: Props) {
 
       <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="bg-card p-6 sm:p-8 rounded-xl shadow-xl">
-          {/* Product Header Section */}
           <div className="text-center mb-8">
             <h1 className="font-headline text-3xl md:text-4xl font-semibold text-primary mb-2">
               {product.productName}
@@ -163,7 +178,6 @@ export default function PublicPassportPage({ params }: Props) {
             </div>
           </div>
 
-          {/* Main Content: Image and Details */}
           <div className="grid md:grid-cols-2 gap-8 items-start">
             <div className="w-full">
               <Image
@@ -219,9 +233,8 @@ export default function PublicPassportPage({ params }: Props) {
             </div>
           </div>
 
-          {/* Manufacturer & Compliance Section */}
           <div className="mt-10 pt-8 border-t border-border">
-            <div className="grid md:grid-cols-2 gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               <Card>
                 <CardHeader>
                   <CardTitle className="text-xl text-primary flex items-center">
@@ -257,6 +270,55 @@ export default function PublicPassportPage({ params }: Props) {
                   )}
                 </CardContent>
               </Card>
+              <Card className="lg:col-span-1">
+                <CardHeader>
+                  <CardTitle className="text-xl text-primary flex items-center">
+                    <Fingerprint className="mr-2 h-6 w-6" /> Blockchain &amp; EBSI Verification
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3 text-sm">
+                  {product.anchorTransactionHash && (
+                    <div className="flex flex-col">
+                      <span className="text-muted-foreground">Product Record Hash:</span>
+                      <TooltipProvider>
+                        <Tooltip delayDuration={100}>
+                          <TooltipTrigger asChild>
+                            <span className="font-mono text-xs break-all text-foreground truncate cursor-help">
+                              {product.anchorTransactionHash}
+                            </span>
+                          </TooltipTrigger>
+                          <TooltipContent side="top" align="start">
+                            <p className="max-w-xs break-all">{product.anchorTransactionHash}</p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  )}
+                  {product.blockchainPlatform && (
+                    <div className="flex flex-col">
+                      <span className="text-muted-foreground">Platform:</span>
+                      <span className="text-foreground">{product.blockchainPlatform}</span>
+                    </div>
+                  )}
+                  {product.ebsiStatus && (
+                     <div className="flex flex-col">
+                        <span className="text-muted-foreground">EBSI Verification Status:</span>
+                        <div className="flex items-center">
+                            {getEbsiStatusBadge(product.ebsiStatus)}
+                        </div>
+                    </div>
+                  )}
+                  {product.ebsiStatus === 'verified' && product.ebsiVerificationId && (
+                     <div className="flex flex-col">
+                        <span className="text-muted-foreground">EBSI Verification ID:</span>
+                        <span className="font-mono text-xs text-foreground break-all">{product.ebsiVerificationId}</span>
+                    </div>
+                  )}
+                  {(!product.anchorTransactionHash && !product.ebsiStatus) && (
+                     <p className="text-muted-foreground">No specific blockchain or EBSI verification details available for this product.</p>
+                  )}
+                </CardContent>
+              </Card>
             </div>
           </div>
         </div>
@@ -271,3 +333,4 @@ export default function PublicPassportPage({ params }: Props) {
     </div>
   );
 }
+

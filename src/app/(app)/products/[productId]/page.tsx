@@ -52,6 +52,8 @@ interface StoredUserProduct extends ProductFormData {
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
   productCategory?: string;
   imageUrl?: string;
+  isDppBlockchainAnchored?: boolean;
+  dppAnchorTransactionHash?: string;
 }
 
 
@@ -209,7 +211,9 @@ const MOCK_PRODUCTS: MockProductType[] = [
     batteryChemistry: "Li-ion NMC", batteryChemistryOrigin: "AI_EXTRACTED", stateOfHealth: 99, stateOfHealthOrigin: "manual", carbonFootprintManufacturing: 5.2, carbonFootprintManufacturingOrigin: "AI_EXTRACTED", recycledContentPercentage: 8, recycledContentPercentageOrigin: "manual",
     lifecycleEvents: [ { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Batch #LEDB456. Battery passport data generated. SCIP database notified of components. Quality control data recorded.", isBlockchainAnchored: true, transactionHash: "0xghi789jkl0mno1pqrustvwx" }, { id: "EVT005", type: "Imported", timestamp: "2024-03-15T10:00:00Z", location: "Rotterdam Port, Netherlands", details: "Shipment #SHP0089. EU customs cleared. Triggers CE marking verification.", isBlockchainAnchored: false }, { id: "EVT006", type: "Software Update", timestamp: "2024-08-01T00:00:00Z", location: "OTA Server", details: "Firmware v1.2 deployed. Improves energy efficiency algorithm. Update logged to DPP.", isBlockchainAnchored: true, transactionHash: "0xotaUpdateHash123xyz" } ],
     complianceData: { "RoHS": { status: "Compliant", lastChecked: "2024-07-01T10:00:00Z", reportId: "ROHS-LEDB456-001", isVerified: true }, "CE Mark": { status: "Compliant", lastChecked: "2024-07-01T10:00:00Z", reportId: "CE-LEDB456-001", isVerified: true }, "Battery Regulation (EU 2023/1542)": { status: "Pending Documentation", lastChecked: "2024-07-20T10:00:00Z", reportId: "BATREG-LEDB456-PRE", isVerified: false }, },
-    isDppBlockchainAnchored: false, currentLifecyclePhaseIndex: 1, 
+    isDppBlockchainAnchored: false, 
+    dppAnchorTransactionHash: undefined,
+    currentLifecyclePhaseIndex: 1, 
     lifecyclePhases: [ { id: "lc007", name: "Materials Sourcing", icon: PackageSearch, status: 'completed', timestamp: "2024-02-01T10:00:00Z", location: "Global Suppliers", details: "Sourcing of PC, Al, LED chips, battery components. Conflict minerals check completed. Supplier data for battery chemistry (e.g. Cobalt source) recorded for Battery Regulation.", complianceMetrics: [{ name: "Conflict Minerals Report", status: "compliant", reportLink: "#" }, { name: "Supplier Chemical Safety Data Sheets", status: "compliant" }], sustainabilityMetrics: [{ name: "Supplier Diversity Score", value: 60, unit: "/100", targetValue: 75 }, {name: "Battery Component Traceability", status: "compliant"}] }, { id: "lc008", name: "Manufacturing", icon: Factory, status: 'in_progress', timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Assembly in Shenzhen. Batch #LEDB456. Initial battery SoH recorded. SCIP notification for SVHC in components submitted. Carbon footprint of manufacturing calculated.", complianceMetrics: [{ name: "Factory Safety Audit (ISO 45001)", status: "compliant", reportLink: "#" }, {name: "SCIP Database Submission", status: "compliant", reportLink: "#"}], sustainabilityMetrics: [{ name: "Carbon Footprint (Mfg.)", value: 5.2, unit: "kg CO2e/pack", targetValue: 5.0 }, { name: "Recycled Packaging Used", value: 90, unit: "%", targetValue: 100}] }, { id: "lc009", name: "Distribution", icon: Truck, status: 'pending', timestamp: "2024-03-15T10:00:00Z", location: "Global Distribution Network", details: "Global distribution. Awaiting final packaging data for carbon footprint update of distribution phase. Customs documents generated.", complianceMetrics: [], sustainabilityMetrics: [{name: "Logistics Efficiency Score", value: 7, unit:"/10 (target)"}] }, { id: "lc010", name: "Retail Sale", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-04-01T00:00:00Z", location: "Online & Physical Stores", details: "Available through various retail channels. EPREL data to be displayed at point of sale. Consumer warranty registration activated on sale.", complianceMetrics: [{name: "EPREL Label Display", status: "pending_review"}], sustainabilityMetrics: [] }, { id: "lc011", name: "Use & Maintenance", icon: Users, status: 'upcoming', timestamp: "2024-04-02T00:00:00Z", location: "Consumer Homes & Businesses", details: "Estimated 3-year useful life for battery. OTA firmware updates enhance performance and security. Battery replacement guide in DPP for consumers/technicians.", sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }, {name: "Firmware Update Frequency", value: 2, unit: "updates/yr (avg)"}] }, { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'issue', timestamp: "2027-04-01T00:00:00Z", location: "Designated Collection Points", details: "Battery designed for removal. Documentation for EU Battery Regulation (EU 2023/1542) is overdue, impacting certified recycling pathway.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}, {name: "EU Battery Reg. Documentation", status: "non_compliant", reportLink: "#"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]} ],
     overallCompliance: { gdpr: { status: "not_applicable", lastChecked: "2024-07-01T10:00:00Z" }, eprel: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" }, ebsiVerified: { status: "pending_review", verificationId: "PENDING_EBSI_CHECK", lastChecked: "2024-07-20T10:00:00Z" },  scip: { status: "compliant", declarationId: "SCIP-XYZ789", lastChecked: "2024-07-01T10:00:00Z" }, csrd: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" } },
     notifications: [ { id: "n003", type: "error", message: "Battery Regulation documentation overdue! Action required.", date: "2024-07-19T10:00:00Z" }, { id: "n004", type: "warning", message: "EPREL registration data needs review by end of week.", date: "2024-07-22T10:00:00Z" }, { id: "n005", type: "info", message: "Firmware update v1.2 successfully deployed.", date: "2024-08-01T02:00:00Z"} ],
@@ -227,8 +231,8 @@ const getDefaultMockProductValues = (id: string): MockProductType => ({
   productName: "User Added Product",
   gtin: "",
   category: "General",
-  status: "Draft", // Default status for user-added products
-  compliance: "N/A", // Default compliance for user-added
+  status: "Draft", 
+  compliance: "N/A", 
   lastUpdated: new Date().toISOString(),
   manufacturer: "N/A",
   modelNumber: "N/A",
@@ -241,6 +245,8 @@ const getDefaultMockProductValues = (id: string): MockProductType => ({
   specifications: {},
   lifecycleEvents: [],
   complianceData: {},
+  isDppBlockchainAnchored: false, // Default for new products
+  dppAnchorTransactionHash: undefined, // Default for new products
   currentLifecyclePhaseIndex: 0,
   lifecyclePhases: [ { id: `lc_user_${id}_1`, name: "Created", icon: PackageSearch, status: 'completed', timestamp: new Date().toISOString(), location: "System", details: "Product entry created by user." }, { id: `lc_user_${id}_2`, name: "Pending Review", icon: Factory, status: 'in_progress', details: "Awaiting further data input and review." } ],
   overallCompliance: { 
@@ -386,6 +392,8 @@ export default function ProductDetailPage() {
             carbonFootprintManufacturingOrigin: storedProduct.carbonFootprintManufacturingOrigin,
             recycledContentPercentage: storedProduct.recycledContentPercentage,
             recycledContentPercentageOrigin: storedProduct.recycledContentPercentageOrigin,
+            isDppBlockchainAnchored: storedProduct.isDppBlockchainAnchored || false,
+            dppAnchorTransactionHash: storedProduct.dppAnchorTransactionHash || undefined,
           };
         }
       }
@@ -531,13 +539,9 @@ export default function ProductDetailPage() {
               <TooltipProvider> 
                 <Tooltip delayDuration={100}> 
                   <TooltipTrigger asChild> 
-                    <span className="cursor-help">
-                      <Fingerprint className="h-6 w-6 text-primary ml-2" /> 
-                    </span>
+                    <span><Fingerprint className="h-6 w-6 text-primary ml-2 cursor-help" /></span> 
                   </TooltipTrigger> 
-                  <TooltipContent> 
-                    <p>This Digital Product Passport is anchored on the blockchain, ensuring its integrity and authenticity.</p> 
-                  </TooltipContent> 
+                  <TooltipContent> <p>This Digital Product Passport is anchored on the blockchain, ensuring its integrity and authenticity.</p> </TooltipContent> 
                 </Tooltip> 
               </TooltipProvider> 
             )}
@@ -545,26 +549,20 @@ export default function ProductDetailPage() {
               <TooltipProvider> 
                 <Tooltip delayDuration={100}> 
                   <TooltipTrigger asChild>
-                     <span className="cursor-help">
+                     <span>
                         <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}> 
                             <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" /> 
                         </Button> 
                      </span>
                   </TooltipTrigger> 
-                  <TooltipContent> 
-                    <p>View on Blockchain Explorer (mock). Tx: {product.dppAnchorTransactionHash}</p> 
-                  </TooltipContent> 
+                  <TooltipContent> <p>View on Blockchain Explorer (mock). Tx: {product.dppAnchorTransactionHash}</p> </TooltipContent> 
                 </Tooltip> 
               </TooltipProvider> 
             )}
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge variant={ product.status === "Active" ? "default" : product.status === "Archived" ? "secondary" : "outline" } className={cn( product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", product.status === "Draft" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {product.status} </Badge>
-            <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> 
-              <span>
-                <Badge variant={ product.compliance === "Compliant" ? "default" : product.compliance === "Pending Documentation" ? "outline" : product.compliance === "Pending" ? "outline" : product.compliance === "N/A" ? "secondary" : "destructive" } className={cn( product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", (product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "", product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" : "" ,"cursor-help" )}> {product.compliance} {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />} {(product.compliance === "Pending" || product.compliance === "Pending Documentation") && <Info className="h-3 w-3 ml-1" />} {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1" />} </Badge> 
-              </span>
-            </TooltipTrigger> <TooltipContent> <p>Overall compliance status. Last checked: {product.complianceLastChecked ? new Date(product.complianceLastChecked).toLocaleDateString() : "N/A"}</p> </TooltipContent> </Tooltip> </TooltipProvider>
+            <TooltipProvider> <Tooltip delayDuration={100}> <TooltipTrigger asChild> <span><Badge variant={ product.compliance === "Compliant" ? "default" : product.compliance === "Pending Documentation" ? "outline" : product.compliance === "Pending" ? "outline" : product.compliance === "N/A" ? "secondary" : "destructive" } className={cn( product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", (product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "", product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" : "" ,"cursor-help" )}> {product.compliance} {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />} {(product.compliance === "Pending" || product.compliance === "Pending Documentation") && <Info className="h-3 w-3 ml-1" />} {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1" />} </Badge></span> </TooltipTrigger> <TooltipContent> <p>Overall compliance status. Last checked: {product.complianceLastChecked ? new Date(product.complianceLastChecked).toLocaleDateString() : "N/A"}</p> </TooltipContent> </Tooltip> </TooltipProvider>
             <span className="text-sm text-muted-foreground">Last updated: {new Date(product.lastUpdated).toLocaleDateString()}</span>
           </div>
         </div>
@@ -808,4 +806,5 @@ function ProductDetailSkeleton() {
 }
 
     
+
 

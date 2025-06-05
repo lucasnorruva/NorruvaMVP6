@@ -27,6 +27,8 @@ import { useToast } from '@/hooks/use-toast';
 import { checkProductCompliance } from '@/ai/flows/check-product-compliance-flow';
 import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow'; // Added
 import type { ProductFormData } from '@/components/products/ProductForm';
+import type { InitialProductFormData } from '@/app/(app)/products/new/page';
+
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 
@@ -37,10 +39,19 @@ interface StoredUserProduct extends ProductFormData {
   lastUpdated: string;
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageUrl?: string; 
+  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
+  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
+  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+  batteryChemistryOrigin?: 'AI_EXTRACTED' | 'manual';
+  stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
+  carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
+  recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
   productCategory?: string;
-  // ... other origin fields if needed
+  imageUrl?: string;
 }
 
 
@@ -70,9 +81,9 @@ export interface MockProductType {
   modelNumber: string;
   description: string;
   descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageUrl: string;
+  imageUrl?: string; // Changed from mandatory to optional
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageHint: string;
+  imageHint?: string; // Changed from mandatory to optional
   materials: string;
   sustainabilityClaims: string;
   sustainabilityClaimsVerified?: boolean;
@@ -83,13 +94,13 @@ export interface MockProductType {
   isDppBlockchainAnchored?: boolean;
   dppAnchorTransactionHash?: string;
   batteryChemistry?: string;
-  batteryChemistryOrigin?: string;
+  batteryChemistryOrigin?: InitialProductFormData['batteryChemistryOrigin'];
   stateOfHealth?: number;
-  stateOfHealthOrigin?: string;
+  stateOfHealthOrigin?: InitialProductFormData['stateOfHealthOrigin'];
   carbonFootprintManufacturing?: number;
-  carbonFootprintManufacturingOrigin?: string;
+  carbonFootprintManufacturingOrigin?: InitialProductFormData['carbonFootprintManufacturingOrigin'];
   recycledContentPercentage?: number;
-  recycledContentPercentageOrigin?: string;
+  recycledContentPercentageOrigin?: InitialProductFormData['recycledContentPercentageOrigin'];
 
   currentLifecyclePhaseIndex: number;
   lifecyclePhases: LifecyclePhase[];
@@ -288,7 +299,7 @@ const chartConfig = {
 
 const calculateDppCompleteness = (product: MockProductType): { score: number; filledFields: number; totalFields: number; missingFields: string[] } => {
   const essentialFieldsConfig: Array<{ key: keyof MockProductType | string; label: string; check?: (p: MockProductType) => boolean; categoryScope?: string[] }> = [
-    { key: 'productName', label: 'Product Name' }, { key: 'gtin', label: 'GTIN' }, { key: 'category', label: 'Category' }, { key: 'manufacturer', label: 'Manufacturer' }, { key: 'modelNumber', label: 'Model Number' }, { key: 'description', label: 'Description' }, { key: 'imageUrl', label: 'Image URL', check: (p) => p.imageUrl && !p.imageUrl.includes('placehold.co') && !p.imageUrl.includes('?text=') }, { key: 'materials', label: 'Materials' }, { key: 'sustainabilityClaims', label: 'Sustainability Claims' }, { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] }, { key: 'specifications', label: 'Specifications', check: (p) => p.specifications && Object.keys(p.specifications).length > 0 }, { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 }, { key: 'complianceData', label: 'Compliance Data', check: (p) => p.complianceData && Object.keys(p.complianceData).length > 0 },
+    { key: 'productName', label: 'Product Name' }, { key: 'gtin', label: 'GTIN' }, { key: 'category', label: 'Category' }, { key: 'manufacturer', label: 'Manufacturer' }, { key: 'modelNumber', label: 'Model Number' }, { key: 'description', label: 'Description' }, { key: 'imageUrl', label: 'Image URL', check: (p) => !!p.imageUrl && !p.imageUrl.includes('placehold.co') && !p.imageUrl.includes('?text=') }, { key: 'materials', label: 'Materials' }, { key: 'sustainabilityClaims', label: 'Sustainability Claims' }, { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] }, { key: 'specifications', label: 'Specifications', check: (p) => p.specifications && Object.keys(p.specifications).length > 0 }, { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 }, { key: 'complianceData', label: 'Compliance Data', check: (p) => p.complianceData && Object.keys(p.complianceData).length > 0 },
   ];
 
   const isBatteryRelevantCategory = product.category?.toLowerCase().includes('electronics') || product.category?.toLowerCase().includes('automotive parts') || product.category?.toLowerCase().includes('battery');
@@ -329,7 +340,7 @@ export default function ProductDetailPage() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('specifications'); 
   const [isCheckingCompliance, setIsCheckingCompliance] = useState(false);
-  const [isSyncingEprel, setIsSyncingEprel] = useState(false); // Added
+  const [isSyncingEprel, setIsSyncingEprel] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -345,7 +356,7 @@ export default function ProductDetailPage() {
         if (storedProduct) {
           const defaults = getDefaultMockProductValues(storedProduct.id);
           foundProduct = {
-            ...defaults, // Start with defaults to ensure all MockProductType fields are present
+            ...defaults, 
             productId: storedProduct.id,
             productName: storedProduct.productName || "User Added Product",
             productNameOrigin: storedProduct.productNameOrigin,
@@ -366,14 +377,13 @@ export default function ProductDetailPage() {
             energyLabel: storedProduct.energyLabel || "N/A",
             specifications: storedProduct.specifications ? (typeof storedProduct.specifications === 'string' ? JSON.parse(storedProduct.specifications) : storedProduct.specifications as Record<string,string>) : {},
             batteryChemistry: storedProduct.batteryChemistry,
-            batteryChemistryOrigin: initialData?.batteryChemistryOrigin,
+            batteryChemistryOrigin: storedProduct.batteryChemistryOrigin,
             stateOfHealth: storedProduct.stateOfHealth,
-            stateOfHealthOrigin: initialData?.stateOfHealthOrigin,
+            stateOfHealthOrigin: storedProduct.stateOfHealthOrigin,
             carbonFootprintManufacturing: storedProduct.carbonFootprintManufacturing,
-            carbonFootprintManufacturingOrigin: initialData?.carbonFootprintManufacturingOrigin,
+            carbonFootprintManufacturingOrigin: storedProduct.carbonFootprintManufacturingOrigin,
             recycledContentPercentage: storedProduct.recycledContentPercentage,
-            recycledContentPercentageOrigin: initialData?.recycledContentPercentageOrigin,
-            // Keep default lifecycleEvents, complianceData, overallCompliance, notifications from defaults if not in StoredUserProduct
+            recycledContentPercentageOrigin: storedProduct.recycledContentPercentageOrigin,
           };
         }
       }
@@ -453,9 +463,9 @@ export default function ProductDetailPage() {
       if (result.syncStatus === 'Synced Successfully') {
         newEprelStatus = 'compliant';
       } else if (result.syncStatus === 'Product Not Found in EPREL') {
-        newEprelStatus = 'not_applicable'; // Or 'non_compliant' depending on business rule
+        newEprelStatus = 'not_applicable'; 
       } else if (result.syncStatus === 'Data Mismatch' || result.syncStatus === 'Error During Sync') {
-        newEprelStatus = 'pending_review'; // Or a custom status like 'requires_attention'
+        newEprelStatus = 'pending_review'; 
       }
 
       setProduct(prevProduct => {
@@ -502,7 +512,10 @@ export default function ProductDetailPage() {
   const currentYear = new Date().getFullYear().toString();
   const currentCarbonFootprint = product.historicalCarbonFootprint?.find(p => p.year === currentYear)?.value || product.historicalCarbonFootprint?.[product.historicalCarbonFootprint.length - 1]?.value;
   const dppCompleteness = calculateDppCompleteness(product);
+  
   const canEditProduct = (currentRole === 'admin' || currentRole === 'manufacturer') && product.productId.startsWith("USER_PROD");
+  const canSimulateCompliance = currentRole === 'admin' || currentRole === 'manufacturer';
+  const canSyncEprel = currentRole === 'admin' || currentRole === 'manufacturer';
 
 
   return (
@@ -534,7 +547,9 @@ export default function ProductDetailPage() {
       <Card className="shadow-xl border-primary/20 bg-muted/30">
         <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div> <CardTitle className="text-2xl font-headline text-primary">Live DPP Status Overview</CardTitle> <CardDescription>Dynamic summary of product compliance, alerts, and lifecycle progress.</CardDescription> </div>
-           <Button  onClick={handleSimulateComplianceCheck}  disabled={isCheckingCompliance || product.currentLifecyclePhaseIndex >= product.lifecyclePhases.length -1} variant="secondary" size="sm" > {isCheckingCompliance ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Workflow className="mr-2 h-4 w-4" />} Simulate Next Stage & Check Compliance </Button>
+           {canSimulateCompliance && (
+            <Button  onClick={handleSimulateComplianceCheck}  disabled={isCheckingCompliance || product.currentLifecyclePhaseIndex >= product.lifecyclePhases.length -1} variant="secondary" size="sm" > {isCheckingCompliance ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Workflow className="mr-2 h-4 w-4" />} Simulate Next Stage & Check Compliance </Button>
+           )}
         </CardHeader>
         <CardContent className="space-y-6"> 
             <OverallProductCompliance  
@@ -542,6 +557,7 @@ export default function ProductDetailPage() {
                 notifications={product.notifications as OverallProductNotification[]}
                 onSyncEprel={handleSyncEprel}
                 isSyncingEprel={isSyncingEprel}
+                canSyncEprel={canSyncEprel}
             /> 
             {product.notifications && product.notifications.length > 0 && ( <ProductAlerts notifications={product.notifications} /> )} 
             <ProductLifecycleFlowchart phases={product.lifecyclePhases} currentPhaseIndex={product.currentLifecyclePhaseIndex} /> 
@@ -557,8 +573,8 @@ export default function ProductDetailPage() {
                 alt={product.productName}
                 fill
                 className="object-contain"
-                data-ai-hint={product.imageHint || product.productName.split(" ").slice(0,2).join(" ")}
-                priority={!product.imageUrl?.startsWith("data:")} // Don't prioritize large data URIs
+                data-ai-hint={product.imageHint || (product.imageUrl?.includes("placehold.co") ? product.productName.split(" ").slice(0,2).join(" ") : "product " + product.category.toLowerCase())}
+                priority={!product.imageUrl?.startsWith("data:")} 
               />
             </AspectRatio>
             <DataOriginIcon origin={product.imageUrlOrigin} fieldName="Product Image"/>
@@ -693,3 +709,4 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
+

@@ -36,8 +36,9 @@ export interface ProductNotification {
 interface OverallProductComplianceProps {
   complianceData: OverallComplianceData;
   notifications?: ProductNotification[];
-  onSyncEprel?: () => Promise<void>; // Callback for EPREL sync
-  isSyncingEprel?: boolean; // Loading state for EPREL sync
+  onSyncEprel?: () => Promise<void>; 
+  isSyncingEprel?: boolean; 
+  canSyncEprel?: boolean; // New prop
 }
 
 const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionButton?: React.ReactNode }> = ({ title, data, actionButton }) => {
@@ -80,7 +81,7 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
       IconComponent = ShieldQuestion;
       badgeVariant = "secondary";
       badgeClasses = "bg-gray-500/20 text-gray-700 border-gray-500/30";
-      detailsText = `Not applicable for this product. Last checked: ${new Date(data.lastChecked).toLocaleDateString()}`; // Keep lastChecked for N/A
+      detailsText = `Not applicable for this product. Last checked: ${new Date(data.lastChecked).toLocaleDateString()}`; 
       break;
   }
 
@@ -109,14 +110,14 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
   );
 };
 
-const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ complianceData, notifications, onSyncEprel, isSyncingEprel }) => {
+const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ complianceData, notifications, onSyncEprel, isSyncingEprel, canSyncEprel }) => {
   if (!complianceData) {
     return <p className="text-muted-foreground">Overall compliance data not available.</p>;
   }
 
   const hasErrorNotifications = notifications?.some(n => n.type === 'error');
 
-  const eprelSyncButton = onSyncEprel ? (
+  const eprelSyncButton = (canSyncEprel && onSyncEprel) ? (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
@@ -162,3 +163,4 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
 };
 
 export default OverallProductCompliance;
+

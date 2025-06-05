@@ -24,7 +24,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 export default function AppHeader() {
@@ -60,7 +60,7 @@ export default function AppHeader() {
       </div>
 
       <div className="flex items-center gap-4">
-        <TooltipProvider>
+        {/* TooltipProvider removed, relying on a higher-level one (e.g., from SidebarProvider) */}
           <Tooltip>
             <TooltipTrigger asChild> {/* Correct usage: asChild is present */}
               <div className="flex items-center gap-2"> {/* This div becomes the trigger element */}
@@ -83,7 +83,7 @@ export default function AppHeader() {
               <p>Simulate User Role (Prototype)</p>
             </TooltipContent>
           </Tooltip>
-        </TooltipProvider>
+        {/* TooltipProvider removed */}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

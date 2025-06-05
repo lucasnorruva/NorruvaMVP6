@@ -30,8 +30,6 @@ import {
 import { useRole } from "@/contexts/RoleContext";
 import { useToast } from "@/hooks/use-toast";
 import type { ProductFormData } from "@/components/products/ProductForm";
-// Using a simplified structure here for the list, actual MockProductType is richer
-// For completeness calculation, we'll adapt.
 
 // Represents product data stored by user interactions (e.g., via ProductForm)
 interface StoredUserProduct extends ProductFormData {
@@ -187,18 +185,14 @@ export default function ProductsPage() {
     const userAddedStoredProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
 
     const userAddedDisplayableProducts: DisplayableProduct[] = userAddedStoredProducts.map(p => ({
-      ...p, // Spread all fields from StoredUserProduct
+      ...p, 
       id: p.id,
-      productId: p.id, // For consistency
+      productId: p.id, 
       productName: p.productName || "Unnamed Product",
-      // category will come from p.productCategory due to spread
-      // specifications will be string from p
     }));
 
-    // Map initialMockProducts to DisplayableProduct structure
     const initialDisplayableProducts: DisplayableProduct[] = initialMockProducts.map(mock => ({
-        ...mock, // Spread all fields from RichMockProduct
-        // id, productName, category, status, compliance, lastUpdated, specifications are already in RichMockProduct
+        ...mock,
     }));
 
 
@@ -319,9 +313,9 @@ export default function ProductsPage() {
                     <TooltipProvider>
                       <Tooltip delayDuration={100}>
                         <TooltipTrigger asChild>
-                          <div className="w-24">
-                            <Progress value={completeness.score} className="h-2.5" />
-                            <span className="text-xs text-muted-foreground ml-1">{completeness.score}%</span>
+                          <div className="flex items-center w-28"> {/* Increased width for progress and text */}
+                            <Progress value={completeness.score} className="h-2.5 flex-grow" />
+                            <span className="text-xs text-muted-foreground ml-2">{completeness.score}%</span>
                           </div>
                         </TooltipTrigger>
                         <TooltipContent align="start" className="bg-background shadow-lg p-3 rounded-md border max-w-xs">
@@ -414,3 +408,6 @@ export default function ProductsPage() {
     </div>
   );
 }
+
+
+    

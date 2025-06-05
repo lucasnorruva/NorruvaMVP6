@@ -92,7 +92,7 @@ const AdminQuickActions = () => {
     { label: "Manage Users", href: "/settings/users", icon: Users, description: "Add, edit, or remove platform users." },
     { label: "View All Products", href: "/products", icon: Package, description: "Oversee all product entries and DPPs." },
     { label: "Platform Configuration", href: "/settings", icon: Settings, description: "Adjust global platform settings and integrations." },
-    { label: "Compliance Copilot", href: "/copilot", icon: FileText, description: "Access AI tools for regulation queries." },
+    { label: "Compliance Copilot", href: "/copilot", icon: FileText, description: "Access AI assistant for regulation queries." },
     { label: "System Health", href: "#", icon: ShieldCheck, description: "Monitor platform status and performance." },
     { label: "Audit Logs", href: "#", icon: ListChecks, description: "Review system and user activity logs (mock)." },
   ];

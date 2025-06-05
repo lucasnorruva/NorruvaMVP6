@@ -5,18 +5,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { DashboardFiltersState } from "@/types/dpp";
-import { Filter } from "lucide-react";
+import { Filter, ListFilter } from "lucide-react";
 
 interface DashboardFiltersComponentProps {
   filters: DashboardFiltersState;
   onFiltersChange: (newFilters: Partial<DashboardFiltersState>) => void;
   availableRegulations: Array<{ value: string, label: string }>;
+  availableCategories: string[];
 }
 
 export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps> = ({
   filters,
   onFiltersChange,
   availableRegulations,
+  availableCategories,
 }) => {
   const statusOptions = [
     { value: "all", label: "All Statuses" },
@@ -72,24 +74,28 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
               </SelectContent>
             </Select>
           </div>
-          {/* Placeholder for Time Range Filter */}
-          {/* <div>
-            <Label htmlFor="time-range-filter">Time Range</Label>
+           <div>
+            <Label htmlFor="category-filter" className="text-sm font-medium mb-1 flex items-center">
+              <ListFilter className="h-4 w-4 mr-2 text-primary" />
+              Filter by Category
+            </Label>
             <Select
-              // value={filters.timeRange}
-              // onValueChange={(value) => onFiltersChange({ timeRange: value as DashboardFiltersState['timeRange'] })}
+              value={filters.category}
+              onValueChange={(value) => onFiltersChange({ category: value as DashboardFiltersState['category'] })}
             >
-              <SelectTrigger id="time-range-filter" disabled className="w-full">
-                <SelectValue placeholder="Select time range (soon)" />
+              <SelectTrigger id="category-filter" className="w-full">
+                <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="7d">Last 7 Days</SelectItem>
-                <SelectItem value="30d">Last 30 Days</SelectItem>
-                <SelectItem value="90d">Last 90 Days</SelectItem>
-                <SelectItem value="all">All Time</SelectItem>
+                <SelectItem value="all">All Categories</SelectItem>
+                {availableCategories.map((category) => (
+                  <SelectItem key={category} value={category}>
+                    {category}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
-          </div> */}
+          </div>
         </div>
       </CardContent>
     </Card>

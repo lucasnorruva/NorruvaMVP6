@@ -5,7 +5,7 @@ export interface DigitalProductPassport {
   category: string;
   metadata: {
     last_updated: string; // ISO date string
-    status: 'draft' | 'published' | 'archived' | 'pending_review'; // Added pending_review for more states
+    status: 'draft' | 'published' | 'archived' | 'pending_review';
   };
   compliance: {
     eu_espr?: { status: 'compliant' | 'non_compliant' | 'pending' };
@@ -13,14 +13,14 @@ export interface DigitalProductPassport {
     battery_regulation?: { status: 'compliant' | 'non_compliant' | 'pending' };
     // Add more regulations as needed
   };
-  consumerScans?: number; // Mock field
-  // Add other relevant DPP fields as needed
+  consumerScans?: number;
 }
 
 export interface DashboardFiltersState {
   status: 'all' | 'draft' | 'published' | 'archived' | 'pending_review';
   regulation: 'all' | 'eu_espr' | 'us_scope3' | 'battery_regulation';
-  // timeRange: '7d' | '30d' | '90d' | 'all'; // Time range filtering can be added later
+  category: 'all' | string; // Added category filter
+  // timeRange: '7d' | '30d' | '90d' | 'all';
 }
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
@@ -31,7 +31,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     metadata: { last_updated: "2024-07-28T10:00:00Z", status: "published" },
     compliance: {
       eu_espr: { status: "compliant" },
-      battery_regulation: { status: "non_compliant" },
+      battery_regulation: { status: "non_compliant" }, // Not fully compliant
     },
     consumerScans: 1250,
   },
@@ -50,7 +50,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     productName: "Recycled Polymer Phone Case",
     category: "Accessories",
     metadata: { last_updated: "2024-07-22T09:15:00Z", status: "published" },
-    compliance: {
+    compliance: { // Fully compliant
       eu_espr: { status: "compliant" },
       us_scope3: { status: "compliant" },
     },
@@ -61,7 +61,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     productName: "Modular Sofa System",
     category: "Furniture",
     metadata: { last_updated: "2024-07-20T11:00:00Z", status: "archived" },
-    compliance: {
+    compliance: { // Fully compliant
       eu_espr: { status: "compliant" },
     },
     consumerScans: 850,
@@ -84,7 +84,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     metadata: { last_updated: "2024-06-15T18:00:00Z", status: "published" },
     compliance: {
       eu_espr: { status: "compliant" },
-      us_scope3: { status: "non_compliant" },
+      us_scope3: { status: "non_compliant" }, // Not fully compliant
     },
     consumerScans: 1520,
   },
@@ -93,10 +93,30 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     productName: "Smart Home Thermostat G2",
     category: "Electronics",
     metadata: { last_updated: "2024-07-10T12:45:00Z", status: "published" },
-    compliance: {
+    compliance: { // Fully compliant
       eu_espr: { status: "compliant" },
-      battery_regulation: { status: "compliant" }, // Assuming it has a small battery
+      battery_regulation: { status: "compliant" },
     },
     consumerScans: 980,
+  },
+  {
+    id: "DPP008",
+    productName: "Recycled Glass Water Bottle",
+    category: "Homeware",
+    metadata: { last_updated: "2024-08-01T10:00:00Z", status: "published" },
+    compliance: {
+      eu_espr: { status: "compliant" },
+    },
+    consumerScans: 620,
+  },
+  {
+    id: "DPP009",
+    productName: "Bamboo Cutting Board Set",
+    category: "Homeware",
+    metadata: { last_updated: "2024-08-02T11:30:00Z", status: "pending_review" },
+    compliance: {
+      eu_espr: { status: "pending" },
+    },
+    consumerScans: 150,
   },
 ];

@@ -8,11 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import ProductForm, { type ProductFormData } from "@/components/products/ProductForm";
-import { extractProductData, type ExtractProductDataOutput } from "@/ai/flows/extract-product-data";
+import { extractProductData } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, Loader2, ScanLine, Info, Cpu } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 // Helper to convert file to data URI
 const fileToDataUri = (file: File): Promise<string> => {
@@ -90,8 +89,8 @@ export default function AddNewProductPage() {
         initialFormData.modelNumber = result.modelNumber;
         initialFormData.modelNumberOrigin = 'AI_EXTRACTED';
       }
-      if (result.specifications) {
-        initialFormData.specifications = typeof result.specifications === 'string' ? result.specifications : JSON.stringify(result.specifications, null, 2);
+      if (result.specifications && Object.keys(result.specifications).length > 0) {
+        initialFormData.specifications = JSON.stringify(result.specifications, null, 2);
         initialFormData.specificationsOrigin = 'AI_EXTRACTED';
       }
       if (result.energyLabel) {
@@ -104,15 +103,15 @@ export default function AddNewProductPage() {
         initialFormData.batteryChemistry = result.batteryChemistry;
         initialFormData.batteryChemistryOrigin = 'AI_EXTRACTED';
       }
-      if (result.stateOfHealth) {
+      if (result.stateOfHealth !== undefined && result.stateOfHealth !== null) {
         initialFormData.stateOfHealth = result.stateOfHealth;
         initialFormData.stateOfHealthOrigin = 'AI_EXTRACTED';
       }
-      if (result.carbonFootprintManufacturing) {
+      if (result.carbonFootprintManufacturing !== undefined && result.carbonFootprintManufacturing !== null) {
         initialFormData.carbonFootprintManufacturing = result.carbonFootprintManufacturing;
         initialFormData.carbonFootprintManufacturingOrigin = 'AI_EXTRACTED';
       }
-      if (result.recycledContentPercentage) {
+      if (result.recycledContentPercentage !== undefined && result.recycledContentPercentage !== null) {
         initialFormData.recycledContentPercentage = result.recycledContentPercentage;
         initialFormData.recycledContentPercentageOrigin = 'AI_EXTRACTED';
       }
@@ -143,14 +142,23 @@ export default function AddNewProductPage() {
   };
   
   const initialData: Partial<InitialProductFormData> = {
+    gtin: "",
+    productName: "",
+    productDescription: "",
+    manufacturer: "",
+    modelNumber: "",
+    materials: "",
+    sustainabilityClaims: "",
+    specifications: "",
+    energyLabel: "",
+    batteryChemistry: "",
   };
 
   const handleProductFormSubmit = async (data: ProductFormData) => {
     setIsSubmittingProduct(true);
     console.log("Submitting product data:", data);
     
-    const payload = { ...data }; 
-
+    // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500)); 
     toast({
       title: "Product Saved (Simulated)",
@@ -159,6 +167,10 @@ export default function AddNewProductPage() {
       action: <CheckCircle2 className="text-green-500" />,
     });
     setIsSubmittingProduct(false);
+    // Potentially reset form or navigate away
+    // form.reset(); // Reset form on successful submission
+    // setExtractedData(null); // Clear extracted data
+    // setActiveTab("ai-extraction"); // Optionally switch back
   };
 
   return (
@@ -226,7 +238,7 @@ export default function AddNewProductPage() {
                   <Info className="h-4 w-4 text-info" />
                   <AlertTitle className="text-info">Data Extracted</AlertTitle>
                   <AlertDescription>
-                    AI has pre-filled some information. Please switch to the "Manual Entry" tab to review, complete, and save the product. Fields populated by AI will be indicated.
+                    AI has pre-filled some information. Please switch to the <strong>Manual Entry</strong> tab to review, complete, and save the product. Fields populated by AI will be indicated with a <Cpu className="inline h-4 w-4 align-middle" /> icon.
                   </AlertDescription>
                 </Alert>
               )}

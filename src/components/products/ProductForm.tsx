@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page"; 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu, BatteryCharging } from "lucide-react";
+import { Cpu, BatteryCharging, Loader2 } from "lucide-react";
 import React from "react";
 
 const formSchema = z.object({
@@ -35,26 +35,26 @@ const formSchema = z.object({
   energyLabel: z.string().optional(),
   // Battery Regulation Fields
   batteryChemistry: z.string().optional(),
-  stateOfHealth: z.coerce.number().optional(), // Coerce to number
-  carbonFootprintManufacturing: z.coerce.number().optional(), // Coerce to number
-  recycledContentPercentage: z.coerce.number().optional(), // Coerce to number
+  stateOfHealth: z.coerce.number().nullable().optional(),
+  carbonFootprintManufacturing: z.coerce.number().nullable().optional(),
+  recycledContentPercentage: z.coerce.number().nullable().optional(),
 });
 
 export type ProductFormData = z.infer<typeof formSchema>;
 
 interface ProductFormProps {
   initialData?: Partial<InitialProductFormData>; 
-  onSubmit: (data: ProductFormData) => void;
+  onSubmit: (data: ProductFormData) => Promise<void>; // onSubmit is now async
   isSubmitting?: boolean;
   isStandalonePage?: boolean; 
 }
 
-const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: string, fieldName: string }) => {
+const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' | 'manual', fieldName: string }) => {
   if (fieldOrigin === 'AI_EXTRACTED') {
     return (
       <TooltipProvider>
         <Tooltip delayDuration={100}>
-          <TooltipTrigger type="button" className="ml-2 cursor-help">
+          <TooltipTrigger type="button" className="ml-1.5 cursor-help align-middle">
             <Cpu className="h-4 w-4 text-info" />
           </TooltipTrigger>
           <TooltipContent>
@@ -82,9 +82,9 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
       specifications: initialData?.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
       energyLabel: initialData?.energyLabel || "",
       batteryChemistry: initialData?.batteryChemistry || "",
-      stateOfHealth: initialData?.stateOfHealth || undefined,
-      carbonFootprintManufacturing: initialData?.carbonFootprintManufacturing || undefined,
-      recycledContentPercentage: initialData?.recycledContentPercentage || undefined,
+      stateOfHealth: initialData?.stateOfHealth ?? undefined,
+      carbonFootprintManufacturing: initialData?.carbonFootprintManufacturing ?? undefined,
+      recycledContentPercentage: initialData?.recycledContentPercentage ?? undefined,
     },
   });
 
@@ -101,9 +101,9 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
         specifications: initialData.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
         energyLabel: initialData.energyLabel || "",
         batteryChemistry: initialData.batteryChemistry || "",
-        stateOfHealth: initialData.stateOfHealth || undefined,
-        carbonFootprintManufacturing: initialData.carbonFootprintManufacturing || undefined,
-        recycledContentPercentage: initialData.recycledContentPercentage || undefined,
+        stateOfHealth: initialData.stateOfHealth ?? undefined,
+        carbonFootprintManufacturing: initialData.carbonFootprintManufacturing ?? undefined,
+        recycledContentPercentage: initialData.recycledContentPercentage ?? undefined,
       });
     }
   }, [initialData, form]);
@@ -271,7 +271,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
                     <Textarea placeholder='e.g., { "color": "blue", "weight": "10kg" }' {...field} rows={5} />
                   </FormControl>
                   <FormDescription>
-                    Enter detailed product specifications as a JSON object.
+                    Enter detailed product specifications as a JSON object. If AI extracted this, ensure it is valid JSON.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
@@ -311,7 +311,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
                     <AiIndicator fieldOrigin={initialData?.stateOfHealthOrigin} fieldName="State of Health" />
                   </FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="e.g., 98" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
+                    <Input type="number" placeholder="e.g., 98" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -327,7 +327,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
                     <AiIndicator fieldOrigin={initialData?.carbonFootprintManufacturingOrigin} fieldName="Carbon Footprint" />
                   </FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="e.g., 75.5" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
+                    <Input type="number" placeholder="e.g., 75.5" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -343,7 +343,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
                     <AiIndicator fieldOrigin={initialData?.recycledContentPercentageOrigin} fieldName="Recycled Content" />
                   </FormLabel>
                   <FormControl>
-                    <Input type="number" placeholder="e.g., 15" {...field} onChange={e => field.onChange(e.target.valueAsNumber)} />
+                    <Input type="number" placeholder="e.g., 15" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -362,14 +362,15 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="font-headline">Product Information</CardTitle>
-              <CardDescription>Fill in the details for the Digital Product Passport. Fields suggested by AI will be marked with a <Cpu className="inline h-4 w-4 text-info" /> icon.</CardDescription>
+              <CardDescription>Fill in the details for the Digital Product Passport. Fields suggested by AI will be marked with a <Cpu className="inline h-4 w-4 text-info align-middle" /> icon.</CardDescription>
             </CardHeader>
             <CardContent>
               {formContent}
             </CardContent>
           </Card>
-          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save Product"}
+          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting ? "Saving Product..." : "Save Product"}
           </Button>
         </form>
       </Form>
@@ -380,10 +381,12 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
      <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {formContent}
-           <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={isSubmitting}>
-            {isSubmitting ? "Saving..." : "Save Changes"}
+           <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting}>
+            {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting ? "Saving Changes..." : "Save Changes"}
           </Button>
         </form>
     </Form>
   );
 }
+

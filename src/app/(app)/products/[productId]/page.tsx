@@ -8,30 +8,76 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageCheck, CircleDollarSign, Wrench, AlertCircle, PackageSearch, CalendarDays, MapPin } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
+
+import ProductLifecycleFlowchart, { type LifecyclePhase } from '@/components/products/ProductLifecycleFlowchart';
+import OverallProductCompliance, { type OverallComplianceData } from '@/components/products/OverallProductCompliance';
+import ProductAlerts, { type ProductNotification } from '@/components/products/ProductAlerts';
 
 
 // Mock product data - in a real app, this would come from an API
-const MOCK_PRODUCTS = [
-  { 
-    productId: "PROD001", 
-    productName: "EcoFriendly Refrigerator X2000", 
+interface MockProductType {
+  productId: string;
+  productName: string;
+  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
+  gtin: string;
+  gtinVerified?: boolean;
+  category: string;
+  status: string;
+  compliance: string;
+  complianceLastChecked?: string;
+  lastUpdated: string;
+  manufacturer: string;
+  manufacturerVerified?: boolean;
+  modelNumber: string;
+  description: string;
+  descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+  imageUrl: string;
+  imageHint: string;
+  materials: string;
+  sustainabilityClaims: string;
+  sustainabilityClaimsVerified?: boolean;
+  energyLabel: string;
+  specifications: Record<string, string>;
+  lifecycleEvents: Array<{ id: string; type: string; timestamp: string; location: string; details: string; isBlockchainAnchored?: boolean }>;
+  complianceData: Record<string, { status: string; lastChecked: string; reportId: string; isVerified?: boolean }>;
+  isDppBlockchainAnchored?: boolean;
+  batteryChemistry?: string;
+  batteryChemistryOrigin?: string;
+  stateOfHealth?: number;
+  stateOfHealthOrigin?: string;
+  carbonFootprintManufacturing?: number;
+  carbonFootprintManufacturingOrigin?: string;
+  recycledContentPercentage?: number;
+  recycledContentPercentageOrigin?: string;
+
+  // New fields for the visual dashboard
+  currentLifecyclePhaseIndex: number;
+  lifecyclePhases: LifecyclePhase[];
+  overallCompliance: OverallComplianceData;
+  notifications: ProductNotification[];
+}
+
+const MOCK_PRODUCTS: MockProductType[] = [
+  {
+    productId: "PROD001",
+    productName: "EcoFriendly Refrigerator X2000",
     gtin: "01234567890123",
     gtinVerified: true,
-    category: "Appliances", 
-    status: "Active", 
-    compliance: "Compliant", 
+    category: "Appliances",
+    status: "Active",
+    compliance: "Compliant",
     complianceLastChecked: "2024-07-15",
     lastUpdated: "2024-07-20",
     manufacturer: "GreenTech Appliances",
     manufacturerVerified: true,
     modelNumber: "X2000-ECO",
     description: "A state-of-the-art refrigerator designed for maximum energy efficiency and minimal environmental impact. Features advanced cooling technology and smart controls.",
-    descriptionOrigin: "manual",
     imageUrl: "https://placehold.co/600x400.png",
     imageHint: "refrigerator appliance",
     materials: "Recycled Steel (70%), Bio-based Polymers (20%), Glass (10%)",
@@ -56,16 +102,37 @@ const MOCK_PRODUCTS = [
       "WEEE": { status: "Compliant", lastChecked: "2024-07-01", reportId: "WEEE-X2000-001", isVerified: false },
     },
     isDppBlockchainAnchored: true,
+    // Visual Dashboard Data
+    currentLifecyclePhaseIndex: 2,
+    lifecyclePhases: [
+      { id: "lc001", name: "Raw Materials", icon: PackageSearch, status: 'completed', timestamp: "2023-12-01", details: "Sourcing of verified recycled steel and bio-polymers.", complianceMetrics: [{ name: "Supplier Ethical Audit", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Recycled Content Input", value: 75, unit: "%", targetValue: 70 }] },
+      { id: "lc002", name: "Manufacturing", icon: Factory, status: 'completed', timestamp: "2024-01-15", details: "Assembly at EcoFactory, Germany. Production batch #PB789.", complianceMetrics: [{ name: "ISO 14001 Certification", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Energy Used", value: 50, unit: "kWh/unit", targetValue: 55 }, { name: "Waste Generated", value: 2, unit: "kg/unit", targetValue: 3 }] },
+      { id: "lc003", name: "Shipment", icon: Truck, status: 'in_progress', timestamp: "2024-01-20", details: "Shipping to distribution center via low-emission freight. Container #C0N741N3R.", complianceMetrics: [{ name: "Carbon Offset Cert.", status: "pending_review", reportLink: "#" }], sustainabilityMetrics: [{ name: "Transport Emissions", value: 15, unit: "kg CO2e", targetValue: 12 }] },
+      { id: "lc004", name: "Retail", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-02-10", details: "Product available at certified retail partners.", complianceMetrics: [], sustainabilityMetrics: [] },
+      { id: "lc005", name: "Consumer Use", icon: PackageCheck, status: 'pending', details: "Estimated 10-year lifespan with smart energy monitoring.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Avg. Energy Use", value: 150, unit: "kWh/yr (est.)" }] },
+      { id: "lc006", name: "End-of-Life", icon: Recycle, status: 'pending', details: "Designated for 95% recyclability through partner network.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Recyclability Potential", value: 95, unit: "%"}] }
+    ],
+    overallCompliance: {
+      gdpr: { status: "compliant", lastChecked: "2024-07-01" },
+      eprel: { status: "compliant", entryId: "EPREL12345", lastChecked: "2024-06-20" },
+      ebsiVerified: { status: "compliant", verificationId: "EBSI-TX-ABC", lastChecked: "2024-07-15" },
+      scip: { status: "not_applicable", lastChecked: "2024-07-01" },
+      csrd: { status: "in_progress", lastChecked: "2024-07-20" }
+    },
+    notifications: [
+      { id: "n001", type: "info", message: "Quarterly sustainability report due next month.", date: "2024-07-10" },
+      { id: "n002", type: "warning", message: "Supplier 'PolyCore' ethical audit expiring soon.", date: "2024-07-18" }
+    ]
   },
-   { 
-    productId: "PROD002", 
-    productName: "Smart LED Bulb (4-Pack) with Battery Backup", 
+  {
+    productId: "PROD002",
+    productName: "Smart LED Bulb (4-Pack) with Battery Backup",
     productNameOrigin: "AI_EXTRACTED",
     gtin: "98765432109876",
     gtinVerified: false,
-    category: "Electronics", 
-    status: "Active", 
-    compliance: "Pending", 
+    category: "Electronics",
+    status: "Active",
+    compliance: "Pending",
     complianceLastChecked: "2024-07-20",
     lastUpdated: "2024-07-18",
     manufacturer: "BrightSpark Electronics",
@@ -86,7 +153,6 @@ const MOCK_PRODUCTS = [
       "Connectivity": "Wi-Fi, Bluetooth",
       "Battery Backup Time": "2 hours"
     },
-    // Battery Regulation Data
     batteryChemistry: "Li-ion NMC",
     batteryChemistryOrigin: "AI_EXTRACTED",
     stateOfHealth: 99, // As percentage
@@ -95,7 +161,6 @@ const MOCK_PRODUCTS = [
     carbonFootprintManufacturingOrigin: "AI_EXTRACTED",
     recycledContentPercentage: 8, // As percentage
     recycledContentPercentageOrigin: "manual",
-
     lifecycleEvents: [
       { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01", location: "Shenzhen, China", details: "Batch #LEDB456", isBlockchainAnchored: true },
       { id: "EVT005", type: "Imported", timestamp: "2024-03-15", location: "Rotterdam Port", details: "Shipment #SHP0089", isBlockchainAnchored: false },
@@ -106,27 +171,37 @@ const MOCK_PRODUCTS = [
       "Battery Regulation (EU 2023/1542)": { status: "Pending Documentation", lastChecked: "2024-07-20", reportId: "BATREG-LEDB456-PRE", isVerified: false },
     },
     isDppBlockchainAnchored: false,
+    // Visual Dashboard Data
+    currentLifecyclePhaseIndex: 1,
+    lifecyclePhases: [
+      { id: "lc007", name: "Materials Sourcing", icon: PackageSearch, status: 'completed', timestamp: "2024-02-01", details: "Sourcing of PC, Al, LED chips, battery components.", complianceMetrics: [{ name: "Conflict Minerals Report", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Supplier Diversity Score", value: 60, unit: "/100", targetValue: 75 }] },
+      { id: "lc008", name: "Manufacturing & Assembly", icon: Factory, status: 'in_progress', timestamp: "2024-03-01", details: "Assembly in Shenzhen, China. Batch #LEDB456.", complianceMetrics: [{ name: "Factory Safety Audit", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Carbon Footprint (Mfg.)", value: 5.2, unit: "kg CO2e", targetValue: 5.0 }, { name: "Recycled Packaging Used", value: 90, unit: "%", targetValue: 100}] },
+      { id: "lc009", name: "Distribution", icon: Truck, status: 'pending', details: "Global distribution network.", complianceMetrics: [], sustainabilityMetrics: [] },
+      { id: "lc010", name: "Retail Sale", icon: ShoppingBagIcon, status: 'pending', details: "Available through online and physical stores.", complianceMetrics: [], sustainabilityMetrics: [] },
+      { id: "lc011", name: "Use Phase", icon: PackageCheck, status: 'pending', details: "Estimated 3-year useful life for battery component.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }] },
+      { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'pending', details: "Battery designed for easy removal and recycling.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]}
+    ],
+    overallCompliance: {
+      gdpr: { status: "not_applicable", lastChecked: "2024-07-01" },
+      eprel: { status: "pending_review", lastChecked: "2024-07-20" },
+      ebsiVerified: { status: "pending_review", lastChecked: "2024-07-20" },
+      scip: { status: "compliant", declarationId: "SCIP-XYZ", lastChecked: "2024-07-01" },
+      csrd: { status: "pending_review", lastChecked: "2024-07-20" }
+    },
+    notifications: [
+      { id: "n003", type: "error", message: "Battery Regulation documentation overdue!", date: "2024-07-19" }
+    ]
   },
 ];
 
-type ProductType = typeof MOCK_PRODUCTS[0] & {
-  batteryChemistry?: string;
-  batteryChemistryOrigin?: string;
-  stateOfHealth?: number;
-  stateOfHealthOrigin?: string;
-  carbonFootprintManufacturing?: number;
-  carbonFootprintManufacturingOrigin?: string;
-  recycledContentPercentage?: number;
-  recycledContentPercentageOrigin?: string;
-};
 
-const TrustSignalIcon = ({ isVerified, tooltipText, Icon = CheckCircle2 }: {isVerified?: boolean, tooltipText: string, Icon?: React.ElementType}) => {
+const TrustSignalIcon = ({ isVerified, tooltipText, Icon = CheckCircle2 }: { isVerified?: boolean, tooltipText: string, Icon?: React.ElementType }) => {
   if (isVerified === undefined) return null;
   return (
     <TooltipProvider>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
-          <span> 
+          <span>
             {isVerified ? <Icon className="h-4 w-4 text-green-500 ml-1" /> : <Info className="h-4 w-4 text-yellow-500 ml-1" />}
           </span>
         </TooltipTrigger>
@@ -160,13 +235,13 @@ const DataOriginIcon = ({ origin, fieldName }: { origin?: string, fieldName: str
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.productId as string;
-  const [product, setProduct] = useState<ProductType | null | undefined>(undefined); 
+  const [product, setProduct] = useState<MockProductType | null | undefined>(undefined);
   const router = useRouter();
 
   useEffect(() => {
     const fetchProduct = async () => {
-      await new Promise(resolve => setTimeout(resolve, 500)); 
-      const foundProduct = MOCK_PRODUCTS.find(p => p.productId === productId) as ProductType | undefined;
+      await new Promise(resolve => setTimeout(resolve, 500));
+      const foundProduct = MOCK_PRODUCTS.find(p => p.productId === productId);
       setProduct(foundProduct);
     };
 
@@ -181,9 +256,9 @@ export default function ProductDetailPage() {
 
   if (!product) {
     notFound();
-    return null; 
+    return null;
   }
-  
+
   const hasBatteryData = product.batteryChemistry || product.stateOfHealth !== undefined || product.carbonFootprintManufacturing !== undefined || product.recycledContentPercentage !== undefined;
 
   return (
@@ -192,86 +267,105 @@ export default function ProductDetailPage() {
         <div>
           <div className="flex items-center">
             <h1 className="text-3xl font-headline font-semibold">{product.productName}</h1>
-            <DataOriginIcon origin={(product as any).productNameOrigin} fieldName="Product Name" />
+            <DataOriginIcon origin={product.productNameOrigin} fieldName="Product Name" />
             {product.isDppBlockchainAnchored && (
-                <TooltipProvider>
-                    <Tooltip delayDuration={100}>
-                        <TooltipTrigger asChild>
-                             <Fingerprint className="h-6 w-6 text-primary ml-2" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                            <p>This Digital Product Passport is anchored on the blockchain.</p>
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
+              <TooltipProvider>
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <Fingerprint className="h-6 w-6 text-primary ml-2" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>This Digital Product Passport is anchored on the blockchain.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge variant={
-              product.status === "Active" ? "default" : 
-              product.status === "Archived" ? "secondary" : "outline"
+              product.status === "Active" ? "default" :
+                product.status === "Archived" ? "secondary" : "outline"
             } className={
               product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : ""
             }>
               {product.status}
             </Badge>
             <TooltipProvider>
-                <Tooltip delayDuration={100}>
-                    <TooltipTrigger asChild>
-                         <Badge variant={
-                            product.compliance === "Compliant" ? "default" :
-                            product.compliance === "Pending" ? "outline" : "destructive"
-                            } className={`
+              <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                  <Badge variant={
+                    product.compliance === "Compliant" ? "default" :
+                      product.compliance === "Pending" ? "outline" : "destructive"
+                  } className={`
                             ${product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : ""}
                             ${product.compliance === "Pending" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""}
+                            ${product.compliance.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""}
                             cursor-help
                             `}>
-                            {product.compliance}
-                            {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1"/>}
-                            {product.compliance === "Pending" && <Info className="h-3 w-3 ml-1"/>}
-                            {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1"/>}
-                        </Badge>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                        <p>Overall compliance status. Last checked: {product.complianceLastChecked || "N/A"}</p>
-                    </TooltipContent>
-                </Tooltip>
+                    {product.compliance}
+                    {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />}
+                    {(product.compliance === "Pending" || product.compliance.startsWith("Pending")) && <Info className="h-3 w-3 ml-1" />}
+                    {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1" />}
+                  </Badge>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Overall compliance status. Last checked: {product.complianceLastChecked || "N/A"}</p>
+                </TooltipContent>
+              </Tooltip>
             </TooltipProvider>
             <span className="text-sm text-muted-foreground">Last updated: {product.lastUpdated}</span>
           </div>
         </div>
         <div className="flex gap-2">
-            <Link href={`/passport/${product.productId}`} passHref target="_blank">
-              <Button variant="outline">
-                <ExternalLink className="mr-2 h-4 w-4" />
-                View Public Passport
-              </Button>
-            </Link>
-         </div>
+          <Link href={`/passport/${product.productId}`} passHref target="_blank">
+            <Button variant="outline">
+              <ExternalLink className="mr-2 h-4 w-4" />
+              View Public Passport
+            </Button>
+          </Link>
+        </div>
       </div>
+
+      {/* Visual Dashboard Section */}
+      <Card className="shadow-xl border-primary/20">
+        <CardHeader>
+          <CardTitle className="text-2xl font-headline text-primary">Live DPP Status Overview</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <OverallProductCompliance complianceData={product.overallCompliance} />
+          {product.notifications && product.notifications.length > 0 && (
+            <ProductAlerts notifications={product.notifications} />
+          )}
+          <ProductLifecycleFlowchart
+            phases={product.lifecyclePhases}
+            currentPhaseIndex={product.currentLifecyclePhaseIndex}
+          />
+        </CardContent>
+      </Card>
+
 
       <Card className="shadow-lg overflow-hidden">
         <div className="grid md:grid-cols-3">
           <div className="md:col-span-1">
             <AspectRatio ratio={1}>
-              <Image 
-                src={product.imageUrl} 
-                alt={product.productName} 
-                fill 
+              <Image
+                src={product.imageUrl}
+                alt={product.productName}
+                fill
                 className="object-cover"
                 data-ai-hint={product.imageHint}
-                priority 
+                priority
               />
             </AspectRatio>
           </div>
           <div className="md:col-span-2 p-6">
             <div className="flex items-center">
-                 <CardTitle className="text-2xl mb-2">{product.productName}</CardTitle>
-                 <DataOriginIcon origin={(product as any).productNameOrigin} fieldName="Product Name"/>
+              <CardTitle className="text-2xl mb-2">{product.productName}</CardTitle>
+              <DataOriginIcon origin={product.productNameOrigin} fieldName="Product Name" />
             </div>
             <div className="flex items-start">
-                <CardDescription className="text-base mb-4">{product.description}</CardDescription>
-                <DataOriginIcon origin={(product as any).descriptionOrigin} fieldName="Description"/>
+              <CardDescription className="text-base mb-4">{product.description}</CardDescription>
+              <DataOriginIcon origin={product.descriptionOrigin} fieldName="Description" />
             </div>
             <div className="grid grid-cols-2 gap-4 text-sm">
               <div className="flex items-center"><strong className="text-foreground/80 mr-1">GTIN:</strong> {product.gtin} <TrustSignalIcon isVerified={product.gtinVerified} tooltipText={product.gtinVerified ? "GTIN Verified" : "GTIN Not Verified"} /></div>
@@ -279,11 +373,11 @@ export default function ProductDetailPage() {
               <div className="flex items-center"><strong className="text-foreground/80 mr-1">Manufacturer:</strong> {product.manufacturer} <TrustSignalIcon isVerified={product.manufacturerVerified} tooltipText={product.manufacturerVerified ? "Manufacturer Verified" : "Manufacturer Not Verified"} /></div>
               <div><strong className="text-foreground/80">Model:</strong> {product.modelNumber}</div>
             </div>
-             <div className="mt-4 pt-4 border-t">
-                <h4 className="text-md font-semibold mb-2 flex items-center"><Leaf className="h-5 w-5 mr-2 text-growth-green"/>Key Sustainability Info <TrustSignalIcon isVerified={product.sustainabilityClaimsVerified} tooltipText={product.sustainabilityClaimsVerified ? "Sustainability Claims Verified" : "Sustainability Claims Pending Verification"} /></h4>
-                <p className="text-sm text-muted-foreground mb-1"><strong>Materials:</strong> {product.materials}</p>
-                <p className="text-sm text-muted-foreground mb-1"><strong>Claims:</strong> {product.sustainabilityClaims}</p>
-                <p className="text-sm text-muted-foreground"><strong>Energy Label:</strong> <Badge variant="secondary">{product.energyLabel}</Badge></p>
+            <div className="mt-4 pt-4 border-t">
+              <h4 className="text-md font-semibold mb-2 flex items-center"><Leaf className="h-5 w-5 mr-2 text-accent" />Key Sustainability Info <TrustSignalIcon isVerified={product.sustainabilityClaimsVerified} tooltipText={product.sustainabilityClaimsVerified ? "Sustainability Claims Verified" : "Sustainability Claims Pending Verification"} /></h4>
+              <p className="text-sm text-muted-foreground mb-1"><strong>Materials:</strong> {product.materials}</p>
+              <p className="text-sm text-muted-foreground mb-1"><strong>Claims:</strong> {product.sustainabilityClaims}</p>
+              <p className="text-sm text-muted-foreground"><strong>Energy Label:</strong> <Badge variant="secondary">{product.energyLabel}</Badge></p>
             </div>
           </div>
         </div>
@@ -318,35 +412,35 @@ export default function ProductDetailPage() {
           <TabsContent value="battery" className="mt-4">
             <Card>
               <CardHeader>
-                <CardTitle className="flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-primary"/>EU Battery Passport Information</CardTitle>
+                <CardTitle className="flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-primary" />EU Battery Passport Information</CardTitle>
                 <CardDescription>Key data points relevant to the EU Battery Regulation.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
                 {product.batteryChemistry && (
                   <div className="flex items-center justify-between text-sm border-b pb-1">
-                    <span className="font-medium text-foreground/90 flex items-center">Battery Chemistry <DataOriginIcon origin={product.batteryChemistryOrigin} fieldName="Battery Chemistry"/></span>
+                    <span className="font-medium text-foreground/90 flex items-center">Battery Chemistry <DataOriginIcon origin={product.batteryChemistryOrigin} fieldName="Battery Chemistry" /></span>
                     <span className="text-muted-foreground">{product.batteryChemistry}</span>
                   </div>
                 )}
                 {product.stateOfHealth !== undefined && (
                   <div className="flex items-center justify-between text-sm border-b pb-1">
-                    <span className="font-medium text-foreground/90 flex items-center">State of Health (SoH) <DataOriginIcon origin={product.stateOfHealthOrigin} fieldName="State of Health"/></span>
+                    <span className="font-medium text-foreground/90 flex items-center">State of Health (SoH) <DataOriginIcon origin={product.stateOfHealthOrigin} fieldName="State of Health" /></span>
                     <span className="text-muted-foreground">{product.stateOfHealth}%</span>
                   </div>
                 )}
                 {product.carbonFootprintManufacturing !== undefined && (
                   <div className="flex items-center justify-between text-sm border-b pb-1">
-                    <span className="font-medium text-foreground/90 flex items-center">Manufacturing Carbon Footprint <DataOriginIcon origin={product.carbonFootprintManufacturingOrigin} fieldName="Manufacturing Carbon Footprint"/></span>
+                    <span className="font-medium text-foreground/90 flex items-center">Manufacturing Carbon Footprint <DataOriginIcon origin={product.carbonFootprintManufacturingOrigin} fieldName="Manufacturing Carbon Footprint" /></span>
                     <span className="text-muted-foreground">{product.carbonFootprintManufacturing} kg CO₂e</span>
                   </div>
                 )}
                 {product.recycledContentPercentage !== undefined && (
                   <div className="flex items-center justify-between text-sm border-b pb-1">
-                    <span className="font-medium text-foreground/90 flex items-center">Recycled Content <DataOriginIcon origin={product.recycledContentPercentageOrigin} fieldName="Recycled Content"/></span>
+                    <span className="font-medium text-foreground/90 flex items-center">Recycled Content <DataOriginIcon origin={product.recycledContentPercentageOrigin} fieldName="Recycled Content" /></span>
                     <span className="text-muted-foreground">{product.recycledContentPercentage}%</span>
                   </div>
                 )}
-                 <p className="text-xs text-muted-foreground pt-2">Additional battery passport information such as performance, durability, and detailed material composition would be displayed here as available.</p>
+                <p className="text-xs text-muted-foreground pt-2">Additional battery passport information such as performance, durability, and detailed material composition would be displayed here as available.</p>
               </CardContent>
             </Card>
           </TabsContent>
@@ -364,7 +458,7 @@ export default function ProductDetailPage() {
                   <CardTitle className="text-md flex items-center justify-between">
                     <span className="flex items-center">{reg} <TrustSignalIcon isVerified={data.isVerified} tooltipText={data.isVerified ? `${reg} Verified` : `${reg} Status Pending Verification`} /></span>
                     <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={
-                        data.status === "Compliant" ? "bg-green-500/20 text-green-700" : 
+                      data.status === "Compliant" ? "bg-green-500/20 text-green-700" :
                         data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""
                     }>
                       {data.status}
@@ -392,18 +486,18 @@ export default function ProductDetailPage() {
                       <p className="font-semibold text-primary flex items-center">
                         {event.type}
                         {event.isBlockchainAnchored && (
-                            <TooltipProvider>
-                                <Tooltip delayDuration={100}>
-                                    <TooltipTrigger asChild>
-                                        <Server className="h-4 w-4 text-primary ml-2" />
-                                    </TooltipTrigger>
-                                    <TooltipContent>
-                                        <p>Event anchored on blockchain.</p>
-                                    </TooltipContent>
-                                </Tooltip>
-                            </TooltipProvider>
+                          <TooltipProvider>
+                            <Tooltip delayDuration={100}>
+                              <TooltipTrigger asChild>
+                                <Server className="h-4 w-4 text-primary ml-2" />
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>Event anchored on blockchain.</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
                         )}
-                        </p>
+                      </p>
                       <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleDateString()}</p>
                     </div>
                     <p className="text-sm text-muted-foreground">Location: {event.location}</p>
@@ -414,34 +508,34 @@ export default function ProductDetailPage() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="sustainability" className="mt-4">
-           <Card>
+          <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><Zap className="mr-2 h-5 w-5 text-growth-green"/>Detailed Sustainability Information</CardTitle> {/* Changed icon to Zap for variety */}
-               <CardDescription>In-depth data on materials, carbon footprint, circularity, etc.</CardDescription>
+              <CardTitle className="flex items-center"><Zap className="mr-2 h-5 w-5 text-accent" />Detailed Sustainability Information</CardTitle>
+              <CardDescription>In-depth data on materials, carbon footprint, circularity, etc.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-                <div className="flex items-center justify-between text-sm border-b pb-1">
-                    <span className="font-medium text-foreground/90 flex items-center"><Leaf className="mr-2 h-4 w-4 text-green-500"/> Detailed Material Breakdown:</span>
-                    <span className="text-muted-foreground">To be populated from BOM or LCA data.</span>
-                </div>
-                 <div className="flex items-center justify-between text-sm border-b pb-1">
-                    <span className="font-medium text-foreground/90 flex items-center"><BarChart3 className="mr-2 h-4 w-4 text-red-500"/> Carbon Footprint (Calculated):</span>
-                    <span className="text-muted-foreground">[Value] kg CO₂e (Scope 1, 2, 3). To be integrated.</span>
-                </div>
-                <div className="flex items-center justify-between text-sm border-b pb-1">
-                    <span className="font-medium text-foreground/90 flex items-center"><Recycle className="mr-2 h-4 w-4 text-blue-500"/> Recyclability Score:</span>
-                    <span className="text-muted-foreground">95% (Based on material composition and design for disassembly).</span>
-                </div>
-                <div className="flex items-center justify-between text-sm border-b pb-1">
-                    <span className="font-medium text-foreground/90 flex items-center"><Settings2 className="mr-2 h-4 w-4 text-orange-500"/> Repairability Index:</span>
-                    <span className="text-muted-foreground">7.5/10 (To be calculated based on ESPR requirements).</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium text-foreground/90 flex items-center"><CheckCircle2 className="mr-2 h-4 w-4 text-yellow-500"/> Certifications:</span>
-                    <span className="text-muted-foreground">Energy Star, EU Ecolabel (Mock).</span>
-                </div>
+              <div className="flex items-center justify-between text-sm border-b pb-1">
+                <span className="font-medium text-foreground/90 flex items-center"><Leaf className="mr-2 h-4 w-4 text-green-500" /> Detailed Material Breakdown:</span>
+                <span className="text-muted-foreground">To be populated from BOM or LCA data.</span>
+              </div>
+              <div className="flex items-center justify-between text-sm border-b pb-1">
+                <span className="font-medium text-foreground/90 flex items-center"><BarChart3 className="mr-2 h-4 w-4 text-red-500" /> Carbon Footprint (Calculated):</span>
+                <span className="text-muted-foreground">[Value] kg CO₂e (Scope 1, 2, 3). To be integrated.</span>
+              </div>
+              <div className="flex items-center justify-between text-sm border-b pb-1">
+                <span className="font-medium text-foreground/90 flex items-center"><Recycle className="mr-2 h-4 w-4 text-blue-500" /> Recyclability Score:</span>
+                <span className="text-muted-foreground">95% (Based on material composition and design for disassembly).</span>
+              </div>
+              <div className="flex items-center justify-between text-sm border-b pb-1">
+                <span className="font-medium text-foreground/90 flex items-center"><Settings2 className="mr-2 h-4 w-4 text-orange-500" /> Repairability Index:</span>
+                <span className="text-muted-foreground">7.5/10 (To be calculated based on ESPR requirements).</span>
+              </div>
+              <div className="flex items-center justify-between text-sm">
+                <span className="font-medium text-foreground/90 flex items-center"><CheckCircle2 className="mr-2 h-4 w-4 text-yellow-500" /> Certifications:</span>
+                <span className="text-muted-foreground">Energy Star, EU Ecolabel (Mock).</span>
+              </div>
             </CardContent>
           </Card>
         </TabsContent>
@@ -458,8 +552,21 @@ function ProductDetailSkeleton() {
           <Skeleton className="h-10 w-3/4 mb-2" />
           <Skeleton className="h-6 w-1/2" />
         </div>
-        <Skeleton className="h-10 w-40" /> 
+        <Skeleton className="h-10 w-40" />
       </div>
+
+      <Card className="shadow-xl border-primary/20">
+        <CardHeader>
+          <Skeleton className="h-8 w-1/2 mb-2" />
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <Skeleton className="h-24 w-full" /> {/* Placeholder for OverallCompliance */}
+          <Skeleton className="h-16 w-full" /> {/* Placeholder for ProductAlerts */}
+          <Skeleton className="h-48 w-full" /> {/* Placeholder for ProductLifecycleFlowchart */}
+        </CardContent>
+      </Card>
+
+
       <Card className="shadow-lg overflow-hidden">
         <div className="grid md:grid-cols-3">
           <div className="md:col-span-1">
@@ -477,15 +584,15 @@ function ProductDetailSkeleton() {
               <Skeleton className="h-6 w-full" />
             </div>
             <div className="mt-4 pt-4 border-t space-y-2">
-                <Skeleton className="h-6 w-1/3 mb-2"/>
-                <Skeleton className="h-5 w-full"/>
-                <Skeleton className="h-5 w-full"/>
-                <Skeleton className="h-5 w-1/2"/>
+              <Skeleton className="h-6 w-1/3 mb-2" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-full" />
+              <Skeleton className="h-5 w-1/2" />
             </div>
           </div>
         </div>
       </Card>
-      <Skeleton className="h-10 w-full md:w-2/3" /> 
+      <Skeleton className="h-10 w-full md:w-2/3" />
       <Card className="mt-4">
         <CardHeader>
           <Skeleton className="h-7 w-1/3" />
@@ -500,3 +607,5 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
+
+    

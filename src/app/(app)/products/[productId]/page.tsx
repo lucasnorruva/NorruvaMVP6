@@ -8,12 +8,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2 } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { Progress } from '@/components/ui/progress';
 
 import ProductLifecycleFlowchart, { type LifecyclePhase } from '@/components/products/ProductLifecycleFlowchart';
 import OverallProductCompliance, { type OverallComplianceData, type ProductNotification as OverallProductNotification } from '@/components/products/OverallProductCompliance';
@@ -306,6 +307,68 @@ const chartConfig = {
   materials: {}, // Will be populated by material names
 } satisfies import("@/components/ui/chart").ChartConfig;
 
+const calculateDppCompleteness = (product: MockProductType): { score: number; filledFields: number; totalFields: number; missingFields: string[] } => {
+  const essentialFieldsConfig: Array<{ key: keyof MockProductType | string; label: string; check?: (p: MockProductType) => boolean; categoryScope?: string[] }> = [
+    { key: 'productName', label: 'Product Name' },
+    { key: 'gtin', label: 'GTIN' },
+    { key: 'category', label: 'Category' },
+    { key: 'manufacturer', label: 'Manufacturer' },
+    { key: 'modelNumber', label: 'Model Number' },
+    { key: 'description', label: 'Description' },
+    { key: 'imageUrl', label: 'Image' },
+    { key: 'materials', label: 'Materials' },
+    { key: 'sustainabilityClaims', label: 'Sustainability Claims' },
+    { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] },
+    { key: 'specifications', label: 'Specifications', check: (p) => p.specifications && Object.keys(p.specifications).length > 0 },
+    { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 },
+    { key: 'complianceData', label: 'Compliance Data', check: (p) => p.complianceData && Object.keys(p.complianceData).length > 0 },
+  ];
+
+  const isBatteryRelevantCategory = product.category?.toLowerCase().includes('electronics') || 
+                                  product.category?.toLowerCase().includes('automotive parts') || 
+                                  product.category?.toLowerCase().includes('battery');
+  
+  if (isBatteryRelevantCategory || product.batteryChemistry) {
+    essentialFieldsConfig.push({ key: 'batteryChemistry', label: 'Battery Chemistry' });
+    essentialFieldsConfig.push({ key: 'stateOfHealth', label: 'Battery State of Health (SoH)', check: p => typeof p.stateOfHealth === 'number' });
+    essentialFieldsConfig.push({ key: 'carbonFootprintManufacturing', label: 'Battery Mfg. Carbon Footprint', check: p => typeof p.carbonFootprintManufacturing === 'number' });
+    essentialFieldsConfig.push({ key: 'recycledContentPercentage', label: 'Battery Recycled Content', check: p => typeof p.recycledContentPercentage === 'number' });
+  }
+
+  let filledCount = 0;
+  const missingFields: string[] = [];
+  let actualTotalFields = 0;
+
+  essentialFieldsConfig.forEach(fieldConfig => {
+    if (fieldConfig.categoryScope) {
+      const productCategoryLower = product.category?.toLowerCase();
+      if (!productCategoryLower || !fieldConfig.categoryScope.some(scope => productCategoryLower.includes(scope.toLowerCase()))) {
+        return; 
+      }
+    }
+    
+    actualTotalFields++;
+
+    if (fieldConfig.check) {
+      if (fieldConfig.check(product)) {
+        filledCount++;
+      } else {
+        missingFields.push(fieldConfig.label);
+      }
+    } else {
+      const value = product[fieldConfig.key as keyof MockProductType];
+      if (value !== null && value !== undefined && String(value).trim() !== '') {
+        filledCount++;
+      } else {
+        missingFields.push(fieldConfig.label);
+      }
+    }
+  });
+
+  const score = actualTotalFields > 0 ? Math.round((filledCount / actualTotalFields) * 100) : 0;
+  return { score, filledFields: filledCount, totalFields: actualTotalFields, missingFields };
+};
+
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -376,7 +439,7 @@ export default function ProductDetailPage() {
     let nextStageIndex = currentStageIndex + 1;
     let nextStage = product.lifecyclePhases[nextStageIndex];
 
-    if (!nextStage) { // If it's the last stage, maybe loop or pick a specific one for demo
+    if (!nextStage) { 
         toast({
             title: "End of Lifecycle",
             description: "This product is already at its final defined lifecycle stage.",
@@ -403,12 +466,8 @@ export default function ProductDetailPage() {
             <p className="mt-2 text-xs">{output.simulatedReport}</p>
           </div>
         ),
-        duration: 9000, // Allow more time to read
+        duration: 9000, 
       });
-      // In a real app, you might want to update the product state here
-      // For this simulation, we'll just show the toast.
-      // You could update product.currentLifecyclePhaseIndex here if you want the UI to reflect the change.
-      // setProduct(prev => prev ? {...prev, currentLifecyclePhaseIndex: nextStageIndex } : null);
     } catch (error) {
       console.error("Compliance check simulation failed:", error);
       toast({
@@ -433,6 +492,7 @@ export default function ProductDetailPage() {
 
   const currentYear = new Date().getFullYear().toString();
   const currentCarbonFootprint = product.historicalCarbonFootprint?.find(p => p.year === currentYear)?.value || product.historicalCarbonFootprint?.[product.historicalCarbonFootprint.length - 1]?.value;
+  const dppCompleteness = calculateDppCompleteness(product);
 
 
   return (
@@ -608,6 +668,41 @@ export default function ProductDetailPage() {
             </div>
           </div>
         </div>
+      </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <ListChecks className="mr-2 h-5 w-5 text-primary" />
+            DPP Data Completeness
+          </CardTitle>
+          <CardDescription>
+            Indicates how complete the information for this Digital Product Passport is.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-lg font-semibold text-primary">{dppCompleteness.score}% Complete</span>
+            <span className="text-sm text-muted-foreground">
+              {dppCompleteness.filledFields} / {dppCompleteness.totalFields} essential fields filled
+            </span>
+          </div>
+          <Progress value={dppCompleteness.score} className="w-full h-3" />
+          {dppCompleteness.missingFields.length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs text-muted-foreground">Missing or incomplete essential fields:</p>
+              <ul className="list-disc list-inside text-xs text-muted-foreground pl-2 max-h-20 overflow-y-auto">
+                {dppCompleteness.missingFields.map(field => <li key={field}>{field}</li>)}
+              </ul>
+            </div>
+          )}
+          {dppCompleteness.score === 100 && (
+            <p className="text-sm text-green-600 mt-3 flex items-center">
+              <CheckCircle2 className="mr-2 h-4 w-4" />
+              All essential data points are present!
+            </p>
+          )}
+        </CardContent>
       </Card>
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -861,7 +956,7 @@ export default function ProductDetailPage() {
                              tooltipText={cert.verified ? "Verified Certification" : "Self-Declared / Pending Verification"}
                              VerifiedIcon={CheckCircle2}
                              UnverifiedIcon={Target}
-                             customClasses={cn(cert.verified ? 'text-green-500' : 'text-yellow-600')} // Ensure color consistency
+                             customClasses={cn(cert.verified ? 'text-green-500' : 'text-yellow-600')} 
                            />
                            <span className="ml-2 font-medium">{cert.name}</span>
                            <span className="text-muted-foreground ml-1 text-xs">({cert.authority})</span>
@@ -931,6 +1026,27 @@ function ProductDetailSkeleton() {
           </div>
         </div>
       </Card>
+
+      {/* DPP Data Completeness Skeleton */}
+      <Card className="shadow-lg">
+        <CardHeader>
+          <Skeleton className="h-7 w-1/2 mb-1" />
+          <Skeleton className="h-4 w-3/4" />
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-between mb-2">
+            <Skeleton className="h-8 w-1/4" />
+            <Skeleton className="h-5 w-1/3" />
+          </div>
+          <Skeleton className="h-3 w-full" />
+          <div className="mt-3 space-y-1">
+            <Skeleton className="h-4 w-1/2" />
+            <Skeleton className="h-3 w-1/3" />
+            <Skeleton className="h-3 w-1/3" />
+          </div>
+        </CardContent>
+      </Card>
+
       <Skeleton className="h-10 w-full md:w-2/3" /> 
       <Card className="mt-4">
         <CardHeader>
@@ -946,3 +1062,6 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
+
+
+    

@@ -1,10 +1,73 @@
 
+"use client";
+
+import React, { useState, useEffect, useRef, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Globe, Info } from "lucide-react";
-import Image from "next/image";
+import { Button } from "@/components/ui/button";
+import { Globe as GlobeIconLucide, Info, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
+import type { GlobeMethods, GlobeProps } from 'react-globe.gl';
+
+// Lazy load the Globe component
+const Globe = React.lazy(() => import('react-globe.gl'));
+
+const GlobeVisualization = () => {
+  const globeEl = useRef<GlobeMethods | undefined>();
+
+  useEffect(() => {
+    // Auto-rotate and zoom
+    if (globeEl.current) {
+      globeEl.current.pointOfView({ lat: 50, lng: 10, altitude: 2.2 }); // Focus on Europe
+      globeEl.current.controls().autoRotate = true;
+      globeEl.current.controls().autoRotateSpeed = 0.3;
+      globeEl.current.controls().enableZoom = true;
+      globeEl.current.controls().minDistance = 100; 
+      globeEl.current.controls().maxDistance = 800; 
+    }
+  }, []);
+
+  const globeProps: GlobeProps = {
+    globeImageUrl: "//unpkg.com/three-globe/example/img/earth-dark.jpg",
+    bumpImageUrl: "//unpkg.com/three-globe/example/img/earth-topology.png",
+    backgroundColor: "rgba(0,0,0,0)", 
+    width: undefined, 
+    height: 450, 
+  };
+
+  return <Globe ref={globeEl} {...globeProps} />;
+};
+
+
+const DppGlobalTrackerClientContainer = () => {
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return (
+      <div className="w-full h-[450px] bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading 3D Globe...</span>
+      </div>
+    );
+  }
+
+  return (
+    <Suspense fallback={
+      <div className="w-full h-[450px] bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <span className="ml-2">Loading 3D Globe...</span>
+      </div>
+    }>
+      <GlobeVisualization />
+    </Suspense>
+  );
+};
+
 
 export default function DppGlobalTrackerPage() {
+  const [isConceptVisible, setIsConceptVisible] = useState(false);
   const conceptDescription = `
 Core Idea:
 Create an interactive 3D globe centered around the European Union that dynamically displays data from the Digital Product Passports (DPPs) across different regions. This globe could act as a “Digital Pulse” of product movement, ownership, lifecycle, certifications, and compliance in real-time.
@@ -75,80 +138,83 @@ The DPP Global Tracker with an interactive 3D EU globe would be a visually engag
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <Globe className="mr-3 h-8 w-8 text-primary" />
-          DPP Global Tracker – "The EU Digital Pulse" (Conceptual)
+          <GlobeIconLucide className="mr-3 h-8 w-8 text-primary" />
+          DPP Global Tracker – "The EU Digital Pulse"
         </h1>
       </div>
 
       <Alert variant="default" className="bg-info/10 border-info/50 text-info-foreground">
         <Info className="h-5 w-5 text-info" />
-        <AlertTitle className="font-semibold text-info">Conceptual Feature</AlertTitle>
+        <AlertTitle className="font-semibold text-info">Interactive Prototype</AlertTitle>
         <AlertDescription>
-          The following describes an advanced concept for a DPP Global Tracker. The full implementation of an interactive 3D globe with real-time data is a significant undertaking beyond the current prototyping scope. This page serves as a placeholder for this vision.
+          This is an early prototype of the DPP Global Tracker. Features are being added incrementally. Rotate the globe with your mouse.
         </AlertDescription>
       </Alert>
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Visualizing the EU Digital Pulse</CardTitle>
-          <CardDescription>A dynamic and interactive way to track Digital Product Passports.</CardDescription>
+          <CardTitle>EU Digital Product Passport Visualization</CardTitle>
+          <CardDescription>An interactive globe displaying mock DPP data points and flows across Europe.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="w-full aspect-video bg-muted rounded-md flex items-center justify-center overflow-hidden">
-            <Image
-              src="https://placehold.co/800x450.png?text=Interactive+EU+Globe+Concept"
-              alt="Conceptual EU Globe Tracker"
-              width={800}
-              height={450}
-              className="object-contain"
-              data-ai-hint="globe europe data"
-            />
-          </div>
-          <div className="prose prose-sm dark:prose-invert max-w-none">
-            {conceptDescription.trim().split('\n\n').map((paragraphBlock, index) => {
-              const lines = paragraphBlock.split('\n');
-              const firstLine = lines[0].trim();
-
-              const mainHeaders = ["Core Idea:", "Key Features of the DPP Global Tracker:", "Technical Implementation Ideas:", "Conclusion:"];
-              const isMainHeader = mainHeaders.some(header => firstLine.startsWith(header));
-              const isNumberedFeature = firstLine.match(/^(\d+)\.\s+.+/);
-
-              if (isMainHeader) {
-                return (
-                  <div key={index} className="pt-2">
-                    <h2 className="text-xl font-headline text-primary mt-6 mb-3 !no-underline">{firstLine}</h2>
-                    {lines.slice(1).map((line, lineIdx) => <p key={lineIdx} className="my-1">{line}</p>)}
-                  </div>
-                );
-              } else if (isNumberedFeature) {
-                return (
-                  <div key={index} className="mt-1">
-                    <h3 className="text-lg font-semibold text-foreground mt-4 mb-2 !no-underline">{firstLine}</h3>
-                    {lines.slice(1).map((line, lineIdx) => {
-                      const trimmedLine = line.trim();
-                      if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('• ')) {
-                        // This basic list detection might not be perfect with Tailwind Prose
-                        return <p key={lineIdx} className="my-1 ml-4 before:content-['•_'] before:mr-2">{trimmedLine.substring(2)}</p>;
-                      }
-                       // Render sub-bullet points if line starts with multiple spaces then a dash/bullet
-                      if (trimmedLine.match(/^(\s{2,}-\s|\s{2,}\u2022\s)/)) {
-                        return <p key={lineIdx} className="my-1 ml-8 before:content-['\25E6_'] before:mr-2">{trimmedLine.replace(/^(\s{2,}[-\u2022]\s)/, '')}</p>;
-                      }
-                      if (trimmedLine) {
-                        return <p key={lineIdx} className="my-1">{trimmedLine}</p>;
-                      }
-                      return null;
-                    })}
-                  </div>
-                );
-              }
-              if (paragraphBlock.trim()) {
-                return <p key={index} className="my-2">{paragraphBlock}</p>;
-              }
-              return null;
-            })}
+          <div className="w-full h-[450px] bg-muted/30 rounded-md overflow-hidden border">
+            <DppGlobalTrackerClientContainer />
           </div>
         </CardContent>
+      </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader className="flex flex-row justify-between items-center cursor-pointer" onClick={() => setIsConceptVisible(!isConceptVisible)}>
+          <div>
+            <CardTitle className="font-headline">About This Concept</CardTitle>
+            <CardDescription>Details of the vision for the DPP Global Tracker.</CardDescription>
+          </div>
+          <Button variant="ghost" size="icon">
+            {isConceptVisible ? <ChevronUp /> : <ChevronDown />}
+          </Button>
+        </CardHeader>
+        {isConceptVisible && (
+          <CardContent className="pt-0">
+             <div className="prose prose-sm dark:prose-invert max-w-none max-h-96 overflow-y-auto">
+                {conceptDescription.trim().split('\n\n').map((paragraphBlock, index) => {
+                  const lines = paragraphBlock.split('\n');
+                  const firstLine = lines[0].trim();
+                  const mainHeaders = ["Core Idea:", "Key Features of the DPP Global Tracker:", "Technical Implementation Ideas:", "Conclusion:"];
+                  const isMainHeader = mainHeaders.some(header => firstLine.startsWith(header));
+
+                  if (isMainHeader) {
+                    return (
+                      <div key={index} className="pt-2">
+                        <h2 className="text-lg font-semibold text-primary mt-4 mb-2 !no-underline">{firstLine}</h2>
+                        {lines.slice(1).map((line, lineIdx) => <p key={lineIdx} className="my-1 text-sm">{line}</p>)}
+                      </div>
+                    );
+                  } else if (firstLine.match(/^(\d+)\.\s+.+/)) { 
+                     return (
+                      <div key={index} className="mt-1">
+                        <h3 className="text-md font-medium text-foreground/90 mt-3 mb-1 !no-underline">{firstLine}</h3>
+                        {lines.slice(1).map((line, lineIdx) => {
+                          const trimmedLine = line.trim();
+                           if (trimmedLine.startsWith('- ') || trimmedLine.startsWith('• ')) {
+                            return <p key={lineIdx} className="my-0.5 ml-4 text-sm before:content-['•_'] before:mr-1.5">{trimmedLine.substring(2)}</p>;
+                          }
+                          if (trimmedLine.match(/^(\s{2,}-\s|\s{2,}\u2022\s)/)) {
+                            return <p key={lineIdx} className="my-0.5 ml-8 text-sm before:content-['\25E6_'] before:mr-1.5">{trimmedLine.replace(/^(\s{2,}[-\u2022]\s)/, '')}</p>;
+                          }
+                          if (trimmedLine) {
+                            return <p key={lineIdx} className="my-0.5 text-sm">{trimmedLine}</p>;
+                          }
+                          return null;
+                        })}
+                      </div>
+                    );
+                  }
+                  if (paragraphBlock.trim()) { return <p key={index} className="my-1.5 text-sm">{paragraphBlock}</p>; }
+                  return null;
+                })}
+             </div>
+          </CardContent>
+        )}
       </Card>
     </div>
   );

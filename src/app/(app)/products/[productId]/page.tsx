@@ -599,12 +599,36 @@ export default function ProductDetailPage() {
       </Card>
 
       <Card className="shadow-lg">
-        <CardHeader> <CardTitle className="flex items-center"> <ListChecks className="mr-2 h-5 w-5 text-primary" /> DPP Data Completeness </CardTitle> <CardDescription> Indicates how complete the information for this Digital Product Passport is. </CardDescription> </CardHeader>
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <ListChecks className="mr-2 h-5 w-5 text-primary" />
+            DPP Data Completeness
+          </CardTitle>
+          <CardDescription>
+            Indicates how complete the information for this Digital Product Passport is.
+          </CardDescription>
+        </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between mb-2"> <span className="text-lg font-semibold text-primary">{dppCompleteness.score}% Complete</span> <span className="text-sm text-muted-foreground"> {dppCompleteness.filledFields} / {dppCompleteness.totalFields} essential fields filled </span> </div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-lg font-semibold text-primary">{dppCompleteness.score}% Complete</span>
+            <span className="text-sm text-muted-foreground">
+              {dppCompleteness.filledFields} / {dppCompleteness.totalFields} essential fields filled
+            </span>
+          </div>
           <Progress value={dppCompleteness.score} className="w-full h-3" />
-          {dppCompleteness.missingFields.length > 0 && ( <div className="mt-3"> <p className="text-xs text-muted-foreground">Missing or incomplete essential fields:</p> <ul className="list-disc list-inside text-xs text-muted-foreground pl-2 max-h-20 overflow-y-auto"> {dppCompleteness.missingFields.map(field => <li key={field}>{field}</li>)} </ul> </div> )}
-          {dppCompleteness.score === 100 && ( <p className="text-sm text-green-600 mt-3 flex items-center"> <CheckCircle2 className="mr-2 h-4 w-4" /> All essential data points are present! </p> )}
+          {dppCompleteness.missingFields.length > 0 && (
+            <div className="mt-3">
+              <p className="text-xs text-muted-foreground">Missing or incomplete essential fields:</p>
+              <ul className="list-disc list-inside text-xs text-muted-foreground pl-2 max-h-20 overflow-y-auto">
+                {dppCompleteness.missingFields.map(field => <li key={field}>{field}</li>)}
+              </ul>
+            </div>
+          )}
+          {dppCompleteness.score === 100 && (
+            <p className="text-sm text-green-600 mt-3 flex items-center">
+              <CheckCircle2 className="mr-2 h-4 w-4" /> All essential data points are present!
+            </p>
+          )}
         </CardContent>
       </Card>
 

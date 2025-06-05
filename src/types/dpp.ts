@@ -119,4 +119,21 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     consumerScans: 150,
   },
+  {
+    id: "DPP010",
+    productName: "Wooden Toy Train",
+    category: "Toys",
+    metadata: { last_updated: "2024-08-03T10:00:00Z", status: "published" },
+    compliance: {}, // No specific regulations tracked / N/A
+    consumerScans: 75,
+  },
+  {
+    id: "DPP011",
+    productName: "Imported Textile Rug",
+    category: "Textiles",
+    metadata: { last_updated: "2024-08-03T11:00:00Z", status: "draft" },
+    // @ts-ignore - Intentionally creating a case where a key might exist with undefined value
+    compliance: { eu_espr: undefined, us_scope3: {status: "pending"} }, // "No Data" for eu_espr if not handled by filter(Boolean), "Pending" for us_scope3
+    consumerScans: 20,
+  }
 ];

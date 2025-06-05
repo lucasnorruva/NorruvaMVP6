@@ -1,13 +1,31 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Server, FileJson, KeyRound, Info, BookText } from "lucide-react";
+import { Server, FileJson, KeyRound, Info, BookText, Send } from "lucide-react"; // Added Send icon for POST
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { MOCK_DPPS } from "@/types/dpp"; // Import for example response
+import { MOCK_DPPS } from "@/types/dpp"; 
 
 export default function ApiReferencePage() {
-  const exampleDppResponse = JSON.stringify(MOCK_DPPS[0], null, 2); // Using the first mock DPP as an example
+  const exampleDppResponse = JSON.stringify(MOCK_DPPS[0], null, 2); 
+
+  const qrValidationResponseExample = {
+    productId: MOCK_DPPS[0].id,
+    productName: MOCK_DPPS[0].productName,
+    category: MOCK_DPPS[0].category,
+    manufacturer: MOCK_DPPS[0].manufacturer?.name || "N/A",
+    verificationStatus: "valid_dpp_found",
+    dppUrl: `/passport/${MOCK_DPPS[0].id}`, 
+    ebsiCompliance: {
+      status: MOCK_DPPS[0].ebsiVerification?.status || "unknown",
+      verificationId: MOCK_DPPS[0].ebsiVerification?.verificationId
+    },
+    blockchainAnchor: {
+      transactionHash: MOCK_DPPS[0].blockchainIdentifiers?.anchorTransactionHash,
+      platform: MOCK_DPPS[0].blockchainIdentifiers?.platform
+    }
+  };
+  const exampleQrValidationResponse = JSON.stringify(qrValidationResponseExample, null, 2);
 
   return (
     <div className="space-y-8">
@@ -74,7 +92,11 @@ export default function ApiReferencePage() {
           <CardHeader>
             <CardTitle className="text-lg">Retrieve a Digital Product Passport</CardTitle>
             <CardDescription>
-              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-sm mr-1">GET /dpp/{'{productId}'}</code>
+              <span className="inline-flex items-center font-mono text-sm">
+                <Badge variant="outline" className="bg-sky-100 text-sky-700 border-sky-300 mr-2">GET</Badge>
+                <code className="bg-muted px-1 py-0.5 rounded-sm">/dpp/{'{productId}'}</code>
+              </span>
+              <br/>
               Fetches the complete Digital Product Passport for a specific product.
             </CardDescription>
           </CardHeader>
@@ -110,24 +132,60 @@ export default function ApiReferencePage() {
           </CardContent>
         </Card>
         
-        {/* Add more conceptual endpoints here as needed */}
-        {/* Example:
         <Card className="shadow-lg mt-6">
           <CardHeader>
-            <CardTitle className="text-lg">List Products</CardTitle>
+            <CardTitle className="text-lg">Validate QR Code & Retrieve DPP Summary</CardTitle>
             <CardDescription>
-              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-sm mr-1">GET /products</code>
-              Retrieves a paginated list of products.
+              <span className="inline-flex items-center font-mono text-sm">
+                <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2">POST</Badge> 
+                <code className="bg-muted px-1 py-0.5 rounded-sm">/qr/validate</code>
+              </span>
+              <br/>
+              Validates a unique identifier (typically from a QR code) and retrieves a summary of the product passport.
             </CardDescription>
           </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">Further details (query parameters, pagination, example response) would be documented here.</p>
+          <CardContent className="space-y-4">
+            <section>
+              <h4 className="font-semibold mb-1">Request Body (JSON)</h4>
+              <pre className="bg-muted p-3 rounded-md text-xs overflow-x-auto mt-2">
+                <code>
+                  {`{
+  "qrIdentifier": "PROD001"
+}`}
+                </code>
+              </pre>
+              <ul className="list-disc list-inside text-sm space-y-1 mt-2">
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">qrIdentifier</code> (string, required): The unique identifier extracted from the QR code, often a product ID or a specific DPP instance ID.</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1">Example Response (Success 200)</h4>
+              <p className="text-sm mb-1">Returns a product summary, its public DPP URL, verification status, and key compliance details.</p>
+              <details className="border rounded-md">
+                <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+                  Click to view example JSON response
+                </summary>
+                <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+                  <code>
+                    {exampleQrValidationResponse}
+                  </code>
+                </pre>
+              </details>
+            </section>
+             <section>
+              <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
+                <ul className="list-disc list-inside text-sm space-y-1">
+                    <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Invalid request body or missing <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">qrIdentifier</code>.</li>
+                    <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>: API key missing or invalid.</li>
+                    <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>: Product with the given identifier does not exist or QR identifier is invalid.</li>
+                    <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>: Server-side error.</li>
+                </ul>
+            </section>
           </CardContent>
         </Card>
-        */}
+        
       </section>
     </div>
   );
 }
-
     

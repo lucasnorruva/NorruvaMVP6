@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, FileSearch } from "lucide-react"; // Added Scale, FileSearch
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIcon, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket } from "lucide-react"; // Added Rocket
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -202,6 +202,23 @@ export default function DeveloperPortalPage() {
         />
       </div>
 
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="font-headline flex items-center"><Rocket className="mr-3 h-6 w-6 text-primary" /> Getting Started</CardTitle>
+          <CardDescription>New to Norruva DPP? Start here to learn the basics and make your first API call.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Button variant="default" asChild>
+            <Link href="#">
+              Read Quick Start Guide (Mock)
+            </Link>
+          </Button>
+          <p className="text-xs text-muted-foreground mt-3">
+            Our Quick Start Guide will walk you through setting up your environment, authentication, and basic DPP operations.
+          </p>
+        </CardContent>
+      </Card>
+
       <Card className="shadow-xl border-primary/20">
         <CardHeader>
           <CardTitle className="font-headline flex items-center"><PlayCircle className="mr-3 h-6 w-6 text-primary" /> Interactive API Playground</CardTitle>
@@ -378,12 +395,12 @@ export default function DeveloperPortalPage() {
                     <li><Link href="#" className="hover:underline">Products API</Link> <span className="text-xs text-muted-foreground">(CRUD, Search)</span></li>
                     <li><Link href="#" className="hover:underline">Lifecycle Events API</Link> <span className="text-xs text-muted-foreground">(Add, View)</span></li>
                     <li><Link href="#" className="hover:underline">Compliance Data API</Link> <span className="text-xs text-muted-foreground">(Query, Update)</span></li>
-                    <li><Link href="#" className="hover:underline">Request/Response Formats</Link> <span className="text-xs text-muted-foreground">(JSON, Schemas)</span></li>
+                    <li><Link href="#" className="hover:underline">Request/Response Formats & Schemas</Link> <span className="text-xs text-muted-foreground">(JSON, JSON-LD)</span></li>
                     <li><Link href="#" className="hover:underline">Error Codes &amp; Handling</Link></li>
                 </ul>
             </div>
              <div className="space-y-2 pt-3 border-t">
-                <h4 className="font-semibold">Integration Guides &amp; Best Practices</h4>
+                <h4 className="font-semibold">Integration Guides & Best Practices</h4>
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
                     <li><Link href="#" className="hover:underline">Step-by-step Integration Guide</Link></li>
                     <li><Link href="#" className="hover:underline">Regulatory Alignment (ESPR, EPREL, EBSI)</Link></li>

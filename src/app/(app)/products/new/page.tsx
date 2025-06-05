@@ -97,11 +97,20 @@ export default function AddNewProductPage() {
         };
         setCurrentProductDataForForm(editData);
         setActiveTab("manual");
-        setAiExtractionAppliedSuccessfully(false); // Reset AI banner in edit mode
+        setAiExtractionAppliedSuccessfully(false); 
       } else {
         toast({ title: "Error", description: "Product not found for editing.", variant: "destructive" });
         router.push("/products/new");
       }
+    } else {
+      // Reset for new product form
+      setAiExtractionAppliedSuccessfully(false);
+      setCurrentProductDataForForm({
+        gtin: "", productName: "", productDescription: "", manufacturer: "", modelNumber: "",
+        materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
+        imageUrl: "",
+        batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined
+      });
     }
   }, [isEditMode, editProductId, router, toast]);
 
@@ -169,11 +178,9 @@ export default function AddNewProductPage() {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
       let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
 
-      // Preserve origins if they exist on currentProductDataForForm, merge with new form data
       const dataToSave = {
-        ...initialData, // carry over original fields including origins
-        ...currentProductDataForForm, // carry over fields that AI might have populated, with their origins
-        ...data, // finally, override with the latest form data from submission
+        ...currentProductDataForForm, 
+        ...data, 
       };
 
 
@@ -185,7 +192,7 @@ export default function AddNewProductPage() {
             ...dataToSave, 
             productName: dataToSave.productName || userProducts[productIndex].productName || "Unnamed Product (edited)",
             lastUpdated: new Date().toISOString(),
-            id: editProductId, // ensure id remains the same
+            id: editProductId, 
           };
           userProducts[productIndex] = updatedProduct;
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
@@ -244,10 +251,9 @@ export default function AddNewProductPage() {
 
       <Tabs value={activeTab} onValueChange={(newTab) => {
           setActiveTab(newTab);
-          // Optionally, reset the AI banner if user navigates away from manual tab after AI extraction
-          // if (newTab !== "manual" && aiExtractionAppliedSuccessfully) {
-          //   setAiExtractionAppliedSuccessfully(false); 
-          // }
+          if (newTab !== "manual" && aiExtractionAppliedSuccessfully) {
+            setAiExtractionAppliedSuccessfully(false); 
+          }
       }} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
           <TabsTrigger value="ai-extraction" disabled={isEditMode}>AI Data Extraction</TabsTrigger>
@@ -255,7 +261,7 @@ export default function AddNewProductPage() {
         </TabsList>
         
         <TabsContent value="manual" className="mt-6">
-           {aiExtractionAppliedSuccessfully && activeTab === 'manual' && (
+           {aiExtractionAppliedSuccessfully && activeTab === 'manual' && !isEditMode && (
             <Alert className="mb-6 border-info bg-info/10 text-info-foreground">
               <FileWarning className="h-5 w-5 text-info" />
               <AlertTitle className="font-semibold text-info">AI Data Populated</AlertTitle>
@@ -271,7 +277,7 @@ export default function AddNewProductPage() {
             isSubmitting={isSubmittingProduct}
             initialData={currentProductDataForForm} 
             isStandalonePage={true}
-            key={editProductId || 'new'} // Re-mount form if ID changes
+            key={editProductId || 'new'} 
           />
         </TabsContent>
 

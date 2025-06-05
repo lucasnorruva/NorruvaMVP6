@@ -20,8 +20,11 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page"; 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu, BatteryCharging, Loader2 } from "lucide-react";
-import React from "react";
+import { Cpu, BatteryCharging, Loader2, Sparkles } from "lucide-react"; // Added Sparkles
+import React, { useState } from "react"; // Added useState
+import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow"; // Added import
+import { useToast } from "@/hooks/use-toast"; // Added import
+import { AlertTriangle } from "lucide-react"; // Added import
 
 const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
@@ -34,6 +37,7 @@ const formSchema = z.object({
   specifications: z.string().optional(), 
   energyLabel: z.string().optional(),
   // Battery Regulation Fields
+  productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."), // Added for claim suggestions
   batteryChemistry: z.string().optional(),
   stateOfHealth: z.coerce.number().nullable().optional(),
   carbonFootprintManufacturing: z.coerce.number().nullable().optional(),
@@ -43,8 +47,8 @@ const formSchema = z.object({
 export type ProductFormData = z.infer<typeof formSchema>;
 
 interface ProductFormProps {
-  initialData?: Partial<InitialProductFormData>; 
-  onSubmit: (data: ProductFormData) => Promise<void>; // onSubmit is now async
+  initialData?: Partial<InitialProductFormData & { productCategory?: string}>; 
+  onSubmit: (data: ProductFormData) => Promise<void>;
   isSubmitting?: boolean;
   isStandalonePage?: boolean; 
 }
@@ -81,12 +85,17 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
       sustainabilityClaims: initialData?.sustainabilityClaims || "",
       specifications: initialData?.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
       energyLabel: initialData?.energyLabel || "",
+      productCategory: initialData?.productCategory || "", // Added
       batteryChemistry: initialData?.batteryChemistry || "",
       stateOfHealth: initialData?.stateOfHealth ?? undefined,
       carbonFootprintManufacturing: initialData?.carbonFootprintManufacturing ?? undefined,
       recycledContentPercentage: initialData?.recycledContentPercentage ?? undefined,
     },
   });
+
+  const { toast } = useToast();
+  const [suggestedClaims, setSuggestedClaims] = useState<string[]>([]);
+  const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
 
   React.useEffect(() => {
     if (initialData) {
@@ -100,6 +109,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
         sustainabilityClaims: initialData.sustainabilityClaims || "",
         specifications: initialData.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
         energyLabel: initialData.energyLabel || "",
+        productCategory: initialData.productCategory || "", // Added
         batteryChemistry: initialData.batteryChemistry || "",
         stateOfHealth: initialData.stateOfHealth ?? undefined,
         carbonFootprintManufacturing: initialData.carbonFootprintManufacturing ?? undefined,
@@ -107,6 +117,40 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
       });
     }
   }, [initialData, form]);
+
+  const handleSuggestClaims = async () => {
+    setIsSuggestingClaims(true);
+    setSuggestedClaims([]);
+    const formData = form.getValues();
+    try {
+      const result = await suggestSustainabilityClaims({
+        productCategory: formData.productCategory || "Unknown", // Provide a default if empty
+        productName: formData.productName,
+        productDescription: formData.productDescription,
+        materials: formData.materials,
+      });
+      setSuggestedClaims(result.claims);
+      if (result.claims.length === 0) {
+        toast({ title: "No specific claims suggested.", description: "Try adding more product details like category or materials."});
+      }
+    } catch (error) {
+      console.error("Failed to suggest claims:", error);
+      toast({
+        title: "Error Suggesting Claims",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        variant: "destructive",
+        action: <AlertTriangle className="text-white" />,
+      });
+    } finally {
+      setIsSuggestingClaims(false);
+    }
+  };
+
+  const handleClaimClick = (claim: string) => {
+    const currentClaims = form.getValues("sustainabilityClaims") || "";
+    const newClaims = currentClaims ? `${currentClaims}\n- ${claim}` : `- ${claim}`;
+    form.setValue("sustainabilityClaims", newClaims, { shouldValidate: true });
+  };
 
   const formContent = (
     <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']} className="w-full">
@@ -138,6 +182,20 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
                 <FormControl>
                   <Input placeholder="e.g., 01234567890123" {...field} />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+           <FormField
+            control={form.control}
+            name="productCategory"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Product Category</FormLabel>
+                <FormControl>
+                  <Input placeholder="e.g., Electronics, Apparel, Homeware" {...field} />
+                </FormControl>
+                 <FormDescription>Used to help generate relevant suggestions.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -222,20 +280,45 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
             name="sustainabilityClaims"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="flex items-center">
-                    Sustainability Claims
-                    <AiIndicator fieldOrigin={initialData?.sustainabilityClaimsOrigin} fieldName="Sustainability Claims" />
-                </FormLabel>
+                <div className="flex items-center justify-between">
+                    <FormLabel className="flex items-center">
+                        Sustainability Claims
+                        <AiIndicator fieldOrigin={initialData?.sustainabilityClaimsOrigin} fieldName="Sustainability Claims" />
+                    </FormLabel>
+                    <Button type="button" variant="ghost" size="sm" onClick={handleSuggestClaims} disabled={isSuggestingClaims}>
+                        {isSuggestingClaims ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
+                        <span className="ml-2">{isSuggestingClaims ? "Suggesting..." : "Suggest Claims"}</span>
+                    </Button>
+                </div>
                 <FormControl>
-                  <Textarea placeholder="e.g., Made with 70% recycled materials, Carbon neutral certified, Biodegradable packaging" {...field} rows={3}/>
+                  <Textarea placeholder="e.g., - Made with 70% recycled materials\n- Carbon neutral certified\n- Biodegradable packaging" {...field} rows={3}/>
                 </FormControl>
                  <FormDescription>
-                  Highlight key sustainability features of the product.
+                  Highlight key sustainability features. Click "Suggest Claims" for AI assistance.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
+          {isSuggestingClaims && (
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Generating suggestions...
+            </div>
+          )}
+          {suggestedClaims.length > 0 && (
+            <div className="space-y-2 pt-2">
+              <p className="text-sm font-medium text-muted-foreground">Click to add a suggestion:</p>
+              <div className="flex flex-wrap gap-2">
+                {suggestedClaims.map((claim, index) => (
+                  <Button key={index} type="button" variant="outline" size="sm" onClick={() => handleClaimClick(claim)}>
+                    {claim}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          )}
+
           <FormField
             control={form.control}
             name="energyLabel"

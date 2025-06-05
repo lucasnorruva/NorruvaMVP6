@@ -27,40 +27,58 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRole } from "@/contexts/RoleContext"; 
 import { useToast } from "@/hooks/use-toast";
+import type { ProductFormData } from "@/components/products/ProductForm"; // Import ProductFormData
 
-interface ListedProduct {
+// This interface now reflects more of what's stored, aligning with ProductFormData + metadata
+export interface ListedProduct extends Partial<ProductFormData> { // Make ProductFormData fields optional for listing
   id: string;
-  name: string;
-  category: string;
+  name: string; // Maintained for direct display, though productName is in ProductFormData
+  productCategory: string; // Consistent with ProductFormData
   status: string;
   compliance: string;
   lastUpdated: string;
 }
 
 const initialMockProducts: ListedProduct[] = [
-  { id: "PROD001", name: "EcoFriendly Refrigerator X2000", category: "Appliances", status: "Active", compliance: "Compliant", lastUpdated: "2024-07-20" },
-  { id: "PROD002", name: "Smart LED Bulb Pack (4-pack)", category: "Electronics", status: "Active", compliance: "Pending", lastUpdated: "2024-07-18" },
-  { id: "PROD003", name: "Organic Cotton T-Shirt", category: "Apparel", status: "Archived", compliance: "Compliant", lastUpdated: "2024-06-10" },
-  { id: "PROD004", name: "Recycled Plastic Water Bottle", category: "Homeware", status: "Active", compliance: "Non-Compliant", lastUpdated: "2024-07-21" },
-  { id: "PROD005", name: "Solar Powered Garden Light", category: "Outdoor", status: "Draft", compliance: "N/A", lastUpdated: "2024-07-22" },
+  { id: "PROD001", name: "EcoFriendly Refrigerator X2000", productCategory: "Appliances", status: "Active", compliance: "Compliant", lastUpdated: "2024-07-20" },
+  { id: "PROD002", name: "Smart LED Bulb Pack (4-pack)", productCategory: "Electronics", status: "Active", compliance: "Pending", lastUpdated: "2024-07-18" },
+  { id: "PROD003", name: "Organic Cotton T-Shirt", productCategory: "Apparel", status: "Archived", compliance: "Compliant", lastUpdated: "2024-06-10" },
+  { id: "PROD004", name: "Recycled Plastic Water Bottle", productCategory: "Homeware", status: "Active", compliance: "Non-Compliant", lastUpdated: "2024-07-21" },
+  { id: "PROD005", name: "Solar Powered Garden Light", productCategory: "Outdoor", status: "Draft", compliance: "N/A", lastUpdated: "2024-07-22" },
 ];
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 
+// StoredProduct should match what's saved in products/new/page.tsx
+interface StoredUserProduct extends ProductFormData {
+  id: string;
+  status: string;
+  compliance: string;
+  lastUpdated: string;
+}
+
+
 export default function ProductsPage() {
   const { currentRole } = useRole(); 
-  const [displayedProducts, setDisplayedProducts] = useState<ListedProduct[]>(initialMockProducts);
+  const [displayedProducts, setDisplayedProducts] = useState<ListedProduct[]>([]);
   const [productToDelete, setProductToDelete] = useState<ListedProduct | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
-    const userAddedProducts: ListedProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+    // Ensure stored products are cast to StoredUserProduct for full type, then map to ListedProduct for display
+    const userAddedStoredProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
     
+    const userAddedListedProducts: ListedProduct[] = userAddedStoredProducts.map(p => ({
+      ...p, // Spread all fields from StoredUserProduct
+      name: p.productName || "Unnamed Product", // Ensure 'name' for ListedProduct is from productName
+      productCategory: p.productCategory || "General", // Ensure 'productCategory' is set
+    }));
+
     const combinedProducts = [
-      ...initialMockProducts.filter(mock => !userAddedProducts.find(userProd => userProd.id === mock.id)),
-      ...userAddedProducts
+      ...initialMockProducts.filter(mock => !userAddedListedProducts.find(userProd => userProd.id === mock.id)),
+      ...userAddedListedProducts
     ];
     
     setDisplayedProducts(combinedProducts.sort((a, b) => a.id.localeCompare(b.id)));
@@ -76,7 +94,7 @@ export default function ProductsPage() {
 
     if (productToDelete.id.startsWith("USER_PROD")) {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
-      let userAddedProducts: ListedProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+      let userAddedProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
       userAddedProducts = userAddedProducts.filter(p => p.id !== productToDelete.id);
       localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userAddedProducts));
     }
@@ -93,7 +111,7 @@ export default function ProductsPage() {
   };
 
   const canAddProducts = currentRole === 'admin' || currentRole === 'manufacturer';
-  const canEditProducts = currentRole === 'admin' || currentRole === 'manufacturer';
+  const canEditProducts = (currentRole === 'admin' || currentRole === 'manufacturer');
   const canDeleteProducts = currentRole === 'admin' || currentRole === 'manufacturer';
 
 
@@ -142,7 +160,7 @@ export default function ProductsPage() {
                         {product.name}
                      </Link>
                   </TableCell>
-                  <TableCell>{product.category}</TableCell>
+                  <TableCell>{product.productCategory}</TableCell>
                   <TableCell>
                     <Badge variant={
                       product.status === "Active" ? "default" : 
@@ -169,7 +187,7 @@ export default function ProductsPage() {
                        {product.compliance}
                      </Badge>
                   </TableCell>
-                  <TableCell>{product.lastUpdated}</TableCell>
+                  <TableCell>{new Date(product.lastUpdated).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -185,10 +203,12 @@ export default function ProductsPage() {
                             View Details
                           </Link>
                         </DropdownMenuItem>
-                        {canEditProducts && (
-                            <DropdownMenuItem onClick={() => alert(`Edit action for ${product.id} (Not Implemented for this task yet)`)}> 
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
+                        {canEditProducts && product.id.startsWith("USER_PROD") && ( // Only allow editing user-added products for now
+                            <DropdownMenuItem asChild>
+                                <Link href={`/products/new?edit=${product.id}`}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    Edit
+                                </Link>
                             </DropdownMenuItem>
                         )}
                         {canDeleteProducts && (
@@ -240,3 +260,4 @@ export default function ProductsPage() {
     </div>
   );
 }
+

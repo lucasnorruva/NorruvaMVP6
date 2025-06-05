@@ -12,7 +12,8 @@ import {
   Settings,
   Bot, 
   Info,
-  Code2 // Added Code2 icon for Developer Portal
+  Code2, // Added Code2 icon for Developer Portal
+  LineChart // Icon for Live DPP Dashboard
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import {
@@ -29,7 +30,8 @@ import { Separator } from "@/components/ui/separator";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/products", label: "Products", icon: Package },
+  { href: "/dpp-live-dashboard", label: "Live DPPs", icon: LineChart }, // New Live DPP Dashboard link
+  { href: "/products", label: "Products List", icon: Package }, // Renamed for clarity
   { href: "/products/new", label: "AI Data Extraction", icon: ScanLine },
   { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck }, 
@@ -37,7 +39,7 @@ const navItems = [
 ];
 
 const secondaryNavItems = [
-  { href: "/developer", label: "Developer Portal", icon: Code2 }, // Added Developer Portal
+  { href: "/developer", label: "Developer Portal", icon: Code2 }, 
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
@@ -47,7 +49,7 @@ export default function AppSidebarContent() {
 
   const commonButtonClass = (href: string) => cn(
     "w-full text-sm", 
-    (pathname === href || (href !== "/dashboard" && pathname.startsWith(href)))
+    (pathname === href || (href !== "/dashboard" && pathname.startsWith(href) && href !== "/products/new" && href !== "/dpp-live-dashboard")) // More specific active state for non-nested main items
       ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium" 
       : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-normal text-sidebar-foreground/80",
      sidebarState === 'collapsed' && !isMobile ? "justify-center" : "justify-start" 
@@ -108,4 +110,3 @@ export default function AppSidebarContent() {
     </>
   );
 }
-

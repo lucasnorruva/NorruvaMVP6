@@ -114,8 +114,8 @@ const MOCK_PRODUCTS: MockProductType[] = [
       "Warranty": "5 years comprehensive, 10 years on compressor"
     },
     lifecycleEvents: [
-      { id: "EVT001", type: "Manufactured", timestamp: "2024-01-15", location: "EcoFactory, Germany", details: "Production batch #PB789", isBlockchainAnchored: true, transactionHash: "0xabc123..." },
-      { id: "EVT002", type: "Shipped", timestamp: "2024-01-20", location: "Hamburg Port", details: "Container #C0N741N3R", isBlockchainAnchored: true, transactionHash: "0xdef456..." },
+      { id: "EVT001", type: "Manufactured", timestamp: "2024-01-15", location: "EcoFactory, Germany", details: "Production batch #PB789", isBlockchainAnchored: true, transactionHash: "0xabc123def456ghi789jkl0mno1pq" },
+      { id: "EVT002", type: "Shipped", timestamp: "2024-01-20", location: "Hamburg Port", details: "Container #C0N741N3R", isBlockchainAnchored: true, transactionHash: "0xdef456ghi789jkl0mno1pqrust" },
       { id: "EVT003", type: "Sold", timestamp: "2024-02-10", location: "Retail Store, Paris", details: "Invoice #INV00567", isBlockchainAnchored: false },
     ],
     complianceData: {
@@ -124,26 +124,26 @@ const MOCK_PRODUCTS: MockProductType[] = [
       "WEEE": { status: "Compliant", lastChecked: "2024-07-01", reportId: "WEEE-X2000-001", isVerified: false },
     },
     isDppBlockchainAnchored: true,
-    dppAnchorTransactionHash: "0x123mainanchor789",
-    currentLifecyclePhaseIndex: 2,
+    dppAnchorTransactionHash: "0x123mainanchor789xyzabc001",
+    currentLifecyclePhaseIndex: 2, // Shipment is in_progress
     lifecyclePhases: [
-      { id: "lc001", name: "Raw Materials", icon: PackageSearch, status: 'completed', timestamp: "2023-12-01", details: "Sourcing of verified recycled steel and bio-polymers.", complianceMetrics: [{ name: "Supplier Ethical Audit", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Recycled Content Input", value: 75, unit: "%", targetValue: 70 }] },
-      { id: "lc002", name: "Manufacturing", icon: Factory, status: 'completed', timestamp: "2024-01-15", details: "Assembly at EcoFactory, Germany. Production batch #PB789.", complianceMetrics: [{ name: "ISO 14001 Certification", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Energy Used", value: 50, unit: "kWh/unit", targetValue: 55 }, { name: "Waste Generated", value: 2, unit: "kg/unit", targetValue: 3 }] },
-      { id: "lc003", name: "Shipment", icon: Truck, status: 'in_progress', timestamp: "2024-01-20", details: "Shipping to distribution center via low-emission freight. Container #C0N741N3R.", complianceMetrics: [{ name: "Carbon Offset Cert.", status: "pending_review", reportLink: "#" }], sustainabilityMetrics: [{ name: "Transport Emissions", value: 15, unit: "kg CO2e", targetValue: 12 }] },
-      { id: "lc004", name: "Retail", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-02-10", details: "Product available at certified retail partners.", complianceMetrics: [], sustainabilityMetrics: [] },
-      { id: "lc005", name: "Consumer Use", icon: PackageCheck, status: 'pending', details: "Estimated 10-year lifespan with smart energy monitoring.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Avg. Energy Use", value: 150, unit: "kWh/yr (est.)" }] },
-      { id: "lc006", name: "End-of-Life", icon: Recycle, status: 'pending', details: "Designated for 95% recyclability through partner network.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Recyclability Potential", value: 95, unit: "%"}] }
+      { id: "lc001", name: "Raw Materials", icon: PackageSearch, status: 'completed', timestamp: "2023-12-01T10:00:00Z", location: "Verified Suppliers", details: "Sourcing of verified recycled steel and bio-polymers.", complianceMetrics: [{ name: "Supplier Ethical Audit", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Recycled Content Input", value: 75, unit: "%", targetValue: 70 }] },
+      { id: "lc002", name: "Manufacturing", icon: Factory, status: 'completed', timestamp: "2024-01-15T10:00:00Z", location: "EcoFactory, Germany", details: "Assembly at EcoFactory, Germany. Production batch #PB789.", complianceMetrics: [{ name: "ISO 14001 Certification", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Energy Used", value: 50, unit: "kWh/unit", targetValue: 55 }, { name: "Waste Generated", value: 2, unit: "kg/unit", targetValue: 3 }] },
+      { id: "lc003", name: "Shipment", icon: Truck, status: 'in_progress', timestamp: "2024-01-20T10:00:00Z", location: "En route to Distributor", details: "Shipping to distribution center via low-emission freight. Container #C0N741N3R.", complianceMetrics: [{ name: "Carbon Offset Cert.", status: "pending_review", reportLink: "#" }], sustainabilityMetrics: [{ name: "Transport Emissions", value: 15, unit: "kg CO2e", targetValue: 12 }] },
+      { id: "lc004", name: "Retail", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-02-10T10:00:00Z", location: "Authorized Retailers", details: "Product available at certified retail partners.", complianceMetrics: [], sustainabilityMetrics: [] },
+      { id: "lc005", name: "Consumer Use", icon: PackageCheck, status: 'upcoming', details: "Estimated 10-year lifespan with smart energy monitoring.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Avg. Energy Use", value: 150, unit: "kWh/yr (est.)" }] },
+      { id: "lc006", name: "End-of-Life", icon: Recycle, status: 'upcoming', details: "Designated for 95% recyclability through partner network.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Recyclability Potential", value: 95, unit: "%"}] }
     ],
     overallCompliance: {
-      gdpr: { status: "compliant", lastChecked: "2024-07-01" },
-      eprel: { status: "compliant", entryId: "EPREL12345", lastChecked: "2024-06-20" },
-      ebsiVerified: { status: "compliant", verificationId: "EBSI-TX-ABCDEF0123", lastChecked: "2024-07-15" },
-      scip: { status: "not_applicable", lastChecked: "2024-07-01" },
-      csrd: { status: "in_progress", lastChecked: "2024-07-20" }
+      gdpr: { status: "compliant", lastChecked: "2024-07-01T10:00:00Z" },
+      eprel: { status: "compliant", entryId: "EPREL12345", lastChecked: "2024-06-20T10:00:00Z" },
+      ebsiVerified: { status: "compliant", verificationId: "EBSI-TX-ABCDEF0123", lastChecked: "2024-07-15T10:00:00Z" },
+      scip: { status: "not_applicable", lastChecked: "2024-07-01T10:00:00Z" },
+      csrd: { status: "in_progress", lastChecked: "2024-07-20T10:00:00Z" }
     },
     notifications: [
-      { id: "n001", type: "info", message: "Quarterly sustainability report due next month.", date: "2024-07-10" },
-      { id: "n002", type: "warning", message: "Supplier 'PolyCore' ethical audit expiring soon.", date: "2024-07-18" }
+      { id: "n001", type: "info", message: "Quarterly sustainability report due next month.", date: "2024-07-10T10:00:00Z" },
+      { id: "n002", type: "warning", message: "Supplier 'PolyCore' ethical audit expiring soon.", date: "2024-07-18T10:00:00Z" }
     ],
     materialComposition: [
       { name: 'Recycled Steel', value: 70, fill: 'hsl(var(--chart-1))' },
@@ -156,7 +156,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
       { year: '2023', value: 200 },
       { year: '2024', value: 180 },
     ],
-    waterUsage: { value: 500, unit: 'L/unit', trend: 'down', trendValue: '-5%' },
+    waterUsage: { value: 500, unit: 'L/unit (mfg)', trend: 'down', trendValue: '-5%' },
     recyclabilityScore: { value: 95, unit: '%' },
     repairabilityIndex: { value: 8.5, scale: 10 },
     certifications: [
@@ -203,34 +203,34 @@ const MOCK_PRODUCTS: MockProductType[] = [
     recycledContentPercentage: 8,
     recycledContentPercentageOrigin: "manual",
     lifecycleEvents: [
-      { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01", location: "Shenzhen, China", details: "Batch #LEDB456", isBlockchainAnchored: true, transactionHash: "0xghi789..." },
-      { id: "EVT005", type: "Imported", timestamp: "2024-03-15", location: "Rotterdam Port", details: "Shipment #SHP0089", isBlockchainAnchored: false },
+      { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Batch #LEDB456", isBlockchainAnchored: true, transactionHash: "0xghi789jkl0mno1pqrustvwx" },
+      { id: "EVT005", type: "Imported", timestamp: "2024-03-15T10:00:00Z", location: "Rotterdam Port", details: "Shipment #SHP0089", isBlockchainAnchored: false },
     ],
     complianceData: {
-      "RoHS": { status: "Compliant", lastChecked: "2024-07-01", reportId: "ROHS-LEDB456-001", isVerified: true },
-      "CE Mark": { status: "Compliant", lastChecked: "2024-07-01", reportId: "CE-LEDB456-001", isVerified: true },
-      "Battery Regulation (EU 2023/1542)": { status: "Pending Documentation", lastChecked: "2024-07-20", reportId: "BATREG-LEDB456-PRE", isVerified: false },
+      "RoHS": { status: "Compliant", lastChecked: "2024-07-01T10:00:00Z", reportId: "ROHS-LEDB456-001", isVerified: true },
+      "CE Mark": { status: "Compliant", lastChecked: "2024-07-01T10:00:00Z", reportId: "CE-LEDB456-001", isVerified: true },
+      "Battery Regulation (EU 2023/1542)": { status: "Pending Documentation", lastChecked: "2024-07-20T10:00:00Z", reportId: "BATREG-LEDB456-PRE", isVerified: false },
     },
     isDppBlockchainAnchored: false,
-    currentLifecyclePhaseIndex: 1,
+    currentLifecyclePhaseIndex: 1, // Manufacturing & Assembly is in_progress
     lifecyclePhases: [
-      { id: "lc007", name: "Materials Sourcing", icon: PackageSearch, status: 'completed', timestamp: "2024-02-01", details: "Sourcing of PC, Al, LED chips, battery components.", complianceMetrics: [{ name: "Conflict Minerals Report", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Supplier Diversity Score", value: 60, unit: "/100", targetValue: 75 }] },
-      { id: "lc008", name: "Manufacturing & Assembly", icon: Factory, status: 'in_progress', timestamp: "2024-03-01", details: "Assembly in Shenzhen, China. Batch #LEDB456.", complianceMetrics: [{ name: "Factory Safety Audit", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Carbon Footprint (Mfg.)", value: 5.2, unit: "kg CO2e", targetValue: 5.0 }, { name: "Recycled Packaging Used", value: 90, unit: "%", targetValue: 100}] },
+      { id: "lc007", name: "Materials Sourcing", icon: PackageSearch, status: 'completed', timestamp: "2024-02-01T10:00:00Z", location: "Global Suppliers", details: "Sourcing of PC, Al, LED chips, battery components.", complianceMetrics: [{ name: "Conflict Minerals Report", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Supplier Diversity Score", value: 60, unit: "/100", targetValue: 75 }] },
+      { id: "lc008", name: "Manufacturing & Assembly", icon: Factory, status: 'in_progress', timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Assembly in Shenzhen, China. Batch #LEDB456.", complianceMetrics: [{ name: "Factory Safety Audit", status: "compliant", reportLink: "#" }], sustainabilityMetrics: [{ name: "Carbon Footprint (Mfg.)", value: 5.2, unit: "kg CO2e", targetValue: 5.0 }, { name: "Recycled Packaging Used", value: 90, unit: "%", targetValue: 100}] },
       { id: "lc009", name: "Distribution", icon: Truck, status: 'pending', details: "Global distribution network.", complianceMetrics: [], sustainabilityMetrics: [] },
       { id: "lc010", name: "Retail Sale", icon: ShoppingBagIcon, status: 'pending', details: "Available through online and physical stores.", complianceMetrics: [], sustainabilityMetrics: [] },
-      { id: "lc011", name: "Use Phase", icon: PackageCheck, status: 'pending', details: "Estimated 3-year useful life for battery component.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }] },
+      { id: "lc011", name: "Use Phase", icon: PackageCheck, status: 'upcoming', details: "Estimated 3-year useful life for battery component.", complianceMetrics: [], sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }] },
       { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'issue', details: "Battery designed for easy removal and recycling. Documentation for EU Battery Regulation (EU 2023/1542) is overdue.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]}
     ],
     overallCompliance: {
-      gdpr: { status: "not_applicable", lastChecked: "2024-07-01" },
-      eprel: { status: "pending_review", lastChecked: "2024-07-20" },
-      ebsiVerified: { status: "pending_review", verificationId: "PENDING_EBSI_CHECK", lastChecked: "2024-07-20" },
-      scip: { status: "compliant", declarationId: "SCIP-XYZ", lastChecked: "2024-07-01" },
-      csrd: { status: "pending_review", lastChecked: "2024-07-20" }
+      gdpr: { status: "not_applicable", lastChecked: "2024-07-01T10:00:00Z" },
+      eprel: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" },
+      ebsiVerified: { status: "pending_review", verificationId: "PENDING_EBSI_CHECK", lastChecked: "2024-07-20T10:00:00Z" },
+      scip: { status: "compliant", declarationId: "SCIP-XYZ789", lastChecked: "2024-07-01T10:00:00Z" },
+      csrd: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" }
     },
     notifications: [
-      { id: "n003", type: "error", message: "Battery Regulation documentation overdue! Action required.", date: "2024-07-19" },
-      { id: "n004", type: "warning", message: "EPREL registration data needs review by end of week.", date: "2024-07-22" }
+      { id: "n003", type: "error", message: "Battery Regulation documentation overdue! Action required.", date: "2024-07-19T10:00:00Z" },
+      { id: "n004", type: "warning", message: "EPREL registration data needs review by end of week.", date: "2024-07-22T10:00:00Z" }
     ],
     materialComposition: [
         { name: 'Polycarbonate', value: 40, fill: 'hsl(var(--chart-1))' },
@@ -260,7 +260,7 @@ const TrustSignalIcon = ({ isVerified, tooltipText, Icon = CheckCircle2 }: { isV
     <TooltipProvider>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
-          <span> 
+          <span className='cursor-help'> 
             {isVerified ? <Icon className="h-4 w-4 text-green-500 ml-1" /> : <Info className="h-4 w-4 text-yellow-500 ml-1" />}
           </span>
         </TooltipTrigger>
@@ -278,7 +278,7 @@ const DataOriginIcon = ({ origin, fieldName }: { origin?: string, fieldName: str
       <TooltipProvider>
         <Tooltip delayDuration={100}>
           <TooltipTrigger asChild>
-             <Cpu className="h-4 w-4 text-info ml-1" />
+             <Cpu className="h-4 w-4 text-info ml-1 cursor-help" />
           </TooltipTrigger>
           <TooltipContent>
             <p>{fieldName} data suggested by AI.</p>
@@ -341,7 +341,7 @@ export default function ProductDetailPage() {
               <TooltipProvider>
                 <Tooltip delayDuration={100}>
                   <TooltipTrigger asChild>
-                    <Fingerprint className="h-6 w-6 text-primary ml-2" />
+                    <Fingerprint className="h-6 w-6 text-primary ml-2 cursor-help" />
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>This Digital Product Passport is anchored on the blockchain, ensuring its integrity and authenticity.</p>
@@ -353,7 +353,6 @@ export default function ProductDetailPage() {
                 <TooltipProvider>
                   <Tooltip delayDuration={100}>
                     <TooltipTrigger asChild>
-                      {/* Using a non-functional button for mock display, replace with Link for real use */}
                       <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}>
                         <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" />
                       </Button>
@@ -369,9 +368,9 @@ export default function ProductDetailPage() {
             <Badge variant={
               product.status === "Active" ? "default" :
                 product.status === "Archived" ? "secondary" : "outline"
-            } className={
+            } className={cn(
               product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : ""
-            }>
+            )}>
               {product.status}
             </Badge>
             <TooltipProvider>
@@ -381,11 +380,11 @@ export default function ProductDetailPage() {
                     product.compliance === "Compliant" ? "default" :
                       product.compliance === "Pending Documentation" ? "outline" :
                       product.compliance === "Pending" ? "outline" : "destructive"
-                  } className={`
-                            ${product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : ""}
-                            ${(product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""}
-                            cursor-help
-                            `}>
+                  } className={cn(
+                            product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "",
+                            (product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "",
+                            "cursor-help"
+                            )}>
                     {product.compliance}
                     {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />}
                     {(product.compliance === "Pending" || product.compliance === "Pending Documentation") && <Info className="h-3 w-3 ml-1" />}
@@ -397,7 +396,7 @@ export default function ProductDetailPage() {
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            <span className="text-sm text-muted-foreground">Last updated: {product.lastUpdated}</span>
+            <span className="text-sm text-muted-foreground">Last updated: {new Date(product.lastUpdated).toLocaleDateString()}</span>
           </div>
         </div>
         <div className="flex gap-2">
@@ -410,8 +409,8 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Visual Dashboard Section */}
-      <Card className="shadow-xl border-primary/20">
+      {}
+      <Card className="shadow-xl border-primary/20 bg-muted/30">
         <CardHeader>
           <CardTitle className="text-2xl font-headline text-primary">Live DPP Status Overview</CardTitle>
         </CardHeader>
@@ -544,14 +543,14 @@ export default function ProductDetailPage() {
                 <Card key={reg} className="bg-muted/50 p-4 rounded-lg">
                   <CardTitle className="text-md flex items-center justify-between">
                     <span className="flex items-center">{reg} <TrustSignalIcon isVerified={data.isVerified} tooltipText={data.isVerified ? `${reg} Verified` : `${reg} Status Pending Verification`} /></span>
-                    <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={
-                      data.status === "Compliant" ? "bg-green-500/20 text-green-700" :
+                    <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={cn(
+                      data.status === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "",
                         data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""
-                    }>
+                    )}>
                       {data.status}
                     </Badge>
                   </CardTitle>
-                  <p className="text-xs text-muted-foreground mt-1">Last Checked: {data.lastChecked}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Last Checked: {new Date(data.lastChecked).toLocaleDateString()}</p>
                   {data.reportId && <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>}
                 </Card>
               ))}
@@ -576,7 +575,7 @@ export default function ProductDetailPage() {
                           <TooltipProvider>
                             <Tooltip delayDuration={100}>
                               <TooltipTrigger asChild>
-                                <Server className="h-4 w-4 text-primary ml-2" />
+                                <Server className="h-4 w-4 text-primary ml-2 cursor-help" />
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p>
@@ -634,13 +633,13 @@ export default function ProductDetailPage() {
                                 const x = cx + radius * Math.cos(-midAngle * RADIAN);
                                 const y = cy + radius * Math.sin(-midAngle * RADIAN);
                                 return (
-                                  <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-medium">
+                                  <text x={x} y={y} fill="hsl(var(--primary-foreground))" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-medium">
                                     {`${(percent * 100).toFixed(0)}%`}
                                   </text>
                                 );
                               }}>
                               {product.materialComposition.map((entry, index) => (
-                                <Cell key={`cell-${index}`} fill={entry.fill} />
+                                <Cell key={`cell-${index}`} fill={entry.fill} className={cn("stroke-background focus:outline-none", entry.fill.startsWith("hsl") ? "" : entry.fill)} />
                               ))}
                             </Pie>
                             <ChartLegend content={<ChartLegendContent nameKey="name" />} className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center" />
@@ -668,7 +667,7 @@ export default function ProductDetailPage() {
                               cursor={false}
                               content={<ChartTooltipContent indicator="line" />}
                             />
-                            <Line type="monotone" dataKey="value" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={true} name="kg CO₂e" />
+                            <Line type="monotone" dataKey="value" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ fill: "hsl(var(--chart-1))", r:4 }} activeDot={{r:6}} name="kg CO₂e" />
                           </LineChart>
                         </ResponsiveContainer>
                       </ChartContainer>
@@ -706,7 +705,7 @@ export default function ProductDetailPage() {
                   <h4 className="text-md font-semibold mb-2 flex items-center"><CheckCircle2 className="mr-2 h-5 w-5 text-primary"/>Certifications</h4>
                   <ul className="space-y-2">
                     {product.certifications.map(cert => (
-                      <li key={cert.name} className="flex items-center justify-between text-sm p-2 bg-background rounded-md border">
+                      <li key={cert.name} className="flex items-center justify-between text-sm p-2 bg-background rounded-md border hover:bg-muted/30 transition-colors">
                         <div className="flex items-center">
                            <TrustSignalIcon isVerified={cert.verified} tooltipText={cert.verified ? "Verified Certification" : "Self-Declared / Pending Verification"} Icon={cert.verified ? CheckCircle2 : Target} />
                            <span className="ml-2 font-medium">{cert.name}</span>
@@ -730,22 +729,24 @@ export default function ProductDetailPage() {
 function ProductDetailSkeleton() {
   return (
     <div className="space-y-8">
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <Skeleton className="h-10 w-3/4 mb-2" />
           <Skeleton className="h-6 w-1/2" />
         </div>
-        <Skeleton className="h-10 w-40" />
+        <div className="flex gap-2">
+          <Skeleton className="h-10 w-40" />
+        </div>
       </div>
 
-      <Card className="shadow-xl border-primary/20">
+      <Card className="shadow-xl border-primary/20 bg-muted/30">
         <CardHeader>
           <Skeleton className="h-8 w-1/2 mb-2" />
         </CardHeader>
         <CardContent className="space-y-6">
-          <Skeleton className="h-24 w-full" /> {/* Placeholder for OverallCompliance */}
-          <Skeleton className="h-16 w-full" /> {/* Placeholder for ProductAlerts */}
-          <Skeleton className="h-48 w-full" /> {/* Placeholder for ProductLifecycleFlowchart */}
+          <Skeleton className="h-24 w-full" /> {}
+          <Skeleton className="h-16 w-full" /> {}
+          <Skeleton className="h-48 w-full" /> {}
         </CardContent>
       </Card>
 
@@ -775,7 +776,7 @@ function ProductDetailSkeleton() {
           </div>
         </div>
       </Card>
-      <Skeleton className="h-10 w-full md:w-2/3" /> {/* TabsList skeleton */}
+      <Skeleton className="h-10 w-full md:w-2/3" /> {}
       <Card className="mt-4">
         <CardHeader>
           <Skeleton className="h-7 w-1/3" />
@@ -790,5 +791,3 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
-
-    

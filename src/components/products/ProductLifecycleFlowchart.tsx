@@ -4,8 +4,8 @@
 import React from 'react';
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertCircle, Info as InfoIcon, ExternalLink, BarChartHorizontal, TrendingUp, TrendingDown, Minus, LucideIcon, CalendarDays, MapPin } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip } from 'recharts';
@@ -37,31 +37,32 @@ interface ProductLifecycleFlowchartProps {
 }
 
 const getStatusClasses = (status: LifecyclePhase['status'], isCurrent: boolean) => {
-  let bgColor = 'bg-muted';
+  let bgColor = 'bg-muted dark:bg-muted/50';
   let textColor = 'text-muted-foreground';
   let borderColor = 'border-border';
 
   if (status === 'completed') {
-    bgColor = 'bg-green-100 dark:bg-green-900';
+    bgColor = 'bg-green-100 dark:bg-green-900/30';
     textColor = 'text-green-700 dark:text-green-300';
-    borderColor = 'border-green-500';
+    borderColor = 'border-green-500/70';
   } else if (status === 'in_progress') {
-    bgColor = 'bg-blue-100 dark:bg-blue-900';
+    bgColor = 'bg-blue-100 dark:bg-blue-900/30';
     textColor = 'text-blue-700 dark:text-blue-300';
-    borderColor = 'border-blue-500';
+    borderColor = 'border-blue-500/70';
   } else if (status === 'issue') {
-    bgColor = 'bg-red-100 dark:bg-red-900';
+    bgColor = 'bg-red-100 dark:bg-red-900/30';
     textColor = 'text-red-700 dark:text-red-300';
-    borderColor = 'border-red-500';
-  } else if (status === 'pending') {
-    bgColor = 'bg-yellow-100 dark:bg-yellow-900';
+    borderColor = 'border-red-500/70';
+  } else if (status === 'pending' || status === 'upcoming') {
+    bgColor = 'bg-yellow-100 dark:bg-yellow-900/30';
     textColor = 'text-yellow-700 dark:text-yellow-300';
-    borderColor = 'border-yellow-500';
+    borderColor = 'border-yellow-500/70';
   }
+
 
   if (isCurrent) {
     borderColor = 'border-primary ring-2 ring-primary ring-offset-2 dark:ring-offset-background';
-    bgColor = status === 'in_progress' ? 'bg-primary/20' : bgColor;
+    bgColor = status === 'in_progress' ? 'bg-primary/20 dark:bg-primary/30' : bgColor;
   }
   return { bgColor, textColor, borderColor };
 };
@@ -79,12 +80,13 @@ const SustainabilityMetricChart = ({ metric }: { metric: Metric }) => {
   const data = [{ name: metric.name, value: metric.value, target: metric.targetValue }];
 
   return (
-    <div className="my-1 h-16 w-full"> {/* Ensure container has height */}
+    <div className="my-1 h-16 w-full"> {}
       <ResponsiveContainer width="100%" height="100%">
         <BarChart layout="vertical" data={data} margin={{ top: 5, right: 5, left: 5, bottom: 5 }}>
           <XAxis type="number" hide />
           <YAxis type="category" dataKey="name" hide />
           <RechartsTooltip
+            cursor={{ fill: 'hsl(var(--muted))' }}
             contentStyle={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)'}}
             labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
             itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
@@ -134,12 +136,12 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
                       >
                         <IconComponent className={cn("h-8 w-8 mb-2", textColor)} />
                         <span className="text-xs font-semibold truncate w-full">{phase.name}</span>
-                        <Badge variant="secondary" className={cn("mt-1 text-xs", bgColor, textColor, borderColor)}>
-                          {phase.status.replace('_', ' ').toUpperCase()}
+                        <Badge variant="secondary" className={cn("mt-1 text-xs capitalize", bgColor, textColor, borderColor)}>
+                          {phase.status.replace('_', ' ')}
                         </Badge>
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-80 shadow-xl z-50" side="bottom" align="center">
+                    <PopoverContent className="w-80 shadow-xl z-50 bg-card" side="bottom" align="center">
                       <div className="space-y-3">
                         <h4 className="font-semibold text-md text-primary">{phase.name}</h4>
                         {phase.timestamp && (
@@ -159,7 +161,7 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
                             <h5 className="text-sm font-medium mb-1 text-foreground/80">Compliance Checks:</h5>
                             <ul className="space-y-1 text-xs">
                               {phase.complianceMetrics.map(metric => (
-                                <li key={metric.name} className="flex items-center justify-between">
+                                <li key={metric.name} className="flex items-center justify-between p-1.5 bg-muted/50 rounded-sm">
                                   <span className="flex items-center">
                                     <MetricStatusIcon status={metric.status} />
                                     <span className="ml-1.5">{metric.name}</span>
@@ -180,13 +182,13 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
                             <h5 className="text-sm font-medium mb-1 mt-2 text-foreground/80">Sustainability Metrics:</h5>
                             <div className="space-y-1 text-xs">
                               {phase.sustainabilityMetrics.map(metric => (
-                                <div key={metric.name} className="py-1">
+                                <div key={metric.name} className="py-1 p-1.5 bg-muted/50 rounded-sm">
                                   <div className="flex justify-between items-center mb-0.5">
                                      <span className="font-medium">{metric.name}:</span>
-                                     <span>{metric.value}{metric.unit}
+                                     <span>{metric.value}{metric.unit && ` ${metric.unit}`}
                                       {typeof metric.value === 'number' && metric.targetValue !== undefined && (
                                         <span className={cn("ml-1 text-xs", metric.value <= metric.targetValue ? 'text-green-500' : 'text-red-500')}>
-                                          ({metric.value <= metric.targetValue ? <TrendingUp className="inline h-3 w-3"/> : <TrendingDown className="inline h-3 w-3"/>} vs {metric.targetValue}{metric.unit})
+                                          ({metric.value <= metric.targetValue ? <TrendingUp className="inline h-3 w-3"/> : <TrendingDown className="inline h-3 w-3"/>} vs {metric.targetValue}{metric.unit && ` ${metric.unit}`})
                                         </span>
                                       )}
                                      </span>
@@ -215,5 +217,3 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
 };
 
 export default ProductLifecycleFlowchart;
-
-    

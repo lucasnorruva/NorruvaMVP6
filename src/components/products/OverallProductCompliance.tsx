@@ -25,8 +25,6 @@ export interface OverallComplianceData {
   csrd: ComplianceStatus;
 }
 
-// Re-define ProductNotification here if it's simple enough, or ensure it's imported consistently.
-// For this component, we only care about the 'type' for error checking.
 export interface ProductNotification {
   id: string;
   type: 'info' | 'warning' | 'error';
@@ -45,15 +43,17 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus }> = ({ t
   let badgeVariant: "default" | "secondary" | "destructive" | "outline" = "outline";
   let badgeClasses = "bg-muted text-muted-foreground";
   let titleText = title;
-  let detailsText = "";
+  let detailsText = `Last checked: ${new Date(data.lastChecked).toLocaleDateString()}`;
 
   switch (data.status) {
     case 'compliant':
       IconComponent = ShieldCheck;
       badgeVariant = "default";
       badgeClasses = "bg-green-500/20 text-green-700 border-green-500/30";
-      if (title.includes("EBSI") && data.verificationId) {
-        detailsText = `Verified (ID: ${data.verificationId})`;
+      if (title.includes("EBSI") && data.verificationId && data.verificationId !== "PENDING_EBSI_CHECK") {
+        detailsText = `Verified (ID: ${data.verificationId}) - ${detailsText}`;
+      } else if (title.includes("EPREL") && data.entryId){
+         detailsText = `Entry ID: ${data.entryId} - ${detailsText}`;
       }
       break;
     case 'non_compliant':
@@ -66,11 +66,11 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus }> = ({ t
       badgeVariant = "outline";
       badgeClasses = "bg-yellow-500/20 text-yellow-700 border-yellow-500/30";
        if (title.includes("EBSI") && data.verificationId === "PENDING_EBSI_CHECK") {
-         detailsText = `Verification Pending`;
+         detailsText = `Verification Pending - ${detailsText}`;
       }
       break;
     case 'in_progress':
-      IconComponent = Info; // Or a specific "in progress" icon
+      IconComponent = Info;
       badgeVariant = "outline";
       badgeClasses = "bg-blue-500/20 text-blue-700 border-blue-500/30";
       break;
@@ -78,13 +78,14 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus }> = ({ t
       IconComponent = ShieldQuestion;
       badgeVariant = "secondary";
       badgeClasses = "bg-gray-500/20 text-gray-700 border-gray-500/30";
+      detailsText = `Not applicable for this product.`; // Overwrite lastChecked for N/A
       break;
   }
 
   return (
-    <div className="flex items-center justify-between p-3 bg-background rounded-md border">
+    <div className="flex items-center justify-between p-3 bg-background rounded-md border hover:bg-muted/30 transition-colors">
       <div className="flex items-center">
-        <IconComponent className={cn("h-5 w-5 mr-2", 
+        <IconComponent className={cn("h-5 w-5 mr-3 flex-shrink-0", 
           data.status === 'compliant' && 'text-green-500',
           data.status === 'non_compliant' && 'text-red-500',
           data.status === 'pending_review' && 'text-yellow-500',
@@ -96,8 +97,8 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus }> = ({ t
           {detailsText && <span className="block text-xs text-muted-foreground">{detailsText}</span>}
         </div>
       </div>
-      <Badge variant={badgeVariant} className={cn("text-xs", badgeClasses)}>
-        {data.status.replace('_', ' ').toUpperCase()}
+      <Badge variant={badgeVariant} className={cn("text-xs capitalize", badgeClasses)}>
+        {data.status.replace('_', ' ')}
       </Badge>
     </div>
   );
@@ -134,4 +135,3 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
 };
 
 export default OverallProductCompliance;
-

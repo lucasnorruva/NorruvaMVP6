@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight, Sparkles, Copy as CopyIcon, ImagePlus, ImageIcon, CheckSquare, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight, Sparkles, Copy as CopyIcon, ImagePlus, ImageIcon, CheckSquare } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -1144,7 +1144,7 @@ export default function ProductDetailPage() {
                             </AspectRatio>
                             <div className="flex items-center mt-1">
                                 <DataOriginIcon origin={product.imageUrlOrigin}/>
-                                {canGenerateImage && (
+                                {canGenerateImage && (isProductImagePlaceholder || product.imageUrlOrigin === 'AI_EXTRACTED') && (
                                     <Button variant="outline" size="sm" onClick={handleGenerateProductImage} disabled={isGeneratingImage} className="ml-auto text-xs">
                                         {isGeneratingImage ? <Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> : <ImagePlus className="mr-1.5 h-3 w-3" />}
                                         {isGeneratingImage ? "Generating..." : (isProductImagePlaceholder ? "Generate Image" : "Regenerate Image")}
@@ -1218,15 +1218,10 @@ export default function ProductDetailPage() {
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
-
-                          {/* Detailed section breakdown visible directly */}
                           <Accordion type="single" collapsible className="w-full mt-4">
                             <AccordionItem value="completeness-details">
-                              <AccordionTrigger className="text-sm py-2 hover:no-underline">
-                                <div className="flex items-center text-muted-foreground">
-                                  View Section Details
-                                  <ChevronDown className="h-4 w-4 ml-1 transition-transform duration-200 group-[data-state=open]:rotate-180" />
-                                </div>
+                              <AccordionTrigger className="text-sm py-2 hover:no-underline text-muted-foreground">
+                                 View Section Details
                               </AccordionTrigger>
                               <AccordionContent className="pt-2 space-y-2">
                                 {dppCompleteness.sections.map(section => (

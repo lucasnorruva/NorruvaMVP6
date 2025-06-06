@@ -11,5 +11,6 @@ import '@/ai/flows/generate-product-image-flow.ts';
 import '@/ai/flows/sync-eprel-data-flow.ts';
 import '@/ai/flows/generate-csrd-summary-flow.ts'; 
 import '@/ai/flows/generate-product-name-flow.ts'; 
-import '@/ai/flows/generate-product-description-flow.ts'; // Added new product description flow
+import '@/ai/flows/generate-product-description-flow.ts';
+
 

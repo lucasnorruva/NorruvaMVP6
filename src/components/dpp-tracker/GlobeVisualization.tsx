@@ -3,7 +3,6 @@
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
-// Removed: import { Text } from 'troika-three-text'; // Ensure this line is GONE
 import { MapPin, Ship, Plane, Building2 as LandBorderIcon } from 'lucide-react';
 import {
     DPP_HEALTH_GOOD_COLOR,
@@ -12,32 +11,29 @@ import {
     CHECKPOINT_PORT_COLOR,
     CHECKPOINT_AIRPORT_COLOR,
     CHECKPOINT_LAND_BORDER_COLOR
-} from '@/app/(app)/dpp-global-tracker/page'; // These are RGBA strings
+} from '@/app/(app)/dpp-global-tracker/page';
 import type { MockDppPoint, MockArc, MockCustomsCheckpoint, MockShipmentPoint } from '@/app/(app)/dpp-global-tracker/page';
 
 const convertRgbaToRgbForThree = (rgbaString: string): string => {
   if (typeof rgbaString !== 'string' || !rgbaString.startsWith('rgba(')) {
-    // console.warn(`GlobeVisualization: Invalid RGBA string for conversion: ${rgbaString}`);
-    return 'rgb(128,128,128)'; // Default to grey
+    return 'rgb(128,128,128)'; 
   }
   const firstParen = rgbaString.indexOf('(');
   const lastComma = rgbaString.lastIndexOf(',');
   if (firstParen === -1 || lastComma === -1 || lastComma < firstParen) {
-    // console.warn(`GlobeVisualization: Malformed RGBA string for conversion: ${rgbaString}`);
-    return 'rgb(128,128,128)'; // Default to grey
+    return 'rgb(128,128,128)'; 
   }
   const rgbValues = rgbaString.substring(firstParen + 1, lastComma);
   return `rgb(${rgbValues})`;
 };
 
-// Convert RGBA strings to THREE.Color instances
 const DPP_HEALTH_GOOD_THREE_COLOR = new THREE.Color(convertRgbaToRgbForThree(DPP_HEALTH_GOOD_COLOR));
 const DPP_HEALTH_FAIR_THREE_COLOR = new THREE.Color(convertRgbaToRgbForThree(DPP_HEALTH_FAIR_COLOR));
 const DPP_HEALTH_POOR_THREE_COLOR = new THREE.Color(convertRgbaToRgbForThree(DPP_HEALTH_POOR_COLOR));
 const CHECKPOINT_PORT_THREE_COLOR = new THREE.Color(convertRgbaToRgbForThree(CHECKPOINT_PORT_COLOR));
 const CHECKPOINT_AIRPORT_THREE_COLOR = new THREE.Color(convertRgbaToRgbForThree(CHECKPOINT_AIRPORT_COLOR));
 const CHECKPOINT_LAND_BORDER_THREE_COLOR = new THREE.Color(convertRgbaToRgbForThree(CHECKPOINT_LAND_BORDER_COLOR));
-const GREY_THREE_COLOR = new THREE.Color('grey');
+const GREY_THREE_COLOR = new THREE.Color('rgb(128,128,128)');
 
 
 const getIconCanvas = (IconComponent: React.ElementType, color: THREE.Color, size = 64): HTMLCanvasElement => {
@@ -48,35 +44,33 @@ const getIconCanvas = (IconComponent: React.ElementType, color: THREE.Color, siz
   if (ctx) {
     ctx.beginPath();
     ctx.arc(size / 2, size / 2, size / 2.5, 0, 2 * Math.PI, false);
-    // Ensure color is a THREE.Color object and getHexString is available
+    
     if (color && typeof color.getHexString === 'function') {
       ctx.fillStyle = `#${color.getHexString()}`;
     } else {
-      // Fallback if color is not a THREE.Color object or getHexString is missing
-      ctx.fillStyle = '#808080'; // Default grey
-      // console.warn("getIconCanvas: Provided color object was invalid or missing getHexString. Defaulting to grey.", color);
+      ctx.fillStyle = '#808080'; 
     }
     ctx.fill();
 
-    ctx.font = `${size / 2.2}px sans-serif`; // Adjusted font size slightly
-    ctx.fillStyle = 'white'; // Text color on the circle
+    ctx.font = `bold ${size / 2.2}px sans-serif`; 
+    ctx.fillStyle = 'white'; 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    let char = '?'; // Default character
+    let char = '?'; 
     if (IconComponent === Ship) char = 'S';
     else if (IconComponent === Plane) char = 'A';
     else if (IconComponent === LandBorderIcon) char = 'L';
-    else if (IconComponent === MapPin) char = 'M'; // Generic MapPin
-    // Add more mappings if other icons are used directly
+    else if (IconComponent === MapPin) char = 'M'; 
 
-    ctx.fillText(char, size / 2, size / 2 + (size/32)); // Slight adjustment for better vertical centering
+    ctx.fillText(char, size / 2, size / 2 + (size/32)); 
   }
   return canvas;
 };
 
 
 interface GlobeVisualizationProps {
+  globeRef?: React.MutableRefObject<any | undefined>; // Added globeRef prop
   pointsData: Array<MockDppPoint | MockShipmentPoint>;
   arcsData: MockArc[];
   polygonsData: any[];
@@ -94,7 +88,8 @@ interface GlobeVisualizationProps {
   globeBackgroundColor: string;
 }
 
-const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
+const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
+  globeRef: externalGlobeRef, // Use externalGlobeRef
   pointsData,
   arcsData,
   polygonsData,
@@ -111,7 +106,9 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
   polygonStrokeColorAccessor,
   globeBackgroundColor
 }) => {
-  const globeEl = useRef<any | undefined>();
+  const internalGlobeRef = useRef<any | undefined>(); // Internal ref if no external one is provided
+  const globeEl = externalGlobeRef || internalGlobeRef; // Use external if available, else internal
+
   const [GlobeComponent, setGlobeComponent] = useState<React.ComponentType<any> | null>(null);
 
   useEffect(() => {
@@ -131,14 +128,14 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
         if (controls) {
             controls.autoRotate = false;
             controls.enableZoom = true;
-            controls.minDistance = 50; // Adjust as needed
-            controls.maxDistance = 1500; // Adjust as needed
+            controls.minDistance = 50; 
+            controls.maxDistance = 1500; 
         }
       } catch (e) {
         // console.error("GlobeVisualization: Error configuring globe controls or POV", e);
       }
     }
-  }, [GlobeComponent]);
+  }, [GlobeComponent, globeEl]);
 
   const checkpointPrimaryColorLogic = (checkpoint: MockCustomsCheckpoint): THREE.Color => {
     switch (checkpoint.dppComplianceHealth) {
@@ -158,25 +155,24 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
     if (!customsCheckpointsData) return [];
     return customsCheckpointsData.map(cp => {
       const color = checkpointPrimaryColorLogic(cp);
-      let IconComp = MapPin; // Default icon
-      if (cp.icon) { // If an icon is directly provided in mock data (it isn't currently, but for future)
+      let IconComp = MapPin; 
+      if (cp.icon) { 
         IconComp = cp.icon;
       } else if (cp.type === 'port') IconComp = Ship;
       else if (cp.type === 'airport') IconComp = Plane;
       else if (cp.type === 'land_border') IconComp = LandBorderIcon;
 
-      const canvas = getIconCanvas(IconComp, color, 32); // Using 32 for potentially smaller sprites
+      const canvas = getIconCanvas(IconComp, color, 32); 
       const map = new THREE.CanvasTexture(canvas);
-      map.needsUpdate = true; // Important for canvas textures
+      map.needsUpdate = true; 
       const material = new THREE.SpriteMaterial({ map: map, depthTest: false, transparent: true, sizeAttenuation: false });
       const sprite = new THREE.Sprite(material);
-      sprite.scale.set(8, 8, 1); // Adjust scale as needed
+      sprite.scale.set(8, 8, 1); 
 
-      // Attach data for click handling
       (sprite as any).checkpointData = cp;
       return sprite;
     });
-  }, [customsCheckpointsData]); // Recompute if customsCheckpointsData changes
+  }, [customsCheckpointsData]); 
 
 
   if (!GlobeComponent) {
@@ -185,13 +181,13 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
 
   const globeProps = {
     backgroundColor: globeBackgroundColor,
-    globeImageUrl: undefined, // Use default globe texture
+    globeImageUrl: undefined, 
 
     pointsData: pointsData,
     pointLabel: 'name',
     pointColor: pointColorAccessor,
     pointRadius: pointRadiusAccessor,
-    pointAltitude: (d: MockDppPoint | MockShipmentPoint) => ('direction' in d && d.direction) ? 0.025 : 0.02, // Slightly raise shipment dots
+    pointAltitude: (d: MockDppPoint | MockShipmentPoint) => ('direction' in d && d.direction) ? 0.025 : 0.02, 
     onPointClick: onPointClick,
 
     arcsData: arcsData,
@@ -204,31 +200,28 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
     polygonCapColor: polygonCapColorAccessor,
     polygonSideColor: polygonSideColorAccessor,
     polygonStrokeColor: polygonStrokeColorAccessor,
-    polygonAltitude: 0.005, // Keep polygons slightly above the globe surface
-    polygonsTransitionDuration: 0, // No transition for polygons
+    polygonAltitude: 0.005, 
+    polygonsTransitionDuration: 0, 
 
-    customLayerData: customsCheckpointsData, // Ensure this is passed
-    customThreeObject: (cpData: any) => { // cpData is one item from customsCheckpointsData
+    customLayerData: customsCheckpointsData, 
+    customThreeObject: (cpData: any) => { 
         const cp = cpData as MockCustomsCheckpoint;
-        // Find the pre-generated sprite for this checkpoint
         const index = customsCheckpointsData.findIndex(item => item.id === cp.id);
         if (index !== -1 && checkpointSprites[index]) {
           return checkpointSprites[index];
         }
-        // Fallback if sprite not found (should ideally not happen with useMemo)
-        const fallbackMaterial = new THREE.SpriteMaterial({ color: 'purple' }); // Should not be hit often
+        const fallbackMaterial = new THREE.SpriteMaterial({ color: 'purple' }); 
         const sprite = new THREE.Sprite(fallbackMaterial);
         sprite.scale.set(5, 5, 1);
-        (sprite as any).checkpointData = cp; // Attach data for click
+        (sprite as any).checkpointData = cp; 
         return sprite;
     },
     customThreeObjectUpdate: (obj: any, cpData: any) => {
-        // Position the sprite correctly on the globe
-        if(globeEl.current){ // Ensure globeEl is initialized
-            Object.assign(obj.position, globeEl.current.getCoords(cpData.lat, cpData.lng, 0.03)); // Altitude 0.03 for checkpoints
+        if(globeEl.current){ 
+            Object.assign(obj.position, globeEl.current.getCoords(cpData.lat, cpData.lng, 0.03)); 
         }
     },
-    onCustomLayerClick: (obj: any, event: MouseEvent) => { // obj is the THREE.Sprite
+    onCustomLayerClick: (obj: any, event: MouseEvent) => { 
         if (obj && (obj as any).checkpointData) {
           onCheckpointClick((obj as any).checkpointData);
         }
@@ -242,4 +235,6 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
   );
 };
 
-export default GlobeVisualization;
+// const GlobeVisualization = React.memo(GlobeVisualizationInternal); // Memoization is good
+export default GlobeVisualizationInternal; // Exporting internal directly if React.memo is handled by parent or not strictly needed now
+

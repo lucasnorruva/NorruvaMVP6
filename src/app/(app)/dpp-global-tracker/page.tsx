@@ -33,7 +33,6 @@ import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
 
 const GlobeVisualizationInternal = React.lazy(() => import('@/components/dpp-tracker/GlobeVisualization'));
 
-// Wrapped GlobeVisualization for React.memo
 const GlobeVisualization = React.memo(GlobeVisualizationInternal);
 
 
@@ -128,7 +127,6 @@ export const CHECKPOINT_PORT_COLOR = 'rgba(60, 70, 180, 0.9)';
 export const CHECKPOINT_AIRPORT_COLOR = 'rgba(100, 60, 170, 0.9)';
 export const CHECKPOINT_LAND_BORDER_COLOR = 'rgba(200, 100, 30, 0.9)';
 
-// Shipment status colors
 const SHIPMENT_IN_TRANSIT_COLOR_GLOBE = 'rgba(0, 123, 255, 0.9)'; 
 const SHIPMENT_AT_CUSTOMS_COLOR_GLOBE = 'rgba(255, 165, 0, 0.9)';  
 const SHIPMENT_INSPECTION_COLOR_GLOBE = 'rgba(220, 53, 69, 0.9)'; 
@@ -136,11 +134,10 @@ const SHIPMENT_DELAYED_COLOR_GLOBE = 'rgba(255, 193, 7, 0.9)';
 const SHIPMENT_CLEARED_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)';   
 const SHIPMENT_DATA_SYNC_DELAYED_COLOR_GLOBE = 'rgba(108, 117, 125, 0.9)'; 
 
-// Arc (Trade Route) Colors
-const ARC_INBOUND_EU_COLOR = 'rgba(50, 120, 220, 0.8)'; // Distinct Blue
-const ARC_OUTBOUND_EU_COLOR = 'rgba(30, 180, 100, 0.8)'; // Distinct Green
-const ARC_INTERNAL_EU_COLOR = 'rgba(150, 100, 200, 0.8)'; // Distinct Purple
-const ARC_DEFAULT_COLOR = 'rgba(128, 128, 128, 0.7)'; // Grey for others
+const ARC_INBOUND_EU_COLOR = 'rgba(50, 120, 220, 0.8)'; 
+const ARC_OUTBOUND_EU_COLOR = 'rgba(30, 180, 100, 0.8)'; 
+const ARC_INTERNAL_EU_COLOR = 'rgba(150, 100, 200, 0.8)'; 
+const ARC_DEFAULT_COLOR = 'rgba(128, 128, 128, 0.7)'; 
 
 
 const initialMockPointsData: MockDppPoint[] = [
@@ -288,7 +285,7 @@ export default function DppGlobalTrackerPage() {
       });
   }, [toast]);
 
-  useEffect(() => {
+ useEffect(() => {
     let simulationToastShown = false;
     const intervalId = setInterval(() => {
       if (!simulationToastShown && SHIPMENTS_TO_SIMULATE.length > 0) {
@@ -308,12 +305,12 @@ export default function DppGlobalTrackerPage() {
             let updatedShipment = { ...shipment };
             const prevStatus = updatedShipment.simulatedStatus;
             
-            // Simulate data sync delay randomly
-            if (Math.random() < 0.02 && updatedShipment.simulatedStatus !== 'data_sync_delayed' && updatedShipment.simulationProgress < 0.95) { 
+            // Simulate data sync delay randomly (5% chance if not already delayed and not near end)
+            if (Math.random() < 0.05 && updatedShipment.simulatedStatus !== 'data_sync_delayed' && updatedShipment.simulationProgress < 0.90) { 
                 updatedShipment.simulatedStatus = 'data_sync_delayed';
             } else if (updatedShipment.simulatedStatus === 'data_sync_delayed') {
-                // Potentially resolve sync delay after some time
-                if (Math.random() < 0.3) { // 30% chance to resolve sync delay
+                // Potentially resolve sync delay after some time (30% chance to resolve)
+                if (Math.random() < 0.3) { 
                   updatedShipment.simulatedStatus = 'in_transit'; 
                 }
             }
@@ -324,11 +321,13 @@ export default function DppGlobalTrackerPage() {
                 updatedShipment.simulatedStatus = 'cleared';
                 updatedShipment.dppComplianceStatusText = "All DPP Data Verified";
                 updatedShipment.dppComplianceBadgeVariant = "default";
+                updatedShipment.dppComplianceNotes = ["Customs cleared successfully."];
                 showShipmentToast(updatedShipment.id, updatedShipment.simulatedStatus, `Shipment ${updatedShipment.id} has cleared customs.`);
               }
               return { ...updatedShipment, lat: arc.endLat, lng: arc.endLng, progressPercentage: 100 };
             }
 
+            // Only advance progress if not in 'data_sync_delayed'
             if (updatedShipment.simulatedStatus !== 'data_sync_delayed') {
                  updatedShipment.simulationProgress = (updatedShipment.simulationProgress || 0) + SIMULATION_STEP;
             }
@@ -340,42 +339,49 @@ export default function DppGlobalTrackerPage() {
             updatedShipment.progressPercentage = Math.round(updatedShipment.simulationProgress * 100);
 
 
+            // Status change logic based on progress (only if not data_sync_delayed)
             if (updatedShipment.simulatedStatus !== 'data_sync_delayed') {
+                // Transition to 'at_customs' between 40% and 70% progress
                 if (updatedShipment.simulationProgress >= 0.4 && updatedShipment.simulationProgress <= 0.7) { 
-                    if (prevStatus === 'in_transit' || prevStatus === 'data_sync_delayed') {
+                    if (prevStatus === 'in_transit') { // Only change if coming from 'in_transit'
                          updatedShipment.simulatedStatus = 'at_customs';
+                         // Simulate a compliance issue being detected at customs (20% chance)
                          if (Math.random() < 0.20) { 
                             const issues = ["Awaiting CBAM Declaration", "CE Marking Verification Pending", "Battery Passport Data Missing"];
                             const randomIssue = issues[Math.floor(Math.random() * issues.length)];
                             updatedShipment.dppComplianceStatusText = randomIssue;
                             updatedShipment.dppComplianceBadgeVariant = "destructive";
-                            updatedShipment.dppComplianceNotes = [randomIssue];
+                            updatedShipment.dppComplianceNotes = [randomIssue, "Documentation review required."];
                             showShipmentToast(updatedShipment.id, "compliance_alert", `Compliance Alert: Shipment ${updatedShipment.id} - ${randomIssue}.`, "destructive");
                          } else {
                             updatedShipment.dppComplianceStatusText = "DPP Data Review In Progress";
                             updatedShipment.dppComplianceBadgeVariant = "outline";
                             updatedShipment.dppComplianceNotes = ["Standard DPP data checks underway."];
                          }
-                    } else if (prevStatus === 'at_customs') {
+                    } else if (prevStatus === 'at_customs') { // If already at customs
                         const randomEvent = Math.random();
-                        if (randomEvent < 0.1) updatedShipment.simulatedStatus = 'customs_inspection';
-                        else if (randomEvent < 0.15 && updatedShipment.simulatedStatus !== 'customs_inspection') updatedShipment.simulatedStatus = 'delayed'; 
+                        if (randomEvent < 0.1) updatedShipment.simulatedStatus = 'customs_inspection'; // 10% chance for inspection
+                        else if (randomEvent < 0.15 && updatedShipment.simulatedStatus !== 'customs_inspection') updatedShipment.simulatedStatus = 'delayed'; // 5% chance for delay (if not already in inspection)
                     }
                 } else if (updatedShipment.simulationProgress > 0.7) { 
+                     // If past customs checkpoint (70% progress) and was at customs/inspection/delayed, mark as cleared
                      if (prevStatus === 'customs_inspection' || prevStatus === 'delayed' || prevStatus === 'at_customs') {
                         updatedShipment.simulatedStatus = 'cleared'; 
                         updatedShipment.dppComplianceStatusText = "All DPP Data Verified";
                         updatedShipment.dppComplianceBadgeVariant = "default";
                         updatedShipment.dppComplianceNotes = ["Customs cleared successfully."];
                      }
-                } else { 
-                    if(prevStatus !== 'in_transit' && prevStatus !== 'delayed' && prevStatus !== 'data_sync_delayed') {
+                } else { // If before 40% progress
+                    // Ensure it stays 'in_transit' if it was something else prematurely (e.g. after resolving a delay)
+                    if(prevStatus !== 'in_transit' && prevStatus !== 'delayed') { // Don't override if already delayed
                         updatedShipment.simulatedStatus = 'in_transit';
                         updatedShipment.dppComplianceStatusText = "DPP Data Verified for Transit"; 
                         updatedShipment.dppComplianceBadgeVariant = "default";
                         updatedShipment.dppComplianceNotes = ["In transit to next checkpoint."];
                     }
                 }
+
+                // Final state if progress reaches 100%
                 if (updatedShipment.simulationProgress >= 1) {
                     updatedShipment.simulatedStatus = 'cleared';
                     updatedShipment.dppComplianceStatusText = "All DPP Data Verified";
@@ -385,11 +391,12 @@ export default function DppGlobalTrackerPage() {
             }
 
 
+            // Show toast if status changed (and not for compliance_alert which has its own toast)
             if (updatedShipment.simulatedStatus !== prevStatus && updatedShipment.simulatedStatus !== 'compliance_alert') { 
                 let toastMessage = `Shipment ${updatedShipment.id} is now ${updatedShipment.simulatedStatus.replace('_', ' ')}.`;
                 let toastVariant: 'default' | 'destructive' = 'default';
                 if (updatedShipment.simulatedStatus === 'delayed' || updatedShipment.simulatedStatus === 'customs_inspection' || updatedShipment.simulatedStatus === 'data_sync_delayed') {
-                    toastVariant = 'destructive';
+                    toastVariant = 'destructive'; // Using 'destructive' for more visual alert
                     toastMessage = `Alert: Shipment ${updatedShipment.id} is ${updatedShipment.simulatedStatus.replace('_', ' ')}!`;
                 } else if (updatedShipment.simulatedStatus === 'cleared') {
                     toastMessage = `Shipment ${updatedShipment.id} has cleared customs.`;
@@ -411,6 +418,10 @@ export default function DppGlobalTrackerPage() {
     const now = Date.now();
     const lastToastInfo = lastToastForShipment[shipmentId];
 
+    // Show toast if:
+    // 1. No previous toast for this shipment OR
+    // 2. Status has changed OR
+    // 3. It's been more than 5 seconds since the last toast (to avoid spamming for same status if logic allows)
     if (!lastToastInfo || lastToastInfo.status !== status || (now - lastToastInfo.time > 5000)) { 
       toast({
         title: "Shipment Update",
@@ -460,7 +471,7 @@ export default function DppGlobalTrackerPage() {
       counts[shipment.simulatedStatus] = (counts[shipment.simulatedStatus] || 0) + 1;
     });
     return Object.entries(counts).map(([status, count]) => ({
-      status: status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()), // Format status for display
+      status: status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()), 
       count,
     }));
   }, [mockShipmentPointsDataState]);
@@ -585,12 +596,12 @@ export default function DppGlobalTrackerPage() {
     "Non-EU Country": NON_EU_LAND_COLOR_LIGHT_BLUE,
     "Country Borders": BORDER_COLOR_MEDIUM_BLUE,
     "Globe Background": WHITE_BACKGROUND_COLOR,
-    "Checkpoint (DPP Good)": DPP_HEALTH_GOOD_COLOR,
-    "Checkpoint (DPP Fair)": DPP_HEALTH_FAIR_COLOR,
-    "Checkpoint (DPP Poor)": DPP_HEALTH_POOR_COLOR,
-    "Port (DPP Unknown/Operational)": CHECKPOINT_PORT_COLOR,
-    "Airport (DPP Unknown/Operational)": CHECKPOINT_AIRPORT_COLOR,
-    "Land Border (DPP Unknown/Operational)": CHECKPOINT_LAND_BORDER_COLOR,
+    "Checkpoint (DPP Good/Green 'G')": DPP_HEALTH_GOOD_COLOR, // Updated for new sprite
+    "Checkpoint (DPP Fair/Yellow 'F')": DPP_HEALTH_FAIR_COLOR, // Updated for new sprite
+    "Checkpoint (DPP Poor/Red 'P')": DPP_HEALTH_POOR_COLOR, // Updated for new sprite
+    "Port (Blue 'S')": CHECKPOINT_PORT_COLOR, // Updated for new sprite
+    "Airport (Purple 'A')": CHECKPOINT_AIRPORT_COLOR, // Updated for new sprite
+    "Land Border (Orange 'L')": CHECKPOINT_LAND_BORDER_COLOR, // Updated for new sprite
     "Electronics Point": SATURATED_BLUE,
     "Appliances Point": VIBRANT_TEAL,
     "Textiles Point": ACCENT_PURPLE,
@@ -804,7 +815,7 @@ export default function DppGlobalTrackerPage() {
               }>
                 {isClient && (
                     <GlobeVisualization
-                        globeRef={globeRefMain}
+                        globeRef={globeRefMain} // Pass the ref here
                         pointsData={combinedPointsForGlobe}
                         arcsData={filteredArcs}
                         polygonsData={countryPolygons}

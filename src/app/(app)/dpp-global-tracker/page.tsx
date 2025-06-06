@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } fr
 import { feature as topojsonFeature } from 'topojson-client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw } from "lucide-react";
+import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw, SearchCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
@@ -16,6 +16,18 @@ import CheckpointInfoCard from '@/components/dpp-tracker/CheckpointInfoCard';
 import ShipmentInfoCard from '@/components/dpp-tracker/ShipmentInfoCard';
 import { cn } from "@/lib/utils";
 import { useToast } from '@/hooks/use-toast';
+import { useRole } from '@/contexts/RoleContext';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Badge } from '@/components/ui/badge';
 
 const GlobeVisualization = React.lazy(() => import('@/components/dpp-tracker/GlobeVisualization'));
 
@@ -27,26 +39,26 @@ export interface MockDppPoint {
   size: number;
   category: 'Electronics' | 'Appliances' | 'Textiles' | 'Raw Material Source' | 'Distribution Hub' | 'Recycling Facility';
   status: 'compliant' | 'pending' | 'issue' | 'unknown';
-  timestamp: number; 
+  timestamp: number;
   manufacturer?: string;
   gtin?: string;
   complianceSummary?: string;
-  color?: string; 
+  color?: string;
   icon?: React.ElementType;
 }
 
 export interface MockArc {
   id: string;
-  shipmentId: string; 
-  direction: 'inbound_eu' | 'outbound_eu' | 'internal_eu'; 
+  shipmentId: string;
+  direction: 'inbound_eu' | 'outbound_eu' | 'internal_eu';
   startLat: number;
   startLng: number;
   endLat: number;
   endLng: number;
-  color: string | string[]; 
+  color: string | string[];
   label?: string;
   stroke?: number;
-  timestamp: number; 
+  timestamp: number;
   transportMode?: 'sea' | 'air' | 'road' | 'rail';
   productId?: string;
 }
@@ -61,36 +73,43 @@ export interface MockCustomsCheckpoint {
   overallCustomsStatus: 'cleared' | 'pending' | 'inspection_required' | 'operational';
   dppComplianceHealth: 'good' | 'fair' | 'poor' | 'unknown';
   icon?: React.ElementType;
+  averageClearanceTime: string;
+  issuesDetectedLast24h: number;
 }
 
 export interface MockShipmentPoint {
-  id: string; 
+  id: string;
   lat: number;
   lng: number;
-  name: string; 
+  name: string;
   size: number;
   direction: 'inbound_eu' | 'outbound_eu' | 'internal_eu';
-  color?: string; 
-  arcId: string; 
-  arcLabel?: string; 
+  color?: string;
+  arcId: string;
+  arcLabel?: string;
   productIconUrl?: string;
   dppComplianceStatusText?: string;
   dppComplianceBadgeVariant?: 'default' | 'secondary' | 'outline' | 'destructive';
-  eta?: string; 
-  progressPercentage?: number; 
+  eta?: string;
+  progressPercentage?: number;
   // For simulation
   currentLat?: number;
   currentLng?: number;
   simulationProgress?: number; // 0 to 1
+  simulatedStatus: 'in_transit' | 'at_customs' | 'customs_inspection' | 'delayed' | 'cleared';
+  // New fields from step 1
+  ceMarkingStatus: 'valid' | 'missing' | 'pending_verification';
+  cbamDeclarationStatus: 'submitted' | 'required' | 'cleared';
+  dppComplianceNotes: string[];
 }
 
 
-const SATURATED_BLUE = 'rgba(41, 171, 226, 0.9)'; 
-const VIBRANT_TEAL = 'rgba(0, 128, 128, 0.9)';   
-const ACCENT_PURPLE = 'rgba(124, 58, 237, 0.9)'; 
-const BROWN_COLOR = 'rgba(139, 69, 19, 0.9)'; 
-const ORANGE_COLOR = 'rgba(255, 165, 0, 0.9)'; 
-const DARK_GREEN_COLOR = 'rgba(0, 100, 0, 0.9)'; 
+const SATURATED_BLUE = 'rgba(41, 171, 226, 0.9)';
+const VIBRANT_TEAL = 'rgba(0, 128, 128, 0.9)';
+const ACCENT_PURPLE = 'rgba(124, 58, 237, 0.9)';
+const BROWN_COLOR = 'rgba(139, 69, 19, 0.9)';
+const ORANGE_COLOR = 'rgba(255, 165, 0, 0.9)';
+const DARK_GREEN_COLOR = 'rgba(0, 100, 0, 0.9)';
 const CORNFLOWER_BLUE_COLOR = 'rgba(100, 149, 237, 0.7)';
 const GREY_COLOR = 'rgba(128, 128, 128, 0.8)';
 
@@ -99,16 +118,19 @@ const NON_EU_LAND_COLOR_LIGHT_BLUE = 'rgba(173, 216, 230, 0.95)';
 const BORDER_COLOR_MEDIUM_BLUE = 'rgba(70, 130, 180, 0.7)';
 const WHITE_BACKGROUND_COLOR = 'rgba(255, 255, 255, 1)';
 
-export const DPP_HEALTH_GOOD_COLOR = 'rgba(76, 175, 80, 0.9)'; 
-export const DPP_HEALTH_FAIR_COLOR = 'rgba(255, 235, 59, 0.9)'; 
-export const DPP_HEALTH_POOR_COLOR = 'rgba(244, 67, 54, 0.9)'; 
-export const CHECKPOINT_PORT_COLOR = 'rgba(60, 70, 180, 0.9)'; 
+export const DPP_HEALTH_GOOD_COLOR = 'rgba(76, 175, 80, 0.9)';
+export const DPP_HEALTH_FAIR_COLOR = 'rgba(255, 235, 59, 0.9)';
+export const DPP_HEALTH_POOR_COLOR = 'rgba(244, 67, 54, 0.9)';
+export const CHECKPOINT_PORT_COLOR = 'rgba(60, 70, 180, 0.9)';
 export const CHECKPOINT_AIRPORT_COLOR = 'rgba(100, 60, 170, 0.9)';
 export const CHECKPOINT_LAND_BORDER_COLOR = 'rgba(200, 100, 30, 0.9)';
 
-const SHIPMENT_INBOUND_EU_COLOR_GLOBE = 'rgba(0, 123, 255, 0.9)'; 
-const SHIPMENT_OUTBOUND_EU_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)'; 
-const SHIPMENT_INTERNAL_EU_COLOR_GLOBE = 'rgba(255, 193, 7, 0.9)'; 
+// Shipment status colors
+const SHIPMENT_IN_TRANSIT_COLOR_GLOBE = 'rgba(0, 123, 255, 0.9)'; // Blue
+const SHIPMENT_AT_CUSTOMS_COLOR_GLOBE = 'rgba(255, 165, 0, 0.9)';  // Orange
+const SHIPMENT_INSPECTION_COLOR_GLOBE = 'rgba(220, 53, 69, 0.9)'; // Red
+const SHIPMENT_DELAYED_COLOR_GLOBE = 'rgba(255, 193, 7, 0.9)';    // Yellow
+const SHIPMENT_CLEARED_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)';   // Green
 
 
 const initialMockPointsData: MockDppPoint[] = [
@@ -132,16 +154,17 @@ const initialMockArcsData: MockArc[] = [
 
 const initialMockShipmentPointsData: MockShipmentPoint[] = initialMockArcsData.map((arc, index) => {
     const etaDate = new Date();
-    etaDate.setDate(etaDate.getDate() + (index + 1) * 7); 
+    etaDate.setDate(etaDate.getDate() + (index + 1) * 7);
     return {
         id: arc.shipmentId,
-        lat: arc.startLat, // Start at the arc's origin for simulation
-        lng: arc.startLng, // Start at the arc's origin for simulation
+        lat: arc.startLat,
+        lng: arc.startLng,
         currentLat: arc.startLat,
         currentLng: arc.startLng,
         simulationProgress: 0,
+        simulatedStatus: 'in_transit',
         name: `Shipment ${arc.shipmentId}`,
-        size: 0.15, 
+        size: 0.15,
         direction: arc.direction,
         arcId: arc.id,
         arcLabel: arc.label,
@@ -149,19 +172,22 @@ const initialMockShipmentPointsData: MockShipmentPoint[] = initialMockArcsData.m
         dppComplianceStatusText: index % 3 === 0 ? "All DPP Data Verified" : (index % 3 === 1 ? "Pending Battery Passport" : "CBAM Declaration Missing"),
         dppComplianceBadgeVariant: index % 3 === 0 ? "default" : (index % 3 === 1 ? "outline" : "destructive"),
         eta: etaDate.toISOString().split('T')[0],
-        progressPercentage: 0, 
+        progressPercentage: 0,
+        ceMarkingStatus: index % 3 === 0 ? 'valid' : (index % 3 === 1 ? 'pending_verification' : 'missing'),
+        cbamDeclarationStatus: index % 2 === 0 ? 'submitted' : 'required',
+        dppComplianceNotes: index % 2 === 0 ? ['Awaiting final quality check report.', 'Eco-packaging verified.'] : ['Partial component data received.'],
     };
 });
 
 
 const initialMockCustomsCheckpointsData: MockCustomsCheckpoint[] = [
-  { id: 'port_rotterdam', lat: 51.9480, lng: 4.1437, name: 'Port of Rotterdam Customs', type: 'port', currentShipmentCount: 1250, overallCustomsStatus: 'cleared', dppComplianceHealth: 'good', icon: Ship },
-  { id: 'port_hamburg', lat: 53.5465, lng: 9.9724, name: 'Port of Hamburg Customs', type: 'port', currentShipmentCount: 980, overallCustomsStatus: 'pending', dppComplianceHealth: 'fair', icon: Ship },
-  { id: 'airport_frankfurt', lat: 50.0379, lng: 8.5622, name: 'Frankfurt Airport Customs', type: 'airport', currentShipmentCount: 750, overallCustomsStatus: 'inspection_required', dppComplianceHealth: 'poor', icon: Plane },
-  { id: 'airport_cdg', lat: 49.0097, lng: 2.5479, name: 'Paris CDG Airport Customs', type: 'airport', currentShipmentCount: 620, overallCustomsStatus: 'operational', dppComplianceHealth: 'good', icon: Plane },
-  { id: 'port_la', lat: 33.7292, lng: -118.2620, name: 'Port of Los Angeles Customs', type: 'port', currentShipmentCount: 1500, overallCustomsStatus: 'operational', dppComplianceHealth: 'unknown', icon: Ship },
-  { id: 'port_shanghai', lat: 31.3925, lng: 121.5201, name: 'Port of Shanghai Customs', type: 'port', currentShipmentCount: 2100, overallCustomsStatus: 'cleared', dppComplianceHealth: 'good', icon: Ship },
-  { id: 'border_pl_ua', lat: 50.0792, lng: 23.8607, name: 'PL-UA Land Border Crossing', type: 'land_border', currentShipmentCount: 350, overallCustomsStatus: 'pending', dppComplianceHealth: 'fair', icon: LandBorderIcon }
+  { id: 'port_rotterdam', lat: 51.9480, lng: 4.1437, name: 'Port of Rotterdam Customs', type: 'port', currentShipmentCount: 1250, overallCustomsStatus: 'cleared', dppComplianceHealth: 'good', icon: Ship, averageClearanceTime: '24-48h', issuesDetectedLast24h: 2 },
+  { id: 'port_hamburg', lat: 53.5465, lng: 9.9724, name: 'Port of Hamburg Customs', type: 'port', currentShipmentCount: 980, overallCustomsStatus: 'pending', dppComplianceHealth: 'fair', icon: Ship, averageClearanceTime: '48-72h', issuesDetectedLast24h: 5 },
+  { id: 'airport_frankfurt', lat: 50.0379, lng: 8.5622, name: 'Frankfurt Airport Customs', type: 'airport', currentShipmentCount: 750, overallCustomsStatus: 'inspection_required', dppComplianceHealth: 'poor', icon: Plane, averageClearanceTime: '72h+', issuesDetectedLast24h: 12 },
+  { id: 'airport_cdg', lat: 49.0097, lng: 2.5479, name: 'Paris CDG Airport Customs', type: 'airport', currentShipmentCount: 620, overallCustomsStatus: 'operational', dppComplianceHealth: 'good', icon: Plane, averageClearanceTime: '12-24h', issuesDetectedLast24h: 1 },
+  { id: 'port_la', lat: 33.7292, lng: -118.2620, name: 'Port of Los Angeles Customs', type: 'port', currentShipmentCount: 1500, overallCustomsStatus: 'operational', dppComplianceHealth: 'unknown', icon: Ship, averageClearanceTime: '24-72h', issuesDetectedLast24h: 8 },
+  { id: 'port_shanghai', lat: 31.3925, lng: 121.5201, name: 'Port of Shanghai Customs', type: 'port', currentShipmentCount: 2100, overallCustomsStatus: 'cleared', dppComplianceHealth: 'good', icon: Ship, averageClearanceTime: '24-36h', issuesDetectedLast24h: 3 },
+  { id: 'border_pl_ua', lat: 50.0792, lng: 23.8607, name: 'PL-UA Land Border Crossing', type: 'land_border', currentShipmentCount: 350, overallCustomsStatus: 'pending', dppComplianceHealth: 'fair', icon: LandBorderIcon, averageClearanceTime: '48h+', issuesDetectedLast24h: 7 }
 ];
 
 
@@ -178,10 +204,10 @@ const Legend: React.FC<{ title: string; colorMap: Record<string, string>, classN
         {title}
       </CardTitle>
     </CardHeader>
-    <CardContent className="px-3 pb-3 space-y-1">
+    <CardContent className="px-3 pb-3 flex flex-wrap gap-x-4 gap-y-1">
       {Object.entries(colorMap).map(([name, color]) => (
-        <div key={name} className="flex items-center text-xs">
-          <span className="h-3 w-3 rounded-sm mr-2 border" style={{ backgroundColor: color.startsWith("rgba") || color.startsWith("#") ? color : undefined, 
+        <div key={name} className="flex items-center text-xs min-w-[140px]">
+          <span className="h-3 w-3 rounded-sm mr-2 border" style={{ backgroundColor: color.startsWith("rgba") || color.startsWith("#") ? color : undefined,
             backgroundImage: name.toLowerCase().includes("gradient") || name.toLowerCase().includes(" to ") ? `linear-gradient(to right, ${color.split(' to ')[0]}, ${color.split(' to ')[1] || color.split(' to ')[0]})` : undefined
           }} />
           <span>{name}</span>
@@ -191,7 +217,7 @@ const Legend: React.FC<{ title: string; colorMap: Record<string, string>, classN
   </Card>
 );
 
-const DppGlobalTrackerClientContainer: React.FC<any & {isClient: boolean}> = ({ isClient, ...globeProps }) => {
+const DppGlobalTrackerClientContainer: React.FC<any & {isClient: boolean, globeRef: React.MutableRefObject<any | undefined> }> = ({ isClient, globeRef, ...globeProps }) => {
   if (!isClient) {
     return (
       <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
@@ -208,33 +234,41 @@ const DppGlobalTrackerClientContainer: React.FC<any & {isClient: boolean}> = ({ 
           <span className="ml-2">Loading 3D Globe Visualization...</span>
         </div>
       }>
-        <GlobeVisualization {...globeProps} />
+        <GlobeVisualization globeRef={globeRef} {...globeProps} />
       </Suspense>
     </div>
   );
 };
 
-const SHIPMENTS_TO_SIMULATE = ['SH001', 'SH004']; // IDs of shipments to simulate movement for
-const SIMULATION_INTERVAL = 2000; // milliseconds
-const SIMULATION_STEP = 0.02; // progress per interval (e.g., 0.02 means 50 steps to complete)
+const SHIPMENTS_TO_SIMULATE = ['SH001', 'SH004'];
+const SIMULATION_INTERVAL = 2000;
+const SIMULATION_STEP = 0.02;
 
 export default function DppGlobalTrackerPage() {
   const [isClient, setIsClient] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<MockDppPoint | null>(null);
   const [selectedArc, setSelectedArc] = useState<MockArc | null>(null);
   const [selectedCheckpoint, setSelectedCheckpoint] = useState<MockCustomsCheckpoint | null>(null);
-  const [selectedShipment, setSelectedShipment] = useState<MockShipmentPoint | null>(null); 
+  const [selectedShipment, setSelectedShipment] = useState<MockShipmentPoint | null>(null);
   const [countryPolygons, setCountryPolygons] = useState<any[]>([]);
   const [isLoadingGeoJson, setIsLoadingGeoJson] = useState(true);
-  
+  const globeRefMain = useRef<any | undefined>();
+
   const [yearFilter, setYearFilter] = useState<number[]>([new Date().getFullYear()]);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [shipmentStatusFilter, setShipmentStatusFilter] = useState<MockShipmentPoint['simulatedStatus'] | 'all'>('all');
   const { toast } = useToast();
+  const { currentRole } = useRole();
 
   const [mockDppPointsData, setMockDppPointsData] = useState<MockDppPoint[]>(initialMockPointsData);
   const [mockArcsDataState, setMockArcsDataState] = useState<MockArc[]>(initialMockArcsData);
   const [mockShipmentPointsDataState, setMockShipmentPointsDataState] = useState<MockShipmentPoint[]>(initialMockShipmentPointsData);
   const [mockCustomsCheckpointsDataState, setMockCustomsCheckpointsDataState] = useState<MockCustomsCheckpoint[]>(initialMockCustomsCheckpointsData);
+
+  const [inspectingCheckpoint, setInspectingCheckpoint] = useState<MockCustomsCheckpoint | null>(null);
+  const [isInspectionModalOpen, setIsInspectionModalOpen] = useState(false);
+
+  const [lastToastForShipment, setLastToastForShipment] = useState<Record<string, { status: string; time: number }>>({});
 
 
   useEffect(() => {
@@ -253,7 +287,6 @@ export default function DppGlobalTrackerPage() {
       });
   }, []);
 
-  // Shipment Movement Simulation Effect
   useEffect(() => {
     let simulationToastShown = false;
     const intervalId = setInterval(() => {
@@ -272,22 +305,61 @@ export default function DppGlobalTrackerPage() {
             if (!arc) return shipment;
 
             let currentSimProgress = shipment.simulationProgress || 0;
-            if (currentSimProgress >= 1) return { ...shipment, lat: arc.endLat, lng: arc.endLng, progressPercentage: 100 }; // Stop at end
+            let currentStatus = shipment.simulatedStatus;
+
+            if (currentSimProgress >= 1) {
+              if(currentStatus !== 'cleared') {
+                currentStatus = 'cleared';
+                showShipmentToast(shipment.id, currentStatus, `Shipment ${shipment.id} has cleared customs.`);
+              }
+              return { ...shipment, lat: arc.endLat, lng: arc.endLng, progressPercentage: 100, simulatedStatus: currentStatus };
+            }
 
             currentSimProgress += SIMULATION_STEP;
             if (currentSimProgress > 1) currentSimProgress = 1;
 
             const newLat = arc.startLat + (arc.endLat - arc.startLat) * currentSimProgress;
             const newLng = arc.startLng + (arc.endLng - arc.startLng) * currentSimProgress;
-            
+
+            const prevStatus = shipment.simulatedStatus;
+            let newStatus = prevStatus;
+
+            if (currentSimProgress >= 0.4 && currentSimProgress <= 0.7 && prevStatus === 'in_transit') {
+                newStatus = 'at_customs';
+            } else if (prevStatus === 'at_customs') {
+                if (Math.random() < 0.1) newStatus = 'customs_inspection'; // Small chance for inspection
+                else if (Math.random() < 0.05) newStatus = 'delayed'; // Smaller chance for delay
+            } else if (prevStatus === 'customs_inspection' || prevStatus === 'delayed') {
+                 // After one interval of inspection/delay, move back to at_customs or cleared if progress allows
+                 if (currentSimProgress >= 0.7) newStatus = 'cleared';
+                 else newStatus = 'at_customs';
+            }
+
+            if (currentSimProgress >= 1) {
+                newStatus = 'cleared';
+            }
+
+            if (newStatus !== prevStatus) {
+                let toastMessage = `Shipment ${shipment.id} is now ${newStatus.replace('_', ' ')}.`;
+                let toastVariant: 'default' | 'destructive' = 'default';
+                if (newStatus === 'delayed' || newStatus === 'customs_inspection') {
+                    toastVariant = 'destructive';
+                    toastMessage = `Alert: Shipment ${shipment.id} is ${newStatus.replace('_', ' ')}!`;
+                } else if (newStatus === 'cleared') {
+                    toastMessage = `Shipment ${shipment.id} has cleared customs.`;
+                }
+                showShipmentToast(shipment.id, newStatus, toastMessage, toastVariant);
+            }
+
             return {
               ...shipment,
               lat: newLat,
               lng: newLng,
-              currentLat: newLat, // Update currentLat/Lng if you use these specific fields
+              currentLat: newLat,
               currentLng: newLng,
               simulationProgress: currentSimProgress,
               progressPercentage: Math.round(currentSimProgress * 100),
+              simulatedStatus: newStatus,
             };
           }
           return shipment;
@@ -296,7 +368,22 @@ export default function DppGlobalTrackerPage() {
     }, SIMULATION_INTERVAL);
 
     return () => clearInterval(intervalId);
-  }, [mockArcsDataState, toast]); // Add toast to dependencies if used inside
+  }, [mockArcsDataState, toast]);
+
+
+  const showShipmentToast = (shipmentId: string, status: string, message: string, variant: 'default' | 'destructive' = 'default') => {
+    const now = Date.now();
+    const lastToastInfo = lastToastForShipment[shipmentId];
+
+    if (!lastToastInfo || lastToastInfo.status !== status || (now - lastToastInfo.time > 5000)) { // Avoid spamming same status, or resend if 5s passed
+      toast({
+        title: "Shipment Update",
+        description: message,
+        variant: variant,
+      });
+      setLastToastForShipment(prev => ({ ...prev, [shipmentId]: { status, time: now } }));
+    }
+  };
 
 
   const filteredDppPoints = useMemo(() => {
@@ -314,26 +401,31 @@ export default function DppGlobalTrackerPage() {
     });
   }, [mockArcsDataState, yearFilter]);
 
-  // Shipment points are now directly taken from state, as their lat/lng will be updated by simulation
   const combinedPointsForGlobe = useMemo(() => {
     const visibleArcIds = new Set(filteredArcs.map(arc => arc.id));
-    const currentShipments = mockShipmentPointsDataState.filter(sp => visibleArcIds.has(sp.arcId));
+    const currentShipments = mockShipmentPointsDataState.filter(sp => {
+        const arcVisible = visibleArcIds.has(sp.arcId);
+        const statusMatch = shipmentStatusFilter === 'all' || sp.simulatedStatus === shipmentStatusFilter;
+        return arcVisible && statusMatch;
+    });
     return [...filteredDppPoints, ...currentShipments];
-  }, [filteredDppPoints, mockShipmentPointsDataState, filteredArcs]);
+  }, [filteredDppPoints, mockShipmentPointsDataState, filteredArcs, shipmentStatusFilter]);
 
 
   const pointColorAccessor = useCallback((point: MockDppPoint | MockShipmentPoint) => {
-    if ('direction' in point && point.direction) { 
+    if ('simulatedStatus' in point && point.simulatedStatus) {
       const shipment = point as MockShipmentPoint;
-      switch (shipment.direction) {
-        case 'inbound_eu': return SHIPMENT_INBOUND_EU_COLOR_GLOBE;
-        case 'outbound_eu': return SHIPMENT_OUTBOUND_EU_COLOR_GLOBE;
-        case 'internal_eu': return SHIPMENT_INTERNAL_EU_COLOR_GLOBE;
+      switch (shipment.simulatedStatus) {
+        case 'in_transit': return SHIPMENT_IN_TRANSIT_COLOR_GLOBE;
+        case 'at_customs': return SHIPMENT_AT_CUSTOMS_COLOR_GLOBE;
+        case 'customs_inspection': return SHIPMENT_INSPECTION_COLOR_GLOBE;
+        case 'delayed': return SHIPMENT_DELAYED_COLOR_GLOBE;
+        case 'cleared': return SHIPMENT_CLEARED_COLOR_GLOBE;
         default: return GREY_COLOR;
       }
-    } else { 
+    } else {
       const dppPoint = point as MockDppPoint;
-      if (dppPoint.icon) return 'rgba(0,0,0,0)'; 
+      if (dppPoint.icon) return 'rgba(0,0,0,0)';
       switch (dppPoint.category) {
         case 'Electronics': return SATURATED_BLUE;
         case 'Appliances': return VIBRANT_TEAL;
@@ -345,23 +437,23 @@ export default function DppGlobalTrackerPage() {
       }
     }
   }, []);
-  
+
   const pointRadiusAccessor = useCallback((point: MockDppPoint | MockShipmentPoint) => {
-    if ('direction' in point && point.direction) { 
-      return 0.12; 
-    } else { 
+    if ('direction' in point && point.direction) {
+      return 0.12;
+    } else {
        const dppPoint = point as MockDppPoint;
       return dppPoint.size * 0.8 + 0.1;
     }
   }, []);
 
   const handlePointClick = useCallback((point: MockDppPoint | MockShipmentPoint) => {
-    if ('direction' in point && point.direction) { 
+    if ('direction' in point && point.direction) {
       setSelectedShipment(point as MockShipmentPoint);
       setSelectedPoint(null);
       setSelectedArc(null);
       setSelectedCheckpoint(null);
-    } else { 
+    } else {
       setSelectedPoint(point as MockDppPoint);
       setSelectedShipment(null);
       setSelectedArc(null);
@@ -383,14 +475,28 @@ export default function DppGlobalTrackerPage() {
     setSelectedShipment(null);
   }, []);
 
+  const handleInspectProductsAtCheckpoint = useCallback((checkpoint: MockCustomsCheckpoint) => {
+    setInspectingCheckpoint(checkpoint);
+    setIsInspectionModalOpen(true);
+  }, []);
+
   const polygonCapColorAccessor = useCallback((feat: any) => {
     const countryCode = feat.properties?.ISO_A2 || feat.properties?.iso_a2;
     return euMemberCountryCodes.includes(countryCode) ? EU_BLUE_COLOR : NON_EU_LAND_COLOR_LIGHT_BLUE;
   }, []);
   const polygonSideColorAccessor = useCallback(() => 'rgba(0, 0, 0, 0)', []);
   const polygonStrokeColorAccessor = useCallback(() => BORDER_COLOR_MEDIUM_BLUE, []);
-  
+
   const uniqueCategories = useMemo(() => ['all', ...new Set(initialMockPointsData.map(p => p.category))], []);
+  const shipmentStatusOptions: { value: MockShipmentPoint['simulatedStatus'] | 'all'; label: string }[] = [
+    { value: 'all', label: 'All Shipment Statuses' },
+    { value: 'in_transit', label: 'In Transit' },
+    { value: 'at_customs', label: 'At Customs' },
+    { value: 'customs_inspection', label: 'Customs Inspection' },
+    { value: 'delayed', label: 'Delayed' },
+    { value: 'cleared', label: 'Cleared' },
+  ];
+
 
   const globeLegendMap = {
     "EU Member State": EU_BLUE_COLOR,
@@ -409,9 +515,11 @@ export default function DppGlobalTrackerPage() {
     "Raw Material Site": BROWN_COLOR,
     "Distribution Hub": ORANGE_COLOR,
     "Recycling Facility": DARK_GREEN_COLOR,
-    "Shipment (Inbound EU)": SHIPMENT_INBOUND_EU_COLOR_GLOBE,
-    "Shipment (Outbound EU)": SHIPMENT_OUTBOUND_EU_COLOR_GLOBE,
-    "Shipment (Internal EU)": SHIPMENT_INTERNAL_EU_COLOR_GLOBE,
+    "Shipment (In Transit)": SHIPMENT_IN_TRANSIT_COLOR_GLOBE,
+    "Shipment (At Customs)": SHIPMENT_AT_CUSTOMS_COLOR_GLOBE,
+    "Shipment (Inspection)": SHIPMENT_INSPECTION_COLOR_GLOBE,
+    "Shipment (Delayed)": SHIPMENT_DELAYED_COLOR_GLOBE,
+    "Shipment (Cleared)": SHIPMENT_CLEARED_COLOR_GLOBE,
     "Sea Route": `${SATURATED_BLUE} to ${VIBRANT_TEAL}`,
     "Air Route": ACCENT_PURPLE,
     "Road Route": ORANGE_COLOR,
@@ -436,25 +544,34 @@ export default function DppGlobalTrackerPage() {
 
         const overallStatuses = ['cleared', 'pending', 'inspection_required', 'operational'] as const;
         const dppHealths = ['good', 'fair', 'poor', 'unknown'] as const;
-        
+
         checkpointToUpdate.overallCustomsStatus = overallStatuses[Math.floor(Math.random() * overallStatuses.length)];
         checkpointToUpdate.dppComplianceHealth = dppHealths[Math.floor(Math.random() * dppHealths.length)];
-        
+        checkpointToUpdate.currentShipmentCount = Math.floor(Math.random() * 1500) + 50;
+        checkpointToUpdate.issuesDetectedLast24h = Math.floor(Math.random() * 15);
+
+
         updatedCheckpoints[randomIndex] = checkpointToUpdate;
         updatedNames.push(checkpointToUpdate.name);
       }
-      
+
       if (selectedCheckpoint && updatedNames.some(name => name === selectedCheckpoint.name)) {
         const updatedSelected = updatedCheckpoints.find(cp => cp.id === selectedCheckpoint.id);
         if (updatedSelected) setSelectedCheckpoint(updatedSelected);
       }
-      
+
       toast({
         title: "Mock Checkpoint Statuses Updated",
         description: `Updated: ${updatedNames.join(', ')}`,
       });
       return updatedCheckpoints;
     });
+  };
+
+  const handleResetGlobeView = () => {
+    if (globeRefMain.current) {
+      globeRefMain.current.pointOfView({ lat: 50, lng: 15, altitude: 2.2 }, 700); // 700ms transition
+    }
   };
 
   return (
@@ -465,6 +582,15 @@ export default function DppGlobalTrackerPage() {
           DPP Global Tracker
         </h1>
       </div>
+      {(currentRole === 'auditor' || currentRole === 'admin') && (
+        <Alert className="mb-6 border-accent bg-accent/10 text-accent-foreground">
+          <ShieldAlert className="h-5 w-5 text-accent" />
+          <AlertTitle className="font-semibold text-accent">Auditor/Admin Enhanced View</AlertTitle>
+          <AlertDescription>
+            Enhanced compliance data visibility. Prioritize items requiring review or with potential issues.
+          </AlertDescription>
+        </Alert>
+      )}
 
       <Card className="shadow-lg">
         <CardHeader>
@@ -472,11 +598,11 @@ export default function DppGlobalTrackerPage() {
           <CardDescription>Interact with the globe to explore product origins, supply chains, and compliance status across regions. Shipment simulation is active.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 items-end">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 items-stretch">
             <div>
               <Label htmlFor="category-filter" className="text-sm font-medium">Filter by Category (Locations)</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger id="category-filter" className="w-full">
+                <SelectTrigger id="category-filter" className="w-full mt-1">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -486,7 +612,7 @@ export default function DppGlobalTrackerPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="md:col-span-2">
+            <div className="lg:col-span-1">
               <Label htmlFor="year-slider" className="text-sm font-medium">Filter by Year (Up to): {yearFilter[0]}</Label>
               <Slider
                 id="year-slider"
@@ -495,19 +621,35 @@ export default function DppGlobalTrackerPage() {
                 step={1}
                 value={yearFilter}
                 onValueChange={(value) => setYearFilter(value)}
-                className="mt-2"
+                className="mt-3"
               />
             </div>
             <div>
+              <Label htmlFor="shipment-status-filter" className="text-sm font-medium">Filter by Shipment Status</Label>
+              <Select value={shipmentStatusFilter} onValueChange={(value) => setShipmentStatusFilter(value as MockShipmentPoint['simulatedStatus'] | 'all')}>
+                 <SelectTrigger id="shipment-status-filter" className="w-full mt-1">
+                   <SelectValue placeholder="Select shipment status" />
+                 </SelectTrigger>
+                 <SelectContent>
+                   {shipmentStatusOptions.map(opt => (
+                     <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                   ))}
+                 </SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col gap-2 justify-end">
                  <Button onClick={handleSimulateCheckpointUpdate} variant="outline" className="w-full">
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Simulate Checkpoint Update
                  </Button>
+                <Button onClick={handleResetGlobeView} variant="outline" className="w-full">
+                    <GlobeIconLucide className="mr-2 h-4 w-4" /> Reset Globe View
+                </Button>
             </div>
           </div>
 
           <div
-            className="w-full h-[600px] rounded-md overflow-hidden border relative bg-card"
+            className="w-full h-[60vh] md:h-[600px] rounded-md overflow-hidden border relative bg-card"
           >
             {isLoadingGeoJson ? (
                  <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground">
@@ -517,20 +659,21 @@ export default function DppGlobalTrackerPage() {
             ) : (
                 <DppGlobalTrackerClientContainer
                     isClient={isClient}
-                    pointsData={combinedPointsForGlobe} 
+                    globeRef={globeRefMain}
+                    pointsData={combinedPointsForGlobe}
                     arcsData={filteredArcs}
-                    labelsData={[]} 
+                    labelsData={[]}
                     polygonsData={countryPolygons}
                     customsCheckpointsData={mockCustomsCheckpointsDataState}
                     polygonCapColorAccessor={polygonCapColorAccessor}
                     polygonSideColorAccessor={polygonSideColorAccessor}
                     polygonStrokeColorAccessor={polygonStrokeColorAccessor}
-                    onPointClick={handlePointClick} 
+                    onPointClick={handlePointClick}
                     onArcClick={handleArcClick}
                     onCheckpointClick={handleCheckpointClick}
-                    pointColorAccessor={pointColorAccessor} 
-                    pointRadiusAccessor={pointRadiusAccessor} 
-                    arcColorAccessor={(arc: MockArc) => arc.color} 
+                    pointColorAccessor={pointColorAccessor}
+                    pointRadiusAccessor={pointRadiusAccessor}
+                    arcColorAccessor={(arc: MockArc) => arc.color}
                     arcStrokeAccessor={(arc: MockArc) => (arc.stroke || 0.2) + (arc.productId ? 0.1 : 0)}
                     globeBackgroundColor={WHITE_BACKGROUND_COLOR}
                 />
@@ -538,18 +681,69 @@ export default function DppGlobalTrackerPage() {
           </div>
 
           <div className="mt-6">
-             <Legend title="Map Legend" colorMap={globeLegendMap} className="mt-2 mx-auto w-fit sm:w-auto" />
+             <Legend title="Map Legend" colorMap={globeLegendMap} className="mt-2 mx-auto w-full sm:w-auto" />
           </div>
         </CardContent>
       </Card>
 
       {selectedPoint && <PointInfoCard pointData={selectedPoint} onClose={() => setSelectedPoint(null)} />}
       {selectedArc && <ArcInfoCard arcData={selectedArc} onClose={() => setSelectedArc(null)} />}
-      {selectedCheckpoint && <CheckpointInfoCard checkpointData={selectedCheckpoint} onClose={() => setSelectedCheckpoint(null)} />}
-      {selectedShipment && <ShipmentInfoCard shipmentData={selectedShipment} onClose={() => setSelectedShipment(null)} />} 
+      {selectedCheckpoint && <CheckpointInfoCard checkpointData={selectedCheckpoint} onClose={() => setSelectedCheckpoint(null)} onInspectProducts={handleInspectProductsAtCheckpoint} />}
+      {selectedShipment && <ShipmentInfoCard shipmentData={selectedShipment} onClose={() => setSelectedShipment(null)} />}
 
+      {inspectingCheckpoint && (
+        <AlertDialog open={isInspectionModalOpen} onOpenChange={setIsInspectionModalOpen}>
+          <AlertDialogContent className="sm:max-w-lg md:max-w-2xl">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="flex items-center">
+                <SearchCheck className="mr-2 h-5 w-5 text-primary" />
+                Product Inspection at {inspectingCheckpoint.name}
+              </AlertDialogTitle>
+              <AlertDialogDescription>
+                Mock list of products currently at this checkpoint and their DPP compliance status.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <div className="max-h-[400px] overflow-y-auto space-y-3 pr-2">
+              {Array.from({ length: Math.max(1, Math.floor(inspectingCheckpoint.currentShipmentCount / 100) % 5 || 2) }).map((_, index) => {
+                 const mockProductId = `DPP_${inspectingCheckpoint.id.slice(-3).toUpperCase()}${String(index + 1).padStart(3, '0')}`;
+                 const mockProductName = `Product Batch ${String.fromCharCode(65 + index)}-${Math.floor(Math.random()*900)+100}`;
+                 const statuses: MockShipmentPoint['dppComplianceBadgeVariant'][] = ['default', 'outline', 'destructive', 'secondary'];
+                 const complianceTexts = {
+                    default: "Compliant",
+                    outline: "Pending Documentation",
+                    destructive: "Non-Compliant",
+                    secondary: "Data Not Available"
+                 };
+                 const randomStatusVariant = statuses[Math.floor(Math.random() * statuses.length)];
+                 const randomComplianceText = complianceTexts[randomStatusVariant] || "Unknown";
+
+                return (
+                  <div key={mockProductId} className="p-3 border rounded-md bg-background hover:bg-muted/30">
+                    <p className="font-medium text-sm">{mockProductId} - <span className="text-muted-foreground">{mockProductName}</span></p>
+                    <div className="flex items-center mt-1">
+                      <span className="text-xs mr-2">DPP Status:</span>
+                      <Badge variant={randomStatusVariant} className="text-xs capitalize">
+                         {randomStatusVariant === 'default' && <ShieldCheck className="h-3 w-3 mr-1"/>}
+                         {randomStatusVariant === 'destructive' && <ShieldAlert className="h-3 w-3 mr-1"/>}
+                         {randomStatusVariant === 'outline' && <Info className="h-3 w-3 mr-1"/>}
+                         {randomStatusVariant === 'secondary' && <ShieldQuestion className="h-3 w-3 mr-1"/>}
+                        {randomComplianceText}
+                      </Badge>
+                    </div>
+                  </div>
+                );
+              })}
+               {inspectingCheckpoint.currentShipmentCount === 0 && (
+                <p className="text-sm text-muted-foreground">No products currently reported at this checkpoint for inspection.</p>
+               )}
+            </div>
+            <AlertDialogFooter>
+              <AlertDialogCancel onClick={() => setIsInspectionModalOpen(false)}>Close</AlertDialogCancel>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      )}
     </div>
   );
 }
 
-    

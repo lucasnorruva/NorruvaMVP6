@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight, Sparkles, Copy as CopyIcon, ImagePlus, ImageIcon, CheckSquare, Send } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight, Sparkles, Copy as CopyIcon, ImagePlus, ImageIcon, CheckSquare, Send, Network, Trash2, Link2, Edit } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -16,10 +16,18 @@ import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import ProductForm, { type ProductFormData } from "@/components/products/ProductForm";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger, DialogClose } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+
 
 import ProductLifecycleFlowchart, { type LifecyclePhase } from '@/components/products/ProductLifecycleFlowchart';
-import OverallProductCompliance, { type OverallComplianceData, type ProductNotification as OverallProductNotificationType, type ComplianceStatus } from '@/components/products/OverallProductCompliance'; // Renamed import
+import OverallProductCompliance, { type OverallComplianceData, type ProductNotification as OverallProductNotificationType, type ComplianceStatus } from '@/components/products/OverallProductCompliance';
 import ProductAlerts, { type ProductNotification } from '@/components/products/ProductAlerts';
+import type { Supplier, ProductSupplyChainLink } from '@/types/dpp';
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
 import { PieChart, Pie, Cell, LineChart, Line, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
@@ -34,11 +42,13 @@ import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-c
 
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
+const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
+
 
 interface StoredUserProduct extends ProductFormData {
   id: string;
-  status: string; // Overall status of product (Draft, Active)
-  compliance: string; // Overall compliance status (Compliant, Pending)
+  status: string; 
+  compliance: string; 
   lastUpdated: string;
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -57,6 +67,7 @@ interface StoredUserProduct extends ProductFormData {
   imageUrl?: string;
   isDppBlockchainAnchored?: boolean;
   dppAnchorTransactionHash?: string;
+  supplyChainLinks?: ProductSupplyChainLink[];
 }
 
 
@@ -75,7 +86,7 @@ interface VerificationLogEntry {
   id: string;
   event: string;
   timestamp: string;
-  actor?: string; // e.g., Verifier name, System
+  actor?: string; 
   details?: string;
 }
 
@@ -92,7 +103,7 @@ export interface MockProductType {
   lastUpdated: string;
   manufacturer: string;
   manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
-  manufacturerVerified?: boolean; // Added for consistency with product detail page
+  manufacturerVerified?: boolean; 
   modelNumber: string;
   modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
   description: string;
@@ -107,7 +118,7 @@ export interface MockProductType {
   sustainabilityClaimsVerified?: boolean;
   energyLabel: string;
   energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
-  specifications: Record<string, string> | string; // Allow string for user-added
+  specifications: Record<string, string> | string; 
   specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
   lifecycleEvents: Array<{ id: string; type: string; timestamp: string; location: string; details: string; isBlockchainAnchored?: boolean; transactionHash?: string }>;
   complianceData: Record<string, { status: string; lastChecked: string; reportId: string; isVerified?: boolean }>;
@@ -121,9 +132,10 @@ export interface MockProductType {
   carbonFootprintManufacturingOrigin?: InitialProductFormData['carbonFootprintManufacturingOrigin'];
   recycledContentPercentage?: number;
   recycledContentPercentageOrigin?: InitialProductFormData['recycledContentPercentageOrigin'];
+  supplyChainLinks?: ProductSupplyChainLink[];
 
   currentLifecyclePhaseIndex: number;
-  lifecyclePhases: LifecyclePhase[]; // Uses imported LifecyclePhase
+  lifecyclePhases: LifecyclePhase[]; 
   overallCompliance: OverallComplianceData;
   notifications: ProductNotification[];
   verificationLog: VerificationLogEntry[];
@@ -135,6 +147,15 @@ export interface MockProductType {
   repairabilityIndex?: { value: number; scale: number };
   certifications?: Array<{ name: string, authority: string, link?: string, verified?: boolean}>;
 }
+
+const MOCK_SUPPLIERS: Supplier[] = [
+  { id: "SUP001", name: "GreenSteel Co.", contactPerson: "Sarah Miller", email: "sarah.miller@greensteel.com", location: "Germany", materialsSupplied: "Recycled Steel, Low-Carbon Steel", status: "Active", lastUpdated: "2024-07-01" },
+  { id: "SUP002", name: "BioPolymer Innovations", contactPerson: "John Chen", email: "j.chen@biopolymer.io", location: "USA", materialsSupplied: "PLA, PHA, Bio-PET", status: "Active", lastUpdated: "2024-06-15" },
+  { id: "SUP003", name: "CircuitWorks Ltd.", contactPerson: "Aisha Khan", email: "a.khan@circuitworks.co.uk", location: "UK", materialsSupplied: "PCBs, Microcontrollers, Capacitors", status: "Active", lastUpdated: "2024-07-10" },
+  { id: "SUP004", name: "LithiumSource Inc.", contactPerson: "Dr. Elena Petrova", email: "elena.p@lithiumsource.com", location: "Chile", materialsSupplied: "Lithium Carbonate, Lithium Hydroxide", status: "Pending Review", lastUpdated: "2024-05-20" },
+  { id: "SUP005", name: "TextileWeavers Global", contactPerson: "Raj Patel", email: "raj@textileweavers.in", location: "India", materialsSupplied: "Organic Cotton, Recycled Polyester Yarn", status: "Active", lastUpdated: "2024-07-25" },
+];
+
 
 const MOCK_PRODUCTS: MockProductType[] = [
   {
@@ -164,6 +185,10 @@ const MOCK_PRODUCTS: MockProductType[] = [
       "Noise Level": "35 dB",
       "Warranty": "5 years comprehensive, 10 years on compressor"
     },
+    supplyChainLinks: [
+      { supplierId: "SUP001", suppliedItem: "Recycled Steel Panels", notes: "70% of total steel content." },
+      { supplierId: "SUP002", suppliedItem: "Bio-Polymer for Interior Linings", notes: "Made from corn starch." },
+    ],
     lifecycleEvents: [
       { id: "EVT001", type: "Manufactured", timestamp: "2024-01-15T08:00:00Z", location: "EcoFactory, Germany", details: "Production batch #PB789. End-of-line quality checks passed. Blockchain anchor event for manufacturing completion. Quality control data recorded; triggers manufacturing completion.", isBlockchainAnchored: true, transactionHash: "0xabc123def456ghi789jkl0mno1pq" },
       { id: "EVT002", type: "Shipped", timestamp: "2024-01-20T14:00:00Z", location: "Hamburg Port, Germany", details: "Container #C0N741N3R to distributor. Shipment data logged, triggers customs declaration prep.", isBlockchainAnchored: true, transactionHash: "0xdef456ghi789jkl0mno1pqrust" },
@@ -242,6 +267,10 @@ const MOCK_PRODUCTS: MockProductType[] = [
     specificationsOrigin: "AI_EXTRACTED",
     specifications: { "Lumens": "800 lm per bulb", "Color Temperature": "2700K - 6500K tunable", "Lifespan": "25,000 hours", "Connectivity": "Wi-Fi, Bluetooth", "Battery Backup Time": "2 hours" },
     batteryChemistry: "Li-ion NMC", batteryChemistryOrigin: "AI_EXTRACTED", stateOfHealth: 99, stateOfHealthOrigin: "manual", carbonFootprintManufacturing: 5.2, carbonFootprintManufacturingOrigin: "AI_EXTRACTED", recycledContentPercentage: 8, recycledContentPercentageOrigin: "manual",
+    supplyChainLinks: [
+      { supplierId: "SUP003", suppliedItem: "LED Chips & PCBs" },
+      { supplierId: "SUP004", suppliedItem: "Li-ion Battery Cells", notes: "Awaiting full traceability report from supplier." },
+    ],
     lifecycleEvents: [ { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Batch #LEDB456. Battery passport data generated. SCIP database notified of components. Quality control data recorded.", isBlockchainAnchored: true, transactionHash: "0xghi789jkl0mno1pqrustvwx" }, { id: "EVT005", type: "Imported", timestamp: "2024-03-15T10:00:00Z", location: "Rotterdam Port, Netherlands", details: "Shipment #SHP0089. EU customs cleared. Triggers CE marking verification.", isBlockchainAnchored: false }, { id: "EVT006", type: "Software Update", timestamp: "2024-08-01T00:00:00Z", location: "OTA Server", details: "Firmware v1.2 deployed. Improves energy efficiency algorithm. Update logged to DPP.", isBlockchainAnchored: true, transactionHash: "0xotaUpdateHash123xyz" } ],
     complianceData: { "RoHS": { status: "Compliant", lastChecked: "2024-07-01T10:00:00Z", reportId: "ROHS-LEDB456-001", isVerified: true }, "CE Mark": { status: "Compliant", lastChecked: "2024-07-01T10:00:00Z", reportId: "CE-LEDB456-001", isVerified: true }, "Battery Regulation (EU 2023/1542)": { status: "Pending Documentation", lastChecked: "2024-07-20T10:00:00Z", reportId: "BATREG-LEDB456-PRE", isVerified: false }, },
     isDppBlockchainAnchored: false,
@@ -292,6 +321,7 @@ const getDefaultMockProductValues = (id: string): MockProductType => ({
   complianceData: {},
   isDppBlockchainAnchored: false,
   dppAnchorTransactionHash: undefined,
+  supplyChainLinks: [],
   currentLifecyclePhaseIndex: 0,
   lifecyclePhases: [ { id: `lc_user_${id}_1`, name: "Created", icon: PackageSearch, status: 'completed', timestamp: new Date().toISOString(), location: "System", details: "Product entry created by user." }, { id: `lc_user_${id}_2`, name: "Pending Review", icon: Factory, status: 'in_progress', details: "Awaiting further data input and review." } ],
   overallCompliance: {
@@ -365,7 +395,6 @@ interface DppCompletenessResult {
   sections: SectionCompleteness[];
 }
 
-// Helper to determine new origin status
 const determineOrigin = (
   currentValue: any,
   previousValue: any,
@@ -507,6 +536,20 @@ export default function ProductDetailPage() {
   const [suggestedClaimsList, setSuggestedClaimsList] = useState<string[]>([]);
   const [verifyingRegulationKey, setVerifyingRegulationKey] = useState<string | null>(null);
 
+  // State for "Link Supplier" Dialog
+  const [availableSuppliers, setAvailableSuppliers] = useState<Supplier[]>([]);
+  const [isLinkSupplierDialogOpen, setIsLinkSupplierDialogOpen] = useState(false);
+  const [selectedSupplierIdToLink, setSelectedSupplierIdToLink] = useState<string>('');
+  const [suppliedItem, setSuppliedItem] = useState('');
+  const [linkNotes, setLinkNotes] = useState('');
+
+  // State for "Edit Link" Dialog
+  const [isEditLinkDialogOpen, setIsEditLinkDialogOpen] = useState(false);
+  const [editingLink, setEditingLink] = useState<ProductSupplyChainLink | null>(null);
+  const [editingSupplierName, setEditingSupplierName] = useState<string | null>(null);
+  const [editSuppliedItem, setEditSuppliedItem] = useState('');
+  const [editLinkNotes, setEditLinkNotes] = useState('');
+
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -572,6 +615,7 @@ export default function ProductDetailPage() {
             recycledContentPercentageOrigin: storedProduct.recycledContentPercentageOrigin,
             isDppBlockchainAnchored: storedProduct.isDppBlockchainAnchored || false,
             dppAnchorTransactionHash: storedProduct.dppAnchorTransactionHash || undefined,
+            supplyChainLinks: storedProduct.supplyChainLinks || [],
           };
         }
       }
@@ -597,7 +641,7 @@ export default function ProductDetailPage() {
           sustainabilityClaims: foundProduct.sustainabilityClaims,
           sustainabilityClaimsOrigin: foundProduct.sustainabilityClaimsOrigin as 'AI_EXTRACTED' | 'manual' | undefined,
           specifications: typeof foundProduct.specifications === 'string' ? foundProduct.specifications : JSON.stringify(foundProduct.specifications, null, 2),
-          specificationsOrigin: (foundProduct as any).specificationsOrigin as 'AI_EXTRACTED' | 'manual' | undefined, // Cast for mock data flexibility
+          specificationsOrigin: (foundProduct as any).specificationsOrigin as 'AI_EXTRACTED' | 'manual' | undefined,
           energyLabel: foundProduct.energyLabel,
           energyLabelOrigin: foundProduct.energyLabelOrigin as 'AI_EXTRACTED' | 'manual' | undefined,
           productCategory: foundProduct.category,
@@ -615,8 +659,19 @@ export default function ProductDetailPage() {
       }
     };
 
+    const loadSuppliers = () => {
+      const storedSuppliersString = localStorage.getItem(USER_SUPPLIERS_LOCAL_STORAGE_KEY);
+      const userAddedSuppliers: Supplier[] = storedSuppliersString ? JSON.parse(storedSuppliersString) : [];
+      const combinedSuppliers = [
+        ...MOCK_SUPPLIERS.filter(mockSup => !userAddedSuppliers.find(userSup => userSup.id === mockSup.id)),
+        ...userAddedSuppliers
+      ];
+      setAvailableSuppliers(combinedSuppliers);
+    };
+    
     if (productId) {
       fetchProduct();
+      loadSuppliers();
     }
   }, [productId]);
 
@@ -631,6 +686,7 @@ export default function ProductDetailPage() {
         const message = criticalErrorNotification.message.toLowerCase();
         if (message.includes('battery regulation') || message.includes('battery passport')) { if (hasBatteryData) { errorDrivenTab = 'battery'; } }
         if (!errorDrivenTab && (message.includes('compliance') || message.includes('regulation'))) { errorDrivenTab = 'compliance';  }
+         if (!errorDrivenTab && (message.includes('supply chain') || message.includes('supplier'))) { errorDrivenTab = 'supply-chain';  }
       }
       if (errorDrivenTab) { newDefaultTab = errorDrivenTab; }
       else {
@@ -1026,6 +1082,90 @@ export default function ProductDetailPage() {
     });
   };
 
+  const handleLinkSupplier = () => {
+    if (!product || !selectedSupplierIdToLink || !suppliedItem.trim()) {
+      toast({ title: "Error", description: "Please select a supplier and specify the supplied item.", variant: "destructive" });
+      return;
+    }
+    const newLink: ProductSupplyChainLink = {
+      supplierId: selectedSupplierIdToLink,
+      suppliedItem: suppliedItem.trim(),
+      notes: linkNotes.trim() || undefined,
+    };
+    const updatedLinks = [...(product.supplyChainLinks || []), newLink];
+    setProduct(prev => prev ? { ...prev, supplyChainLinks: updatedLinks, lastUpdated: new Date().toISOString() } : null);
+
+    if (product.productId.startsWith("USER_PROD")) {
+      const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+      let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+      const productIndex = userProducts.findIndex(p => p.id === product.productId);
+      if (productIndex > -1) {
+        userProducts[productIndex].supplyChainLinks = updatedLinks;
+        userProducts[productIndex].lastUpdated = new Date().toISOString();
+        localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
+      }
+    }
+    toast({ title: "Supplier Linked", description: "The supplier has been linked to this product." });
+    setIsLinkSupplierDialogOpen(false);
+    setSelectedSupplierIdToLink('');
+    setSuppliedItem('');
+    setLinkNotes('');
+  };
+
+  const handleUnlinkSupplier = (supplierIdToUnlink: string, itemSupplied: string) => {
+    if (!product) return;
+    const updatedLinks = (product.supplyChainLinks || []).filter(
+      link => !(link.supplierId === supplierIdToUnlink && link.suppliedItem === itemSupplied)
+    );
+    setProduct(prev => prev ? { ...prev, supplyChainLinks: updatedLinks, lastUpdated: new Date().toISOString() } : null);
+
+    if (product.productId.startsWith("USER_PROD")) {
+      const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+      let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+      const productIndex = userProducts.findIndex(p => p.id === product.productId);
+      if (productIndex > -1) {
+        userProducts[productIndex].supplyChainLinks = updatedLinks;
+        userProducts[productIndex].lastUpdated = new Date().toISOString();
+        localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
+      }
+    }
+    toast({ title: "Supplier Unlinked", description: "The supplier link has been removed." });
+  };
+
+  const handleOpenEditLinkDialog = (link: ProductSupplyChainLink) => {
+    setEditingLink(link);
+    const supplier = availableSuppliers.find(s => s.id === link.supplierId);
+    setEditingSupplierName(supplier?.name || "Unknown Supplier");
+    setEditSuppliedItem(link.suppliedItem);
+    setEditLinkNotes(link.notes || "");
+    setIsEditLinkDialogOpen(true);
+  };
+
+  const handleUpdateSupplierLink = () => {
+    if (!product || !editingLink) return;
+    const updatedLinks = (product.supplyChainLinks || []).map(link =>
+      (link.supplierId === editingLink.supplierId && link.suppliedItem === editingLink.suppliedItem) // Assuming supplierId + suppliedItem is unique enough for mock
+        ? { ...link, suppliedItem: editSuppliedItem.trim(), notes: editLinkNotes.trim() || undefined }
+        : link
+    );
+
+    setProduct(prev => prev ? { ...prev, supplyChainLinks: updatedLinks, lastUpdated: new Date().toISOString() } : null);
+
+    if (product.productId.startsWith("USER_PROD")) {
+      const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+      let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+      const productIndex = userProducts.findIndex(p => p.id === product.productId);
+      if (productIndex > -1) {
+        userProducts[productIndex].supplyChainLinks = updatedLinks;
+        userProducts[productIndex].lastUpdated = new Date().toISOString();
+        localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
+      }
+    }
+    toast({ title: "Supplier Link Updated", description: "The link details have been updated." });
+    setIsEditLinkDialogOpen(false);
+    setEditingLink(null);
+  };
+
 
   if (product === undefined) { return <ProductDetailSkeleton />; }
   if (!product) { notFound(); return null; }
@@ -1036,6 +1176,8 @@ export default function ProductDetailPage() {
   const canSimulateCompliance = currentRole === 'admin' || currentRole === 'manufacturer';
   const canSyncEprel = currentRole === 'admin' || currentRole === 'manufacturer';
   const canAdvanceLifecycle = (currentRole === 'admin' || currentRole === 'manufacturer') && product.currentLifecyclePhaseIndex < product.lifecyclePhases.length - 1;
+  const canEditProductSupplyChain = (currentRole === 'admin' || currentRole === 'manufacturer') && product.productId.startsWith("USER_PROD");
+
 
   const isProductImagePlaceholder = !product.imageUrl || product.imageUrl.includes('placehold.co') || product.imageUrl.includes('?text=');
   const canGenerateImage = (currentRole === 'admin' || currentRole === 'manufacturer');
@@ -1120,13 +1262,14 @@ export default function ProductDetailPage() {
       ) : (
         <>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8"> {/* Adjusted for Supply Chain tab */}
               <TabsTrigger value="overview"><FileText className="mr-1.5 h-4 w-4" />Overview</TabsTrigger>
               <TabsTrigger value="specifications"><Settings2 className="mr-1.5 h-4 w-4" />Specs</TabsTrigger>
               {hasBatteryData && <TabsTrigger value="battery"><BatteryCharging className="mr-1.5 h-4 w-4" />Battery</TabsTrigger>}
               <TabsTrigger value="compliance"><ShieldCheck className="mr-1.5 h-4 w-4" />Compliance</TabsTrigger>
               <TabsTrigger value="lifecycle"><GitBranch className="mr-1.5 h-4 w-4" />Lifecycle</TabsTrigger>
               <TabsTrigger value="sustainability"><Zap className="mr-1.5 h-4 w-4" />Sustainability</TabsTrigger>
+              <TabsTrigger value="supply-chain"><Layers className="mr-1.5 h-4 w-4" />Supply Chain</TabsTrigger> {/* New Tab */}
               <TabsTrigger value="verification"><ServerIconLucide className="mr-1.5 h-4 w-4" />Verification Log</TabsTrigger>
             </TabsList>
 
@@ -1476,6 +1619,127 @@ export default function ProductDetailPage() {
               </Card>
             </TabsContent>
 
+            <TabsContent value="supply-chain" className="mt-4">
+              <Card>
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="flex items-center"><Layers className="mr-2 h-5 w-5 text-primary" />Supply Chain Information</CardTitle>
+                    <CardDescription>Suppliers involved in the production of this product.</CardDescription>
+                  </div>
+                  {canEditProductSupplyChain && (
+                    <Dialog open={isLinkSupplierDialogOpen} onOpenChange={setIsLinkSupplierDialogOpen}>
+                      <DialogTrigger asChild>
+                        <Button variant="outline"> <Link2 className="mr-2 h-4 w-4" />Link New Supplier</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>Link Supplier to Product</DialogTitle>
+                          <DialogDescription>
+                            Select an existing supplier and specify what they provide for this product.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="supplier-select" className="text-right">Supplier</Label>
+                            <Select value={selectedSupplierIdToLink} onValueChange={setSelectedSupplierIdToLink}>
+                              <SelectTrigger id="supplier-select" className="col-span-3">
+                                <SelectValue placeholder="Select a supplier" />
+                              </SelectTrigger>
+                              <SelectContent>
+                                {availableSuppliers.map(supplier => (
+                                  <SelectItem key={supplier.id} value={supplier.id}>{supplier.name}</SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="supplied-item" className="text-right">Supplied Item</Label>
+                            <Input id="supplied-item" value={suppliedItem} onChange={(e) => setSuppliedItem(e.target.value)} className="col-span-3" placeholder="e.g., Battery Cells, Organic Cotton"/>
+                          </div>
+                          <div className="grid grid-cols-4 items-center gap-4">
+                            <Label htmlFor="link-notes" className="text-right">Notes</Label>
+                            <Textarea id="link-notes" value={linkNotes} onChange={(e) => setLinkNotes(e.target.value)} className="col-span-3" placeholder="Optional notes about this link" />
+                          </div>
+                        </div>
+                        <DialogFooter>
+                          <DialogClose asChild><Button type="button" variant="outline">Cancel</Button></DialogClose>
+                          <Button type="button" onClick={handleLinkSupplier}>Save Link</Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  )}
+                </CardHeader>
+                <CardContent>
+                {product.supplyChainLinks && product.supplyChainLinks.length > 0 ? (
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Supplier Name</TableHead>
+                        <TableHead>Supplied Item/Component</TableHead>
+                        <TableHead>Notes</TableHead>
+                        {canEditProductSupplyChain && <TableHead className="text-right">Actions</TableHead>}
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {product.supplyChainLinks.map((link, index) => {
+                        const supplierDetails = availableSuppliers.find(s => s.id === link.supplierId);
+                        return (
+                          <TableRow key={`${link.supplierId}-${index}`}>
+                            <TableCell className="font-medium">{supplierDetails?.name || link.supplierId}</TableCell>
+                            <TableCell>{link.suppliedItem}</TableCell>
+                            <TableCell>{link.notes || <span className="text-muted-foreground italic">N/A</span>}</TableCell>
+                            {canEditProductSupplyChain && (
+                              <TableCell className="text-right space-x-2">
+                                <Button variant="ghost" size="icon" onClick={() => handleOpenEditLinkDialog(link)} title="Edit Link">
+                                  <Edit className="h-4 w-4" />
+                                </Button>
+                                <Button variant="ghost" size="icon" onClick={() => handleUnlinkSupplier(link.supplierId, link.suppliedItem)} className="text-destructive hover:text-destructive" title="Unlink Supplier">
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              </TableCell>
+                            )}
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                ) : (
+                  <div className="text-center py-4 text-muted-foreground">
+                     <Layers className="mx-auto h-10 w-10 mb-2 text-muted-foreground/50" />
+                    No suppliers are currently linked to this product.
+                  </div>
+                )}
+                </CardContent>
+              </Card>
+
+              {/* Edit Supplier Link Dialog */}
+              <Dialog open={isEditLinkDialogOpen} onOpenChange={setIsEditLinkDialogOpen}>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Edit Link for Supplier: {editingSupplierName || "N/A"}</DialogTitle>
+                    <DialogDescription>
+                      Update the supplied item or notes for this supplier link.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="edit-supplied-item" className="text-right">Supplied Item</Label>
+                      <Input id="edit-supplied-item" value={editSuppliedItem} onChange={(e) => setEditSuppliedItem(e.target.value)} className="col-span-3" />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="edit-link-notes" className="text-right">Notes</Label>
+                      <Textarea id="edit-link-notes" value={editLinkNotes} onChange={(e) => setEditLinkNotes(e.target.value)} className="col-span-3" />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    <DialogClose asChild><Button type="button" variant="outline" onClick={() => setEditingLink(null)}>Cancel</Button></DialogClose>
+                    <Button type="button" onClick={handleUpdateSupplierLink}>Save Changes</Button>
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
+
+            </TabsContent>
+
             <TabsContent value="verification" className="mt-4">
               <Card>
                 <CardHeader>
@@ -1550,5 +1814,3 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
-
-    

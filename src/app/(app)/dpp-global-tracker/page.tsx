@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, Suspense } from 'react';
+import { feature as topojsonFeature } from 'topojson-client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train } from "lucide-react";
@@ -12,7 +13,6 @@ import { Label } from "@/components/ui/label";
 import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
 import ArcInfoCard from '@/components/dpp-tracker/ArcInfoCard';
 import { cn } from "@/lib/utils";
-import { feature as topojsonFeature } from 'topojson-client';
 
 // Dynamically import GlobeVisualization
 const GlobeVisualization = React.lazy(() => import('@/components/dpp-tracker/GlobeVisualization'));
@@ -46,25 +46,26 @@ export interface MockArc {
   productId?: string;
 }
 
+// Minimal diagnostic data for points and arcs, other features effectively disabled.
 const diagnosticPointsMinimal: MockDppPoint[] = [
-  // { id: 'brussels', lat: 50.8503, lng: 4.3517, name: 'Brussels (EU HQ)', size: 0.5, category: 'Distribution Hub', status: 'compliant', timestamp: 2024, color: 'red' },
-  // { id: 'beijing', lat: 39.9042, lng: 116.4074, name: 'Beijing Factory', size: 0.5, category: 'Manufacturing Site', status: 'pending', timestamp: 2024, color: 'red' },
+  // { id: 'brussels', lat: 50.8503, lng: 4.3517, name: 'Brussels (EU HQ)', size: 0.3, category: 'Distribution Hub', status: 'compliant', timestamp: 2024, color: 'rgba(255,0,0,1)' },
+  // { id: 'beijing', lat: 39.9042, lng: 116.4074, name: 'Beijing Factory', size: 0.3, category: 'Manufacturing Site', status: 'pending', timestamp: 2024, color: 'rgba(255,0,0,1)' },
 ];
-const diagnosticArcsMinimal: MockArc[] = [
-  // { id: 'arc1', startLat: 39.9042, startLng: 116.4074, endLat: 50.8503, endLng: 4.3517, color: 'rgba(0, 255, 0, 0.6)', label: 'Shipment Route 1', stroke: 0.3, timestamp: 2024, transportMode: 'sea' }
-];
+const diagnosticArcsMinimal: MockArc[] = [];
 const diagnosticLabelsMinimal: any[] = [];
+
 
 const euMemberCountryCodes = [
   'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU',
   'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'
 ];
 
-const EU_BLUE_COLOR = 'rgba(25, 118, 210, 0.95)';
-const NON_EU_LAND_COLOR = 'rgba(240, 230, 210, 1)'; // Light beige/cream
-const BORDER_COLOR = 'rgba(80, 80, 80, 0.7)'; // Darker grey for borders
+// Updated Color Scheme
+const EU_BLUE_COLOR = 'rgba(0, 80, 150, 0.95)'; // Medium-dark blue for EU countries
+const NON_EU_LAND_COLOR_LIGHT_BLUE = 'rgba(173, 216, 230, 0.95)'; // Light blue for non-EU land
+const BORDER_COLOR_MEDIUM_BLUE = 'rgba(70, 130, 180, 0.7)'; // Medium blue for borders
 const WHITE_BACKGROUND_COLOR = 'rgba(255, 255, 255, 1)'; // White for the ocean/background
-
+const DIAGNOSTIC_POINT_COLOR = 'rgba(255, 0, 0, 0.8)'; // Red for diagnostic points
 
 const Legend: React.FC<{ title: string; colorMap: Record<string, string>, className?: string }> = ({ title, colorMap, className }) => (
   <Card className={cn("shadow-md", className)}>
@@ -118,7 +119,6 @@ export default function DppGlobalTrackerPage() {
 
   useEffect(() => {
     setIsClient(true);
-    // Fetch country polygons data
     fetch('//unpkg.com/world-atlas/countries-110m.json')
       .then(res => res.json())
       .then(countries => {
@@ -143,26 +143,26 @@ export default function DppGlobalTrackerPage() {
     setSelectedPoint(null);
   }, []);
 
-  // Simple accessors for diagnostic points/arcs
-  const pointColorAccessor = useCallback(() => 'rgba(255, 0, 0, 0.7)', []); // Red for all points
-  const pointRadiusAccessor = useCallback(() => 0.25, []); // Fixed size
-  const arcColorAccessor = useCallback(() => 'rgba(0, 255, 0, 0.5)', []); // Green for all arcs
-  const arcStrokeAccessor = useCallback(() => 0.3, []); // Fixed stroke
+  const pointColorAccessor = useCallback(() => DIAGNOSTIC_POINT_COLOR, []); 
+  const pointRadiusAccessor = useCallback(() => 0.25, []); 
+  const arcColorAccessor = useCallback(() => 'rgba(0, 255, 0, 0.5)', []); 
+  const arcStrokeAccessor = useCallback(() => 0.3, []);
 
   const polygonCapColorAccessor = useCallback((feat: any) => {
     const countryCode = feat.properties?.ISO_A2 || feat.properties?.iso_a2;
-    return euMemberCountryCodes.includes(countryCode) ? EU_BLUE_COLOR : NON_EU_LAND_COLOR;
+    return euMemberCountryCodes.includes(countryCode) ? EU_BLUE_COLOR : NON_EU_LAND_COLOR_LIGHT_BLUE;
   }, []);
 
   const polygonSideColorAccessor = useCallback(() => 'rgba(0, 0, 0, 0)', []); // Flat look
-  const polygonStrokeColorAccessor = useCallback(() => BORDER_COLOR, []);
+  const polygonStrokeColorAccessor = useCallback(() => BORDER_COLOR_MEDIUM_BLUE, []);
 
 
   const globeLegendMap = {
     "EU Member State": EU_BLUE_COLOR,
-    "Non-EU Country": NON_EU_LAND_COLOR,
+    "Non-EU Country": NON_EU_LAND_COLOR_LIGHT_BLUE,
     "Globe Background": WHITE_BACKGROUND_COLOR,
-    "Country Borders": BORDER_COLOR,
+    "Country Borders": BORDER_COLOR_MEDIUM_BLUE,
+    // "Diagnostic Point": DIAGNOSTIC_POINT_COLOR, // Can be added if points are active
   };
 
   const [activeDataLayer, setActiveDataLayer] = useState('overview');
@@ -183,10 +183,10 @@ export default function DppGlobalTrackerPage() {
           <CardDescription>Interact with the globe to explore product origins, supply chains, and compliance status across regions.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 opacity-50 pointer-events-none"> {/* Visually disable controls */}
             <div className="md:col-span-1">
-              <Label htmlFor="data-layer-select" className="text-sm font-medium">Data Layer</Label>
-              <Select value={activeDataLayer} onValueChange={setActiveDataLayer}>
+              <Label htmlFor="data-layer-select" className="text-sm font-medium">Data Layer (Disabled)</Label>
+              <Select value={activeDataLayer} onValueChange={setActiveDataLayer} disabled>
                 <SelectTrigger id="data-layer-select">
                   <SelectValue placeholder="Select data layer" />
                 </SelectTrigger>
@@ -198,7 +198,7 @@ export default function DppGlobalTrackerPage() {
               </Select>
             </div>
             <div className="md:col-span-2">
-              <Label htmlFor="year-slider" className="text-sm font-medium">Year Filter: {yearFilter[0]}</Label>
+              <Label htmlFor="year-slider" className="text-sm font-medium">Year Filter (Disabled): {yearFilter[0]}</Label>
               <Slider
                 id="year-slider"
                 min={2020}
@@ -253,3 +253,5 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
+    
+    

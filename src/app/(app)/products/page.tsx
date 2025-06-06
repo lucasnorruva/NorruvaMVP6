@@ -2,7 +2,7 @@
 "use client";
 
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -29,16 +29,15 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRole } from "@/contexts/RoleContext";
 import { useToast } from "@/hooks/use-toast";
-import type { ProductFormData as ProductFormDataType } from "@/components/products/ProductForm"; // Renamed to avoid conflict
+import type { ProductFormData as ProductFormDataType } from "@/components/products/ProductForm";
+import ProductManagementFiltersComponent, { type ProductManagementFilterState } from "@/components/products/ProductManagementFiltersComponent";
 
-// Represents product data stored by user interactions (e.g., via ProductForm)
-// Aligned with ProductFormDataType and includes origin fields.
+// Represents product data stored by user interactions
 interface StoredUserProduct extends ProductFormDataType {
   id: string;
-  status: string; // Overall status of product (Draft, Active)
-  compliance: string; // Overall compliance status (Compliant, Pending)
+  status: string;
+  compliance: string;
   lastUpdated: string;
-  // productCategory and imageUrl are part of ProductFormDataType
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
   manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -54,19 +53,19 @@ interface StoredUserProduct extends ProductFormDataType {
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
 }
 
-// Represents the structure for initial mock products, with potentially richer data
+// Represents the structure for initial mock products
 interface RichMockProduct {
-  id: string; // This will be the same as productId for mocks
+  id: string;
   productId: string;
   productName: string;
-  category?: string; // Note: ProductFormDataType uses 'productCategory'
+  category?: string;
   status: string;
   compliance: string;
   lastUpdated: string;
   gtin?: string;
   manufacturer?: string;
   modelNumber?: string;
-  description?: string; // Note: ProductFormDataType uses 'productDescription'
+  description?: string;
   imageUrl?: string;
   materials?: string;
   sustainabilityClaims?: string;
@@ -83,33 +82,32 @@ interface RichMockProduct {
 // A unified type for products displayed in the list
 export interface DisplayableProduct {
   id: string;
-  productId?: string; // From RichMockProduct for consistency
-  productName?: string; // From ProductFormDataType & RichMockProduct
-  category?: string; // From RichMockProduct
-  productCategory?: string; // From ProductFormDataType (used for StoredUserProduct)
+  productId?: string;
+  productName?: string;
+  category?: string;
+  productCategory?: string; // From ProductFormDataType
   status: string;
   compliance: string;
   lastUpdated: string;
   gtin?: string;
   manufacturer?: string;
   modelNumber?: string;
-  description?: string; // From RichMockProduct
+  description?: string;
   productDescription?: string; // From ProductFormDataType
   imageUrl?: string;
   materials?: string;
   sustainabilityClaims?: string;
   energyLabel?: string;
-  specifications?: Record<string, string> | string; // Allow both
-  lifecycleEvents?: Array<any>; // Simplified for list
-  complianceData?: Record<string, any>; // Simplified for list
+  specifications?: Record<string, string> | string;
+  lifecycleEvents?: Array<any>;
+  complianceData?: Record<string, any>;
   batteryChemistry?: string;
-  stateOfHealth?: number | null; // Allow null
-  carbonFootprintManufacturing?: number | null; // Allow null
-  recycledContentPercentage?: number | null; // Allow null
+  stateOfHealth?: number | null;
+  carbonFootprintManufacturing?: number | null;
+  recycledContentPercentage?: number | null;
 }
 
-
-const initialMockProducts: RichMockProduct[] = [
+const initialMockProductsData: RichMockProduct[] = [
   {
     id: "PROD001", productId: "PROD001", productName: "EcoFriendly Refrigerator X2000", category: "Appliances", status: "Active", compliance: "Compliant", lastUpdated: "2024-07-20",
     gtin: "01234567890123", manufacturer: "GreenTech Appliances", modelNumber: "X2000-ECO", description: "State-of-the-art energy efficient refrigerator.", imageUrl: "https://placehold.co/600x400.png?text=PROD001", materials: "Recycled Steel, Bio-polymers", sustainabilityClaims: "Energy Star Certified", energyLabel: "A+++", specifications: { "Capacity": "400L", "Warranty": "5 years" }, lifecycleEvents: [{id:"lc_mfg_001", name:"Manufacturing"}], complianceData: {REACH: {status:"Compliant"}},
@@ -121,17 +119,17 @@ const initialMockProducts: RichMockProduct[] = [
   },
   {
     id: "PROD003", productId: "PROD003", productName: "Organic Cotton T-Shirt", category: "Apparel", status: "Archived", compliance: "Compliant", lastUpdated: "2024-06-10",
-    description: "100% organic cotton t-shirt.", materials: "Organic Cotton", sustainabilityClaims: "GOTS Certified", imageUrl: "https://placehold.co/600x400.png?text=PROD003",
+    description: "100% organic cotton t-shirt.", materials: "Organic Cotton", sustainabilityClaims: "GOTS Certified", imageUrl: "https://placehold.co/600x400.png?text=PROD003", manufacturer: "EcoThreads",
     specifications: {"Fit": "Regular", "Origin": "India"}, lifecycleEvents: [], complianceData: {},
   },
   {
     id: "PROD004", productId: "PROD004", productName: "Recycled Plastic Water Bottle", category: "Homeware", status: "Active", compliance: "Non-Compliant", lastUpdated: "2024-07-21",
-    description: "Made from 100% recycled ocean-bound plastic.", materials: "Recycled PET", sustainabilityClaims: "Reduces ocean plastic", imageUrl: "https://placehold.co/600x400.png?text=PROD004",
+    description: "Made from 100% recycled ocean-bound plastic.", materials: "Recycled PET", sustainabilityClaims: "Reduces ocean plastic", imageUrl: "https://placehold.co/600x400.png?text=PROD004", manufacturer: "RePurpose Inc.",
     specifications: {"Volume": "500ml", "BPA-Free": "Yes"}, lifecycleEvents: [], complianceData: {},
   },
   {
     id: "PROD005", productId: "PROD005", productName: "Solar Powered Garden Light", category: "Outdoor", status: "Draft", compliance: "N/A", lastUpdated: "2024-07-22",
-    description: "Solar-powered LED light for gardens.", materials: "Aluminum, Solar Panel", energyLabel: "N/A", imageUrl: "https://placehold.co/600x400.png?text=PROD005",
+    description: "Solar-powered LED light for gardens.", materials: "Aluminum, Solar Panel", energyLabel: "N/A", imageUrl: "https://placehold.co/600x400.png?text=PROD005", manufacturer: "SunBeam",
     specifications: {"Brightness": "100 lumens", "Battery life": "8 hours"}, lifecycleEvents: [], complianceData: {},
   },
 ];
@@ -187,7 +185,7 @@ const calculateDppCompletenessForList = (product: DisplayableProduct): { score: 
     if (fieldConfig.check) {
       isFieldFilled = fieldConfig.check(product);
     } else {
-      if (typeof value === 'object' && value !== null) { // For specifications if it's an object
+      if (typeof value === 'object' && value !== null) {
         isFieldFilled = Object.keys(value).length > 0;
       } else {
         isFieldFilled = value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A';
@@ -208,36 +206,67 @@ const calculateDppCompletenessForList = (product: DisplayableProduct): { score: 
 
 export default function ProductsPage() {
   const { currentRole } = useRole();
-  const [displayedProducts, setDisplayedProducts] = useState<DisplayableProduct[]>([]);
+  const [allProducts, setAllProducts] = useState<DisplayableProduct[]>([]);
+  const [filteredProducts, setFilteredProducts] = useState<DisplayableProduct[]>([]);
   const [productToDelete, setProductToDelete] = useState<DisplayableProduct | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const { toast } = useToast();
+
+  const [filters, setFilters] = useState<ProductManagementFilterState>({
+    searchQuery: "",
+    status: "All",
+    compliance: "All",
+    category: "All",
+  });
 
   useEffect(() => {
     const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
     const userAddedStoredProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
 
     const userAddedDisplayableProducts: DisplayableProduct[] = userAddedStoredProducts.map(p => ({
-      ...p, // Spread all fields from StoredUserProduct
-      id: p.id, // Ensure id is present
-      productId: p.id, // For consistency with RichMockProduct structure
-      // productCategory is already in p from ProductFormDataType
-      // productDescription is already in p
+      ...p,
+      id: p.id,
+      productId: p.id,
     }));
 
-    const initialDisplayableProducts: DisplayableProduct[] = initialMockProducts.map(mock => ({
-      ...mock, // Spread all fields from RichMockProduct
-      // category is already in mock
-      // description is already in mock
+    const initialDisplayableProducts: DisplayableProduct[] = initialMockProductsData.map(mock => ({
+      ...mock,
     }));
 
-    const combinedProducts = [
+    const combined = [
       ...initialDisplayableProducts.filter(mock => !userAddedDisplayableProducts.find(userProd => userProd.id === mock.id)),
       ...userAddedDisplayableProducts
     ];
-
-    setDisplayedProducts(combinedProducts.sort((a, b) => (a.id || "").localeCompare(b.id || "")));
+    setAllProducts(combined);
   }, []);
+
+  useEffect(() => {
+    let tempProducts = [...allProducts];
+
+    if (filters.searchQuery) {
+      const lowerSearchQuery = filters.searchQuery.toLowerCase();
+      tempProducts = tempProducts.filter(p =>
+        p.productName?.toLowerCase().includes(lowerSearchQuery) ||
+        p.gtin?.toLowerCase().includes(lowerSearchQuery) ||
+        p.manufacturer?.toLowerCase().includes(lowerSearchQuery)
+      );
+    }
+
+    if (filters.status !== "All") {
+      tempProducts = tempProducts.filter(p => p.status === filters.status);
+    }
+
+    if (filters.compliance !== "All") {
+      tempProducts = tempProducts.filter(p => p.compliance === filters.compliance);
+    }
+
+    if (filters.category !== "All") {
+      tempProducts = tempProducts.filter(p => (p.category || p.productCategory) === filters.category);
+    }
+
+    setFilteredProducts(tempProducts.sort((a, b) => (a.id || "").localeCompare(b.id || "")));
+  }, [filters, allProducts]);
+
 
   const openDeleteConfirmDialog = (product: DisplayableProduct) => {
     setProductToDelete(product);
@@ -254,7 +283,7 @@ export default function ProductsPage() {
       localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userAddedProducts));
     }
 
-    setDisplayedProducts(prevProducts => prevProducts.filter(p => p.id !== productToDelete.id));
+    setAllProducts(prevProducts => prevProducts.filter(p => p.id !== productToDelete.id)); // Update allProducts, useEffect will update filteredProducts
 
     toast({
       title: "Product Deleted",
@@ -266,13 +295,17 @@ export default function ProductsPage() {
   };
 
   const canAddProducts = currentRole === 'admin' || currentRole === 'manufacturer';
-  const canEditProducts = (currentRole === 'admin' || currentRole === 'manufacturer');
+  const canEditProducts = currentRole === 'admin' || currentRole === 'manufacturer';
   const canDeleteProducts = currentRole === 'admin' || currentRole === 'manufacturer';
+
+  const statusOptions = useMemo(() => ["All", ...new Set(allProducts.map(p => p.status).filter(Boolean).sort())], [allProducts]);
+  const complianceOptions = useMemo(() => ["All", ...new Set(allProducts.map(p => p.compliance).filter(Boolean).sort())], [allProducts]);
+  const categoryOptions = useMemo(() => ["All", ...new Set(allProducts.map(p => p.category || p.productCategory).filter(Boolean).sort())], [allProducts]);
 
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-headline font-semibold">Products</h1>
+        <h1 className="text-3xl font-headline font-semibold">Product Management</h1>
         {canAddProducts && (
           <Link href="/products/new" passHref>
             <Button variant="secondary">
@@ -282,6 +315,14 @@ export default function ProductsPage() {
           </Link>
         )}
       </div>
+
+      <ProductManagementFiltersComponent
+        filters={filters}
+        onFilterChange={setFilters}
+        statusOptions={statusOptions}
+        complianceOptions={complianceOptions}
+        categoryOptions={categoryOptions}
+      />
 
       <Card className="shadow-lg">
         <CardHeader>
@@ -303,7 +344,7 @@ export default function ProductsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {displayedProducts.map((product) => {
+              {filteredProducts.map((product) => {
                 const completeness = calculateDppCompletenessForList(product);
                 const currentProductName = product.productName || "Unnamed Product";
                 const currentCategory = product.category || product.productCategory || "N/A";
@@ -327,7 +368,7 @@ export default function ProductsPage() {
                     } className={
                       product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" :
                       product.status === "Archived" ? "bg-muted text-muted-foreground border-border" :
-                      "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" // Draft or other pending states
+                      "bg-yellow-500/20 text-yellow-700 border-yellow-500/30"
                     }>
                       {product.status}
                     </Badge>
@@ -341,7 +382,7 @@ export default function ProductsPage() {
                         product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" :
                         product.compliance === "Pending" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" :
                         product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" :
-                        "bg-red-500/20 text-red-700 border-red-500/30" // Non-Compliant
+                        "bg-red-500/20 text-red-700 border-red-500/30"
                       }>
                        {product.compliance}
                      </Badge>
@@ -413,10 +454,10 @@ export default function ProductsPage() {
                   </TableCell>
                 </TableRow>
               );})}
-               {displayedProducts.length === 0 && (
+               {filteredProducts.length === 0 && (
                 <TableRow>
                     <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
-                    No products found. Start by adding a new product.
+                    No products found matching your filters.
                     </TableCell>
                 </TableRow>
                 )}

@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
-// REMOVED: import { Text } from 'troika-three-text'; 
+// Removed: import { Text } from 'troika-three-text'; // Ensure this line is GONE
 import { MapPin, Ship, Plane, Building2 as LandBorderIcon } from 'lucide-react';
 import {
     DPP_HEALTH_GOOD_COLOR,
@@ -48,21 +48,29 @@ const getIconCanvas = (IconComponent: React.ElementType, color: THREE.Color, siz
   if (ctx) {
     ctx.beginPath();
     ctx.arc(size / 2, size / 2, size / 2.5, 0, 2 * Math.PI, false);
-    ctx.fillStyle = color && typeof color.getHexString === 'function' ? `#${color.getHexString()}` : '#808080';
+    // Ensure color is a THREE.Color object and getHexString is available
+    if (color && typeof color.getHexString === 'function') {
+      ctx.fillStyle = `#${color.getHexString()}`;
+    } else {
+      // Fallback if color is not a THREE.Color object or getHexString is missing
+      ctx.fillStyle = '#808080'; // Default grey
+      // console.warn("getIconCanvas: Provided color object was invalid or missing getHexString. Defaulting to grey.", color);
+    }
     ctx.fill();
 
-    ctx.font = `${size / 2.2}px sans-serif`;
-    ctx.fillStyle = 'white';
+    ctx.font = `${size / 2.2}px sans-serif`; // Adjusted font size slightly
+    ctx.fillStyle = 'white'; // Text color on the circle
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    let char = '?';
+    let char = '?'; // Default character
     if (IconComponent === Ship) char = 'S';
     else if (IconComponent === Plane) char = 'A';
     else if (IconComponent === LandBorderIcon) char = 'L';
-    else if (IconComponent === MapPin) char = 'M';
+    else if (IconComponent === MapPin) char = 'M'; // Generic MapPin
+    // Add more mappings if other icons are used directly
 
-    ctx.fillText(char, size / 2, size / 2 + (size/32)); // Small adjustment for vertical centering
+    ctx.fillText(char, size / 2, size / 2 + (size/32)); // Slight adjustment for better vertical centering
   }
   return canvas;
 };
@@ -123,11 +131,11 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
         if (controls) {
             controls.autoRotate = false;
             controls.enableZoom = true;
-            controls.minDistance = 50;
-            controls.maxDistance = 1500;
+            controls.minDistance = 50; // Adjust as needed
+            controls.maxDistance = 1500; // Adjust as needed
         }
       } catch (e) {
-        console.error("GlobeVisualization: Error configuring globe controls or POV", e);
+        // console.error("GlobeVisualization: Error configuring globe controls or POV", e);
       }
     }
   }, [GlobeComponent]);
@@ -147,26 +155,28 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
   };
 
   const checkpointSprites = useMemo(() => {
+    if (!customsCheckpointsData) return [];
     return customsCheckpointsData.map(cp => {
       const color = checkpointPrimaryColorLogic(cp);
-      let IconComp = MapPin;
-      if (cp.icon) {
+      let IconComp = MapPin; // Default icon
+      if (cp.icon) { // If an icon is directly provided in mock data (it isn't currently, but for future)
         IconComp = cp.icon;
       } else if (cp.type === 'port') IconComp = Ship;
       else if (cp.type === 'airport') IconComp = Plane;
       else if (cp.type === 'land_border') IconComp = LandBorderIcon;
 
-      const canvas = getIconCanvas(IconComp, color, 32);
+      const canvas = getIconCanvas(IconComp, color, 32); // Using 32 for potentially smaller sprites
       const map = new THREE.CanvasTexture(canvas);
-      map.needsUpdate = true;
+      map.needsUpdate = true; // Important for canvas textures
       const material = new THREE.SpriteMaterial({ map: map, depthTest: false, transparent: true, sizeAttenuation: false });
       const sprite = new THREE.Sprite(material);
-      sprite.scale.set(8, 8, 1);
+      sprite.scale.set(8, 8, 1); // Adjust scale as needed
 
+      // Attach data for click handling
       (sprite as any).checkpointData = cp;
       return sprite;
     });
-  }, [customsCheckpointsData]);
+  }, [customsCheckpointsData]); // Recompute if customsCheckpointsData changes
 
 
   if (!GlobeComponent) {
@@ -181,7 +191,7 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
     pointLabel: 'name',
     pointColor: pointColorAccessor,
     pointRadius: pointRadiusAccessor,
-    pointAltitude: (d: MockDppPoint | MockShipmentPoint) => ('direction' in d && d.direction) ? 0.025 : 0.02,
+    pointAltitude: (d: MockDppPoint | MockShipmentPoint) => ('direction' in d && d.direction) ? 0.025 : 0.02, // Slightly raise shipment dots
     onPointClick: onPointClick,
 
     arcsData: arcsData,
@@ -194,29 +204,31 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
     polygonCapColor: polygonCapColorAccessor,
     polygonSideColor: polygonSideColorAccessor,
     polygonStrokeColor: polygonStrokeColorAccessor,
-    polygonAltitude: 0.005,
-    polygonsTransitionDuration: 0,
+    polygonAltitude: 0.005, // Keep polygons slightly above the globe surface
+    polygonsTransitionDuration: 0, // No transition for polygons
 
-    customLayerData: customsCheckpointsData,
-    customThreeObject: (cpData: any) => {
+    customLayerData: customsCheckpointsData, // Ensure this is passed
+    customThreeObject: (cpData: any) => { // cpData is one item from customsCheckpointsData
         const cp = cpData as MockCustomsCheckpoint;
+        // Find the pre-generated sprite for this checkpoint
         const index = customsCheckpointsData.findIndex(item => item.id === cp.id);
         if (index !== -1 && checkpointSprites[index]) {
           return checkpointSprites[index];
         }
-        // Fallback if sprite not found (should ideally not happen)
-        const fallbackMaterial = new THREE.SpriteMaterial({ color: 'purple' });
+        // Fallback if sprite not found (should ideally not happen with useMemo)
+        const fallbackMaterial = new THREE.SpriteMaterial({ color: 'purple' }); // Should not be hit often
         const sprite = new THREE.Sprite(fallbackMaterial);
         sprite.scale.set(5, 5, 1);
-        (sprite as any).checkpointData = cp;
+        (sprite as any).checkpointData = cp; // Attach data for click
         return sprite;
     },
     customThreeObjectUpdate: (obj: any, cpData: any) => {
-        if(globeEl.current){
-            Object.assign(obj.position, globeEl.current.getCoords(cpData.lat, cpData.lng, 0.03));
+        // Position the sprite correctly on the globe
+        if(globeEl.current){ // Ensure globeEl is initialized
+            Object.assign(obj.position, globeEl.current.getCoords(cpData.lat, cpData.lng, 0.03)); // Altitude 0.03 for checkpoints
         }
     },
-    onCustomLayerClick: (obj: any, event: MouseEvent) => {
+    onCustomLayerClick: (obj: any, event: MouseEvent) => { // obj is the THREE.Sprite
         if (obj && (obj as any).checkpointData) {
           onCheckpointClick((obj as any).checkpointData);
         }
@@ -224,8 +236,8 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
   };
 
   return (
-    <div className="w-full h-full" style={{ position: 'relative' }}> {/* Removed zIndex as likely not needed */}
-      <GlobeComponent ref={globeEl} {...globeProps} />
+    <div className="w-full h-full" style={{ position: 'relative' }}>
+      { GlobeComponent && <GlobeComponent ref={globeEl} {...globeProps} /> }
     </div>
   );
 };

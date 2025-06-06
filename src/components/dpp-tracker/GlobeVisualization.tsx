@@ -3,49 +3,36 @@
 
 import React, { useEffect, useRef, forwardRef } from 'react';
 import Globe, { type GlobeMethods, type GlobeProps as ReactGlobeProps } from 'react-globe.gl';
-import { Color } from 'three'; // Import Color from three
+import { Color } from 'three';
 
 // Define the props for our GlobeVisualization component
-// Removed polygon-related props
-export interface GlobeVisualizationProps extends Omit<ReactGlobeProps, 
-  'ref' | 
-  'polygonsData' | 
-  'polygonCapColor' | 
-  'polygonSideColor' | 
-  'polygonStrokeColor' | 
-  'polygonAltitude' | 
-  'onPolygonClick' |
-  'onPolygonHover'
-> {
+export interface GlobeVisualizationProps extends ReactGlobeProps {
   globeRef?: React.Ref<GlobeMethods>;
-  backgroundColor?: string; // Allow passing background color for the globe canvas
+  backgroundColor?: string; 
 }
 
 export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationProps>(
-  ({ backgroundColor = '#00000000', ...globeProps }, ref) => {
+  ({ backgroundColor = 'rgba(0,0,0,0)', ...globeProps }, ref) => {
     const globeEl = useRef<GlobeMethods | undefined>();
 
     useEffect(() => {
       if (globeEl.current) {
         const globeInstance = globeEl.current;
-        // Setup controls
+        
         globeInstance.controls().autoRotate = true;
-        globeInstance.controls().autoRotateSpeed = 0.2;
+        globeInstance.controls().autoRotateSpeed = 0.15; // Slightly slower for better viewing
         globeInstance.controls().enableZoom = true;
-        globeInstance.controls().minDistance = 150; // Min zoom distance
-        globeInstance.controls().maxDistance = 800; // Max zoom distance
+        globeInstance.controls().minDistance = 150; 
+        globeInstance.controls().maxDistance = 800; 
 
-        // Explicitly set the renderer's clear color and alpha
         const renderer = globeInstance.renderer();
         if (renderer) {
-           // If backgroundColor is 'transparent' or an RGBA with 0 alpha, set clearAlpha to 0. Otherwise, 1.
-          const isTransparent = backgroundColor === 'transparent' || backgroundColor === '#00000000' || (backgroundColor.startsWith('rgba') && backgroundColor.endsWith('0)'));
+          const isTransparent = backgroundColor === 'transparent' || backgroundColor === 'rgba(0,0,0,0)' || (backgroundColor.startsWith('rgba') && backgroundColor.endsWith(',0)'));
           renderer.setClearColor(new Color(backgroundColor), isTransparent ? 0 : 1);
         }
       }
     }, [backgroundColor]);
 
-    // Combine internal ref with forwarded ref if provided
     useEffect(() => {
         if (typeof ref === 'function') {
           ref(globeEl.current || null);
@@ -54,15 +41,13 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
         }
       }, [ref]);
 
-
-    // Default Globe settings can be part of globeProps or overridden here
     const defaultGlobeProps: Partial<ReactGlobeProps> = {
-      // globeImageUrl is now expected to be passed via globeProps, e.g., earth-political.jpg
+      globeImageUrl: "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg", // Default texture
       bumpImageUrl: "//unpkg.com/three-globe/example/img/earth-topology.png",
       showAtmosphere: true,
-      atmosphereColor: '#4682B4', // A nice steel blue
+      atmosphereColor: '#4682B4', 
       atmosphereAltitude: 0.25,
-      enablePointerInteraction: true, // Still allow general globe interaction
+      enablePointerInteraction: true,
       animateIn: true,
     };
 
@@ -71,10 +56,10 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
         ref={globeEl}
         {...defaultGlobeProps}
         {...globeProps} // User-provided props will override defaults
-        // Polygon props are no longer passed here
       />
     );
   }
 );
 
 GlobeVisualization.displayName = 'GlobeVisualization';
+```

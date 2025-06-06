@@ -4,7 +4,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, AlertTriangle, ShieldCheck, Package, CheckCircle, Clock, ListFilter, Truck, Ship, Plane } from "lucide-react";
+import { BarChart3, AlertTriangle, ShieldCheck, Package, CheckCircle, Clock, ListFilter, Truck, Ship, Plane, ScanLine, FileText, CalendarDays } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 const mockTransitProducts = [
@@ -18,6 +18,15 @@ const mockCustomsAlerts = [
   { id: "ALERT001", productId: "PROD101", message: "Flagged at CDG Airport - Potential counterfeit. Physical inspection scheduled.", severity: "High", timestamp: "2 hours ago" },
   { id: "ALERT002", productId: "PROD456", message: "Awaiting CBAM declaration for steel components. Shipment delayed at Rotterdam.", severity: "Medium", timestamp: "1 day ago" },
   { id: "ALERT003", productId: "PROD999", message: "Random spot check selected for agricultural products. Expected delay: 48h.", severity: "Low", timestamp: "3 days ago" },
+];
+
+const mockInspectionTimeline = [
+  { id: "event1", icon: Ship, title: "Arrival at EU Border (Hamburg Port)", timestamp: "Aug 10, 2024 - 07:30 CET", description: "Container #C789XYZ unloaded from vessel 'Sea Serpent'.", status: "Completed" },
+  { id: "event2", icon: ScanLine, title: "Initial Customs Scan & DPP Check", timestamp: "Aug 10, 2024 - 08:15 CET", description: "Automated scan of container. DPP data for PROD789 retrieved and verified.", status: "Completed" },
+  { id: "event3", icon: FileText, title: "Documentation Review", timestamp: "Aug 10, 2024 - 09:00 CET", description: "Import declarations and CBAM certificate cross-referenced with DPP.", status: "Completed" },
+  { id: "event4", icon: AlertTriangle, title: "Random Physical Inspection Selected", timestamp: "Aug 10, 2024 - 10:30 CET", description: "Batch selected for routine physical check due to product category.", status: "Action Required", badgeVariant: "outline" as "outline" | "default" | "destructive" | "secondary" | null | undefined },
+  { id: "event5", icon: CheckCircle, title: "Inspection Complete & Cleared", timestamp: "Aug 10, 2024 - 14:00 CET", description: "Physical inspection passed. Product cleared for entry into EU market.", status: "Completed", badgeVariant: "default" as "outline" | "default" | "destructive" | "secondary" | null | undefined },
+  { id: "event6", icon: Truck, title: "Released for Inland Transit", timestamp: "Aug 10, 2024 - 15:30 CET", description: "Product released to logistics partner for final delivery.", status: "Upcoming" },
 ];
 
 const MetricCardWidget: React.FC<{title: string, value: string | number, icon: React.ElementType, description?: string}> = ({ title, value, icon: Icon, description }) => (
@@ -101,67 +110,107 @@ export default function CustomsDashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <Card className="shadow-lg">
+      <div className="grid md:grid-cols-3 gap-6"> {/* Changed to 3 columns for the new card */}
+        <Card className="shadow-lg md:col-span-2"> {/* Timeline takes 2 columns */}
           <CardHeader>
-            <CardTitle className="font-headline flex items-center"><BarChart3 className="mr-2 h-5 w-5 text-primary"/>DPP Compliance Overview</CardTitle>
-            <CardDescription>Breakdown of products by their Digital Product Passport compliance status.</CardDescription>
+            <CardTitle className="font-headline flex items-center"><CalendarDays className="mr-2 h-5 w-5 text-primary"/>Customs Inspection Timeline (Example: PROD789)</CardTitle>
+            <CardDescription>Chronological overview of a product's journey through customs.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <div className="flex justify-between mb-1 text-sm">
-                <span>Compliant</span>
-                <span>750 (85%)</span>
-              </div>
-              <Progress value={85} className="h-2.5 [&>div]:bg-green-500" />
-            </div>
-            <div>
-              <div className="flex justify-between mb-1 text-sm">
-                <span>Pending Review/Data</span>
-                <span>80 (9%)</span>
-              </div>
-              <Progress value={9} className="h-2.5 [&>div]:bg-yellow-500" />
-            </div>
-            <div>
-              <div className="flex justify-between mb-1 text-sm">
-                <span>Issues / Non-Compliant</span>
-                <span>50 (6%)</span>
-              </div>
-              <Progress value={6} className="h-2.5 [&>div]:bg-red-500" />
-            </div>
-            <p className="text-xs text-muted-foreground pt-2">Note: This is a static mock representation. A real chart would be interactive.</p>
+          <CardContent>
+            <ul className="space-y-4">
+              {mockInspectionTimeline.map((event) => {
+                let badgeColorClass = "";
+                if (event.status === "Completed" && event.badgeVariant === "default") badgeColorClass = "bg-green-100 text-green-700 border-green-300";
+                else if (event.status === "Action Required") badgeColorClass = "bg-yellow-100 text-yellow-700 border-yellow-300";
+                else if (event.status === "Upcoming") badgeColorClass = "bg-blue-100 text-blue-700 border-blue-300";
+
+                return (
+                  <li key={event.id} className="flex items-start space-x-3 p-3 border rounded-md bg-background hover:bg-muted/30">
+                    <event.icon className="h-5 w-5 text-primary mt-1 flex-shrink-0" />
+                    <div className="flex-grow">
+                      <div className="flex justify-between items-center">
+                        <p className="font-medium text-foreground">{event.title}</p>
+                        {event.status && (
+                           <Badge variant={event.badgeVariant || "secondary"} className={badgeColorClass || "text-xs"}>
+                             {event.status}
+                           </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-muted-foreground">{event.timestamp}</p>
+                      <p className="text-sm text-foreground/80 mt-1">{event.description}</p>
+                    </div>
+                  </li>
+                );
+              })}
+            </ul>
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="font-headline flex items-center"><AlertTriangle className="mr-2 h-5 w-5 text-destructive"/>Customs Inspection Alerts</CardTitle>
-            <CardDescription>Products currently flagged or requiring attention at customs.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {mockCustomsAlerts.length > 0 ? (
-              <ul className="space-y-3">
-                {mockCustomsAlerts.map((alert) => (
-                  <li key={alert.id} className="p-3 border rounded-md bg-background hover:bg-muted/30">
-                    <div className="flex justify-between items-start">
-                      <p className="font-medium text-sm text-foreground">{alert.productId}: {alert.message}</p>
-                      <Badge variant={alert.severity === "High" ? "destructive" : alert.severity === "Medium" ? "outline" : "secondary"} className={
-                        alert.severity === "High" ? "bg-red-100 text-red-700 border-red-300" :
-                        alert.severity === "Medium" ? "bg-yellow-100 text-yellow-700 border-yellow-300" : ""
-                      }>
-                        {alert.severity}
-                      </Badge>
-                    </div>
-                    <p className="text-xs text-muted-foreground mt-1">{alert.timestamp}</p>
-                  </li>
-                ))}
-              </ul>
-            ) : (
-              <p className="text-sm text-muted-foreground">No active customs alerts.</p>
-            )}
-          </CardContent>
-        </Card>
-      </Card>
+        <div className="space-y-6 md:col-span-1"> {/* Existing cards take 1 column */}
+            <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="font-headline flex items-center"><BarChart3 className="mr-2 h-5 w-5 text-primary"/>DPP Compliance Overview</CardTitle>
+                <CardDescription>Breakdown of products by their Digital Product Passport compliance status.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div>
+                <div className="flex justify-between mb-1 text-sm">
+                    <span>Compliant</span>
+                    <span>750 (85%)</span>
+                </div>
+                <Progress value={85} className="h-2.5 [&>div]:bg-green-500" />
+                </div>
+                <div>
+                <div className="flex justify-between mb-1 text-sm">
+                    <span>Pending Review/Data</span>
+                    <span>80 (9%)</span>
+                </div>
+                <Progress value={9} className="h-2.5 [&>div]:bg-yellow-500" />
+                </div>
+                <div>
+                <div className="flex justify-between mb-1 text-sm">
+                    <span>Issues / Non-Compliant</span>
+                    <span>50 (6%)</span>
+                </div>
+                <Progress value={6} className="h-2.5 [&>div]:bg-red-500" />
+                </div>
+                <p className="text-xs text-muted-foreground pt-2">Note: This is a static mock representation. A real chart would be interactive.</p>
+            </CardContent>
+            </Card>
+
+            <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="font-headline flex items-center"><AlertTriangle className="mr-2 h-5 w-5 text-destructive"/>Customs Inspection Alerts</CardTitle>
+                <CardDescription>Products currently flagged or requiring attention at customs.</CardDescription>
+            </CardHeader>
+            <CardContent>
+                {mockCustomsAlerts.length > 0 ? (
+                <ul className="space-y-3">
+                    {mockCustomsAlerts.map((alert) => (
+                    <li key={alert.id} className="p-3 border rounded-md bg-background hover:bg-muted/30">
+                        <div className="flex justify-between items-start">
+                        <p className="font-medium text-sm text-foreground">{alert.productId}: {alert.message}</p>
+                        <Badge variant={alert.severity === "High" ? "destructive" : alert.severity === "Medium" ? "outline" : "secondary"} className={
+                            alert.severity === "High" ? "bg-red-100 text-red-700 border-red-300" :
+                            alert.severity === "Medium" ? "bg-yellow-100 text-yellow-700 border-yellow-300" : ""
+                        }>
+                            {alert.severity}
+                        </Badge>
+                        </div>
+                        <p className="text-xs text-muted-foreground mt-1">{alert.timestamp}</p>
+                    </li>
+                    ))}
+                </ul>
+                ) : (
+                <p className="text-sm text-muted-foreground">No active customs alerts.</p>
+                )}
+            </CardContent>
+            </Card>
+        </div>
+      </div>
     </div>
   );
 }
+
+
+    

@@ -60,10 +60,10 @@ const euMemberCountryCodes = [
   'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'
 ];
 
-const EU_BLUE_COLOR = 'rgba(25, 118, 210, 0.95)'; // Norruva Primary Blue for EU countries
-const NON_EU_LAND_COLOR = 'rgba(224, 224, 224, 1)'; // A slightly darker neutral grey for non-EU land
-const BORDER_COLOR = 'rgba(100, 100, 100, 0.7)'; // Darker grey for borders for better contrast
-const LIGHT_BLUE_OCEAN_COLOR = 'rgba(210, 230, 255, 1)'; // Light blue for the ocean
+const EU_BLUE_COLOR = 'rgba(25, 118, 210, 0.95)';
+const NON_EU_LAND_COLOR = 'rgba(240, 230, 210, 1)'; // Light beige/cream
+const BORDER_COLOR = 'rgba(80, 80, 80, 0.7)'; // Darker grey for borders
+const WHITE_BACKGROUND_COLOR = 'rgba(255, 255, 255, 1)'; // White for the ocean/background
 
 
 const Legend: React.FC<{ title: string; colorMap: Record<string, string>, className?: string }> = ({ title, colorMap, className }) => (
@@ -118,6 +118,7 @@ export default function DppGlobalTrackerPage() {
 
   useEffect(() => {
     setIsClient(true);
+    // Fetch country polygons data
     fetch('//unpkg.com/world-atlas/countries-110m.json')
       .then(res => res.json())
       .then(countries => {
@@ -142,24 +143,25 @@ export default function DppGlobalTrackerPage() {
     setSelectedPoint(null);
   }, []);
 
-  const pointColorAccessor = useCallback(() => 'rgba(255, 0, 0, 0.7)', []);
-  const pointRadiusAccessor = useCallback(() => 0.25, []);
-  const arcColorAccessor = useCallback(() => 'rgba(0, 255, 0, 0.5)', []);
-  const arcStrokeAccessor = useCallback(() => 0.3, []);
+  // Simple accessors for diagnostic points/arcs
+  const pointColorAccessor = useCallback(() => 'rgba(255, 0, 0, 0.7)', []); // Red for all points
+  const pointRadiusAccessor = useCallback(() => 0.25, []); // Fixed size
+  const arcColorAccessor = useCallback(() => 'rgba(0, 255, 0, 0.5)', []); // Green for all arcs
+  const arcStrokeAccessor = useCallback(() => 0.3, []); // Fixed stroke
 
   const polygonCapColorAccessor = useCallback((feat: any) => {
     const countryCode = feat.properties?.ISO_A2 || feat.properties?.iso_a2;
     return euMemberCountryCodes.includes(countryCode) ? EU_BLUE_COLOR : NON_EU_LAND_COLOR;
   }, []);
 
-  const polygonSideColorAccessor = useCallback(() => 'rgba(0, 0, 0, 0)', []);
+  const polygonSideColorAccessor = useCallback(() => 'rgba(0, 0, 0, 0)', []); // Flat look
   const polygonStrokeColorAccessor = useCallback(() => BORDER_COLOR, []);
 
 
   const globeLegendMap = {
     "EU Member State": EU_BLUE_COLOR,
     "Non-EU Country": NON_EU_LAND_COLOR,
-    "Ocean / Background": LIGHT_BLUE_OCEAN_COLOR,
+    "Globe Background": WHITE_BACKGROUND_COLOR,
     "Country Borders": BORDER_COLOR,
   };
 
@@ -234,7 +236,7 @@ export default function DppGlobalTrackerPage() {
                     pointRadiusAccessor={pointRadiusAccessor}
                     arcColorAccessor={arcColorAccessor}
                     arcStrokeAccessor={arcStrokeAccessor}
-                    globeBackgroundColor={LIGHT_BLUE_OCEAN_COLOR}
+                    globeBackgroundColor={WHITE_BACKGROUND_COLOR}
                 />
             )}
           </div>

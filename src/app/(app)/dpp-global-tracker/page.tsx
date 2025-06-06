@@ -96,7 +96,7 @@ export interface MockShipmentPoint {
   currentLat?: number;
   currentLng?: number;
   simulationProgress?: number; // 0 to 1
-  simulatedStatus: 'in_transit' | 'at_customs' | 'customs_inspection' | 'delayed' | 'cleared';
+  simulatedStatus: 'in_transit' | 'at_customs' | 'customs_inspection' | 'delayed' | 'cleared' | 'data_sync_delayed';
   // New fields from step 1
   ceMarkingStatus: 'valid' | 'missing' | 'pending_verification';
   cbamDeclarationStatus: 'submitted' | 'required' | 'cleared';
@@ -131,6 +131,7 @@ const SHIPMENT_AT_CUSTOMS_COLOR_GLOBE = 'rgba(255, 165, 0, 0.9)';  // Orange
 const SHIPMENT_INSPECTION_COLOR_GLOBE = 'rgba(220, 53, 69, 0.9)'; // Red
 const SHIPMENT_DELAYED_COLOR_GLOBE = 'rgba(255, 193, 7, 0.9)';    // Yellow
 const SHIPMENT_CLEARED_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)';   // Green
+const SHIPMENT_DATA_SYNC_DELAYED_COLOR_GLOBE = 'rgba(108, 117, 125, 0.9)'; // Grey for data sync issues
 
 
 const initialMockPointsData: MockDppPoint[] = [
@@ -157,12 +158,12 @@ const initialMockShipmentPointsData: MockShipmentPoint[] = initialMockArcsData.m
     etaDate.setDate(etaDate.getDate() + (index + 1) * 7);
     return {
         id: arc.shipmentId,
-        lat: arc.startLat,
-        lng: arc.startLng,
+        lat: arc.startLat, 
+        lng: arc.startLng, 
         currentLat: arc.startLat,
         currentLng: arc.startLng,
-        simulationProgress: 0,
-        simulatedStatus: 'in_transit',
+        simulationProgress: 0, 
+        simulatedStatus: 'in_transit', 
         name: `Shipment ${arc.shipmentId}`,
         size: 0.15,
         direction: arc.direction,
@@ -172,7 +173,7 @@ const initialMockShipmentPointsData: MockShipmentPoint[] = initialMockArcsData.m
         dppComplianceStatusText: index % 3 === 0 ? "All DPP Data Verified" : (index % 3 === 1 ? "Pending Battery Passport" : "CBAM Declaration Missing"),
         dppComplianceBadgeVariant: index % 3 === 0 ? "default" : (index % 3 === 1 ? "outline" : "destructive"),
         eta: etaDate.toISOString().split('T')[0],
-        progressPercentage: 0,
+        progressPercentage: 0, 
         ceMarkingStatus: index % 3 === 0 ? 'valid' : (index % 3 === 1 ? 'pending_verification' : 'missing'),
         cbamDeclarationStatus: index % 2 === 0 ? 'submitted' : 'required',
         dppComplianceNotes: index % 2 === 0 ? ['Awaiting final quality check report.', 'Eco-packaging verified.'] : ['Partial component data received.'],
@@ -217,7 +218,7 @@ const Legend: React.FC<{ title: string; colorMap: Record<string, string>, classN
   </Card>
 );
 
-const DppGlobalTrackerClientContainer: React.FC<any & {isClient: boolean, globeRef: React.MutableRefObject<any | undefined> }> = ({ isClient, globeRef, ...globeProps }) => {
+const DppGlobalTrackerClientContainer: React.FC<any & {isClient: boolean }> = ({ isClient, ...globeProps }) => {
   if (!isClient) {
     return (
       <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
@@ -234,15 +235,15 @@ const DppGlobalTrackerClientContainer: React.FC<any & {isClient: boolean, globeR
           <span className="ml-2">Loading 3D Globe Visualization...</span>
         </div>
       }>
-        <GlobeVisualization globeRef={globeRef} {...globeProps} />
+        <GlobeVisualization {...globeProps} />
       </Suspense>
     </div>
   );
 };
 
 const SHIPMENTS_TO_SIMULATE = ['SH001', 'SH004'];
-const SIMULATION_INTERVAL = 2000;
-const SIMULATION_STEP = 0.02;
+const SIMULATION_INTERVAL = 2000; 
+const SIMULATION_STEP = 0.02; 
 
 export default function DppGlobalTrackerPage() {
   const [isClient, setIsClient] = useState(false);
@@ -304,63 +305,93 @@ export default function DppGlobalTrackerPage() {
             const arc = mockArcsDataState.find(a => a.id === shipment.arcId);
             if (!arc) return shipment;
 
-            let currentSimProgress = shipment.simulationProgress || 0;
-            let currentStatus = shipment.simulatedStatus;
+            let updatedShipment = { ...shipment };
+            const prevStatus = updatedShipment.simulatedStatus;
+            
+            // Simulate data sync delay randomly
+            if (Math.random() < 0.05 && updatedShipment.simulatedStatus !== 'data_sync_delayed' && updatedShipment.simulationProgress < 0.95) {
+                updatedShipment.simulatedStatus = 'data_sync_delayed';
+            } else if (updatedShipment.simulatedStatus === 'data_sync_delayed') {
+                // If it was delayed, recover to in_transit or previous logical state after one cycle
+                updatedShipment.simulatedStatus = 'in_transit'; // Simplified recovery
+            }
 
-            if (currentSimProgress >= 1) {
-              if(currentStatus !== 'cleared') {
-                currentStatus = 'cleared';
-                showShipmentToast(shipment.id, currentStatus, `Shipment ${shipment.id} has cleared customs.`);
+
+            if (updatedShipment.simulationProgress >= 1) {
+              if(updatedShipment.simulatedStatus !== 'cleared') {
+                updatedShipment.simulatedStatus = 'cleared';
+                updatedShipment.dppComplianceStatusText = "All DPP Data Verified";
+                updatedShipment.dppComplianceBadgeVariant = "default";
+                showShipmentToast(updatedShipment.id, updatedShipment.simulatedStatus, `Shipment ${updatedShipment.id} has cleared customs.`);
               }
-              return { ...shipment, lat: arc.endLat, lng: arc.endLng, progressPercentage: 100, simulatedStatus: currentStatus };
+              return { ...updatedShipment, lat: arc.endLat, lng: arc.endLng, progressPercentage: 100 };
             }
 
-            currentSimProgress += SIMULATION_STEP;
-            if (currentSimProgress > 1) currentSimProgress = 1;
-
-            const newLat = arc.startLat + (arc.endLat - arc.startLat) * currentSimProgress;
-            const newLng = arc.startLng + (arc.endLng - arc.startLng) * currentSimProgress;
-
-            const prevStatus = shipment.simulatedStatus;
-            let newStatus = prevStatus;
-
-            if (currentSimProgress >= 0.4 && currentSimProgress <= 0.7 && prevStatus === 'in_transit') {
-                newStatus = 'at_customs';
-            } else if (prevStatus === 'at_customs') {
-                if (Math.random() < 0.1) newStatus = 'customs_inspection'; // Small chance for inspection
-                else if (Math.random() < 0.05) newStatus = 'delayed'; // Smaller chance for delay
-            } else if (prevStatus === 'customs_inspection' || prevStatus === 'delayed') {
-                 // After one interval of inspection/delay, move back to at_customs or cleared if progress allows
-                 if (currentSimProgress >= 0.7) newStatus = 'cleared';
-                 else newStatus = 'at_customs';
+            if (updatedShipment.simulatedStatus !== 'data_sync_delayed') {
+                 updatedShipment.simulationProgress += SIMULATION_STEP;
             }
+           
+            if (updatedShipment.simulationProgress > 1) updatedShipment.simulationProgress = 1;
 
-            if (currentSimProgress >= 1) {
-                newStatus = 'cleared';
-            }
+            updatedShipment.lat = arc.startLat + (arc.endLat - arc.startLat) * updatedShipment.simulationProgress;
+            updatedShipment.lng = arc.startLng + (arc.endLng - arc.startLng) * updatedShipment.simulationProgress;
+            updatedShipment.progressPercentage = Math.round(updatedShipment.simulationProgress * 100);
 
-            if (newStatus !== prevStatus) {
-                let toastMessage = `Shipment ${shipment.id} is now ${newStatus.replace('_', ' ')}.`;
-                let toastVariant: 'default' | 'destructive' = 'default';
-                if (newStatus === 'delayed' || newStatus === 'customs_inspection') {
-                    toastVariant = 'destructive';
-                    toastMessage = `Alert: Shipment ${shipment.id} is ${newStatus.replace('_', ' ')}!`;
-                } else if (newStatus === 'cleared') {
-                    toastMessage = `Shipment ${shipment.id} has cleared customs.`;
+
+            // Determine status based on progress if not data_sync_delayed
+            if (updatedShipment.simulatedStatus !== 'data_sync_delayed') {
+                if (updatedShipment.simulationProgress >= 0.4 && updatedShipment.simulationProgress <= 0.7) { 
+                    if (prevStatus === 'in_transit' || prevStatus === 'data_sync_delayed') {
+                         updatedShipment.simulatedStatus = 'at_customs';
+                         // Simulate compliance data validation
+                         if (Math.random() < 0.20) { // 20% chance of a compliance issue
+                            const issues = ["Awaiting CBAM Declaration", "CE Marking Verification Pending", "Battery Passport Data Missing"];
+                            const randomIssue = issues[Math.floor(Math.random() * issues.length)];
+                            updatedShipment.dppComplianceStatusText = randomIssue;
+                            updatedShipment.dppComplianceBadgeVariant = "destructive";
+                            showShipmentToast(updatedShipment.id, "compliance_alert", `Compliance Alert: Shipment ${updatedShipment.id} - ${randomIssue}.`, "destructive");
+                         } else {
+                            updatedShipment.dppComplianceStatusText = "DPP Data Review In Progress";
+                            updatedShipment.dppComplianceBadgeVariant = "outline";
+                         }
+                    } else if (prevStatus === 'at_customs') {
+                        const randomEvent = Math.random();
+                        if (randomEvent < 0.1) updatedShipment.simulatedStatus = 'customs_inspection';
+                        else if (randomEvent < 0.15) updatedShipment.simulatedStatus = 'delayed'; 
+                    }
+                } else if (updatedShipment.simulationProgress > 0.7) { 
+                     if (prevStatus === 'customs_inspection' || prevStatus === 'delayed' || prevStatus === 'at_customs') {
+                        updatedShipment.simulatedStatus = 'cleared'; 
+                        updatedShipment.dppComplianceStatusText = "All DPP Data Verified";
+                        updatedShipment.dppComplianceBadgeVariant = "default";
+                     }
+                } else { 
+                    if(prevStatus !== 'in_transit' && prevStatus !== 'delayed' && prevStatus !== 'data_sync_delayed') {
+                        updatedShipment.simulatedStatus = 'in_transit';
+                        updatedShipment.dppComplianceStatusText = "DPP Data Verified for Transit"; // Reset compliance text
+                        updatedShipment.dppComplianceBadgeVariant = "default";
+                    }
                 }
-                showShipmentToast(shipment.id, newStatus, toastMessage, toastVariant);
+                if (updatedShipment.simulationProgress >= 1) {
+                    updatedShipment.simulatedStatus = 'cleared';
+                    updatedShipment.dppComplianceStatusText = "All DPP Data Verified";
+                    updatedShipment.dppComplianceBadgeVariant = "default";
+                }
             }
 
-            return {
-              ...shipment,
-              lat: newLat,
-              lng: newLng,
-              currentLat: newLat,
-              currentLng: newLng,
-              simulationProgress: currentSimProgress,
-              progressPercentage: Math.round(currentSimProgress * 100),
-              simulatedStatus: newStatus,
-            };
+
+            if (updatedShipment.simulatedStatus !== prevStatus && updatedShipment.simulatedStatus !== 'compliance_alert') { // Don't toast for internal 'compliance_alert'
+                let toastMessage = `Shipment ${updatedShipment.id} is now ${updatedShipment.simulatedStatus.replace('_', ' ')}.`;
+                let toastVariant: 'default' | 'destructive' = 'default';
+                if (updatedShipment.simulatedStatus === 'delayed' || updatedShipment.simulatedStatus === 'customs_inspection' || updatedShipment.simulatedStatus === 'data_sync_delayed') {
+                    toastVariant = 'destructive';
+                    toastMessage = `Alert: Shipment ${updatedShipment.id} is ${updatedShipment.simulatedStatus.replace('_', ' ')}!`;
+                } else if (updatedShipment.simulatedStatus === 'cleared') {
+                    toastMessage = `Shipment ${updatedShipment.id} has cleared customs.`;
+                }
+                showShipmentToast(updatedShipment.id, updatedShipment.simulatedStatus, toastMessage, toastVariant);
+            }
+            return updatedShipment;
           }
           return shipment;
         })
@@ -375,7 +406,7 @@ export default function DppGlobalTrackerPage() {
     const now = Date.now();
     const lastToastInfo = lastToastForShipment[shipmentId];
 
-    if (!lastToastInfo || lastToastInfo.status !== status || (now - lastToastInfo.time > 5000)) { // Avoid spamming same status, or resend if 5s passed
+    if (!lastToastInfo || lastToastInfo.status !== status || (now - lastToastInfo.time > 5000)) { 
       toast({
         title: "Shipment Update",
         description: message,
@@ -421,6 +452,7 @@ export default function DppGlobalTrackerPage() {
         case 'customs_inspection': return SHIPMENT_INSPECTION_COLOR_GLOBE;
         case 'delayed': return SHIPMENT_DELAYED_COLOR_GLOBE;
         case 'cleared': return SHIPMENT_CLEARED_COLOR_GLOBE;
+        case 'data_sync_delayed': return SHIPMENT_DATA_SYNC_DELAYED_COLOR_GLOBE;
         default: return GREY_COLOR;
       }
     } else {
@@ -495,6 +527,7 @@ export default function DppGlobalTrackerPage() {
     { value: 'customs_inspection', label: 'Customs Inspection' },
     { value: 'delayed', label: 'Delayed' },
     { value: 'cleared', label: 'Cleared' },
+    { value: 'data_sync_delayed', label: 'Data Sync Delayed'},
   ];
 
 
@@ -520,6 +553,7 @@ export default function DppGlobalTrackerPage() {
     "Shipment (Inspection)": SHIPMENT_INSPECTION_COLOR_GLOBE,
     "Shipment (Delayed)": SHIPMENT_DELAYED_COLOR_GLOBE,
     "Shipment (Cleared)": SHIPMENT_CLEARED_COLOR_GLOBE,
+    "Shipment (Data Sync Delay)": SHIPMENT_DATA_SYNC_DELAYED_COLOR_GLOBE,
     "Sea Route": `${SATURATED_BLUE} to ${VIBRANT_TEAL}`,
     "Air Route": ACCENT_PURPLE,
     "Road Route": ORANGE_COLOR,
@@ -570,7 +604,7 @@ export default function DppGlobalTrackerPage() {
 
   const handleResetGlobeView = () => {
     if (globeRefMain.current) {
-      globeRefMain.current.pointOfView({ lat: 50, lng: 15, altitude: 2.2 }, 700); // 700ms transition
+      globeRefMain.current.pointOfView({ lat: 50, lng: 15, altitude: 2.2 }, 700); 
     }
   };
 
@@ -598,7 +632,7 @@ export default function DppGlobalTrackerPage() {
           <CardDescription>Interact with the globe to explore product origins, supply chains, and compliance status across regions. Shipment simulation is active.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 items-stretch">
             <div>
               <Label htmlFor="category-filter" className="text-sm font-medium">Filter by Category (Locations)</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -662,7 +696,6 @@ export default function DppGlobalTrackerPage() {
                     globeRef={globeRefMain}
                     pointsData={combinedPointsForGlobe}
                     arcsData={filteredArcs}
-                    labelsData={[]}
                     polygonsData={countryPolygons}
                     customsCheckpointsData={mockCustomsCheckpointsDataState}
                     polygonCapColorAccessor={polygonCapColorAccessor}
@@ -747,3 +780,5 @@ export default function DppGlobalTrackerPage() {
   );
 }
 
+
+    

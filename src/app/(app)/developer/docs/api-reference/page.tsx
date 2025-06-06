@@ -1,7 +1,8 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Server, FileJson, KeyRound, Info, BookText, Send } from "lucide-react"; // Added Send icon for POST
+import { Badge } from "@/components/ui/badge"; // Added Badge
+import { Server, FileJson, KeyRound, Info, BookText } from "lucide-react"; 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MOCK_DPPS } from "@/types/dpp"; 
@@ -14,7 +15,7 @@ export default function ApiReferencePage() {
     productName: MOCK_DPPS[0].productName,
     category: MOCK_DPPS[0].category,
     manufacturer: MOCK_DPPS[0].manufacturer?.name || "N/A",
-    verificationStatus: "valid_dpp_found",
+    verificationStatus: "valid_dpp_found", // Example status
     dppUrl: `/passport/${MOCK_DPPS[0].id}`, 
     ebsiCompliance: {
       status: MOCK_DPPS[0].ebsiVerification?.status || "unknown",
@@ -93,7 +94,7 @@ export default function ApiReferencePage() {
             <CardTitle className="text-lg">Retrieve a Digital Product Passport</CardTitle>
             <CardDescription>
               <span className="inline-flex items-center font-mono text-sm">
-                <Badge variant="outline" className="bg-sky-100 text-sky-700 border-sky-300 mr-2">GET</Badge>
+                <Badge variant="outline" className="bg-sky-100 text-sky-700 border-sky-300 mr-2 font-semibold">GET</Badge>
                 <code className="bg-muted px-1 py-0.5 rounded-sm">/dpp/{'{productId}'}</code>
               </span>
               <br/>
@@ -137,7 +138,7 @@ export default function ApiReferencePage() {
             <CardTitle className="text-lg">Validate QR Code & Retrieve DPP Summary</CardTitle>
             <CardDescription>
               <span className="inline-flex items-center font-mono text-sm">
-                <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2">POST</Badge> 
+                <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge> 
                 <code className="bg-muted px-1 py-0.5 rounded-sm">/qr/validate</code>
               </span>
               <br/>

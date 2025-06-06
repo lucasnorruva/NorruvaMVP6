@@ -4,9 +4,9 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, Package2, MapPin, Route } from "lucide-react";
+import { X, Package2, MapPin, Route, QrCode } from "lucide-react"; // Added QrCode
 import type { MockShipmentPoint } from '@/app/(app)/dpp-global-tracker/page'; 
-import { cn } from '@/lib/utils';
+import { useToast } from "@/hooks/use-toast"; // Added useToast
 
 interface ShipmentInfoCardProps {
   shipmentData: MockShipmentPoint;
@@ -23,6 +23,16 @@ const formatDirection = (direction: MockShipmentPoint['direction']) => {
 };
 
 export default function ShipmentInfoCard({ shipmentData, onClose }: ShipmentInfoCardProps) {
+  const { toast } = useToast(); // Initialize toast
+
+  const handleMockQrClick = () => {
+    toast({
+      title: "Shipment DPP (Mock)",
+      description: `Mock: QR code link for Shipment ID ${shipmentData.id} would be presented here, linking to its detailed DPP.`,
+      duration: 5000,
+    });
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
       <Card className="w-full max-w-md shadow-2xl animate-in fade-in-50 zoom-in-90 duration-300">
@@ -54,8 +64,12 @@ export default function ShipmentInfoCard({ shipmentData, onClose }: ShipmentInfo
           <p className="text-xs text-muted-foreground mt-2">Shipment ID: {shipmentData.id}</p>
           <p className="text-xs text-muted-foreground">Associated Arc ID: {shipmentData.arcId}</p>
           
-          <div className="pt-3 border-t border-border">
-             <p className="text-xs text-muted-foreground">This card shows basic information for a shipment. More details (product info, compliance, QR) will be added in subsequent tasks.</p>
+          <div className="pt-3 border-t border-border space-y-2">
+            <Button className="w-full" variant="outline" onClick={handleMockQrClick}>
+                <QrCode className="mr-2 h-4 w-4" />
+                View Shipment DPP (QR Mock)
+            </Button>
+            <p className="text-xs text-muted-foreground">This card shows basic information for a shipment. More details (product info, compliance, QR) will be added in subsequent tasks.</p>
           </div>
         </CardContent>
       </Card>

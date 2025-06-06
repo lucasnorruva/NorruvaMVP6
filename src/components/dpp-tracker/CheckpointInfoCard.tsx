@@ -4,10 +4,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, MapPin, Ship, Plane, Building2 as LandBorderIcon, Package, ShieldCheck, ShieldAlert, ShieldQuestion, Info, FileText } from "lucide-react";
+import { X, MapPin, Ship, Plane, Building2 as LandBorderIcon, Package, ShieldCheck, ShieldAlert, ShieldQuestion, Info, FileText, QrCode } from "lucide-react"; // Added QrCode
 import { type MockCustomsCheckpoint } from '@/app/(app)/dpp-global-tracker/page'; 
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from "@/hooks/use-toast"; // Added useToast
 
 interface CheckpointInfoCardProps {
   checkpointData: MockCustomsCheckpoint;
@@ -15,6 +16,7 @@ interface CheckpointInfoCardProps {
 }
 
 export default function CheckpointInfoCard({ checkpointData, onClose }: CheckpointInfoCardProps) {
+  const { toast } = useToast(); // Initialize toast
   
   const getCheckpointIcon = (type: MockCustomsCheckpoint['type']) => {
     switch (type) {
@@ -53,6 +55,14 @@ export default function CheckpointInfoCard({ checkpointData, onClose }: Checkpoi
     }
   };
 
+  const handleMockQrClick = () => {
+    toast({
+      title: "Shipment DPPs (Mock)",
+      description: `Mock: Access to QR codes for individual shipments passing through ${checkpointData.name} would be provided here.`,
+      duration: 5000,
+    });
+  };
+
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
@@ -85,7 +95,11 @@ export default function CheckpointInfoCard({ checkpointData, onClose }: Checkpoi
             {getDppComplianceHealthBadge(checkpointData.dppComplianceHealth)}
           </div>
           
-          <div className="pt-3 mt-2 border-t border-border">
+          <div className="pt-3 mt-2 border-t border-border space-y-2">
+            <Button className="w-full" variant="outline" onClick={handleMockQrClick}>
+                <QrCode className="mr-2 h-4 w-4" />
+                View Shipment DPP QR Codes (Mock)
+            </Button>
             <p className="text-xs text-muted-foreground">
               This card shows an operational and aggregated DPP compliance overview for the selected customs checkpoint. 
               Individual shipment DPP details would be accessible via QR codes in a full system.
@@ -96,4 +110,3 @@ export default function CheckpointInfoCard({ checkpointData, onClose }: Checkpoi
     </div>
   );
 }
-

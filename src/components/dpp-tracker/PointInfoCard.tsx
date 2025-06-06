@@ -4,10 +4,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, ExternalLink } from "lucide-react";
-import { type MockDppPoint } from '@/app/(app)/dpp-global-tracker/page'; // Import the type
+import { X, ExternalLink, QrCode } from "lucide-react"; // Added QrCode icon
+import type { MockDppPoint } from '@/app/(app)/dpp-global-tracker/page';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
+import { useToast } from "@/hooks/use-toast"; // Added useToast
 
 interface PointInfoCardProps {
   pointData: MockDppPoint;
@@ -15,11 +16,20 @@ interface PointInfoCardProps {
 }
 
 export default function PointInfoCard({ pointData, onClose }: PointInfoCardProps) {
-  
+  const { toast } = useToast(); // Initialize toast
+
   let statusColorClass = "text-muted-foreground";
   if (pointData.status === 'compliant') statusColorClass = "text-green-600";
   else if (pointData.status === 'pending') statusColorClass = "text-yellow-600";
   else if (pointData.status === 'issue') statusColorClass = "text-red-600";
+
+  const handleMockQrClick = () => {
+    toast({
+      title: "QR Code Access (Mock)",
+      description: `Mock: QR code link for Product ID ${pointData.id} would be presented here, linking to its detailed DPP.`,
+      duration: 5000,
+    });
+  };
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
@@ -41,13 +51,17 @@ export default function PointInfoCard({ pointData, onClose }: PointInfoCardProps
           {pointData.complianceSummary && <p><strong>Compliance Note:</strong> {pointData.complianceSummary}</p>}
           {pointData.id && <p className="text-xs text-muted-foreground mt-2">Product System ID: {pointData.id}</p>}
           
-          <div className="pt-3 border-t border-border">
+          <div className="pt-3 border-t border-border space-y-2">
             <Link href={`/products/${pointData.id}`} passHref>
-              <Button className="w-full mt-2" variant="outline">
+              <Button className="w-full" variant="outline">
                 <ExternalLink className="mr-2 h-4 w-4" />
-                View Full Passport
+                View Full Passport Details
               </Button>
             </Link>
+            <Button className="w-full" variant="outline" onClick={handleMockQrClick}>
+              <QrCode className="mr-2 h-4 w-4" />
+              View Product DPP (QR Mock)
+            </Button>
           </div>
         </CardContent>
       </Card>

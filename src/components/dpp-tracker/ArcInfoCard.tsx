@@ -4,10 +4,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, ExternalLink, GitBranch, Anchor, Ship, Plane, Truck, Train } from "lucide-react";
+import { X, ExternalLink, GitBranch, Ship, Plane, Truck, Train, QrCode } from "lucide-react"; // Added QrCode
 import type { MockArc } from '@/app/(app)/dpp-global-tracker/page';
 import Link from 'next/link';
-import { cn } from '@/lib/utils';
+import { useToast } from "@/hooks/use-toast"; // Added useToast
 
 interface ArcInfoCardProps {
   arcData: MockArc;
@@ -25,6 +25,16 @@ const getTransportIcon = (transportMode?: MockArc['transportMode']) => {
 };
 
 export default function ArcInfoCard({ arcData, onClose }: ArcInfoCardProps) {
+  const { toast } = useToast(); // Initialize toast
+
+  const handleMockQrClick = () => {
+    toast({
+      title: "QR Code Access (Mock)",
+      description: `Mock: QR code link for Product ID ${arcData.productId} associated with this arc would be presented here.`,
+      duration: 5000,
+    });
+  };
+
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50 p-4 backdrop-blur-sm">
       <Card className="w-full max-w-md shadow-2xl animate-in fade-in-50 zoom-in-90 duration-300">
@@ -53,19 +63,25 @@ export default function ArcInfoCard({ arcData, onClose }: ArcInfoCardProps) {
             </p>
           )}
           <p><strong>Timestamp (Year):</strong> {arcData.timestamp}</p>
-          {arcData.productId && (
-            <p>
-              <strong>Associated Product ID:</strong> 
-              <Link href={`/products/${arcData.productId}`} passHref>
-                <Button variant="link" className="p-0 h-auto ml-1 text-primary hover:underline">
-                  {arcData.productId} <ExternalLink className="ml-1 h-3 w-3" />
-                </Button>
-              </Link>
-            </p>
-          )}
           
-          <div className="pt-3 border-t border-border">
-            <p className="text-xs text-muted-foreground">This card shows information about a specific connection or movement in the supply chain represented on the globe.</p>
+          <div className="pt-3 border-t border-border space-y-2">
+            {arcData.productId && (
+              <>
+                <p>
+                  <strong>Associated Product ID:</strong> 
+                  <Link href={`/products/${arcData.productId}`} passHref>
+                    <Button variant="link" className="p-0 h-auto ml-1 text-primary hover:underline">
+                      {arcData.productId} <ExternalLink className="ml-1 h-3 w-3" />
+                    </Button>
+                  </Link>
+                </p>
+                <Button className="w-full" variant="outline" onClick={handleMockQrClick}>
+                  <QrCode className="mr-2 h-4 w-4" />
+                  View Product DPP (QR Mock)
+                </Button>
+              </>
+            )}
+            <p className="text-xs text-muted-foreground">This card shows information about a specific connection or movement in the supply chain.</p>
           </div>
         </CardContent>
       </Card>

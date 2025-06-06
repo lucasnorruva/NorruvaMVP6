@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight, Sparkles, Copy as CopyIcon, ImagePlus, ImageIcon, CheckSquare } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight, Sparkles, Copy as CopyIcon, ImagePlus, ImageIcon, CheckSquare, Send } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -365,6 +365,23 @@ interface DppCompletenessResult {
   sections: SectionCompleteness[];
 }
 
+// Helper to determine new origin status
+const determineOrigin = (
+  currentValue: any,
+  previousValue: any,
+  previousOrigin: 'AI_EXTRACTED' | 'manual' | undefined
+): 'AI_EXTRACTED' | 'manual' | undefined => {
+  if (String(currentValue) !== String(previousValue)) { 
+    if ( (previousValue !== undefined && previousValue !== null && String(previousValue).trim() !== "") && (currentValue === "" || currentValue === null || currentValue === undefined) ) {
+        return 'manual'; 
+    }
+    if (currentValue !== "" && currentValue !== null && currentValue !== undefined) {
+        return 'manual'; 
+    }
+  }
+  return previousOrigin; 
+};
+
 
 const ESSENTIAL_FIELDS_CONFIG: FieldConfig[] = [
   { key: 'productName', label: 'Product Name', section: 'Basic Info' },
@@ -415,7 +432,6 @@ const calculateDppCompleteness = (product: MockProductType): DppCompletenessResu
       }
     }
     
-    // Special handling for battery section based on product category OR if battery data is present
     if (fieldConfig.section === 'Battery') {
         const isBatteryRelevantCategory = product.category?.toLowerCase().includes('electronics') || product.category?.toLowerCase().includes('automotive parts') || product.category?.toLowerCase().includes('battery');
         const hasSomeBatteryData = product.batteryChemistry || product.stateOfHealth !== undefined || product.carbonFootprintManufacturing !== undefined || product.recycledContentPercentage !== undefined;
@@ -451,12 +467,12 @@ const calculateDppCompleteness = (product: MockProductType): DppCompletenessResu
   });
 
   const sectionsArray: SectionCompleteness[] = (Object.keys(sectionsData) as DppSectionName[])
-    .filter(sectionName => sectionsData[sectionName].total > 0) // Only include sections with applicable fields
+    .filter(sectionName => sectionsData[sectionName].total > 0) 
     .map(sectionName => {
         const section = sectionsData[sectionName];
         return {
             sectionName,
-            score: section.total > 0 ? Math.round((section.filled / section.total) * 100) : 100, // Score 100 if no fields applicable to section or all filled
+            score: section.total > 0 ? Math.round((section.filled / section.total) * 100) : 100, 
             filledFields: section.filled,
             totalFields: section.total,
             missingFieldsInSection: section.missing,
@@ -471,27 +487,6 @@ const calculateDppCompleteness = (product: MockProductType): DppCompletenessResu
     overallTotalFields: overallTotalApplicable,
     sections: sectionsArray,
   };
-};
-
-
-// Helper to determine new origin status
-const determineOrigin = (
-  currentValue: any,
-  previousValue: any,
-  previousOrigin: 'AI_EXTRACTED' | 'manual' | undefined
-): 'AI_EXTRACTED' | 'manual' | undefined => {
-   // If user clears a field that had a value, it's a manual action.
-   // If a field was empty and user provides a value, it's manual.
-   // If a field had a value and user changes it to another non-empty value, it's manual.
-  if (String(currentValue) !== String(previousValue)) { // Compare as strings to handle undefined/null/empty variations
-    if ( (previousValue !== undefined && previousValue !== null && String(previousValue).trim() !== "") && (currentValue === "" || currentValue === null || currentValue === undefined) ) {
-        return 'manual'; // User cleared an existing field
-    }
-    if (currentValue !== "" && currentValue !== null && currentValue !== undefined) {
-        return 'manual'; // User provided or changed a value
-    }
-  }
-  return previousOrigin; // Otherwise, preserve initial origin
 };
 
 
@@ -779,7 +774,7 @@ export default function ProductDetailPage() {
 
   const handleProductFormSubmit = async (formDataFromForm: ProductFormData) => {
     if (!product) return;
-    setIsEditing(true); // Visually, though the state `isEditing` toggles the form display
+    setIsEditing(true); 
 
     try {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
@@ -788,8 +783,6 @@ export default function ProductDetailPage() {
 
       if (productIndex > -1) {
         const currentStoredProduct = userProducts[productIndex];
-        // initialProductDataForEdit holds the state of the product *before* this current edit session started.
-        // This is crucial for determining which fields the user actually changed vs. what was pre-filled by AI or previous edits.
         const productDataBeforeThisEditSession = initialProductDataForEdit;
 
 
@@ -871,7 +864,6 @@ export default function ProductDetailPage() {
           };
           return displayProduct;
         });
-        // After successful save, the new data becomes the baseline for the next edit session.
         setInitialProductDataForEdit({
             productName: updatedProductData.productName,
             productNameOrigin: updatedProductData.productNameOrigin,
@@ -997,9 +989,9 @@ export default function ProductDetailPage() {
   const handleMockVerifyDocument = async (regulationKey: string) => {
     if (!product) return;
     setVerifyingRegulationKey(regulationKey);
-    await new Promise(resolve => setTimeout(resolve, 1200)); // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1200)); 
 
-    const success = Math.random() > 0.2; // 80% chance of success
+    const success = Math.random() > 0.2; 
 
     setProduct(prevProduct => {
       if (!prevProduct) return null;
@@ -1007,7 +999,7 @@ export default function ProductDetailPage() {
       if (updatedComplianceData[regulationKey]) {
         updatedComplianceData[regulationKey] = {
           ...updatedComplianceData[regulationKey],
-          isVerified: success ? !updatedComplianceData[regulationKey].isVerified : false, // Toggle on success, false on failure
+          isVerified: success ? !updatedComplianceData[regulationKey].isVerified : false, 
           lastChecked: new Date().toISOString(),
         };
       }
@@ -1026,6 +1018,14 @@ export default function ProductDetailPage() {
     setVerifyingRegulationKey(null);
   };
 
+  const handleRequestDataFromSupplier = (fieldName: string) => {
+    toast({
+      title: "Mock Data Request Sent",
+      description: `A mock request for "${fieldName}" has been 'sent' to the supplier.`,
+      variant: "default"
+    });
+  };
+
 
   if (product === undefined) { return <ProductDetailSkeleton />; }
   if (!product) { notFound(); return null; }
@@ -1041,6 +1041,13 @@ export default function ProductDetailPage() {
   const canGenerateImage = (currentRole === 'admin' || currentRole === 'manufacturer');
   const canSuggestClaims = currentRole === 'admin' || currentRole === 'manufacturer';
   const canVerifyDocuments = currentRole === 'admin' || currentRole === 'verifier';
+  const canRequestSupplierData = currentRole === 'admin' || currentRole === 'manufacturer';
+
+  const isMaterialsMissing = !product.materials || product.materials.trim() === "" || product.materials.toLowerCase() === "not specified" || product.materials.toLowerCase() === "n/a";
+  const isSpecificationsMissing = !product.specifications || (typeof product.specifications === 'string' && (product.specifications.trim() === "" || product.specifications.trim() === "{}")) || (typeof product.specifications === 'object' && Object.keys(product.specifications).length === 0);
+  const isBatteryChemistryMissing = !product.batteryChemistry || product.batteryChemistry.trim() === "" || product.batteryChemistry.toLowerCase() === "n/a";
+  const isRelevantForBatterySupplierRequest = hasBatteryData && isBatteryChemistryMissing;
+
 
   return (
 
@@ -1087,7 +1094,7 @@ export default function ProductDetailPage() {
            {isEditing && (
             <>
               <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} className="bg-destructive/10 text-destructive hover:bg-destructive/20">Cancel Edit</Button>
-              <Button form="product-form-in-detail-page" type="submit" size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={isCheckingCompliance || isSyncingEprel || isGeneratingImage}> Save Changes </Button>
+              <Button form="product-form-in-detail-page" type="submit" size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={isCheckingCompliance || isSyncingEprel || isGeneratingImage || isSuggestingClaims}> Save Changes </Button>
             </>
            )}
           <Link href={`/passport/${product.productId}`} passHref target="_blank"> <Button variant="outline"> <ExternalLink className="mr-2 h-4 w-4" /> View Public Passport </Button> </Link>
@@ -1266,7 +1273,14 @@ export default function ProductDetailPage() {
                                 </div>
                             ))
                         ) : (
-                            <p className="text-sm text-muted-foreground">No specifications provided.</p>
+                          <div className="text-sm text-muted-foreground">
+                            No specifications provided.
+                            {canRequestSupplierData && isSpecificationsMissing && (
+                              <Button variant="link" size="sm" className="p-0 h-auto text-primary hover:underline ml-2" onClick={() => handleRequestDataFromSupplier("Specifications")}>
+                                <Send className="mr-1 h-3 w-3"/> Request Data (Mock)
+                              </Button>
+                            )}
+                          </div>
                         )}
                       </AccordionContent>
                     </AccordionItem>
@@ -1279,11 +1293,14 @@ export default function ProductDetailPage() {
               <TabsContent value="battery" className="mt-4">
                 <Card> <CardHeader> <CardTitle className="flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-primary" />EU Battery Passport Information</CardTitle> <CardDescription>Key data points relevant to the EU Battery Regulation.</CardDescription> </CardHeader>
                   <CardContent className="space-y-3">
-                    {product.batteryChemistry && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Battery Chemistry <DataOriginIcon origin={product.batteryChemistryOrigin} /></span> <span className="text-muted-foreground">{product.batteryChemistry}</span> </div> )}
+                    {product.batteryChemistry ? ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Battery Chemistry <DataOriginIcon origin={product.batteryChemistryOrigin} /></span> <span className="text-muted-foreground">{product.batteryChemistry}</span> </div> )
+                      : (canRequestSupplierData && <div className="text-sm text-muted-foreground">Battery Chemistry: N/A <Button variant="link" size="sm" className="p-0 h-auto text-primary hover:underline ml-1" onClick={() => handleRequestDataFromSupplier("Battery Chemistry")}><Send className="mr-1 h-3 w-3"/>Request Data</Button></div> )
+                    }
                     {product.stateOfHealth !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">State of Health (SoH) <DataOriginIcon origin={product.stateOfHealthOrigin} /></span> <span className="text-muted-foreground">{product.stateOfHealth}%</span> </div> )}
                     {product.carbonFootprintManufacturing !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Manufacturing Carbon Footprint <DataOriginIcon origin={product.carbonFootprintManufacturingOrigin} /></span> <span className="text-muted-foreground">{product.carbonFootprintManufacturing} kg CO₂e</span> </div> )}
                     {product.recycledContentPercentage !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Recycled Content <DataOriginIcon origin={product.recycledContentPercentageOrigin} /></span> <span className="text-muted-foreground">{product.recycledContentPercentage}%</span> </div> )}
-                    {!product.batteryChemistry && product.stateOfHealth === undefined && product.carbonFootprintManufacturing === undefined && product.recycledContentPercentage === undefined && (
+                    
+                    {!isRelevantForBatterySupplierRequest && !product.batteryChemistry && product.stateOfHealth === undefined && product.carbonFootprintManufacturing === undefined && product.recycledContentPercentage === undefined && (
                         <p className="text-sm text-muted-foreground">No battery-specific information provided for this product.</p>
                     )}
                     <p className="text-xs text-muted-foreground pt-2">Additional battery passport information such as performance, durability, and detailed material composition would be displayed here as available.</p>
@@ -1440,6 +1457,14 @@ export default function ProductDetailPage() {
                     {product.materialComposition && product.materialComposition.length > 0 && ( <Card className="shadow-sm"> <CardHeader> <CardTitle className="text-lg flex items-center"><Leaf className="mr-2 h-4 w-4 text-green-500" />Material Composition</CardTitle> </CardHeader> <CardContent> <ChartContainer config={chartConfig} className="aspect-square h-[250px] w-full"> <ResponsiveContainer width="100%" height="100%"> <PieChart> <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} /> <Pie data={product.materialComposition} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => { const RADIAN = Math.PI / 180; const radius = innerRadius + (outerRadius - innerRadius) * 0.5; const x = cx + radius * Math.cos(-midAngle * RADIAN); const y = cy + radius * Math.sin(-midAngle * RADIAN); return ( <text x={x} y={y} fill="hsl(var(--primary-foreground))" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-medium"> {`${(percent * 100).toFixed(0)}%`} </text> ); }}> {product.materialComposition.map((entry, index) => ( <Cell key={`cell-${index}`} fill={entry.fill} className={cn("stroke-background focus:outline-none", entry.fill.startsWith("hsl") ? "" : entry.fill)} /> ))} </Pie> <ChartLegend content={<ChartLegendContent nameKey="name" />} className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center" /> </PieChart> </ResponsiveContainer> </ChartContainer> </CardContent> </Card> )}
                     {product.historicalCarbonFootprint && product.historicalCarbonFootprint.length > 0 && ( <Card className="shadow-sm"> <CardHeader> <CardTitle className="text-lg flex items-center"><BarChart3 className="mr-2 h-4 w-4 text-red-500" />Carbon Footprint Trend</CardTitle> <CardDescription> (kg CO₂e over time)</CardDescription> </CardHeader> <CardContent> <ChartContainer config={chartConfig} className="aspect-video h-[250px] w-full"> <ResponsiveContainer width="100%" height="100%"> <LineChart data={product.historicalCarbonFootprint} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}> <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /> <XAxis dataKey="year" stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} dy={5} /> <YAxis stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} /> <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} /> <Line type="monotone" dataKey="value" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ fill: "hsl(var(--chart-1))", r:4 }} activeDot={{r:6}} name="kg CO₂e" /> </LineChart> </ResponsiveContainer> </ChartContainer> </CardContent> </Card> )}
                   </div>
+                   <div className="text-sm text-muted-foreground">
+                      <strong>Materials:</strong> {product.materials || "N/A"} <DataOriginIcon origin={product.materialsOrigin} />
+                      {canRequestSupplierData && isMaterialsMissing && (
+                        <Button variant="link" size="sm" className="p-0 h-auto text-primary hover:underline ml-2" onClick={() => handleRequestDataFromSupplier("Materials")}>
+                          <Send className="mr-1 h-3 w-3"/> Request Data (Mock)
+                        </Button>
+                      )}
+                    </div>
                   <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t">
                     {product.waterUsage && ( <Card className="bg-muted/50 p-4"> <CardTitle className="text-sm font-medium flex items-center text-foreground/80 mb-1"><Droplet className="mr-2 h-4 w-4 text-blue-500"/>Water Usage</CardTitle> <p className="text-2xl font-bold">{product.waterUsage.value} <span className="text-sm font-normal text-muted-foreground">{product.waterUsage.unit}</span></p> {product.waterUsage.trend && <p className={cn("text-xs", product.waterUsage.trend === 'down' ? 'text-green-600' : 'text-red-600')}>{product.waterUsage.trendValue} vs last period</p>} </Card> )}
                     {product.recyclabilityScore && ( <Card className="bg-muted/50 p-4"> <CardTitle className="text-sm font-medium flex items-center text-foreground/80 mb-1"><Recycle className="mr-2 h-4 w-4 text-green-600"/>Recyclability Score</CardTitle> <p className="text-2xl font-bold">{product.recyclabilityScore.value}<span className="text-sm font-normal text-muted-foreground">{product.recyclabilityScore.unit}</span></p> <p className="text-xs text-muted-foreground">Based on material & design</p> </Card> )}
@@ -1496,7 +1521,7 @@ function ProductDetailSkeleton() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"> <div> <Skeleton className="h-10 w-3/4 mb-2" /> <Skeleton className="h-6 w-1/2" /> </div> <div className="flex gap-2"> <Skeleton className="h-10 w-40" /> </div> </div>
-      <Skeleton className="h-12 w-full md:w-2/3" /> {/* Tabs Skeleton */}
+      <Skeleton className="h-12 w-full md:w-2/3" /> 
       <div className="grid md:grid-cols-3 gap-6 mt-4">
         <Card className="md:col-span-2 shadow-lg">
             <CardHeader><Skeleton className="h-8 w-1/2" /></CardHeader>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } from 'react';
@@ -120,7 +121,7 @@ const GREY_COLOR = 'rgba(128, 128, 128, 0.8)';
 const EU_BLUE_COLOR = 'rgba(0, 80, 150, 0.95)';
 const NON_EU_LAND_COLOR_LIGHT_BLUE = 'rgba(173, 216, 230, 0.95)';
 const BORDER_COLOR_MEDIUM_BLUE = 'rgba(70, 130, 180, 0.7)';
-const WHITE_BACKGROUND_COLOR = 'rgba(255, 255, 255, 1)';
+const GLOBE_BACKGROUND_COLOR = 'rgba(0,0,0,0)'; // Changed from WHITE_BACKGROUND_COLOR
 
 export const DPP_HEALTH_GOOD_COLOR = 'rgba(76, 175, 80, 0.9)';
 export const DPP_HEALTH_FAIR_COLOR = 'rgba(255, 235, 59, 0.9)';
@@ -321,8 +322,8 @@ export default function DppGlobalTrackerPage() {
     const now = Date.now();
     setLastToastForShipment(prev => {
         const lastToastInfo = prev[shipmentId];
-        if (!lastToastInfo || lastToastInfo.status !== status || (now - lastToastInfo.time > 5000)) { // Only toast if status changed or enough time passed
-            setTimeout(() => { // Defer toast to next tick
+        if (!lastToastInfo || lastToastInfo.status !== status || (now - lastToastInfo.time > 5000)) {
+            setTimeout(() => { 
                 toast({ title: "Shipment Update", description: message, variant: variant });
             }, 0);
             return { ...prev, [shipmentId]: { status, time: now } };
@@ -500,7 +501,7 @@ export default function DppGlobalTrackerPage() {
 
 
   const pointColorAccessor = useCallback((point: MockDppPoint | MockShipmentPoint) => {
-    if ('simulatedStatus' in point && point.simulatedStatus) { // Check if it's a MockShipmentPoint
+    if ('simulatedStatus' in point && point.simulatedStatus) { 
       const shipment = point as MockShipmentPoint;
       switch (shipment.simulatedStatus) {
         case 'in_transit': return SHIPMENT_IN_TRANSIT_COLOR_GLOBE;
@@ -511,9 +512,9 @@ export default function DppGlobalTrackerPage() {
         case 'data_sync_delayed': return SHIPMENT_DATA_SYNC_DELAYED_COLOR_GLOBE;
         default: return GREY_COLOR;
       }
-    } else { // It's a MockDppPoint
+    } else { 
       const dppPoint = point as MockDppPoint;
-      if (dppPoint.icon) return 'rgba(0,0,0,0)'; // Transparent if icon is used (though icons aren't rendered as simple points)
+      if (dppPoint.icon) return 'rgba(0,0,0,0)'; 
       switch (dppPoint.category) {
         case 'Electronics': return SATURATED_BLUE;
         case 'Appliances': return VIBRANT_TEAL;
@@ -538,21 +539,21 @@ export default function DppGlobalTrackerPage() {
 
 
   const pointRadiusAccessor = useCallback((point: MockDppPoint | MockShipmentPoint) => {
-    if ('simulatedStatus' in point && point.simulatedStatus) { // It's a MockShipmentPoint
-      return 0.12; // Slightly smaller fixed size for shipment markers
-    } else { // It's a MockDppPoint
+    if ('simulatedStatus' in point && point.simulatedStatus) { 
+      return 0.12; 
+    } else { 
        const dppPoint = point as MockDppPoint;
-      return dppPoint.size * 0.8 + 0.1; // Original logic for DPP points
+      return dppPoint.size * 0.8 + 0.1; 
     }
   }, []);
 
   const handlePointClick = useCallback((point: MockDppPoint | MockShipmentPoint) => {
-    if ('simulatedStatus' in point && point.simulatedStatus) { // It's a MockShipmentPoint
+    if ('simulatedStatus' in point && point.simulatedStatus) { 
       setSelectedShipment(point as MockShipmentPoint);
       setSelectedPoint(null);
       setSelectedArc(null);
       setSelectedCheckpoint(null);
-    } else { // It's a MockDppPoint
+    } else { 
       setSelectedPoint(point as MockDppPoint);
       setSelectedShipment(null);
       setSelectedArc(null);
@@ -602,7 +603,7 @@ export default function DppGlobalTrackerPage() {
     "EU Member State": EU_BLUE_COLOR,
     "Non-EU Country": NON_EU_LAND_COLOR_LIGHT_BLUE,
     "Country Borders": BORDER_COLOR_MEDIUM_BLUE,
-    "Globe Background": WHITE_BACKGROUND_COLOR,
+    "Globe Background": GLOBE_BACKGROUND_COLOR, // Updated to new constant
     "Checkpoint (DPP Good/Green 'G')": DPP_HEALTH_GOOD_COLOR, 
     "Checkpoint (DPP Fair/Yellow 'F')": DPP_HEALTH_FAIR_COLOR, 
     "Checkpoint (DPP Poor/Red 'P')": DPP_HEALTH_POOR_COLOR, 
@@ -873,7 +874,8 @@ export default function DppGlobalTrackerPage() {
                         pointRadiusAccessor={pointRadiusAccessor}
                         arcColorAccessor={arcColorAccessor}
                         arcStrokeAccessor={(arc: MockArc) => (arc.stroke || 0.2) + (arc.productId ? 0.1 : 0)}
-                        globeBackgroundColor={WHITE_BACKGROUND_COLOR}
+                        globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+                        globeBackgroundColor={GLOBE_BACKGROUND_COLOR}
                     />
                 )}
                 </Suspense>
@@ -946,3 +948,4 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
+

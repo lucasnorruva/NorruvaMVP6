@@ -18,7 +18,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import ProductForm, { type ProductFormData } from "@/components/products/ProductForm";
 
 import ProductLifecycleFlowchart, { type LifecyclePhase } from '@/components/products/ProductLifecycleFlowchart';
-import OverallProductCompliance, { type OverallComplianceData, type ProductNotification as OverallProductNotification, type ComplianceStatus } from '@/components/products/OverallProductCompliance';
+import OverallProductCompliance, { type OverallComplianceData, type ProductNotification as OverallProductNotificationType, type ComplianceStatus } from '@/components/products/OverallProductCompliance'; // Renamed import
 import ProductAlerts, { type ProductNotification } from '@/components/products/ProductAlerts';
 
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
@@ -29,7 +29,7 @@ import { checkProductCompliance } from '@/ai/flows/check-product-compliance-flow
 import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow';
 import type { InitialProductFormData } from '@/app/(app)/products/new/page';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
+import { generateProductImage } from "@/ai/flows/generate-product-image-flow.ts";
 import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow";
 
 
@@ -117,7 +117,7 @@ export interface MockProductType {
   recycledContentPercentageOrigin?: InitialProductFormData['recycledContentPercentageOrigin'];
 
   currentLifecyclePhaseIndex: number;
-  lifecyclePhases: LifecyclePhase[];
+  lifecyclePhases: LifecyclePhase[]; // Uses imported LifecyclePhase
   overallCompliance: OverallComplianceData;
   notifications: ProductNotification[];
   verificationLog: VerificationLogEntry[];
@@ -173,9 +173,9 @@ const MOCK_PRODUCTS: MockProductType[] = [
     dppAnchorTransactionHash: "0x123mainanchor789xyzabc001",
     currentLifecyclePhaseIndex: 2,
     lifecyclePhases: [
-      { id: "lc001", name: "Raw Materials", icon: PackageSearch, status: 'completed', timestamp: "2023-12-01T10:00:00Z", location: "Verified Suppliers Network", details: "Sourcing of certified recycled steel and bio-polymers. Supplier compliance data (e.g., REACH for raw materials) recorded and verified. Quality control data recorded; triggers manufacturing completion.", complianceMetrics: [{ name: "Supplier Ethical Audit", status: "compliant", reportLink: "#" }, { name: "Material Origin Traceability", status: "compliant"}], sustainabilityMetrics: [{ name: "Recycled Content Input", value: 75, unit: "%", targetValue: 70 }, { name: "Conflict Minerals Free", status: "compliant"}] },
-      { id: "lc002", name: "Manufacturing", icon: Factory, status: 'completed', timestamp: "2024-01-15T08:00:00Z", location: "EcoFactory, Germany", details: "Assembly at EcoFactory. Production batch #PB789 logged. Energy & waste data captured for sustainability reporting. End-of-line quality checks passed, triggers blockchain anchor for manufacturing completion.", complianceMetrics: [{ name: "ISO 14001 Certification", status: "compliant", reportLink: "#" }, { name: "Factory Safety Standards", status: "compliant"}], sustainabilityMetrics: [{ name: "Energy Used", value: 50, unit: "kWh/unit", targetValue: 55 }, { name: "Waste Generated", value: 2, unit: "kg/unit", targetValue: 3 }, {name: "Water Usage", value: 15, unit: "L/unit", targetValue: 20}] },
-      { id: "lc003", name: "Distribution", icon: Truck, status: 'in_progress', timestamp: "2024-01-20T14:00:00Z", location: "Global Logistics Network", details: "Shipping to distribution centers via low-emission freight. Container #C0N741N3R. Carbon offset calculation in progress based on transport data. Customs declaration prep triggered.", complianceMetrics: [{ name: "Carbon Offset Cert.", status: "pending_review", reportLink: "#" }, { name: "Customs Compliance (EU)", status: "compliant"}], sustainabilityMetrics: [{ name: "Transport Emissions", value: 15, unit: "kg CO2e/unit", targetValue: 12 }] },
+      { id: "lc001", name: "Raw Materials", icon: PackageSearch, status: 'completed', timestamp: "2023-12-01T10:00:00Z", location: "Verified Suppliers Network", details: "Sourcing of certified recycled steel and bio-polymers. Supplier compliance data (e.g., REACH for raw materials) recorded and verified. Quality control data recorded; triggers manufacturing completion.", complianceMetrics: [{ name: "Supplier Ethical Audit", status: "compliant", reportLink: "#" }, { name: "Material Origin Traceability", status: "compliant"}], sustainabilityMetrics: [{ name: "Recycled Content Input", value: 75, unit: "%", targetValue: 70 }, { name: "Conflict Minerals Free", status: "compliant"}], responsibleParty: "Supply Chain Dept.", keyDocuments: [{name: "Recycled Steel Cert.", type: "PDF", url:"#"}, {name:"Bio-Polymer Spec.", type:"Link", url:"#"}]},
+      { id: "lc002", name: "Manufacturing", icon: Factory, status: 'completed', timestamp: "2024-01-15T08:00:00Z", location: "EcoFactory, Germany", details: "Assembly at EcoFactory. Production batch #PB789 logged. Energy & waste data captured for sustainability reporting. End-of-line quality checks passed, triggers blockchain anchor for manufacturing completion.", complianceMetrics: [{ name: "ISO 14001 Certification", status: "compliant", reportLink: "#" }, { name: "Factory Safety Standards", status: "compliant"}], sustainabilityMetrics: [{ name: "Energy Used", value: 50, unit: "kWh/unit", targetValue: 55 }, { name: "Waste Generated", value: 2, unit: "kg/unit", targetValue: 3 }, {name: "Water Usage", value: 15, unit: "L/unit", targetValue: 20}], subEvents: [{name: "QA Check Passed", timestamp: "2024-01-14T10:00:00Z", status:"completed"}, {name: "Packaging Complete", timestamp: "2024-01-15T07:00:00Z", status:"completed"}]},
+      { id: "lc003", name: "Distribution", icon: Truck, status: 'in_progress', timestamp: "2024-01-20T14:00:00Z", location: "Global Logistics Network", details: "Shipping to distribution centers via low-emission freight. Container #C0N741N3R. Carbon offset calculation in progress based on transport data. Customs declaration prep triggered.", complianceMetrics: [{ name: "Carbon Offset Cert.", status: "pending_review", reportLink: "#" }, { name: "Customs Compliance (EU)", status: "compliant"}], sustainabilityMetrics: [{ name: "Transport Emissions", value: 15, unit: "kg CO2e/unit", targetValue: 12 }], responsibleParty: "Logistics Partner GMBH", keyDocuments:[{name:"Bill of Lading #789", type:"PDF", url:"#"}, {name:"Customs Form A", type:"Link", url:"#"}]},
       { id: "lc004", name: "Retail & Sale", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-02-10T16:30:00Z", location: "Authorized Retailers", details: "Product available at certified retail partners. Point-of-sale data syncs warranty info. EPREL data accessible to consumers via QR code.", complianceMetrics: [{ name: "EPREL Data Sync", status: "compliant"}], sustainabilityMetrics: [{ name: "Packaging Recyclability", value: 100, unit: "%" }] },
       { id: "lc005", name: "Consumer Use", icon: Users, status: 'upcoming', timestamp: "2024-02-11T00:00:00Z", location: "Consumer Homes", details: "Estimated 10-year lifespan. Smart models provide energy usage data to consumer app. Repairability info (manuals, spare parts) available via DPP.", sustainabilityMetrics: [{ name: "Avg. Energy Use (est.)", value: 150, unit: "kWh/yr" }, {name: "Repairability Score", value: 8.5, unit: "/10"}] },
       { id: "lc006", name: "End-of-Life", icon: Recycle, status: 'upcoming', timestamp: "2034-02-10T00:00:00Z", location: "Certified Recycling Partners", details: "Designated for 95% recyclability. Take-back program details in DPP. Disassembly instructions and material composition available to recyclers for efficient processing.", complianceMetrics: [{name: "WEEE Compliance", status: "compliant"}], sustainabilityMetrics: [{ name: "Recyclability Potential", value: 95, unit: "%"}, {name: "Material Recovery Rate (target)", value: 90, unit: "%"}]}
@@ -234,7 +234,14 @@ const MOCK_PRODUCTS: MockProductType[] = [
     isDppBlockchainAnchored: false,
     dppAnchorTransactionHash: undefined,
     currentLifecyclePhaseIndex: 1,
-    lifecyclePhases: [ { id: "lc007", name: "Materials Sourcing", icon: PackageSearch, status: 'completed', timestamp: "2024-02-01T10:00:00Z", location: "Global Suppliers", details: "Sourcing of PC, Al, LED chips, battery components. Conflict minerals check completed. Supplier data for battery chemistry (e.g. Cobalt source) recorded for Battery Regulation.", complianceMetrics: [{ name: "Conflict Minerals Report", status: "compliant", reportLink: "#" }, { name: "Supplier Chemical Safety Data Sheets", status: "compliant" }], sustainabilityMetrics: [{ name: "Supplier Diversity Score", value: 60, unit: "/100", targetValue: 75 }, {name: "Battery Component Traceability", status: "compliant"}] }, { id: "lc008", name: "Manufacturing", icon: Factory, status: 'in_progress', timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Assembly in Shenzhen. Batch #LEDB456. Initial battery SoH recorded. SCIP notification for SVHC in components submitted. Carbon footprint of manufacturing calculated.", complianceMetrics: [{ name: "Factory Safety Audit (ISO 45001)", status: "compliant", reportLink: "#" }, {name: "SCIP Database Submission", status: "compliant", reportLink: "#"}], sustainabilityMetrics: [{ name: "Carbon Footprint (Mfg.)", value: 5.2, unit: "kg CO2e/pack", targetValue: 5.0 }, { name: "Recycled Packaging Used", value: 90, unit: "%", targetValue: 100}] }, { id: "lc009", name: "Distribution", icon: Truck, status: 'pending', timestamp: "2024-03-15T10:00:00Z", location: "Global Distribution Network", details: "Global distribution. Awaiting final packaging data for carbon footprint update of distribution phase. Customs documents generated.", complianceMetrics: [], sustainabilityMetrics: [{name: "Logistics Efficiency Score", value: 7, unit:"/10 (target)"}] }, { id: "lc010", name: "Retail Sale", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-04-01T00:00:00Z", location: "Online & Physical Stores", details: "Available through various retail channels. EPREL data to be displayed at point of sale. Consumer warranty registration activated on sale.", complianceMetrics: [{name: "EPREL Label Display", status: "pending_review"}], sustainabilityMetrics: [] }, { id: "lc011", name: "Use & Maintenance", icon: Users, status: 'upcoming', timestamp: "2024-04-02T00:00:00Z", location: "Consumer Homes & Businesses", details: "Estimated 3-year useful life for battery. OTA firmware updates enhance performance and security. Battery replacement guide in DPP for consumers/technicians.", sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }, {name: "Firmware Update Frequency", value: 2, unit: "updates/yr (avg)"}] }, { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'issue', timestamp: "2027-04-01T00:00:00Z", location: "Designated Collection Points", details: "Battery designed for removal. Documentation for EU Battery Regulation (EU 2023/1542) is overdue, impacting certified recycling pathway.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}, {name: "EU Battery Reg. Documentation", status: "non_compliant", reportLink: "#"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]} ],
+    lifecyclePhases: [ 
+      { id: "lc007", name: "Materials Sourcing", icon: PackageSearch, status: 'completed', timestamp: "2024-02-01T10:00:00Z", location: "Global Suppliers", details: "Sourcing of PC, Al, LED chips, battery components. Conflict minerals check completed. Supplier data for battery chemistry (e.g. Cobalt source) recorded for Battery Regulation.", complianceMetrics: [{ name: "Conflict Minerals Report", status: "compliant", reportLink: "#" }, { name: "Supplier Chemical Safety Data Sheets", status: "compliant" }], sustainabilityMetrics: [{ name: "Supplier Diversity Score", value: 60, unit: "/100", targetValue: 75 }, {name: "Battery Component Traceability", status: "compliant"}], keyDocuments: [{name: "Conflict Minerals Due Diligence Report", type: "PDF", url:"#"}], subEvents: [{name:"Battery Cells Received", timestamp: "2024-02-15T00:00:00Z", status:"completed"}]}, 
+      { id: "lc008", name: "Manufacturing", icon: Factory, status: 'in_progress', timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Assembly in Shenzhen. Batch #LEDB456. Initial battery SoH recorded. SCIP notification for SVHC in components submitted. Carbon footprint of manufacturing calculated.", complianceMetrics: [{ name: "Factory Safety Audit (ISO 45001)", status: "compliant", reportLink: "#" }, {name: "SCIP Database Submission", status: "compliant", reportLink: "#"}], sustainabilityMetrics: [{ name: "Carbon Footprint (Mfg.)", value: 5.2, unit: "kg CO2e/pack", targetValue: 5.0 }, { name: "Recycled Packaging Used", value: 90, unit: "%", targetValue: 100}], responsibleParty: "BrightSpark Manufacturing Unit"}, 
+      { id: "lc009", name: "Distribution", icon: Truck, status: 'pending', timestamp: "2024-03-15T10:00:00Z", location: "Global Distribution Network", details: "Global distribution. Awaiting final packaging data for carbon footprint update of distribution phase. Customs documents generated.", complianceMetrics: [], sustainabilityMetrics: [{name: "Logistics Efficiency Score", value: 7, unit:"/10 (target)"}] }, 
+      { id: "lc010", name: "Retail Sale", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-04-01T00:00:00Z", location: "Online & Physical Stores", details: "Available through various retail channels. EPREL data to be displayed at point of sale. Consumer warranty registration activated on sale.", complianceMetrics: [{name: "EPREL Label Display", status: "pending_review"}], sustainabilityMetrics: [] }, 
+      { id: "lc011", name: "Use & Maintenance", icon: Users, status: 'upcoming', timestamp: "2024-04-02T00:00:00Z", location: "Consumer Homes & Businesses", details: "Estimated 3-year useful life for battery. OTA firmware updates enhance performance and security. Battery replacement guide in DPP for consumers/technicians.", sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }, {name: "Firmware Update Frequency", value: 2, unit: "updates/yr (avg)"}] }, 
+      { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'issue', timestamp: "2027-04-01T00:00:00Z", location: "Designated Collection Points", details: "Battery designed for removal. Documentation for EU Battery Regulation (EU 2023/1542) is overdue, impacting certified recycling pathway.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}, {name: "EU Battery Reg. Documentation", status: "non_compliant", reportLink: "#"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]} 
+    ],
     overallCompliance: { gdpr: { status: "not_applicable", lastChecked: "2024-07-01T10:00:00Z" }, eprel: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" }, ebsiVerified: { status: "pending_review", verificationId: "PENDING_EBSI_CHECK", lastChecked: "2024-07-20T10:00:00Z" },  scip: { status: "compliant", declarationId: "SCIP-XYZ789", lastChecked: "2024-07-01T10:00:00Z" }, csrd: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" } },
     notifications: [ { id: "n003", type: "error", message: "Battery Regulation documentation overdue! Action required.", date: "2024-07-19T10:00:00Z" }, { id: "n004", type: "warning", message: "EPREL registration data needs review by end of week.", date: "2024-07-22T10:00:00Z" }, { id: "n005", type: "info", message: "Firmware update v1.2 successfully deployed.", date: "2024-08-01T02:00:00Z"} ],
     verificationLog: [
@@ -384,18 +391,18 @@ const determineOrigin = (
   previousValue: any,
   previousOrigin: 'AI_EXTRACTED' | 'manual' | undefined
 ): 'AI_EXTRACTED' | 'manual' | undefined => {
+   // If user clears a field that had a value, it's a manual action.
+   // If a field was empty and user provides a value, it's manual.
+   // If a field had a value and user changes it to another non-empty value, it's manual.
   if (currentValue !== previousValue) {
-    // If current value is empty/null/undefined, and previous was not, it means user cleared it - still manual
-    // If current value is different and not empty, it's a manual change
-    if (currentValue === "" || currentValue === null || currentValue === undefined) {
-        // If user clears a field, it's a manual action. If it was AI extracted and now empty, it's manual.
-        // If it was empty and stays empty, origin doesn't change from undefined.
-        // This ensures clearing an AI field marks it as manual (empty).
-        return previousValue !== currentValue ? 'manual' : previousOrigin;
+    if ( (previousValue !== undefined && previousValue !== null && previousValue !== "") && (currentValue === "" || currentValue === null || currentValue === undefined) ) {
+        return 'manual'; // User cleared an existing field
     }
-    return 'manual';
+    if (currentValue !== "" && currentValue !== null && currentValue !== undefined) {
+        return 'manual'; // User provided or changed a value
+    }
   }
-  return previousOrigin;
+  return previousOrigin; // Otherwise, preserve initial origin
 };
 
 
@@ -434,7 +441,6 @@ export default function ProductDetailPage() {
               parsedSpecifications = JSON.parse(storedProduct.specifications);
             } catch (e) {
               console.warn("Failed to parse specifications for user product:", storedProduct.id, e);
-              // Keep specifications as string if parsing fails, or default to empty object
               parsedSpecifications = typeof defaults.specifications === 'object' ? defaults.specifications : {};
             }
           } else if (typeof storedProduct.specifications === 'object' && storedProduct.specifications !== null) {
@@ -443,7 +449,7 @@ export default function ProductDetailPage() {
 
 
           foundProduct = {
-            ...defaults, // Start with defaults to ensure all MockProductType fields are present
+            ...defaults, 
             productId: storedProduct.id,
             productName: storedProduct.productName || "User Added Product",
             productNameOrigin: storedProduct.productNameOrigin,
@@ -467,7 +473,7 @@ export default function ProductDetailPage() {
             sustainabilityClaimsOrigin: storedProduct.sustainabilityClaimsOrigin,
             energyLabel: storedProduct.energyLabel || "N/A",
             energyLabelOrigin: storedProduct.energyLabelOrigin,
-            specifications: parsedSpecifications, // Use parsed or default
+            specifications: parsedSpecifications, 
             specificationsOrigin: storedProduct.specificationsOrigin,
             batteryChemistry: storedProduct.batteryChemistry,
             batteryChemistryOrigin: storedProduct.batteryChemistryOrigin,
@@ -489,7 +495,6 @@ export default function ProductDetailPage() {
       
       setProduct(foundProduct);
       if (foundProduct) {
-        // Set initial data for form editing, including origins
         setInitialProductDataForEdit({
           productName: foundProduct.productName,
           productNameOrigin: foundProduct.productNameOrigin,
@@ -505,7 +510,7 @@ export default function ProductDetailPage() {
           sustainabilityClaims: foundProduct.sustainabilityClaims,
           sustainabilityClaimsOrigin: foundProduct.sustainabilityClaimsOrigin as 'AI_EXTRACTED' | 'manual' | undefined,
           specifications: typeof foundProduct.specifications === 'string' ? foundProduct.specifications : JSON.stringify(foundProduct.specifications, null, 2),
-          specificationsOrigin: foundProduct.specificationsOrigin as 'AI_EXTRACTED' | 'manual' | undefined,
+          specificationsOrigin: (foundProduct as any).specificationsOrigin as 'AI_EXTRACTED' | 'manual' | undefined, // Cast for mock data flexibility
           energyLabel: foundProduct.energyLabel,
           energyLabelOrigin: foundProduct.energyLabelOrigin as 'AI_EXTRACTED' | 'manual' | undefined,
           productCategory: foundProduct.category,
@@ -642,7 +647,7 @@ export default function ProductDetailPage() {
         productCategory: product.category,
       });
       
-      const updatedProductState = { 
+      const updatedProductState: MockProductType = { 
         ...product, 
         imageUrl: result.imageUrl, 
         imageUrlOrigin: 'AI_EXTRACTED' as ('AI_EXTRACTED' | 'manual'),
@@ -695,9 +700,8 @@ export default function ProductDetailPage() {
 
 
         const updatedProductData: StoredUserProduct = {
-          ...currentStoredProduct, // Start with the most recent stored version
+          ...currentStoredProduct, 
           id: product.productId,
-          // Update with form data
           productName: formDataFromForm.productName || currentStoredProduct.productName,
           gtin: formDataFromForm.gtin || currentStoredProduct.gtin,
           productDescription: formDataFromForm.productDescription || currentStoredProduct.productDescription,
@@ -715,14 +719,13 @@ export default function ProductDetailPage() {
           recycledContentPercentage: formDataFromForm.recycledContentPercentage !== undefined && formDataFromForm.recycledContentPercentage !== null ? formDataFromForm.recycledContentPercentage : currentStoredProduct.recycledContentPercentage,
           
           lastUpdated: new Date().toISOString(),
-          // Determine origins
           productNameOrigin: determineOrigin(formDataFromForm.productName, productDataBeforeThisEditSession.productName, productDataBeforeThisEditSession.productNameOrigin),
           productDescriptionOrigin: determineOrigin(formDataFromForm.productDescription, productDataBeforeThisEditSession.productDescription, productDataBeforeThisEditSession.productDescriptionOrigin),
           manufacturerOrigin: determineOrigin(formDataFromForm.manufacturer, productDataBeforeThisEditSession.manufacturer, productDataBeforeThisEditSession.manufacturerOrigin),
           modelNumberOrigin: determineOrigin(formDataFromForm.modelNumber, productDataBeforeThisEditSession.modelNumber, productDataBeforeThisEditSession.modelNumberOrigin),
           materialsOrigin: determineOrigin(formDataFromForm.materials, productDataBeforeThisEditSession.materials, productDataBeforeThisEditSession.materialsOrigin),
           sustainabilityClaimsOrigin: determineOrigin(formDataFromForm.sustainabilityClaims, productDataBeforeThisEditSession.sustainabilityClaims, productDataBeforeThisEditSession.sustainabilityClaimsOrigin),
-          specificationsOrigin: determineOrigin(formDataFromForm.specifications, productDataBeforeThisEditSession.specifications, productDataBeforeThisEditSession.specificationsOrigin),
+          specificationsOrigin: determineOrigin(formDataFromForm.specifications, productDataBeforeThisEditSession.specifications, productDataBeforeThisEditSession.specificationsOrigin as 'AI_EXTRACTED' | 'manual' | undefined),
           energyLabelOrigin: determineOrigin(formDataFromForm.energyLabel, productDataBeforeThisEditSession.energyLabel, productDataBeforeThisEditSession.energyLabelOrigin),
           imageUrlOrigin: determineOrigin(formDataFromForm.imageUrl, productDataBeforeThisEditSession.imageUrl, productDataBeforeThisEditSession.imageUrlOrigin),
           batteryChemistryOrigin: determineOrigin(formDataFromForm.batteryChemistry, productDataBeforeThisEditSession.batteryChemistry, productDataBeforeThisEditSession.batteryChemistryOrigin),
@@ -734,12 +737,10 @@ export default function ProductDetailPage() {
         userProducts[productIndex] = updatedProductData;
         localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
 
-        // Update the main product state for UI reactivity
         setProduct(prev => {
           if (!prev) return null;
-          // Create a new object that matches MockProductType structure from updatedProductData
           const displayProduct: MockProductType = {
-            ...prev, // Keep existing complex structures like lifecycleEvents, complianceData, etc.
+            ...prev, 
             productId: updatedProductData.id,
             productName: updatedProductData.productName || "Error",
             productNameOrigin: updatedProductData.productNameOrigin,
@@ -776,7 +777,7 @@ export default function ProductDetailPage() {
           };
           return displayProduct;
         });
-        setInitialProductDataForEdit(updatedProductData); // Update the baseline for next edit session
+        setInitialProductDataForEdit(updatedProductData); 
 
         toast({ title: "Product Updated", description: `${updatedProductData.productName} has been updated successfully.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
         setIsEditing(false); 
@@ -786,7 +787,7 @@ export default function ProductDetailPage() {
     } catch (e) {
       console.error("Failed to update product:", e);
       toast({ title: `Product Update Failed`, description: `Could not update the product. ${e instanceof Error ? e.message : ''}`, variant: "destructive" });
-       setIsEditing(false); // Ensure this is always reset
+       setIsEditing(false); 
     }
   };
 
@@ -882,7 +883,7 @@ export default function ProductDetailPage() {
   const canAdvanceLifecycle = (currentRole === 'admin' || currentRole === 'manufacturer') && product.currentLifecyclePhaseIndex < product.lifecyclePhases.length - 1;
   
   const isProductImagePlaceholder = !product.imageUrl || product.imageUrl.includes('placehold.co') || product.imageUrl.includes('?text=');
-  const canGenerateImage = (currentRole === 'admin' || currentRole === 'manufacturer') && isProductImagePlaceholder;
+  const canGenerateImage = (currentRole === 'admin' || currentRole === 'manufacturer'); // Now always enabled for these roles, placeholder or not
   const canSuggestClaims = currentRole === 'admin' || currentRole === 'manufacturer';
 
   return (
@@ -947,7 +948,7 @@ export default function ProductDetailPage() {
             <ProductForm
               id="product-form-in-detail-page"
               onSubmit={handleProductFormSubmit}
-              isSubmitting={isSubmitting || isGeneratingImage || isSuggestingClaims } // use the main isSubmitting prop of ProductForm
+              isSubmitting={(isCheckingCompliance || isSyncingEprel || isGeneratingImage || isSuggestingClaims) } 
               initialData={initialProductDataForEdit}
               isStandalonePage={false}
             />
@@ -990,7 +991,7 @@ export default function ProductDetailPage() {
                                 {canGenerateImage && (
                                     <Button variant="outline" size="sm" onClick={handleGenerateProductImage} disabled={isGeneratingImage} className="ml-auto text-xs">
                                         {isGeneratingImage ? <Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> : <ImagePlus className="mr-1.5 h-3 w-3" />}
-                                        {isGeneratingImage ? "Generating..." : "Regenerate Image"}
+                                        {isGeneratingImage ? "Generating..." : (isProductImagePlaceholder ? "Generate Image" : "Regenerate Image")}
                                     </Button>
                                 )}
                             </div>

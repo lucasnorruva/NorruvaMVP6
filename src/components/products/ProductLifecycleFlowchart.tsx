@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertCircle, Info as InfoIcon, ExternalLink, TrendingUp, TrendingDown, Minus, LucideIcon, CalendarDays, MapPin } from 'lucide-react';
+import { CheckCircle, AlertCircle, Info as InfoIcon, ExternalLink, TrendingUp, TrendingDown, Minus, LucideIcon, CalendarDays, MapPin, FileText, ListChecks, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip } from 'recharts';
 
@@ -19,6 +19,18 @@ interface Metric {
   reportLink?: string;
 }
 
+interface KeyDocument {
+  name: string;
+  type: 'PDF' | 'Link';
+  url: string;
+}
+
+interface SubEvent {
+  name: string;
+  timestamp: string;
+  status?: 'completed' | 'in_progress' | 'pending';
+}
+
 export interface LifecyclePhase {
   id: string;
   name: string;
@@ -29,6 +41,9 @@ export interface LifecyclePhase {
   details?: string;
   complianceMetrics?: Metric[];
   sustainabilityMetrics?: Metric[];
+  keyDocuments?: KeyDocument[];
+  subEvents?: SubEvent[];
+  responsibleParty?: string;
 }
 
 interface ProductLifecycleFlowchartProps {
@@ -161,8 +176,45 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
                         )}
                         {phase.details && <p className="text-sm text-foreground">{phase.details}</p>}
 
+                        {phase.responsibleParty && (
+                          <div className="pt-2 mt-2 border-t border-border/50">
+                            <h5 className="text-sm font-medium mb-1 text-foreground/80 flex items-center"><User className="h-4 w-4 mr-1.5" />Responsible Party:</h5>
+                            <p className="text-xs text-muted-foreground">{phase.responsibleParty}</p>
+                          </div>
+                        )}
+
+                        {phase.keyDocuments && phase.keyDocuments.length > 0 && (
+                          <div className="pt-2 mt-2 border-t border-border/50">
+                            <h5 className="text-sm font-medium mb-1 text-foreground/80 flex items-center"><FileText className="h-4 w-4 mr-1.5" />Key Documents:</h5>
+                            <ul className="space-y-1 text-xs">
+                              {phase.keyDocuments.map(doc => (
+                                <li key={doc.name} className="flex items-center justify-between p-1 bg-muted/30 rounded-sm">
+                                  <span className="truncate pr-2">{doc.name} ({doc.type})</span>
+                                  <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                    <ExternalLink className="h-3 w-3" />
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
+                        {phase.subEvents && phase.subEvents.length > 0 && (
+                           <div className="pt-2 mt-2 border-t border-border/50">
+                            <h5 className="text-sm font-medium mb-1 text-foreground/80 flex items-center"><ListChecks className="h-4 w-4 mr-1.5" />Sub-Events:</h5>
+                            <ul className="space-y-1 text-xs">
+                              {phase.subEvents.map(event => (
+                                <li key={event.name} className="flex items-center justify-between p-1 bg-muted/30 rounded-sm">
+                                  <span>{event.name} <span className="text-muted-foreground/70">({new Date(event.timestamp).toLocaleDateString()})</span></span>
+                                  {event.status && <Badge variant={event.status === 'completed' ? 'default' : 'outline'} className={`text-[0.6rem] px-1.5 py-0.5 ${event.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{event.status}</Badge>}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+
                         {phase.complianceMetrics && phase.complianceMetrics.length > 0 && (
-                          <div>
+                          <div className="pt-2 mt-2 border-t border-border/50">
                             <h5 className="text-sm font-medium mb-1 text-foreground/80">Compliance Checks:</h5>
                             <ul className="space-y-1 text-xs">
                               {phase.complianceMetrics.map(metric => (
@@ -183,8 +235,8 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
                         )}
 
                         {phase.sustainabilityMetrics && phase.sustainabilityMetrics.length > 0 && (
-                          <div>
-                            <h5 className="text-sm font-medium mb-1 mt-2 text-foreground/80">Sustainability Metrics:</h5>
+                          <div className="pt-2 mt-2 border-t border-border/50">
+                            <h5 className="text-sm font-medium mb-1 text-foreground/80">Sustainability Metrics:</h5>
                             <div className="space-y-1 text-xs">
                               {phase.sustainabilityMetrics.map(metric => (
                                 <div key={metric.name} className="py-1 p-1.5 bg-muted/50 rounded-sm">
@@ -222,5 +274,3 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
 };
 
 export default ProductLifecycleFlowchart;
-
-    

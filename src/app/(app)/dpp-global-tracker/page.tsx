@@ -9,9 +9,9 @@ import { Globe as GlobeIconLucide, Info, MapPin, Palette, Plus, Minus,Maximize }
 import { cn } from '@/lib/utils';
 
 // --- Color & Style Constants for the 2D Map ---
-const MAP_BACKGROUND_COLOR = '#e0e5ec'; // A light greyish-blue, similar to the image
-const LAND_COLOR_PLACEHOLDER = '#f0f0f0'; // Light grey for landmasses (if not in image)
-const OCEAN_COLOR_PLACEHOLDER = '#d0d8e0'; // Light blue-grey for oceans (if not in image)
+const MAP_BACKGROUND_COLOR = '#e0e5ec'; // A light greyish-blue, for the area around the map image
+const LAND_COLOR_PLACEHOLDER = '#f0f0f0'; // Light grey for landmasses (used in placeholder image bg)
+const OCEAN_COLOR_PLACEHOLDER = '#d0d8e0'; // Light blue-grey for oceans (used in placeholder image text/design)
 
 interface RegionalHighlightProps {
   id: string;
@@ -116,11 +116,11 @@ export default function DppGlobalTrackerPage() {
                ))}
                 <div className="flex items-center text-xs">
                   <span style={{ backgroundColor: LAND_COLOR_PLACEHOLDER }} className="h-3 w-3 rounded-sm mr-2 border border-black/20"></span>
-                  <span>Landmasses</span>
+                  <span>Landmasses (Placeholder)</span>
                 </div>
                 <div className="flex items-center text-xs">
                   <span style={{ backgroundColor: OCEAN_COLOR_PLACEHOLDER }} className="h-3 w-3 rounded-sm mr-2 border border-black/20"></span>
-                  <span>Oceans</span>
+                  <span>Oceans (Placeholder)</span>
                 </div>
             </CardContent>
           </Card>
@@ -148,10 +148,10 @@ export default function DppGlobalTrackerPage() {
             style={{ transform: `scale(${zoomLevel})` }}
           >
             <Image
-              src="https://placehold.co/1920x1080.png/e0e5ec/d0d8e0?text=World+Map" // Placeholder simulating light land/ocean
+              src={`https://placehold.co/1920x1080.png/${LAND_COLOR_PLACEHOLDER.replace("#","")}/${OCEAN_COLOR_PLACEHOLDER.replace("#","")}?text=World+Map`}
               alt="World Map with Regional Highlights"
               layout="fill"
-              objectFit="contain" // Use contain to see the whole map, or cover to fill
+              objectFit="contain" 
               priority
               data-ai-hint="world map regions"
             />
@@ -184,3 +184,5 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
+
+    

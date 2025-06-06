@@ -6,7 +6,9 @@ import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Globe as GlobeIconLucide, Info, MapPin, ZoomIn, ZoomOut, Maximize, AlertTriangle, Loader2, Palette, Ship, Truck, Plane } from "lucide-react";
+import { Globe as GlobeIconLucide, Info, MapPin, ZoomIn, ZoomOut, Maximize, AlertTriangle, Loader2, Palette, Ship, Truck, Plane, Layers as LayersIcon, Route, Paintbrush } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import type { GlobeMethods } from 'react-globe.gl';
@@ -28,49 +30,37 @@ const ClientOnlyGlobe = dynamic(
 
 const EU_COUNTRIES_ISO_A2 = [
   'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU',
-  'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'
+  'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE', 'GF', 'GP', 'MQ', 'YT', 'RE', // Added French overseas departments as they are part of EU
 ];
 
-const RICH_DARK_BLUE_EU_COLOR = 'rgba(0, 51, 102, 0.9)'; // Rich Dark Blue for EU Countries
-const LIGHT_GREY_NON_EU_COLOR = 'rgba(211, 211, 211, 0.85)'; // Light Grey for Non-EU Countries
-const BLACK_BORDER_COLOR = 'rgba(0, 0, 0, 1)'; // Black for borders
-const GLOBE_PAGE_BACKGROUND_COLOR = '#0a0a0a'; // Very dark grey / off-black for the page
-const VIBRANT_LIGHT_BLUE_OCEAN_TEXTURE_URL = '//unpkg.com/three-globe/example/img/earth-day.jpg'; // Texture with light blue oceans and land details
-const ATMOSPHERE_COLOR = '#4682B4'; // Steel blue for atmosphere
+const RICH_DARK_BLUE_EU_COLOR = 'rgba(0, 51, 102, 0.9)';
+const LIGHT_GREY_NON_EU_COLOR = 'rgba(200, 200, 200, 0.85)'; // Slightly adjusted for visibility
+const LIGHT_GREY_UNIFORM_LAND_COLOR = 'rgba(211, 211, 211, 0.85)';
+const BLACK_BORDER_COLOR = 'rgba(0, 0, 0, 1)';
+const GLOBE_PAGE_BACKGROUND_COLOR = '#0a0a0a';
+const VIBRANT_LIGHT_BLUE_OCEAN_TEXTURE_URL = '//unpkg.com/three-globe/example/img/earth-day.jpg';
+const ATMOSPHERE_COLOR = '#4682B4';
 
 const getCountryISO_A2 = (feature: any): string | undefined => {
   if (!feature || !feature.properties) return undefined;
   const props = feature.properties;
-
-  // Primary ISO A2 sources
   if (props.ISO_A2 && props.ISO_A2 !== "-99") return props.ISO_A2.trim();
   if (props.iso_a2 && props.iso_a2 !== "-99") return props.iso_a2.trim();
-  
-  // Specific cases from world-atlas or common GeoJSON structures
-  if (props.SOVEREIGNT === "Somaliland") return "SO"; // Somaliland uses Somalia's ISO code area
-  if (props.SOVEREIGNT === "N. Cyprus") return "CY"; // Northern Cyprus, internationally recognized as part of Cyprus
-  if (props.ADMIN === "Kosovo") return "XK"; // Kosovo uses a user-assigned code
-
-  // Fallback ISO A2 sources
-  if (props.WB_A2 && props.WB_A2 !== "-99") return props.WB_A2.trim();
-  
-  // Broader fallbacks (some datasets might use these for 2-letter codes)
-  const potentialCodes = [props.ADM0_A2, props.GU_A2, props.postal];
+  if (props.ADM0_A3 && props.ADM0_A3 === "Somaliland") return "SO"; // Somaliland often uses Somalia's code area or is unassigned.
+  if (props.ADMIN && props.ADMIN === "Kosovo") return "XK"; // User-assigned code for Kosovo
+  if (props.NAME && props.NAME === "N. Cyprus") return "CY"; // Internationally recognized as part of Cyprus
+  const potentialCodes = [props.WB_A2, props.GU_A2, props.ADM0_A2, props.POSTAL];
   for (const code of potentialCodes) {
-    if (code && typeof code === 'string' && code.length === 2 && code !== "-99") return code.trim().toUpperCase();
+    if (code && typeof code === 'string' && code.length === 2 && code !== "-99" && /^[A-Z]{2}$/.test(code)) return code.trim().toUpperCase();
   }
-
-  // If strictly need an ISO A2 and above failed, it's undefined for our use case
   return undefined;
 };
 
 const getCountryName = (feature: any): string => {
   if (!feature || !feature.properties) return 'Unknown Territory';
   const props = feature.properties;
-  // Prioritize more official or common name properties
-  return props.NAME_EN || props.NAME || props.NAME_LONG || props.FORMAL_EN || props.SOVEREIGNT || props.ADMIN || 'Unknown Country';
+  return props.NAME_EN || props.NAME || props.ADMIN || props.SOVEREIGNT || props.FORMAL_EN || 'Unknown Country';
 };
-
 
 interface SelectedCountryProperties {
   name?: string;
@@ -118,7 +108,6 @@ const MOCK_TRADE_ARCS: TradeArc[] = [
   { id: 'arc002', startLat: MOCK_SHIPMENT_POINTS[2].lat, startLng: MOCK_SHIPMENT_POINTS[2].lng, endLat: MOCK_SHIPMENT_POINTS[1].lat, endLng: MOCK_SHIPMENT_POINTS[1].lng, color: 'rgba(0, 0, 255, 0.6)', stroke: 0.2, label: 'Route Tokyo-London', dashLength: 0.2, dashGap: 0.2, dashAnimateTime: 4000 },
 ];
 
-
 export default function DppGlobalTrackerPage() {
   const globeEl = useRef<GlobeMethods | undefined>();
   const { toast } = useToast();
@@ -130,12 +119,17 @@ export default function DppGlobalTrackerPage() {
   const [shipmentPoints] = useState<ShipmentPoint[]>(MOCK_SHIPMENT_POINTS);
   const [tradeArcs] = useState<TradeArc[]>(MOCK_TRADE_ARCS);
 
+  // State for UI Toggles
+  const [showDynamicCountryColors, setShowDynamicCountryColors] = useState(true);
+  const [showShipmentMarkers, setShowShipmentMarkers] = useState(true);
+  const [showTradeArcs, setShowTradeArcs] = useState(true);
+
   useEffect(() => {
     const fetchGeoJson = async () => {
       setIsLoadingGeoJson(true);
       setGeoJsonError(null);
       try {
-        const response = await fetch('https://unpkg.com/world-atlas@2.0.2/countries-50m.json'); // Using 50m for more detail
+        const response = await fetch('https://unpkg.com/world-atlas@2.0.2/countries-50m.json');
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`Failed to fetch GeoJSON: ${response.status} ${response.statusText}. Server said: ${errorText.substring(0,100)}. URL: ${response.url}`);
@@ -153,13 +147,13 @@ export default function DppGlobalTrackerPage() {
           });
 
           if (missingNameCount > 0 || missingIsoA2Count > 0) {
-            const message = `GeoJSON Validation: ${missingNameCount} countries missing identifiable name. ${missingIsoA2Count} countries missing identifiable ISO A2 code. Some map features or info might be incomplete.`;
+            const message = `GeoJSON Validation: ${missingNameCount} features missing identifiable name. ${missingIsoA2Count} features missing identifiable ISO A2 code. Some map features or info might be incomplete.`;
             console.warn(message);
             if (missingNameCount > geoJsonFeatures.length * 0.1 || missingIsoA2Count > geoJsonFeatures.length * 0.1) { 
                 toast({
                     variant: "default",
                     title: "Map Data Inconsistencies",
-                    description: `Found ${missingNameCount} countries missing names and ${missingIsoA2Count} missing ISO codes. Some map details might be affected.`,
+                    description: `Found ${missingNameCount} countries missing names and ${missingIsoA2Count} missing ISO codes. Some map details might be affected. Data source: world-atlas@2.0.2/countries-50m.json`,
                     duration: 8000,
                 });
             }
@@ -185,9 +179,12 @@ export default function DppGlobalTrackerPage() {
   }, [toast]);
 
   const polygonCapColorAccessor = useCallback((feature: any) => {
+    if (!showDynamicCountryColors) {
+      return LIGHT_GREY_UNIFORM_LAND_COLOR;
+    }
     const isoA2 = getCountryISO_A2(feature);
     return isoA2 && EU_COUNTRIES_ISO_A2.includes(isoA2) ? RICH_DARK_BLUE_EU_COLOR : LIGHT_GREY_NON_EU_COLOR;
-  }, []);
+  }, [showDynamicCountryColors]);
 
   const polygonSideColorAccessor = useCallback(() => 'rgba(0,0,0,0.05)', []);
   const polygonStrokeColorAccessor = useCallback(() => BLACK_BORDER_COLOR, []);
@@ -250,13 +247,15 @@ export default function DppGlobalTrackerPage() {
   const arcDashGapAccessor = useCallback((arc: TradeArc) => arc.dashGap, []);
   const arcDashAnimateTimeAccessor = useCallback((arc: TradeArc) => arc.dashAnimateTime, []);
 
+  const displayedShipmentPoints = useMemo(() => showShipmentMarkers ? shipmentPoints : [], [showShipmentMarkers, shipmentPoints]);
+  const displayedTradeArcs = useMemo(() => showTradeArcs ? tradeArcs : [], [showTradeArcs, tradeArcs]);
 
   return (
     <div className="flex flex-col h-[calc(100vh-var(--header-height,4rem)-2rem)] bg-background">
       <header className="p-4 border-b sticky top-0 bg-background z-20">
         <h1 className="text-2xl font-headline font-semibold text-primary flex items-center">
           <GlobeIconLucide className="mr-3 h-7 w-7" />
-          DPP Global Tracker (Enhanced Visuals)
+          DPP Global Tracker
         </h1>
       </header>
 
@@ -285,6 +284,53 @@ export default function DppGlobalTrackerPage() {
               )}
             </CardContent>
           </Card>
+
+          <Card className="shadow-sm">
+            <CardHeader className="pb-2">
+              <CardTitle className="text-lg font-semibold flex items-center">
+                 <LayersIcon className="mr-2 h-5 w-5 text-primary"/> Layer Controls
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3 pt-2">
+              <div className="flex items-center justify-between">
+                <Label htmlFor="toggle-country-colors" className="text-sm flex items-center">
+                  <Paintbrush className="h-4 w-4 mr-2 text-muted-foreground" />
+                  Dynamic Country Colors
+                </Label>
+                <Switch
+                  id="toggle-country-colors"
+                  checked={showDynamicCountryColors}
+                  onCheckedChange={setShowDynamicCountryColors}
+                  aria-label="Toggle dynamic country colors"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="toggle-shipment-markers" className="text-sm flex items-center">
+                  <MapPin className="h-4 w-4 mr-2 text-muted-foreground" />
+                  Shipment Markers
+                </Label>
+                <Switch
+                  id="toggle-shipment-markers"
+                  checked={showShipmentMarkers}
+                  onCheckedChange={setShowShipmentMarkers}
+                  aria-label="Toggle shipment markers"
+                />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="toggle-trade-arcs" className="text-sm flex items-center">
+                  <Route className="h-4 w-4 mr-2 text-muted-foreground" />
+                  Trade Routes
+                </Label>
+                <Switch
+                  id="toggle-trade-arcs"
+                  checked={showTradeArcs}
+                  onCheckedChange={setShowTradeArcs}
+                  aria-label="Toggle trade routes"
+                />
+              </div>
+            </CardContent>
+          </Card>
+          
           <Card className="shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-lg font-semibold flex items-center">
@@ -299,6 +345,10 @@ export default function DppGlobalTrackerPage() {
                  <div className="flex items-center">
                   <span style={{ backgroundColor: LIGHT_GREY_NON_EU_COLOR }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span>
                   <span>Non-EU Countries</span>
+                </div>
+                <div className="flex items-center">
+                    <span style={{ backgroundColor: LIGHT_GREY_UNIFORM_LAND_COLOR }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span>
+                    <span>Countries (Uniform Color if Dynamic is Off)</span>
                 </div>
                 <div className="flex items-center">
                   <span className="h-3 w-3 rounded-full mr-2 border-2 border-black bg-transparent opacity-70"></span>
@@ -363,7 +413,7 @@ export default function DppGlobalTrackerPage() {
               <ClientOnlyGlobe
                 globeRef={globeEl}
                 globeImageUrl={VIBRANT_LIGHT_BLUE_OCEAN_TEXTURE_URL}
-                backgroundColor="rgba(0,0,0,0)" // Transparent, so div background shows
+                backgroundColor="rgba(0,0,0,0)" 
                 atmosphereColor={ATMOSPHERE_COLOR}
                 atmosphereAltitude={0.25}
                 polygonsData={countryPolygons}
@@ -373,13 +423,13 @@ export default function DppGlobalTrackerPage() {
                 polygonAltitude={polygonAltitudeAccessor}
                 onPolygonClick={handlePolygonClick}
                 polygonsTransitionDuration={0} 
-                pointsData={shipmentPoints}
+                pointsData={displayedShipmentPoints}
                 pointLat={pointLatAccessor}
                 pointLng={pointLngAccessor}
                 pointAltitude={pointAltitudeAccessor}
                 pointRadius={pointRadiusAccessor}
                 pointColor={pointColorAccessor}
-                arcsData={tradeArcs}
+                arcsData={displayedTradeArcs}
                 arcStartLat={arcStartLatAccessor}
                 arcStartLng={arcStartLngAccessor}
                 arcEndLat={arcEndLatAccessor}
@@ -406,10 +456,9 @@ export default function DppGlobalTrackerPage() {
         </div>
       </main>
       <footer className="p-2 border-t text-center text-xs text-muted-foreground sticky bottom-0 bg-background z-20">
-        DPP Global Tracker - Enhanced Visuals. Country data from unpkg.com (50m resolution).
+        DPP Global Tracker. Country data from unpkg.com (world-atlas). Shipment and trade route data is mock.
       </footer>
     </div>
   );
 }
 
-      

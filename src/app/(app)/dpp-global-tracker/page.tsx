@@ -5,11 +5,12 @@ import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } fr
 import { feature as topojsonFeature } from 'topojson-client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw, SearchCheck, BarChart3 } from "lucide-react";
+import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw, SearchCheck, BarChart3, BellRing, History as HistoryIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
 import ArcInfoCard from '@/components/dpp-tracker/ArcInfoCard';
 import CheckpointInfoCard from '@/components/dpp-tracker/CheckpointInfoCard';
@@ -104,6 +105,8 @@ export interface MockShipmentPoint {
   cbamDeclarationStatus: 'submitted' | 'required' | 'cleared' | 'not_applicable';
   dppComplianceNotes: string[];
 }
+
+type NotificationType = 'compliance_alert' | 'delay_alert' | 'status_change';
 
 
 const SATURATED_BLUE = 'rgba(41, 171, 226, 0.9)';
@@ -260,6 +263,12 @@ export default function DppGlobalTrackerPage() {
 
   const [inspectingCheckpoint, setInspectingCheckpoint] = useState<MockCustomsCheckpoint | null>(null);
   const [isInspectionModalOpen, setIsInspectionModalOpen] = useState(false);
+  
+  const [notificationPrefs, setNotificationPrefs] = useState({
+    complianceIssues: true,
+    shipmentDelays: true,
+    statusChanges: true,
+  });
 
   const [lastToastForShipment, setLastToastForShipment] = useState<Record<string, { status: string; time: number }>>({});
   const [simulationActiveToastShown, setSimulationActiveToastShown] = useState(false);
@@ -286,7 +295,6 @@ export default function DppGlobalTrackerPage() {
       });
   }, [toast]);
 
-  // Effect for one-time "Simulation Active" toast
   useEffect(() => {
     if (SHIPMENTS_TO_SIMULATE.length > 0 && !simulationActiveToastShown) {
       const timer = setTimeout(() => {
@@ -295,20 +303,35 @@ export default function DppGlobalTrackerPage() {
           description: "Mock shipments are now moving on the globe.",
         });
         setSimulationActiveToastShown(true);
-      }, 150); // Slight delay to ensure it's after initial render
+      }, 150); 
       return () => clearTimeout(timer);
     }
   }, [simulationActiveToastShown, toast]);
 
 
-  const showShipmentToast = useCallback((shipmentId: string, status: string, message: string, variant: 'default' | 'destructive' = 'default') => {
+  const showShipmentToast = useCallback((shipmentId: string, status: string, message: string, variant: 'default' | 'destructive' = 'default', type: NotificationType) => {
+    let allowToast = false;
+    switch (type) {
+        case 'compliance_alert':
+            allowToast = notificationPrefs.complianceIssues;
+            break;
+        case 'delay_alert':
+            allowToast = notificationPrefs.shipmentDelays;
+            break;
+        case 'status_change':
+            allowToast = notificationPrefs.statusChanges;
+            break;
+        default:
+            allowToast = true; 
+    }
+
+    if (!allowToast) return;
+
     const now = Date.now();
-    // Use functional update for setLastToastForShipment to access previous state
-    // without making lastToastForShipment a direct dependency of this useCallback
     setLastToastForShipment(prevLastToast => {
         const lastToastInfo = prevLastToast[shipmentId];
         if (!lastToastInfo || lastToastInfo.status !== status || (now - lastToastInfo.time > 5000)) {
-            setTimeout(() => { // Defer the toast call
+            setTimeout(() => { 
                 toast({
                     title: "Shipment Update",
                     description: message,
@@ -317,9 +340,9 @@ export default function DppGlobalTrackerPage() {
             }, 0);
             return { ...prevLastToast, [shipmentId]: { status, time: now } };
         }
-        return prevLastToast; // No change to lastToastForShipment state needed
+        return prevLastToast;
     });
-  }, [toast]); // Dependency is only `toast` (stable from useToast)
+  }, [toast, notificationPrefs.complianceIssues, notificationPrefs.shipmentDelays, notificationPrefs.statusChanges]);
 
  useEffect(() => {
     const intervalId = setInterval(() => {
@@ -331,12 +354,15 @@ export default function DppGlobalTrackerPage() {
 
             let updatedShipment = { ...shipment };
             const prevStatus = updatedShipment.simulatedStatus;
+            let toastType: NotificationType | null = null;
             
             if (Math.random() < 0.05 && updatedShipment.simulatedStatus !== 'data_sync_delayed' && updatedShipment.simulationProgress < 0.90) { 
                 updatedShipment.simulatedStatus = 'data_sync_delayed';
+                toastType = 'delay_alert';
             } else if (updatedShipment.simulatedStatus === 'data_sync_delayed') {
                 if (Math.random() < 0.3) { 
                   updatedShipment.simulatedStatus = 'in_transit'; 
+                  toastType = 'status_change';
                 }
             }
 
@@ -354,13 +380,16 @@ export default function DppGlobalTrackerPage() {
                 if (updatedShipment.simulationProgress >= 0.4 && updatedShipment.simulationProgress < 0.7) { 
                     if (prevStatus === 'in_transit') { 
                          updatedShipment.simulatedStatus = 'at_customs';
+                         toastType = 'status_change';
                          if (Math.random() < 0.20) { 
                             const issues = ["Awaiting CBAM Declaration", "CE Marking Verification Pending", "Battery Passport Data Missing"];
                             const randomIssue = issues[Math.floor(Math.random() * issues.length)];
                             updatedShipment.dppComplianceStatusText = randomIssue;
                             updatedShipment.dppComplianceBadgeVariant = "destructive";
                             updatedShipment.dppComplianceNotes = [randomIssue, "Documentation review required."];
-                            showShipmentToast(updatedShipment.id, "compliance_alert", `Compliance Alert: Shipment ${updatedShipment.id} - ${randomIssue}.`, "destructive");
+                            // This specific internal status change for compliance alert will trigger a toast with its own type
+                            showShipmentToast(updatedShipment.id, "compliance_alert", `Compliance Alert: Shipment ${updatedShipment.id} - ${randomIssue}.`, "destructive", "compliance_alert");
+                            toastType = null; // Prevent double toast if main status also changed
                          } else {
                             updatedShipment.dppComplianceStatusText = "DPP Data Review In Progress";
                             updatedShipment.dppComplianceBadgeVariant = "outline";
@@ -368,23 +397,21 @@ export default function DppGlobalTrackerPage() {
                          }
                     } else if (prevStatus === 'at_customs') { 
                         const randomEvent = Math.random();
-                        if (randomEvent < 0.1) updatedShipment.simulatedStatus = 'customs_inspection'; 
-                        else if (randomEvent < 0.15 && updatedShipment.simulatedStatus !== 'customs_inspection') updatedShipment.simulatedStatus = 'delayed';
+                        if (randomEvent < 0.1) { updatedShipment.simulatedStatus = 'customs_inspection'; toastType = 'status_change'; }
+                        else if (randomEvent < 0.15 && updatedShipment.simulatedStatus !== 'customs_inspection') { updatedShipment.simulatedStatus = 'delayed'; toastType = 'delay_alert';}
                     }
                 } else if (updatedShipment.simulationProgress >= 0.7 && updatedShipment.simulationProgress < 1) { 
                      if (['customs_inspection', 'delayed', 'at_customs'].includes(prevStatus)) {
                         updatedShipment.simulatedStatus = 'cleared'; 
+                        toastType = 'status_change';
                         updatedShipment.dppComplianceStatusText = "All DPP Data Verified";
                         updatedShipment.dppComplianceBadgeVariant = "default";
                         updatedShipment.dppComplianceNotes = ["Customs cleared successfully."];
-                     } else if (prevStatus === 'in_transit') {
-                         // If it skipped the customs phase for some reason, ensure it's still marked as in_transit
-                         // or could be directly cleared if very close to end.
-                         // For simplicity, let's assume it must pass through a customs-like phase or remain in_transit.
                      }
                 } else if (updatedShipment.simulationProgress < 0.4) { 
                     if(prevStatus !== 'in_transit' && prevStatus !== 'delayed' && prevStatus !== 'data_sync_delayed') { 
                         updatedShipment.simulatedStatus = 'in_transit';
+                        toastType = 'status_change';
                         updatedShipment.dppComplianceStatusText = "DPP Data Verified for Transit"; 
                         updatedShipment.dppComplianceBadgeVariant = "default";
                         updatedShipment.dppComplianceNotes = ["In transit to next checkpoint."];
@@ -395,6 +422,7 @@ export default function DppGlobalTrackerPage() {
             if (updatedShipment.simulationProgress >= 1) {
                  if(updatedShipment.simulatedStatus !== 'cleared') {
                     updatedShipment.simulatedStatus = 'cleared';
+                    toastType = 'status_change';
                     updatedShipment.dppComplianceStatusText = "All DPP Data Verified";
                     updatedShipment.dppComplianceBadgeVariant = "default";
                     updatedShipment.dppComplianceNotes = ["Customs cleared successfully."];
@@ -404,7 +432,7 @@ export default function DppGlobalTrackerPage() {
                   updatedShipment.progressPercentage = 100;
             }
 
-            if (updatedShipment.simulatedStatus !== prevStatus && updatedShipment.simulatedStatus !== 'compliance_alert') { 
+            if (toastType && updatedShipment.simulatedStatus !== prevStatus) { 
                 let toastMessage = `Shipment ${updatedShipment.id} is now ${updatedShipment.simulatedStatus.replace('_', ' ')}.`;
                 let toastVariant: 'default' | 'destructive' = 'default';
                 if (['delayed', 'customs_inspection', 'data_sync_delayed'].includes(updatedShipment.simulatedStatus)) {
@@ -413,7 +441,7 @@ export default function DppGlobalTrackerPage() {
                 } else if (updatedShipment.simulatedStatus === 'cleared') {
                     toastMessage = `Shipment ${updatedShipment.id} has cleared customs.`;
                 }
-                showShipmentToast(updatedShipment.id, updatedShipment.simulatedStatus, toastMessage, toastVariant);
+                showShipmentToast(updatedShipment.id, updatedShipment.simulatedStatus, toastMessage, toastVariant, toastType);
             }
             return updatedShipment;
           }
@@ -423,7 +451,7 @@ export default function DppGlobalTrackerPage() {
     }, SIMULATION_INTERVAL);
 
     return () => clearInterval(intervalId);
-  }, [mockArcsDataState, showShipmentToast]); // showShipmentToast is now stable
+  }, [mockArcsDataState, showShipmentToast]); 
 
 
   const filteredDppPoints = useMemo(() => {
@@ -659,6 +687,11 @@ export default function DppGlobalTrackerPage() {
       globeRefMain.current.pointOfView({ lat: 50, lng: 15, altitude: 2.2 }, 700); 
     }
   };
+  
+  const handleNotificationPrefChange = (prefKey: keyof typeof notificationPrefs, checked: boolean) => {
+    setNotificationPrefs(prev => ({ ...prev, [prefKey]: checked }));
+  };
+
 
   return (
     <div className="space-y-8 bg-background">
@@ -684,7 +717,7 @@ export default function DppGlobalTrackerPage() {
           <CardDescription>Adjust filters to refine the displayed data on the globe. Shipment simulation is active.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mb-6 items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mb-6 items-end">
             <div title="Filter DPP location points by their assigned category.">
               <Label htmlFor="category-filter" className="text-sm font-medium">Filter by Category (Locations)</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -723,7 +756,7 @@ export default function DppGlobalTrackerPage() {
                  </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 col-span-1 sm:col-span-2 lg:col-span-3 lg:justify-end">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 col-span-1 sm:col-span-2 lg:col-span-3 lg:justify-end mt-2 sm:mt-0">
                  <Button onClick={handleSimulateCheckpointUpdate} variant="outline" className="w-full sm:w-auto" title="Simulate random updates to customs checkpoint data.">
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Simulate Checkpoint Update
@@ -781,6 +814,37 @@ export default function DppGlobalTrackerPage() {
               </ChartContainer>
             </div>
           </div>
+        </CardContent>
+      </Card>
+      
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="font-headline flex items-center">
+            <BellRing className="mr-2 h-5 w-5 text-primary" /> Notification Preferences (Mock)
+          </CardTitle>
+          <CardDescription>Control which simulated toast notifications you receive from the Global Tracker.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-center justify-between p-3 border rounded-md bg-background">
+            <Label htmlFor="compliance-issues-pref" className="text-sm font-medium">Show Compliance Issue Toasts</Label>
+            <Switch id="compliance-issues-pref" checked={notificationPrefs.complianceIssues} onCheckedChange={(checked) => handleNotificationPrefChange('complianceIssues', checked)} />
+          </div>
+          <div className="flex items-center justify-between p-3 border rounded-md bg-background">
+            <Label htmlFor="shipment-delays-pref" className="text-sm font-medium">Show Shipment Delay Toasts</Label>
+            <Switch id="shipment-delays-pref" checked={notificationPrefs.shipmentDelays} onCheckedChange={(checked) => handleNotificationPrefChange('shipmentDelays', checked)} />
+          </div>
+          <div className="flex items-center justify-between p-3 border rounded-md bg-background">
+            <Label htmlFor="status-changes-pref" className="text-sm font-medium">Show General Status Change Toasts</Label>
+            <Switch id="status-changes-pref" checked={notificationPrefs.statusChanges} onCheckedChange={(checked) => handleNotificationPrefChange('statusChanges', checked)} />
+          </div>
+          <Button 
+            variant="outline" 
+            onClick={() => toast({title: "Mock Action", description: "Notification history would be displayed here."})}
+            className="mt-2"
+          >
+            <HistoryIcon className="mr-2 h-4 w-4" />
+            View Notification History (Mock)
+          </Button>
         </CardContent>
       </Card>
 

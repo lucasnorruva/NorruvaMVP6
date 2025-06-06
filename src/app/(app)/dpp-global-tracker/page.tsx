@@ -229,7 +229,7 @@ export default function DppGlobalTrackerPage() {
     "Raw Material Site": BROWN_COLOR,
     "Distribution Hub": ORANGE_COLOR,
     "Recycling Facility": DARK_GREEN_COLOR,
-    "Sea Route (Gradient)": `${SATURATED_BLUE} to ${VIBRANT_TEAL}`,
+    "Sea Route": `${SATURATED_BLUE} to ${VIBRANT_TEAL}`,
     "Air Route": ACCENT_PURPLE,
     "Road Route": ORANGE_COLOR,
     "Rail Route": CORNFLOWER_BLUE_COLOR,

@@ -4,10 +4,10 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, ExternalLink, GitBranch, Ship, Plane, Truck, Train, QrCode } from "lucide-react"; // Added QrCode
+import { X, ExternalLink, GitBranch, Ship, Plane, Truck, Train, QrCode, ShieldAlert } from "lucide-react"; // Added ShieldAlert
 import type { MockArc } from '@/app/(app)/dpp-global-tracker/page';
 import Link from 'next/link';
-import { useToast } from "@/hooks/use-toast"; // Added useToast
+import { useToast } from "@/hooks/use-toast";
 
 interface ArcInfoCardProps {
   arcData: MockArc;
@@ -25,7 +25,7 @@ const getTransportIcon = (transportMode?: MockArc['transportMode']) => {
 };
 
 export default function ArcInfoCard({ arcData, onClose }: ArcInfoCardProps) {
-  const { toast } = useToast(); // Initialize toast
+  const { toast } = useToast();
 
   const handleMockQrClick = () => {
     toast({
@@ -82,6 +82,12 @@ export default function ArcInfoCard({ arcData, onClose }: ArcInfoCardProps) {
               </>
             )}
             <p className="text-xs text-muted-foreground">This card shows information about a specific connection or movement in the supply chain.</p>
+          </div>
+          <div className="pt-3 mt-2 border-t border-border">
+            <p className="text-xs text-muted-foreground flex items-center">
+              <ShieldAlert className="h-3 w-3 mr-1.5 text-muted-foreground" />
+              DPP data may contain sensitive information. Handle with care according to GDPR and privacy policies.
+            </p>
           </div>
         </CardContent>
       </Card>

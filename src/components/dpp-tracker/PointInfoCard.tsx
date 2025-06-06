@@ -4,11 +4,11 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, ExternalLink, QrCode } from "lucide-react"; // Added QrCode icon
+import { X, ExternalLink, QrCode, ShieldAlert } from "lucide-react"; // Added ShieldAlert
 import type { MockDppPoint } from '@/app/(app)/dpp-global-tracker/page';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { useToast } from "@/hooks/use-toast"; // Added useToast
+import { useToast } from "@/hooks/use-toast";
 
 interface PointInfoCardProps {
   pointData: MockDppPoint;
@@ -16,7 +16,7 @@ interface PointInfoCardProps {
 }
 
 export default function PointInfoCard({ pointData, onClose }: PointInfoCardProps) {
-  const { toast } = useToast(); // Initialize toast
+  const { toast } = useToast();
 
   let statusColorClass = "text-muted-foreground";
   if (pointData.status === 'compliant') statusColorClass = "text-green-600";
@@ -62,6 +62,12 @@ export default function PointInfoCard({ pointData, onClose }: PointInfoCardProps
               <QrCode className="mr-2 h-4 w-4" />
               View Product DPP (QR Mock)
             </Button>
+          </div>
+          <div className="pt-3 mt-2 border-t border-border">
+            <p className="text-xs text-muted-foreground flex items-center">
+              <ShieldAlert className="h-3 w-3 mr-1.5 text-muted-foreground" />
+              DPP data may contain sensitive information. Handle with care according to GDPR and privacy policies.
+            </p>
           </div>
         </CardContent>
       </Card>

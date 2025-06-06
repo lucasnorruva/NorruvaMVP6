@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw, SearchCheck, BarChart3, BellRing, History as HistoryIcon, ChevronDown } from "lucide-react";
+import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw, SearchCheck, BarChart3, BellRing, History as HistoryIcon, ChevronDown, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
@@ -28,7 +28,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip } from 'recharts';
-import { ChartContainer } from '@/components/ui/chart';
+import { ChartConfig, ChartContainer } from '@/components/ui/chart';
 import { useRouter } from 'next/navigation';
 
 import GlobeVisualization from '@/components/dpp-tracker/GlobeVisualization';
@@ -63,6 +63,9 @@ export interface MockArc {
   timestamp: number;
   transportMode?: 'sea' | 'air' | 'road' | 'rail';
   productId?: string;
+  productCategory?: string; // Added from prompt
+  dppCompliant?: boolean; // Added from prompt
+  value?: number; // Trade volume, added from prompt
 }
 
 export interface MockCustomsCheckpoint {
@@ -106,9 +109,9 @@ export interface MockShipmentPoint {
 type NotificationType = 'compliance_alert' | 'delay_alert' | 'status_change';
 
 
-const EU_BLUE_COLOR = '#2563EB';
-const NON_EU_LAND_COLOR_LIGHT_BLUE = '#64748B'; // Gray for Non-EU
-const GLOBE_BACKGROUND_COLOR = '#0a0a0a'; // Dark space/night sky
+const EU_BLUE_COLOR = '#2563EB'; // As per prompt
+const NON_EU_LAND_COLOR_LIGHT_BLUE = '#64748B'; // As per prompt
+const GLOBE_BACKGROUND_COLOR = '#0a0a0a'; // As per prompt
 
 export const DPP_HEALTH_GOOD_COLOR = 'rgba(76, 175, 80, 0.9)';
 export const DPP_HEALTH_FAIR_COLOR = 'rgba(255, 235, 59, 0.9)';
@@ -119,15 +122,15 @@ export const CHECKPOINT_LAND_BORDER_COLOR = 'rgba(200, 100, 30, 0.9)';
 
 const SHIPMENT_IN_TRANSIT_COLOR_GLOBE = 'rgba(0, 123, 255, 0.9)';
 const SHIPMENT_AT_CUSTOMS_COLOR_GLOBE = 'rgba(255, 165, 0, 0.9)';
-const SHIPMENT_INSPECTION_COLOR_GLOBE = 'rgba(220, 53, 69, 0.9)';
+const SHIPMENT_INSPECTION_COLOR_GLOBE = 'rgba(220, 53, 69, 0.9)'; // Red for inspection
 const SHIPMENT_DELAYED_COLOR_GLOBE = 'rgba(255, 193, 7, 0.9)';
-const SHIPMENT_CLEARED_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)';
+const SHIPMENT_CLEARED_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)'; // Green for cleared
 const SHIPMENT_DATA_SYNC_DELAYED_COLOR_GLOBE = 'rgba(108, 117, 125, 0.9)';
 
-export const ARC_INBOUND_EU_COLOR = 'rgba(22, 163, 74, 0.8)'; // Green for Inbound (Import) - #16A34A
-export const ARC_OUTBOUND_EU_COLOR = 'rgba(245, 158, 11, 0.8)'; // Orange for Outbound (Export) - #F59E0B
-export const ARC_INTERNAL_EU_COLOR = 'rgba(139, 92, 246, 0.8)'; // Purple for Intra-EU - #8B5CF6
-export const ARC_DEFAULT_COLOR = 'rgba(128, 128, 128, 0.7)'; // Grey for other routes
+export const ARC_INBOUND_EU_COLOR = '#10B981'; // Green for Import (as per prompt)
+export const ARC_OUTBOUND_EU_COLOR = '#F59E0B'; // Orange for Export (as per prompt)
+export const ARC_INTERNAL_EU_COLOR = '#8B5CF6'; // Purple for Intra-EU (as per prompt)
+export const ARC_DEFAULT_COLOR = 'rgba(128, 128, 128, 0.7)';
 
 
 const EU_MEMBER_STATES = [
@@ -145,10 +148,10 @@ const initialMockPointsData: MockDppPoint[] = [
 ];
 
 const initialMockArcsData: MockArc[] = [
-  { id: 'arc1', shipmentId: 'SH001', direction: 'inbound_eu', startLat: 22.3193, startLng: 114.1694, endLat: 50.8503, endLng: 4.3517, label: 'Textiles to EU', stroke: 0.25, timestamp: 2023, transportMode: 'sea', productId: 'PROD_TEXTILE_A' },
-  { id: 'arc2', shipmentId: 'SH002', direction: 'internal_eu', startLat: 50.8503, startLng: 4.3517, endLat: 48.8566, endLng: 2.3522, label: 'Electronics Brussels to Paris', stroke: 0.2, timestamp: 2024, transportMode: 'road', productId: 'PROD_ELECTRONIC_B' },
-  { id: 'arc3', shipmentId: 'SH003', direction: 'outbound_eu', startLat: 48.8566, startLng: 2.3522, endLat: 40.7128, endLng: -74.0060, label: 'Luxury Goods EU to US', stroke: 0.2, timestamp: 2024, transportMode: 'air', productId: 'PROD_LUXURY_C' },
-  { id: 'arc4', shipmentId: 'SH004', direction: 'other', startLat: -33.8688, startLng: 151.2093, endLat: 35.6895, endLng: 139.6917, label: 'Components AUS to JPN', stroke: 0.15, timestamp: 2023, transportMode: 'sea', productId: 'PROD_COMP_D' },
+  { id: 'arc1', shipmentId: 'SH001', direction: 'inbound_eu', startLat: 22.3193, startLng: 114.1694, endLat: 50.8503, endLng: 4.3517, label: 'Textiles to EU', stroke: 0.25, timestamp: 2023, transportMode: 'sea', productId: 'PROD_TEXTILE_A', productCategory: 'Textiles', dppCompliant: false, value: 50000 },
+  { id: 'arc2', shipmentId: 'SH002', direction: 'internal_eu', startLat: 50.8503, startLng: 4.3517, endLat: 48.8566, endLng: 2.3522, label: 'Electronics Brussels to Paris', stroke: 0.2, timestamp: 2024, transportMode: 'road', productId: 'PROD_ELECTRONIC_B', productCategory: 'Electronics', dppCompliant: true, value: 20000 },
+  { id: 'arc3', shipmentId: 'SH003', direction: 'outbound_eu', startLat: 48.8566, startLng: 2.3522, endLat: 40.7128, endLng: -74.0060, label: 'Luxury Goods EU to US', stroke: 0.2, timestamp: 2024, transportMode: 'air', productId: 'PROD_LUXURY_C', productCategory: 'Apparel', dppCompliant: true, value: 75000 },
+  { id: 'arc4', shipmentId: 'SH004', direction: 'other', startLat: -33.8688, startLng: 151.2093, endLat: 35.6895, endLng: 139.6917, label: 'Components AUS to JPN', stroke: 0.15, timestamp: 2023, transportMode: 'sea', productId: 'PROD_COMP_D', productCategory: 'Electronics', dppCompliant: false, value: 30000 },
 ];
 
 const initialMockShipmentPointsData: MockShipmentPoint[] = [
@@ -246,7 +249,7 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
         {tradeFlowsVisible ? 'Hide Trade Flows' : 'Show Trade Flows'}
       </Button>
       <div>
-        <Label htmlFor="product-category-filter-control" className="text-xs font-medium">Filter Product Category (Trade Routes)</Label>
+        <Label htmlFor="product-category-filter-control" className="text-xs font-medium">Filter Trade Routes by Product Category</Label>
         <Select value={selectedCategory} onValueChange={onCategoryChange}>
           <SelectTrigger id="product-category-filter-control" className="w-full h-9 text-xs mt-1">
             <SelectValue placeholder="Select category" />
@@ -312,6 +315,7 @@ export default function DppGlobalTrackerPage() {
   const [selectedShipment, setSelectedShipment] = useState<MockShipmentPoint | null>(null);
   const [countryPolygons, setCountryPolygons] = useState<any[]>([]);
   const [isLoadingGeoJson, setIsLoadingGeoJson] = useState(true); 
+  const [geoJsonError, setGeoJsonError] = useState<boolean>(false);
   const globeRefMain = useRef<any | undefined>();
   const router = useRouter();
 
@@ -365,26 +369,39 @@ export default function DppGlobalTrackerPage() {
 
   useEffect(() => {
     setIsClient(true);
-    fetch('/ne_110m_admin_0_countries.geojson') // Assumes file is in /public
+    fetch('/ne_110m_admin_0_countries.geojson')
       .then(res => {
         if (!res.ok) {
           console.error(`GeoJSON fetch error: ${res.status} ${res.statusText} for URL ${res.url}`);
-          throw new Error(`Failed to fetch geojson: ${res.status}`);
+          // Do not throw error here to prevent Next.js error overlay for this specific fetch
+          setGeoJsonError(true);
+          toast({
+            title: "Error Loading Map Data",
+            description: `Could not load country boundaries (status: ${res.status}). Some map features may be unavailable.`,
+            variant: "destructive",
+          });
+          return null; // Return null to indicate failure
         }
         return res.json();
       })
       .then(data => {
-        setCountryPolygons(data.features);
+        if (data) {
+          setCountryPolygons(data.features);
+          setGeoJsonError(false);
+        }
+        // If data is null (fetch failed), geoJsonError is already true
         setIsLoadingGeoJson(false);
       })
       .catch(error => {
-        console.error("Error loading GeoJSON:", error);
+        // This catch block handles network errors or issues with res.json() itself
+        console.error("Error processing GeoJSON or network issue:", error.message);
         toast({
           title: "Error Loading Map Data",
-          description: "Could not load country boundaries. Some map features may be unavailable. Check console for details.",
+          description: "Could not load or process country boundaries. Some map features will be unavailable.",
           variant: "destructive",
         });
-        setIsLoadingGeoJson(false); 
+        setIsLoadingGeoJson(false);
+        setGeoJsonError(true);
       });
   }, [toast]);
 
@@ -402,7 +419,7 @@ export default function DppGlobalTrackerPage() {
 
     const now = Date.now();
     setLastToastForShipment(prev => {
-      if (!prev[shipmentId] || prev[shipmentId].status !== title || (now - (prev[shipmentId].timestamp || 0) > 10000)) { // Debounce same status toast for 10s
+      if (!prev[shipmentId] || prev[shipmentId].status !== title || (now - (prev[shipmentId].timestamp || 0) > 10000)) {
         setTimeout(() => { 
           toast({ title, description, variant });
         }, 0);
@@ -537,7 +554,7 @@ export default function DppGlobalTrackerPage() {
     if (!tradeFlowsVisible) return [];
     return mockArcsDataState.filter(arc => {
       const yearMatch = arc.timestamp <= yearFilter[0];
-      const arcProductCategory = initialMockPointsData.find(p => p.id === arc.productId)?.category || "Unknown";
+      const arcProductCategory = arc.productCategory || "Unknown";
       const categoryMatch = tradeRouteCategoryFilter === 'all' || arcProductCategory === tradeRouteCategoryFilter;
       return yearMatch && categoryMatch;
     });
@@ -573,12 +590,18 @@ export default function DppGlobalTrackerPage() {
     return Object.entries(counts).map(([category, count]) => ({ category, count }));
   }, [mockDppPointsDataState]);
 
-  const chartConfig = {
+  const chartConfig: ChartConfig = useMemo(() => ({
     count: {
       label: "Count",
       color: "hsl(var(--primary))",
     },
-  } satisfies import("@/components/ui/chart").ChartConfig;
+    status: {
+      label: "Status",
+    },
+    category: {
+      label: "Category",
+    }
+  }), []);
 
   const handlePointClick = useCallback((point: MockDppPoint | MockShipmentPoint) => {
     if ('simulatedStatus' in point && point.simulatedStatus) {
@@ -600,7 +623,7 @@ export default function DppGlobalTrackerPage() {
 
 
   const globeLegendMap = useMemo(() => ({
-    "Country Border": 'rgba(200, 200, 200, 0.6)',
+    "Country Border": 'rgba(200, 200, 200, 0.6)', // Keeping this for the "lined out" style
     "Route (Import into EU)": ARC_INBOUND_EU_COLOR,
     "Route (Export from EU)": ARC_OUTBOUND_EU_COLOR,
     "Route (Internal EU)": ARC_INTERNAL_EU_COLOR,
@@ -615,9 +638,9 @@ export default function DppGlobalTrackerPage() {
     "Checkpoint (DPP Good/Green 'G')": DPP_HEALTH_GOOD_COLOR,
     "Checkpoint (DPP Fair/Yellow 'F')": DPP_HEALTH_FAIR_COLOR,
     "Checkpoint (DPP Poor/Red 'P')": DPP_HEALTH_POOR_COLOR,
-    "Port (Blue 'S')": CHECKPOINT_PORT_COLOR,
-    "Airport (Purple 'A')": CHECKPOINT_AIRPORT_COLOR,
-    "Land Border (Orange 'L')": CHECKPOINT_LAND_BORDER_COLOR,
+    "Port (Blue 'S')": CHECKPOINT_PORT_COLOR, // For sprite 'S'
+    "Airport (Purple 'A')": CHECKPOINT_AIRPORT_COLOR, // For sprite 'A'
+    "Land Border (Orange 'L')": CHECKPOINT_LAND_BORDER_COLOR, // For sprite 'L'
   }), []);
 
 
@@ -682,10 +705,10 @@ export default function DppGlobalTrackerPage() {
       if (obj.status === 'compliant') return DPP_HEALTH_GOOD_COLOR;
       if (obj.status === 'pending') return DPP_HEALTH_FAIR_COLOR;
       if (obj.status === 'issue') return DPP_HEALTH_POOR_COLOR;
-      if (obj.category === 'Electronics') return 'rgba(0, 0, 255, 0.75)';
-      if (obj.category === 'Appliances') return 'rgba(128, 0, 128, 0.75)';
-      if (obj.category === 'Textiles') return 'rgba(255, 192, 203, 0.75)';
-      if (obj.icon) return 'rgba(255, 165, 0, 0.75)';
+      if (obj.category === 'Electronics') return EU_BLUE_COLOR; // Example specific color
+      if (obj.category === 'Appliances') return 'rgba(128, 0, 128, 0.85)'; // Purple
+      if (obj.category === 'Textiles') return 'rgba(255, 192, 203, 0.85)'; // Pinkish
+      if (obj.icon) return 'rgba(255, 165, 0, 0.85)'; // Orange if icon
       return 'grey';
     }
   }, []);
@@ -709,7 +732,7 @@ export default function DppGlobalTrackerPage() {
 
   const arcStrokeAccessor = useCallback((arc: MockArc): number => arc.stroke || 0.2, []);
   
-  const polygonCapColorAccessor = useCallback((feature: any) => 'rgba(0,0,0,0)', []); 
+  const polygonCapColorAccessor = useCallback(() => 'rgba(0,0,0,0)', []); 
   const polygonSideColorAccessor = useCallback(() => 'rgba(0,0,0,0)', []); 
   const polygonStrokeColorAccessor = useCallback(() => 'rgba(200, 200, 200, 0.6)', []); 
   const polygonAltitudeAccessor = useCallback(() => 0.001, []); 
@@ -736,9 +759,8 @@ export default function DppGlobalTrackerPage() {
   const availableTradeRouteCategories = useMemo(() => {
     const categories = new Set<string>();
     mockArcsDataState.forEach(arc => {
-      const product = initialMockPointsData.find(p => p.id === arc.productId);
-      if (product && product.category) {
-        categories.add(product.category);
+      if (arc.productCategory) {
+        categories.add(arc.productCategory);
       }
     });
     return Array.from(categories).sort();
@@ -776,9 +798,9 @@ export default function DppGlobalTrackerPage() {
         "Checkpoint (DPP Good/Green 'G')": DPP_HEALTH_GOOD_COLOR,
         "Checkpoint (DPP Fair/Yellow 'F')": DPP_HEALTH_FAIR_COLOR,
         "Checkpoint (DPP Poor/Red 'P')": DPP_HEALTH_POOR_COLOR,
-        "Port (Blue 'S')": CHECKPOINT_PORT_COLOR,
-        "Airport (Purple 'A')": CHECKPOINT_AIRPORT_COLOR,
-        "Land Border (Orange 'L')": CHECKPOINT_LAND_BORDER_COLOR,
+        "Port (Blue 'S')": CHECKPOINT_PORT_COLOR, // For sprite 'S'
+        "Airport (Purple 'A')": CHECKPOINT_AIRPORT_COLOR, // For sprite 'A'
+        "Land Border (Orange 'L')": CHECKPOINT_LAND_BORDER_COLOR, // For sprite 'L'
     });
     return map;
   }, [tradeFlowsVisible]);
@@ -802,8 +824,21 @@ export default function DppGlobalTrackerPage() {
         </div>
         <Button variant="outline" size="sm" onClick={() => router.back()}>Back to Dashboard</Button>
       </header>
+      
+      {isClient && geoJsonError && !isLoadingGeoJson && (
+        <div className="p-4 flex-shrink-0"> {/* Added flex-shrink-0 so it doesn't cause overflow */}
+          <Alert variant="destructive"> {/* Changed to destructive for more visibility */}
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Map Data Issue</AlertTitle>
+            <AlertDescription>
+              Could not load country border data. The globe will function, but borders may not be visible.
+              Please ensure 'ne_110m_admin_0_countries.geojson' is in the /public folder of your project.
+            </AlertDescription>
+          </Alert>
+        </div>
+      )}
 
-      <div className="flex-grow grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr] gap-0 relative">
+      <div className="flex-grow grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr] gap-0 relative min-h-0"> {/* Added min-h-0 */}
         <aside className="h-full bg-card border-r border-border p-3 space-y-3 overflow-y-auto print:hidden flex flex-col">
           <div className="flex-shrink-0">
             <Card className="shadow-md">
@@ -813,7 +848,13 @@ export default function DppGlobalTrackerPage() {
                 </CardTitle>
                 <ChevronDown className={`h-4 w-4 transition-transform ${isInfoPanelVisible ? '' : '-rotate-90'}`} />
               </CardHeader>
-              {isInfoPanelVisible && <InfoPanel />}
+              {isInfoPanelVisible && (
+                 <CardContent className="px-3 pb-3 text-xs text-muted-foreground space-y-1">
+                    <p>Visualize Digital Product Passport compliance and trade flows.</p>
+                    <p>Interact: Drag to rotate, scroll to zoom. Click on points/arcs for details.</p>
+                    <p>Data is simulated for demonstration purposes.</p>
+                </CardContent>
+              )}
             </Card>
           </div>
 
@@ -885,17 +926,22 @@ export default function DppGlobalTrackerPage() {
                   <ul className="list-disc list-inside text-muted-foreground">
                     {dppCategoryAnalyticsData.map(c => <li key={c.category}>{c.category}: {c.count}</li>)}
                   </ul>
-                  {/* Placeholder for a small chart */}
-                  <div className="h-32 w-full bg-muted/30 rounded-md flex items-center justify-center text-muted-foreground mt-2">
-                    Chart Placeholder
-                  </div>
+                   <ChartContainer config={chartConfig} className="aspect-square h-[200px] w-full mt-2">
+                    <BarChart data={shipmentStatusAnalyticsData} layout="vertical" margin={{ left: 10, right:10 }}>
+                      <CartesianGrid horizontal={false} strokeDasharray="3 3" />
+                      <XAxis type="number" dataKey="count" tick={{ fontSize: 10 }} />
+                      <YAxis type="category" dataKey="status" tick={{ fontSize: 10, width: 80, textAnchor: 'end' }} interval={0} />
+                      <RechartsTooltip cursor={{fill: 'hsl(var(--muted))'}} contentStyle={{backgroundColor: 'hsl(var(--background))', fontSize: '10px', padding: '2px 4px'}}/>
+                      <Bar dataKey="count" fill="hsl(var(--primary))" radius={2} />
+                    </BarChart>
+                  </ChartContainer>
                 </CardContent>
               )}
             </Card>
           </div>
         </aside>
 
-        <main className="h-full w-full relative">
+        <main className={cn("h-full w-full relative", (isClient && geoJsonError && !isLoadingGeoJson) && "border-destructive border-2")}>
           {isLoadingGeoJson ? (
              <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -917,7 +963,7 @@ export default function DppGlobalTrackerPage() {
                         if ('simulatedStatus' in p) { 
                            legendKey = `Shipment (${p.simulatedStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())})`;
                         } else { 
-                           legendKey = `DPP Location (${p.status.charAt(0).toUpperCase() + p.status.slice(1)} Compliance)`;
+                           legendKey = `DPP Location (${(p.status || 'unknown').charAt(0).toUpperCase() + (p.status || 'unknown').slice(1)} Compliance)`;
                         }
                         return legendVisibility[legendKey] !== false; 
                       })}
@@ -928,9 +974,9 @@ export default function DppGlobalTrackerPage() {
                         const otherVisible = legendVisibility["Route (Other)"] !== false;
                         return importVisible || exportVisible || internalVisible || otherVisible;
                       })}
-                      polygonsData={legendVisibility["Country Border"] ? countryPolygons : []}
+                      polygonsData={legendVisibility["Country Border"] && !geoJsonError ? countryPolygons : []}
                       customsCheckpointsData={mockCustomsCheckpointsDataState.filter(cp => {
-                        const healthKey = `Checkpoint (DPP ${cp.dppComplianceHealth.charAt(0).toUpperCase() + cp.dppComplianceHealth.slice(1)}/${cp.dppComplianceHealth.charAt(0).toUpperCase()})`;
+                        const healthKey = `Checkpoint (DPP ${(cp.dppComplianceHealth || 'unknown').charAt(0).toUpperCase() + (cp.dppComplianceHealth || 'unknown').slice(1)}/${(cp.dppComplianceHealth || 'unknown').charAt(0).toUpperCase()})`;
                         const typeKey = `${cp.type.charAt(0).toUpperCase() + cp.type.slice(1).replace('_', ' ')} (${cp.type.charAt(0).toUpperCase()})`;
                         return legendVisibility[healthKey] !== false && legendVisibility[typeKey] !== false;
                       })}
@@ -947,8 +993,8 @@ export default function DppGlobalTrackerPage() {
                       polygonAltitudeAccessor={polygonAltitudeAccessor}
                       globeBackgroundColor={GLOBE_BACKGROUND_COLOR}
                       globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
-                      atmosphereColor="#3a82f6"
-                      atmosphereAltitude={0.25}
+                      atmosphereColor="#3a82f6" // As per prompt
+                      atmosphereAltitude={0.25} // As per prompt
                   />
               )}
               </Suspense>
@@ -989,7 +1035,7 @@ export default function DppGlobalTrackerPage() {
         </AlertDialog>
       )}
 
-      <div className="p-3 border-t border-border bg-card print:hidden">
+      <div className="p-3 border-t border-border bg-card print:hidden flex-shrink-0"> {/* Added flex-shrink-0 */}
           <Card className="shadow-md">
             <CardHeader className="pb-3 pt-4 px-4">
               <CardTitle className="text-base font-semibold flex items-center">

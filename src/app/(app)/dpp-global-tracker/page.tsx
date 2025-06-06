@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } fr
 import { feature as topojsonFeature } from 'topojson-client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw } from "lucide-react"; // Added RefreshCw
+import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
@@ -15,7 +15,7 @@ import ArcInfoCard from '@/components/dpp-tracker/ArcInfoCard';
 import CheckpointInfoCard from '@/components/dpp-tracker/CheckpointInfoCard';
 import ShipmentInfoCard from '@/components/dpp-tracker/ShipmentInfoCard';
 import { cn } from "@/lib/utils";
-import { useToast } from '@/hooks/use-toast'; // Added useToast
+import { useToast } from '@/hooks/use-toast';
 
 const GlobeVisualization = React.lazy(() => import('@/components/dpp-tracker/GlobeVisualization'));
 
@@ -78,6 +78,10 @@ export interface MockShipmentPoint {
   dppComplianceBadgeVariant?: 'default' | 'secondary' | 'outline' | 'destructive';
   eta?: string; 
   progressPercentage?: number; 
+  // For simulation
+  currentLat?: number;
+  currentLng?: number;
+  simulationProgress?: number; // 0 to 1
 }
 
 
@@ -131,8 +135,11 @@ const initialMockShipmentPointsData: MockShipmentPoint[] = initialMockArcsData.m
     etaDate.setDate(etaDate.getDate() + (index + 1) * 7); 
     return {
         id: arc.shipmentId,
-        lat: arc.endLat, 
-        lng: arc.endLng,
+        lat: arc.startLat, // Start at the arc's origin for simulation
+        lng: arc.startLng, // Start at the arc's origin for simulation
+        currentLat: arc.startLat,
+        currentLng: arc.startLng,
+        simulationProgress: 0,
         name: `Shipment ${arc.shipmentId}`,
         size: 0.15, 
         direction: arc.direction,
@@ -142,7 +149,7 @@ const initialMockShipmentPointsData: MockShipmentPoint[] = initialMockArcsData.m
         dppComplianceStatusText: index % 3 === 0 ? "All DPP Data Verified" : (index % 3 === 1 ? "Pending Battery Passport" : "CBAM Declaration Missing"),
         dppComplianceBadgeVariant: index % 3 === 0 ? "default" : (index % 3 === 1 ? "outline" : "destructive"),
         eta: etaDate.toISOString().split('T')[0],
-        progressPercentage: Math.floor(Math.random() * 70) + 30, 
+        progressPercentage: 0, 
     };
 });
 
@@ -207,6 +214,10 @@ const DppGlobalTrackerClientContainer: React.FC<any & {isClient: boolean}> = ({ 
   );
 };
 
+const SHIPMENTS_TO_SIMULATE = ['SH001', 'SH004']; // IDs of shipments to simulate movement for
+const SIMULATION_INTERVAL = 2000; // milliseconds
+const SIMULATION_STEP = 0.02; // progress per interval (e.g., 0.02 means 50 steps to complete)
+
 export default function DppGlobalTrackerPage() {
   const [isClient, setIsClient] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<MockDppPoint | null>(null);
@@ -218,7 +229,7 @@ export default function DppGlobalTrackerPage() {
   
   const [yearFilter, setYearFilter] = useState<number[]>([new Date().getFullYear()]);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
-  const { toast } = useToast(); // Initialize toast
+  const { toast } = useToast();
 
   const [mockDppPointsData, setMockDppPointsData] = useState<MockDppPoint[]>(initialMockPointsData);
   const [mockArcsDataState, setMockArcsDataState] = useState<MockArc[]>(initialMockArcsData);
@@ -242,6 +253,52 @@ export default function DppGlobalTrackerPage() {
       });
   }, []);
 
+  // Shipment Movement Simulation Effect
+  useEffect(() => {
+    let simulationToastShown = false;
+    const intervalId = setInterval(() => {
+      if (!simulationToastShown && SHIPMENTS_TO_SIMULATE.length > 0) {
+        toast({
+          title: "Shipment Simulation Active",
+          description: "Mock shipments are now moving on the globe.",
+        });
+        simulationToastShown = true;
+      }
+
+      setMockShipmentPointsDataState(prevShipments =>
+        prevShipments.map(shipment => {
+          if (SHIPMENTS_TO_SIMULATE.includes(shipment.id)) {
+            const arc = mockArcsDataState.find(a => a.id === shipment.arcId);
+            if (!arc) return shipment;
+
+            let currentSimProgress = shipment.simulationProgress || 0;
+            if (currentSimProgress >= 1) return { ...shipment, lat: arc.endLat, lng: arc.endLng, progressPercentage: 100 }; // Stop at end
+
+            currentSimProgress += SIMULATION_STEP;
+            if (currentSimProgress > 1) currentSimProgress = 1;
+
+            const newLat = arc.startLat + (arc.endLat - arc.startLat) * currentSimProgress;
+            const newLng = arc.startLng + (arc.endLng - arc.startLng) * currentSimProgress;
+            
+            return {
+              ...shipment,
+              lat: newLat,
+              lng: newLng,
+              currentLat: newLat, // Update currentLat/Lng if you use these specific fields
+              currentLng: newLng,
+              simulationProgress: currentSimProgress,
+              progressPercentage: Math.round(currentSimProgress * 100),
+            };
+          }
+          return shipment;
+        })
+      );
+    }, SIMULATION_INTERVAL);
+
+    return () => clearInterval(intervalId);
+  }, [mockArcsDataState, toast]); // Add toast to dependencies if used inside
+
+
   const filteredDppPoints = useMemo(() => {
     return mockDppPointsData.filter(point => {
       const yearMatch = point.timestamp <= yearFilter[0];
@@ -257,14 +314,12 @@ export default function DppGlobalTrackerPage() {
     });
   }, [mockArcsDataState, yearFilter]);
 
-  const filteredShipmentPoints = useMemo(() => {
-    const visibleArcIds = new Set(filteredArcs.map(arc => arc.id));
-    return mockShipmentPointsDataState.filter(sp => visibleArcIds.has(sp.arcId));
-  }, [mockShipmentPointsDataState, filteredArcs]);
-
+  // Shipment points are now directly taken from state, as their lat/lng will be updated by simulation
   const combinedPointsForGlobe = useMemo(() => {
-    return [...filteredDppPoints, ...filteredShipmentPoints];
-  }, [filteredDppPoints, filteredShipmentPoints]);
+    const visibleArcIds = new Set(filteredArcs.map(arc => arc.id));
+    const currentShipments = mockShipmentPointsDataState.filter(sp => visibleArcIds.has(sp.arcId));
+    return [...filteredDppPoints, ...currentShipments];
+  }, [filteredDppPoints, mockShipmentPointsDataState, filteredArcs]);
 
 
   const pointColorAccessor = useCallback((point: MockDppPoint | MockShipmentPoint) => {
@@ -372,7 +427,7 @@ export default function DppGlobalTrackerPage() {
 
     setMockCustomsCheckpointsDataState(prevCheckpoints => {
       const updatedCheckpoints = [...prevCheckpoints];
-      const numToUpdate = Math.min(2, updatedCheckpoints.length); // Update 1 or 2 checkpoints
+      const numToUpdate = Math.min(2, updatedCheckpoints.length);
       const updatedNames: string[] = [];
 
       for (let i = 0; i < numToUpdate; i++) {
@@ -414,14 +469,14 @@ export default function DppGlobalTrackerPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Global Product Passport Visualization</CardTitle>
-          <CardDescription>Interact with the globe to explore product origins, supply chains, and compliance status across regions.</CardDescription>
+          <CardDescription>Interact with the globe to explore product origins, supply chains, and compliance status across regions. Shipment simulation is active.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 items-end">
             <div>
               <Label htmlFor="category-filter" className="text-sm font-medium">Filter by Category (Locations)</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger id="category-filter">
+                <SelectTrigger id="category-filter" className="w-full">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>

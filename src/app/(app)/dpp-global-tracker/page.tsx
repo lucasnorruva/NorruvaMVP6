@@ -1,11 +1,11 @@
 
 "use client";
 
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Construction, Globe as GlobeIcon, AlertTriangle, Loader2, Palette, Info, MapPin, ChevronRight } from "lucide-react";
+import { Construction, Globe as GlobeIcon, AlertTriangle, Loader2, Palette, Info, MapPin, ChevronRight, Building, Users as UsersIcon, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { GlobeMethods } from 'react-globe.gl';
 
@@ -57,7 +57,7 @@ export default function DppGlobalTrackerPage() {
         if (!res.ok) {
           const errorMsg = `GeoJSON fetch error: ${res.status} ${res.statusText} for URL ${res.url}`;
           console.warn(errorMsg); 
-          setGeoJsonError(errorMsg);
+          setGeoJsonError(errorMsg); // Set the error message state
           toast({
             variant: "destructive",
             title: "Map Data Error",
@@ -70,10 +70,11 @@ export default function DppGlobalTrackerPage() {
       .then(data => {
         if (data && data.features) {
           setCountryPolygons(data.features);
-          setGeoJsonError(null); 
+          setGeoJsonError(null); // Clear any previous error
         } else if (data === null) {
-          // Error already handled
-        } else {
+          // Error already handled by setting geoJsonError and toasting
+        }
+         else {
           console.warn("GeoJSON data is not in the expected format or is empty:", data);
           setGeoJsonError("GeoJSON data is not in the expected format.");
           toast({ variant: "destructive", title: "Map Data Format Error", description: "Country data could not be processed." });
@@ -111,17 +112,15 @@ export default function DppGlobalTrackerPage() {
       if (globeRefMain.current && feature.geometry && feature.geometry.coordinates) {
         // This part is tricky as GeoJSON coordinates can be complex (MultiPolygon)
         // For simplicity, we might need a pre-calculated centroid or use a library
-        // For now, just log it
         console.log("Clicked country:", feature.properties.NAME || feature.properties.ADMIN);
       }
     }
   };
 
-
   const dynamicGlobeLegendMap = {
-    "EU Member State": EU_BLUE_COLOR,
-    "Non-EU Country": NON_EU_GREY_COLOR,
-    "Country Border": COUNTRY_BORDER_COLOR,
+    "EU Member State (Dark Blue Fill)": EU_BLUE_COLOR,
+    "Non-EU Country (Light Grey Fill)": NON_EU_GREY_COLOR,
+    "Country Border (Black)": COUNTRY_BORDER_COLOR,
   };
 
   if (!isClient) {
@@ -162,13 +161,21 @@ export default function DppGlobalTrackerPage() {
             </CardHeader>
             <CardContent>
               {selectedCountryInfo ? (
-                <div>
-                  <h3 className="font-medium text-base text-primary mb-1">
+                <div className="space-y-1.5 text-sm">
+                  <h3 className="font-semibold text-base text-primary mb-1.5 flex items-center">
+                    <MapPin className="h-4 w-4 mr-1.5 text-primary/80" />
                     {selectedCountryInfo.NAME || selectedCountryInfo.ADMIN || "Unknown Country"}
                   </h3>
-                  {selectedCountryInfo.ISO_A2 && <p className="text-xs text-muted-foreground">Code: {selectedCountryInfo.ISO_A2}</p>}
-                  {typeof selectedCountryInfo.POP_EST === 'number' && <p className="text-xs text-muted-foreground">Est. Population: {selectedCountryInfo.POP_EST.toLocaleString()}</p>}
-                  {/* Add more details as needed */}
+                  {selectedCountryInfo.ISO_A2 && (
+                    <p><strong className="text-foreground/80">Code:</strong> <span className="text-muted-foreground">{selectedCountryInfo.ISO_A2}</span></p>
+                  )}
+                  {typeof selectedCountryInfo.POP_EST === 'number' && (
+                    <p><strong className="text-foreground/80 flex items-center"><UsersIcon className="h-4 w-4 mr-1.5 text-muted-foreground" />Est. Population:</strong> <span className="text-muted-foreground">{selectedCountryInfo.POP_EST.toLocaleString()}</span></p>
+                  )}
+                  {/* Placeholder for future DPP compliance status */}
+                  <div className="pt-2 mt-2 border-t border-border/50">
+                     <p className="flex items-center"><Shield className="h-4 w-4 mr-1.5 text-muted-foreground" /><strong className="text-foreground/80">DPP Compliance:</strong> <Badge variant="outline" className="ml-2 text-xs">Pending (Mock)</Badge></p>
+                  </div>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">Click on a country on the globe to see its details here.</p>
@@ -199,7 +206,7 @@ export default function DppGlobalTrackerPage() {
                     <MapPin className="mr-2 h-4 w-4"/> Focus Europe
                 </Button>
                  <Button variant="outline" size="sm" className="w-full" onClick={() => {
-                     const controls = globeRefMain.current?.controls();
+                     const controls = globeRefMain.current?.controls() as any; // Cast to any to access autoRotate
                      if (controls) controls.autoRotate = !controls.autoRotate;
                  }}>
                     <ChevronRight className="mr-2 h-4 w-4"/> Toggle Rotation
@@ -216,7 +223,7 @@ export default function DppGlobalTrackerPage() {
             </div>
           )}
           {!isLoadingGeoJson && (
-            <React.Suspense fallback={
+            <Suspense fallback={
               <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-50">
                 <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
                 <p className="text-primary-foreground">Initializing 3D Globe...</p>
@@ -236,13 +243,8 @@ export default function DppGlobalTrackerPage() {
                 polygonAltitude={polygonAltitudeAccessor}
                 onPolygonClick={handlePolygonClick}
                 polygonsTransitionDuration={300}
-                pointsData={[]}
-                arcsData={[]}
-                customLayerData={[]}
-                labelsData={[]}
-                htmlElementsData={[]}
               />
-            </React.Suspense>
+            </Suspense>
           )}
         </div>
       </main>

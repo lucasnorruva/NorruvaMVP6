@@ -2,10 +2,9 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } from 'react';
-// import { feature as topojsonFeature } from 'topojson-client'; // Temporarily unused
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw, SearchCheck, BarChart3, BellRing, History as HistoryIcon } from "lucide-react";
+import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw, SearchCheck, BarChart3, BellRing, History as HistoryIcon, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
@@ -106,10 +105,10 @@ export interface MockShipmentPoint {
 type NotificationType = 'compliance_alert' | 'delay_alert' | 'status_change';
 
 
-const EU_BLUE_COLOR = 'rgba(0, 80, 150, 0.95)';
-const NON_EU_LAND_COLOR_LIGHT_BLUE = 'rgba(173, 216, 230, 0.95)';
-const BORDER_COLOR_MEDIUM_BLUE = 'rgba(70, 130, 180, 0.7)';
-const GLOBE_BACKGROUND_COLOR = '#000033';
+const EU_BLUE_COLOR = '#2563EB';
+const NON_EU_LAND_COLOR_LIGHT_BLUE = '#64748B';
+const BORDER_COLOR_MEDIUM_BLUE = 'rgba(70, 130, 180, 0.7)'; // Used for initial border, might be overridden
+const GLOBE_BACKGROUND_COLOR = '#0a0a0a'; // Dark space/night sky
 
 export const DPP_HEALTH_GOOD_COLOR = 'rgba(76, 175, 80, 0.9)';
 export const DPP_HEALTH_FAIR_COLOR = 'rgba(255, 235, 59, 0.9)';
@@ -125,10 +124,20 @@ const SHIPMENT_DELAYED_COLOR_GLOBE = 'rgba(255, 193, 7, 0.9)';
 const SHIPMENT_CLEARED_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)';
 const SHIPMENT_DATA_SYNC_DELAYED_COLOR_GLOBE = 'rgba(108, 117, 125, 0.9)';
 
-export const ARC_INBOUND_EU_COLOR = 'rgba(50, 120, 220, 0.8)';
-export const ARC_OUTBOUND_EU_COLOR = 'rgba(30, 180, 100, 0.8)';
-export const ARC_INTERNAL_EU_COLOR = 'rgba(150, 100, 200, 0.8)';
-export const ARC_DEFAULT_COLOR = 'rgba(128, 128, 128, 0.7)';
+export const ARC_INBOUND_EU_COLOR = 'rgba(50, 120, 220, 0.8)'; // Blueish
+export const ARC_OUTBOUND_EU_COLOR = 'rgba(30, 180, 100, 0.8)'; // Greenish
+export const ARC_INTERNAL_EU_COLOR = 'rgba(150, 100, 200, 0.8)'; // Purplish
+export const ARC_DEFAULT_COLOR = 'rgba(128, 128, 128, 0.7)'; // Grey for other routes
+
+
+const EU_MEMBER_STATES = [ // As per User Prompt
+  "Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czech Republic", 
+  "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", 
+  "Ireland", "Italy", "Latvia", "Lithuania", "Luxembourg", "Malta", 
+  "Netherlands", "Poland", "Portugal", "Romania", "Slovakia", "Slovenia", 
+  "Spain", "Sweden"
+];
+
 
 const initialMockPointsData: MockDppPoint[] = [
   { id: 'eu_electronics_factory', lat: 50.8503, lng: 4.3517, name: 'EU Electronics Hub (Brussels)', size: 0.3, category: 'Electronics', status: 'compliant', timestamp: 2024, manufacturer: 'EuroChip', gtin: '111222333', icon: PackageIcon },
@@ -146,7 +155,7 @@ const initialMockShipmentPointsData: MockShipmentPoint[] = [
   { id: 'SH001', lat: 22.3193, lng: 114.1694, name: 'Textile Shipment Alpha', size: 0.15, direction: 'inbound_eu', arcId: 'arc1', productIconUrl: 'https://placehold.co/40x40.png?text=FAB', dppComplianceStatusText: 'Pending Customs Data', dppComplianceBadgeVariant: 'outline', simulatedStatus: 'in_transit', eta: '2024-08-15', progressPercentage: 10, ceMarkingStatus: 'not_applicable', cbamDeclarationStatus: 'required', dppComplianceNotes: ["Awaiting Bill of Lading verification."] },
   { id: 'SH002', lat: 50.8503, lng: 4.3517, name: 'Electronics Batch Beta', size: 0.15, direction: 'internal_eu', arcId: 'arc2', productIconUrl: 'https://placehold.co/40x40.png?text=CHIP', dppComplianceStatusText: 'DPP Verified', dppComplianceBadgeVariant: 'default', simulatedStatus: 'in_transit', eta: '2024-08-05', progressPercentage: 30, ceMarkingStatus: 'valid', cbamDeclarationStatus: 'not_applicable', dppComplianceNotes: ["All documents aligned."] },
   { id: 'SH003', lat: 48.8566, lng: 2.3522, name: 'Luxury Goods Gamma', size: 0.15, direction: 'outbound_eu', arcId: 'arc3', productIconUrl: 'https://placehold.co/40x40.png?text=BAG', dppComplianceStatusText: 'Awaiting Export Approval', dppComplianceBadgeVariant: 'outline', simulatedStatus: 'at_customs', eta: '2024-08-10', progressPercentage: 0, ceMarkingStatus: 'valid', cbamDeclarationStatus: 'not_applicable', dppComplianceNotes: ["Export license pending."] },
-  { id: 'SH004', lat: -33.8688, lng: 151.2093, name: 'Components Delta', size: 0.15, direction: 'other', arcId: 'arc4', productIconUrl: 'https://placehold.co/40x40.png?text=COMP', dppComplianceStatusText: 'Data Sync Delayed', dppComplianceBadgeVariant: 'secondary', simulatedStatus: 'data_sync_delayed', eta: '2024-08-20', progressPercentage: 5, ceMarkingStatus: 'not_applicable', cbamDeclarationStatus: 'not_applicable', dppComplianceNotes: ["Origin country data system offline."] },
+  { id: 'SH004', lat: -33.8688, startLng: 151.2093, name: 'Components Delta', size: 0.15, direction: 'other', arcId: 'arc4', productIconUrl: 'https://placehold.co/40x40.png?text=COMP', dppComplianceStatusText: 'Data Sync Delayed', dppComplianceBadgeVariant: 'secondary', simulatedStatus: 'data_sync_delayed', eta: '2024-08-20', progressPercentage: 5, ceMarkingStatus: 'not_applicable', cbamDeclarationStatus: 'not_applicable', dppComplianceNotes: ["Origin country data system offline."] },
 ];
 
 const initialMockCustomsCheckpointsData: MockCustomsCheckpoint[] = [
@@ -159,7 +168,7 @@ const SHIPMENTS_TO_SIMULATE = ['SH001', 'SH002', 'SH003', 'SH004'];
 const SIMULATION_INTERVAL = 3000; 
 const SIMULATION_STEP = 0.01; 
 
-const Legend: React.FC<{ title: string; colorMap: Record<string, string>, className?: string }> = ({ title, colorMap, className }) => (
+const Legend: React.FC<{ title: string; colorMap: Record<string, string>, className?: string, onToggleVisibility?: (key: string) => void, visibility?: Record<string, boolean> }> = ({ title, colorMap, className, onToggleVisibility, visibility }) => (
   <Card className={cn("shadow-md", className)}>
     <CardHeader className="pb-2 pt-3 px-3">
       <CardTitle className="text-sm font-semibold flex items-center">
@@ -167,15 +176,93 @@ const Legend: React.FC<{ title: string; colorMap: Record<string, string>, classN
         {title}
       </CardTitle>
     </CardHeader>
-    <CardContent className="px-3 pb-3 flex flex-wrap gap-x-4 gap-y-1">
+    <CardContent className="px-3 pb-3 grid grid-cols-1 gap-y-1">
       {Object.entries(colorMap).map(([name, color]) => (
-        <div key={name} className="flex items-center text-xs min-w-[140px]">
-          <span className="h-3 w-3 rounded-sm mr-2 border" style={{ backgroundColor: color.startsWith("rgba") || color.startsWith("#") ? color : undefined,
+        <div key={name} className="flex items-center text-xs">
+          {onToggleVisibility && visibility && (
+             <Switch
+              id={`legend-toggle-${name.replace(/\s+/g, '-')}`}
+              checked={visibility[name]}
+              onCheckedChange={() => onToggleVisibility(name)}
+              className="mr-2 h-4 w-7 [&>span]:h-3 [&>span]:w-3 [&>span[data-state=checked]]:translate-x-3.5 [&>span[data-state=unchecked]]:translate-x-0.5"
+            />
+          )}
+          <span className={`h-3 w-3 rounded-sm mr-2 border ${onToggleVisibility && visibility && !visibility[name] ? 'opacity-30' : ''}`} style={{ 
+            backgroundColor: color.startsWith("rgba") || color.startsWith("#") ? color : undefined,
             backgroundImage: name.toLowerCase().includes("gradient") || name.toLowerCase().includes(" to ") ? `linear-gradient(to right, ${color.split(' to ')[0]}, ${color.split(' to ')[1] || color.split(' to ')[0]})` : undefined
           }} />
-          <span>{name}</span>
+          <label htmlFor={`legend-toggle-${name.replace(/\s+/g, '-')}`} className={`flex-1 ${onToggleVisibility && visibility && !visibility[name] ? 'opacity-50' : ''}`}>
+            {name}
+          </label>
         </div>
       ))}
+    </CardContent>
+  </Card>
+);
+
+interface ControlPanelProps {
+  onFocusEurope: () => void;
+  onToggleRotation: () => void;
+  isRotating: boolean;
+  productCategories: string[];
+  selectedCategory: string;
+  onCategoryChange: (category: string) => void;
+  onToggleTradeFlows: () => void;
+  tradeFlowsVisible: boolean;
+}
+
+const ControlPanel: React.FC<ControlPanelProps> = ({ 
+  onFocusEurope, onToggleRotation, isRotating, 
+  productCategories, selectedCategory, onCategoryChange,
+  onToggleTradeFlows, tradeFlowsVisible 
+}) => (
+  <Card className="shadow-lg">
+    <CardHeader className="pb-3 pt-4 px-4">
+      <CardTitle className="text-base font-semibold flex items-center">
+        <Settings2 className="h-5 w-5 mr-2 text-primary" />
+        Controls
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="px-4 pb-4 space-y-3">
+      <Button onClick={onFocusEurope} variant="outline" size="sm" className="w-full justify-start">
+        <MapPin className="h-4 w-4 mr-2" /> Focus on Europe
+      </Button>
+      <Button onClick={onToggleRotation} variant="outline" size="sm" className="w-full justify-start">
+        <RefreshCw className={`h-4 w-4 mr-2 ${isRotating ? 'animate-spin-slow' : ''}`} />
+        {isRotating ? 'Stop Rotation' : 'Start Rotation'}
+      </Button>
+      <Button onClick={onToggleTradeFlows} variant="outline" size="sm" className="w-full justify-start">
+        <Route className="h-4 w-4 mr-2" />
+        {tradeFlowsVisible ? 'Hide Trade Flows' : 'Show Trade Flows'}
+      </Button>
+      <div>
+        <Label htmlFor="product-category-filter-control" className="text-xs font-medium">Filter Product Category (Trade Routes)</Label>
+        <Select value={selectedCategory} onValueChange={onCategoryChange}>
+          <SelectTrigger id="product-category-filter-control" className="w-full h-9 text-xs mt-1">
+            <SelectValue placeholder="Select category" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Categories</SelectItem>
+            {productCategories.map(cat => <SelectItem key={cat} value={cat}>{cat}</SelectItem>)}
+          </SelectContent>
+        </Select>
+      </div>
+    </CardContent>
+  </Card>
+);
+
+const InfoPanel: React.FC = () => (
+  <Card className="shadow-lg max-w-sm">
+    <CardHeader className="pb-3 pt-4 px-4">
+      <CardTitle className="text-base font-semibold flex items-center">
+        <Info className="h-5 w-5 mr-2 text-primary" />
+        DPP Global Tracker
+      </CardTitle>
+    </CardHeader>
+    <CardContent className="px-4 pb-4 text-xs text-muted-foreground space-y-1">
+      <p>Visualize Digital Product Passport compliance and trade flows.</p>
+      <p>Interact: Drag to rotate, scroll to zoom. Click on points/arcs for details.</p>
+      <p>Data is simulated for demonstration purposes.</p>
     </CardContent>
   </Card>
 );
@@ -188,11 +275,11 @@ export default function DppGlobalTrackerPage() {
   const [selectedCheckpoint, setSelectedCheckpoint] = useState<MockCustomsCheckpoint | null>(null);
   const [selectedShipment, setSelectedShipment] = useState<MockShipmentPoint | null>(null);
   const [countryPolygons, setCountryPolygons] = useState<any[]>([]);
-  const [isLoadingGeoJson, setIsLoadingGeoJson] = useState(false);
+  const [isLoadingGeoJson, setIsLoadingGeoJson] = useState(true); // Start true
   const globeRefMain = useRef<any | undefined>();
 
   const [yearFilter, setYearFilter] = useState<number[]>([new Date().getFullYear()]);
-  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all'); // For DPP Points
   const [shipmentStatusFilter, setShipmentStatusFilter] = useState<MockShipmentPoint['simulatedStatus'] | 'all'>('all');
   const { toast } = useToast();
   const { currentRole } = useRole();
@@ -214,12 +301,57 @@ export default function DppGlobalTrackerPage() {
     statusChanges: true,
   });
 
+  const [isGlobeRotating, setIsGlobeRotating] = useState(false);
+  const [tradeFlowsVisible, setTradeFlowsVisible] = useState(true);
+  const [tradeRouteCategoryFilter, setTradeRouteCategoryFilter] = useState('all');
+
+  const [legendVisibility, setLegendVisibility] = useState<Record<string, boolean>>({
+    "Country Border": true,
+    "Route (Inbound EU)": true,
+    "Route (Outbound EU)": true,
+    "Route (Internal EU)": true,
+    "Route (Other)": true,
+    "DPP Location (Good Compliance)": true,
+    "DPP Location (Fair Compliance)": true,
+    "DPP Location (Poor Compliance)": true,
+    "Shipment (In Transit)": true,
+    "Shipment (At Customs)": true,
+    "Shipment (Inspection)": true,
+    "Shipment (Cleared)": true,
+    "Checkpoint (DPP Good/Green 'G')": true,
+    "Checkpoint (DPP Fair/Yellow 'F')": true,
+    "Checkpoint (DPP Poor/Red 'P')": true,
+    "Port (Blue 'S')": true,
+    "Airport (Purple 'A')": true,
+    "Land Border (Orange 'L')": true,
+  });
+
   useEffect(() => {
     setIsClient(true);
-    // GeoJSON fetching is currently disabled.
-  }, []);
+    fetch('/ne_110m_admin_0_countries.geojson')
+      .then(res => {
+        if (!res.ok) {
+          throw new Error(`Failed to fetch geojson: ${res.status}`);
+        }
+        return res.json();
+      })
+      .then(data => {
+        setCountryPolygons(data.features);
+        setIsLoadingGeoJson(false);
+      })
+      .catch(error => {
+        console.error("Error loading GeoJSON:", error);
+        toast({
+          title: "Error Loading Map Data",
+          description: "Could not load country boundaries. Some map features may be unavailable.",
+          variant: "destructive",
+        });
+        setIsLoadingGeoJson(false); // Still set to false to attempt rendering globe without polygons
+      });
+  }, [toast]);
 
   const showShipmentToast = useCallback((shipmentId: string, title: string, description: string, variant: 'default' | 'destructive' = 'default', toastType: NotificationType) => {
+    if (!isClient) return; 
     let shouldShowToast = false;
     switch (toastType) {
       case 'compliance_alert': shouldShowToast = notificationPrefs.complianceIssues; break;
@@ -232,16 +364,16 @@ export default function DppGlobalTrackerPage() {
     setLastToastForShipment(prev => {
       const now = Date.now();
       if (!prev[shipmentId] || prev[shipmentId].status !== title || (now - (prev[shipmentId].timestamp || 0) > 10000)) {
-        setTimeout(() => {
+        setTimeout(() => { // Defer toast to next tick
           toast({ title, description, variant });
         }, 0);
         return { ...prev, [shipmentId]: { status: title, timestamp: now } };
       }
       return prev;
     });
-  }, [toast, notificationPrefs]);
+  }, [toast, notificationPrefs, isClient]);
 
-  useEffect(() => {
+   useEffect(() => {
     if (isClient && SHIPMENTS_TO_SIMULATE.length > 0 && !simulationActiveToastShown) {
       setTimeout(() => {
         toast({
@@ -340,10 +472,10 @@ export default function DppGlobalTrackerPage() {
             currentLat: currentLat,
             currentLng: currentLng,
             simulationProgress: newProgress,
-            simulatedStatus: newSimulatedStatus,
             progressPercentage: Math.round(newProgress * 100),
             dppComplianceStatusText: newDppComplianceStatusText,
             dppComplianceBadgeVariant: newDppComplianceBadgeVariant,
+            simulatedStatus: newSimulatedStatus,
           };
         })
       );
@@ -362,8 +494,21 @@ export default function DppGlobalTrackerPage() {
   }, [mockDppPointsDataState, yearFilter, categoryFilter]);
 
   const filteredArcs = useMemo(() => {
-    return mockArcsDataState.filter(arc => arc.timestamp <= yearFilter[0]);
-  }, [mockArcsDataState, yearFilter]);
+    if (!tradeFlowsVisible) return [];
+    return mockArcsDataState.filter(arc => {
+      const yearMatch = arc.timestamp <= yearFilter[0];
+      // Assuming productCategory might be on arc.product.category if product detail is embedded
+      // For now, we use a placeholder or direct property if available on arc.
+      // This part needs to be adapted based on how productCategory is actually linked to an arc.
+      // For simplicity, we'll assume arc.productCategory for now if it were there.
+      // Since it's not, we'll filter based on a known product or skip this part of filtering for arcs.
+      // For the sake of example, let's assume mockArcsData has a productCategory property
+      // or we fetch it from a related product if arc.productId exists
+      const arcProductCategory = initialMockPointsData.find(p => p.id === arc.productId)?.category || "Unknown";
+      const categoryMatch = tradeRouteCategoryFilter === 'all' || arcProductCategory === tradeRouteCategoryFilter;
+      return yearMatch && categoryMatch;
+    });
+  }, [mockArcsDataState, yearFilter, tradeFlowsVisible, tradeRouteCategoryFilter]);
 
   const filteredShipmentPoints = useMemo(() => {
     if (shipmentStatusFilter === 'all') return mockShipmentPointsDataState;
@@ -421,10 +566,10 @@ export default function DppGlobalTrackerPage() {
   const handleInspectProductsAtCheckpoint = useCallback((checkpoint: MockCustomsCheckpoint) => { setInspectingCheckpoint(checkpoint); setIsInspectionModalOpen(true); }, []);
 
 
-  const globeLegendMap = {
-    "EU Country": EU_BLUE_COLOR,
-    "Non-EU Country": NON_EU_LAND_COLOR_LIGHT_BLUE,
-    "Country Border": BORDER_COLOR_MEDIUM_BLUE,
+  const globeLegendMap = useMemo(() => ({
+    // "EU Country": EU_BLUE_COLOR, (no longer used for fill)
+    // "Non-EU Country": NON_EU_LAND_COLOR_LIGHT_BLUE, (no longer used for fill)
+    "Country Border": 'rgba(200, 200, 200, 0.6)',
     "Route (Inbound EU)": ARC_INBOUND_EU_COLOR,
     "Route (Outbound EU)": ARC_OUTBOUND_EU_COLOR,
     "Route (Internal EU)": ARC_INTERNAL_EU_COLOR,
@@ -442,7 +587,8 @@ export default function DppGlobalTrackerPage() {
     "Port (Blue 'S')": CHECKPOINT_PORT_COLOR,
     "Airport (Purple 'A')": CHECKPOINT_AIRPORT_COLOR,
     "Land Border (Orange 'L')": CHECKPOINT_LAND_BORDER_COLOR,
-  };
+  }), []);
+
 
   const handleSimulateCheckpointUpdate = useCallback(() => {
     setMockCustomsCheckpointsDataState(prevCheckpoints =>
@@ -478,7 +624,7 @@ export default function DppGlobalTrackerPage() {
 
   const handleResetGlobeView = useCallback(() => {
     if (globeRefMain.current && globeRefMain.current.pointOfView) {
-      globeRefMain.current.pointOfView({ lat: 50, lng: 15, altitude: 2.2 }, 700);
+      globeRefMain.current.pointOfView({ lat: 45, lng: 10, altitude: 2.5 }, 700);
     }
   }, []);
 
@@ -490,204 +636,239 @@ export default function DppGlobalTrackerPage() {
     });
   }, [toast]);
 
+  const pointColorAccessor = useCallback((obj: MockDppPoint | MockShipmentPoint): string => {
+    if ('simulatedStatus' in obj) { // It's a MockShipmentPoint
+      switch (obj.simulatedStatus) {
+        case 'in_transit': return SHIPMENT_IN_TRANSIT_COLOR_GLOBE;
+        case 'at_customs': return SHIPMENT_AT_CUSTOMS_COLOR_GLOBE;
+        case 'customs_inspection': return SHIPMENT_INSPECTION_COLOR_GLOBE;
+        case 'delayed': return SHIPMENT_DELAYED_COLOR_GLOBE;
+        case 'cleared': return SHIPMENT_CLEARED_COLOR_GLOBE;
+        case 'data_sync_delayed': return SHIPMENT_DATA_SYNC_DELAYED_COLOR_GLOBE;
+        default: return 'grey';
+      }
+    } else { // It's a MockDppPoint
+      if (obj.status === 'compliant') return DPP_HEALTH_GOOD_COLOR;
+      if (obj.status === 'pending') return DPP_HEALTH_FAIR_COLOR;
+      if (obj.status === 'issue') return DPP_HEALTH_POOR_COLOR;
+      if (obj.category === 'Electronics') return 'rgba(0, 0, 255, 0.75)';
+      if (obj.category === 'Appliances') return 'rgba(128, 0, 128, 0.75)';
+      if (obj.category === 'Textiles') return 'rgba(255, 192, 203, 0.75)';
+      if (obj.icon) return 'rgba(255, 165, 0, 0.75)';
+      return 'grey';
+    }
+  }, []);
+
+  const pointRadiusAccessor = useCallback((obj: MockDppPoint | MockShipmentPoint): number => {
+    if ('simulatedStatus' in obj) { // MockShipmentPoint
+      return 0.12; // Slightly smaller and uniform for shipments
+    }
+    // MockDppPoint - existing logic
+    const baseSize = obj.size || 0.1;
+    if (obj.category === 'Electronics') return baseSize * 1.2;
+    if (obj.category === 'Distribution Hub') return baseSize * 1.5;
+    return baseSize;
+  }, []);
+
+  const arcColorAccessor = useCallback((arc: MockArc): string | string[] => {
+    if (arc.direction === 'inbound_eu') return ARC_INBOUND_EU_COLOR;
+    if (arc.direction === 'outbound_eu') return ARC_OUTBOUND_EU_COLOR;
+    if (arc.direction === 'internal_eu') return ARC_INTERNAL_EU_COLOR;
+    return ARC_DEFAULT_COLOR;
+  }, []);
+
+  const arcStrokeAccessor = useCallback((arc: MockArc): number => arc.stroke || 0.2, []);
+  
+  const polygonCapColorAccessor = useCallback((feature: any) => 'rgba(0,0,0,0)', []); // Transparent caps
+  const polygonSideColorAccessor = useCallback(() => 'rgba(0,0,0,0)', []); // Transparent sides
+  const polygonStrokeColorAccessor = useCallback(() => 'rgba(200, 200, 200, 0.6)', []); // Light gray borders
+  const polygonAltitudeAccessor = useCallback(() => 0.001, []); // Minimal, uniform altitude
+
+  const handleFocusEurope = useCallback(() => {
+    if (globeRefMain.current) {
+      globeRefMain.current.pointOfView({ lat: 50, lng: 15, altitude: 1.5 }, 1000);
+    }
+  }, []);
+
+  const handleToggleRotation = useCallback(() => {
+    if (globeRefMain.current && globeRefMain.current.controls()) {
+      const newRotationState = !isGlobeRotating;
+      globeRefMain.current.controls().autoRotate = newRotationState;
+      globeRefMain.current.controls().autoRotateSpeed = newRotationState ? 0.3 : 0;
+      setIsGlobeRotating(newRotationState);
+    }
+  }, [isGlobeRotating]);
+
+  const handleToggleTradeFlows = useCallback(() => {
+    setTradeFlowsVisible(prev => !prev);
+  }, []);
+  
+  const availableTradeRouteCategories = useMemo(() => {
+    const categories = new Set<string>();
+    mockArcsDataState.forEach(arc => {
+      const product = initialMockPointsData.find(p => p.id === arc.productId);
+      if (product && product.category) {
+        categories.add(product.category);
+      }
+    });
+    return Array.from(categories).sort();
+  }, [mockArcsDataState]);
+  
+  const [isLegendVisible, setIsLegendVisible] = useState(true);
+  const [isControlPanelVisible, setIsControlPanelVisible] = useState(true);
+  const [isInfoPanelVisible, setIsInfoPanelVisible] = useState(true);
+  
+  const handleToggleLegendVisibility = (key: string) => {
+    setLegendVisibility(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+  
+  const dynamicGlobeLegendMap = useMemo(() => {
+    const map = { ...globeLegendMap };
+    // Remove EU/Non-EU country fill colors if they exist, as we are only showing borders
+    delete map["EU Country"];
+    delete map["Non-EU Country"];
+    
+    if (!tradeFlowsVisible) {
+        delete map["Route (Inbound EU)"];
+        delete map["Route (Outbound EU)"];
+        delete map["Route (Internal EU)"];
+        delete map["Route (Other)"];
+    }
+    return map;
+  }, [globeLegendMap, tradeFlowsVisible]);
+
+
   return (
-    <div className="space-y-8 bg-background">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <GlobeIconLucide className="mr-3 h-8 w-8 text-primary" />
-          DPP Global Tracker
-        </h1>
-      </div>
-      {(currentRole === 'auditor' || currentRole === 'admin') && (
-         <Alert variant="default" className="bg-info/10 border-info/50 text-info-foreground">
-            <Info className="h-4 w-4 !text-info" />
-            <AlertTitle className="!text-info">Auditor/Admin View</AlertTitle>
-            <AlertDescription>
-              You are viewing an enhanced version of the tracker with additional details.
-            </AlertDescription>
-          </Alert>
-      )}
+    <div className="h-screen flex flex-col bg-background text-foreground overflow-hidden">
+      {/* Header Section - Can be a separate component later */}
+      <header className="p-3 border-b border-border shadow-sm bg-card flex items-center justify-between print:hidden">
+        <div className="flex items-center">
+           <GlobeIconLucide className="mr-2 h-6 w-6 text-primary" />
+           <h1 className="text-xl font-headline font-semibold">
+             DPP Global Tracker
+           </h1>
+        </div>
+        <Button variant="outline" size="sm" onClick={() => router.back()}>Back to Dashboard</Button>
+      </header>
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle>Filters & Controls</CardTitle>
-          <CardDescription>Adjust filters to refine data and control globe actions.</CardDescription>
-        </CardHeader>
-        <CardContent>
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mb-6 items-end">
-            <div title="Filter DPP location points by their assigned category.">
-              <Label htmlFor="category-filter" className="text-sm font-medium">Filter by Category (Locations)</Label>
-              <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-                <SelectTrigger id="category-filter" className="w-full mt-1">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {uniqueCategories.map(cat => (
-                    <SelectItem key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="lg:col-span-1" title="Filter data points and arcs up to the selected year.">
-              <Label htmlFor="year-slider" className="text-sm font-medium">Filter by Year (Up to): {yearFilter[0]}</Label>
-              <Slider
-                id="year-slider"
-                min={Math.min(...initialMockPointsData.map(p => p.timestamp), new Date().getFullYear() - 5)}
-                max={new Date().getFullYear()}
-                step={1}
-                value={yearFilter}
-                onValueChange={(value) => setYearFilter(value)}
-                className="mt-3"
-              />
-            </div>
-            <div title="Filter active shipments by their current simulated status.">
-              <Label htmlFor="shipment-status-filter" className="text-sm font-medium">Filter by Shipment Status</Label>
-              <Select value={shipmentStatusFilter} onValueChange={(value) => setShipmentStatusFilter(value as MockShipmentPoint['simulatedStatus'] | 'all')}>
-                 <SelectTrigger id="shipment-status-filter" className="w-full mt-1">
-                   <SelectValue placeholder="Select shipment status" />
-                 </SelectTrigger>
-                 <SelectContent>
-                   {shipmentStatusOptions.map(opt => (
-                     <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
-                   ))}
-                 </SelectContent>
-              </Select>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:items-center gap-2 col-span-1 sm:col-span-2 lg:col-span-3 lg:justify-end mt-2 sm:mt-0">
-                 <Button onClick={handleSimulateCheckpointUpdate} variant="outline" className="w-full sm:w-auto" title="Simulate random updates to customs checkpoint data.">
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    Simulate Checkpoint Update
-                 </Button>
-                <Button onClick={handleResetGlobeView} variant="outline" className="w-full sm:w-auto" title="Reset the globe to its default position and zoom level.">
-                    <GlobeIconLucide className="mr-2 h-4 w-4" /> Reset Globe View
-                </Button>
-            </div>
+      <div className="flex-grow grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr] gap-0 relative">
+        {/* Left Sidebar for Controls & Info */}
+        <aside className="h-full bg-card border-r border-border p-3 space-y-3 overflow-y-auto print:hidden flex flex-col">
+          <div className="flex-shrink-0">
+            <Card className="shadow-md">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 pt-3 px-3 cursor-pointer" onClick={() => setIsInfoPanelVisible(!isInfoPanelVisible)}>
+                <CardTitle className="text-sm font-semibold flex items-center">
+                    <Info className="h-4 w-4 mr-2 text-primary" /> Info
+                </CardTitle>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isInfoPanelVisible ? '' : '-rotate-90'}`} />
+              </CardHeader>
+              {isInfoPanelVisible && <InfoPanel />}
+            </Card>
           </div>
-        </CardContent>
-      </Card>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="shadow-lg lg:col-span-2">
-          <CardHeader>
-            <CardTitle className="font-headline flex items-center">
-              <BarChart3 className="mr-2 h-5 w-5 text-primary" />
-              Analytics Overview (Mock Data)
-            </CardTitle>
-            <CardDescription>Summary of mock shipment and DPP data.</CardDescription>
-          </CardHeader>
-          <CardContent className="grid md:grid-cols-2 gap-x-6 gap-y-4">
-            <div>
-              <h4 className="text-sm font-medium mb-1">Shipments by Status:</h4>
-              <ul className="text-xs list-disc list-inside pl-2 text-muted-foreground">
-                {shipmentStatusAnalyticsData.map(item => <li key={item.status}>{item.status}: {item.count}</li>)}
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-sm font-medium mb-1">DPP Locations by Category:</h4>
-              <ul className="text-xs list-disc list-inside pl-2 text-muted-foreground">
-                {dppCategoryAnalyticsData.map(item => <li key={item.category}>{item.category}: {item.count}</li>)}
-              </ul>
-            </div>
-            <div className="h-[200px] w-full mt-2 md:col-span-2">
-              <ChartContainer config={chartConfig} className="w-full h-full">
-                <BarChart data={shipmentStatusAnalyticsData} layout="vertical" margin={{ left: 30, right:10 }}>
-                  <CartesianGrid horizontal={false} strokeDasharray="3 3" />
-                  <XAxis type="number" dataKey="count" stroke="hsl(var(--muted-foreground))" fontSize={10} />
-                  <YAxis type="category" dataKey="status" stroke="hsl(var(--muted-foreground))" width={100} interval={0} fontSize={10}/>
-                  <RechartsTooltip
-                    cursor={{ fill: 'hsl(var(--muted))' }}
-                    contentStyle={{ backgroundColor: 'hsl(var(--popover))', border: '1px solid hsl(var(--border))', borderRadius: 'var(--radius)'}}
-                    labelStyle={{ color: 'hsl(var(--popover-foreground))' }}
-                    itemStyle={{ color: 'hsl(var(--popover-foreground))' }}
+          <div className="flex-shrink-0">
+            <Card className="shadow-md">
+               <CardHeader className="flex flex-row items-center justify-between pb-2 pt-3 px-3 cursor-pointer" onClick={() => setIsControlPanelVisible(!isControlPanelVisible)}>
+                <CardTitle className="text-sm font-semibold flex items-center">
+                    <Settings2 className="h-4 w-4 mr-2 text-primary" /> Controls
+                </CardTitle>
+                <ChevronDown className={`h-4 w-4 transition-transform ${isControlPanelVisible ? '' : '-rotate-90'}`} />
+              </CardHeader>
+              {isControlPanelVisible && (
+                <ControlPanel 
+                  onFocusEurope={handleFocusEurope}
+                  onToggleRotation={handleToggleRotation}
+                  isRotating={isGlobeRotating}
+                  productCategories={availableTradeRouteCategories}
+                  selectedCategory={tradeRouteCategoryFilter}
+                  onCategoryChange={setTradeRouteCategoryFilter}
+                  onToggleTradeFlows={handleToggleTradeFlows}
+                  tradeFlowsVisible={tradeFlowsVisible}
+                />
+              )}
+            </Card>
+          </div>
+
+          <div className="flex-grow min-h-0"> {/* This makes the legend scrollable if needed */}
+            <Card className="shadow-md h-full flex flex-col">
+              <CardHeader className="flex flex-row items-center justify-between pb-2 pt-3 px-3 cursor-pointer flex-shrink-0" onClick={() => setIsLegendVisible(!isLegendVisible)}>
+                  <CardTitle className="text-sm font-semibold flex items-center">
+                      <Palette className="h-4 w-4 mr-2 text-primary" /> Legend
+                  </CardTitle>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${isLegendVisible ? '' : '-rotate-90'}`} />
+              </CardHeader>
+              {isLegendVisible && (
+                <div className="overflow-y-auto flex-grow">
+                  <Legend 
+                    title="" 
+                    colorMap={dynamicGlobeLegendMap} 
+                    className="shadow-none border-none"
+                    onToggleVisibility={handleToggleLegendVisibility}
+                    visibility={legendVisibility}
                   />
-                  <Bar dataKey="count" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} barSize={15}/>
-                </BarChart>
-              </ChartContainer>
-            </div>
-          </CardContent>
-        </Card>
+                </div>
+              )}
+            </Card>
+          </div>
+        </aside>
 
-        <Card className="shadow-lg lg:col-span-1">
-          <CardHeader>
-            <CardTitle className="font-headline flex items-center">
-              <BellRing className="mr-2 h-5 w-5 text-primary" /> Notification Preferences (Mock)
-            </CardTitle>
-            <CardDescription>Control which simulated toast notifications you receive.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-              <div className="flex items-center justify-between p-3 border rounded-md bg-background">
-                  <Label htmlFor="compliance-issues-pref" className="text-sm font-medium">Show Compliance Issue Toasts</Label>
-                  <Switch id="compliance-issues-pref" checked={notificationPrefs.complianceIssues} onCheckedChange={(checked) => handleNotificationPrefChange('complianceIssues', checked)} />
+        {/* Main Globe Area */}
+        <main className="h-full w-full relative">
+          {isLoadingGeoJson ? (
+             <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="ml-2">Loading Geographic Data...</span>
               </div>
-              <div className="flex items-center justify-between p-3 border rounded-md bg-background">
-                  <Label htmlFor="shipment-delays-pref" className="text-sm font-medium">Show Shipment Delay Toasts</Label>
-                  <Switch id="shipment-delays-pref" checked={notificationPrefs.shipmentDelays} onCheckedChange={(checked) => handleNotificationPrefChange('shipmentDelays', checked)} />
+          ) : (
+            <Suspense fallback={
+              <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <span className="ml-2">Loading 3D Globe Visualization...</span>
               </div>
-              <div className="flex items-center justify-between p-3 border rounded-md bg-background">
-                  <Label htmlFor="status-changes-pref" className="text-sm font-medium">Show General Status Change Toasts</Label>
-                  <Switch id="status-changes-pref" checked={notificationPrefs.statusChanges} onCheckedChange={(checked) => handleNotificationPrefChange('statusChanges', checked)} />
-              </div>
-              <Button variant="outline" size="sm" onClick={() => toast({title: "Mock Action", description:"Notification history would be displayed here."})}>
-                <HistoryIcon className="mr-2 h-4 w-4" /> View Notification History (Mock)
-              </Button>
-          </CardContent>
-        </Card>
+            }>
+              {isClient && (
+                  <GlobeVisualization
+                      globeRef={globeRefMain}
+                      pointsData={combinedPointsForGlobe.filter(p => {
+                        const pointCategory = 'category' in p ? p.category : 'Shipment';
+                        let legendKey = "";
+                        if ('simulatedStatus' in p) { // Shipment
+                           legendKey = `Shipment (${p.simulatedStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())})`;
+                        } else { // DPP Point
+                           legendKey = `DPP Location (${p.status.charAt(0).toUpperCase() + p.status.slice(1)} Compliance)`;
+                        }
+                        return legendVisibility[legendKey] !== false; // Default to visible if key not in map
+                      })}
+                      arcsData={filteredArcs.filter(() => legendVisibility[`Route (${'Inbound EU'})`] !== false)} // Simplified, adjust if specific route types need toggling
+                      polygonsData={legendVisibility["Country Border"] ? countryPolygons : []}
+                      customsCheckpointsData={mockCustomsCheckpointsDataState.filter(cp => {
+                        const healthKey = `Checkpoint (DPP ${cp.dppComplianceHealth.charAt(0).toUpperCase() + cp.dppComplianceHealth.slice(1)}/${cp.dppComplianceHealth.charAt(0).toUpperCase()})`;
+                        const typeKey = `${cp.type.charAt(0).toUpperCase() + cp.type.slice(1).replace('_', ' ')} (${cp.type.charAt(0).toUpperCase()})`;
+                        return legendVisibility[healthKey] !== false && legendVisibility[typeKey] !== false;
+                      })}
+                      onPointClick={handlePointClick}
+                      onArcClick={handleArcClick}
+                      onCheckpointClick={handleCheckpointClick}
+                      pointColorAccessor={pointColorAccessor}
+                      pointRadiusAccessor={pointRadiusAccessor}
+                      arcColorAccessor={arcColorAccessor}
+                      arcStrokeAccessor={arcStrokeAccessor}
+                      polygonCapColorAccessor={polygonCapColorAccessor}
+                      polygonSideColorAccessor={polygonSideColorAccessor}
+                      polygonStrokeColorAccessor={polygonStrokeColorAccessor}
+                      polygonAltitudeAccessor={polygonAltitudeAccessor}
+                      globeBackgroundColor={GLOBE_BACKGROUND_COLOR}
+                      globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
+                      atmosphereColor="#3a82f6"
+                      atmosphereAltitude={0.25}
+                  />
+              )}
+              </Suspense>
+          )}
+        </main>
       </div>
-
-
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle>Global Product Passport Visualization</CardTitle>
-          <CardDescription>Interact with the globe to explore product origins, supply chains, and compliance status across regions. (Diagnosis: Minimal hardcoded data being used)</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div
-            className="w-full h-[60vh] md:h-[600px] rounded-md overflow-hidden border relative bg-card"
-            style={{ backgroundColor: GLOBE_BACKGROUND_COLOR }}
-          >
-            {isLoadingGeoJson ? (
-               <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <span className="ml-2">Loading Geographic Data...</span>
-                </div>
-            ) : (
-              <Suspense fallback={
-                <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                  <span className="ml-2">Loading 3D Globe Visualization...</span>
-                </div>
-              }>
-                {isClient && (
-                    <GlobeVisualization
-                        globeRef={globeRefMain}
-                        // Temporarily removing data props for diagnosis
-                        // pointsData={combinedPointsForGlobe}
-                        // arcsData={filteredArcs}
-                        // polygonsData={countryPolygons}
-                        // customsCheckpointsData={mockCustomsCheckpointsDataState}
-                        // onPointClick={handlePointClick}
-                        // onArcClick={handleArcClick}
-                        // onCheckpointClick={handleCheckpointClick}
-                        // pointColorAccessor={pointColorAccessor}
-                        // pointRadiusAccessor={pointRadiusAccessor}
-                        // arcColorAccessor={arcColorAccessor}
-                        // arcStrokeAccessor={arcStrokeAccessor}
-                        // polygonCapColorAccessor={polygonCapColorAccessor}
-                        // polygonSideColorAccessor={polygonSideColorAccessor}
-                        // polygonStrokeColorAccessor={polygonStrokeColorAccessor}
-                        // globeBackgroundColor={GLOBE_BACKGROUND_COLOR} // Passed from const
-                        // globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg" // Passed from const
-                    />
-                )}
-                </Suspense>
-            )}
-          </div>
-          <div className="mt-6">
-             <Legend title="Map Legend" colorMap={globeLegendMap} className="mt-2 mx-auto w-full sm:w-auto" />
-          </div>
-        </CardContent>
-      </Card>
-
+      
+      {/* Info Cards - These will overlay the globe area when active */}
       {selectedPoint && <PointInfoCard pointData={selectedPoint} onClose={() => setSelectedPoint(null)} />}
       {selectedArc && <ArcInfoCard arcData={selectedArc} onClose={() => setSelectedArc(null)} />}
       {selectedCheckpoint && <CheckpointInfoCard checkpointData={selectedCheckpoint} onClose={() => setSelectedCheckpoint(null)} onInspectProducts={handleInspectProductsAtCheckpoint} />}
@@ -720,6 +901,88 @@ export default function DppGlobalTrackerPage() {
           </AlertDialogContent>
         </AlertDialog>
       )}
+
+      {/* Filters for DPP Points & Shipments (outside the main globe grid) */}
+      <div className="p-3 border-t border-border bg-card print:hidden">
+          <Card className="shadow-md">
+            <CardHeader className="pb-3 pt-4 px-4">
+              <CardTitle className="text-base font-semibold flex items-center">
+                <Filter className="h-4 w-4 mr-2 text-primary" />
+                Global Data Filters
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-4 gap-y-3 px-4 pb-4">
+                <div>
+                  <Label htmlFor="category-filter-main" className="text-xs font-medium">DPP Locations by Category</Label>
+                  <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+                    <SelectTrigger id="category-filter-main" className="w-full h-9 text-xs mt-1">
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {uniqueCategories.map(cat => (
+                        <SelectItem key={cat} value={cat}>{cat === 'all' ? 'All Categories' : cat}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div title="Filter data points and arcs up to the selected year.">
+                  <Label htmlFor="year-slider-main" className="text-xs font-medium">Data Year (Up to): {yearFilter[0]}</Label>
+                  <Slider
+                    id="year-slider-main"
+                    min={Math.min(...initialMockPointsData.map(p => p.timestamp), new Date().getFullYear() - 5)}
+                    max={new Date().getFullYear()}
+                    step={1}
+                    value={yearFilter}
+                    onValueChange={(value) => setYearFilter(value)}
+                    className="mt-3"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="shipment-status-filter-main" className="text-xs font-medium">Shipment Status</Label>
+                  <Select value={shipmentStatusFilter} onValueChange={(value) => setShipmentStatusFilter(value as MockShipmentPoint['simulatedStatus'] | 'all')}>
+                     <SelectTrigger id="shipment-status-filter-main" className="w-full h-9 text-xs mt-1">
+                       <SelectValue placeholder="Select shipment status" />
+                     </SelectTrigger>
+                     <SelectContent>
+                       {shipmentStatusOptions.map(opt => (
+                         <SelectItem key={opt.value} value={opt.value}>{opt.label}</SelectItem>
+                       ))}
+                     </SelectContent>
+                  </Select>
+                </div>
+            </CardContent>
+        </Card>
+      </div>
+
+
+       {/* Floating UI Panels over the Globe */}
+       <div className="absolute top-4 left-4 z-10 space-y-3 print:hidden md:hidden"> {/* Hidden on md and larger, use sidebar there */}
+          <InfoPanel />
+       </div>
+
+       <div className="absolute top-4 right-4 z-10 space-y-3 print:hidden md:hidden"> {/* Hidden on md and larger, use sidebar there */}
+          <ControlPanel 
+            onFocusEurope={handleFocusEurope}
+            onToggleRotation={handleToggleRotation}
+            isRotating={isGlobeRotating}
+            productCategories={availableTradeRouteCategories}
+            selectedCategory={tradeRouteCategoryFilter}
+            onCategoryChange={setTradeRouteCategoryFilter}
+            onToggleTradeFlows={handleToggleTradeFlows}
+            tradeFlowsVisible={tradeFlowsVisible}
+          />
+        </div>
+
+        <div className="absolute bottom-4 right-4 z-10 print:hidden md:hidden"> {/* Hidden on md and larger, use sidebar there */}
+          <Legend 
+            title="Legend" 
+            colorMap={dynamicGlobeLegendMap} 
+            className="max-w-xs" 
+            onToggleVisibility={handleToggleLegendVisibility}
+            visibility={legendVisibility}
+          />
+        </div>
+
     </div>
   );
 }
@@ -734,3 +997,4 @@ const shipmentStatusOptions: { value: MockShipmentPoint['simulatedStatus'] | 'al
   { value: 'cleared', label: 'Cleared' },
   { value: 'data_sync_delayed', label: 'Data Sync Delayed' },
 ];
+

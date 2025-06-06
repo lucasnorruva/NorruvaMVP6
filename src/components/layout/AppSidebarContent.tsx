@@ -15,8 +15,9 @@ import {
   Code2,
   LineChart,
   ListChecks,
-  BarChartHorizontal, // Added for Compare Sustainability
-  Globe // Added for DPP Global Tracker
+  BarChartHorizontal, 
+  Globe,
+  ClipboardList // Added for Customs Dashboard
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import {
@@ -37,6 +38,7 @@ const navItems = [
   { href: "/products", label: "Products", icon: Package },
   { href: "/products/new", label: "Add Product", icon: ScanLine },
   { href: "/dpp-global-tracker", label: "Global Tracker", icon: Globe },
+  { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList }, // New Item
   { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
   { href: "/compliance/pathways/battery-regulation", label: "Compliance Pathways", icon: ListChecks },
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
@@ -68,6 +70,8 @@ export default function AppSidebarContent() {
     } else if (href === "/sustainability" && pathname.startsWith("/sustainability/compare")) {
         isActive = false; // "/sustainability/compare" should not make "/sustainability" active
     } else if (href === "/dpp-global-tracker" && pathname === href) { 
+        isActive = true;
+    } else if (href === "/customs-dashboard" && pathname === href) { // Exact match for new page
         isActive = true;
     } else if (href === "/sustainability/compare" && pathname === href) { // Exact match for new page
         isActive = true;

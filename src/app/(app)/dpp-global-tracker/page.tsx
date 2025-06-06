@@ -63,9 +63,9 @@ export interface MockArc {
   timestamp: number;
   transportMode?: 'sea' | 'air' | 'road' | 'rail';
   productId?: string;
-  productCategory?: string; // Added from prompt
-  dppCompliant?: boolean; // Added from prompt
-  value?: number; // Trade volume, added from prompt
+  productCategory?: string; 
+  dppCompliant?: boolean; 
+  value?: number; 
 }
 
 export interface MockCustomsCheckpoint {
@@ -109,9 +109,9 @@ export interface MockShipmentPoint {
 type NotificationType = 'compliance_alert' | 'delay_alert' | 'status_change';
 
 
-const EU_BLUE_COLOR = '#2563EB'; // As per prompt
-const NON_EU_LAND_COLOR_LIGHT_BLUE = '#64748B'; // As per prompt
-const GLOBE_BACKGROUND_COLOR = '#0a0a0a'; // As per prompt
+const GLOBE_BACKGROUND_COLOR = '#0a0a0a'; 
+const EU_BLUE_COLOR = '#2563EB'; 
+const NON_EU_LAND_COLOR_LIGHT_BLUE = '#64748B'; 
 
 export const DPP_HEALTH_GOOD_COLOR = 'rgba(76, 175, 80, 0.9)';
 export const DPP_HEALTH_FAIR_COLOR = 'rgba(255, 235, 59, 0.9)';
@@ -122,14 +122,14 @@ export const CHECKPOINT_LAND_BORDER_COLOR = 'rgba(200, 100, 30, 0.9)';
 
 const SHIPMENT_IN_TRANSIT_COLOR_GLOBE = 'rgba(0, 123, 255, 0.9)';
 const SHIPMENT_AT_CUSTOMS_COLOR_GLOBE = 'rgba(255, 165, 0, 0.9)';
-const SHIPMENT_INSPECTION_COLOR_GLOBE = 'rgba(220, 53, 69, 0.9)'; // Red for inspection
+const SHIPMENT_INSPECTION_COLOR_GLOBE = 'rgba(220, 53, 69, 0.9)'; 
 const SHIPMENT_DELAYED_COLOR_GLOBE = 'rgba(255, 193, 7, 0.9)';
-const SHIPMENT_CLEARED_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)'; // Green for cleared
+const SHIPMENT_CLEARED_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)'; 
 const SHIPMENT_DATA_SYNC_DELAYED_COLOR_GLOBE = 'rgba(108, 117, 125, 0.9)';
 
-export const ARC_INBOUND_EU_COLOR = '#10B981'; // Green for Import (as per prompt)
-export const ARC_OUTBOUND_EU_COLOR = '#F59E0B'; // Orange for Export (as per prompt)
-export const ARC_INTERNAL_EU_COLOR = '#8B5CF6'; // Purple for Intra-EU (as per prompt)
+export const ARC_INBOUND_EU_COLOR = '#10B981'; 
+export const ARC_OUTBOUND_EU_COLOR = '#F59E0B'; 
+export const ARC_INTERNAL_EU_COLOR = '#8B5CF6'; 
 export const ARC_DEFAULT_COLOR = 'rgba(128, 128, 128, 0.7)';
 
 
@@ -290,22 +290,6 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
   </Card>
 );
 
-const InfoPanel: React.FC = () => (
-  <Card className="shadow-lg max-w-sm">
-    <CardHeader className="pb-3 pt-4 px-4">
-      <CardTitle className="text-base font-semibold flex items-center">
-        <Info className="h-5 w-5 mr-2 text-primary" />
-        DPP Global Tracker
-      </CardTitle>
-    </CardHeader>
-    <CardContent className="px-4 pb-4 text-xs text-muted-foreground space-y-1">
-      <p>Visualize Digital Product Passport compliance and trade flows.</p>
-      <p>Interact: Drag to rotate, scroll to zoom. Click on points/arcs for details.</p>
-      <p>Data is simulated for demonstration purposes.</p>
-    </CardContent>
-  </Card>
-);
-
 
 export default function DppGlobalTrackerPage() {
   const [isClient, setIsClient] = useState(false);
@@ -372,36 +356,38 @@ export default function DppGlobalTrackerPage() {
     fetch('/ne_110m_admin_0_countries.geojson')
       .then(res => {
         if (!res.ok) {
-          console.error(`GeoJSON fetch error: ${res.status} ${res.statusText} for URL ${res.url}`);
+          console.warn(`GeoJSON fetch error: ${res.status} ${res.statusText} for URL ${res.url}`);
           // Do not throw error here to prevent Next.js error overlay for this specific fetch
           setGeoJsonError(true);
           toast({
             title: "Error Loading Map Data",
-            description: `Could not load country boundaries (status: ${res.status}). Some map features may be unavailable.`,
+            description: `Could not load country boundaries (status: ${res.status}). Some map features may be unavailable. Please ensure 'ne_110m_admin_0_countries.geojson' is in the /public folder.`,
             variant: "destructive",
+            duration: 10000,
           });
-          return null; // Return null to indicate failure
+          return null; // Explicitly return null on error
         }
         return res.json();
       })
       .then(data => {
-        if (data) {
+        if (data) { // Check if data is not null (i.e., fetch was successful)
           setCountryPolygons(data.features);
           setGeoJsonError(false);
         }
-        // If data is null (fetch failed), geoJsonError is already true
+        // If data is null, geoJsonError is already true from the previous .then()
         setIsLoadingGeoJson(false);
       })
       .catch(error => {
         // This catch block handles network errors or issues with res.json() itself
-        console.error("Error processing GeoJSON or network issue:", error.message);
+        console.warn("Error processing GeoJSON or network issue:", error.message);
         toast({
           title: "Error Loading Map Data",
-          description: "Could not load or process country boundaries. Some map features will be unavailable.",
+          description: "Could not load or process country boundaries. Some map features will be unavailable. Please ensure 'ne_110m_admin_0_countries.geojson' is in the /public folder.",
           variant: "destructive",
+          duration: 10000,
         });
         setIsLoadingGeoJson(false);
-        setGeoJsonError(true);
+        setGeoJsonError(true); // Ensure geoJsonError is true
       });
   }, [toast]);
 
@@ -623,7 +609,7 @@ export default function DppGlobalTrackerPage() {
 
 
   const globeLegendMap = useMemo(() => ({
-    "Country Border": 'rgba(200, 200, 200, 0.6)', // Keeping this for the "lined out" style
+    "Country Border": 'rgba(200, 200, 200, 0.6)',
     "Route (Import into EU)": ARC_INBOUND_EU_COLOR,
     "Route (Export from EU)": ARC_OUTBOUND_EU_COLOR,
     "Route (Internal EU)": ARC_INTERNAL_EU_COLOR,
@@ -638,9 +624,9 @@ export default function DppGlobalTrackerPage() {
     "Checkpoint (DPP Good/Green 'G')": DPP_HEALTH_GOOD_COLOR,
     "Checkpoint (DPP Fair/Yellow 'F')": DPP_HEALTH_FAIR_COLOR,
     "Checkpoint (DPP Poor/Red 'P')": DPP_HEALTH_POOR_COLOR,
-    "Port (Blue 'S')": CHECKPOINT_PORT_COLOR, // For sprite 'S'
-    "Airport (Purple 'A')": CHECKPOINT_AIRPORT_COLOR, // For sprite 'A'
-    "Land Border (Orange 'L')": CHECKPOINT_LAND_BORDER_COLOR, // For sprite 'L'
+    "Port (Blue 'S')": CHECKPOINT_PORT_COLOR, 
+    "Airport (Purple 'A')": CHECKPOINT_AIRPORT_COLOR, 
+    "Land Border (Orange 'L')": CHECKPOINT_LAND_BORDER_COLOR, 
   }), []);
 
 
@@ -705,10 +691,10 @@ export default function DppGlobalTrackerPage() {
       if (obj.status === 'compliant') return DPP_HEALTH_GOOD_COLOR;
       if (obj.status === 'pending') return DPP_HEALTH_FAIR_COLOR;
       if (obj.status === 'issue') return DPP_HEALTH_POOR_COLOR;
-      if (obj.category === 'Electronics') return EU_BLUE_COLOR; // Example specific color
-      if (obj.category === 'Appliances') return 'rgba(128, 0, 128, 0.85)'; // Purple
-      if (obj.category === 'Textiles') return 'rgba(255, 192, 203, 0.85)'; // Pinkish
-      if (obj.icon) return 'rgba(255, 165, 0, 0.85)'; // Orange if icon
+      if (obj.category === 'Electronics') return EU_BLUE_COLOR; 
+      if (obj.category === 'Appliances') return 'rgba(128, 0, 128, 0.85)'; 
+      if (obj.category === 'Textiles') return 'rgba(255, 192, 203, 0.85)'; 
+      if (obj.icon) return 'rgba(255, 165, 0, 0.85)'; 
       return 'grey';
     }
   }, []);
@@ -798,9 +784,9 @@ export default function DppGlobalTrackerPage() {
         "Checkpoint (DPP Good/Green 'G')": DPP_HEALTH_GOOD_COLOR,
         "Checkpoint (DPP Fair/Yellow 'F')": DPP_HEALTH_FAIR_COLOR,
         "Checkpoint (DPP Poor/Red 'P')": DPP_HEALTH_POOR_COLOR,
-        "Port (Blue 'S')": CHECKPOINT_PORT_COLOR, // For sprite 'S'
-        "Airport (Purple 'A')": CHECKPOINT_AIRPORT_COLOR, // For sprite 'A'
-        "Land Border (Orange 'L')": CHECKPOINT_LAND_BORDER_COLOR, // For sprite 'L'
+        "Port (Blue 'S')": CHECKPOINT_PORT_COLOR, 
+        "Airport (Purple 'A')": CHECKPOINT_AIRPORT_COLOR, 
+        "Land Border (Orange 'L')": CHECKPOINT_LAND_BORDER_COLOR, 
     });
     return map;
   }, [tradeFlowsVisible]);
@@ -826,8 +812,8 @@ export default function DppGlobalTrackerPage() {
       </header>
       
       {isClient && geoJsonError && !isLoadingGeoJson && (
-        <div className="p-4 flex-shrink-0"> {/* Added flex-shrink-0 so it doesn't cause overflow */}
-          <Alert variant="destructive"> {/* Changed to destructive for more visibility */}
+        <div className="p-4 flex-shrink-0"> 
+          <Alert variant="destructive"> 
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Map Data Issue</AlertTitle>
             <AlertDescription>
@@ -838,7 +824,7 @@ export default function DppGlobalTrackerPage() {
         </div>
       )}
 
-      <div className="flex-grow grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr] gap-0 relative min-h-0"> {/* Added min-h-0 */}
+      <div className="flex-grow grid grid-cols-1 md:grid-cols-[300px_1fr] lg:grid-cols-[350px_1fr] gap-0 relative min-h-0"> 
         <aside className="h-full bg-card border-r border-border p-3 space-y-3 overflow-y-auto print:hidden flex flex-col">
           <div className="flex-shrink-0">
             <Card className="shadow-md">
@@ -942,7 +928,7 @@ export default function DppGlobalTrackerPage() {
         </aside>
 
         <main className={cn("h-full w-full relative", (isClient && geoJsonError && !isLoadingGeoJson) && "border-destructive border-2")}>
-          {isLoadingGeoJson ? (
+          {isLoadingGeoJson && !geoJsonError ? ( 
              <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
                 <span className="ml-2">Loading Geographic Data...</span>
@@ -993,8 +979,8 @@ export default function DppGlobalTrackerPage() {
                       polygonAltitudeAccessor={polygonAltitudeAccessor}
                       globeBackgroundColor={GLOBE_BACKGROUND_COLOR}
                       globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
-                      atmosphereColor="#3a82f6" // As per prompt
-                      atmosphereAltitude={0.25} // As per prompt
+                      atmosphereColor="#3a82f6" 
+                      atmosphereAltitude={0.25} 
                   />
               )}
               </Suspense>
@@ -1035,7 +1021,7 @@ export default function DppGlobalTrackerPage() {
         </AlertDialog>
       )}
 
-      <div className="p-3 border-t border-border bg-card print:hidden flex-shrink-0"> {/* Added flex-shrink-0 */}
+      <div className="p-3 border-t border-border bg-card print:hidden flex-shrink-0"> 
           <Card className="shadow-md">
             <CardHeader className="pb-3 pt-4 px-4">
               <CardTitle className="text-base font-semibold flex items-center">
@@ -1099,4 +1085,3 @@ const shipmentStatusOptions: { value: MockShipmentPoint['simulatedStatus'] | 'al
   { value: 'cleared', label: 'Cleared' },
   { value: 'data_sync_delayed', label: 'Data Sync Delayed' },
 ];
-

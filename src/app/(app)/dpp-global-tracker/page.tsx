@@ -13,7 +13,7 @@ import type { GlobeMethods } from 'react-globe.gl';
 
 // Dynamically import the GlobeVisualization component
 const ClientOnlyGlobe = dynamic(
-  () => import('@/components/dpp-tracker/GlobeVisualization').then(mod => mod.GlobeVisualization),
+  () => import('@/components/dpp-tracker/GlobeVisualization'),
   {
     ssr: false,
     loading: () => (
@@ -42,18 +42,18 @@ const EU_MEMBER_STATES_ISO_A2 = [
 // Helper to get ISO A2 code, robustly checking common property names
 const getCountryISO_A2 = (feature: any): string | undefined => {
   if (!feature || !feature.properties) return undefined;
-  // Common properties from world-atlas or similar Natural Earth derived GeoJSONs
   const props = feature.properties;
-  if (props. sovereignt === "Somaliland") return "SO"; 
-  if (props. sovereignt === "N. Cyprus") return "CY";
-  return props.iso_a2 || props.ISO_A2 || props.ISO_A2_EH || props.ADM0_A3 // ADM0_A3 as a fallback for some datasets
+  // Fixes for specific entities in world-atlas
+  if (props.sovereignt === "Somaliland") return "SO"; // Somaliland is de facto independent, often coded as part of Somalia (SO) or separately (not official ISO)
+  if (props.sovereignt === "N. Cyprus") return "CY"; // Northern Cyprus, recognized only by Turkey, use Cyprus (CY)
+  return props.iso_a2 || props.ISO_A2 || props.ISO_A2_EH || props.ADM0_A3; // ADM0_A3 as a fallback
 };
 
 // Helper to get country name, robustly checking common property names
 const getCountryName = (feature: any): string => {
   if (!feature || !feature.properties) return 'Unknown Territory';
   const props = feature.properties;
-  return props.name || props.NAME || props.NAME_EN || props.ADMIN || props. sovereignt || 'Unknown Country';
+  return props.name || props.NAME || props.NAME_EN || props.ADMIN || props.sovereignt || 'Unknown Country';
 };
 
 interface SelectedCountryProperties {
@@ -61,8 +61,8 @@ interface SelectedCountryProperties {
   iso_a2?: string;
   continent?: string;
   subregion?: string;
-  pop_est?: number | string; // Population can sometimes be a string
-  [key: string]: any; // Allow other properties
+  pop_est?: number | string;
+  [key: string]: any;
 }
 
 export default function DppGlobalTrackerPage() {
@@ -79,18 +79,53 @@ export default function DppGlobalTrackerPage() {
       setIsLoadingGeoJson(true);
       setGeoJsonError(null);
       try {
-        // Switched to 50m resolution for more detail
+        // Using 50m resolution for more detail
         const response = await fetch('https://unpkg.com/world-atlas@2.0.2/countries-50m.json');
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`Failed to fetch GeoJSON: ${response.status} ${response.statusText}. Server said: ${errorText.substring(0,100)}. URL: ${response.url}`);
         }
         const world = await response.json();
-        // Dynamically import topojson-client only when needed
         const topojson = await import('topojson-client');
+        
         if (world.objects && world.objects.countries) {
-          // Convert TopoJSON to GeoJSON features
           const geoJsonFeatures = topojson.feature(world, world.objects.countries).features;
+          
+          // --- GeoJSON Data Validation ---
+          let missingNameCount = 0;
+          let missingIsoA2Count = 0;
+          geoJsonFeatures.forEach(feature => {
+            if (!feature.properties) {
+              missingNameCount++;
+              missingIsoA2Count++;
+              return;
+            }
+            const name = feature.properties.sovereignt || feature.properties.name || feature.properties.NAME || feature.properties.NAME_EN || feature.properties.ADMIN;
+            const iso_a2 = feature.properties.iso_a2 || feature.properties.ISO_A2 || feature.properties.ISO_A2_EH;
+            
+            if (!name) missingNameCount++;
+            if (!iso_a2 && feature.properties.sovereignt !== "Somaliland" && feature.properties.sovereignt !== "N. Cyprus") { 
+              // Special cases for Somaliland and N. Cyprus are handled in getCountryISO_A2,
+              // so don't count them as missing iso_a2 if sovereignt is present.
+              // We also check if ADM0_A3 is present as a fallback, if not, count as missing.
+              if (!feature.properties.ADM0_A3) missingIsoA2Count++;
+            }
+          });
+
+          if (missingNameCount > 0 || missingIsoA2Count > 0) {
+            const message = `GeoJSON Validation: ${missingNameCount} countries missing name. ${missingIsoA2Count} countries missing ISO A2 code. Some map features or info might be incomplete.`;
+            console.warn(message);
+            if (missingNameCount > geoJsonFeatures.length * 0.1 || missingIsoA2Count > geoJsonFeatures.length * 0.1) { // If more than 10% issues
+              toast({
+                variant: "default", // Use default or a custom 'warning' variant if available
+                title: "Map Data Inconsistencies",
+                description: `Found ${missingNameCount} countries missing names and ${missingIsoA2Count} missing ISO codes. Some map details might be affected.`,
+                duration: 8000,
+              });
+            }
+          }
+          // --- End GeoJSON Data Validation ---
+
           setCountryPolygons(geoJsonFeatures);
         } else {
            throw new Error("GeoJSON structure from unpkg.com/world-atlas (50m) is not as expected. Missing 'objects.countries'.");
@@ -101,7 +136,7 @@ export default function DppGlobalTrackerPage() {
         toast({
           variant: "destructive",
           title: "Map Data Error (CDN)",
-          description: `Could not load detailed country data from CDN: ${error.message}. The globe may not display country-specific details or colors correctly.`,
+          description: `Could not load detailed country data: ${error.message}. The globe may not display country-specific details correctly.`,
           duration: 10000,
         });
       } finally {
@@ -119,9 +154,9 @@ export default function DppGlobalTrackerPage() {
     return NON_EU_GREY_COLOR;
   }, []);
 
-  const polygonSideColorAccessor = useCallback(() => 'rgba(0, 0, 0, 0.05)', []); // Keep sides subtle
-  const polygonStrokeColorAccessor = useCallback(() => COUNTRY_BORDER_COLOR, []); // Black borders
-  const polygonAltitudeAccessor = useCallback(() => 0.01, []); // Slight lift for polygons
+  const polygonSideColorAccessor = useCallback(() => 'rgba(0, 0, 0, 0.05)', []);
+  const polygonStrokeColorAccessor = useCallback(() => COUNTRY_BORDER_COLOR, []);
+  const polygonAltitudeAccessor = useCallback(() => 0.01, []);
 
   const handlePolygonClick = useCallback((polygon: any, event: MouseEvent) => {
     if (polygon && polygon.properties) {
@@ -129,10 +164,13 @@ export default function DppGlobalTrackerPage() {
       setSelectedCountryInfo({
         name: getCountryName(polygon),
         iso_a2: getCountryISO_A2(polygon),
-        continent: props.CONTINENT || props.continent,
-        subregion: props.SUBREGION || props.subregion,
-        pop_est: props.POP_EST || props.pop_est || props.POP_MAX, // Add POP_MAX as fallback
+        continent: props.CONTINENT || props.continent || props.REGION_UN || "N/A",
+        subregion: props.SUBREGION || props.subregion || props.REGION_WB || "N/A",
+        pop_est: props.POP_EST || props.pop_est || props.POP_MAX || "N/A",
       });
+       if (globeEl.current) {
+        globeEl.current.pointOfView({ lat: polygon.properties.latitude || 0, lng: polygon.properties.longitude || 0, altitude: 1 }, 750);
+      }
     } else {
       setSelectedCountryInfo(null);
     }
@@ -166,8 +204,9 @@ export default function DppGlobalTrackerPage() {
                   {selectedCountryInfo.iso_a2 && <p><strong>Code:</strong> {selectedCountryInfo.iso_a2}</p>}
                   {selectedCountryInfo.continent && <p><strong>Continent:</strong> {selectedCountryInfo.continent}</p>}
                   {selectedCountryInfo.subregion && <p><strong>Region:</strong> {selectedCountryInfo.subregion}</p>}
-                  {selectedCountryInfo.pop_est && <p><strong>Population:</strong> {Number(selectedCountryInfo.pop_est).toLocaleString()}</p>}
-                   <p className="mt-2 text-xs text-muted-foreground">DPP Compliance Data: Mock (To be implemented)</p>
+                  {selectedCountryInfo.pop_est && typeof selectedCountryInfo.pop_est === 'number' && <p><strong>Population:</strong> {selectedCountryInfo.pop_est.toLocaleString()}</p>}
+                  {selectedCountryInfo.pop_est && typeof selectedCountryInfo.pop_est === 'string' && <p><strong>Population:</strong> {selectedCountryInfo.pop_est}</p>}
+                   <p className="mt-2 text-xs text-muted-foreground">Shipment/Compliance Data: (Mock - To be implemented)</p>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
@@ -232,8 +271,8 @@ export default function DppGlobalTrackerPage() {
                   <AlertTriangle className="h-5 w-5" />
                   <AlertTitle>Map Data Error (CDN)</AlertTitle>
                   <AlertDescription>
-                    Could not load country boundary data from CDN: <br /> {geoJsonError}
-                    <br /><br />The globe might not display countries correctly. Please check your internet connection or try refreshing.
+                    Could not load country boundary data: <br /> {geoJsonError}
+                    <br /><br />Please check your internet connection or try refreshing.
                   </AlertDescription>
                 </Alert>
               </div>
@@ -251,7 +290,7 @@ export default function DppGlobalTrackerPage() {
                 polygonStrokeColor={polygonStrokeColorAccessor}
                 polygonAltitude={polygonAltitudeAccessor}
                 onPolygonClick={handlePolygonClick}
-                polygonsTransitionDuration={0} // Faster updates, can be adjusted
+                polygonsTransitionDuration={0}
               />
             )}
             {!isLoadingGeoJson && !geoJsonError && countryPolygons.length === 0 && (

@@ -144,7 +144,7 @@ export default function DppGlobalTrackerPage() {
   }, []);
 
   const pointColorAccessor = useCallback(() => DIAGNOSTIC_POINT_COLOR, []); 
-  const pointRadiusAccessor = useCallback(() => 0.25, []); 
+  const pointRadiusAccessor = useCallback(() => 0.3, []); // Small radius for minimal points
   const arcColorAccessor = useCallback(() => 'rgba(0, 255, 0, 0.5)', []); 
   const arcStrokeAccessor = useCallback(() => 0.3, []);
 
@@ -236,7 +236,7 @@ export default function DppGlobalTrackerPage() {
                     pointRadiusAccessor={pointRadiusAccessor}
                     arcColorAccessor={arcColorAccessor}
                     arcStrokeAccessor={arcStrokeAccessor}
-                    globeBackgroundColor={WHITE_BACKGROUND_COLOR}
+                    globeBackgroundColor={WHITE_BACKGROUND_COLOR} // Set to white
                 />
             )}
           </div>
@@ -254,4 +254,6 @@ export default function DppGlobalTrackerPage() {
   );
 }
     
+    
+
     

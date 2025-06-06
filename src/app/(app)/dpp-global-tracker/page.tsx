@@ -31,40 +31,44 @@ const EU_COUNTRIES_ISO_A2 = [
   'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'
 ];
 
-const LIGHT_GREY_LAND_COLOR = 'rgba(211, 211, 211, 0.85)'; // Light grey for all countries (overridden for EU)
-const EU_COUNTRY_COLOR = 'rgba(0, 51, 153, 0.85)'; // Dark blue for EU countries
-const COUNTRY_BORDER_COLOR = 'rgba(0, 0, 0, 1)'; // Black for borders
-const GLOBE_PAGE_BACKGROUND_COLOR = '#0a0a0a'; // Very dark grey / off-black
+const RICH_DARK_BLUE_EU_COLOR = 'rgba(0, 51, 102, 0.9)'; // Rich Dark Blue for EU Countries
+const LIGHT_GREY_NON_EU_COLOR = 'rgba(211, 211, 211, 0.85)'; // Light Grey for Non-EU Countries
+const BLACK_BORDER_COLOR = 'rgba(0, 0, 0, 1)'; // Black for borders
+const GLOBE_PAGE_BACKGROUND_COLOR = '#0a0a0a'; // Very dark grey / off-black for the page
+const VIBRANT_LIGHT_BLUE_OCEAN_TEXTURE_URL = '//unpkg.com/three-globe/example/img/earth-day.jpg'; // Texture with light blue oceans and land details
 const ATMOSPHERE_COLOR = '#4682B4'; // Steel blue for atmosphere
-const OCEAN_TEXTURE_URL = '//unpkg.com/three-globe/example/img/earth-day.jpg'; // Texture with light blue oceans
-
 
 const getCountryISO_A2 = (feature: any): string | undefined => {
   if (!feature || !feature.properties) return undefined;
   const props = feature.properties;
 
-  // Most reliable primary sources
-  if (props.ISO_A2 && props.ISO_A2 !== "-99") return props.ISO_A2;
-  if (props.iso_a2 && props.iso_a2 !== "-99") return props.iso_a2;
+  // Primary ISO A2 sources
+  if (props.ISO_A2 && props.ISO_A2 !== "-99") return props.ISO_A2.trim();
+  if (props.iso_a2 && props.iso_a2 !== "-99") return props.iso_a2.trim();
   
-  // Handle known specific cases from world-atlas
-  if (props.SOVEREIGNT === "Somaliland") return "SO"; // Somaliland is de facto independent but uses Somalia's ISO code area.
-  if (props.SOVEREIGNT === "N. Cyprus") return "CY"; // Northern Cyprus, internationally recognized as part of Cyprus.
-  if (props.ADMIN === "Kosovo") return "XK"; // Kosovo uses a user-assigned code.
+  // Specific cases from world-atlas or common GeoJSON structures
+  if (props.SOVEREIGNT === "Somaliland") return "SO"; // Somaliland uses Somalia's ISO code area
+  if (props.SOVEREIGNT === "N. Cyprus") return "CY"; // Northern Cyprus, internationally recognized as part of Cyprus
+  if (props.ADMIN === "Kosovo") return "XK"; // Kosovo uses a user-assigned code
 
-  // General fallbacks (prefer 2-letter codes if available)
-  if (props.WB_A2 && props.WB_A2 !== "-99") return props.WB_A2;
-  if (props.GU_A3 && props.GU_A3 !== "-99" && props.GU_A3.length === 2) return props.GU_A3; // If GU_A3 happens to be 2 letters
-  if (props.ADM0_A3 && props.ADM0_A3 !== "-99" && props.ADM0_A3.length === 2) return props.ADM0_A3; // If ADM0_A3 happens to be 2 letters
+  // Fallback ISO A2 sources
+  if (props.WB_A2 && props.WB_A2 !== "-99") return props.WB_A2.trim();
   
-  // If strictly need an ISO A2 and above failed, it's effectively undefined for our needs
+  // Broader fallbacks (some datasets might use these for 2-letter codes)
+  const potentialCodes = [props.ADM0_A2, props.GU_A2, props.postal];
+  for (const code of potentialCodes) {
+    if (code && typeof code === 'string' && code.length === 2 && code !== "-99") return code.trim().toUpperCase();
+  }
+
+  // If strictly need an ISO A2 and above failed, it's undefined for our use case
   return undefined;
 };
 
 const getCountryName = (feature: any): string => {
   if (!feature || !feature.properties) return 'Unknown Territory';
   const props = feature.properties;
-  return props.NAME_EN || props.NAME || props.ADMIN || props.SOVEREIGNT || 'Unknown Country';
+  // Prioritize more official or common name properties
+  return props.NAME_EN || props.NAME || props.NAME_LONG || props.FORMAL_EN || props.SOVEREIGNT || props.ADMIN || 'Unknown Country';
 };
 
 
@@ -110,8 +114,8 @@ interface TradeArc {
 }
 
 const MOCK_TRADE_ARCS: TradeArc[] = [
-  { id: 'arc001', startLat: MOCK_SHIPMENT_POINTS[0].lat, startLng: MOCK_SHIPMENT_POINTS[0].lng, endLat: MOCK_SHIPMENT_POINTS[3].lat, endLng: MOCK_SHIPMENT_POINTS[3].lng, color: 'rgba(0, 255, 0, 0.6)', stroke: 0.2, label: 'Route Alpha-Delta', dashLength: 0.3, dashGap: 0.1, dashAnimateTime: 3000 },
-  { id: 'arc002', startLat: MOCK_SHIPMENT_POINTS[2].lat, startLng: MOCK_SHIPMENT_POINTS[2].lng, endLat: MOCK_SHIPMENT_POINTS[1].lat, endLng: MOCK_SHIPMENT_POINTS[1].lng, color: 'rgba(0, 0, 255, 0.6)', stroke: 0.2, label: 'Route Charlie-Bravo', dashLength: 0.2, dashGap: 0.2, dashAnimateTime: 4000 },
+  { id: 'arc001', startLat: MOCK_SHIPMENT_POINTS[0].lat, startLng: MOCK_SHIPMENT_POINTS[0].lng, endLat: MOCK_SHIPMENT_POINTS[3].lat, endLng: MOCK_SHIPMENT_POINTS[3].lng, color: 'rgba(0, 255, 0, 0.6)', stroke: 0.2, label: 'Route LA-Paris', dashLength: 0.3, dashGap: 0.1, dashAnimateTime: 3000 },
+  { id: 'arc002', startLat: MOCK_SHIPMENT_POINTS[2].lat, startLng: MOCK_SHIPMENT_POINTS[2].lng, endLat: MOCK_SHIPMENT_POINTS[1].lat, endLng: MOCK_SHIPMENT_POINTS[1].lng, color: 'rgba(0, 0, 255, 0.6)', stroke: 0.2, label: 'Route Tokyo-London', dashLength: 0.2, dashGap: 0.2, dashAnimateTime: 4000 },
 ];
 
 
@@ -131,7 +135,7 @@ export default function DppGlobalTrackerPage() {
       setIsLoadingGeoJson(true);
       setGeoJsonError(null);
       try {
-        const response = await fetch('https://unpkg.com/world-atlas@2.0.2/countries-50m.json');
+        const response = await fetch('https://unpkg.com/world-atlas@2.0.2/countries-50m.json'); // Using 50m for more detail
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`Failed to fetch GeoJSON: ${response.status} ${response.statusText}. Server said: ${errorText.substring(0,100)}. URL: ${response.url}`);
@@ -151,9 +155,9 @@ export default function DppGlobalTrackerPage() {
           if (missingNameCount > 0 || missingIsoA2Count > 0) {
             const message = `GeoJSON Validation: ${missingNameCount} countries missing identifiable name. ${missingIsoA2Count} countries missing identifiable ISO A2 code. Some map features or info might be incomplete.`;
             console.warn(message);
-            if (missingNameCount > geoJsonFeatures.length * 0.1 || missingIsoA2Count > geoJsonFeatures.length * 0.1) { // Toast if > 10% are problematic
+            if (missingNameCount > geoJsonFeatures.length * 0.1 || missingIsoA2Count > geoJsonFeatures.length * 0.1) { 
                 toast({
-                    variant: "default", // Changed to default as it's informational
+                    variant: "default",
                     title: "Map Data Inconsistencies",
                     description: `Found ${missingNameCount} countries missing names and ${missingIsoA2Count} missing ISO codes. Some map details might be affected.`,
                     duration: 8000,
@@ -182,11 +186,11 @@ export default function DppGlobalTrackerPage() {
 
   const polygonCapColorAccessor = useCallback((feature: any) => {
     const isoA2 = getCountryISO_A2(feature);
-    return isoA2 && EU_COUNTRIES_ISO_A2.includes(isoA2) ? EU_COUNTRY_COLOR : LIGHT_GREY_LAND_COLOR;
+    return isoA2 && EU_COUNTRIES_ISO_A2.includes(isoA2) ? RICH_DARK_BLUE_EU_COLOR : LIGHT_GREY_NON_EU_COLOR;
   }, []);
 
   const polygonSideColorAccessor = useCallback(() => 'rgba(0,0,0,0.05)', []);
-  const polygonStrokeColorAccessor = useCallback(() => COUNTRY_BORDER_COLOR, []);
+  const polygonStrokeColorAccessor = useCallback(() => BLACK_BORDER_COLOR, []);
   const polygonAltitudeAccessor = useCallback(() => 0.01, []);
 
   const handlePolygonClick = useCallback((polygon: any, event: MouseEvent) => {
@@ -252,7 +256,7 @@ export default function DppGlobalTrackerPage() {
       <header className="p-4 border-b sticky top-0 bg-background z-20">
         <h1 className="text-2xl font-headline font-semibold text-primary flex items-center">
           <GlobeIconLucide className="mr-3 h-7 w-7" />
-          DPP Global Tracker (50m Detail)
+          DPP Global Tracker (Enhanced Visuals)
         </h1>
       </header>
 
@@ -289,19 +293,19 @@ export default function DppGlobalTrackerPage() {
             </CardHeader>
             <CardContent className="space-y-2 text-xs">
                <div className="flex items-center">
-                  <span style={{ backgroundColor: LIGHT_GREY_LAND_COLOR }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span>
-                  <span>Non-EU Countries</span>
+                  <span style={{ backgroundColor: RICH_DARK_BLUE_EU_COLOR }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span>
+                  <span>EU Countries</span>
                 </div>
                  <div className="flex items-center">
-                  <span style={{ backgroundColor: EU_COUNTRY_COLOR }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span>
-                  <span>EU Countries</span>
+                  <span style={{ backgroundColor: LIGHT_GREY_NON_EU_COLOR }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span>
+                  <span>Non-EU Countries</span>
                 </div>
                 <div className="flex items-center">
                   <span className="h-3 w-3 rounded-full mr-2 border-2 border-black bg-transparent opacity-70"></span>
                   <span>Country Borders (Black)</span>
                 </div>
                  <div className="flex items-center">
-                  <span style={{ backgroundImage: `url(${OCEAN_TEXTURE_URL})`, backgroundSize: 'cover' }} className="h-3 w-3 rounded-full mr-2 border border-black/30 opacity-70"></span>
+                  <span style={{ backgroundImage: `url(${VIBRANT_LIGHT_BLUE_OCEAN_TEXTURE_URL})`, backgroundSize: 'cover' }} className="h-3 w-3 rounded-full mr-2 border border-black/30 opacity-70"></span>
                   <span>Oceans (Light Blue Texture)</span>
                 </div>
                 <div className="mt-2 pt-2 border-t">
@@ -358,8 +362,8 @@ export default function DppGlobalTrackerPage() {
             {!isLoadingGeoJson && !geoJsonError && countryPolygons.length > 0 && (
               <ClientOnlyGlobe
                 globeRef={globeEl}
-                globeImageUrl={OCEAN_TEXTURE_URL}
-                backgroundColor="rgba(0,0,0,0)"
+                globeImageUrl={VIBRANT_LIGHT_BLUE_OCEAN_TEXTURE_URL}
+                backgroundColor="rgba(0,0,0,0)" // Transparent, so div background shows
                 atmosphereColor={ATMOSPHERE_COLOR}
                 atmosphereAltitude={0.25}
                 polygonsData={countryPolygons}
@@ -402,8 +406,10 @@ export default function DppGlobalTrackerPage() {
         </div>
       </main>
       <footer className="p-2 border-t text-center text-xs text-muted-foreground sticky bottom-0 bg-background z-20">
-        DPP Global Tracker - 3D Interactive Globe. Country data from unpkg.com (50m resolution).
+        DPP Global Tracker - Enhanced Visuals. Country data from unpkg.com (50m resolution).
       </footer>
     </div>
   );
 }
+
+      

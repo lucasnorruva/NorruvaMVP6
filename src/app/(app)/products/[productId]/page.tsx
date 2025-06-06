@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useParams, notFound, useRouter } from 'next/navigation';
@@ -889,7 +890,16 @@ export default function ProductDetailPage() {
                     <AccordionItem value="item-1">
                       <AccordionTrigger className="text-base">View Events Log</AccordionTrigger>
                       <AccordionContent className="pt-2">
-                        {product.lifecycleEvents && product.lifecycleEvents.length > 0 ? ( <ul className="space-y-4"> {product.lifecycleEvents.map((event) => ( <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors"> <div className="flex justify-between items-start mb-1"> <p className="font-semibold text-primary flex items-center"> {event.type} {event.isBlockchainAnchored && ( <Tooltip delayDuration={100}> <TooltipTrigger className="cursor-help"> <Server className="h-4 w-4 text-primary ml-2" /> </TooltipTrigger> <TooltipContent> <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p> </TooltipContent> </Tooltip> )} {event.isBlockchainAnchored && event.transactionHash && ( <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}> <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" /> </Button> </TooltipTrigger> <TooltipContent> <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p> </TooltipContent> </Tooltip> )} </p> <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleDateString()}</p> </div> <p className="text-sm text-muted-foreground">Location: {event.location}</p> <p className="text-sm text-muted-foreground">Details: {event.details}</p> </li> ))} </ul> ) : ( <p className="text-sm text-muted-foreground">No lifecycle events recorded for this product.</p> )}
+                        {product.lifecycleEvents && product.lifecycleEvents.length > 0 ? ( <ul className="space-y-4"> {product.lifecycleEvents.map((event) => ( <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors"> 
+                        <div className="font-semibold text-primary flex items-center mb-1"> {/* Changed from p to div */}
+                          {event.type} 
+                          {event.isBlockchainAnchored && ( <Tooltip delayDuration={100}> <TooltipTrigger className="cursor-help"> <Server className="h-4 w-4 text-primary ml-2" /> </TooltipTrigger> <TooltipContent> <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p> </TooltipContent> </Tooltip> )} 
+                          {event.isBlockchainAnchored && event.transactionHash && ( <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}> <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" /> </Button> </TooltipTrigger> <TooltipContent> <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p> </TooltipContent> </Tooltip> )} 
+                          <span className="text-xs text-muted-foreground ml-auto font-normal">{new Date(event.timestamp).toLocaleDateString()}</span> {/* Moved date to be part of this div for better flex alignment */}
+                        </div> 
+                        <p className="text-sm text-muted-foreground">Location: {event.location}</p> 
+                        <p className="text-sm text-muted-foreground">Details: {event.details}</p> 
+                        </li> ))} </ul> ) : ( <p className="text-sm text-muted-foreground">No lifecycle events recorded for this product.</p> )}
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
@@ -989,5 +999,3 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
-
-

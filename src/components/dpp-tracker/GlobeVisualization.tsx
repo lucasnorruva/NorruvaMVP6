@@ -1,26 +1,29 @@
 
 "use client"; // This component must be client-side
 
-import React, { useEffect, useRef, forwardRef } from 'react';
+import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import Globe, { type GlobeMethods, type GlobeProps as ReactGlobeProps } from 'react-globe.gl';
 import { Color } from 'three';
 
 // Define the props for our GlobeVisualization component
-export interface GlobeVisualizationProps extends ReactGlobeProps {
+export interface GlobeVisualizationProps extends Omit<ReactGlobeProps, 'ref'> {
   globeRef?: React.Ref<GlobeMethods>;
   backgroundColor?: string; 
 }
 
 export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationProps>(
-  ({ backgroundColor = 'rgba(0,0,0,0)', ...globeProps }, ref) => {
-    const globeEl = useRef<GlobeMethods | undefined>();
+  ({ backgroundColor = 'rgba(0,0,0,0)', globeImageUrl, ...globeProps }, ref) => {
+    const internalGlobeEl = useRef<GlobeMethods | undefined>();
+
+    // Expose necessary methods via the ref passed from the parent
+    useImperativeHandle(ref, () => internalGlobeEl.current as GlobeMethods, []);
 
     useEffect(() => {
-      if (globeEl.current) {
-        const globeInstance = globeEl.current;
+      if (internalGlobeEl.current) {
+        const globeInstance = internalGlobeEl.current;
         
         globeInstance.controls().autoRotate = true;
-        globeInstance.controls().autoRotateSpeed = 0.15; // Slightly slower for better viewing
+        globeInstance.controls().autoRotateSpeed = 0.15;
         globeInstance.controls().enableZoom = true;
         globeInstance.controls().minDistance = 150; 
         globeInstance.controls().maxDistance = 800; 
@@ -33,16 +36,18 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
       }
     }, [backgroundColor]);
 
-    useEffect(() => {
-        if (typeof ref === 'function') {
-          ref(globeEl.current || null);
-        } else if (ref) {
-          (ref as React.MutableRefObject<GlobeMethods | null>).current = globeEl.current || null;
-        }
-      }, [ref]);
+    // Handle external ref attachment
+     useEffect(() => {
+      if (typeof globeProps.globeRef === 'function') {
+        (globeProps.globeRef as (instance: GlobeMethods | null) => void)(internalGlobeEl.current || null);
+      } else if (globeProps.globeRef) {
+        (globeProps.globeRef as React.MutableRefObject<GlobeMethods | null>).current = internalGlobeEl.current || null;
+      }
+    }, [globeProps.globeRef]);
+
 
     const defaultGlobeProps: Partial<ReactGlobeProps> = {
-      globeImageUrl: "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg", // Default texture
+      globeImageUrl: globeImageUrl || "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg", // Default texture
       bumpImageUrl: "//unpkg.com/three-globe/example/img/earth-topology.png",
       showAtmosphere: true,
       atmosphereColor: '#4682B4', 
@@ -53,7 +58,7 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
 
     return (
       <Globe
-        ref={globeEl}
+        ref={internalGlobeEl}
         {...defaultGlobeProps}
         {...globeProps} // User-provided props will override defaults
       />
@@ -62,4 +67,3 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
 );
 
 GlobeVisualization.displayName = 'GlobeVisualization';
-```

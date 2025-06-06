@@ -10,10 +10,11 @@ import { Globe as GlobeIconLucide, Info, MapPin, ZoomIn, ZoomOut, Maximize, Aler
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import type { GlobeMethods } from 'react-globe.gl';
+import * as topojson from 'topojson-client'; // Import all of topojson-client
 
 // Dynamically import the GlobeVisualization component
 const ClientOnlyGlobe = dynamic(
-  () => import('@/components/dpp-tracker/GlobeVisualization'),
+  () => import('@/components/dpp-tracker/GlobeVisualization').then(mod => mod.GlobeVisualization),
   {
     ssr: false,
     loading: () => (
@@ -26,7 +27,7 @@ const ClientOnlyGlobe = dynamic(
 );
 
 // --- Color & Style Constants ---
-const EU_BLUE_COLOR = '#003399'; // Darker blue for EU
+const EU_BLUE_COLOR = '#00008B'; // Dark blue for EU
 const NON_EU_GREY_COLOR = '#D1D5DB'; // Light grey for non-EU
 const COUNTRY_BORDER_COLOR = '#000000'; // Black for borders
 const GLOBE_PAGE_BACKGROUND_COLOR = '#0a0a0a'; // Dark background for the page/globe area
@@ -44,9 +45,9 @@ const getCountryISO_A2 = (feature: any): string | undefined => {
   if (!feature || !feature.properties) return undefined;
   const props = feature.properties;
   // Fixes for specific entities in world-atlas
-  if (props.sovereignt === "Somaliland") return "SO"; // Somaliland is de facto independent, often coded as part of Somalia (SO) or separately (not official ISO)
-  if (props.sovereignt === "N. Cyprus") return "CY"; // Northern Cyprus, recognized only by Turkey, use Cyprus (CY)
-  return props.iso_a2 || props.ISO_A2 || props.ISO_A2_EH || props.ADM0_A3; // ADM0_A3 as a fallback
+  if (props.sovereignt === "Somaliland") return "SO"; 
+  if (props.sovereignt === "N. Cyprus") return "CY"; 
+  return props.iso_a2 || props.ISO_A2 || props.ISO_A2_EH || props.ADM0_A3; 
 };
 
 // Helper to get country name, robustly checking common property names
@@ -79,22 +80,21 @@ export default function DppGlobalTrackerPage() {
       setIsLoadingGeoJson(true);
       setGeoJsonError(null);
       try {
-        // Using 50m resolution for more detail
         const response = await fetch('https://unpkg.com/world-atlas@2.0.2/countries-50m.json');
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`Failed to fetch GeoJSON: ${response.status} ${response.statusText}. Server said: ${errorText.substring(0,100)}. URL: ${response.url}`);
         }
         const world = await response.json();
-        const topojson = await import('topojson-client');
         
         if (world.objects && world.objects.countries) {
-          const geoJsonFeatures = topojson.feature(world, world.objects.countries).features;
+          // Use topojson.feature to convert TopoJSON to GeoJSON
+          const geoJsonFeatures = (topojson.feature(world, world.objects.countries) as any).features;
           
-          // --- GeoJSON Data Validation ---
           let missingNameCount = 0;
           let missingIsoA2Count = 0;
-          geoJsonFeatures.forEach(feature => {
+
+          geoJsonFeatures.forEach((feature: any) => {
             if (!feature.properties) {
               missingNameCount++;
               missingIsoA2Count++;
@@ -105,9 +105,6 @@ export default function DppGlobalTrackerPage() {
             
             if (!name) missingNameCount++;
             if (!iso_a2 && feature.properties.sovereignt !== "Somaliland" && feature.properties.sovereignt !== "N. Cyprus") { 
-              // Special cases for Somaliland and N. Cyprus are handled in getCountryISO_A2,
-              // so don't count them as missing iso_a2 if sovereignt is present.
-              // We also check if ADM0_A3 is present as a fallback, if not, count as missing.
               if (!feature.properties.ADM0_A3) missingIsoA2Count++;
             }
           });
@@ -117,15 +114,13 @@ export default function DppGlobalTrackerPage() {
             console.warn(message);
             if (missingNameCount > geoJsonFeatures.length * 0.1 || missingIsoA2Count > geoJsonFeatures.length * 0.1) { // If more than 10% issues
               toast({
-                variant: "default", // Use default or a custom 'warning' variant if available
+                variant: "default",
                 title: "Map Data Inconsistencies",
                 description: `Found ${missingNameCount} countries missing names and ${missingIsoA2Count} missing ISO codes. Some map details might be affected.`,
                 duration: 8000,
               });
             }
           }
-          // --- End GeoJSON Data Validation ---
-
           setCountryPolygons(geoJsonFeatures);
         } else {
            throw new Error("GeoJSON structure from unpkg.com/world-atlas (50m) is not as expected. Missing 'objects.countries'.");
@@ -169,7 +164,22 @@ export default function DppGlobalTrackerPage() {
         pop_est: props.POP_EST || props.pop_est || props.POP_MAX || "N/A",
       });
        if (globeEl.current) {
-        globeEl.current.pointOfView({ lat: polygon.properties.latitude || 0, lng: polygon.properties.longitude || 0, altitude: 1 }, 750);
+        // Example: Focus on the clicked country
+        const center = { lat: props.latitude || 0, lng: props.longitude || 0, altitude: 1.5 }; // Adjust altitude as needed
+        try {
+          // Get centroid if available, otherwise use lat/lng or default
+          const centroid = (polygon.geometry && polygon.geometry.type === 'Polygon' && polygon.geometry.coordinates) ?
+             // A simple way to get a point; for multipolygons, this would be more complex
+             { lat: polygon.geometry.coordinates[0][0][1], lng: polygon.geometry.coordinates[0][0][0] } :
+             (polygon.geometry && polygon.geometry.type === 'MultiPolygon' && polygon.geometry.coordinates) ?
+             { lat: polygon.geometry.coordinates[0][0][0][1], lng: polygon.geometry.coordinates[0][0][0][0] } :
+             { lat: 0, lng: 0};
+
+          globeEl.current.pointOfView({ lat: centroid.lat, lng: centroid.lng, altitude: 1 }, 750);
+        } catch (e) {
+            console.warn("Could not calculate centroid for focusing, using default.", e);
+            globeEl.current.pointOfView({ lat: 0, lng: 0, altitude: 1.5}, 750);
+        }
       }
     } else {
       setSelectedCountryInfo(null);
@@ -312,4 +322,3 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
-

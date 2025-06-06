@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight, Sparkles, Copy as CopyIcon, ImagePlus, ImageIcon } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight, Sparkles, Copy as CopyIcon, ImagePlus, ImageIcon, CheckSquare } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -91,18 +91,23 @@ export interface MockProductType {
   complianceLastChecked?: string;
   lastUpdated: string;
   manufacturer: string;
-  manufacturerVerified?: boolean;
+  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
   modelNumber: string;
+  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
   description: string;
   descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
   imageUrl?: string;
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
   imageHint?: string;
   materials: string;
+  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
   sustainabilityClaims: string;
+  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
   sustainabilityClaimsVerified?: boolean;
   energyLabel: string;
+  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
   specifications: Record<string, string>;
+  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
   lifecycleEvents: Array<{ id: string; type: string; timestamp: string; location: string; details: string; isBlockchainAnchored?: boolean; transactionHash?: string }>;
   complianceData: Record<string, { status: string; lastChecked: string; reportId: string; isVerified?: boolean }>;
   isDppBlockchainAnchored?: boolean;
@@ -217,16 +222,23 @@ const MOCK_PRODUCTS: MockProductType[] = [
     complianceLastChecked: "2024-07-20T00:00:00Z",
     lastUpdated: "2024-07-18T00:00:00Z",
     manufacturer: "BrightSpark Electronics",
+    manufacturerOrigin: "AI_EXTRACTED",
     manufacturerVerified: true,
     modelNumber: "BS-LED-S04B",
+    modelNumberOrigin: "AI_EXTRACTED",
     description: "Energy-efficient smart LED bulbs with customizable lighting options, long lifespan, and integrated battery backup for power outages. Connects to smart home systems.",
     descriptionOrigin: "AI_EXTRACTED",
     imageUrl: "https://placehold.co/600x400.png",
+    imageUrlOrigin: "AI_EXTRACTED",
     imageHint: "led bulbs package battery",
     materials: "Polycarbonate, Aluminum, LEDs, Li-ion Battery Cell",
+    materialsOrigin: "AI_EXTRACTED",
     sustainabilityClaims: "Uses 85% less energy, Mercury-free, Recyclable packaging, Conflict-free minerals in battery.",
+    sustainabilityClaimsOrigin: "AI_EXTRACTED",
     sustainabilityClaimsVerified: false,
     energyLabel: "A+",
+    energyLabelOrigin: "AI_EXTRACTED",
+    specificationsOrigin: "AI_EXTRACTED",
     specifications: { "Lumens": "800 lm per bulb", "Color Temperature": "2700K - 6500K tunable", "Lifespan": "25,000 hours", "Connectivity": "Wi-Fi, Bluetooth", "Battery Backup Time": "2 hours" },
     batteryChemistry: "Li-ion NMC", batteryChemistryOrigin: "AI_EXTRACTED", stateOfHealth: 99, stateOfHealthOrigin: "manual", carbonFootprintManufacturing: 5.2, carbonFootprintManufacturingOrigin: "AI_EXTRACTED", recycledContentPercentage: 8, recycledContentPercentageOrigin: "manual",
     lifecycleEvents: [ { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Batch #LEDB456. Battery passport data generated. SCIP database notified of components. Quality control data recorded.", isBlockchainAnchored: true, transactionHash: "0xghi789jkl0mno1pqrustvwx" }, { id: "EVT005", type: "Imported", timestamp: "2024-03-15T10:00:00Z", location: "Rotterdam Port, Netherlands", details: "Shipment #SHP0089. EU customs cleared. Triggers CE marking verification.", isBlockchainAnchored: false }, { id: "EVT006", type: "Software Update", timestamp: "2024-08-01T00:00:00Z", location: "OTA Server", details: "Firmware v1.2 deployed. Improves energy efficiency algorithm. Update logged to DPP.", isBlockchainAnchored: true, transactionHash: "0xotaUpdateHash123xyz" } ],
@@ -421,6 +433,7 @@ export default function ProductDetailPage() {
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
   const [suggestedClaimsList, setSuggestedClaimsList] = useState<string[]>([]);
+  const [verifyingRegulationKey, setVerifyingRegulationKey] = useState<string | null>(null);
 
 
   useEffect(() => {
@@ -436,15 +449,17 @@ export default function ProductDetailPage() {
         if (storedProduct) {
           const defaults = getDefaultMockProductValues(storedProduct.id);
           let parsedSpecifications: Record<string, string> = {};
-          if (storedProduct.specifications && typeof storedProduct.specifications === 'string') {
-            try {
-              parsedSpecifications = JSON.parse(storedProduct.specifications);
-            } catch (e) {
+          try {
+            if (storedProduct.specifications && typeof storedProduct.specifications === 'string') {
+                parsedSpecifications = JSON.parse(storedProduct.specifications);
+            } else if (typeof storedProduct.specifications === 'object' && storedProduct.specifications !== null) {
+                parsedSpecifications = storedProduct.specifications as Record<string, string>;
+            } else {
+                parsedSpecifications = typeof defaults.specifications === 'object' ? defaults.specifications : {};
+            }
+          } catch (e) {
               console.warn("Failed to parse specifications for user product:", storedProduct.id, e);
               parsedSpecifications = typeof defaults.specifications === 'object' ? defaults.specifications : {};
-            }
-          } else if (typeof storedProduct.specifications === 'object' && storedProduct.specifications !== null) {
-            parsedSpecifications = storedProduct.specifications as Record<string, string>;
           }
 
 
@@ -721,12 +736,12 @@ export default function ProductDetailPage() {
           lastUpdated: new Date().toISOString(),
           productNameOrigin: determineOrigin(formDataFromForm.productName, productDataBeforeThisEditSession.productName, productDataBeforeThisEditSession.productNameOrigin),
           productDescriptionOrigin: determineOrigin(formDataFromForm.productDescription, productDataBeforeThisEditSession.productDescription, productDataBeforeThisEditSession.productDescriptionOrigin),
-          manufacturerOrigin: determineOrigin(formDataFromForm.manufacturer, productDataBeforeThisEditSession.manufacturer, productDataBeforeThisEditSession.manufacturerOrigin),
-          modelNumberOrigin: determineOrigin(formDataFromForm.modelNumber, productDataBeforeThisEditSession.modelNumber, productDataBeforeThisEditSession.modelNumberOrigin),
-          materialsOrigin: determineOrigin(formDataFromForm.materials, productDataBeforeThisEditSession.materials, productDataBeforeThisEditSession.materialsOrigin),
-          sustainabilityClaimsOrigin: determineOrigin(formDataFromForm.sustainabilityClaims, productDataBeforeThisEditSession.sustainabilityClaims, productDataBeforeThisEditSession.sustainabilityClaimsOrigin),
+          manufacturerOrigin: determineOrigin(formDataFromForm.manufacturer, productDataBeforeThisEditSession.manufacturer, productDataBeforeThisEditSession.manufacturerOrigin as 'AI_EXTRACTED' | 'manual' | undefined),
+          modelNumberOrigin: determineOrigin(formDataFromForm.modelNumber, productDataBeforeThisEditSession.modelNumber, productDataBeforeThisEditSession.modelNumberOrigin as 'AI_EXTRACTED' | 'manual' | undefined),
+          materialsOrigin: determineOrigin(formDataFromForm.materials, productDataBeforeThisEditSession.materials, productDataBeforeThisEditSession.materialsOrigin as 'AI_EXTRACTED' | 'manual' | undefined),
+          sustainabilityClaimsOrigin: determineOrigin(formDataFromForm.sustainabilityClaims, productDataBeforeThisEditSession.sustainabilityClaims, productDataBeforeThisEditSession.sustainabilityClaimsOrigin as 'AI_EXTRACTED' | 'manual' | undefined),
           specificationsOrigin: determineOrigin(formDataFromForm.specifications, productDataBeforeThisEditSession.specifications, productDataBeforeThisEditSession.specificationsOrigin as 'AI_EXTRACTED' | 'manual' | undefined),
-          energyLabelOrigin: determineOrigin(formDataFromForm.energyLabel, productDataBeforeThisEditSession.energyLabel, productDataBeforeThisEditSession.energyLabelOrigin),
+          energyLabelOrigin: determineOrigin(formDataFromForm.energyLabel, productDataBeforeThisEditSession.energyLabel, productDataBeforeThisEditSession.energyLabelOrigin as 'AI_EXTRACTED' | 'manual' | undefined),
           imageUrlOrigin: determineOrigin(formDataFromForm.imageUrl, productDataBeforeThisEditSession.imageUrl, productDataBeforeThisEditSession.imageUrlOrigin),
           batteryChemistryOrigin: determineOrigin(formDataFromForm.batteryChemistry, productDataBeforeThisEditSession.batteryChemistry, productDataBeforeThisEditSession.batteryChemistryOrigin),
           stateOfHealthOrigin: determineOrigin(formDataFromForm.stateOfHealth, productDataBeforeThisEditSession.stateOfHealth, productDataBeforeThisEditSession.stateOfHealthOrigin),
@@ -870,6 +885,38 @@ export default function ProductDetailPage() {
     });
   };
 
+  const handleMockVerifyDocument = async (regulationKey: string) => {
+    if (!product) return;
+    setVerifyingRegulationKey(regulationKey);
+    await new Promise(resolve => setTimeout(resolve, 1200)); // Simulate API call
+
+    const success = Math.random() > 0.2; // 80% chance of success
+
+    setProduct(prevProduct => {
+      if (!prevProduct) return null;
+      const updatedComplianceData = { ...prevProduct.complianceData };
+      if (updatedComplianceData[regulationKey]) {
+        updatedComplianceData[regulationKey] = {
+          ...updatedComplianceData[regulationKey],
+          isVerified: success ? !updatedComplianceData[regulationKey].isVerified : false, // Toggle on success, false on failure
+          lastChecked: new Date().toISOString(),
+        };
+      }
+      return {
+        ...prevProduct,
+        complianceData: updatedComplianceData,
+      };
+    });
+
+    toast({
+      title: success ? "Document Verification (Mock)" : "Mock Verification Failed",
+      description: success ? `Verification status for ${regulationKey} has been updated.` : `Could not verify document for ${regulationKey}. (Mock failure)`,
+      variant: success ? "default" : "destructive",
+    });
+
+    setVerifyingRegulationKey(null);
+  };
+
 
   if (product === undefined) { return <ProductDetailSkeleton />; }
   if (!product) { notFound(); return null; }
@@ -883,8 +930,9 @@ export default function ProductDetailPage() {
   const canAdvanceLifecycle = (currentRole === 'admin' || currentRole === 'manufacturer') && product.currentLifecyclePhaseIndex < product.lifecyclePhases.length - 1;
   
   const isProductImagePlaceholder = !product.imageUrl || product.imageUrl.includes('placehold.co') || product.imageUrl.includes('?text=');
-  const canGenerateImage = (currentRole === 'admin' || currentRole === 'manufacturer'); // Now always enabled for these roles, placeholder or not
+  const canGenerateImage = (currentRole === 'admin' || currentRole === 'manufacturer');
   const canSuggestClaims = currentRole === 'admin' || currentRole === 'manufacturer';
+  const canVerifyDocuments = currentRole === 'admin' || currentRole === 'verifier';
 
   return (
     
@@ -1000,15 +1048,15 @@ export default function ProductDetailPage() {
                              <div><strong className="text-foreground/80 block">Description:</strong> <span className="text-muted-foreground text-sm">{product.description}</span> <DataOriginIcon origin={product.descriptionOrigin} /></div>
                              <div><strong className="text-foreground/80 block">GTIN:</strong> <span className="text-muted-foreground text-sm">{product.gtin || "N/A"}</span> <TrustSignalIcon isVerified={product.gtinVerified} /> </div>
                              <div><strong className="text-foreground/80 block">Category:</strong> <span className="text-muted-foreground text-sm">{product.category || "N/A"}</span></div>
-                             <div><strong className="text-foreground/80 block">Manufacturer:</strong> <span className="text-muted-foreground text-sm">{product.manufacturer || "N/A"}</span> <DataOriginIcon origin={product.manufacturerOrigin as 'AI_EXTRACTED' | 'manual' | undefined} /> <TrustSignalIcon isVerified={product.manufacturerVerified} /></div>
-                             <div><strong className="text-foreground/80 block">Model:</strong> <span className="text-muted-foreground text-sm">{product.modelNumber || "N/A"}</span> <DataOriginIcon origin={product.modelNumberOrigin as 'AI_EXTRACTED' | 'manual' | undefined} /></div>
+                             <div><strong className="text-foreground/80 block">Manufacturer:</strong> <span className="text-muted-foreground text-sm">{product.manufacturer || "N/A"}</span> <DataOriginIcon origin={product.manufacturerOrigin} /> <TrustSignalIcon isVerified={product.manufacturerVerified} /></div>
+                             <div><strong className="text-foreground/80 block">Model:</strong> <span className="text-muted-foreground text-sm">{product.modelNumber || "N/A"}</span> <DataOriginIcon origin={product.modelNumberOrigin} /></div>
                         </div>
                     </div>
                     <div className="mt-4 pt-4 border-t">
                       <h4 className="text-md font-semibold mb-2 flex items-center"> <Leaf className="h-5 w-5 mr-2 text-accent" />Key Sustainability Info <TrustSignalIcon isVerified={product.sustainabilityClaimsVerified} /> </h4>
-                      <p className="text-sm text-muted-foreground mb-1"><strong>Materials:</strong> {product.materials || "N/A"} <DataOriginIcon origin={product.materialsOrigin as 'AI_EXTRACTED' | 'manual' | undefined} /></p>
-                      <p className="text-sm text-muted-foreground mb-1"><strong>Claims:</strong> {product.sustainabilityClaims || "N/A"} <DataOriginIcon origin={product.sustainabilityClaimsOrigin as 'AI_EXTRACTED' | 'manual' | undefined} /></p>
-                      <p className="text-sm text-muted-foreground"><strong>Energy Label:</strong> <Badge variant="secondary">{product.energyLabel || "N/A"}</Badge> <DataOriginIcon origin={product.energyLabelOrigin as 'AI_EXTRACTED' | 'manual' | undefined} /></p>
+                      <p className="text-sm text-muted-foreground mb-1"><strong>Materials:</strong> {product.materials || "N/A"} <DataOriginIcon origin={product.materialsOrigin} /></p>
+                      <p className="text-sm text-muted-foreground mb-1"><strong>Claims:</strong> {product.sustainabilityClaims || "N/A"} <DataOriginIcon origin={product.sustainabilityClaimsOrigin} /></p>
+                      <p className="text-sm text-muted-foreground"><strong>Energy Label:</strong> <Badge variant="secondary">{product.energyLabel || "N/A"}</Badge> <DataOriginIcon origin={product.energyLabelOrigin} /></p>
                     </div>
                   </CardContent>
                 </Card>
@@ -1053,7 +1101,7 @@ export default function ProductDetailPage() {
             </TabsContent>
 
             <TabsContent value="specifications" className="mt-4">
-              <Card> <CardHeader> <CardTitle className="flex items-center"><Settings2 className="mr-2 h-5 w-5 text-primary" />Detailed Specifications <DataOriginIcon origin={product.specificationsOrigin as 'AI_EXTRACTED' | 'manual' | undefined} /></CardTitle> </CardHeader>
+              <Card> <CardHeader> <CardTitle className="flex items-center"><Settings2 className="mr-2 h-5 w-5 text-primary" />Detailed Specifications <DataOriginIcon origin={product.specificationsOrigin} /></CardTitle> </CardHeader>
                 <CardContent>
                   <Accordion type="single" collapsible defaultValue="item-1">
                     <AccordionItem value="item-1">
@@ -1100,19 +1148,32 @@ export default function ProductDetailPage() {
                     <CardContent className="space-y-4">
                     {product.complianceData && Object.keys(product.complianceData).length > 0 ? ( Object.entries(product.complianceData).map(([reg, data]) => (
                     <Card key={reg} className="bg-muted/50 p-4 rounded-lg">
-                        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                            <div>
+                        <div className="flex flex-col sm:flex-row justify-between sm:items-start gap-2">
+                            <div className="flex-grow">
                                 <CardTitle className="text-md flex items-center">
                                     <span className="flex items-center"> {reg}  <TrustSignalIcon isVerified={data.isVerified} /> </span>
                                 </CardTitle>
                                 <p className="text-xs text-muted-foreground mt-1">Last Checked: {new Date(data.lastChecked).toLocaleDateString()}</p>
                                 {data.reportId && <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>}
                             </div>
-                            <div className="flex flex-col items-start sm:items-end gap-2 mt-2 sm:mt-0">
-                                <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={cn( data.status === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {data.status} </Badge>
-                                <Button variant="outline" size="sm" onClick={() => handleAskCopilotForRegulation(reg, data.status)}>
-                                    <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" /> Ask AI Copilot
-                                </Button>
+                            <div className="flex flex-col sm:flex-row items-start sm:items-end gap-2 mt-2 sm:mt-0 flex-shrink-0">
+                                <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={cn( "mb-1 sm:mb-0", data.status === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {data.status} </Badge>
+                                <div className="flex gap-2">
+                                  {canVerifyDocuments && (
+                                    <Button 
+                                      variant="outline" 
+                                      size="sm" 
+                                      onClick={() => handleMockVerifyDocument(reg)}
+                                      disabled={verifyingRegulationKey === reg || isCheckingCompliance || isSyncingEprel}
+                                    >
+                                      {verifyingRegulationKey === reg ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <CheckSquare className="mr-2 h-4 w-4" />}
+                                      {verifyingRegulationKey === reg ? "Verifying..." : "Verify Doc (Mock)"}
+                                    </Button>
+                                  )}
+                                  <Button variant="outline" size="sm" onClick={() => handleAskCopilotForRegulation(reg, data.status)}>
+                                      <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" /> Ask AI
+                                  </Button>
+                                </div>
                             </div>
                         </div>
                     </Card> )) ) : ( <p className="text-sm text-muted-foreground">No specific compliance records available for this product.</p> )}
@@ -1304,3 +1365,4 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
+

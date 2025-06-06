@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useParams, notFound, useRouter } from 'next/navigation';
@@ -78,13 +77,13 @@ interface VerificationLogEntry {
   details?: string;
 }
 
-export interface MockProductType { 
+export interface MockProductType {
   productId: string;
   productName: string;
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   gtin: string;
   gtinVerified?: boolean;
-  category: string; 
+  category: string;
   status: string;
   compliance: string;
   complianceLastChecked?: string;
@@ -101,7 +100,7 @@ export interface MockProductType {
   sustainabilityClaims: string;
   sustainabilityClaimsVerified?: boolean;
   energyLabel: string;
-  specifications: Record<string, string>; 
+  specifications: Record<string, string>;
   lifecycleEvents: Array<{ id: string; type: string; timestamp: string; location: string; details: string; isBlockchainAnchored?: boolean; transactionHash?: string }>;
   complianceData: Record<string, { status: string; lastChecked: string; reportId: string; isVerified?: boolean }>;
   isDppBlockchainAnchored?: boolean;
@@ -135,7 +134,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
     productName: "EcoFriendly Refrigerator X2000",
     gtin: "01234567890123",
     gtinVerified: true,
-    category: "Appliances", 
+    category: "Appliances",
     status: "Active",
     compliance: "Compliant",
     complianceLastChecked: "2024-07-15",
@@ -170,7 +169,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
     },
     isDppBlockchainAnchored: true,
     dppAnchorTransactionHash: "0x123mainanchor789xyzabc001",
-    currentLifecyclePhaseIndex: 2, 
+    currentLifecyclePhaseIndex: 2,
     lifecyclePhases: [
       { id: "lc001", name: "Raw Materials", icon: PackageSearch, status: 'completed', timestamp: "2023-12-01T10:00:00Z", location: "Verified Suppliers Network", details: "Sourcing of certified recycled steel and bio-polymers. Supplier compliance data (e.g., REACH for raw materials) recorded and verified. Quality control data recorded; triggers manufacturing completion.", complianceMetrics: [{ name: "Supplier Ethical Audit", status: "compliant", reportLink: "#" }, { name: "Material Origin Traceability", status: "compliant"}], sustainabilityMetrics: [{ name: "Recycled Content Input", value: 75, unit: "%", targetValue: 70 }, { name: "Conflict Minerals Free", status: "compliant"}] },
       { id: "lc002", name: "Manufacturing", icon: Factory, status: 'completed', timestamp: "2024-01-15T08:00:00Z", location: "EcoFactory, Germany", details: "Assembly at EcoFactory. Production batch #PB789 logged. Energy & waste data captured for sustainability reporting. End-of-line quality checks passed, triggers blockchain anchor for manufacturing completion.", complianceMetrics: [{ name: "ISO 14001 Certification", status: "compliant", reportLink: "#" }, { name: "Factory Safety Standards", status: "compliant"}], sustainabilityMetrics: [{ name: "Energy Used", value: 50, unit: "kWh/unit", targetValue: 55 }, { name: "Waste Generated", value: 2, unit: "kg/unit", targetValue: 3 }, {name: "Water Usage", value: 15, unit: "L/unit", targetValue: 20}] },
@@ -183,7 +182,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
       gdpr: { status: "compliant", lastChecked: "2024-07-01T10:00:00Z" },
       eprel: { status: "compliant", entryId: "EPREL12345", lastChecked: "2024-06-20T10:00:00Z" },
       ebsiVerified: { status: "compliant", verificationId: "EBSI-TX-ABCDEF0123", lastChecked: "2024-07-15T10:00:00Z" },
-      scip: { status: "not_applicable", lastChecked: "2024-07-01T10:00:00Z" }, 
+      scip: { status: "not_applicable", lastChecked: "2024-07-01T10:00:00Z" },
       csrd: { status: "in_progress", lastChecked: "2024-07-20T10:00:00Z" }
     },
     notifications: [
@@ -210,7 +209,7 @@ const MOCK_PRODUCTS: MockProductType[] = [
     productNameOrigin: "AI_EXTRACTED",
     gtin: "98765432109876",
     gtinVerified: false,
-    category: "Electronics", 
+    category: "Electronics",
     status: "Active",
     compliance: "Pending Documentation",
     complianceLastChecked: "2024-07-20T00:00:00Z",
@@ -230,9 +229,9 @@ const MOCK_PRODUCTS: MockProductType[] = [
     batteryChemistry: "Li-ion NMC", batteryChemistryOrigin: "AI_EXTRACTED", stateOfHealth: 99, stateOfHealthOrigin: "manual", carbonFootprintManufacturing: 5.2, carbonFootprintManufacturingOrigin: "AI_EXTRACTED", recycledContentPercentage: 8, recycledContentPercentageOrigin: "manual",
     lifecycleEvents: [ { id: "EVT004", type: "Manufactured", timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Batch #LEDB456. Battery passport data generated. SCIP database notified of components. Quality control data recorded.", isBlockchainAnchored: true, transactionHash: "0xghi789jkl0mno1pqrustvwx" }, { id: "EVT005", type: "Imported", timestamp: "2024-03-15T10:00:00Z", location: "Rotterdam Port, Netherlands", details: "Shipment #SHP0089. EU customs cleared. Triggers CE marking verification.", isBlockchainAnchored: false }, { id: "EVT006", type: "Software Update", timestamp: "2024-08-01T00:00:00Z", location: "OTA Server", details: "Firmware v1.2 deployed. Improves energy efficiency algorithm. Update logged to DPP.", isBlockchainAnchored: true, transactionHash: "0xotaUpdateHash123xyz" } ],
     complianceData: { "RoHS": { status: "Compliant", lastChecked: "2024-07-01T10:00:00Z", reportId: "ROHS-LEDB456-001", isVerified: true }, "CE Mark": { status: "Compliant", lastChecked: "2024-07-01T10:00:00Z", reportId: "CE-LEDB456-001", isVerified: true }, "Battery Regulation (EU 2023/1542)": { status: "Pending Documentation", lastChecked: "2024-07-20T10:00:00Z", reportId: "BATREG-LEDB456-PRE", isVerified: false }, },
-    isDppBlockchainAnchored: false, 
+    isDppBlockchainAnchored: false,
     dppAnchorTransactionHash: undefined,
-    currentLifecyclePhaseIndex: 1, 
+    currentLifecyclePhaseIndex: 1,
     lifecyclePhases: [ { id: "lc007", name: "Materials Sourcing", icon: PackageSearch, status: 'completed', timestamp: "2024-02-01T10:00:00Z", location: "Global Suppliers", details: "Sourcing of PC, Al, LED chips, battery components. Conflict minerals check completed. Supplier data for battery chemistry (e.g. Cobalt source) recorded for Battery Regulation.", complianceMetrics: [{ name: "Conflict Minerals Report", status: "compliant", reportLink: "#" }, { name: "Supplier Chemical Safety Data Sheets", status: "compliant" }], sustainabilityMetrics: [{ name: "Supplier Diversity Score", value: 60, unit: "/100", targetValue: 75 }, {name: "Battery Component Traceability", status: "compliant"}] }, { id: "lc008", name: "Manufacturing", icon: Factory, status: 'in_progress', timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Assembly in Shenzhen. Batch #LEDB456. Initial battery SoH recorded. SCIP notification for SVHC in components submitted. Carbon footprint of manufacturing calculated.", complianceMetrics: [{ name: "Factory Safety Audit (ISO 45001)", status: "compliant", reportLink: "#" }, {name: "SCIP Database Submission", status: "compliant", reportLink: "#"}], sustainabilityMetrics: [{ name: "Carbon Footprint (Mfg.)", value: 5.2, unit: "kg CO2e/pack", targetValue: 5.0 }, { name: "Recycled Packaging Used", value: 90, unit: "%", targetValue: 100}] }, { id: "lc009", name: "Distribution", icon: Truck, status: 'pending', timestamp: "2024-03-15T10:00:00Z", location: "Global Distribution Network", details: "Global distribution. Awaiting final packaging data for carbon footprint update of distribution phase. Customs documents generated.", complianceMetrics: [], sustainabilityMetrics: [{name: "Logistics Efficiency Score", value: 7, unit:"/10 (target)"}] }, { id: "lc010", name: "Retail Sale", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-04-01T00:00:00Z", location: "Online & Physical Stores", details: "Available through various retail channels. EPREL data to be displayed at point of sale. Consumer warranty registration activated on sale.", complianceMetrics: [{name: "EPREL Label Display", status: "pending_review"}], sustainabilityMetrics: [] }, { id: "lc011", name: "Use & Maintenance", icon: Users, status: 'upcoming', timestamp: "2024-04-02T00:00:00Z", location: "Consumer Homes & Businesses", details: "Estimated 3-year useful life for battery. OTA firmware updates enhance performance and security. Battery replacement guide in DPP for consumers/technicians.", sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }, {name: "Firmware Update Frequency", value: 2, unit: "updates/yr (avg)"}] }, { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'issue', timestamp: "2027-04-01T00:00:00Z", location: "Designated Collection Points", details: "Battery designed for removal. Documentation for EU Battery Regulation (EU 2023/1542) is overdue, impacting certified recycling pathway.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}, {name: "EU Battery Reg. Documentation", status: "non_compliant", reportLink: "#"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]} ],
     overallCompliance: { gdpr: { status: "not_applicable", lastChecked: "2024-07-01T10:00:00Z" }, eprel: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" }, ebsiVerified: { status: "pending_review", verificationId: "PENDING_EBSI_CHECK", lastChecked: "2024-07-20T10:00:00Z" },  scip: { status: "compliant", declarationId: "SCIP-XYZ789", lastChecked: "2024-07-01T10:00:00Z" }, csrd: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" } },
     notifications: [ { id: "n003", type: "error", message: "Battery Regulation documentation overdue! Action required.", date: "2024-07-19T10:00:00Z" }, { id: "n004", type: "warning", message: "EPREL registration data needs review by end of week.", date: "2024-07-22T10:00:00Z" }, { id: "n005", type: "info", message: "Firmware update v1.2 successfully deployed.", date: "2024-08-01T02:00:00Z"} ],
@@ -255,8 +254,8 @@ const getDefaultMockProductValues = (id: string): MockProductType => ({
   productName: "User Added Product",
   gtin: "",
   category: "General",
-  status: "Draft", 
-  compliance: "N/A", 
+  status: "Draft",
+  compliance: "N/A",
   lastUpdated: new Date().toISOString(),
   manufacturer: "N/A",
   modelNumber: "N/A",
@@ -273,12 +272,12 @@ const getDefaultMockProductValues = (id: string): MockProductType => ({
   dppAnchorTransactionHash: undefined, // Default for new products
   currentLifecyclePhaseIndex: 0,
   lifecyclePhases: [ { id: `lc_user_${id}_1`, name: "Created", icon: PackageSearch, status: 'completed', timestamp: new Date().toISOString(), location: "System", details: "Product entry created by user." }, { id: `lc_user_${id}_2`, name: "Pending Review", icon: Factory, status: 'in_progress', details: "Awaiting further data input and review." } ],
-  overallCompliance: { 
-    gdpr: { status: "pending_review", lastChecked: new Date().toISOString() }, 
-    eprel: { status: "pending_review", lastChecked: new Date().toISOString() }, 
-    ebsiVerified: { status: "pending_review", lastChecked: new Date().toISOString() }, 
-    scip: { status: "pending_review", lastChecked: new Date().toISOString() }, 
-    csrd: { status: "pending_review", lastChecked: new Date().toISOString() }, 
+  overallCompliance: {
+    gdpr: { status: "pending_review", lastChecked: new Date().toISOString() },
+    eprel: { status: "pending_review", lastChecked: new Date().toISOString() },
+    ebsiVerified: { status: "pending_review", lastChecked: new Date().toISOString() },
+    scip: { status: "pending_review", lastChecked: new Date().toISOString() },
+    csrd: { status: "pending_review", lastChecked: new Date().toISOString() },
   },
   notifications: [ {id: `user_info_${id}`, type: "info", message: "This product was added by a user and may have incomplete data. Please review and update.", date: new Date().toISOString()} ],
   verificationLog: [{ id: `vlog_user_${id}`, event: "DPP Created by User", timestamp: new Date().toISOString(), actor: "User" }],
@@ -287,7 +286,7 @@ const getDefaultMockProductValues = (id: string): MockProductType => ({
 const TrustSignalIcon = ({ isVerified, tooltipText, VerifiedIcon = CheckCircle2, UnverifiedIcon = Info, customClasses }: { isVerified?: boolean, tooltipText: string, VerifiedIcon?: React.ElementType, UnverifiedIcon?: React.ElementType, customClasses?: string }) => {
   if (isVerified === undefined) return null;
   const IconToRender = isVerified ? VerifiedIcon : UnverifiedIcon;
-  const colorClass = isVerified ? 'text-green-500' : 'text-yellow-600'; 
+  const colorClass = isVerified ? 'text-green-500' : 'text-yellow-600';
 
   return (
     <TooltipProvider>
@@ -327,7 +326,7 @@ const DataOriginIcon = ({ origin, fieldName }: { origin?: 'AI_EXTRACTED' | 'manu
 
 const chartConfig = {
   carbon: { label: "Carbon Footprint (kg CO₂e)", color: "hsl(var(--chart-1))" },
-  materials: {}, 
+  materials: {},
 } satisfies import("@/components/ui/chart").ChartConfig;
 
 const calculateDppCompleteness = (product: MockProductType): { score: number; filledFields: number; totalFields: number; missingFields: string[] } => {
@@ -395,14 +394,14 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const { currentRole } = useRole();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('overview'); 
+  const [activeTab, setActiveTab] = useState('overview');
   const [isCheckingCompliance, setIsCheckingCompliance] = useState(false);
   const [isSyncingEprel, setIsSyncingEprel] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
-      await new Promise(resolve => setTimeout(resolve, 300)); 
+      await new Promise(resolve => setTimeout(resolve, 300));
 
       let foundProduct: MockProductType | undefined;
 
@@ -413,7 +412,7 @@ export default function ProductDetailPage() {
 
         if (storedProduct) {
           const defaults = getDefaultMockProductValues(storedProduct.id);
-          
+
           let parsedSpecifications: Record<string, string> = {};
           if (storedProduct.specifications && typeof storedProduct.specifications === 'string') {
             try {
@@ -427,7 +426,7 @@ export default function ProductDetailPage() {
 
 
           foundProduct = {
-            ...defaults, 
+            ...defaults,
             productId: storedProduct.id,
             productName: storedProduct.productName || "User Added Product",
             productNameOrigin: storedProduct.productNameOrigin,
@@ -442,7 +441,7 @@ export default function ProductDetailPage() {
             descriptionOrigin: storedProduct.productDescriptionOrigin,
             imageUrl: storedProduct.imageUrl || defaults.imageUrl,
             imageUrlOrigin: storedProduct.imageUrlOrigin,
-            imageHint: storedProduct.imageUrl && !storedProduct.imageUrl.includes('placehold.co') && !storedProduct.imageUrl.includes('?text=') ? (storedProduct.productName || "product image") : defaults.imageHint, 
+            imageHint: storedProduct.imageUrl && !storedProduct.imageUrl.includes('placehold.co') && !storedProduct.imageUrl.includes('?text=') ? (storedProduct.productName || "product image") : defaults.imageHint,
             materials: storedProduct.materials || "Not specified",
             sustainabilityClaims: storedProduct.sustainabilityClaims || "None specified",
             energyLabel: storedProduct.energyLabel || "N/A",
@@ -464,7 +463,7 @@ export default function ProductDetailPage() {
       if (!foundProduct) {
         foundProduct = MOCK_PRODUCTS.find(p => p.productId === productId);
       }
-      
+
       setProduct(foundProduct);
     };
 
@@ -477,7 +476,7 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     if (product) {
-      let newDefaultTab = 'overview'; 
+      let newDefaultTab = 'overview';
       const criticalErrorNotification = product.notifications?.find(n => n.type === 'error');
       let errorDrivenTab: string | null = null;
       if (criticalErrorNotification) {
@@ -485,7 +484,7 @@ export default function ProductDetailPage() {
         if (message.includes('battery regulation') || message.includes('battery passport')) { if (hasBatteryData) { errorDrivenTab = 'battery'; } }
         if (!errorDrivenTab && (message.includes('compliance') || message.includes('regulation'))) { errorDrivenTab = 'compliance';  }
       }
-      if (errorDrivenTab) { newDefaultTab = errorDrivenTab; } 
+      if (errorDrivenTab) { newDefaultTab = errorDrivenTab; }
       else {
          // Keep existing role-based logic or a sensible default if no error drives tab selection
         switch (currentRole) {
@@ -538,9 +537,9 @@ export default function ProductDetailPage() {
       if (result.syncStatus === 'Synced Successfully') {
         newEprelStatus = 'compliant';
       } else if (result.syncStatus === 'Product Not Found in EPREL') {
-        newEprelStatus = 'not_applicable'; 
+        newEprelStatus = 'not_applicable';
       } else if (result.syncStatus === 'Data Mismatch' || result.syncStatus === 'Error During Sync') {
-        newEprelStatus = 'pending_review'; 
+        newEprelStatus = 'pending_review';
       }
 
       setProduct(prevProduct => {
@@ -583,7 +582,7 @@ export default function ProductDetailPage() {
   const handleProductFormSubmit = async (data: ProductFormData) => {
     if (!product) return;
     setIsEditing(true); // Using isEditing to represent form submission loading state
-    
+
     try {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
       let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
@@ -600,7 +599,7 @@ export default function ProductDetailPage() {
         };
         userProducts[productIndex] = updatedProductData;
         localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
-        
+
         setProduct(prev => prev ? ({ ...prev, ...updatedProductData, productName: data.productName || prev.productName, productDescription: data.productDescription || prev.productDescription, manufacturer: data.manufacturer || prev.manufacturer, modelNumber: data.modelNumber || prev.modelNumber, materials: data.materials || prev.materials, sustainabilityClaims: data.sustainabilityClaims || prev.sustainabilityClaims, specifications: data.specifications ? (typeof data.specifications === 'string' ? JSON.parse(data.specifications) : data.specifications) : prev.specifications, energyLabel: data.energyLabel || prev.energyLabel, category: data.productCategory || prev.category, imageUrl: data.imageUrl || prev.imageUrl, batteryChemistry: data.batteryChemistry, stateOfHealth: data.stateOfHealth, carbonFootprintManufacturing: data.carbonFootprintManufacturing, recycledContentPercentage: data.recycledContentPercentage, lastUpdated: updatedProductData.lastUpdated }) : null);
 
         toast({ title: "Product Updated", description: `${updatedProductData.productName} has been updated successfully.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
@@ -622,7 +621,7 @@ export default function ProductDetailPage() {
   const currentYear = new Date().getFullYear().toString();
   const currentCarbonFootprint = product.historicalCarbonFootprint?.find(p => p.year === currentYear)?.value || product.historicalCarbonFootprint?.[product.historicalCarbonFootprint.length - 1]?.value;
   const dppCompleteness = calculateDppCompleteness(product);
-  
+
   const canEditProduct = (currentRole === 'admin' || currentRole === 'manufacturer') && product.productId.startsWith("USER_PROD");
   const canSimulateCompliance = currentRole === 'admin' || currentRole === 'manufacturer';
   const canSyncEprel = currentRole === 'admin' || currentRole === 'manufacturer';
@@ -636,23 +635,23 @@ export default function ProductDetailPage() {
           <div className="flex items-center">
             <h1 className="text-3xl font-headline font-semibold">{product.productName}</h1>
             <DataOriginIcon origin={product.productNameOrigin} fieldName="Product Name" />
-            {product.isDppBlockchainAnchored && ( 
-                <Tooltip delayDuration={100}> 
-                  <TooltipTrigger asChild> 
-                    <span><Fingerprint className="h-6 w-6 text-primary ml-2 cursor-help" /></span> 
-                  </TooltipTrigger> 
-                  <TooltipContent> <p>This Digital Product Passport is anchored on the blockchain, ensuring its integrity and authenticity.</p> </TooltipContent> 
-                </Tooltip> 
-            )}
-            {product.isDppBlockchainAnchored && product.dppAnchorTransactionHash && ( 
-                <Tooltip delayDuration={100}> 
+            {product.isDppBlockchainAnchored && (
+                <Tooltip delayDuration={100}>
                   <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}> 
-                        <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" /> 
-                    </Button> 
-                  </TooltipTrigger> 
-                  <TooltipContent> <p>View on Blockchain Explorer (mock). Tx: {product.dppAnchorTransactionHash}</p> </TooltipContent> 
-                </Tooltip> 
+                    <span><Fingerprint className="h-6 w-6 text-primary ml-2 cursor-help" /></span>
+                  </TooltipTrigger>
+                  <TooltipContent> <p>This Digital Product Passport is anchored on the blockchain, ensuring its integrity and authenticity.</p> </TooltipContent>
+                </Tooltip>
+            )}
+            {product.isDppBlockchainAnchored && product.dppAnchorTransactionHash && (
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
+                    <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}>
+                        <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent> <p>View on Blockchain Explorer (mock). Tx: {product.dppAnchorTransactionHash}</p> </TooltipContent>
+                </Tooltip>
             )}
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -688,10 +687,10 @@ export default function ProductDetailPage() {
            {isEditing && (
             <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} className="bg-destructive/10 text-destructive hover:bg-destructive/20">Cancel Edit</Button>
            )}
-          <Link href={`/passport/${product.productId}`} passHref target="_blank"> <Button variant="outline"> <ExternalLink className="mr-2 h-4 w-4" /> View Public Passport </Button> </Link> 
+          <Link href={`/passport/${product.productId}`} passHref target="_blank"> <Button variant="outline"> <ExternalLink className="mr-2 h-4 w-4" /> View Public Passport </Button> </Link>
         </div>
       </div>
-      
+
       {isEditing && canEditProduct ? (
         <Card className="shadow-lg">
           <CardHeader>
@@ -699,8 +698,8 @@ export default function ProductDetailPage() {
             <CardDescription>Modify the details for this Digital Product Passport.</CardDescription>
           </CardHeader>
           <CardContent>
-            <ProductForm 
-              onSubmit={handleProductFormSubmit} 
+            <ProductForm
+              onSubmit={handleProductFormSubmit}
               isSubmitting={isEditing && (form.formState.isSubmitting)} // Example, adapt as needed
               initialData={{
                 productName: product.productName,
@@ -848,30 +847,30 @@ export default function ProductDetailPage() {
             )}
 
             <TabsContent value="compliance" className="mt-4">
-                <OverallProductCompliance  
-                    complianceData={product.overallCompliance}  
+                <OverallProductCompliance
+                    complianceData={product.overallCompliance}
                     onSyncEprel={handleSyncEprel}
                     isSyncingEprel={isSyncingEprel}
                     canSyncEprel={canSyncEprel}
-                /> 
+                />
                 <Card className="mt-6">
                     <CardHeader>
                         <CardTitle className="text-lg">Specific Regulation Status</CardTitle>
                         <CardDescription>Detailed compliance status for individual regulations.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                    {product.complianceData && Object.keys(product.complianceData).length > 0 ? ( Object.entries(product.complianceData).map(([reg, data]) => ( 
-                    <Card key={reg} className="bg-muted/50 p-4 rounded-lg"> 
+                    {product.complianceData && Object.keys(product.complianceData).length > 0 ? ( Object.entries(product.complianceData).map(([reg, data]) => (
+                    <Card key={reg} className="bg-muted/50 p-4 rounded-lg">
                         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                             <div>
-                                <CardTitle className="text-md flex items-center"> 
-                                    <span className="flex items-center"> {reg}  <TrustSignalIcon  isVerified={data.isVerified}  tooltipText={data.isVerified ? `${reg} Verified` : `${reg} Status Pending Verification`} VerifiedIcon={CheckCircle2} UnverifiedIcon={Info} /> </span> 
-                                </CardTitle> 
-                                <p className="text-xs text-muted-foreground mt-1">Last Checked: {new Date(data.lastChecked).toLocaleDateString()}</p> 
-                                {data.reportId && <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>} 
+                                <CardTitle className="text-md flex items-center">
+                                    <span className="flex items-center"> {reg}  <TrustSignalIcon  isVerified={data.isVerified}  tooltipText={data.isVerified ? `${reg} Verified` : `${reg} Status Pending Verification`} VerifiedIcon={CheckCircle2} UnverifiedIcon={Info} /> </span>
+                                </CardTitle>
+                                <p className="text-xs text-muted-foreground mt-1">Last Checked: {new Date(data.lastChecked).toLocaleDateString()}</p>
+                                {data.reportId && <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>}
                             </div>
                             <div className="flex flex-col items-start sm:items-end gap-2 mt-2 sm:mt-0">
-                                <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={cn( data.status === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {data.status} </Badge> 
+                                <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={cn( data.status === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {data.status} </Badge>
                                 <Button variant="outline" size="sm" onClick={() => handleAskCopilotForRegulation(reg, data.status)}>
                                     <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" /> Ask AI Copilot
                                 </Button>
@@ -890,16 +889,16 @@ export default function ProductDetailPage() {
                     <AccordionItem value="item-1">
                       <AccordionTrigger className="text-base">View Events Log</AccordionTrigger>
                       <AccordionContent className="pt-2">
-                        {product.lifecycleEvents && product.lifecycleEvents.length > 0 ? ( <ul className="space-y-4"> {product.lifecycleEvents.map((event) => ( <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors"> 
-                        <div className="font-semibold text-primary flex items-center mb-1"> {/* Changed from p to div */}
-                          {event.type} 
-                          {event.isBlockchainAnchored && ( <Tooltip delayDuration={100}> <TooltipTrigger className="cursor-help"> <Server className="h-4 w-4 text-primary ml-2" /> </TooltipTrigger> <TooltipContent> <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p> </TooltipContent> </Tooltip> )} 
-                          {event.isBlockchainAnchored && event.transactionHash && ( <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}> <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" /> </Button> </TooltipTrigger> <TooltipContent> <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p> </TooltipContent> </Tooltip> )} 
-                          <span className="text-xs text-muted-foreground ml-auto font-normal">{new Date(event.timestamp).toLocaleDateString()}</span> {/* Moved date to be part of this div for better flex alignment */}
-                        </div> 
-                        <p className="text-sm text-muted-foreground">Location: {event.location}</p> 
-                        <p className="text-sm text-muted-foreground">Details: {event.details}</p> 
-                        </li> ))} </ul> ) : ( <p className="text-sm text-muted-foreground">No lifecycle events recorded for this product.</p> )}
+                        {product.lifecycleEvents && product.lifecycleEvents.length > 0 ? ( <ul className="space-y-4"> {product.lifecycleEvents.map((event) => ( <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors">
+                        <div className="flex justify-between items-start mb-1">
+                          <div className="font-semibold text-primary flex items-center"> {/* Container for type and icons */}
+                            {event.type}
+                            {event.isBlockchainAnchored && ( <Tooltip delayDuration={100}> <TooltipTrigger className="cursor-help"> <Server className="h-4 w-4 text-primary ml-2" /> </TooltipTrigger> <TooltipContent> <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p> </TooltipContent> </Tooltip> )}
+                            {event.isBlockchainAnchored && event.transactionHash && ( <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}> <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" /> </Button> </TooltipTrigger> <TooltipContent> <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p> </TooltipContent> </Tooltip> )}
+                          </div>
+                          <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleDateString()}</p>
+                        </div>
+                        <p className="text-sm text-muted-foreground">Location: {event.location}</p> <p className="text-sm text-muted-foreground">Details: {event.details}</p> </li> ))} </ul> ) : ( <p className="text-sm text-muted-foreground">No lifecycle events recorded for this product.</p> )}
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>

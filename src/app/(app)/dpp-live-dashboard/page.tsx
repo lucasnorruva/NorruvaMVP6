@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
 import { DashboardFiltersComponent } from "@/components/dpp-dashboard/DashboardFiltersComponent";
-import type { DigitalProductPassport, DashboardFiltersState } from "@/types/dpp";
+import type { DigitalProductPassport, DashboardFiltersState, EbsiVerificationDetails } from "@/types/dpp";
 import { MOCK_DPPS } from "@/types/dpp"; // Import mock data
 import { BarChart3, CheckSquare, Clock, Eye, PlusCircle, ScanEye, Percent, Users, QrCode, Camera } from "lucide-react";
 import Link from "next/link";
@@ -34,7 +34,7 @@ const availableRegulations = [
   { value: "battery_regulation", label: "EU Battery Regulation" },
 ];
 
-type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance'; // Added 'overallCompliance' for potential future use
+type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status';
 
 interface SortConfig {
   key: SortableKeys | null;
@@ -52,7 +52,7 @@ export default function DPPLiveDashboardPage() {
     regulation: "all",
     category: "all",
     searchQuery: "",
-    blockchainAnchored: "all", // Initialize new filter
+    blockchainAnchored: "all", 
   });
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
   const [manualProductId, setManualProductId] = useState("");
@@ -62,11 +62,9 @@ export default function DPPLiveDashboardPage() {
 
 
   useEffect(() => {
-    // Load initial mock DPPs and user-added products from localStorage
     const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
     const userAddedProducts: DigitalProductPassport[] = storedProductsString ? JSON.parse(storedProductsString) : [];
     
-    // Combine and filter out duplicates if any mock product ID was overwritten by a user product
     const combinedProducts = [
       ...MOCK_DPPS.filter(mockDpp => !userAddedProducts.find(userDpp => userDpp.id === mockDpp.id)),
       ...userAddedProducts
@@ -107,7 +105,7 @@ export default function DPPLiveDashboardPage() {
 
     if (sortConfig.key && sortConfig.direction) {
       filtered.sort((a, b) => {
-        let valA, valB;
+        let valA: any, valB: any;
 
         if (sortConfig.key === 'metadata.status') {
           valA = a.metadata.status;
@@ -115,6 +113,9 @@ export default function DPPLiveDashboardPage() {
         } else if (sortConfig.key === 'metadata.last_updated') {
           valA = new Date(a.metadata.last_updated).getTime();
           valB = new Date(b.metadata.last_updated).getTime();
+        } else if (sortConfig.key === 'ebsiVerification.status') {
+          valA = a.ebsiVerification?.status;
+          valB = b.ebsiVerification?.status;
         } else if (sortConfig.key === 'id' || sortConfig.key === 'productName' || sortConfig.key === 'category') {
            valA = a[sortConfig.key as keyof DigitalProductPassport];
            valB = b[sortConfig.key as keyof DigitalProductPassport];
@@ -129,8 +130,13 @@ export default function DPPLiveDashboardPage() {
           valB = valB.toLowerCase();
         }
         
-        if (valA === undefined || valA === null) return sortConfig.direction === 'ascending' ? 1 : -1;
-        if (valB === undefined || valB === null) return sortConfig.direction === 'ascending' ? -1 : 1;
+        // Consistent sorting for undefined/null values (e.g., sort them to the end)
+        const valAExists = valA !== undefined && valA !== null && valA !== "";
+        const valBExists = valB !== undefined && valB !== null && valB !== "";
+
+        if (!valAExists && valBExists) return sortConfig.direction === 'ascending' ? 1 : -1;
+        if (valAExists && !valBExists) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (!valAExists && !valBExists) return 0;
 
 
         if (valA < valB) {
@@ -183,7 +189,7 @@ export default function DPPLiveDashboardPage() {
     if (manualProductId.trim()) {
       const productExists = MOCK_DPPS.some(p => p.id === manualProductId.trim()) || dpps.some(p => p.id === manualProductId.trim());
       if (productExists) {
-        router.push(`/passport/${manualProductId.trim()}`); // Navigate to public passport viewer
+        router.push(`/passport/${manualProductId.trim()}`); 
         setIsScanDialogOpen(false);
         setManualProductId("");
       } else {
@@ -335,4 +341,3 @@ export default function DPPLiveDashboardPage() {
     </div>
   );
 }
-

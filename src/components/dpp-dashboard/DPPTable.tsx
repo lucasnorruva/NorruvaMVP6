@@ -5,20 +5,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
-import type { DigitalProductPassport } from "@/types/dpp";
-import { MoreHorizontal, Eye, Edit, Settings as SettingsIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
+import type { DigitalProductPassport, EbsiVerificationDetails } from "@/types/dpp";
+import { MoreHorizontal, Eye, Edit, Settings as SettingsIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, ArrowDown, ArrowUp, ChevronsUpDown, AlertCircle, AlertTriangle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance';
+type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status';
 
 interface DPPTableProps {
   dpps: DigitalProductPassport[];
   onSort: (key: SortableKeys) => void;
   sortConfig: { key: SortableKeys | null; direction: 'ascending' | 'descending' | null };
-  onDeleteProduct?: (productId: string) => void; // Kept for internal product list page if needed, but not used for settings action here
+  onDeleteProduct?: (productId: string) => void; 
 }
 
 interface ComplianceDetails {
@@ -27,6 +27,8 @@ interface ComplianceDetails {
   icon: JSX.Element;
   tooltipText: string;
 }
+
+interface EbsiStatusDisplayDetails extends ComplianceDetails {}
 
 const getOverallComplianceDetails = (dpp: DigitalProductPassport): ComplianceDetails => {
   let compliantCount = 0;
@@ -61,6 +63,25 @@ const getOverallComplianceDetails = (dpp: DigitalProductPassport): ComplianceDet
   return { text: "Review Needed", variant: "outline", icon: <ShieldQuestion className="h-5 w-5 text-muted-foreground" />, tooltipText: "Compliance status requires review." };
 };
 
+const getEbsiStatusDetails = (status?: EbsiVerificationDetails['status']): EbsiStatusDisplayDetails => {
+  if (!status) {
+    return { text: "N/A", variant: "secondary", icon: <ShieldQuestion className="h-4 w-4 text-muted-foreground" />, tooltipText: "EBSI status unknown or not applicable." };
+  }
+  switch (status) {
+    case 'verified':
+      return { text: "Verified", variant: "default", icon: <ShieldCheck className="h-4 w-4 text-green-500" />, tooltipText: "EBSI verification successful." };
+    case 'pending_verification':
+      return { text: "Pending", variant: "outline", icon: <InfoIcon className="h-4 w-4 text-yellow-500" />, tooltipText: "EBSI verification is pending." };
+    case 'not_verified':
+      return { text: "Not Verified", variant: "destructive", icon: <AlertCircle className="h-4 w-4 text-red-500" />, tooltipText: "EBSI verification failed or not verified." };
+    case 'error':
+      return { text: "Error", variant: "destructive", icon: <AlertTriangle className="h-4 w-4 text-red-700" />, tooltipText: "Error during EBSI verification process." };
+    default:
+      return { text: "Unknown", variant: "secondary", icon: <ShieldQuestion className="h-4 w-4 text-muted-foreground" />, tooltipText: "EBSI status is unknown." };
+  }
+};
+
+
 const SortableHeader: React.FC<{
   columnKey: SortableKeys;
   title: string;
@@ -84,8 +105,6 @@ export const DPPTable: React.FC<DPPTableProps> = ({ dpps, onSort, sortConfig, on
   const router = useRouter();
 
   const handleDPPSettings = (dppId: string) => {
-    // For now, this is a mock action. Later, it could navigate to a specific settings page for the DPP.
-    // e.g., router.push(`/products/${dppId}/settings`);
     alert(`Mock: Opening settings for DPP ${dppId}.`);
   };
 
@@ -98,6 +117,7 @@ export const DPPTable: React.FC<DPPTableProps> = ({ dpps, onSort, sortConfig, on
           <SortableHeader columnKey="category" title="Category" onSort={onSort} sortConfig={sortConfig} />
           <SortableHeader columnKey="metadata.status" title="Status" onSort={onSort} sortConfig={sortConfig} />
           <TableHead>Overall Compliance</TableHead>
+          <SortableHeader columnKey="ebsiVerification.status" title="EBSI Status" onSort={onSort} sortConfig={sortConfig} />
           <SortableHeader columnKey="metadata.last_updated" title="Last Updated" onSort={onSort} sortConfig={sortConfig} />
           <TableHead className="text-right">Actions</TableHead>
         </TableRow>
@@ -105,13 +125,14 @@ export const DPPTable: React.FC<DPPTableProps> = ({ dpps, onSort, sortConfig, on
       <TableBody>
         {dpps.length === 0 && (
           <TableRow>
-            <TableCell colSpan={7} className="text-center text-muted-foreground py-8">
+            <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
               No Digital Product Passports match your current filters.
             </TableCell>
           </TableRow>
         )}
         {dpps.map((dpp) => {
           const complianceDetails = getOverallComplianceDetails(dpp);
+          const ebsiStatusDetails = getEbsiStatusDetails(dpp.ebsiVerification?.status);
           return (
             <TableRow key={dpp.id} className="hover:bg-muted/50 transition-colors">
               <TableCell className="font-medium">
@@ -162,6 +183,32 @@ export const DPPTable: React.FC<DPPTableProps> = ({ dpps, onSort, sortConfig, on
                     >
                       {complianceDetails.text}
                     </Badge>
+                </div>
+              </TableCell>
+              <TableCell>
+                <div className="flex items-center space-x-2">
+                  <TooltipProvider delayDuration={100}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-help">{ebsiStatusDetails.icon}</span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{ebsiStatusDetails.tooltipText}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <Badge
+                    variant={ebsiStatusDetails.variant}
+                     className={cn(
+                        "capitalize",
+                        ebsiStatusDetails.variant === "default" && "bg-green-500/20 text-green-700 border-green-500/30",
+                        ebsiStatusDetails.variant === "destructive" && "bg-red-500/20 text-red-700 border-red-500/30",
+                        ebsiStatusDetails.variant === "outline" && "bg-yellow-500/20 text-yellow-700 border-yellow-500/30",
+                        ebsiStatusDetails.variant === "secondary" && "bg-muted text-muted-foreground border-border"
+                      )}
+                  >
+                    {ebsiStatusDetails.text.replace('_', ' ')}
+                  </Badge>
                 </div>
               </TableCell>
               <TableCell>{new Date(dpp.metadata.last_updated).toLocaleDateString()}</TableCell>

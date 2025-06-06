@@ -5,7 +5,7 @@ import React, { useEffect, useRef, useState, useMemo, Suspense } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Construction, Globe as GlobeIcon, AlertTriangle, Loader2, Palette, Info, MapPin, ChevronRight, Building, Users as UsersIcon, Shield } from "lucide-react";
+import { Globe as GlobeIconLucide, AlertTriangle, Loader2, Palette, Info, MapPin, ChevronRight, Building, Users as UsersIcon, Shield } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import type { GlobeMethods } from 'react-globe.gl';
 
@@ -37,14 +37,14 @@ interface GeoJsonFeatureProperties {
 interface GeoJsonFeature {
   type: string;
   properties: GeoJsonFeatureProperties;
-  geometry: any; 
+  geometry: any;
 }
 
 export default function DppGlobalTrackerPage() {
   const globeRefMain = useRef<GlobeMethods | undefined>();
   const [countryPolygons, setCountryPolygons] = useState<GeoJsonFeature[]>([]);
   const [isLoadingGeoJson, setIsLoadingGeoJson] = useState(true);
-  const [geoJsonError, setGeoJsonError] = useState<string | null>(null);
+  const [geoJsonError, setGeoJsonError] = useState<string | null>(null); // Changed to store error message string
   const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
   const [selectedCountryInfo, setSelectedCountryInfo] = useState<GeoJsonFeatureProperties | null>(null);
@@ -55,36 +55,37 @@ export default function DppGlobalTrackerPage() {
     fetch('/ne_110m_admin_0_countries.geojson')
       .then(res => {
         if (!res.ok) {
-          const errorMsg = `GeoJSON fetch error: ${res.status} ${res.statusText} for URL ${res.url}`;
-          console.warn(errorMsg); 
-          setGeoJsonError(errorMsg); // Set the error message state
+          const errorMsg = `Failed to fetch GeoJSON: Server responded with ${res.status} (${res.statusText}). Please ensure 'ne_110m_admin_0_countries.geojson' is in the '/public' directory and the filename (including case) is correct. URL: ${res.url}`;
+          console.warn(errorMsg); // Changed to console.warn
+          setGeoJsonError(errorMsg);
           toast({
             variant: "destructive",
-            title: "Map Data Error",
-            description: "Could not load country border data. Some map features may be unavailable.",
+            title: "Map Data Error (404 Not Found)",
+            description: "Could not load country border data. Check the file in your /public folder and its name.",
+            duration: 10000, // Make toast more persistent
           });
-          return null; 
+          return null;
         }
         return res.json();
       })
       .then(data => {
         if (data && data.features) {
           setCountryPolygons(data.features);
-          setGeoJsonError(null); // Clear any previous error
+          setGeoJsonError(null); // Clear any previous error if successful
         } else if (data === null) {
           // Error already handled by setting geoJsonError and toasting
-        }
-         else {
-          console.warn("GeoJSON data is not in the expected format or is empty:", data);
-          setGeoJsonError("GeoJSON data is not in the expected format.");
+        } else {
+          const formatErrorMsg = "GeoJSON data is not in the expected format or is empty.";
+          console.warn(formatErrorMsg, data);
+          setGeoJsonError(formatErrorMsg);
           toast({ variant: "destructive", title: "Map Data Format Error", description: "Country data could not be processed." });
         }
       })
       .catch(err => {
+        const networkErrorMsg = err instanceof Error ? err.message : "An unknown network error occurred while loading map data.";
         console.error("Failed to process GeoJSON:", err);
-        const errorMsg = err instanceof Error ? err.message : "An unknown error occurred while loading map data.";
-        setGeoJsonError(errorMsg);
-        toast({ variant: "destructive", title: "Map Data Load Failed", description: errorMsg });
+        setGeoJsonError(networkErrorMsg);
+        toast({ variant: "destructive", title: "Map Data Load Failed", description: networkErrorMsg });
       })
       .finally(() => {
         setIsLoadingGeoJson(false);
@@ -96,24 +97,19 @@ export default function DppGlobalTrackerPage() {
     return EU_MEMBER_STATES.includes(countryName || "") ? EU_BLUE_COLOR : NON_EU_GREY_COLOR;
   }, []);
 
-  const polygonSideColorAccessor = useMemo(() => (feat: GeoJsonFeature) => {
-    const countryName = feat.properties.NAME || feat.properties.ADMIN;
-    return EU_MEMBER_STATES.includes(countryName || "") ? EU_BLUE_COLOR : NON_EU_GREY_COLOR;
-  }, []);
+  const polygonSideColorAccessor = useMemo(() => () => 'rgba(0,0,0,0)', []); // Keep sides transparent for a flatter look
 
   const polygonStrokeColorAccessor = useMemo(() => () => COUNTRY_BORDER_COLOR, []);
-  const polygonAltitudeAccessor = useMemo(() => () => 0.005, []); 
+  const polygonAltitudeAccessor = useMemo(() => () => 0.005, []); // Slight uniform altitude
 
   const handlePolygonClick = (polygon: object, event: MouseEvent) => {
-    const feature = polygon as GeoJsonFeature; // Type assertion
+    const feature = polygon as GeoJsonFeature;
     if (feature && feature.properties) {
       setSelectedCountryInfo(feature.properties);
-      // Fly to country (optional, can be refined)
-      if (globeRefMain.current && feature.geometry && feature.geometry.coordinates) {
-        // This part is tricky as GeoJSON coordinates can be complex (MultiPolygon)
-        // For simplicity, we might need a pre-calculated centroid or use a library
-        console.log("Clicked country:", feature.properties.NAME || feature.properties.ADMIN);
-      }
+      // Optional: Fly to country (can be refined)
+      // if (globeRefMain.current && feature.geometry && feature.geometry.coordinates) {
+      //   console.log("Clicked country:", feature.properties.NAME || feature.properties.ADMIN);
+      // }
     }
   };
 
@@ -136,17 +132,22 @@ export default function DppGlobalTrackerPage() {
     <div className="flex flex-col h-[calc(100vh-var(--header-height,4rem))] bg-background">
       <header className="p-4 border-b">
         <h1 className="text-2xl font-headline font-semibold text-primary flex items-center">
-          <GlobeIcon className="mr-3 h-7 w-7" />
+          <GlobeIconLucide className="mr-3 h-7 w-7" />
           DPP Global Tracker
         </h1>
       </header>
 
       {geoJsonError && !isLoadingGeoJson && (
-        <Alert variant="destructive" className="m-4">
-          <AlertTriangle className="h-4 w-4" />
-          <AlertTitle>Map Data Error</AlertTitle>
+        <Alert variant="destructive" className="m-4 rounded-lg">
+          <AlertTriangle className="h-5 w-5" />
+          <AlertTitle className="font-semibold">Map Data Load Error</AlertTitle>
           <AlertDescription>
-            Failed to load country border data: {geoJsonError}. The globe may not display country outlines correctly. Please ensure 'ne_110m_admin_0_countries.geojson' is in the /public folder.
+            <p className="mb-1">Could not load country border data for the globe. The map may appear without country outlines.</p>
+            <p className="text-xs"><strong>Details:</strong> {geoJsonError}</p>
+            <p className="text-xs mt-1">
+              <strong>Troubleshooting:</strong> Please ensure the file named exactly `<strong>ne_110m_admin_0_countries.geojson</strong>` (case-sensitive)
+              is located directly in your project's `<strong>/public</strong>` directory. If the file is present, try restarting your development server.
+            </p>
           </AlertDescription>
         </Alert>
       )}
@@ -170,9 +171,8 @@ export default function DppGlobalTrackerPage() {
                     <p><strong className="text-foreground/80">Code:</strong> <span className="text-muted-foreground">{selectedCountryInfo.ISO_A2}</span></p>
                   )}
                   {typeof selectedCountryInfo.POP_EST === 'number' && (
-                    <p><strong className="text-foreground/80 flex items-center"><UsersIcon className="h-4 w-4 mr-1.5 text-muted-foreground" />Est. Population:</strong> <span className="text-muted-foreground">{selectedCountryInfo.POP_EST.toLocaleString()}</span></p>
+                    <p><strong className="text-foreground/80 flex items-center"><UsersIcon className="h-4 w-4 mr-1.5 text-muted-foreground" />Est. Pop:</strong> <span className="text-muted-foreground">{selectedCountryInfo.POP_EST.toLocaleString()}</span></p>
                   )}
-                  {/* Placeholder for future DPP compliance status */}
                   <div className="pt-2 mt-2 border-t border-border/50">
                      <p className="flex items-center"><Shield className="h-4 w-4 mr-1.5 text-muted-foreground" /><strong className="text-foreground/80">DPP Compliance:</strong> <Badge variant="outline" className="ml-2 text-xs">Pending (Mock)</Badge></p>
                   </div>
@@ -206,7 +206,7 @@ export default function DppGlobalTrackerPage() {
                     <MapPin className="mr-2 h-4 w-4"/> Focus Europe
                 </Button>
                  <Button variant="outline" size="sm" className="w-full" onClick={() => {
-                     const controls = globeRefMain.current?.controls() as any; // Cast to any to access autoRotate
+                     const controls = globeRefMain.current?.controls() as any;
                      if (controls) controls.autoRotate = !controls.autoRotate;
                  }}>
                     <ChevronRight className="mr-2 h-4 w-4"/> Toggle Rotation
@@ -216,7 +216,7 @@ export default function DppGlobalTrackerPage() {
         </aside>
 
         <div className="row-span-1 col-start-2 relative" style={{ backgroundColor: GLOBE_PAGE_BACKGROUND_COLOR }}>
-          {(isLoadingGeoJson || countryPolygons.length === 0 && !geoJsonError) && (
+          {(isLoadingGeoJson && !geoJsonError) && ( // Show loader only if no error yet but still loading
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-50">
               <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
               <p className="text-primary-foreground">Loading map data...</p>
@@ -254,4 +254,5 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
-
+    
+    

@@ -4,11 +4,12 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, ExternalLink, QrCode, ShieldAlert } from "lucide-react"; // Added ShieldAlert
+import { X, ExternalLink, QrCode, ShieldAlert, ShieldCheck, Info as InfoIcon, Package as PackageIcon } from "lucide-react";
 import type { MockDppPoint } from '@/app/(app)/dpp-global-tracker/page';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from '@/components/ui/badge';
 
 interface PointInfoCardProps {
   pointData: MockDppPoint;
@@ -18,10 +19,24 @@ interface PointInfoCardProps {
 export default function PointInfoCard({ pointData, onClose }: PointInfoCardProps) {
   const { toast } = useToast();
 
-  let statusColorClass = "text-muted-foreground";
-  if (pointData.status === 'compliant') statusColorClass = "text-green-600";
-  else if (pointData.status === 'pending') statusColorClass = "text-yellow-600";
-  else if (pointData.status === 'issue') statusColorClass = "text-red-600";
+  let StatusIcon = InfoIcon;
+  let statusBadgeVariant: "default" | "outline" | "destructive" | "secondary" = "secondary";
+  let statusClasses = "bg-muted text-muted-foreground";
+
+  if (pointData.status === 'compliant') {
+    StatusIcon = ShieldCheck;
+    statusBadgeVariant = "default";
+    statusClasses = "bg-green-100 text-green-700 border-green-300";
+  } else if (pointData.status === 'pending') {
+    StatusIcon = InfoIcon;
+    statusBadgeVariant = "outline";
+    statusClasses = "bg-yellow-100 text-yellow-700 border-yellow-300";
+  } else if (pointData.status === 'issue') {
+    StatusIcon = ShieldAlert;
+    statusBadgeVariant = "destructive";
+    statusClasses = "bg-red-100 text-red-700 border-red-300";
+  }
+
 
   const handleMockQrClick = () => {
     toast({
@@ -36,13 +51,19 @@ export default function PointInfoCard({ pointData, onClose }: PointInfoCardProps
       <Card className="w-full max-w-md shadow-2xl animate-in fade-in-50 zoom-in-90 duration-300">
         <CardHeader className="pb-4">
           <div className="flex justify-between items-start">
-            <CardTitle className="text-xl font-headline text-primary">{pointData.name}</CardTitle>
+            <CardTitle className="text-xl font-headline text-primary flex items-center">
+              <PackageIcon className="h-5 w-5 mr-2" /> {pointData.name}
+            </CardTitle>
             <Button variant="ghost" size="icon" onClick={onClose} aria-label="Close" className="h-8 w-8 -mt-1 -mr-1">
               <X className="h-5 w-5" />
             </Button>
           </div>
-          <CardDescription className="text-sm">
-            {pointData.category} - Status: <span className={cn("font-semibold capitalize", statusColorClass)}>{pointData.status}</span>
+          <CardDescription className="text-sm flex items-center pt-1">
+            {pointData.category} - 
+            <Badge variant={statusBadgeVariant} className={cn("ml-2 capitalize text-xs", statusClasses)}>
+              <StatusIcon className="h-3 w-3 mr-1" />
+              {pointData.status}
+            </Badge>
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">

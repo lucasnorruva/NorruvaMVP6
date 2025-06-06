@@ -4,7 +4,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, MapPin, Ship, Plane, Building2 as LandBorderIcon, Package, ShieldCheck, ShieldAlert, ShieldQuestion, Info, FileText, QrCode, SearchCheck } from "lucide-react"; 
+import { X, MapPin, Ship, Plane, Building2 as LandBorderIcon, Package, ShieldCheck, ShieldAlert, ShieldQuestion, Info, FileText, QrCode, SearchCheck, Clock, AlertTriangle as AlertTriangleIcon } from "lucide-react"; 
 import { type MockCustomsCheckpoint } from '@/app/(app)/dpp-global-tracker/page'; 
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -13,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 interface CheckpointInfoCardProps {
   checkpointData: MockCustomsCheckpoint;
   onClose: () => void;
-  onInspectProducts?: (checkpoint: MockCustomsCheckpoint) => void; // Added this prop
+  onInspectProducts?: (checkpoint: MockCustomsCheckpoint) => void;
 }
 
 export default function CheckpointInfoCard({ checkpointData, onClose, onInspectProducts }: CheckpointInfoCardProps) {
@@ -82,25 +82,25 @@ export default function CheckpointInfoCard({ checkpointData, onClose, onInspectP
             {checkpointData.type.replace('_', ' ')} Checkpoint
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4 text-sm">
-          <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+        <CardContent className="space-y-3 text-sm">
+          <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-md">
             <span className="font-medium text-foreground/90 flex items-center"><Package className="h-4 w-4 mr-2 text-muted-foreground" /> Current Shipments:</span>
             <span className="text-foreground font-semibold">{checkpointData.currentShipmentCount.toLocaleString()}</span>
           </div>
-          <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+          <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-md">
             <span className="font-medium text-foreground/90 flex items-center"><ShieldQuestion className="h-4 w-4 mr-2 text-muted-foreground" /> Overall Customs Status:</span>
             {getOverallCustomsStatusBadge(checkpointData.overallCustomsStatus)}
           </div>
-          <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+          <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-md">
             <span className="font-medium text-foreground/90 flex items-center"><FileText className="h-4 w-4 mr-2 text-muted-foreground" /> DPP Compliance Health:</span>
             {getDppComplianceHealthBadge(checkpointData.dppComplianceHealth)}
           </div>
-           <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
-            <span className="font-medium text-foreground/90 flex items-center"><Info className="h-4 w-4 mr-2 text-muted-foreground" /> Avg. Clearance Time:</span>
+           <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-md">
+            <span className="font-medium text-foreground/90 flex items-center"><Clock className="h-4 w-4 mr-2 text-muted-foreground" /> Avg. Clearance Time:</span>
             <span className="text-foreground">{checkpointData.averageClearanceTime}</span>
           </div>
-          <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
-            <span className="font-medium text-foreground/90 flex items-center"><ShieldAlert className="h-4 w-4 mr-2 text-muted-foreground" /> Issues (Last 24h):</span>
+          <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-md">
+            <span className="font-medium text-foreground/90 flex items-center"><AlertTriangleIcon className="h-4 w-4 mr-2 text-muted-foreground" /> Issues (Last 24h):</span>
             <span className={cn("font-semibold", checkpointData.issuesDetectedLast24h > 5 ? "text-red-500" : "text-foreground")}>{checkpointData.issuesDetectedLast24h}</span>
           </div>
           
@@ -120,10 +120,6 @@ export default function CheckpointInfoCard({ checkpointData, onClose, onInspectP
                 <QrCode className="mr-2 h-4 w-4" />
                 View Shipment DPP QR Codes (Mock)
             </Button>
-            <p className="text-xs text-muted-foreground">
-              This card shows an operational and aggregated DPP compliance overview for the selected customs checkpoint. 
-              Individual shipment DPP details would be accessible via QR codes in a full system.
-            </p>
           </div>
            <div className="pt-3 mt-2 border-t border-border">
             <p className="text-xs text-muted-foreground flex items-center">

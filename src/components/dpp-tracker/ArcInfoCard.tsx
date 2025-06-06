@@ -4,7 +4,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, ExternalLink, GitBranch, Ship, Plane, Truck, Train, QrCode, ShieldAlert } from "lucide-react"; // Added ShieldAlert
+import { X, ExternalLink, GitBranch, Ship, Plane, Truck, Train, QrCode, ShieldAlert, Info } from "lucide-react";
 import type { MockArc } from '@/app/(app)/dpp-global-tracker/page';
 import Link from 'next/link';
 import { useToast } from "@/hooks/use-toast";
@@ -16,11 +16,11 @@ interface ArcInfoCardProps {
 
 const getTransportIcon = (transportMode?: MockArc['transportMode']) => {
   switch (transportMode) {
-    case 'sea': return <Ship className="h-4 w-4 mr-2" />;
-    case 'air': return <Plane className="h-4 w-4 mr-2" />;
-    case 'road': return <Truck className="h-4 w-4 mr-2" />;
-    case 'rail': return <Train className="h-4 w-4 mr-2" />;
-    default: return <GitBranch className="h-4 w-4 mr-2" />;
+    case 'sea': return <Ship className="h-4 w-4 mr-1.5 text-muted-foreground" />;
+    case 'air': return <Plane className="h-4 w-4 mr-1.5 text-muted-foreground" />;
+    case 'road': return <Truck className="h-4 w-4 mr-1.5 text-muted-foreground" />;
+    case 'rail': return <Train className="h-4 w-4 mr-1.5 text-muted-foreground" />;
+    default: return <GitBranch className="h-4 w-4 mr-1.5 text-muted-foreground" />;
   }
 };
 
@@ -53,19 +53,24 @@ export default function ArcInfoCard({ arcData, onClose }: ArcInfoCardProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 text-sm">
-          <p><strong>Label:</strong> {arcData.label}</p>
-          {arcData.transportMode && (
+          <div className="p-3 bg-muted/50 rounded-md space-y-2">
+            <p><strong>Label:</strong> {arcData.label || "N/A"}</p>
+            {arcData.transportMode && (
+              <p className="flex items-center">
+                <strong>Transport Mode:</strong> 
+                <span className="ml-1.5 capitalize inline-flex items-center">
+                   {getTransportIcon(arcData.transportMode)} {arcData.transportMode}
+                </span>
+              </p>
+            )}
             <p className="flex items-center">
-              <strong>Transport Mode:</strong> 
-              <span className="ml-2 capitalize inline-flex items-center">
-                 {getTransportIcon(arcData.transportMode)} {arcData.transportMode}
-              </span>
+              <Info className="h-4 w-4 mr-1.5 text-muted-foreground" />
+              <strong>Timestamp (Year):</strong> {arcData.timestamp}
             </p>
-          )}
-          <p><strong>Timestamp (Year):</strong> {arcData.timestamp}</p>
+          </div>
           
           <div className="pt-3 border-t border-border space-y-2">
-            {arcData.productId && (
+            {arcData.productId ? (
               <>
                 <p>
                   <strong>Associated Product ID:</strong> 
@@ -80,8 +85,9 @@ export default function ArcInfoCard({ arcData, onClose }: ArcInfoCardProps) {
                   View Product DPP (QR Mock)
                 </Button>
               </>
+            ) : (
+              <p className="text-xs text-muted-foreground italic">No specific product ID linked to this transport segment.</p>
             )}
-            <p className="text-xs text-muted-foreground">This card shows information about a specific connection or movement in the supply chain.</p>
           </div>
           <div className="pt-3 mt-2 border-t border-border">
             <p className="text-xs text-muted-foreground flex items-center">

@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { X, Package2, MapPin, Route, QrCode, CalendarDays, ShieldCheck, ShieldAlert, Info, Image as ImageIcon, FileText, AlertTriangle, Check, HelpCircle } from "lucide-react"; // Added specific icons
+import { X, Package2, MapPin, Route, QrCode, CalendarDays, ShieldCheck, ShieldAlert, Info, Image as ImageIcon, FileText, AlertTriangle, Check, HelpCircle, TrafficCone, Edit3, Layers } from "lucide-react";
 import type { MockShipmentPoint } from '@/app/(app)/dpp-global-tracker/page'; 
 import { useToast } from "@/hooks/use-toast";
 import { cn } from '@/lib/utils';
@@ -22,36 +22,37 @@ const formatDirection = (direction: MockShipmentPoint['direction']) => {
     case 'inbound_eu': return "Inbound to EU";
     case 'outbound_eu': return "Outbound from EU";
     case 'internal_eu': return "Internal EU Movement";
+    case 'other': return "Other Route";
     default: return "Unknown Direction";
   }
 };
 
 const getComplianceIcon = (variant?: MockShipmentPoint['dppComplianceBadgeVariant']) => {
   switch (variant) {
-    case 'default': return <ShieldCheck className="h-4 w-4 mr-1.5" />;
-    case 'destructive': return <ShieldAlert className="h-4 w-4 mr-1.5" />;
-    case 'outline':
+    case 'default': return <ShieldCheck className="h-4 w-4 mr-1.5 text-green-500" />;
+    case 'destructive': return <ShieldAlert className="h-4 w-4 mr-1.5 text-red-500" />;
+    case 'outline': return <Info className="h-4 w-4 mr-1.5 text-yellow-600" />;
     case 'secondary':
-    default: return <Info className="h-4 w-4 mr-1.5" />;
+    default: return <HelpCircle className="h-4 w-4 mr-1.5 text-muted-foreground" />;
   }
 };
 
 const getStatusIconAndText = (status: MockShipmentPoint['simulatedStatus']) => {
   switch (status) {
-    case 'in_transit': return { Icon: Route, text: "In Transit", color: "text-blue-500" };
-    case 'at_customs': return { Icon: FileText, text: "At Customs", color: "text-orange-500" };
-    case 'customs_inspection': return { Icon: AlertTriangle, text: "Customs Inspection", color: "text-red-500" };
-    case 'delayed': return { Icon: Info, text: "Delayed", color: "text-yellow-600" };
-    case 'cleared': return { Icon: Check, text: "Cleared", color: "text-green-500" };
-    case 'data_sync_delayed': return { Icon: HelpCircle, text: "Data Sync Delayed", color: "text-gray-500" };
-    default: return { Icon: HelpCircle, text: "Unknown Status", color: "text-gray-500" };
+    case 'in_transit': return { Icon: Route, text: "In Transit", color: "text-blue-600", badgeVariant: "default" as const, badgeClasses: "bg-blue-100 text-blue-700 border-blue-300" };
+    case 'at_customs': return { Icon: FileText, text: "At Customs", color: "text-orange-600", badgeVariant: "outline" as const, badgeClasses: "bg-yellow-100 text-yellow-700 border-yellow-300" };
+    case 'customs_inspection': return { Icon: AlertTriangle, text: "Customs Inspection", color: "text-red-600", badgeVariant: "destructive" as const, badgeClasses: "bg-red-100 text-red-700 border-red-300" };
+    case 'delayed': return { Icon: TrafficCone, text: "Delayed", color: "text-yellow-700", badgeVariant: "outline" as const, badgeClasses: "bg-amber-100 text-amber-700 border-amber-300" };
+    case 'cleared': return { Icon: Check, text: "Cleared", color: "text-green-600", badgeVariant: "default" as const, badgeClasses: "bg-green-100 text-green-700 border-green-300" };
+    case 'data_sync_delayed': return { Icon: HelpCircle, text: "Data Sync Delayed", color: "text-gray-600", badgeVariant: "secondary" as const, badgeClasses: "bg-gray-100 text-gray-700 border-gray-300" };
+    default: return { Icon: HelpCircle, text: "Unknown Status", color: "text-gray-500", badgeVariant: "secondary" as const, badgeClasses: "bg-muted text-muted-foreground" };
   }
 };
 
 const getCEStatusBadge = (status: MockShipmentPoint['ceMarkingStatus']) => {
     switch(status){
         case 'valid': return <Badge variant="default" className="bg-green-100 text-green-700 border-green-300"><ShieldCheck className="mr-1 h-3 w-3"/>Valid</Badge>;
-        case 'missing': return <Badge variant="destructive"><ShieldAlert className="mr-1 h-3 w-3"/>Missing</Badge>;
+        case 'missing': return <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-300"><ShieldAlert className="mr-1 h-3 w-3"/>Missing</Badge>;
         case 'pending_verification': return <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-300"><Info className="mr-1 h-3 w-3"/>Pending</Badge>;
         default: return <Badge variant="secondary">N/A</Badge>;
     }
@@ -79,7 +80,7 @@ export default function ShipmentInfoCard({ shipmentData, onClose }: ShipmentInfo
     });
   };
   
-  const { Icon: StatusIcon, text: statusText, color: statusColor } = getStatusIconAndText(shipmentData.simulatedStatus);
+  const { Icon: StatusIcon, text: statusText, badgeVariant: statusBadgeVariant, badgeClasses: statusBadgeClasses } = getStatusIconAndText(shipmentData.simulatedStatus);
 
 
   return (
@@ -101,89 +102,81 @@ export default function ShipmentInfoCard({ shipmentData, onClose }: ShipmentInfo
             </CardDescription>
           )}
         </CardHeader>
-        <CardContent className="space-y-4 text-sm">
-          <div className="flex items-center gap-4">
+        <CardContent className="space-y-3 text-sm max-h-[70vh] overflow-y-auto">
+          <div className="flex items-center gap-4 mb-3">
             {shipmentData.productIconUrl ? (
               <Image 
                 src={shipmentData.productIconUrl} 
                 alt="Product Icon" 
-                width={60} 
-                height={60} 
-                className="rounded-md border object-cover" 
+                width={50} 
+                height={50} 
+                className="rounded-md border object-cover flex-shrink-0" 
                 data-ai-hint="product shipment"
               />
             ) : (
-              <div className="w-[60px] h-[60px] bg-muted rounded-md flex items-center justify-center border">
+              <div className="w-[50px] h-[50px] bg-muted rounded-md flex items-center justify-center border flex-shrink-0">
                 <ImageIcon className="h-6 w-6 text-muted-foreground" />
               </div>
             )}
             <div className="flex-grow space-y-1">
-              <p className="flex items-center">
-                <Route className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
-                <strong>Direction:</strong> {formatDirection(shipmentData.direction)}
+              <p className="flex items-center text-xs">
+                <Route className="h-3.5 w-3.5 mr-1.5 text-muted-foreground flex-shrink-0" />
+                <strong>Direction:</strong><span className="ml-1">{formatDirection(shipmentData.direction)}</span>
               </p>
-              <p className="flex items-center">
-                <MapPin className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
-                <strong>Current Position (mock):</strong> Lat: {shipmentData.lat.toFixed(2)}, Lng: {shipmentData.lng.toFixed(2)}
+              <p className="flex items-center text-xs">
+                <MapPin className="h-3.5 w-3.5 mr-1.5 text-muted-foreground flex-shrink-0" />
+                <strong>Position (mock):</strong><span className="ml-1">Lat: {shipmentData.lat.toFixed(2)}, Lng: {shipmentData.lng.toFixed(2)}</span>
               </p>
                {shipmentData.eta && (
-                <p className="flex items-center">
-                  <CalendarDays className="h-4 w-4 mr-2 text-muted-foreground flex-shrink-0" />
-                  <strong>Est. Arrival:</strong> {new Date(shipmentData.eta).toLocaleDateString()}
+                <p className="flex items-center text-xs">
+                  <CalendarDays className="h-3.5 w-3.5 mr-1.5 text-muted-foreground flex-shrink-0" />
+                  <strong>Est. Arrival:</strong><span className="ml-1">{new Date(shipmentData.eta).toLocaleDateString()}</span>
                 </p>
               )}
             </div>
           </div>
           
-          <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
-             <span className="font-medium text-foreground/90 flex items-center"><StatusIcon className={cn("h-4 w-4 mr-2", statusColor)} /> Current Status:</span>
-             <Badge variant={shipmentData.simulatedStatus === 'customs_inspection' || shipmentData.simulatedStatus === 'delayed' ? 'destructive' : shipmentData.simulatedStatus === 'at_customs' ? 'outline' : 'default'} 
-                    className={cn(
-                        shipmentData.simulatedStatus === 'cleared' ? 'bg-green-100 text-green-700 border-green-300' : '',
-                        shipmentData.simulatedStatus === 'in_transit' ? 'bg-blue-100 text-blue-700 border-blue-300' : '',
-                        shipmentData.simulatedStatus === 'at_customs' ? 'bg-yellow-100 text-yellow-700 border-yellow-300' : '',
-                        shipmentData.simulatedStatus === 'data_sync_delayed' ? 'bg-gray-100 text-gray-700 border-gray-300' : ''
-                    )}>
-                 {statusText}
-             </Badge>
+          <div className="p-2.5 bg-muted/50 rounded-md">
+             <div className="flex items-center justify-between mb-1.5">
+                <span className="font-medium text-foreground/90 flex items-center"><StatusIcon className={cn("h-4 w-4 mr-2", statusBadgeClasses.split(' ')[1])} /> Current Status:</span>
+                <Badge variant={statusBadgeVariant} className={cn("text-xs", statusBadgeClasses)}> {statusText} </Badge>
+             </div>
+             {shipmentData.progressPercentage !== undefined && (
+                <div>
+                    <label htmlFor={`shipment-progress-${shipmentData.id}`} className="text-xs font-medium text-muted-foreground">Shipment Progress</label>
+                    <div className="flex items-center gap-2 mt-0.5">
+                        <Progress id={`shipment-progress-${shipmentData.id}`} value={shipmentData.progressPercentage} className="w-full h-2" />
+                        <span className="text-xs font-semibold">{shipmentData.progressPercentage}%</span>
+                    </div>
+                </div>
+            )}
           </div>
 
 
           {shipmentData.dppComplianceStatusText && (
-            <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
+            <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-md">
               <strong className="mr-2 font-medium text-foreground/90 flex items-center">{getComplianceIcon(shipmentData.dppComplianceBadgeVariant)}DPP Compliance:</strong>
-              <Badge variant={shipmentData.dppComplianceBadgeVariant || 'secondary'} className="text-xs">
+              <Badge variant={shipmentData.dppComplianceBadgeVariant || 'secondary'} className="text-xs capitalize text-right">
                 {shipmentData.dppComplianceStatusText}
               </Badge>
             </div>
           )}
           
-          <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
-             <strong className="mr-2 font-medium text-foreground/90">CE Marking:</strong>
+          <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-md">
+             <strong className="mr-2 font-medium text-foreground/90 flex items-center"><Edit3 className="h-4 w-4 mr-1.5 text-muted-foreground" />CE Marking:</strong>
              {getCEStatusBadge(shipmentData.ceMarkingStatus)}
           </div>
-          <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
-             <strong className="mr-2 font-medium text-foreground/90">CBAM Declaration:</strong>
+          <div className="flex items-center justify-between p-2.5 bg-muted/50 rounded-md">
+             <strong className="mr-2 font-medium text-foreground/90 flex items-center"><Layers className="h-4 w-4 mr-1.5 text-muted-foreground" />CBAM Declaration:</strong>
              {getCBAMStatusBadge(shipmentData.cbamDeclarationStatus)}
           </div>
 
           {shipmentData.dppComplianceNotes && shipmentData.dppComplianceNotes.length > 0 && (
-            <div className="p-2 bg-muted/50 rounded-md">
+            <div className="p-2.5 bg-muted/50 rounded-md">
                 <strong className="text-xs font-medium text-foreground/90 block mb-1">Compliance Notes:</strong>
                 <ul className="list-disc list-inside text-xs text-muted-foreground space-y-0.5">
                     {shipmentData.dppComplianceNotes.map((note, idx) => <li key={idx}>{note}</li>)}
                 </ul>
-            </div>
-          )}
-
-
-          {shipmentData.progressPercentage !== undefined && (
-            <div>
-              <label htmlFor={`shipment-progress-${shipmentData.id}`} className="text-xs font-medium text-muted-foreground">Shipment Progress</label>
-              <div className="flex items-center gap-2 mt-1">
-                <Progress id={`shipment-progress-${shipmentData.id}`} value={shipmentData.progressPercentage} className="w-full h-2.5" />
-                <span className="text-xs font-semibold">{shipmentData.progressPercentage}%</span>
-              </div>
             </div>
           )}
           
@@ -194,7 +187,6 @@ export default function ShipmentInfoCard({ shipmentData, onClose }: ShipmentInfo
                 <QrCode className="mr-2 h-4 w-4" />
                 View Shipment DPP (QR Mock)
             </Button>
-            <p className="text-xs text-muted-foreground">This card shows mock shipment details including compliance and progress.</p>
           </div>
           <div className="pt-3 mt-2 border-t border-border">
             <p className="text-xs text-muted-foreground flex items-center">

@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { Globe as GlobeIconLucide, Info, MapPin, ZoomIn, ZoomOut, Maximize, AlertTriangle, Loader2, Palette } from "lucide-react";
+import { Globe as GlobeIconLucide, Info, MapPin, ZoomIn, ZoomOut, Maximize, AlertTriangle, Loader2, Palette, Ship, Truck, Plane } from "lucide-react";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import type { GlobeMethods } from 'react-globe.gl';
@@ -25,10 +25,10 @@ const ClientOnlyGlobe = dynamic(
   }
 );
 
-const EU_BLUE_COLOR = 'rgba(0, 0, 139, 0.7)'; // Dark blue with some transparency
-const NON_EU_GREY_COLOR = 'rgba(209, 213, 219, 0.6)'; // Light grey with some transparency
-const COUNTRY_BORDER_COLOR = 'rgba(0, 0, 0, 0.5)'; // Black for borders
-const GLOBE_PAGE_BACKGROUND_COLOR = '#0a0a0a'; // Dark background for the page/globe area
+const EU_BLUE_COLOR = 'rgba(0, 51, 102, 0.8)'; // Dark blue for EU
+const NON_EU_GREY_COLOR = 'rgba(200, 200, 200, 0.7)'; // Light grey for Non-EU
+const COUNTRY_BORDER_COLOR = 'rgba(0, 0, 0, 1)'; // Black for borders
+const GLOBE_PAGE_BACKGROUND_COLOR = '#0a0a0a'; // Very dark grey / off-black
 const ATMOSPHERE_COLOR = '#4682B4'; // Steel blue for atmosphere
 const OCEAN_TEXTURE_URL = '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg';
 
@@ -38,19 +38,24 @@ const EU_MEMBER_STATES_ISO_A2 = [
   'SI', 'ES', 'SE'
 ];
 
-// Helper to get ISO A2 code
 const getCountryISO_A2 = (feature: any): string | undefined => {
   if (!feature || !feature.properties) return undefined;
   const props = feature.properties;
-  if (props.sovereignt === "Somaliland") return "SO";
-  if (props.sovereignt === "N. Cyprus") return "CY";
-  return props.iso_a2 || props.ISO_A2 || props.ISO_A2_EH || props.ADM0_A3;
+  // Prioritize iso_a2 if it exists and is not -99 (problematic code)
+  if (props.iso_a2 && props.iso_a2 !== "-99") return props.iso_a2;
+  if (props.ISO_A2 && props.ISO_A2 !== "-99") return props.ISO_A2;
+  // Fallback for specific problematic cases observed in some datasets
+  if (props.SOVEREIGNT === "Somaliland") return "SO"; // Approximate
+  if (props.SOVEREIGNT === "N. Cyprus") return "CY"; // Approximate
+  if (props.ADMIN === "Kosovo") return "XK"; // User-assigned code
+  // General fallback to ADM0_A3 if ISO_A2 is missing/invalid
+  return props.ADM0_A3 || props.WB_A2 || props.GU_A3;
 };
 
 const getCountryName = (feature: any): string => {
   if (!feature || !feature.properties) return 'Unknown Territory';
   const props = feature.properties;
-  return props.name || props.NAME || props.NAME_EN || props.ADMIN || props.sovereignt || 'Unknown Country';
+  return props.NAME_EN || props.NAME || props.ADMIN || props.SOVEREIGNT || 'Unknown Country';
 };
 
 interface SelectedCountryProperties {
@@ -70,13 +75,33 @@ interface ShipmentPoint {
   size: number;
   color: string;
   status: 'In Transit' | 'Customs Review' | 'Cleared' | 'Delayed';
+  transport: 'Ship' | 'Truck' | 'Plane';
 }
 
 const MOCK_SHIPMENT_POINTS: ShipmentPoint[] = [
-  { id: 'ship001', name: 'Shipment Alpha', lat: 34.0522, lng: -118.2437, size: 0.5, color: 'rgba(0, 255, 0, 0.75)', status: 'In Transit' }, // Los Angeles
-  { id: 'ship002', name: 'Shipment Bravo', lat: 51.5074, lng: -0.1278, size: 0.6, color: 'rgba(255, 165, 0, 0.75)', status: 'Customs Review' }, // London
-  { id: 'ship003', name: 'Shipment Charlie', lat: 35.6895, lng: 139.6917, size: 0.4, color: 'rgba(0, 0, 255, 0.75)', status: 'Cleared' }, // Tokyo
-  { id: 'ship004', name: 'Shipment Delta (EU)', lat: 48.8566, lng: 2.3522, size: 0.55, color: 'rgba(255,0,0,0.75)', status: 'Delayed' }, // Paris (EU)
+  { id: 'ship001', name: 'Shipment Alpha (Electronics to EU)', lat: 34.0522, lng: -118.2437, size: 0.3, color: 'rgba(0, 255, 0, 0.85)', status: 'In Transit', transport: 'Ship' }, // Los Angeles
+  { id: 'ship002', name: 'Shipment Bravo (Textiles to US)', lat: 51.5074, lng: -0.1278, size: 0.35, color: 'rgba(255, 165, 0, 0.85)', status: 'Customs Review', transport: 'Plane' }, // London
+  { id: 'ship003', name: 'Shipment Charlie (Auto Parts from ASIA)', lat: 35.6895, lng: 139.6917, size: 0.25, color: 'rgba(0, 0, 255, 0.85)', status: 'Cleared', transport: 'Ship' }, // Tokyo
+  { id: 'ship004', name: 'Shipment Delta (Pharma within EU)', lat: 48.8566, lng: 2.3522, size: 0.3, color: 'rgba(255,0,0,0.85)', status: 'Delayed', transport: 'Truck' }, // Paris (EU)
+];
+
+interface TradeArc {
+  id: string;
+  startLat: number;
+  startLng: number;
+  endLat: number;
+  endLng: number;
+  color: string;
+  stroke?: number;
+  label?: string;
+  dashLength?: number;
+  dashGap?: number;
+  dashAnimateTime?: number;
+}
+
+const MOCK_TRADE_ARCS: TradeArc[] = [
+  { id: 'arc001', startLat: MOCK_SHIPMENT_POINTS[0].lat, startLng: MOCK_SHIPMENT_POINTS[0].lng, endLat: MOCK_SHIPMENT_POINTS[3].lat, endLng: MOCK_SHIPMENT_POINTS[3].lng, color: 'rgba(0, 255, 0, 0.6)', stroke: 0.2, label: 'Route Alpha-Delta', dashLength: 0.3, dashGap: 0.1, dashAnimateTime: 3000 }, // LA to Paris
+  { id: 'arc002', startLat: MOCK_SHIPMENT_POINTS[2].lat, startLng: MOCK_SHIPMENT_POINTS[2].lng, endLat: MOCK_SHIPMENT_POINTS[1].lat, endLng: MOCK_SHIPMENT_POINTS[1].lng, color: 'rgba(0, 0, 255, 0.6)', stroke: 0.2, label: 'Route Charlie-Bravo', dashLength: 0.2, dashGap: 0.2, dashAnimateTime: 4000 }, // Tokyo to London
 ];
 
 
@@ -88,7 +113,8 @@ export default function DppGlobalTrackerPage() {
   const [geoJsonError, setGeoJsonError] = useState<string | null>(null);
   const [isLoadingGeoJson, setIsLoadingGeoJson] = useState(true);
   const [selectedCountryInfo, setSelectedCountryInfo] = useState<SelectedCountryProperties | null>(null);
-  const [shipmentPoints, setShipmentPoints] = useState<ShipmentPoint[]>(MOCK_SHIPMENT_POINTS);
+  const [shipmentPoints] = useState<ShipmentPoint[]>(MOCK_SHIPMENT_POINTS);
+  const [tradeArcs] = useState<TradeArc[]>(MOCK_TRADE_ARCS);
 
   useEffect(() => {
     const fetchGeoJson = async () => {
@@ -104,27 +130,24 @@ export default function DppGlobalTrackerPage() {
 
         if (world.objects && world.objects.countries) {
           const geoJsonFeatures = (topojson.feature(world, world.objects.countries) as any).features;
-
+          
           let missingNameCount = 0;
           let missingIsoA2Count = 0;
-
           geoJsonFeatures.forEach((feature: any) => {
-            const name = getCountryName(feature);
-            const iso_a2 = getCountryISO_A2(feature);
-            if (!name || name === 'Unknown Country' || name === 'Unknown Territory') missingNameCount++;
-            if (!iso_a2) missingIsoA2Count++;
+            if (!getCountryName(feature) || getCountryName(feature) === 'Unknown Country' || getCountryName(feature) === 'Unknown Territory') missingNameCount++;
+            if (!getCountryISO_A2(feature)) missingIsoA2Count++;
           });
 
           if (missingNameCount > 0 || missingIsoA2Count > 0) {
-            const message = `GeoJSON Validation: ${missingNameCount} countries missing name. ${missingIsoA2Count} countries missing ISO A2 code. Some map features or info might be incomplete.`;
+            const message = `GeoJSON Validation: ${missingNameCount} countries missing identifiable name. ${missingIsoA2Count} countries missing identifiable ISO A2 code. Some map features or info might be incomplete.`;
             console.warn(message);
             if (missingNameCount > geoJsonFeatures.length * 0.1 || missingIsoA2Count > geoJsonFeatures.length * 0.1) {
-              toast({
-                variant: "default",
-                title: "Map Data Inconsistencies",
-                description: `Found ${missingNameCount} countries missing names and ${missingIsoA2Count} missing ISO codes. Some map details might be affected.`,
-                duration: 8000,
-              });
+                toast({
+                    variant: "default",
+                    title: "Map Data Inconsistencies",
+                    description: `Found ${missingNameCount} countries missing names and ${missingIsoA2Count} missing ISO codes. Some map details might be affected.`,
+                    duration: 8000,
+                });
             }
           }
           setCountryPolygons(geoJsonFeatures);
@@ -169,20 +192,26 @@ export default function DppGlobalTrackerPage() {
         subregion: props.SUBREGION || props.subregion || props.REGION_WB || "N/A",
         pop_est: props.POP_EST || props.pop_est || props.POP_MAX || "N/A",
       });
-       if (globeEl.current) {
-        const centroid = (polygon.geometry && (polygon.geometry.type === 'Polygon' || polygon.geometry.type === 'MultiPolygon')) ?
-             (topojson.feature(polygon, polygon.geometry) as any).properties.centroid || [0,0] : // This part might be tricky without a proper centroid function
-             { lat: 0, lng: 0};
-        let targetLat = centroid.lat || (polygon.properties.latitude);
-        let targetLng = centroid.lng || (polygon.properties.longitude);
-        
-        if (!targetLat && polygon.bbox) { // Fallback to bounding box center
-            targetLat = (polygon.bbox[1] + polygon.bbox[3]) / 2;
-            targetLng = (polygon.bbox[0] + polygon.bbox[2]) / 2;
-        }
-        targetLat = targetLat || 0;
-        targetLng = targetLng || 0;
+       if (globeEl.current && polygon.geometry) {
+          const centroid = (topojson.feature(polygon as any, polygon.geometry) as any).properties?.centroid || [0,0]; // topojson-client specific feature
+          let targetLat = centroid[1]; // latitude is typically the second element
+          let targetLng = centroid[0]; // longitude is typically the first
 
+          if (targetLat === undefined || targetLng === undefined) {
+            // Fallback logic if proper centroid is not found directly
+            if (polygon.bbox) {
+                targetLat = (polygon.bbox[1] + polygon.bbox[3]) / 2;
+                targetLng = (polygon.bbox[0] + polygon.bbox[2]) / 2;
+            } else { // Crude fallback: use geometry coordinates if available
+                const coords = polygon.geometry.coordinates?.[0]?.[0];
+                if (Array.isArray(coords) && coords.length >= 2) {
+                    targetLng = coords[0];
+                    targetLat = coords[1];
+                } else { // Last resort
+                    targetLat = 0; targetLng = 0;
+                }
+            }
+          }
         globeEl.current.pointOfView({ lat: targetLat, lng: targetLng, altitude: 1.5 }, 750);
       }
     } else {
@@ -198,8 +227,20 @@ export default function DppGlobalTrackerPage() {
   const pointLatAccessor = useCallback((p: ShipmentPoint) => p.lat, []);
   const pointLngAccessor = useCallback((p: ShipmentPoint) => p.lng, []);
   const pointColorAccessor = useCallback((p: ShipmentPoint) => p.color, []);
-  const pointAltitudeAccessor = useCallback(() => 0.02, []); // Slightly above surface
+  const pointAltitudeAccessor = useCallback(() => 0.02, []);
   const pointRadiusAccessor = useCallback((p: ShipmentPoint) => p.size, []);
+  
+  // Accessors for trade arcs
+  const arcStartLatAccessor = useCallback((arc: TradeArc) => arc.startLat, []);
+  const arcStartLngAccessor = useCallback((arc: TradeArc) => arc.startLng, []);
+  const arcEndLatAccessor = useCallback((arc: TradeArc) => arc.endLat, []);
+  const arcEndLngAccessor = useCallback((arc: TradeArc) => arc.endLng, []);
+  const arcColorAccessor = useCallback((arc: TradeArc) => arc.color, []);
+  const arcStrokeAccessor = useCallback((arc: TradeArc) => arc.stroke, []);
+  const arcLabelAccessor = useCallback((arc: TradeArc) => arc.label, []);
+  const arcDashLengthAccessor = useCallback((arc: TradeArc) => arc.dashLength, []);
+  const arcDashGapAccessor = useCallback((arc: TradeArc) => arc.dashGap, []);
+  const arcDashAnimateTimeAccessor = useCallback((arc: TradeArc) => arc.dashAnimateTime, []);
 
 
   return (
@@ -207,7 +248,7 @@ export default function DppGlobalTrackerPage() {
       <header className="p-4 border-b sticky top-0 bg-background z-20">
         <h1 className="text-2xl font-headline font-semibold text-primary flex items-center">
           <GlobeIconLucide className="mr-3 h-7 w-7" />
-          DPP Global Tracker (3D Globe - 50m Detail)
+          DPP Global Tracker (50m Detail)
         </h1>
       </header>
 
@@ -231,7 +272,7 @@ export default function DppGlobalTrackerPage() {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Click on a country to view its details. Rotate and zoom the globe. Shipment markers show current mock activities.
+                  Click on a country to view its details. Rotate and zoom the globe. Markers show mock shipment activities. Arcs indicate trade routes.
                 </p>
               )}
             </CardContent>
@@ -257,14 +298,19 @@ export default function DppGlobalTrackerPage() {
                 </div>
                  <div className="flex items-center">
                   <span style={{ backgroundImage: `url(${OCEAN_TEXTURE_URL})`, backgroundSize: 'cover' }} className="h-3 w-3 rounded-full mr-2 border border-black/30 opacity-70"></span>
-                  <span>Oceans (Blue Marble Texture)</span>
+                  <span>Oceans (Texture)</span>
                 </div>
                 <div className="mt-2 pt-2 border-t">
                     <p className="font-medium mb-1">Shipment Markers:</p>
-                    <div className="flex items-center"><span style={{ backgroundColor: 'rgba(0, 255, 0, 0.75)' }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span><span>In Transit</span></div>
-                    <div className="flex items-center"><span style={{ backgroundColor: 'rgba(255, 165, 0, 0.75)' }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span><span>Customs Review</span></div>
-                    <div className="flex items-center"><span style={{ backgroundColor: 'rgba(0, 0, 255, 0.75)' }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span><span>Cleared</span></div>
-                    <div className="flex items-center"><span style={{ backgroundColor: 'rgba(255,0,0,0.75)' }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span><span>Delayed</span></div>
+                    <div className="flex items-center"><span style={{ backgroundColor: MOCK_SHIPMENT_POINTS[0].color }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span><span>{MOCK_SHIPMENT_POINTS[0].status}</span></div>
+                    <div className="flex items-center"><span style={{ backgroundColor: MOCK_SHIPMENT_POINTS[1].color }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span><span>{MOCK_SHIPMENT_POINTS[1].status}</span></div>
+                    <div className="flex items-center"><span style={{ backgroundColor: MOCK_SHIPMENT_POINTS[2].color }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span><span>{MOCK_SHIPMENT_POINTS[2].status}</span></div>
+                    <div className="flex items-center"><span style={{ backgroundColor: MOCK_SHIPMENT_POINTS[3].color }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span><span>{MOCK_SHIPMENT_POINTS[3].status}</span></div>
+                </div>
+                 <div className="mt-2 pt-2 border-t">
+                    <p className="font-medium mb-1">Trade Routes (Example):</p>
+                    <div className="flex items-center"><span style={{ backgroundColor: MOCK_TRADE_ARCS[0].color }} className="h-1 w-3 rounded-sm mr-2 border border-black/30"></span><span>Route LA-Paris</span></div>
+                    <div className="flex items-center"><span style={{ backgroundColor: MOCK_TRADE_ARCS[1].color }} className="h-1 w-3 rounded-sm mr-2 border border-black/30"></span><span>Route Tokyo-London</span></div>
                 </div>
             </CardContent>
           </Card>
@@ -325,6 +371,17 @@ export default function DppGlobalTrackerPage() {
                 pointAltitude={pointAltitudeAccessor}
                 pointRadius={pointRadiusAccessor}
                 pointColor={pointColorAccessor}
+                arcsData={tradeArcs}
+                arcStartLat={arcStartLatAccessor}
+                arcStartLng={arcStartLngAccessor}
+                arcEndLat={arcEndLatAccessor}
+                arcEndLng={arcEndLngAccessor}
+                arcColor={arcColorAccessor}
+                arcStroke={arcStrokeAccessor}
+                arcLabel={arcLabelAccessor}
+                arcDashLength={arcDashLengthAccessor}
+                arcDashGap={arcDashGapAccessor}
+                arcDashAnimateTime={arcDashAnimateTimeAccessor}
               />
             )}
             {!isLoadingGeoJson && !geoJsonError && countryPolygons.length === 0 && (

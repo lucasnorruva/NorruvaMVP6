@@ -9,7 +9,8 @@ import { Color } from 'three';
 export interface GlobeVisualizationProps extends Omit<ReactGlobeProps, 'ref'> {
   globeRef?: React.Ref<GlobeMethods>;
   backgroundColor?: string;
-  // Add point-related props if they are not already in ReactGlobeProps or need specific typing
+  
+  // Point-related props
   pointsData?: object[];
   pointLat?: string | ((d: any) => number);
   pointLng?: string | ((d: any) => number);
@@ -18,6 +19,36 @@ export interface GlobeVisualizationProps extends Omit<ReactGlobeProps, 'ref'> {
   pointRadius?: number | string | ((d: any) => number);
   onPointClick?: (point: any, event: MouseEvent) => void;
   onPointHover?: (point: any | null, prevPoint: any | null) => void;
+
+  // Arc-related props
+  arcsData?: object[];
+  arcStartLat?: string | ((d: any) => number);
+  arcStartLng?: string | ((d: any) => number);
+  arcEndLat?: string | ((d: any) => number);
+  arcEndLng?: string | ((d: any) => number);
+  arcColor?: string | ((d: any) => string | string[]);
+  arcAltitude?: number | string | ((d: any) => number | null) | null;
+  arcAltitudeAutoScale?: number | string | ((d: any) => number);
+  arcStroke?: number | string | ((d: any) => number | null) | null;
+  arcCurveResolution?: number | string | ((d: any) => number);
+  arcCircularResolution?: number | string | ((d: any) => number);
+  arcDashLength?: number | string | ((d: any) => number);
+  arcDashGap?: number | string | ((d: any) => number);
+  arcDashInitialGap?: number | string | ((d: any) => number);
+  arcDashAnimateTime?: number | string | ((d: any) => number);
+  arcsTransitionDuration?: number;
+  arcLabel?: string | ((d: any) => string | null) | null;
+  onArcClick?: (arc: any, event: MouseEvent) => void;
+  onArcHover?: (arc: any | null, prevArc: any | null) => void;
+
+  // Polygon-related props (re-added from previous versions if needed)
+  polygonsData?: object[];
+  polygonCapColor?: string | ((d: any) => string);
+  polygonSideColor?: string | ((d: any) => string);
+  polygonStrokeColor?: string | ((d: any) => string | null) | null;
+  polygonAltitude?: number | string | ((d: any) => number);
+  onPolygonClick?: (polygon: any, event: MouseEvent) => void;
+  polygonsTransitionDuration?: number;
 }
 
 export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationProps>(
@@ -32,8 +63,8 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
         globeInstance.controls().autoRotate = true;
         globeInstance.controls().autoRotateSpeed = 0.15;
         globeInstance.controls().enableZoom = true;
-        globeInstance.controls().minDistance = 150;
-        globeInstance.controls().maxDistance = 800;
+        globeInstance.controls().minDistance = 150; // Prevent zooming too close
+        globeInstance.controls().maxDistance = 800; // Prevent zooming too far
 
         const renderer = globeInstance.renderer();
         if (renderer) {
@@ -42,7 +73,7 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
         }
       }
     }, [backgroundColor]);
-
+    
     useEffect(() => {
       if (typeof globeProps.globeRef === 'function') {
         (globeProps.globeRef as (instance: GlobeMethods | null) => void)(internalGlobeEl.current || null);
@@ -51,13 +82,14 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
       }
     }, [globeProps.globeRef]);
 
+
     const defaultGlobeProps: Partial<ReactGlobeProps> = {
       globeImageUrl: globeImageUrl || "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg",
       bumpImageUrl: "//unpkg.com/three-globe/example/img/earth-topology.png",
       showAtmosphere: true,
-      atmosphereColor: '#4682B4',
-      atmosphereAltitude: 0.25,
-      enablePointerInteraction: true,
+      atmosphereColor: '#4682B4', // Default atmosphere color
+      atmosphereAltitude: 0.25,   // Default atmosphere altitude
+      enablePointerInteraction: true, // Enable interactions
       animateIn: true,
     };
 

@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } fr
 import { feature as topojsonFeature } from 'topojson-client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon } from "lucide-react";
+import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw } from "lucide-react"; // Added RefreshCw
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
@@ -13,8 +13,9 @@ import { Label } from "@/components/ui/label";
 import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
 import ArcInfoCard from '@/components/dpp-tracker/ArcInfoCard';
 import CheckpointInfoCard from '@/components/dpp-tracker/CheckpointInfoCard';
-import ShipmentInfoCard from '@/components/dpp-tracker/ShipmentInfoCard'; // New Import
+import ShipmentInfoCard from '@/components/dpp-tracker/ShipmentInfoCard';
 import { cn } from "@/lib/utils";
+import { useToast } from '@/hooks/use-toast'; // Added useToast
 
 const GlobeVisualization = React.lazy(() => import('@/components/dpp-tracker/GlobeVisualization'));
 
@@ -72,12 +73,11 @@ export interface MockShipmentPoint {
   color?: string; 
   arcId: string; 
   arcLabel?: string; 
-  // New fields for Task 13
   productIconUrl?: string;
   dppComplianceStatusText?: string;
   dppComplianceBadgeVariant?: 'default' | 'secondary' | 'outline' | 'destructive';
-  eta?: string; // e.g., "2024-08-15"
-  progressPercentage?: number; // 0-100
+  eta?: string; 
+  progressPercentage?: number; 
 }
 
 
@@ -107,7 +107,7 @@ const SHIPMENT_OUTBOUND_EU_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)';
 const SHIPMENT_INTERNAL_EU_COLOR_GLOBE = 'rgba(255, 193, 7, 0.9)'; 
 
 
-const mockPointsData: MockDppPoint[] = [
+const initialMockPointsData: MockDppPoint[] = [
   { id: 'eu_electronics_factory', lat: 50.8503, lng: 4.3517, name: 'EU Electronics Hub (Brussels)', size: 0.3, category: 'Electronics', status: 'compliant', timestamp: 2024, manufacturer: 'EuroChip', gtin: '111222333', icon: PackageIcon },
   { id: 'asia_textile_factory', lat: 22.3193, lng: 114.1694, name: 'Asia Textile Plant (Hong Kong)', size: 0.25, category: 'Textiles', status: 'pending', timestamp: 2023, manufacturer: 'SilkRoad Co.', gtin: '444555666', icon: Zap },
   { id: 'us_appliance_dist', lat: 34.0522, lng: -118.2437, name: 'US Appliance Distributor (LA)', size: 0.2, category: 'Appliances', status: 'compliant', timestamp: 2024, manufacturer: 'HomeGoods Inc.', gtin: '777888999', icon: Building },
@@ -118,17 +118,17 @@ const mockPointsData: MockDppPoint[] = [
   { id: 'india_appliances_bangalore', lat: 12.9716, lng: 77.5946, name: 'Bangalore Appliance Factory', size: 0.25, category: 'Appliances', status: 'compliant', timestamp: 2024, manufacturer: 'IndiaHome', gtin: '202020202', icon: Building },
 ];
 
-const mockArcsData: MockArc[] = [
+const initialMockArcsData: MockArc[] = [
   { id: 'arc1', shipmentId: 'SH001', direction: 'inbound_eu', startLat: 22.3193, startLng: 114.1694, endLat: 50.8503, endLng: 4.3517, label: 'Textiles to EU', timestamp: 2023, transportMode: 'sea', productId: 'DPP002', color: VIBRANT_TEAL },
   { id: 'arc2', shipmentId: 'SH002', direction: 'outbound_eu', startLat: -14.2350, startLng: -51.9253, endLat: 22.3193, endLng: 114.1694, label: 'Materials to Asia', timestamp: 2022, transportMode: 'sea', color: SATURATED_BLUE },
   { id: 'arc3', shipmentId: 'SH003', direction: 'outbound_eu', startLat: 50.8503, startLng: 4.3517, endLat: 34.0522, endLng: -118.2437, label: 'Electronics to US', timestamp: 2024, transportMode: 'air', productId: 'DPP001', color: ACCENT_PURPLE },
-  { id: 'arc4', shipmentId: 'SH004', direction: 'internal_eu', startLat: 22.5431, startLng: 114.0579, endLat: 50.1109, endLng: 8.6821, label: 'Electronics to Frankfurt', timestamp: 2023, transportMode: 'rail', color: SATURATED_BLUE },
+  { id: 'arc4', shipmentId: 'SH004', direction: 'inbound_eu', startLat: 22.5431, startLng: 114.0579, endLat: 50.1109, endLng: 8.6821, label: 'Electronics to Frankfurt', timestamp: 2023, transportMode: 'rail', color: SATURATED_BLUE },
   { id: 'arc5', shipmentId: 'SH005', direction: 'internal_eu', startLat: 12.9716, startLng: 77.5946, endLat: -1.2921, endLng: 36.8219, label: 'Appliances EOL to Nairobi', timestamp: 2024, transportMode: 'road', productId: 'DPP005', color: VIBRANT_TEAL },
 ];
 
-const mockShipmentPointsData: MockShipmentPoint[] = mockArcsData.map((arc, index) => {
+const initialMockShipmentPointsData: MockShipmentPoint[] = initialMockArcsData.map((arc, index) => {
     const etaDate = new Date();
-    etaDate.setDate(etaDate.getDate() + (index + 1) * 7); // Mock ETA in the future
+    etaDate.setDate(etaDate.getDate() + (index + 1) * 7); 
     return {
         id: arc.shipmentId,
         lat: arc.endLat, 
@@ -138,16 +138,16 @@ const mockShipmentPointsData: MockShipmentPoint[] = mockArcsData.map((arc, index
         direction: arc.direction,
         arcId: arc.id,
         arcLabel: arc.label,
-        productIconUrl: `https://placehold.co/50x50.png?text=${arc.productId ? arc.productId.slice(-3) : arc.shipmentId.slice(-3)}`, // Simple placeholder based on ID
+        productIconUrl: `https://placehold.co/50x50.png?text=${arc.productId ? arc.productId.slice(-3) : arc.shipmentId.slice(-3)}`,
         dppComplianceStatusText: index % 3 === 0 ? "All DPP Data Verified" : (index % 3 === 1 ? "Pending Battery Passport" : "CBAM Declaration Missing"),
         dppComplianceBadgeVariant: index % 3 === 0 ? "default" : (index % 3 === 1 ? "outline" : "destructive"),
         eta: etaDate.toISOString().split('T')[0],
-        progressPercentage: Math.floor(Math.random() * 70) + 30, // Random progress between 30-100
+        progressPercentage: Math.floor(Math.random() * 70) + 30, 
     };
 });
 
 
-const mockCustomsCheckpointsData: MockCustomsCheckpoint[] = [
+const initialMockCustomsCheckpointsData: MockCustomsCheckpoint[] = [
   { id: 'port_rotterdam', lat: 51.9480, lng: 4.1437, name: 'Port of Rotterdam Customs', type: 'port', currentShipmentCount: 1250, overallCustomsStatus: 'cleared', dppComplianceHealth: 'good', icon: Ship },
   { id: 'port_hamburg', lat: 53.5465, lng: 9.9724, name: 'Port of Hamburg Customs', type: 'port', currentShipmentCount: 980, overallCustomsStatus: 'pending', dppComplianceHealth: 'fair', icon: Ship },
   { id: 'airport_frankfurt', lat: 50.0379, lng: 8.5622, name: 'Frankfurt Airport Customs', type: 'airport', currentShipmentCount: 750, overallCustomsStatus: 'inspection_required', dppComplianceHealth: 'poor', icon: Plane },
@@ -218,6 +218,13 @@ export default function DppGlobalTrackerPage() {
   
   const [yearFilter, setYearFilter] = useState<number[]>([new Date().getFullYear()]);
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const { toast } = useToast(); // Initialize toast
+
+  const [mockDppPointsData, setMockDppPointsData] = useState<MockDppPoint[]>(initialMockPointsData);
+  const [mockArcsDataState, setMockArcsDataState] = useState<MockArc[]>(initialMockArcsData);
+  const [mockShipmentPointsDataState, setMockShipmentPointsDataState] = useState<MockShipmentPoint[]>(initialMockShipmentPointsData);
+  const [mockCustomsCheckpointsDataState, setMockCustomsCheckpointsDataState] = useState<MockCustomsCheckpoint[]>(initialMockCustomsCheckpointsData);
+
 
   useEffect(() => {
     setIsClient(true);
@@ -236,24 +243,24 @@ export default function DppGlobalTrackerPage() {
   }, []);
 
   const filteredDppPoints = useMemo(() => {
-    return mockPointsData.filter(point => {
+    return mockDppPointsData.filter(point => {
       const yearMatch = point.timestamp <= yearFilter[0];
       const categoryMatch = categoryFilter === 'all' || point.category === categoryFilter;
       return yearMatch && categoryMatch;
     });
-  }, [yearFilter, categoryFilter]);
+  }, [mockDppPointsData, yearFilter, categoryFilter]);
 
   const filteredArcs = useMemo(() => {
-    return mockArcsData.filter(arc => {
+    return mockArcsDataState.filter(arc => {
       const yearMatch = arc.timestamp <= yearFilter[0];
       return yearMatch;
     });
-  }, [yearFilter]);
+  }, [mockArcsDataState, yearFilter]);
 
   const filteredShipmentPoints = useMemo(() => {
     const visibleArcIds = new Set(filteredArcs.map(arc => arc.id));
-    return mockShipmentPointsData.filter(sp => visibleArcIds.has(sp.arcId));
-  }, [filteredArcs]);
+    return mockShipmentPointsDataState.filter(sp => visibleArcIds.has(sp.arcId));
+  }, [mockShipmentPointsDataState, filteredArcs]);
 
   const combinedPointsForGlobe = useMemo(() => {
     return [...filteredDppPoints, ...filteredShipmentPoints];
@@ -328,7 +335,7 @@ export default function DppGlobalTrackerPage() {
   const polygonSideColorAccessor = useCallback(() => 'rgba(0, 0, 0, 0)', []);
   const polygonStrokeColorAccessor = useCallback(() => BORDER_COLOR_MEDIUM_BLUE, []);
   
-  const uniqueCategories = useMemo(() => ['all', ...new Set(mockPointsData.map(p => p.category))], []);
+  const uniqueCategories = useMemo(() => ['all', ...new Set(initialMockPointsData.map(p => p.category))], []);
 
   const globeLegendMap = {
     "EU Member State": EU_BLUE_COLOR,
@@ -357,6 +364,44 @@ export default function DppGlobalTrackerPage() {
     "Other Point/Route": GREY_COLOR,
   };
 
+  const handleSimulateCheckpointUpdate = () => {
+    if (mockCustomsCheckpointsDataState.length === 0) {
+      toast({ title: "No Checkpoints", description: "No customs checkpoints available to update.", variant: "default" });
+      return;
+    }
+
+    setMockCustomsCheckpointsDataState(prevCheckpoints => {
+      const updatedCheckpoints = [...prevCheckpoints];
+      const numToUpdate = Math.min(2, updatedCheckpoints.length); // Update 1 or 2 checkpoints
+      const updatedNames: string[] = [];
+
+      for (let i = 0; i < numToUpdate; i++) {
+        const randomIndex = Math.floor(Math.random() * updatedCheckpoints.length);
+        const checkpointToUpdate = { ...updatedCheckpoints[randomIndex] };
+
+        const overallStatuses = ['cleared', 'pending', 'inspection_required', 'operational'] as const;
+        const dppHealths = ['good', 'fair', 'poor', 'unknown'] as const;
+        
+        checkpointToUpdate.overallCustomsStatus = overallStatuses[Math.floor(Math.random() * overallStatuses.length)];
+        checkpointToUpdate.dppComplianceHealth = dppHealths[Math.floor(Math.random() * dppHealths.length)];
+        
+        updatedCheckpoints[randomIndex] = checkpointToUpdate;
+        updatedNames.push(checkpointToUpdate.name);
+      }
+      
+      if (selectedCheckpoint && updatedNames.some(name => name === selectedCheckpoint.name)) {
+        const updatedSelected = updatedCheckpoints.find(cp => cp.id === selectedCheckpoint.id);
+        if (updatedSelected) setSelectedCheckpoint(updatedSelected);
+      }
+      
+      toast({
+        title: "Mock Checkpoint Statuses Updated",
+        description: `Updated: ${updatedNames.join(', ')}`,
+      });
+      return updatedCheckpoints;
+    });
+  };
+
   return (
     <div className="space-y-8 bg-background">
       <div className="flex items-center justify-between">
@@ -372,7 +417,7 @@ export default function DppGlobalTrackerPage() {
           <CardDescription>Interact with the globe to explore product origins, supply chains, and compliance status across regions.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 items-end">
             <div>
               <Label htmlFor="category-filter" className="text-sm font-medium">Filter by Category (Locations)</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -390,13 +435,19 @@ export default function DppGlobalTrackerPage() {
               <Label htmlFor="year-slider" className="text-sm font-medium">Filter by Year (Up to): {yearFilter[0]}</Label>
               <Slider
                 id="year-slider"
-                min={Math.min(...mockPointsData.map(p => p.timestamp), ...mockArcsData.map(a => a.timestamp), new Date().getFullYear() - 5)}
+                min={Math.min(...initialMockPointsData.map(p => p.timestamp), ...initialMockArcsData.map(a => a.timestamp), new Date().getFullYear() - 5)}
                 max={new Date().getFullYear()}
                 step={1}
                 value={yearFilter}
                 onValueChange={(value) => setYearFilter(value)}
                 className="mt-2"
               />
+            </div>
+            <div>
+                 <Button onClick={handleSimulateCheckpointUpdate} variant="outline" className="w-full">
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Simulate Checkpoint Update
+                 </Button>
             </div>
           </div>
 
@@ -415,7 +466,7 @@ export default function DppGlobalTrackerPage() {
                     arcsData={filteredArcs}
                     labelsData={[]} 
                     polygonsData={countryPolygons}
-                    customsCheckpointsData={mockCustomsCheckpointsData}
+                    customsCheckpointsData={mockCustomsCheckpointsDataState}
                     polygonCapColorAccessor={polygonCapColorAccessor}
                     polygonSideColorAccessor={polygonSideColorAccessor}
                     polygonStrokeColorAccessor={polygonStrokeColorAccessor}

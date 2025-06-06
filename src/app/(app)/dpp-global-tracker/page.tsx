@@ -5,16 +5,16 @@ import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } fr
 import { feature as topojsonFeature } from 'topojson-client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon } from "lucide-react";
+import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
 import ArcInfoCard from '@/components/dpp-tracker/ArcInfoCard';
+import CheckpointInfoCard from '@/components/dpp-tracker/CheckpointInfoCard';
 import { cn } from "@/lib/utils";
 
-// Dynamically import GlobeVisualization as it's client-side only
 const GlobeVisualization = React.lazy(() => import('@/components/dpp-tracker/GlobeVisualization'));
 
 export interface MockDppPoint {
@@ -25,7 +25,7 @@ export interface MockDppPoint {
   size: number;
   category: 'Electronics' | 'Appliances' | 'Textiles' | 'Raw Material Source' | 'Distribution Hub' | 'Recycling Facility';
   status: 'compliant' | 'pending' | 'issue' | 'unknown';
-  timestamp: number; // Year for simplicity
+  timestamp: number; 
   manufacturer?: string;
   gtin?: string;
   complianceSummary?: string;
@@ -42,26 +42,42 @@ export interface MockArc {
   color: string | string[]; 
   label?: string;
   stroke?: number;
-  timestamp: number; // Year
+  timestamp: number; 
   transportMode?: 'sea' | 'air' | 'road' | 'rail';
   productId?: string;
 }
 
-// PRD Colors & Theme Colors
-const SATURATED_BLUE = 'rgba(41, 171, 226, 0.9)'; // #29ABE2 from --primary
-const VIBRANT_TEAL = 'rgba(0, 128, 128, 0.9)';   // #008080 from --accent
-const ACCENT_PURPLE = 'rgba(124, 58, 237, 0.9)'; // from --info
-const BROWN_COLOR = 'rgba(139, 69, 19, 0.9)'; // For Raw Material
-const ORANGE_COLOR = 'rgba(255, 165, 0, 0.9)'; // For Distribution/Warning-like
-const DARK_GREEN_COLOR = 'rgba(0, 100, 0, 0.9)'; // For Recycling
-const CORNFLOWER_BLUE_COLOR = 'rgba(100, 149, 237, 0.7)'; // For Rail
+export interface MockCustomsCheckpoint {
+  id: string;
+  lat: number;
+  lng: number;
+  name: string;
+  type: 'port' | 'airport' | 'land_border';
+  currentShipmentCount: number;
+  overallCustomsStatus: 'cleared' | 'pending' | 'inspection_required' | 'operational';
+  dppComplianceHealth: 'good' | 'fair' | 'poor' | 'unknown';
+  icon?: React.ElementType;
+}
 
-// Base Map Colors
+const SATURATED_BLUE = 'rgba(41, 171, 226, 0.9)'; 
+const VIBRANT_TEAL = 'rgba(0, 128, 128, 0.9)';   
+const ACCENT_PURPLE = 'rgba(124, 58, 237, 0.9)'; 
+const BROWN_COLOR = 'rgba(139, 69, 19, 0.9)'; 
+const ORANGE_COLOR = 'rgba(255, 165, 0, 0.9)'; 
+const DARK_GREEN_COLOR = 'rgba(0, 100, 0, 0.9)'; 
+const CORNFLOWER_BLUE_COLOR = 'rgba(100, 149, 237, 0.7)';
+const GREY_COLOR = 'rgba(128, 128, 128, 0.8)';
+
 const EU_BLUE_COLOR = 'rgba(0, 80, 150, 0.95)';
 const NON_EU_LAND_COLOR_LIGHT_BLUE = 'rgba(173, 216, 230, 0.95)';
 const BORDER_COLOR_MEDIUM_BLUE = 'rgba(70, 130, 180, 0.7)';
 const WHITE_BACKGROUND_COLOR = 'rgba(255, 255, 255, 1)';
-const GREY_COLOR = 'rgba(128, 128, 128, 0.8)';
+
+const CHECKPOINT_PORT_COLOR = 'rgba(60, 70, 180, 0.9)'; // A distinct blue for ports
+const CHECKPOINT_AIRPORT_COLOR = 'rgba(100, 60, 170, 0.9)'; // A distinct purple for airports
+const CHECKPOINT_CLEARED_COLOR = 'rgba(76, 175, 80, 0.9)'; // Green
+const CHECKPOINT_PENDING_COLOR = 'rgba(255, 235, 59, 0.9)'; // Yellow
+const CHECKPOINT_INSPECTION_COLOR = 'rgba(244, 67, 54, 0.9)'; // Red
 
 
 const mockPointsData: MockDppPoint[] = [
@@ -82,6 +98,16 @@ const mockArcsData: MockArc[] = [
   { id: 'arc4', startLat: 22.5431, startLng: 114.0579, endLat: 50.1109, endLng: 8.6821, label: 'Electronics to Frankfurt', timestamp: 2023, transportMode: 'rail', color: SATURATED_BLUE },
   { id: 'arc5', startLat: 12.9716, startLng: 77.5946, endLat: -1.2921, endLng: 36.8219, label: 'Appliances EOL to Nairobi', timestamp: 2024, transportMode: 'road', productId: 'DPP005', color: VIBRANT_TEAL },
 ];
+
+const mockCustomsCheckpointsData: MockCustomsCheckpoint[] = [
+  { id: 'port_rotterdam', lat: 51.9480, lng: 4.1437, name: 'Port of Rotterdam Customs', type: 'port', currentShipmentCount: 1250, overallCustomsStatus: 'cleared', dppComplianceHealth: 'good', icon: Ship },
+  { id: 'port_hamburg', lat: 53.5465, lng: 9.9724, name: 'Port of Hamburg Customs', type: 'port', currentShipmentCount: 980, overallCustomsStatus: 'pending', dppComplianceHealth: 'fair', icon: Ship },
+  { id: 'airport_frankfurt', lat: 50.0379, lng: 8.5622, name: 'Frankfurt Airport Customs', type: 'airport', currentShipmentCount: 750, overallCustomsStatus: 'inspection_required', dppComplianceHealth: 'poor', icon: Plane },
+  { id: 'airport_cdg', lat: 49.0097, lng: 2.5479, name: 'Paris CDG Airport Customs', type: 'airport', currentShipmentCount: 620, overallCustomsStatus: 'operational', dppComplianceHealth: 'good', icon: Plane },
+  { id: 'port_la', lat: 33.7292, lng: -118.2620, name: 'Port of Los Angeles Customs', type: 'port', currentShipmentCount: 1500, overallCustomsStatus: 'operational', dppComplianceHealth: 'unknown', icon: Ship },
+  { id: 'port_shanghai', lat: 31.3925, lng: 121.5201, name: 'Port of Shanghai Customs', type: 'port', currentShipmentCount: 2100, overallCustomsStatus: 'cleared', dppComplianceHealth: 'good', icon: Ship },
+];
+
 
 const euMemberCountryCodes = [
   'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU',
@@ -136,6 +162,7 @@ export default function DppGlobalTrackerPage() {
   const [isClient, setIsClient] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<MockDppPoint | null>(null);
   const [selectedArc, setSelectedArc] = useState<MockArc | null>(null);
+  const [selectedCheckpoint, setSelectedCheckpoint] = useState<MockCustomsCheckpoint | null>(null);
   const [countryPolygons, setCountryPolygons] = useState<any[]>([]);
   const [isLoadingGeoJson, setIsLoadingGeoJson] = useState(true);
   
@@ -174,6 +201,7 @@ export default function DppGlobalTrackerPage() {
   }, [yearFilter]);
 
   const pointColorAccessor = useCallback((point: MockDppPoint) => {
+    if (point.icon) return 'rgba(0,0,0,0)'; // Make point invisible if icon is used by custom layer
     switch (point.category) {
       case 'Electronics': return SATURATED_BLUE;
       case 'Appliances': return VIBRANT_TEAL;
@@ -202,11 +230,19 @@ export default function DppGlobalTrackerPage() {
   const handlePointClick = useCallback((point: MockDppPoint) => {
     setSelectedPoint(point);
     setSelectedArc(null);
+    setSelectedCheckpoint(null);
   }, []);
 
   const handleArcClick = useCallback((arc: MockArc) => {
     setSelectedArc(arc);
     setSelectedPoint(null);
+    setSelectedCheckpoint(null);
+  }, []);
+
+  const handleCheckpointClick = useCallback((checkpoint: MockCustomsCheckpoint) => {
+    setSelectedCheckpoint(checkpoint);
+    setSelectedPoint(null);
+    setSelectedArc(null);
   }, []);
 
   const polygonCapColorAccessor = useCallback((feat: any) => {
@@ -223,6 +259,11 @@ export default function DppGlobalTrackerPage() {
     "Non-EU Country": NON_EU_LAND_COLOR_LIGHT_BLUE,
     "Country Borders": BORDER_COLOR_MEDIUM_BLUE,
     "Globe Background": WHITE_BACKGROUND_COLOR,
+    "Customs Cleared": CHECKPOINT_CLEARED_COLOR,
+    "Customs Pending": CHECKPOINT_PENDING_COLOR,
+    "Customs Inspection Req.": CHECKPOINT_INSPECTION_COLOR,
+    "Customs Port (Operational)": CHECKPOINT_PORT_COLOR,
+    "Customs Airport (Operational)": CHECKPOINT_AIRPORT_COLOR,
     "Electronics Point": SATURATED_BLUE,
     "Appliances Point": VIBRANT_TEAL,
     "Textiles Point": ACCENT_PURPLE,
@@ -294,11 +335,13 @@ export default function DppGlobalTrackerPage() {
                     arcsData={filteredArcs}
                     labelsData={[]} 
                     polygonsData={countryPolygons}
+                    customsCheckpointsData={mockCustomsCheckpointsData}
                     polygonCapColorAccessor={polygonCapColorAccessor}
                     polygonSideColorAccessor={polygonSideColorAccessor}
                     polygonStrokeColorAccessor={polygonStrokeColorAccessor}
                     onPointClick={handlePointClick}
                     onArcClick={handleArcClick}
+                    onCheckpointClick={handleCheckpointClick}
                     pointColorAccessor={pointColorAccessor}
                     pointRadiusAccessor={pointRadiusAccessor}
                     arcColorAccessor={arcColorAccessor}
@@ -316,7 +359,9 @@ export default function DppGlobalTrackerPage() {
 
       {selectedPoint && <PointInfoCard pointData={selectedPoint} onClose={() => setSelectedPoint(null)} />}
       {selectedArc && <ArcInfoCard arcData={selectedArc} onClose={() => setSelectedArc(null)} />}
+      {selectedCheckpoint && <CheckpointInfoCard checkpointData={selectedCheckpoint} onClose={() => setSelectedCheckpoint(null)} />}
 
     </div>
   );
 }
+

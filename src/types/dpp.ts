@@ -136,6 +136,7 @@ export interface DashboardFiltersState {
   regulation: 'all' | 'eu_espr' | 'us_scope3' | 'battery_regulation'; // This might need to become more dynamic
   category: 'all' | string;
   searchQuery?: string;
+  blockchainAnchored?: 'all' | 'anchored' | 'not_anchored';
 }
 
 // MOCK_DPPS needs to be updated to conform to the new (mostly optional) structure.
@@ -161,7 +162,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       battery_regulation: { status: "not_applicable" }, 
     },
     ebsiVerification: { status: "verified", verificationId: "EBSI_TX_ABC123", lastChecked: "2024-07-29T00:00:00Z"},
-    blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123...abc"},
+    blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef"},
     consumerScans: 1250,
     lifecycleEvents: [
       {id: "evt1", type: "Manufactured", timestamp: "2024-01-01T00:00:00Z", transactionHash: "0xabc...def"}
@@ -187,6 +188,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-20T00:00:00Z"},
     consumerScans: 300,
+    blockchainIdentifiers: { platform: "MockChain" }, // No anchor hash
   },
   {
     id: "DPP003",
@@ -199,7 +201,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       us_scope3: { status: "compliant" },
     },
     consumerScans: 2100,
-     productDetails: { description: "A recycled phone case."}
+     productDetails: { description: "A recycled phone case."},
+     blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0x789polymerAnchorHash000333"},
   },
   {
     id: "DPP004",
@@ -211,7 +214,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eu_espr: { status: "compliant" },
     },
     consumerScans: 850,
-    productDetails: { description: "A modular sofa."}
+    productDetails: { description: "A modular sofa."} // No blockchainIdentifiers
   },
   {
     id: "DPP005",
@@ -237,7 +240,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     consumerScans: 50,
     certifications: [
       {id: "cert_bat_01", name: "UN 38.3 Transport Test", issuer: "TestCert Ltd.", issueDate: "2024-07-01", documentUrl: "#", transactionHash: "0xcertAnchorBat1"}
-    ]
+    ],
+    blockchainIdentifiers: { platform: "BatteryChain", anchorTransactionHash: "0xevBatteryAnchorHash555AAA"},
   },
    {
     id: "DPP006",
@@ -251,6 +255,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     consumerScans: 1520,
     productDetails: { description: "Fairtrade coffee beans.", imageUrl: "https://placehold.co/600x400.png", imageHint: "coffee beans bag"}
+    // No blockchainIdentifiers
   },
   {
     id: "DPP007",
@@ -265,7 +270,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     ebsiVerification: { status: "verified", lastChecked: "2024-07-11T00:00:00Z"},
     consumerScans: 980,
-    productDetails: { description: "A smart thermostat.", imageUrl: "https://placehold.co/600x400.png", imageHint: "smart thermostat device"}
+    productDetails: { description: "A smart thermostat.", imageUrl: "https://placehold.co/600x400.png", imageHint: "smart thermostat device"},
+    blockchainIdentifiers: { platform: "SmartHomeChain", anchorTransactionHash: "0xthermoAnchorHash777BBB"},
   }
 ];
 

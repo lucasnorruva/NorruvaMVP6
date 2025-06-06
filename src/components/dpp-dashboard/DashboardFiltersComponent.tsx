@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input"; // Added Input import
 import type { DashboardFiltersState } from "@/types/dpp";
-import { Filter, ListFilter, Search } from "lucide-react"; // Added Search icon
+import { Filter, ListFilter, Search, Link as LinkIcon } from "lucide-react"; // Added Search and LinkIcon icons
 
 interface DashboardFiltersComponentProps {
   filters: DashboardFiltersState;
@@ -29,10 +29,16 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
     { value: "archived", label: "Archived" },
   ];
 
+  const anchoringOptions = [
+    { value: "all", label: "All Anchoring Statuses" },
+    { value: "anchored", label: "Anchored" },
+    { value: "not_anchored", label: "Not Anchored" },
+  ];
+
   return (
     <Card className="shadow-md">
       <CardContent className="p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 items-end"> {/* Adjusted grid to md:grid-cols-4 */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end"> {/* Adjusted grid for new filter */}
           <div>
             <Label htmlFor="search-query" className="text-sm font-medium mb-1 flex items-center">
               <Search className="h-4 w-4 mr-2 text-primary" />
@@ -106,6 +112,27 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
                 {availableCategories.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="anchoring-filter" className="text-sm font-medium mb-1 flex items-center">
+              <LinkIcon className="h-4 w-4 mr-2 text-primary" />
+              Blockchain Anchoring
+            </Label>
+            <Select
+              value={filters.blockchainAnchored || 'all'}
+              onValueChange={(value) => onFiltersChange({ blockchainAnchored: value as DashboardFiltersState['blockchainAnchored'] })}
+            >
+              <SelectTrigger id="anchoring-filter" className="w-full">
+                <SelectValue placeholder="Select anchoring status" />
+              </SelectTrigger>
+              <SelectContent>
+                {anchoringOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>

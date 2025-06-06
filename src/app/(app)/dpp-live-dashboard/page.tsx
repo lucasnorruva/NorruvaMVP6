@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
 import { DashboardFiltersComponent } from "@/components/dpp-dashboard/DashboardFiltersComponent";
-import { DPPTable } from "@/components/dpp-dashboard/DPPTable";
 import type { DigitalProductPassport, DashboardFiltersState } from "@/types/dpp";
 import { MOCK_DPPS } from "@/types/dpp"; // Import mock data
 import { BarChart3, CheckSquare, Clock, Eye, PlusCircle, ScanEye, Percent, Users, QrCode, Camera } from "lucide-react";
@@ -26,6 +25,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { DPPTable } from "@/components/dpp-dashboard/DPPTable"; // Ensure DPPTable is imported
 
 const availableRegulations = [
   { value: "all", label: "All Regulations" },
@@ -52,6 +52,7 @@ export default function DPPLiveDashboardPage() {
     regulation: "all",
     category: "all",
     searchQuery: "",
+    blockchainAnchored: "all", // Initialize new filter
   });
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
   const [manualProductId, setManualProductId] = useState("");
@@ -88,11 +89,17 @@ export default function DPPLiveDashboardPage() {
       }
       if (filters.regulation !== "all") {
         const complianceData = dpp.compliance[filters.regulation as keyof typeof dpp.compliance];
-        if (!complianceData || (typeof complianceData === 'object' && 'status' in complianceData && complianceData.status !== "compliant")) {
+        if (!complianceData || (typeof complianceData === 'object' && 'status' in complianceData && complianceData.status !== 'compliant')) {
           return false;
         }
       }
       if (filters.category !== "all" && dpp.category !== filters.category) {
+        return false;
+      }
+      if (filters.blockchainAnchored === 'anchored' && !dpp.blockchainIdentifiers?.anchorTransactionHash) {
+        return false;
+      }
+      if (filters.blockchainAnchored === 'not_anchored' && dpp.blockchainIdentifiers?.anchorTransactionHash) {
         return false;
       }
       return true;

@@ -36,8 +36,8 @@ export interface MockDppPoint {
 
 export interface MockArc {
   id: string;
-  shipmentId: string; // Added for linking to shipment dot
-  direction: 'inbound_eu' | 'outbound_eu' | 'internal_eu'; // Added for shipment coloring
+  shipmentId: string; 
+  direction: 'inbound_eu' | 'outbound_eu' | 'internal_eu'; 
   startLat: number;
   startLng: number;
   endLat: number;
@@ -62,17 +62,22 @@ export interface MockCustomsCheckpoint {
   icon?: React.ElementType;
 }
 
-// New interface for shipment dots
 export interface MockShipmentPoint {
-  id: string; // shipmentId from MockArc
+  id: string; 
   lat: number;
   lng: number;
-  name: string; // e.g., "Shipment SH001"
+  name: string; 
   size: number;
   direction: 'inbound_eu' | 'outbound_eu' | 'internal_eu';
-  color?: string; // Will be set by accessor
-  arcId: string; // Original arc ID
-  arcLabel?: string; // Label from the original arc
+  color?: string; 
+  arcId: string; 
+  arcLabel?: string; 
+  // New fields for Task 13
+  productIconUrl?: string;
+  dppComplianceStatusText?: string;
+  dppComplianceBadgeVariant?: 'default' | 'secondary' | 'outline' | 'destructive';
+  eta?: string; // e.g., "2024-08-15"
+  progressPercentage?: number; // 0-100
 }
 
 
@@ -97,10 +102,9 @@ export const CHECKPOINT_PORT_COLOR = 'rgba(60, 70, 180, 0.9)';
 export const CHECKPOINT_AIRPORT_COLOR = 'rgba(100, 60, 170, 0.9)';
 export const CHECKPOINT_LAND_BORDER_COLOR = 'rgba(200, 100, 30, 0.9)';
 
-// New colors for shipment dots
-const SHIPMENT_INBOUND_EU_COLOR_GLOBE = 'rgba(0, 123, 255, 0.9)'; // Blue
-const SHIPMENT_OUTBOUND_EU_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)'; // Green
-const SHIPMENT_INTERNAL_EU_COLOR_GLOBE = 'rgba(255, 193, 7, 0.9)'; // Orange
+const SHIPMENT_INBOUND_EU_COLOR_GLOBE = 'rgba(0, 123, 255, 0.9)'; 
+const SHIPMENT_OUTBOUND_EU_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)'; 
+const SHIPMENT_INTERNAL_EU_COLOR_GLOBE = 'rgba(255, 193, 7, 0.9)'; 
 
 
 const mockPointsData: MockDppPoint[] = [
@@ -122,17 +126,25 @@ const mockArcsData: MockArc[] = [
   { id: 'arc5', shipmentId: 'SH005', direction: 'internal_eu', startLat: 12.9716, startLng: 77.5946, endLat: -1.2921, endLng: 36.8219, label: 'Appliances EOL to Nairobi', timestamp: 2024, transportMode: 'road', productId: 'DPP005', color: VIBRANT_TEAL },
 ];
 
-// Derive shipment dots from arcs
-const mockShipmentPointsData: MockShipmentPoint[] = mockArcsData.map(arc => ({
-  id: arc.shipmentId,
-  lat: arc.endLat, // Place dot at the end of the arc for static representation
-  lng: arc.endLng,
-  name: `Shipment ${arc.shipmentId}`,
-  size: 0.15, // Default smaller size for shipment dots
-  direction: arc.direction,
-  arcId: arc.id,
-  arcLabel: arc.label,
-}));
+const mockShipmentPointsData: MockShipmentPoint[] = mockArcsData.map((arc, index) => {
+    const etaDate = new Date();
+    etaDate.setDate(etaDate.getDate() + (index + 1) * 7); // Mock ETA in the future
+    return {
+        id: arc.shipmentId,
+        lat: arc.endLat, 
+        lng: arc.endLng,
+        name: `Shipment ${arc.shipmentId}`,
+        size: 0.15, 
+        direction: arc.direction,
+        arcId: arc.id,
+        arcLabel: arc.label,
+        productIconUrl: `https://placehold.co/50x50.png?text=${arc.productId ? arc.productId.slice(-3) : arc.shipmentId.slice(-3)}`, // Simple placeholder based on ID
+        dppComplianceStatusText: index % 3 === 0 ? "All DPP Data Verified" : (index % 3 === 1 ? "Pending Battery Passport" : "CBAM Declaration Missing"),
+        dppComplianceBadgeVariant: index % 3 === 0 ? "default" : (index % 3 === 1 ? "outline" : "destructive"),
+        eta: etaDate.toISOString().split('T')[0],
+        progressPercentage: Math.floor(Math.random() * 70) + 30, // Random progress between 30-100
+    };
+});
 
 
 const mockCustomsCheckpointsData: MockCustomsCheckpoint[] = [
@@ -200,7 +212,7 @@ export default function DppGlobalTrackerPage() {
   const [selectedPoint, setSelectedPoint] = useState<MockDppPoint | null>(null);
   const [selectedArc, setSelectedArc] = useState<MockArc | null>(null);
   const [selectedCheckpoint, setSelectedCheckpoint] = useState<MockCustomsCheckpoint | null>(null);
-  const [selectedShipment, setSelectedShipment] = useState<MockShipmentPoint | null>(null); // New state for shipment dots
+  const [selectedShipment, setSelectedShipment] = useState<MockShipmentPoint | null>(null); 
   const [countryPolygons, setCountryPolygons] = useState<any[]>([]);
   const [isLoadingGeoJson, setIsLoadingGeoJson] = useState(true);
   
@@ -234,14 +246,11 @@ export default function DppGlobalTrackerPage() {
   const filteredArcs = useMemo(() => {
     return mockArcsData.filter(arc => {
       const yearMatch = arc.timestamp <= yearFilter[0];
-      // Potentially filter arcs based on categoryFilter if arcs are linked to product categories
-      // For now, just year filter for arcs.
       return yearMatch;
     });
   }, [yearFilter]);
 
   const filteredShipmentPoints = useMemo(() => {
-    // Filter shipment points based on the visibility of their associated arcs (and thus year filter)
     const visibleArcIds = new Set(filteredArcs.map(arc => arc.id));
     return mockShipmentPointsData.filter(sp => visibleArcIds.has(sp.arcId));
   }, [filteredArcs]);
@@ -252,7 +261,7 @@ export default function DppGlobalTrackerPage() {
 
 
   const pointColorAccessor = useCallback((point: MockDppPoint | MockShipmentPoint) => {
-    if ('direction' in point && point.direction) { // It's a MockShipmentPoint
+    if ('direction' in point && point.direction) { 
       const shipment = point as MockShipmentPoint;
       switch (shipment.direction) {
         case 'inbound_eu': return SHIPMENT_INBOUND_EU_COLOR_GLOBE;
@@ -260,9 +269,9 @@ export default function DppGlobalTrackerPage() {
         case 'internal_eu': return SHIPMENT_INTERNAL_EU_COLOR_GLOBE;
         default: return GREY_COLOR;
       }
-    } else { // It's a MockDppPoint
+    } else { 
       const dppPoint = point as MockDppPoint;
-      if (dppPoint.icon) return 'rgba(0,0,0,0)'; // Make point invisible if icon is used by custom layer
+      if (dppPoint.icon) return 'rgba(0,0,0,0)'; 
       switch (dppPoint.category) {
         case 'Electronics': return SATURATED_BLUE;
         case 'Appliances': return VIBRANT_TEAL;
@@ -276,21 +285,21 @@ export default function DppGlobalTrackerPage() {
   }, []);
   
   const pointRadiusAccessor = useCallback((point: MockDppPoint | MockShipmentPoint) => {
-    if ('direction' in point && point.direction) { // It's a MockShipmentPoint
-      return 0.12; // Smaller radius for shipment dots
-    } else { // It's a MockDppPoint
+    if ('direction' in point && point.direction) { 
+      return 0.12; 
+    } else { 
        const dppPoint = point as MockDppPoint;
       return dppPoint.size * 0.8 + 0.1;
     }
   }, []);
 
   const handlePointClick = useCallback((point: MockDppPoint | MockShipmentPoint) => {
-    if ('direction' in point && point.direction) { // It's a MockShipmentPoint
+    if ('direction' in point && point.direction) { 
       setSelectedShipment(point as MockShipmentPoint);
       setSelectedPoint(null);
       setSelectedArc(null);
       setSelectedCheckpoint(null);
-    } else { // It's a MockDppPoint
+    } else { 
       setSelectedPoint(point as MockDppPoint);
       setSelectedShipment(null);
       setSelectedArc(null);
@@ -402,7 +411,7 @@ export default function DppGlobalTrackerPage() {
             ) : (
                 <DppGlobalTrackerClientContainer
                     isClient={isClient}
-                    pointsData={combinedPointsForGlobe} // Use combined data for points
+                    pointsData={combinedPointsForGlobe} 
                     arcsData={filteredArcs}
                     labelsData={[]} 
                     polygonsData={countryPolygons}
@@ -410,12 +419,12 @@ export default function DppGlobalTrackerPage() {
                     polygonCapColorAccessor={polygonCapColorAccessor}
                     polygonSideColorAccessor={polygonSideColorAccessor}
                     polygonStrokeColorAccessor={polygonStrokeColorAccessor}
-                    onPointClick={handlePointClick} // Updated to handle both point types
+                    onPointClick={handlePointClick} 
                     onArcClick={handleArcClick}
                     onCheckpointClick={handleCheckpointClick}
-                    pointColorAccessor={pointColorAccessor} // Updated
-                    pointRadiusAccessor={pointRadiusAccessor} // Updated
-                    arcColorAccessor={(arc: MockArc) => arc.color} // Simplified as arc colors are directly in data
+                    pointColorAccessor={pointColorAccessor} 
+                    pointRadiusAccessor={pointRadiusAccessor} 
+                    arcColorAccessor={(arc: MockArc) => arc.color} 
                     arcStrokeAccessor={(arc: MockArc) => (arc.stroke || 0.2) + (arc.productId ? 0.1 : 0)}
                     globeBackgroundColor={WHITE_BACKGROUND_COLOR}
                 />
@@ -431,8 +440,10 @@ export default function DppGlobalTrackerPage() {
       {selectedPoint && <PointInfoCard pointData={selectedPoint} onClose={() => setSelectedPoint(null)} />}
       {selectedArc && <ArcInfoCard arcData={selectedArc} onClose={() => setSelectedArc(null)} />}
       {selectedCheckpoint && <CheckpointInfoCard checkpointData={selectedCheckpoint} onClose={() => setSelectedCheckpoint(null)} />}
-      {selectedShipment && <ShipmentInfoCard shipmentData={selectedShipment} onClose={() => setSelectedShipment(null)} />} {/* New Card */}
+      {selectedShipment && <ShipmentInfoCard shipmentData={selectedShipment} onClose={() => setSelectedShipment(null)} />} 
 
     </div>
   );
 }
+
+    

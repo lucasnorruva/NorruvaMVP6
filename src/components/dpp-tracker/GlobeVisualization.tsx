@@ -4,12 +4,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import Globe, { type GlobeMethods, type GlobeProps } from 'react-globe.gl';
 import * as THREE from 'three';
+import { Loader2 } from 'lucide-react'; // Added Loader2 import
 
 interface GlobeVisualizationProps extends Omit<GlobeProps, 'ref'> {
-  globeRef: React.RefObject<GlobeMethods | undefined>; // Allow undefined for initial ref state
+  globeRef: React.RefObject<GlobeMethods | undefined>;
   globeImageUrl?: string;
   bumpImageUrl?: string;
-  globeBackgroundColor?: string; 
+  globeBackgroundColor?: string;
   atmosphereColor?: string;
   atmosphereAltitude?: number;
   initialZoom?: number;
@@ -19,13 +20,13 @@ interface GlobeVisualizationProps extends Omit<GlobeProps, 'ref'> {
 
 const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
   globeRef,
-  globeImageUrl = "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg",
+  globeImageUrl = "//unpkg.com/three-globe/example/img/earth-night.jpg",
   bumpImageUrl = "//unpkg.com/three-globe/example/img/earth-topology.png",
-  globeBackgroundColor = '#0a0a0a', 
-  atmosphereColor = '#3a82f6', 
+  globeBackgroundColor = '#0a0a0a',
+  atmosphereColor = '#3a82f6',
   atmosphereAltitude = 0.25,
-  initialZoom = 1.5, 
-  initialLat = 20,   
+  initialZoom = 2.5, 
+  initialLat = 20,
   initialLng = 0,
   ...globeProps
 }) => {
@@ -33,44 +34,49 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (globeRef.current) {
-      const globe = globeRef.current;
-      
-      globe.pointOfView({ lat: initialLat, lng: initialLng, altitude: initialZoom }, 1000);
+    const currentGlobeRef = globeRef.current;
+    if (currentGlobeRef) {
+      console.log("GlobeVisualization: Globe ref found. Initializing...");
+      currentGlobeRef.pointOfView({ lat: initialLat, lng: initialLng, altitude: initialZoom }, 1000);
 
-      const controls = globe.controls();
+      const controls = currentGlobeRef.controls();
       if (controls) {
         controls.enableZoom = true;
         controls.zoomSpeed = 0.5;
         controls.autoRotate = true;
         controls.autoRotateSpeed = 0.3;
-        controls.minDistance = 1; 
-        controls.maxDistance = 3.5;
+        controls.minDistance = 1.5; // Allow closer zoom
+        controls.maxDistance = 5;   // Restrict zooming too far out
+        console.log("GlobeVisualization: Controls configured.");
+      } else {
+        console.warn("GlobeVisualization: Globe controls not available.");
       }
 
       try {
-        const renderer = globe.renderer();
+        const renderer = currentGlobeRef.renderer();
         if (renderer) {
-          renderer.setClearColor(new THREE.Color(globeBackgroundColor), 1);
+          renderer.setClearColor(new THREE.Color(globeBackgroundColor || '#0a0a0a'), 1);
           console.log(`GlobeVisualization: Renderer clear color set to: ${globeBackgroundColor}`);
         } else {
           console.warn("GlobeVisualization: Renderer not available to set clear color.");
         }
       } catch (e) {
-        console.error("GlobeVisualization: Error setting renderer clear color:", e);
-        setError("Failed to set globe background color.");
+        const errorMessage = e instanceof Error ? e.message : String(e);
+        console.error("GlobeVisualization: Error setting renderer clear color:", errorMessage);
+        setError(`Failed to set globe background color: ${errorMessage}`);
       }
-      
       setGlobeReady(true);
-      console.log("GlobeVisualization: Globe component ready and configured.");
+    } else {
+      console.warn("GlobeVisualization: Globe ref is null during useEffect.");
     }
-  }, [globeRef, globeBackgroundColor, initialLat, initialLng, initialZoom]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [globeRef, globeBackgroundColor, initialLat, initialLng, initialZoom]); // Removed atmosphereColor, atmosphereAltitude, bumpImageUrl, globeImageUrl if they don't change after initial setup
 
   if (error) {
     return <div className="text-destructive text-center p-4">{error}</div>;
   }
 
-  if (!globeReady && typeof window === 'undefined') { // Avoid rendering Globe on server if not ready
+  if (!globeReady && typeof window === 'undefined') {
     return (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-50">
             <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -78,20 +84,31 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
         </div>
     );
   }
-
+  
   return (
     <Globe
-      ref={globeRef}
+      ref={globeRef as React.MutableRefObject<GlobeMethods>}
       globeImageUrl={globeImageUrl}
       bumpImageUrl={bumpImageUrl}
-      backgroundColor={globeBackgroundColor} // Important for react-globe.gl to not use its default white
+      backgroundColor={globeBackgroundColor}
       atmosphereColor={atmosphereColor}
       atmosphereAltitude={atmosphereAltitude}
       onGlobeReady={() => {
         console.log("GlobeVisualization: onGlobeReady triggered from react-globe.gl");
         setGlobeReady(true);
+         // Attempt to set renderer color again once globe is ready, as a fallback
+        if (globeRef.current) {
+          try {
+            const renderer = globeRef.current.renderer();
+            if (renderer) {
+              renderer.setClearColor(new THREE.Color(globeBackgroundColor || '#0a0a0a'), 1);
+              console.log(`GlobeVisualization (onGlobeReady): Renderer clear color set to: ${globeBackgroundColor}`);
+            }
+          } catch (e) {
+             console.error("GlobeVisualization (onGlobeReady): Error setting renderer clear color:", e);
+          }
+        }
       }}
-      // Pass through all other polygon-related props
       polygonsData={globeProps.polygonsData || []}
       polygonCapColor={globeProps.polygonCapColor}
       polygonSideColor={globeProps.polygonSideColor}
@@ -99,15 +116,14 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
       polygonAltitude={globeProps.polygonAltitude}
       onPolygonClick={globeProps.onPolygonClick}
       polygonsTransitionDuration={globeProps.polygonsTransitionDuration || 0}
-      {...globeProps} // Spread remaining props
+      {...globeProps}
     />
   );
 };
 
-const GlobeVisualization = React.memo(GlobeVisualizationInternal);
-GlobeVisualization.displayName = 'GlobeVisualization';
+const MemoizedGlobeVisualizationInternal = React.memo(GlobeVisualizationInternal);
+MemoizedGlobeVisualizationInternal.displayName = 'MemoizedGlobeVisualizationInternal';
 
-// This wrapper ensures GlobeVisualization is only rendered on the client
 const ClientOnlyGlobe: React.FC<GlobeVisualizationProps> = (props) => {
   const [hasMounted, setHasMounted] = useState(false);
   useEffect(() => {
@@ -122,9 +138,7 @@ const ClientOnlyGlobe: React.FC<GlobeVisualizationProps> = (props) => {
         </div>
     );
   }
-  return <GlobeVisualization {...props} />;
+  return <MemoizedGlobeVisualizationInternal {...props} />;
 };
 
 export default ClientOnlyGlobe;
-
-    

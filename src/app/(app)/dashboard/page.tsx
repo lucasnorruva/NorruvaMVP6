@@ -295,29 +295,12 @@ const ManufacturerDashboard = () => (
         </Card>
       </CardContent>
     </Card>
-    <ManufacturerQuickActionsCard /> {/* Added Quick Actions Card */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-        <Link href="/products/new" passHref>
-          <Button variant="secondary" className="w-full h-full">
-            <PlusCircle className="mr-2 h-5 w-5" />
-            Add New Product / Create DPP
-          </Button>
-        </Link>
-        <Link href="/products" passHref>
-          <Button variant="outline" className="w-full h-full">
-            <Eye className="mr-2 h-5 w-5" />
-            View My Products
-          </Button>
-        </Link>
-        <Button variant="outline" className="w-full h-full">
-            <Layers className="mr-2 h-5 w-5" />
-            Manage Supply Chain Data (Mock)
-        </Button>
-    </div>
+    <ManufacturerQuickActionsCard />
     <Card>
       <CardHeader><CardTitle className="flex items-center"><History className="mr-2 h-5 w-5"/>Recent Activity</CardTitle></CardHeader>
       <CardContent><p className="text-muted-foreground">Product 'EcoBoiler X1' updated. New batch data for 'SolarPanel ZP' added. Supplier 'GreenParts Co' confirmed new material specs.</p></CardContent>
     </Card>
+    <RegulationUpdatesCard /> 
   </div>
 );
 
@@ -339,21 +322,12 @@ const SupplierDashboard = () => (
         </Card>
       </CardContent>
     </Card>
-    <SupplierQuickActionsCard /> {/* Added Quick Actions Card */}
-     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Button variant="secondary" className="w-full h-full">
-          <ScanLine className="mr-2 h-5 w-5" />
-          Upload Compliance Document
-        </Button>
-         <Button variant="outline" className="w-full h-full">
-            <FileText className="mr-2 h-5 w-5" />
-            View Material Specifications (Mock)
-        </Button>
-    </div>
+    <SupplierQuickActionsCard />
      <Card>
       <CardHeader><CardTitle className="flex items-center"><Inbox className="mr-2 h-5 w-5"/>Notifications</CardTitle></CardHeader>
       <CardContent><p className="text-muted-foreground">Manufacturer 'GreenTech' requests updated specs for 'Component X'. Reminder: 'Polymer Z' safety data sheet due next week.</p></CardContent>
     </Card>
+    <RegulationUpdatesCard />
   </div>
 );
 
@@ -375,23 +349,12 @@ const RetailerDashboard = () => (
         </Card>
       </CardContent>
     </Card>
-    <RetailerQuickActionsCard /> {/* Added Quick Actions Card */}
-     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Button variant="secondary" className="w-full h-full">
-          <FileText className="mr-2 h-5 w-5" />
-          Download Product Data Sheets
-        </Button>
-        <Link href="/dpp-live-dashboard" passHref>
-            <Button variant="outline" className="w-full h-full">
-                <Eye className="mr-2 h-5 w-5" />
-                Access Public DPPs
-            </Button>
-        </Link>
-    </div>
+    <RetailerQuickActionsCard />
     <Card>
       <CardHeader><CardTitle className="flex items-center"><MessageSquare className="mr-2 h-5 w-5"/>Market Alerts</CardTitle></CardHeader>
       <CardContent><p className="text-muted-foreground">New sustainability claim verified for 'Eco T-Shirt'. Upcoming regulation update for 'Electronics' category.</p></CardContent>
     </Card>
+    <RegulationUpdatesCard />
   </div>
 );
 
@@ -413,21 +376,12 @@ const RecyclerDashboard = () => (
         </Card>
       </CardContent>
     </Card>
-    <RecyclerQuickActionsCard /> {/* Added Quick Actions Card */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Button variant="secondary" className="w-full h-full">
-          <ScanLine className="mr-2 h-5 w-5" />
-          Scan Product for Disassembly Info
-        </Button>
-        <Button variant="outline" className="w-full h-full">
-            <Database className="mr-2 h-5 w-5" />
-            View Material Composition DB (Mock)
-        </Button>
-    </div>
+    <RecyclerQuickActionsCard />
      <Card>
       <CardHeader><CardTitle className="flex items-center"><AlertTriangle className="mr-2 h-5 w-5"/>Material Alerts</CardTitle></CardHeader>
       <CardContent><p className="text-muted-foreground">High volume of 'Recycled PET' available from recent batch. Low stock of 'Lithium Carbonate' for battery recycling.</p></CardContent>
     </Card>
+    <RegulationUpdatesCard />
   </div>
 );
 
@@ -449,17 +403,7 @@ const VerifierDashboard = () => (
         </Card>
       </CardContent>
     </Card>
-    <VerifierQuickActionsCard /> {/* Added Quick Actions Card */}
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Button variant="secondary" className="w-full h-full">
-          <FileText className="mr-2 h-5 w-5" />
-          Access Audit Trail Database
-        </Button>
-        <Button variant="outline" className="w-full h-full">
-            <SearchCheck className="mr-2 h-5 w-5" />
-            Review Submitted Claims (Mock)
-        </Button>
-    </div>
+    <VerifierQuickActionsCard />
     <Card>
       <CardHeader><CardTitle className="flex items-center"><BarChart2 className="mr-2 h-5 w-5"/>System Alerts</CardTitle></CardHeader>
       <CardContent><p className="text-muted-foreground">New regulation update requires re-verification for 'Textile' category. Multiple DPPs flagged for potential data mismatch.</p></CardContent>

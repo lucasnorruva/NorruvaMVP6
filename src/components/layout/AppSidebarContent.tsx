@@ -16,7 +16,6 @@ import {
   LineChart,
   ListChecks,
   BarChartHorizontal, 
-  Globe,
   ClipboardList 
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
@@ -37,7 +36,6 @@ const navItems = [
   { href: "/dpp-live-dashboard", label: "Live DPPs", icon: LineChart },
   { href: "/products", label: "Products", icon: Package },
   { href: "/products/new", label: "Add Product", icon: ScanLine },
-  { href: "/dpp-global-tracker", label: "Global Tracker", icon: Globe },
   { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList }, 
   { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
   { href: "/compliance/pathways", label: "Compliance Pathways", icon: ListChecks },
@@ -72,8 +70,6 @@ export default function AppSidebarContent() {
     } else if (href === "/sustainability/compare" && pathname === href) { // Compare page is active
         isActive = true;
     } else if (href === "/sustainability" && pathname === href) { // Main sustainability page is active
-        isActive = true;
-    } else if (href === "/dpp-global-tracker" && pathname === href) { 
         isActive = true;
     } else if (href === "/customs-dashboard" && pathname === href) { // Exact match for customs dashboard
         isActive = true;
@@ -148,6 +144,3 @@ export default function AppSidebarContent() {
     </>
   );
 }
-
-
-    

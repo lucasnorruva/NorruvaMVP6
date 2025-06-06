@@ -4,6 +4,7 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
 import type { GlobeMethods } from 'react-globe.gl'; // Import GlobeMethods type
+import { Loader2 } from 'lucide-react'; // Added Loader2
 
 // Data type interfaces (can be expanded as needed)
 export interface PointData { lat: number; lng: number; [key: string]: any; }
@@ -15,6 +16,7 @@ export interface CustomLayerData { lat: number; lng: number; [key: string]: any;
 interface GlobeVisualizationProps {
   globeRef?: React.MutableRefObject<GlobeMethods | undefined>; // Use GlobeMethods type
   globeImageUrl?: string;
+  bumpImageUrl?: string; // Added for bump mapping
   globeBackgroundColor?: string;
   atmosphereColor?: string;
   atmosphereAltitude?: number;
@@ -53,8 +55,9 @@ interface GlobeVisualizationProps {
 
 const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
   globeRef: externalGlobeRef,
-  globeImageUrl = "//unpkg.com/three-globe/example/img/earth-night.jpg",
-  globeBackgroundColor = "#0a0a0a",
+  globeImageUrl = "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg", // Default to blue marble
+  bumpImageUrl = "//unpkg.com/three-globe/example/img/earth-topology.png", // Added bump image
+  globeBackgroundColor = "#0a0a0a", // Default to dark space/night sky
   atmosphereColor = "#3a82f6",
   atmosphereAltitude = 0.25,
   pointsData = [],
@@ -104,7 +107,6 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
       try {
         console.log("Globe component loaded. Attempting to set globe PoV, controls, and renderer background. BackgroundColor prop:", globeBackgroundColor);
         
-        // Explicitly set renderer clear color
         const renderer = globeEl.current.renderer();
         if (renderer) {
           renderer.setClearColor(new THREE.Color(globeBackgroundColor || '#0a0a0a'), 1); 
@@ -146,6 +148,7 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
   
   const globeProps = {
     globeImageUrl: globeImageUrl,
+    bumpImageUrl: bumpImageUrl, // Pass bumpImageUrl to GlobeComponent
     backgroundColor: 'rgba(0,0,0,0)', // Make the component's own canvas transparent
     atmosphereColor: atmosphereColor,
     atmosphereAltitude: atmosphereAltitude,
@@ -196,5 +199,3 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
 };
 
 export default React.memo(GlobeVisualizationInternal);
-
-    

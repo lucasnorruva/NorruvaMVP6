@@ -12,49 +12,8 @@ import {
     CHECKPOINT_AIRPORT_COLOR,
     CHECKPOINT_LAND_BORDER_COLOR
 } from '@/app/(app)/dpp-global-tracker/page';
+import type { MockDppPoint, MockArc, MockCustomsCheckpoint, MockShipmentPoint } from '@/app/(app)/dpp-global-tracker/page';
 
-
-interface MockDppPoint {
-  id: string;
-  lat: number;
-  lng: number;
-  name: string;
-  size: number;
-  category: 'Manufacturing Site' | 'Distribution Hub' | 'Retail Outlet' | 'Recycling Facility' | 'Raw Material Source' | 'Electronics' | 'Appliances' | 'Textiles';
-  status: 'compliant' | 'pending' | 'issue' | 'unknown';
-  timestamp: number;
-  manufacturer?: string;
-  gtin?: string;
-  complianceSummary?: string;
-  color?: string;
-  icon?: React.ElementType;
-}
-
-interface MockArc {
-  id: string;
-  startLat: number;
-  startLng: number;
-  endLat: number;
-  endLng: number;
-  color: string | string[];
-  label?: string;
-  stroke?: number;
-  timestamp: number;
-  transportMode?: 'sea' | 'air' | 'road' | 'rail';
-  productId?: string;
-}
-
-interface MockCustomsCheckpoint {
-  id: string;
-  lat: number;
-  lng: number;
-  name: string;
-  type: 'port' | 'airport' | 'land_border';
-  currentShipmentCount: number;
-  overallCustomsStatus: 'cleared' | 'pending' | 'inspection_required' | 'operational';
-  dppComplianceHealth: 'good' | 'fair' | 'poor' | 'unknown';
-  icon?: React.ElementType;
-}
 
 // Convert RGBA strings to THREE.Color instances
 const DPP_HEALTH_GOOD_THREE_COLOR = new THREE.Color(DPP_HEALTH_GOOD_COLOR.replace('rgba(', 'rgb(').slice(0, -4) + ')');
@@ -72,42 +31,39 @@ const getIconCanvas = (IconComponent: React.ElementType, color: THREE.Color, siz
   canvas.height = size;
   const ctx = canvas.getContext('2d');
   if (ctx) {
-    // Draw a colored circle as background
     ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2.5, 0, 2 * Math.PI, false); // Slightly smaller radius for the circle
-    ctx.fillStyle = `#${color.getHexString()}`; // Use the THREE.Color hex string
+    ctx.arc(size / 2, size / 2, size / 2.5, 0, 2 * Math.PI, false); 
+    ctx.fillStyle = `#${color.getHexString()}`; 
     ctx.fill();
     
-    // Draw the icon character (simplified)
-    // In a real app, you'd render the SVG path here for better quality
-    ctx.font = `${size / 2.2}px sans-serif`; // Icon size
-    ctx.fillStyle = 'white'; // Icon color (ensure contrast)
+    ctx.font = `${size / 2.2}px sans-serif`; 
+    ctx.fillStyle = 'white'; 
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
     let char = '?';
     if (IconComponent === Ship) char = 'S';
     else if (IconComponent === Plane) char = 'A';
-    else if (IconComponent === LandBorderIcon) char = 'L'; // Using LandBorderIcon as Building2 alias
-    else if (IconComponent === MapPin) char = 'M'; // Default
+    else if (IconComponent === LandBorderIcon) char = 'L'; 
+    else if (IconComponent === MapPin) char = 'M'; 
 
-    ctx.fillText(char, size / 2, size / 2 + 2); // Small adjustment for vertical centering
+    ctx.fillText(char, size / 2, size / 2 + 2); 
   }
   return canvas;
 };
 
 
 interface GlobeVisualizationProps {
-  pointsData: MockDppPoint[];
+  pointsData: Array<MockDppPoint | MockShipmentPoint>; // Updated to accept union type
   arcsData: MockArc[];
   labelsData: any[]; 
   polygonsData: any[];
   customsCheckpointsData: MockCustomsCheckpoint[];
-  onPointClick: (point: MockDppPoint) => void;
+  onPointClick: (point: MockDppPoint | MockShipmentPoint) => void; // Updated
   onArcClick: (arc: MockArc) => void;
   onCheckpointClick: (checkpoint: MockCustomsCheckpoint) => void;
-  pointColorAccessor: (point: MockDppPoint) => string;
-  pointRadiusAccessor: (point: MockDppPoint) => number;
+  pointColorAccessor: (point: MockDppPoint | MockShipmentPoint) => string; // Updated
+  pointRadiusAccessor: (point: MockDppPoint | MockShipmentPoint) => number; // Updated
   arcColorAccessor: (arc: MockArc) => string | string[];
   arcStrokeAccessor: (arc: MockArc) => number;
   polygonCapColorAccessor: (feature: any) => string;
@@ -169,12 +125,11 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
       case 'fair': return DPP_HEALTH_FAIR_THREE_COLOR;
       case 'poor': return DPP_HEALTH_POOR_THREE_COLOR;
       case 'unknown':
-      default: // Fallback for 'unknown' or any other unhandled status
-        // For 'unknown' or 'operational' (if that's the primary status), use type-based color
+      default: 
         if (checkpoint.type === 'port') return CHECKPOINT_PORT_THREE_COLOR;
         if (checkpoint.type === 'airport') return CHECKPOINT_AIRPORT_THREE_COLOR;
         if (checkpoint.type === 'land_border') return CHECKPOINT_LAND_BORDER_THREE_COLOR;
-        return GREY_THREE_COLOR; // A very generic fallback
+        return GREY_THREE_COLOR; 
     }
   };
 
@@ -184,7 +139,7 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
       let IconComp = MapPin; 
       if (cp.type === 'port') IconComp = Ship;
       else if (cp.type === 'airport') IconComp = Plane;
-      else if (cp.type === 'land_border') IconComp = LandBorderIcon; // Using alias
+      else if (cp.type === 'land_border') IconComp = LandBorderIcon; 
       
       const canvas = getIconCanvas(IconComp, color, 32); 
       const map = new THREE.CanvasTexture(canvas);
@@ -207,12 +162,12 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
     backgroundColor: globeBackgroundColor, 
     globeImageUrl: undefined, 
 
-    pointsData: pointsData,
+    pointsData: pointsData, // This now includes product locations and shipment dots
     pointLabel: 'name',
     pointColor: pointColorAccessor,
     pointRadius: pointRadiusAccessor,
-    pointAltitude: 0.02,
-    onPointClick: onPointClick,
+    pointAltitude: (d: MockDppPoint | MockShipmentPoint) => ('direction' in d && d.direction) ? 0.025 : 0.02, // Slightly different altitude for shipments
+    onPointClick: onPointClick, // Parent handles differentiation
     
     arcsData: arcsData,
     arcLabel: 'label',
@@ -234,11 +189,10 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
         if (index !== -1 && checkpointSprites[index]) {
           return checkpointSprites[index];
         }
-        // Fallback sprite (should ideally not be hit if checkpointSprites is correctly memoized and populated)
         const fallbackMaterial = new THREE.SpriteMaterial({ color: 'purple' });
         const sprite = new THREE.Sprite(fallbackMaterial);
-        sprite.scale.set(5, 5, 1); // Adjusted scale
-        (sprite as any).checkpointData = cp; // Attach data for click handling
+        sprite.scale.set(5, 5, 1); 
+        (sprite as any).checkpointData = cp; 
         return sprite;
     },
     customThreeObjectUpdate: (obj: any, cpData: any) => {

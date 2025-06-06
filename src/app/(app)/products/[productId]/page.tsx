@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
@@ -614,6 +614,48 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleSimulateStageAdvancement = () => {
+    if (!product) return;
+
+    setProduct(prevProduct => {
+      if (!prevProduct) return null;
+
+      const currentIdx = prevProduct.currentLifecyclePhaseIndex;
+      const newPhases = [...prevProduct.lifecyclePhases];
+
+      if (currentIdx >= newPhases.length - 1) {
+        toast({ title: "End of Lifecycle", description: "Product is already at its final lifecycle stage.", variant: "default" });
+        return prevProduct;
+      }
+
+      // Update current phase to completed (if not an issue)
+      if (newPhases[currentIdx].status !== 'issue') {
+        newPhases[currentIdx] = { ...newPhases[currentIdx], status: 'completed', timestamp: new Date().toISOString() };
+      }
+
+      // Update next phase to in_progress
+      const nextIdx = currentIdx + 1;
+      newPhases[nextIdx] = { ...newPhases[nextIdx], status: 'in_progress', timestamp: new Date().toISOString() };
+      
+      const newLifecycleEvent = {
+        id: `EVT_SIM_${Date.now()}`,
+        type: "Stage Advanced (Simulated)",
+        timestamp: new Date().toISOString(),
+        location: "System Simulation",
+        details: `Product moved to '${newPhases[nextIdx].name}' stage.`
+      };
+
+      toast({ title: "Lifecycle Stage Advanced", description: `Product moved to '${newPhases[nextIdx].name}' stage.`});
+
+      return {
+        ...prevProduct,
+        currentLifecyclePhaseIndex: nextIdx,
+        lifecyclePhases: newPhases,
+        lifecycleEvents: [...(prevProduct.lifecycleEvents || []), newLifecycleEvent]
+      };
+    });
+  };
+
 
   if (product === undefined) { return <ProductDetailSkeleton />; }
   if (!product) { notFound(); return null; }
@@ -625,6 +667,7 @@ export default function ProductDetailPage() {
   const canEditProduct = (currentRole === 'admin' || currentRole === 'manufacturer') && product.productId.startsWith("USER_PROD");
   const canSimulateCompliance = currentRole === 'admin' || currentRole === 'manufacturer';
   const canSyncEprel = currentRole === 'admin' || currentRole === 'manufacturer';
+  const canAdvanceLifecycle = (currentRole === 'admin' || currentRole === 'manufacturer') && product.currentLifecyclePhaseIndex < product.lifecyclePhases.length - 1;
 
 
   return (
@@ -636,22 +679,12 @@ export default function ProductDetailPage() {
             <h1 className="text-3xl font-headline font-semibold">{product.productName}</h1>
             <DataOriginIcon origin={product.productNameOrigin} fieldName="Product Name" />
             {product.isDppBlockchainAnchored && (
-                <Tooltip delayDuration={100}>
-                  <TooltipTrigger asChild>
-                    <span><Fingerprint className="h-6 w-6 text-primary ml-2 cursor-help" /></span>
-                  </TooltipTrigger>
-                  <TooltipContent> <p>This Digital Product Passport is anchored on the blockchain, ensuring its integrity and authenticity.</p> </TooltipContent>
-                </Tooltip>
+                <span><Fingerprint className="h-6 w-6 text-primary ml-2 cursor-help" /></span>
             )}
             {product.isDppBlockchainAnchored && product.dppAnchorTransactionHash && (
-                <Tooltip delayDuration={100}>
-                  <TooltipTrigger asChild>
-                    <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}>
-                        <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent> <p>View on Blockchain Explorer (mock). Tx: {product.dppAnchorTransactionHash}</p> </TooltipContent>
-                </Tooltip>
+                <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}>
+                    <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" />
+                </Button>
             )}
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -685,7 +718,8 @@ export default function ProductDetailPage() {
             <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}> <Edit3 className="mr-2 h-4 w-4" /> Edit Product </Button>
           )}
            {isEditing && (
-            <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} className="bg-destructive/10 text-destructive hover:bg-destructive/20">Cancel Edit</Button>
+            <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} className="bg-destructive/10 text-destructive hover:bg-destructive/20">Cancel Edit</Button>,
+            <Button form="product-form-in-detail-page" type="submit" size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={isCheckingCompliance || isSyncingEprel}> Save Changes </Button>
            )}
           <Link href={`/passport/${product.productId}`} passHref target="_blank"> <Button variant="outline"> <ExternalLink className="mr-2 h-4 w-4" /> View Public Passport </Button> </Link>
         </div>
@@ -699,6 +733,7 @@ export default function ProductDetailPage() {
           </CardHeader>
           <CardContent>
             <ProductForm
+              id="product-form-in-detail-page"
               onSubmit={handleProductFormSubmit}
               isSubmitting={isEditing && (form.formState.isSubmitting)} // Example, adapt as needed
               initialData={{
@@ -849,6 +884,7 @@ export default function ProductDetailPage() {
             <TabsContent value="compliance" className="mt-4">
                 <OverallProductCompliance
                     complianceData={product.overallCompliance}
+                    notifications={product.notifications}
                     onSyncEprel={handleSyncEprel}
                     isSyncingEprel={isSyncingEprel}
                     canSyncEprel={canSyncEprel}
@@ -879,9 +915,46 @@ export default function ProductDetailPage() {
                     </Card> )) ) : ( <p className="text-sm text-muted-foreground">No specific compliance records available for this product.</p> )}
                     </CardContent>
                 </Card>
+                 {canSimulateCompliance && (
+                    <Card className="mt-6">
+                        <CardHeader>
+                        <CardTitle className="text-lg flex items-center"><Workflow className="mr-2 h-5 w-5 text-primary" />Simulate Compliance Re-Check</CardTitle>
+                        <CardDescription>Test how moving to the next lifecycle stage might impact compliance. (Uses AI simulation)</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                        <Button onClick={handleSimulateComplianceCheck} disabled={isCheckingCompliance || product.currentLifecyclePhaseIndex >= product.lifecyclePhases.length -1 }>
+                            {isCheckingCompliance ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <ShieldCheck className="mr-2 h-4 w-4" />}
+                            {isCheckingCompliance ? "Checking..." : (product.currentLifecyclePhaseIndex >= product.lifecyclePhases.length -1 ? "At Final Stage" : "Simulate Re-Check for Next Stage")}
+                        </Button>
+                        { product.currentLifecyclePhaseIndex < product.lifecyclePhases.length -1 &&
+                            <p className="text-xs text-muted-foreground mt-2">Current stage: {product.lifecyclePhases[product.currentLifecyclePhaseIndex].name}. Will simulate for: {product.lifecyclePhases[product.currentLifecyclePhaseIndex + 1].name}.</p>
+                        }
+                        </CardContent>
+                    </Card>
+                )}
+                 {product.notifications && product.notifications.length > 0 && (
+                    <ProductAlerts notifications={product.notifications} />
+                )}
             </TabsContent>
 
-            <TabsContent value="lifecycle" className="mt-4">
+            <TabsContent value="lifecycle" className="mt-4 space-y-6">
+              {canAdvanceLifecycle && (
+                  <Card className="shadow-md">
+                    <CardHeader>
+                      <CardTitle className="text-lg font-headline flex items-center"><ChevronRight className="mr-2 h-5 w-5 text-primary" />Lifecycle Progression</CardTitle>
+                      <CardDescription>Simulate the product moving to the next phase in its lifecycle.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button onClick={handleSimulateStageAdvancement} disabled={!canAdvanceLifecycle}>
+                        <ChevronRight className="mr-2 h-4 w-4" />
+                        Advance to Next Stage: {product.lifecyclePhases[product.currentLifecyclePhaseIndex + 1]?.name || "Final Stage Reached"}
+                      </Button>
+                      {product.currentLifecyclePhaseIndex >= product.lifecyclePhases.length -1 &&
+                        <p className="text-sm text-muted-foreground mt-2">Product is at its final defined lifecycle stage.</p>
+                      }
+                    </CardContent>
+                  </Card>
+              )}
               <ProductLifecycleFlowchart phases={product.lifecyclePhases} currentPhaseIndex={product.currentLifecyclePhaseIndex} />
               <Card className="mt-6"> <CardHeader> <CardTitle className="flex items-center"><GitBranch className="mr-2 h-5 w-5 text-primary" />Lifecycle Events Log</CardTitle> <CardDescription>Detailed history of key events in the product's journey.</CardDescription> </CardHeader>
                 <CardContent>
@@ -891,7 +964,7 @@ export default function ProductDetailPage() {
                       <AccordionContent className="pt-2">
                         {product.lifecycleEvents && product.lifecycleEvents.length > 0 ? ( <ul className="space-y-4"> {product.lifecycleEvents.map((event) => ( <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors">
                         <div className="flex justify-between items-start mb-1">
-                           <div className="font-semibold text-primary flex items-center"> {/* Changed from p to div */}
+                           <div className="font-semibold text-primary flex items-center">
                             {event.type}
                             {event.isBlockchainAnchored && ( <Server className="h-4 w-4 text-primary ml-2" /> )}
                             {event.isBlockchainAnchored && event.transactionHash && (
@@ -1002,6 +1075,3 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
-
-
-    

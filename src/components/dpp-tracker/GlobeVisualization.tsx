@@ -4,6 +4,7 @@
 import React, { useEffect, useRef, forwardRef, useImperativeHandle } from 'react';
 import Globe, { type GlobeMethods, type GlobeProps as ReactGlobeProps } from 'react-globe.gl';
 import { Color } from 'three';
+import type { Feature, Geometry } from 'geojson'; // Ensure Feature is imported
 
 // Define the props for our GlobeVisualization component
 export interface GlobeVisualizationProps extends Omit<ReactGlobeProps, 'ref'> {
@@ -41,13 +42,15 @@ export interface GlobeVisualizationProps extends Omit<ReactGlobeProps, 'ref'> {
   onArcClick?: (arc: any, event: MouseEvent) => void;
   onArcHover?: (arc: any | null, prevArc: any | null) => void;
 
-  // Polygon-related props (re-added from previous versions if needed)
+  // Polygon-related props
   polygonsData?: object[];
   polygonCapColor?: string | ((d: any) => string);
   polygonSideColor?: string | ((d: any) => string);
   polygonStrokeColor?: string | ((d: any) => string | null) | null;
   polygonAltitude?: number | string | ((d: any) => number);
   onPolygonClick?: (polygon: any, event: MouseEvent) => void;
+  onPolygonHover?: (polygon: Feature<Geometry, any> | null, prevPolygon: Feature<Geometry, any> | null) => void; // Updated type
+  polygonLabel?: string | ((d: Feature<Geometry, any>) => string); // Updated type
   polygonsTransitionDuration?: number;
 }
 
@@ -63,8 +66,8 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
         globeInstance.controls().autoRotate = true;
         globeInstance.controls().autoRotateSpeed = 0.15;
         globeInstance.controls().enableZoom = true;
-        globeInstance.controls().minDistance = 150; // Prevent zooming too close
-        globeInstance.controls().maxDistance = 800; // Prevent zooming too far
+        globeInstance.controls().minDistance = 150;
+        globeInstance.controls().maxDistance = 800;
 
         const renderer = globeInstance.renderer();
         if (renderer) {
@@ -87,9 +90,9 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
       globeImageUrl: globeImageUrl || "//unpkg.com/three-globe/example/img/earth-blue-marble.jpg",
       bumpImageUrl: "//unpkg.com/three-globe/example/img/earth-topology.png",
       showAtmosphere: true,
-      atmosphereColor: '#4682B4', // Default atmosphere color
-      atmosphereAltitude: 0.25,   // Default atmosphere altitude
-      enablePointerInteraction: true, // Enable interactions
+      atmosphereColor: '#4682B4',
+      atmosphereAltitude: 0.25,
+      enablePointerInteraction: true,
       animateIn: true,
     };
 
@@ -97,10 +100,11 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
       <Globe
         ref={internalGlobeEl}
         {...defaultGlobeProps}
-        {...globeProps} // User-provided props will override defaults
+        {...globeProps}
       />
     );
   }
 );
 
 GlobeVisualization.displayName = 'GlobeVisualization';
+

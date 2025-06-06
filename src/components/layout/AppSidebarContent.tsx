@@ -17,7 +17,7 @@ import {
   ListChecks,
   BarChartHorizontal, 
   ClipboardList,
-  Globe // Added Globe icon
+  // Globe icon removed
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import {
@@ -43,7 +43,7 @@ const navItems = [
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
   { href: "/sustainability", label: "Sustainability Reporting", icon: FileText },
   { href: "/sustainability/compare", label: "Compare Sustainability", icon: BarChartHorizontal },
-  { href: "/dpp-global-tracker", label: "DPP Global Tracker", icon: Globe }, // Added new item
+  // { href: "/dpp-global-tracker", label: "DPP Global Tracker", icon: Globe }, // Item removed
 ];
 
 const secondaryNavItems = [
@@ -78,8 +78,6 @@ export default function AppSidebarContent() {
     } else if (href === "/compliance/pathways" && pathname.startsWith("/compliance/pathways/battery-regulation")) {
         isActive = true;
     } else if (href === "/compliance/pathways" && pathname !== href && !pathname.startsWith("/compliance/pathways/")) { // Ensure main "Compliance Pathways" is not active if on a sub-page unless it's a direct sub-page
-        isActive = false;
-    } else if (href === "/dpp-global-tracker" && pathname !== href) { // Ensure exact match for DPP Global Tracker for now
         isActive = false;
     }
 

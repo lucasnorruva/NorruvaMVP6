@@ -679,12 +679,22 @@ export default function ProductDetailPage() {
             <h1 className="text-3xl font-headline font-semibold">{product.productName}</h1>
             <DataOriginIcon origin={product.productNameOrigin} fieldName="Product Name" />
             {product.isDppBlockchainAnchored && (
-                <span><Fingerprint className="h-6 w-6 text-primary ml-2 cursor-help" /></span>
+                <Tooltip delayDuration={100}>
+                  <TooltipTrigger asChild>
+                     <span className="cursor-help"><Fingerprint className="h-6 w-6 text-primary ml-2" /></span>
+                  </TooltipTrigger>
+                  <TooltipContent><p>DPP is anchored on blockchain.</p></TooltipContent>
+                </Tooltip>
             )}
             {product.isDppBlockchainAnchored && product.dppAnchorTransactionHash && (
-                <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}>
-                    <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" />
-                </Button>
+                 <Tooltip delayDuration={100}>
+                    <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}>
+                            <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" />
+                        </Button>
+                    </TooltipTrigger>
+                    <TooltipContent><p>View anchor on Blockchain Explorer (mock).</p></TooltipContent>
+                 </Tooltip>
             )}
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -1075,3 +1085,4 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
+

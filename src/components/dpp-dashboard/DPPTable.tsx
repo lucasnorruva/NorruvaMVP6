@@ -4,11 +4,11 @@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import type { DigitalProductPassport } from "@/types/dpp";
-import { MoreHorizontal, Eye, Edit, Trash2, ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
+import { MoreHorizontal, Eye, Edit, Settings as SettingsIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation"; 
+import { useRouter } from "next/navigation";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
@@ -18,7 +18,7 @@ interface DPPTableProps {
   dpps: DigitalProductPassport[];
   onSort: (key: SortableKeys) => void;
   sortConfig: { key: SortableKeys | null; direction: 'ascending' | 'descending' | null };
-  onDeleteProduct?: (productId: string) => void; // Optional: if delete is handled by parent
+  onDeleteProduct?: (productId: string) => void; // Kept for internal product list page if needed, but not used for settings action here
 }
 
 interface ComplianceDetails {
@@ -83,26 +83,23 @@ const SortableHeader: React.FC<{
 export const DPPTable: React.FC<DPPTableProps> = ({ dpps, onSort, sortConfig, onDeleteProduct }) => {
   const router = useRouter();
 
-  const handleDPPDelete = (dppId: string) => {
-    if (onDeleteProduct) {
-      onDeleteProduct(dppId);
-    } else {
-      // Fallback or default behavior if parent doesn't provide handler
-      alert(`Mock: Deleting DPP ${dppId}. Parent handler not provided.`);
-    }
+  const handleDPPSettings = (dppId: string) => {
+    // For now, this is a mock action. Later, it could navigate to a specific settings page for the DPP.
+    // e.g., router.push(`/products/${dppId}/settings`);
+    alert(`Mock: Opening settings for DPP ${dppId}.`);
   };
-  
+
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <SortableHeader columnKey="id" title="ID" onSort={onSort} sortConfig={sortConfig} />{/*
-          */}<SortableHeader columnKey="productName" title="Product Name" onSort={onSort} sortConfig={sortConfig} />{/*
-          */}<SortableHeader columnKey="category" title="Category" onSort={onSort} sortConfig={sortConfig} />{/*
-          */}<SortableHeader columnKey="metadata.status" title="Status" onSort={onSort} sortConfig={sortConfig} />{/*
-          */}<TableHead>Overall Compliance</TableHead>{/*
-          */}<SortableHeader columnKey="metadata.last_updated" title="Last Updated" onSort={onSort} sortConfig={sortConfig} />{/*
-          */}<TableHead className="text-right">Actions</TableHead>
+          <SortableHeader columnKey="id" title="ID" onSort={onSort} sortConfig={sortConfig} />
+          <SortableHeader columnKey="productName" title="Product Name" onSort={onSort} sortConfig={sortConfig} />
+          <SortableHeader columnKey="category" title="Category" onSort={onSort} sortConfig={sortConfig} />
+          <SortableHeader columnKey="metadata.status" title="Status" onSort={onSort} sortConfig={sortConfig} />
+          <TableHead>Overall Compliance</TableHead>
+          <SortableHeader columnKey="metadata.last_updated" title="Last Updated" onSort={onSort} sortConfig={sortConfig} />
+          <TableHead className="text-right">Actions</TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
@@ -153,7 +150,7 @@ export const DPPTable: React.FC<DPPTableProps> = ({ dpps, onSort, sortConfig, on
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  <Badge 
+                  <Badge
                     variant={complianceDetails.variant}
                     className={cn(
                         complianceDetails.variant === "default" && "bg-green-500/20 text-green-700 border-green-500/30",
@@ -173,7 +170,7 @@ export const DPPTable: React.FC<DPPTableProps> = ({ dpps, onSort, sortConfig, on
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon">
                       <MoreHorizontal className="h-5 w-5" />
-                      <span className="sr-only">DPP Actions</span>
+                      <span className="sr-only">DPP Actions for {dpp.productName}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
@@ -185,11 +182,9 @@ export const DPPTable: React.FC<DPPTableProps> = ({ dpps, onSort, sortConfig, on
                     <DropdownMenuItem onClick={() => router.push(`/products/new?edit=${dpp.id}`)}>
                       <Edit className="mr-2 h-4 w-4" /> Edit
                     </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => handleDPPDelete(dpp.id)}
-                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleDPPSettings(dpp.id)}>
+                      <SettingsIcon className="mr-2 h-4 w-4" /> Settings
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

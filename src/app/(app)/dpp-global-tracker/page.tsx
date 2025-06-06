@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
 import ArcInfoCard from '@/components/dpp-tracker/ArcInfoCard';
 import { cn } from "@/lib/utils";
-import { feature as topojsonFeature } from 'topojson-client'; // Import topojson-client
+import { feature as topojsonFeature } from 'topojson-client';
 
 // Dynamically import GlobeVisualization
 const GlobeVisualization = React.lazy(() => import('@/components/dpp-tracker/GlobeVisualization'));
@@ -60,10 +60,10 @@ const euMemberCountryCodes = [
   'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'
 ];
 
-const EU_BLUE_COLOR = 'rgba(25, 118, 210, 0.95)';
-const NON_EU_LAND_COLOR = 'rgba(240, 230, 210, 1)';
-const BORDER_COLOR = 'rgba(80, 80, 80, 0.7)';
-const WHITE_OCEAN_COLOR = 'rgba(255, 255, 255, 1)';
+const EU_BLUE_COLOR = 'rgba(25, 118, 210, 0.95)'; // Norruva Primary Blue for EU countries
+const NON_EU_LAND_COLOR = 'rgba(224, 224, 224, 1)'; // A slightly darker neutral grey for non-EU land
+const BORDER_COLOR = 'rgba(100, 100, 100, 0.7)'; // Darker grey for borders for better contrast
+const LIGHT_BLUE_OCEAN_COLOR = 'rgba(210, 230, 255, 1)'; // Light blue for the ocean
 
 
 const Legend: React.FC<{ title: string; colorMap: Record<string, string>, className?: string }> = ({ title, colorMap, className }) => (
@@ -122,8 +122,6 @@ export default function DppGlobalTrackerPage() {
       .then(res => res.json())
       .then(countries => {
         // @ts-ignore
-        const landFeatures = countries.objects.land.geometries.map(obj => topojsonFeature(countries, obj));
-        // @ts-ignore
         const countryFeatures = countries.objects.countries.geometries.map(obj => topojsonFeature(countries, obj));
         setCountryPolygons(countryFeatures);
         setIsLoadingGeoJson(false);
@@ -150,7 +148,7 @@ export default function DppGlobalTrackerPage() {
   const arcStrokeAccessor = useCallback(() => 0.3, []);
 
   const polygonCapColorAccessor = useCallback((feat: any) => {
-    const countryCode = feat.properties?.ISO_A2 || feat.properties?.iso_a2; // Handle potential variations in property name
+    const countryCode = feat.properties?.ISO_A2 || feat.properties?.iso_a2;
     return euMemberCountryCodes.includes(countryCode) ? EU_BLUE_COLOR : NON_EU_LAND_COLOR;
   }, []);
 
@@ -161,7 +159,7 @@ export default function DppGlobalTrackerPage() {
   const globeLegendMap = {
     "EU Member State": EU_BLUE_COLOR,
     "Non-EU Country": NON_EU_LAND_COLOR,
-    "Ocean / Background": "White",
+    "Ocean / Background": LIGHT_BLUE_OCEAN_COLOR,
     "Country Borders": BORDER_COLOR,
   };
 
@@ -207,7 +205,7 @@ export default function DppGlobalTrackerPage() {
                 value={yearFilter}
                 onValueChange={(value) => setYearFilter(value)}
                 className="mt-2"
-                disabled 
+                disabled
               />
             </div>
           </div>
@@ -221,7 +219,7 @@ export default function DppGlobalTrackerPage() {
                     <span className="ml-2">Loading Geographic Data...</span>
                 </div>
             ) : (
-                <DppGlobalTrackerClientContainer 
+                <DppGlobalTrackerClientContainer
                     isClient={isClient}
                     pointsData={diagnosticPointsMinimal}
                     arcsData={diagnosticArcsMinimal}
@@ -236,11 +234,11 @@ export default function DppGlobalTrackerPage() {
                     pointRadiusAccessor={pointRadiusAccessor}
                     arcColorAccessor={arcColorAccessor}
                     arcStrokeAccessor={arcStrokeAccessor}
-                    globeBackgroundColor={WHITE_OCEAN_COLOR}
+                    globeBackgroundColor={LIGHT_BLUE_OCEAN_COLOR}
                 />
             )}
           </div>
-          
+
           <div className="mt-6">
              <Legend title="Map Legend" colorMap={globeLegendMap} className="mt-2 mx-auto w-fit sm:w-auto" />
           </div>

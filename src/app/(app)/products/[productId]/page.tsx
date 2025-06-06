@@ -270,8 +270,8 @@ const getDefaultMockProductValues = (id: string): MockProductType => ({
   specifications: {},
   lifecycleEvents: [],
   complianceData: {},
-  isDppBlockchainAnchored: false, // Default for new products
-  dppAnchorTransactionHash: undefined, // Default for new products
+  isDppBlockchainAnchored: false, 
+  dppAnchorTransactionHash: undefined, 
   currentLifecyclePhaseIndex: 0,
   lifecyclePhases: [ { id: `lc_user_${id}_1`, name: "Created", icon: PackageSearch, status: 'completed', timestamp: new Date().toISOString(), location: "System", details: "Product entry created by user." }, { id: `lc_user_${id}_2`, name: "Pending Review", icon: Factory, status: 'in_progress', details: "Awaiting further data input and review." } ],
   overallCompliance: {
@@ -285,7 +285,7 @@ const getDefaultMockProductValues = (id: string): MockProductType => ({
   verificationLog: [{ id: `vlog_user_${id}`, event: "DPP Created by User", timestamp: new Date().toISOString(), actor: "User" }],
 });
 
-// Simplified TrustSignalIcon: Renders icon only, no tooltip
+
 const TrustSignalIcon = ({ isVerified, VerifiedIcon = CheckCircle2, UnverifiedIcon = Info, customClasses }: { isVerified?: boolean, VerifiedIcon?: React.ElementType, UnverifiedIcon?: React.ElementType, customClasses?: string }) => {
   if (isVerified === undefined) return null;
   const IconToRender = isVerified ? VerifiedIcon : UnverifiedIcon;
@@ -293,7 +293,7 @@ const TrustSignalIcon = ({ isVerified, VerifiedIcon = CheckCircle2, UnverifiedIc
   return <IconToRender className={cn("h-4 w-4 ml-1", colorClass, customClasses)} />;
 };
 
-// Simplified DataOriginIcon: Renders icon only, no tooltip
+
 const DataOriginIcon = ({ origin }: { origin?: 'AI_EXTRACTED' | 'manual' }) => {
   if (origin === 'AI_EXTRACTED') {
     return (
@@ -362,7 +362,7 @@ const calculateDppCompleteness = (product: MockProductType): { score: number; fi
       isFieldFilled = fieldConfig.check(product);
     } else {
       const value = product[fieldConfig.key as keyof MockProductType];
-      if (typeof value === 'object' && value !== null) { // For specifications if it's an object
+      if (typeof value === 'object' && value !== null) { 
         isFieldFilled = Object.keys(value).length > 0;
       } else {
         isFieldFilled = value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A';
@@ -378,10 +378,32 @@ const calculateDppCompleteness = (product: MockProductType): { score: number; fi
   return { score, filledFields: filledCount, totalFields: actualTotalFields, missingFields };
 };
 
+// Helper to determine new origin status
+const determineOrigin = (
+  currentValue: any,
+  previousValue: any,
+  previousOrigin: 'AI_EXTRACTED' | 'manual' | undefined
+): 'AI_EXTRACTED' | 'manual' | undefined => {
+  if (currentValue !== previousValue) {
+    // If current value is empty/null/undefined, and previous was not, it means user cleared it - still manual
+    // If current value is different and not empty, it's a manual change
+    if (currentValue === "" || currentValue === null || currentValue === undefined) {
+        // If user clears a field, it's a manual action. If it was AI extracted and now empty, it's manual.
+        // If it was empty and stays empty, origin doesn't change from undefined.
+        // This ensures clearing an AI field marks it as manual (empty).
+        return previousValue !== currentValue ? 'manual' : previousOrigin;
+    }
+    return 'manual';
+  }
+  return previousOrigin;
+};
+
+
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.productId as string;
   const [product, setProduct] = useState<MockProductType | null | undefined>(undefined);
+  const [initialProductDataForEdit, setInitialProductDataForEdit] = useState<Partial<InitialProductFormData>>({});
   const router = useRouter();
   const { currentRole } = useRole();
   const { toast } = useToast();
@@ -397,7 +419,6 @@ export default function ProductDetailPage() {
   useEffect(() => {
     const fetchProduct = async () => {
       await new Promise(resolve => setTimeout(resolve, 300));
-
       let foundProduct: MockProductType | undefined;
 
       if (productId.startsWith("USER_PROD")) {
@@ -407,13 +428,14 @@ export default function ProductDetailPage() {
 
         if (storedProduct) {
           const defaults = getDefaultMockProductValues(storedProduct.id);
-
           let parsedSpecifications: Record<string, string> = {};
           if (storedProduct.specifications && typeof storedProduct.specifications === 'string') {
             try {
               parsedSpecifications = JSON.parse(storedProduct.specifications);
             } catch (e) {
               console.warn("Failed to parse specifications for user product:", storedProduct.id, e);
+              // Keep specifications as string if parsing fails, or default to empty object
+              parsedSpecifications = typeof defaults.specifications === 'object' ? defaults.specifications : {};
             }
           } else if (typeof storedProduct.specifications === 'object' && storedProduct.specifications !== null) {
             parsedSpecifications = storedProduct.specifications as Record<string, string>;
@@ -421,7 +443,7 @@ export default function ProductDetailPage() {
 
 
           foundProduct = {
-            ...defaults,
+            ...defaults, // Start with defaults to ensure all MockProductType fields are present
             productId: storedProduct.id,
             productName: storedProduct.productName || "User Added Product",
             productNameOrigin: storedProduct.productNameOrigin,
@@ -431,16 +453,22 @@ export default function ProductDetailPage() {
             compliance: storedProduct.compliance || "N/A",
             lastUpdated: storedProduct.lastUpdated || new Date().toISOString(),
             manufacturer: storedProduct.manufacturer || "N/A",
+            manufacturerOrigin: storedProduct.manufacturerOrigin,
             modelNumber: storedProduct.modelNumber || "N/A",
+            modelNumberOrigin: storedProduct.modelNumberOrigin,
             description: storedProduct.productDescription || "No description provided.",
             descriptionOrigin: storedProduct.productDescriptionOrigin,
             imageUrl: storedProduct.imageUrl || defaults.imageUrl,
             imageUrlOrigin: storedProduct.imageUrlOrigin,
             imageHint: storedProduct.imageUrl && !storedProduct.imageUrl.includes('placehold.co') && !storedProduct.imageUrl.includes('?text=') ? (storedProduct.productName || "product image") : defaults.imageHint,
             materials: storedProduct.materials || "Not specified",
+            materialsOrigin: storedProduct.materialsOrigin,
             sustainabilityClaims: storedProduct.sustainabilityClaims || "None specified",
+            sustainabilityClaimsOrigin: storedProduct.sustainabilityClaimsOrigin,
             energyLabel: storedProduct.energyLabel || "N/A",
-            specifications: parsedSpecifications,
+            energyLabelOrigin: storedProduct.energyLabelOrigin,
+            specifications: parsedSpecifications, // Use parsed or default
+            specificationsOrigin: storedProduct.specificationsOrigin,
             batteryChemistry: storedProduct.batteryChemistry,
             batteryChemistryOrigin: storedProduct.batteryChemistryOrigin,
             stateOfHealth: storedProduct.stateOfHealth,
@@ -458,8 +486,41 @@ export default function ProductDetailPage() {
       if (!foundProduct) {
         foundProduct = MOCK_PRODUCTS.find(p => p.productId === productId);
       }
-
+      
       setProduct(foundProduct);
+      if (foundProduct) {
+        // Set initial data for form editing, including origins
+        setInitialProductDataForEdit({
+          productName: foundProduct.productName,
+          productNameOrigin: foundProduct.productNameOrigin,
+          gtin: foundProduct.gtin,
+          productDescription: foundProduct.description,
+          productDescriptionOrigin: foundProduct.descriptionOrigin,
+          manufacturer: foundProduct.manufacturer,
+          manufacturerOrigin: foundProduct.manufacturerOrigin as 'AI_EXTRACTED' | 'manual' | undefined,
+          modelNumber: foundProduct.modelNumber,
+          modelNumberOrigin: foundProduct.modelNumberOrigin as 'AI_EXTRACTED' | 'manual' | undefined,
+          materials: foundProduct.materials,
+          materialsOrigin: foundProduct.materialsOrigin as 'AI_EXTRACTED' | 'manual' | undefined,
+          sustainabilityClaims: foundProduct.sustainabilityClaims,
+          sustainabilityClaimsOrigin: foundProduct.sustainabilityClaimsOrigin as 'AI_EXTRACTED' | 'manual' | undefined,
+          specifications: typeof foundProduct.specifications === 'string' ? foundProduct.specifications : JSON.stringify(foundProduct.specifications, null, 2),
+          specificationsOrigin: foundProduct.specificationsOrigin as 'AI_EXTRACTED' | 'manual' | undefined,
+          energyLabel: foundProduct.energyLabel,
+          energyLabelOrigin: foundProduct.energyLabelOrigin as 'AI_EXTRACTED' | 'manual' | undefined,
+          productCategory: foundProduct.category,
+          imageUrl: foundProduct.imageUrl,
+          imageUrlOrigin: foundProduct.imageUrlOrigin,
+          batteryChemistry: foundProduct.batteryChemistry,
+          batteryChemistryOrigin: foundProduct.batteryChemistryOrigin,
+          stateOfHealth: foundProduct.stateOfHealth,
+          stateOfHealthOrigin: foundProduct.stateOfHealthOrigin,
+          carbonFootprintManufacturing: foundProduct.carbonFootprintManufacturing,
+          carbonFootprintManufacturingOrigin: foundProduct.carbonFootprintManufacturingOrigin,
+          recycledContentPercentage: foundProduct.recycledContentPercentage,
+          recycledContentPercentageOrigin: foundProduct.recycledContentPercentageOrigin,
+        });
+      }
     };
 
     if (productId) {
@@ -481,14 +542,13 @@ export default function ProductDetailPage() {
       }
       if (errorDrivenTab) { newDefaultTab = errorDrivenTab; }
       else {
-         // Keep existing role-based logic or a sensible default if no error drives tab selection
         switch (currentRole) {
           case 'manufacturer': newDefaultTab = 'overview'; break;
           case 'supplier': newDefaultTab = 'specifications'; break;
           case 'retailer': newDefaultTab = 'sustainability'; break;
           case 'recycler': newDefaultTab = hasBatteryData ? 'battery' : 'sustainability'; break;
           case 'verifier': newDefaultTab = 'compliance'; break;
-          case 'admin': newDefaultTab = 'overview'; break; // Default to overview for admin
+          case 'admin': newDefaultTab = 'overview'; break; 
           default: newDefaultTab = 'overview';
         }
       }
@@ -507,8 +567,7 @@ export default function ProductDetailPage() {
     if (!product) return;
     const currentStageIndex = product.currentLifecyclePhaseIndex;
     const currentStage = product.lifecyclePhases[currentStageIndex];
-    let nextStageIndex = currentStageIndex + 1;
-    let nextStage = product.lifecyclePhases[nextStageIndex];
+    let nextStage = product.lifecyclePhases[currentStageIndex + 1];
     if (!nextStage) { toast({ title: "End of Lifecycle", description: "This product is already at its final defined lifecycle stage.", variant: "default" }); return; }
     setIsCheckingCompliance(true);
     try {
@@ -583,32 +642,30 @@ export default function ProductDetailPage() {
         productCategory: product.category,
       });
       
-      setProduct(prev => {
-        if (!prev) return null;
-        const updatedProduct = { 
-          ...prev, 
-          imageUrl: result.imageUrl, 
-          imageUrlOrigin: 'AI_EXTRACTED' as ('AI_EXTRACTED' | 'manual'),
-          lastUpdated: new Date().toISOString()
-        };
+      const updatedProductState = { 
+        ...product, 
+        imageUrl: result.imageUrl, 
+        imageUrlOrigin: 'AI_EXTRACTED' as ('AI_EXTRACTED' | 'manual'),
+        lastUpdated: new Date().toISOString()
+      };
+      setProduct(updatedProductState);
+      setInitialProductDataForEdit(prev => ({...prev, imageUrl: result.imageUrl, imageUrlOrigin: 'AI_EXTRACTED'}));
 
-        if (prev.productId.startsWith("USER_PROD")) {
+
+        if (product.productId.startsWith("USER_PROD")) {
           const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
           let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
-          const productIndex = userProducts.findIndex(p => p.id === prev.productId);
+          const productIndex = userProducts.findIndex(p => p.id === product.productId);
           if (productIndex > -1) {
             userProducts[productIndex] = {
               ...userProducts[productIndex],
               imageUrl: result.imageUrl,
               imageUrlOrigin: 'AI_EXTRACTED',
-              lastUpdated: updatedProduct.lastUpdated,
+              lastUpdated: updatedProductState.lastUpdated,
             };
             localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
           }
         }
-        return updatedProduct;
-      });
-
       toast({ title: "Image Generated Successfully", description: "The product image has been updated.", variant: "default" });
     } catch (error) {
       console.error("Failed to generate image:", error);
@@ -623,9 +680,9 @@ export default function ProductDetailPage() {
     }
   };
 
-  const handleProductFormSubmit = async (data: ProductFormData) => {
+  const handleProductFormSubmit = async (formDataFromForm: ProductFormData) => {
     if (!product) return;
-    setIsEditing(true); 
+    setIsEditing(true); // Visually, though the state `isEditing` toggles the form display
 
     try {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
@@ -633,18 +690,93 @@ export default function ProductDetailPage() {
       const productIndex = userProducts.findIndex(p => p.id === product.productId);
 
       if (productIndex > -1) {
+        const currentStoredProduct = userProducts[productIndex];
+        const productDataBeforeThisEditSession = initialProductDataForEdit;
+
+
         const updatedProductData: StoredUserProduct = {
-          ...userProducts[productIndex], 
-          ...data, 
-          id: product.productId, 
-          status: userProducts[productIndex].status, 
-          compliance: userProducts[productIndex].compliance, 
+          ...currentStoredProduct, // Start with the most recent stored version
+          id: product.productId,
+          // Update with form data
+          productName: formDataFromForm.productName || currentStoredProduct.productName,
+          gtin: formDataFromForm.gtin || currentStoredProduct.gtin,
+          productDescription: formDataFromForm.productDescription || currentStoredProduct.productDescription,
+          manufacturer: formDataFromForm.manufacturer || currentStoredProduct.manufacturer,
+          modelNumber: formDataFromForm.modelNumber || currentStoredProduct.modelNumber,
+          materials: formDataFromForm.materials || currentStoredProduct.materials,
+          sustainabilityClaims: formDataFromForm.sustainabilityClaims || currentStoredProduct.sustainabilityClaims,
+          specifications: formDataFromForm.specifications || currentStoredProduct.specifications,
+          energyLabel: formDataFromForm.energyLabel || currentStoredProduct.energyLabel,
+          productCategory: formDataFromForm.productCategory || currentStoredProduct.productCategory,
+          imageUrl: formDataFromForm.imageUrl || currentStoredProduct.imageUrl,
+          batteryChemistry: formDataFromForm.batteryChemistry || currentStoredProduct.batteryChemistry,
+          stateOfHealth: formDataFromForm.stateOfHealth !== undefined && formDataFromForm.stateOfHealth !== null ? formDataFromForm.stateOfHealth : currentStoredProduct.stateOfHealth,
+          carbonFootprintManufacturing: formDataFromForm.carbonFootprintManufacturing !== undefined && formDataFromForm.carbonFootprintManufacturing !== null ? formDataFromForm.carbonFootprintManufacturing : currentStoredProduct.carbonFootprintManufacturing,
+          recycledContentPercentage: formDataFromForm.recycledContentPercentage !== undefined && formDataFromForm.recycledContentPercentage !== null ? formDataFromForm.recycledContentPercentage : currentStoredProduct.recycledContentPercentage,
+          
           lastUpdated: new Date().toISOString(),
+          // Determine origins
+          productNameOrigin: determineOrigin(formDataFromForm.productName, productDataBeforeThisEditSession.productName, productDataBeforeThisEditSession.productNameOrigin),
+          productDescriptionOrigin: determineOrigin(formDataFromForm.productDescription, productDataBeforeThisEditSession.productDescription, productDataBeforeThisEditSession.productDescriptionOrigin),
+          manufacturerOrigin: determineOrigin(formDataFromForm.manufacturer, productDataBeforeThisEditSession.manufacturer, productDataBeforeThisEditSession.manufacturerOrigin),
+          modelNumberOrigin: determineOrigin(formDataFromForm.modelNumber, productDataBeforeThisEditSession.modelNumber, productDataBeforeThisEditSession.modelNumberOrigin),
+          materialsOrigin: determineOrigin(formDataFromForm.materials, productDataBeforeThisEditSession.materials, productDataBeforeThisEditSession.materialsOrigin),
+          sustainabilityClaimsOrigin: determineOrigin(formDataFromForm.sustainabilityClaims, productDataBeforeThisEditSession.sustainabilityClaims, productDataBeforeThisEditSession.sustainabilityClaimsOrigin),
+          specificationsOrigin: determineOrigin(formDataFromForm.specifications, productDataBeforeThisEditSession.specifications, productDataBeforeThisEditSession.specificationsOrigin),
+          energyLabelOrigin: determineOrigin(formDataFromForm.energyLabel, productDataBeforeThisEditSession.energyLabel, productDataBeforeThisEditSession.energyLabelOrigin),
+          imageUrlOrigin: determineOrigin(formDataFromForm.imageUrl, productDataBeforeThisEditSession.imageUrl, productDataBeforeThisEditSession.imageUrlOrigin),
+          batteryChemistryOrigin: determineOrigin(formDataFromForm.batteryChemistry, productDataBeforeThisEditSession.batteryChemistry, productDataBeforeThisEditSession.batteryChemistryOrigin),
+          stateOfHealthOrigin: determineOrigin(formDataFromForm.stateOfHealth, productDataBeforeThisEditSession.stateOfHealth, productDataBeforeThisEditSession.stateOfHealthOrigin),
+          carbonFootprintManufacturingOrigin: determineOrigin(formDataFromForm.carbonFootprintManufacturing, productDataBeforeThisEditSession.carbonFootprintManufacturing, productDataBeforeThisEditSession.carbonFootprintManufacturingOrigin),
+          recycledContentPercentageOrigin: determineOrigin(formDataFromForm.recycledContentPercentage, productDataBeforeThisEditSession.recycledContentPercentage, productDataBeforeThisEditSession.recycledContentPercentageOrigin),
         };
+        
         userProducts[productIndex] = updatedProductData;
         localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
 
-        setProduct(prev => prev ? ({ ...prev, ...updatedProductData, productName: data.productName || prev.productName, productDescription: data.productDescription || prev.productDescription, manufacturer: data.manufacturer || prev.manufacturer, modelNumber: data.modelNumber || prev.modelNumber, materials: data.materials || prev.materials, sustainabilityClaims: data.sustainabilityClaims || prev.sustainabilityClaims, specifications: data.specifications ? (typeof data.specifications === 'string' ? JSON.parse(data.specifications) : data.specifications) : prev.specifications, energyLabel: data.energyLabel || prev.energyLabel, category: data.productCategory || prev.category, imageUrl: data.imageUrl || prev.imageUrl, batteryChemistry: data.batteryChemistry, stateOfHealth: data.stateOfHealth, carbonFootprintManufacturing: data.carbonFootprintManufacturing, recycledContentPercentage: data.recycledContentPercentage, lastUpdated: updatedProductData.lastUpdated }) : null);
+        // Update the main product state for UI reactivity
+        setProduct(prev => {
+          if (!prev) return null;
+          // Create a new object that matches MockProductType structure from updatedProductData
+          const displayProduct: MockProductType = {
+            ...prev, // Keep existing complex structures like lifecycleEvents, complianceData, etc.
+            productId: updatedProductData.id,
+            productName: updatedProductData.productName || "Error",
+            productNameOrigin: updatedProductData.productNameOrigin,
+            gtin: updatedProductData.gtin || "",
+            category: updatedProductData.productCategory || "Error",
+            status: updatedProductData.status,
+            compliance: updatedProductData.compliance,
+            lastUpdated: updatedProductData.lastUpdated,
+            manufacturer: updatedProductData.manufacturer || "Error",
+            manufacturerOrigin: updatedProductData.manufacturerOrigin,
+            modelNumber: updatedProductData.modelNumber || "Error",
+            modelNumberOrigin: updatedProductData.modelNumberOrigin,
+            description: updatedProductData.productDescription || "Error",
+            descriptionOrigin: updatedProductData.productDescriptionOrigin,
+            imageUrl: updatedProductData.imageUrl,
+            imageUrlOrigin: updatedProductData.imageUrlOrigin,
+            imageHint: updatedProductData.imageUrl && !updatedProductData.imageUrl.includes('placehold.co') ? (updatedProductData.productName || "product") : "product placeholder",
+            materials: updatedProductData.materials || "Error",
+            materialsOrigin: updatedProductData.materialsOrigin,
+            sustainabilityClaims: updatedProductData.sustainabilityClaims || "Error",
+            sustainabilityClaimsOrigin: updatedProductData.sustainabilityClaimsOrigin,
+            energyLabel: updatedProductData.energyLabel || "Error",
+            energyLabelOrigin: updatedProductData.energyLabelOrigin,
+            specifications: typeof updatedProductData.specifications === 'string' ? JSON.parse(updatedProductData.specifications || '{}') : (updatedProductData.specifications || {}),
+            specificationsOrigin: updatedProductData.specificationsOrigin,
+            batteryChemistry: updatedProductData.batteryChemistry,
+            batteryChemistryOrigin: updatedProductData.batteryChemistryOrigin,
+            stateOfHealth: updatedProductData.stateOfHealth === null ? undefined : updatedProductData.stateOfHealth,
+            stateOfHealthOrigin: updatedProductData.stateOfHealthOrigin,
+            carbonFootprintManufacturing: updatedProductData.carbonFootprintManufacturing === null ? undefined : updatedProductData.carbonFootprintManufacturing,
+            carbonFootprintManufacturingOrigin: updatedProductData.carbonFootprintManufacturingOrigin,
+            recycledContentPercentage: updatedProductData.recycledContentPercentage === null ? undefined : updatedProductData.recycledContentPercentage,
+            recycledContentPercentageOrigin: updatedProductData.recycledContentPercentageOrigin,
+          };
+          return displayProduct;
+        });
+        setInitialProductDataForEdit(updatedProductData); // Update the baseline for next edit session
 
         toast({ title: "Product Updated", description: `${updatedProductData.productName} has been updated successfully.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
         setIsEditing(false); 
@@ -654,7 +786,7 @@ export default function ProductDetailPage() {
     } catch (e) {
       console.error("Failed to update product:", e);
       toast({ title: `Product Update Failed`, description: `Could not update the product. ${e instanceof Error ? e.message : ''}`, variant: "destructive" });
-       setIsEditing(false);
+       setIsEditing(false); // Ensure this is always reset
     }
   };
 
@@ -672,12 +804,10 @@ export default function ProductDetailPage() {
         return prevProduct;
       }
 
-      // Update current phase to completed (if not an issue)
       if (newPhases[currentIdx].status !== 'issue') {
         newPhases[currentIdx] = { ...newPhases[currentIdx], status: 'completed', timestamp: new Date().toISOString() };
       }
 
-      // Update next phase to in_progress
       const nextIdx = currentIdx + 1;
       newPhases[nextIdx] = { ...newPhases[nextIdx], status: 'in_progress', timestamp: new Date().toISOString() };
       
@@ -744,14 +874,15 @@ export default function ProductDetailPage() {
   if (!product) { notFound(); return null; }
 
   const currentYear = new Date().getFullYear().toString();
-  const currentCarbonFootprint = product.historicalCarbonFootprint?.find(p => p.year === currentYear)?.value || product.historicalCarbonFootprint?.[product.historicalCarbonFootprint.length - 1]?.value;
   const dppCompleteness = calculateDppCompleteness(product);
 
   const canEditProduct = (currentRole === 'admin' || currentRole === 'manufacturer') && product.productId.startsWith("USER_PROD");
   const canSimulateCompliance = currentRole === 'admin' || currentRole === 'manufacturer';
   const canSyncEprel = currentRole === 'admin' || currentRole === 'manufacturer';
   const canAdvanceLifecycle = (currentRole === 'admin' || currentRole === 'manufacturer') && product.currentLifecyclePhaseIndex < product.lifecyclePhases.length - 1;
-  const canGenerateImage = (currentRole === 'admin' || currentRole === 'manufacturer') && (!product.imageUrl || product.imageUrl.includes('placehold.co'));
+  
+  const isProductImagePlaceholder = !product.imageUrl || product.imageUrl.includes('placehold.co') || product.imageUrl.includes('?text=');
+  const canGenerateImage = (currentRole === 'admin' || currentRole === 'manufacturer') && isProductImagePlaceholder;
   const canSuggestClaims = currentRole === 'admin' || currentRole === 'manufacturer';
 
   return (
@@ -797,8 +928,10 @@ export default function ProductDetailPage() {
             <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}> <Edit3 className="mr-2 h-4 w-4" /> Edit Product </Button>
           )}
            {isEditing && (
-            <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} className="bg-destructive/10 text-destructive hover:bg-destructive/20">Cancel Edit</Button>,
-            <Button form="product-form-in-detail-page" type="submit" size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={isCheckingCompliance || isSyncingEprel}> Save Changes </Button>
+            <>
+              <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} className="bg-destructive/10 text-destructive hover:bg-destructive/20">Cancel Edit</Button>
+              <Button form="product-form-in-detail-page" type="submit" size="sm" className="bg-primary text-primary-foreground hover:bg-primary/90" disabled={isCheckingCompliance || isSyncingEprel || isGeneratingImage}> Save Changes </Button>
+            </>
            )}
           <Link href={`/passport/${product.productId}`} passHref target="_blank"> <Button variant="outline"> <ExternalLink className="mr-2 h-4 w-4" /> View Public Passport </Button> </Link>
         </div>
@@ -814,28 +947,8 @@ export default function ProductDetailPage() {
             <ProductForm
               id="product-form-in-detail-page"
               onSubmit={handleProductFormSubmit}
-              isSubmitting={isEditing && (isCheckingCompliance || isSyncingEprel)} 
-              initialData={{
-                productName: product.productName,
-                gtin: product.gtin,
-                productDescription: product.description,
-                manufacturer: product.manufacturer,
-                modelNumber: product.modelNumber,
-                materials: product.materials,
-                sustainabilityClaims: product.sustainabilityClaims,
-                specifications: typeof product.specifications === 'string' ? product.specifications : JSON.stringify(product.specifications, null, 2),
-                energyLabel: product.energyLabel,
-                productCategory: product.category,
-                imageUrl: product.imageUrl,
-                batteryChemistry: product.batteryChemistry,
-                stateOfHealth: product.stateOfHealth,
-                carbonFootprintManufacturing: product.carbonFootprintManufacturing,
-                recycledContentPercentage: product.recycledContentPercentage,
-                productNameOrigin: product.productNameOrigin,
-                productDescriptionOrigin: product.descriptionOrigin,
-                imageUrlOrigin: product.imageUrlOrigin,
-                // Add other ...Origin fields as needed
-              }}
+              isSubmitting={isSubmitting || isGeneratingImage || isSuggestingClaims } // use the main isSubmitting prop of ProductForm
+              initialData={initialProductDataForEdit}
               isStandalonePage={false}
             />
           </CardContent>
@@ -886,15 +999,15 @@ export default function ProductDetailPage() {
                              <div><strong className="text-foreground/80 block">Description:</strong> <span className="text-muted-foreground text-sm">{product.description}</span> <DataOriginIcon origin={product.descriptionOrigin} /></div>
                              <div><strong className="text-foreground/80 block">GTIN:</strong> <span className="text-muted-foreground text-sm">{product.gtin || "N/A"}</span> <TrustSignalIcon isVerified={product.gtinVerified} /> </div>
                              <div><strong className="text-foreground/80 block">Category:</strong> <span className="text-muted-foreground text-sm">{product.category || "N/A"}</span></div>
-                             <div><strong className="text-foreground/80 block">Manufacturer:</strong> <span className="text-muted-foreground text-sm">{product.manufacturer || "N/A"}</span> <TrustSignalIcon isVerified={product.manufacturerVerified} /></div>
-                             <div><strong className="text-foreground/80 block">Model:</strong> <span className="text-muted-foreground text-sm">{product.modelNumber || "N/A"}</span></div>
+                             <div><strong className="text-foreground/80 block">Manufacturer:</strong> <span className="text-muted-foreground text-sm">{product.manufacturer || "N/A"}</span> <DataOriginIcon origin={product.manufacturerOrigin as 'AI_EXTRACTED' | 'manual' | undefined} /> <TrustSignalIcon isVerified={product.manufacturerVerified} /></div>
+                             <div><strong className="text-foreground/80 block">Model:</strong> <span className="text-muted-foreground text-sm">{product.modelNumber || "N/A"}</span> <DataOriginIcon origin={product.modelNumberOrigin as 'AI_EXTRACTED' | 'manual' | undefined} /></div>
                         </div>
                     </div>
                     <div className="mt-4 pt-4 border-t">
                       <h4 className="text-md font-semibold mb-2 flex items-center"> <Leaf className="h-5 w-5 mr-2 text-accent" />Key Sustainability Info <TrustSignalIcon isVerified={product.sustainabilityClaimsVerified} /> </h4>
-                      <p className="text-sm text-muted-foreground mb-1"><strong>Materials:</strong> {product.materials || "N/A"}</p>
-                      <p className="text-sm text-muted-foreground mb-1"><strong>Claims:</strong> {product.sustainabilityClaims || "N/A"}</p>
-                      <p className="text-sm text-muted-foreground"><strong>Energy Label:</strong> <Badge variant="secondary">{product.energyLabel || "N/A"}</Badge></p>
+                      <p className="text-sm text-muted-foreground mb-1"><strong>Materials:</strong> {product.materials || "N/A"} <DataOriginIcon origin={product.materialsOrigin as 'AI_EXTRACTED' | 'manual' | undefined} /></p>
+                      <p className="text-sm text-muted-foreground mb-1"><strong>Claims:</strong> {product.sustainabilityClaims || "N/A"} <DataOriginIcon origin={product.sustainabilityClaimsOrigin as 'AI_EXTRACTED' | 'manual' | undefined} /></p>
+                      <p className="text-sm text-muted-foreground"><strong>Energy Label:</strong> <Badge variant="secondary">{product.energyLabel || "N/A"}</Badge> <DataOriginIcon origin={product.energyLabelOrigin as 'AI_EXTRACTED' | 'manual' | undefined} /></p>
                     </div>
                   </CardContent>
                 </Card>
@@ -939,7 +1052,7 @@ export default function ProductDetailPage() {
             </TabsContent>
 
             <TabsContent value="specifications" className="mt-4">
-              <Card> <CardHeader> <CardTitle className="flex items-center"><Settings2 className="mr-2 h-5 w-5 text-primary" />Detailed Specifications</CardTitle> </CardHeader>
+              <Card> <CardHeader> <CardTitle className="flex items-center"><Settings2 className="mr-2 h-5 w-5 text-primary" />Detailed Specifications <DataOriginIcon origin={product.specificationsOrigin as 'AI_EXTRACTED' | 'manual' | undefined} /></CardTitle> </CardHeader>
                 <CardContent>
                   <Accordion type="single" collapsible defaultValue="item-1">
                     <AccordionItem value="item-1">
@@ -1190,5 +1303,3 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
-
-    

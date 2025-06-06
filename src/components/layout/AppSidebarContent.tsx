@@ -38,9 +38,9 @@ const navItems = [
   { href: "/products", label: "Products", icon: Package },
   { href: "/products/new", label: "Add Product", icon: ScanLine },
   { href: "/dpp-global-tracker", label: "Global Tracker", icon: Globe },
-  { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList }, // New Item
+  { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList }, 
   { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
-  { href: "/compliance/pathways/battery-regulation", label: "Compliance Pathways", icon: ListChecks },
+  { href: "/compliance/pathways", label: "Compliance Pathways", icon: ListChecks }, // Updated href
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
   { href: "/sustainability", label: "Sustainability Reporting", icon: FileText },
   { href: "/sustainability/compare", label: "Compare Sustainability", icon: BarChartHorizontal },
@@ -71,10 +71,15 @@ export default function AppSidebarContent() {
         isActive = false; // "/sustainability/compare" should not make "/sustainability" active
     } else if (href === "/dpp-global-tracker" && pathname === href) { 
         isActive = true;
-    } else if (href === "/customs-dashboard" && pathname === href) { // Exact match for new page
+    } else if (href === "/customs-dashboard" && pathname === href) { 
         isActive = true;
-    } else if (href === "/sustainability/compare" && pathname === href) { // Exact match for new page
+    } else if (href === "/sustainability/compare" && pathname === href) { 
         isActive = true;
+    } else if (href === "/compliance/pathways" && pathname.startsWith("/compliance/pathways/battery-regulation")) {
+        // Keep /compliance/pathways active if on a sub-page like battery-regulation
+        isActive = true;
+    } else if (href === "/compliance/pathways" && pathname !== href) {
+        isActive = false; // Ensure only exact match or deeper path makes it active
     }
 
 

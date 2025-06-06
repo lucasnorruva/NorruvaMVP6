@@ -44,25 +44,25 @@ export default function DppGlobalTrackerPage() {
   const globeRefMain = useRef<GlobeMethods | undefined>();
   const [countryPolygons, setCountryPolygons] = useState<GeoJsonFeature[]>([]);
   const [isLoadingGeoJson, setIsLoadingGeoJson] = useState(true);
-  const [geoJsonError, setGeoJsonError] = useState<string | null>(null); // Changed to store error message string
+  const [geoJsonError, setGeoJsonError] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   const { toast } = useToast();
   const [selectedCountryInfo, setSelectedCountryInfo] = useState<GeoJsonFeatureProperties | null>(null);
 
   useEffect(() => {
-    setIsClient(true); // Component has mounted, so it's client-side
+    setIsClient(true); 
 
     fetch('/ne_110m_admin_0_countries.geojson')
       .then(res => {
         if (!res.ok) {
-          const errorMsg = `Failed to fetch GeoJSON: Server responded with ${res.status} (${res.statusText}). Please ensure 'ne_110m_admin_0_countries.geojson' is in the '/public' directory and the filename (including case) is correct. URL: ${res.url}`;
-          console.warn(errorMsg); // Changed to console.warn
+          const errorMsg = `Failed to fetch GeoJSON. URL: ${res.url}, Status: ${res.status} (${res.statusText}). Ensure 'ne_110m_admin_0_countries.geojson' is in the '/public' directory and the filename (including case) is correct.`;
+          console.warn(errorMsg);
           setGeoJsonError(errorMsg);
           toast({
             variant: "destructive",
-            title: "Map Data Error (404 Not Found)",
-            description: "Could not load country border data. Check the file in your /public folder and its name.",
-            duration: 10000, // Make toast more persistent
+            title: "Map Data Error (Not Found)",
+            description: "Could not load country border data. Check the file path and name in your /public folder. Ensure it is 'ne_110m_admin_0_countries.geojson' (case-sensitive).",
+            duration: 10000,
           });
           return null;
         }
@@ -71,11 +71,11 @@ export default function DppGlobalTrackerPage() {
       .then(data => {
         if (data && data.features) {
           setCountryPolygons(data.features);
-          setGeoJsonError(null); // Clear any previous error if successful
+          setGeoJsonError(null); 
         } else if (data === null) {
-          // Error already handled by setting geoJsonError and toasting
+          // Error already handled
         } else {
-          const formatErrorMsg = "GeoJSON data is not in the expected format or is empty.";
+          const formatErrorMsg = "GeoJSON data is not in the expected FeatureCollection format or is empty.";
           console.warn(formatErrorMsg, data);
           setGeoJsonError(formatErrorMsg);
           toast({ variant: "destructive", title: "Map Data Format Error", description: "Country data could not be processed." });
@@ -97,19 +97,14 @@ export default function DppGlobalTrackerPage() {
     return EU_MEMBER_STATES.includes(countryName || "") ? EU_BLUE_COLOR : NON_EU_GREY_COLOR;
   }, []);
 
-  const polygonSideColorAccessor = useMemo(() => () => 'rgba(0,0,0,0)', []); // Keep sides transparent for a flatter look
-
+  const polygonSideColorAccessor = useMemo(() => () => 'rgba(0,0,0,0)', []); 
   const polygonStrokeColorAccessor = useMemo(() => () => COUNTRY_BORDER_COLOR, []);
-  const polygonAltitudeAccessor = useMemo(() => () => 0.005, []); // Slight uniform altitude
+  const polygonAltitudeAccessor = useMemo(() => () => 0.005, []); 
 
   const handlePolygonClick = (polygon: object, event: MouseEvent) => {
     const feature = polygon as GeoJsonFeature;
     if (feature && feature.properties) {
       setSelectedCountryInfo(feature.properties);
-      // Optional: Fly to country (can be refined)
-      // if (globeRefMain.current && feature.geometry && feature.geometry.coordinates) {
-      //   console.log("Clicked country:", feature.properties.NAME || feature.properties.ADMIN);
-      // }
     }
   };
 
@@ -216,7 +211,7 @@ export default function DppGlobalTrackerPage() {
         </aside>
 
         <div className="row-span-1 col-start-2 relative" style={{ backgroundColor: GLOBE_PAGE_BACKGROUND_COLOR }}>
-          {(isLoadingGeoJson && !geoJsonError) && ( // Show loader only if no error yet but still loading
+          {(isLoadingGeoJson && !geoJsonError) && ( 
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/50 z-50">
               <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
               <p className="text-primary-foreground">Loading map data...</p>
@@ -249,10 +244,10 @@ export default function DppGlobalTrackerPage() {
         </div>
       </main>
       <footer className="p-2 border-t text-center text-xs text-muted-foreground">
-        DPP Global Tracker - Data is illustrative. Click on countries for basic info.
+        DPP Global Tracker - Data is illustrative. Click on countries for basic info. Map data: Natural Earth.
       </footer>
     </div>
   );
 }
-    
+
     

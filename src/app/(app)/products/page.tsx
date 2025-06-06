@@ -3,13 +3,14 @@
 
 import Link from "next/link";
 import React, { useEffect, useState, useMemo } from "react";
+import Image from "next/image"; // Import next/image
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { PlusCircle, MoreHorizontal, Edit, Trash2, Eye, CheckCircle2 } from "lucide-react";
+import { PlusCircle, MoreHorizontal, Edit, Trash2, Eye, CheckCircle2, Package as PackageIcon, FileText as FileTextIcon, AlertTriangle as AlertTriangleIcon, ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,6 +32,8 @@ import { useRole } from "@/contexts/RoleContext";
 import { useToast } from "@/hooks/use-toast";
 import type { ProductFormData as ProductFormDataType } from "@/components/products/ProductForm";
 import ProductManagementFiltersComponent, { type ProductManagementFilterState } from "@/components/products/ProductManagementFiltersComponent";
+import { MetricCard } from "@/components/dpp-dashboard/MetricCard"; // Import MetricCard
+import { cn } from "@/lib/utils";
 
 // Represents product data stored by user interactions
 interface StoredUserProduct extends ProductFormDataType {
@@ -107,29 +110,37 @@ export interface DisplayableProduct {
   recycledContentPercentage?: number | null;
 }
 
+type SortableProductKeys = keyof Pick<DisplayableProduct, 'id' | 'productName' | 'status' | 'compliance' | 'lastUpdated' | 'manufacturer'> | 'category';
+
+interface SortConfig {
+  key: SortableProductKeys | null;
+  direction: 'ascending' | 'descending' | null;
+}
+
+
 const initialMockProductsData: RichMockProduct[] = [
   {
     id: "PROD001", productId: "PROD001", productName: "EcoFriendly Refrigerator X2000", category: "Appliances", status: "Active", compliance: "Compliant", lastUpdated: "2024-07-20",
-    gtin: "01234567890123", manufacturer: "GreenTech Appliances", modelNumber: "X2000-ECO", description: "State-of-the-art energy efficient refrigerator.", imageUrl: "https://placehold.co/600x400.png?text=PROD001", materials: "Recycled Steel, Bio-polymers", sustainabilityClaims: "Energy Star Certified", energyLabel: "A+++", specifications: { "Capacity": "400L", "Warranty": "5 years" }, lifecycleEvents: [{id:"lc_mfg_001", name:"Manufacturing"}], complianceData: {REACH: {status:"Compliant"}},
+    gtin: "01234567890123", manufacturer: "GreenTech Appliances", modelNumber: "X2000-ECO", description: "State-of-the-art energy efficient refrigerator.", imageUrl: "https://placehold.co/400x300.png?text=Fridge", materials: "Recycled Steel, Bio-polymers", sustainabilityClaims: "Energy Star Certified", energyLabel: "A+++", specifications: { "Capacity": "400L", "Warranty": "5 years" }, lifecycleEvents: [{id:"lc_mfg_001", name:"Manufacturing"}], complianceData: {REACH: {status:"Compliant"}},
   },
   {
     id: "PROD002", productId: "PROD002", productName: "Smart LED Bulb Pack (4-pack)", category: "Electronics", status: "Active", compliance: "Pending", lastUpdated: "2024-07-18",
-    gtin: "98765432109876", manufacturer: "BrightSpark Electronics", modelNumber: "BS-LED-S04B", description: "Tunable white and color smart LED bulbs.", imageUrl: "https://placehold.co/600x400.png?text=PROD002", materials: "Polycarbonate, Aluminum", sustainabilityClaims: "Uses 85% less energy", energyLabel: "A+", specifications: { "Lumens": "800lm", "Connectivity": "Wi-Fi" }, batteryChemistry: "Li-ion", stateOfHealth: 99, carbonFootprintManufacturing: 5, recycledContentPercentage: 10,
+    gtin: "98765432109876", manufacturer: "BrightSpark Electronics", modelNumber: "BS-LED-S04B", description: "Tunable white and color smart LED bulbs.", imageUrl: "https://placehold.co/400x300.png?text=Bulbs", materials: "Polycarbonate, Aluminum", sustainabilityClaims: "Uses 85% less energy", energyLabel: "A+", specifications: { "Lumens": "800lm", "Connectivity": "Wi-Fi" }, batteryChemistry: "Li-ion", stateOfHealth: 99, carbonFootprintManufacturing: 5, recycledContentPercentage: 10,
     lifecycleEvents: [{id:"lc_mfg_002", name:"Manufacturing"}], complianceData: {RoHS: {status:"Compliant"}},
   },
   {
     id: "PROD003", productId: "PROD003", productName: "Organic Cotton T-Shirt", category: "Apparel", status: "Archived", compliance: "Compliant", lastUpdated: "2024-06-10",
-    description: "100% organic cotton t-shirt.", materials: "Organic Cotton", sustainabilityClaims: "GOTS Certified", imageUrl: "https://placehold.co/600x400.png?text=PROD003", manufacturer: "EcoThreads",
+    description: "100% organic cotton t-shirt.", materials: "Organic Cotton", sustainabilityClaims: "GOTS Certified", imageUrl: "https://placehold.co/400x300.png?text=T-Shirt", manufacturer: "EcoThreads",
     specifications: {"Fit": "Regular", "Origin": "India"}, lifecycleEvents: [], complianceData: {},
   },
   {
     id: "PROD004", productId: "PROD004", productName: "Recycled Plastic Water Bottle", category: "Homeware", status: "Active", compliance: "Non-Compliant", lastUpdated: "2024-07-21",
-    description: "Made from 100% recycled ocean-bound plastic.", materials: "Recycled PET", sustainabilityClaims: "Reduces ocean plastic", imageUrl: "https://placehold.co/600x400.png?text=PROD004", manufacturer: "RePurpose Inc.",
+    description: "Made from 100% recycled ocean-bound plastic.", materials: "Recycled PET", sustainabilityClaims: "Reduces ocean plastic", imageUrl: "https://placehold.co/400x300.png?text=Bottle", manufacturer: "RePurpose Inc.",
     specifications: {"Volume": "500ml", "BPA-Free": "Yes"}, lifecycleEvents: [], complianceData: {},
   },
   {
     id: "PROD005", productId: "PROD005", productName: "Solar Powered Garden Light", category: "Outdoor", status: "Draft", compliance: "N/A", lastUpdated: "2024-07-22",
-    description: "Solar-powered LED light for gardens.", materials: "Aluminum, Solar Panel", energyLabel: "N/A", imageUrl: "https://placehold.co/600x400.png?text=PROD005", manufacturer: "SunBeam",
+    description: "Solar-powered LED light for gardens.", materials: "Aluminum, Solar Panel", energyLabel: "N/A", imageUrl: "https://placehold.co/400x300.png?text=Light", manufacturer: "SunBeam",
     specifications: {"Brightness": "100 lumens", "Battery life": "8 hours"}, lifecycleEvents: [], complianceData: {},
   },
 ];
@@ -203,11 +214,29 @@ const calculateDppCompletenessForList = (product: DisplayableProduct): { score: 
   return { score, filledFields: filledCount, totalFields: actualTotalFields, missingFields };
 };
 
+const SortableTableHead: React.FC<{
+  columnKey: SortableProductKeys;
+  title: string;
+  onSort: (key: SortableProductKeys) => void;
+  sortConfig: SortConfig;
+  className?: string;
+}> = ({ columnKey, title, onSort, sortConfig, className }) => {
+  const isSorted = sortConfig.key === columnKey;
+  const Icon = isSorted ? (sortConfig.direction === 'ascending' ? ArrowUp : ArrowDown) : ChevronsUpDown;
+  return (
+    <TableHead className={cn("cursor-pointer hover:bg-muted/50 transition-colors", className)} onClick={() => onSort(columnKey)}>
+      <div className="flex items-center gap-1">
+        {title}
+        <Icon className={cn("h-3.5 w-3.5", isSorted ? "text-primary" : "text-muted-foreground/70")} />
+      </div>
+    </TableHead>
+  );
+};
+
 
 export default function ProductsPage() {
   const { currentRole } = useRole();
   const [allProducts, setAllProducts] = useState<DisplayableProduct[]>([]);
-  const [filteredProducts, setFilteredProducts] = useState<DisplayableProduct[]>([]);
   const [productToDelete, setProductToDelete] = useState<DisplayableProduct | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const { toast } = useToast();
@@ -218,6 +247,8 @@ export default function ProductsPage() {
     compliance: "All",
     category: "All",
   });
+  
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
 
   useEffect(() => {
     const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
@@ -240,7 +271,15 @@ export default function ProductsPage() {
     setAllProducts(combined);
   }, []);
 
-  useEffect(() => {
+  const handleSort = (key: SortableProductKeys) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  const filteredAndSortedProducts = useMemo(() => {
     let tempProducts = [...allProducts];
 
     if (filters.searchQuery) {
@@ -263,9 +302,37 @@ export default function ProductsPage() {
     if (filters.category !== "All") {
       tempProducts = tempProducts.filter(p => (p.category || p.productCategory) === filters.category);
     }
+    
+    if (sortConfig.key && sortConfig.direction) {
+      tempProducts.sort((a, b) => {
+        let valA: any;
+        let valB: any;
 
-    setFilteredProducts(tempProducts.sort((a, b) => (a.id || "").localeCompare(b.id || "")));
-  }, [filters, allProducts]);
+        if (sortConfig.key === 'category') {
+          valA = a.category || a.productCategory;
+          valB = b.category || b.productCategory;
+        } else {
+          valA = a[sortConfig.key as keyof DisplayableProduct];
+          valB = b[sortConfig.key as keyof DisplayableProduct];
+        }
+        
+        if (valA === undefined || valA === null) valA = ""; // Handle undefined or null by treating as empty string for sorting
+        if (valB === undefined || valB === null) valB = "";
+
+        if (typeof valA === 'string' && typeof valB === 'string') {
+          valA = valA.toLowerCase();
+          valB = valB.toLowerCase();
+        }
+        
+        if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
+        return 0;
+      });
+    }
+
+
+    return tempProducts;
+  }, [filters, allProducts, sortConfig]);
 
 
   const openDeleteConfirmDialog = (product: DisplayableProduct) => {
@@ -283,7 +350,7 @@ export default function ProductsPage() {
       localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userAddedProducts));
     }
 
-    setAllProducts(prevProducts => prevProducts.filter(p => p.id !== productToDelete.id)); // Update allProducts, useEffect will update filteredProducts
+    setAllProducts(prevProducts => prevProducts.filter(p => p.id !== productToDelete.id));
 
     toast({
       title: "Product Deleted",
@@ -302,6 +369,14 @@ export default function ProductsPage() {
   const complianceOptions = useMemo(() => ["All", ...new Set(allProducts.map(p => p.compliance).filter(Boolean).sort())], [allProducts]);
   const categoryOptions = useMemo(() => ["All", ...new Set(allProducts.map(p => p.category || p.productCategory).filter(Boolean).sort())], [allProducts]);
 
+  const summaryMetrics = useMemo(() => {
+    const total = allProducts.length;
+    const active = allProducts.filter(p => p.status === 'Active').length;
+    const draft = allProducts.filter(p => p.status === 'Draft').length;
+    const issues = allProducts.filter(p => p.compliance === 'Non-Compliant' || p.compliance === 'Pending').length;
+    return { total, active, draft, issues };
+  }, [allProducts]);
+
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -316,6 +391,13 @@ export default function ProductsPage() {
         )}
       </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard title="Total Products" value={summaryMetrics.total} icon={PackageIcon} />
+        <MetricCard title="Active Products" value={summaryMetrics.active} icon={CheckCircle2} />
+        <MetricCard title="Draft Products" value={summaryMetrics.draft} icon={FileTextIcon} />
+        <MetricCard title="Compliance Issues" value={summaryMetrics.issues} icon={AlertTriangleIcon} trendDirection={summaryMetrics.issues > 0 ? "up" : "neutral"} />
+      </div>
+
       <ProductManagementFiltersComponent
         filters={filters}
         onFilterChange={setFilters}
@@ -327,29 +409,45 @@ export default function ProductsPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="font-headline">Product Inventory</CardTitle>
-          <CardDescription>Manage and track all products in your system and their Digital Product Passports.</CardDescription>
+          <CardDescription>Manage and track all products in your system and their Digital Product Passports. Click headers to sort.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Category</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Compliance</TableHead>
+                <TableHead className="w-[50px]">Image</TableHead>
+                <SortableTableHead columnKey="id" title="ID" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableTableHead columnKey="productName" title="Name" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableTableHead columnKey="manufacturer" title="Manufacturer" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableTableHead columnKey="category" title="Category" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableTableHead columnKey="status" title="Status" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableTableHead columnKey="compliance" title="Compliance" onSort={handleSort} sortConfig={sortConfig} />
                 <TableHead>Completeness</TableHead>
-                <TableHead>Last Updated</TableHead>
+                <SortableTableHead columnKey="lastUpdated" title="Last Updated" onSort={handleSort} sortConfig={sortConfig} />
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredProducts.map((product) => {
+              {filteredAndSortedProducts.map((product) => {
                 const completeness = calculateDppCompletenessForList(product);
                 const currentProductName = product.productName || "Unnamed Product";
                 const currentCategory = product.category || product.productCategory || "N/A";
+                const currentManufacturer = product.manufacturer || "N/A";
+                const imageUrl = product.imageUrl || "https://placehold.co/50x50.png?text=N/A";
                 return (
                 <TableRow key={product.id}>
+                  <TableCell>
+                    <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex items-center justify-center">
+                      <Image 
+                        src={imageUrl} 
+                        alt={currentProductName} 
+                        width={48} 
+                        height={48} 
+                        className="object-contain"
+                        data-ai-hint={product.imageUrl?.includes('placehold.co') ? currentProductName.split(" ").slice(0,2).join(" ") : "product " + (currentCategory || "").toLowerCase()}
+                      />
+                    </div>
+                  </TableCell>
                   <TableCell className="font-medium">
                      <Link href={`/products/${product.id}`} className="hover:underline text-primary">
                         {product.id}
@@ -360,6 +458,7 @@ export default function ProductsPage() {
                         {currentProductName}
                      </Link>
                   </TableCell>
+                  <TableCell>{currentManufacturer}</TableCell>
                   <TableCell>{currentCategory}</TableCell>
                   <TableCell>
                     <Badge variant={
@@ -391,9 +490,9 @@ export default function ProductsPage() {
                     <TooltipProvider>
                       <Tooltip delayDuration={100}>
                         <TooltipTrigger asChild>
-                          <div className="flex items-center w-28 cursor-help">
-                            <Progress value={completeness.score} className="h-2.5 flex-grow" />
-                            <span className="text-xs text-muted-foreground ml-2">{completeness.score}%</span>
+                          <div className="flex items-center w-24 cursor-help">
+                            <Progress value={completeness.score} className="h-2 flex-grow" />
+                            <span className="text-xs text-muted-foreground ml-1.5">{completeness.score}%</span>
                           </div>
                         </TooltipTrigger>
                         <TooltipContent align="start" className="bg-background shadow-lg p-3 rounded-md border max-w-xs">
@@ -429,7 +528,7 @@ export default function ProductsPage() {
                             View Details
                           </Link>
                         </DropdownMenuItem>
-                        {canEditProducts && product.id.startsWith("USER_PROD") && (
+                        {(canEditProducts && product.id.startsWith("USER_PROD")) && ( // Only allow edit for user-added products
                             <DropdownMenuItem asChild>
                                 <Link href={`/products/new?edit=${product.id}`}>
                                     <Edit className="mr-2 h-4 w-4" />
@@ -437,7 +536,12 @@ export default function ProductsPage() {
                                 </Link>
                             </DropdownMenuItem>
                         )}
-                        {canDeleteProducts && (
+                        {/* Settings option (previously in DPPTable) */}
+                        <DropdownMenuItem onClick={() => alert(`Mock: Settings for ${product.id}`)}>
+                           <FileTextIcon className="mr-2 h-4 w-4" /> {/* Changed icon to avoid conflict */}
+                           Settings
+                        </DropdownMenuItem>
+                        {(canDeleteProducts && product.id.startsWith("USER_PROD")) && ( // Only allow delete for user-added products
                             <>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
@@ -454,9 +558,9 @@ export default function ProductsPage() {
                   </TableCell>
                 </TableRow>
               );})}
-               {filteredProducts.length === 0 && (
+               {filteredAndSortedProducts.length === 0 && (
                 <TableRow>
-                    <TableCell colSpan={8} className="text-center text-muted-foreground py-8">
+                    <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
                     No products found matching your filters.
                     </TableCell>
                 </TableRow>
@@ -486,3 +590,4 @@ export default function ProductsPage() {
     </div>
   );
 }
+

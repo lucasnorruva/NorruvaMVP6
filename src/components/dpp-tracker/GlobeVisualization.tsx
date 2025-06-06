@@ -123,14 +123,15 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
   useEffect(() => {
     if (globeEl.current && GlobeComponent) {
       try {
-        // Setting initial PoV slightly higher to see more of the globe
         globeEl.current.pointOfView({ lat: 45, lng: 10, altitude: 2.5 }); 
         const controls = globeEl.current.controls();
         if (controls) {
             controls.autoRotate = false;
             controls.enableZoom = true;
-            controls.minDistance = 50; 
-            controls.maxDistance = 1500; 
+            controls.zoomSpeed = 0.7; 
+            controls.rotateSpeed = 0.4; 
+            controls.minDistance = 120; 
+            controls.maxDistance = 1000; 
         }
       } catch (e) {
         // console.error("GlobeVisualization: Error configuring globe controls or POV", e);
@@ -185,17 +186,17 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
     globeImageUrl: undefined, 
 
     pointsData: pointsData,
-    pointLabel: (d: MockDppPoint | MockShipmentPoint) => d.name, // Ensure label uses 'name'
+    pointLabel: (d: MockDppPoint | MockShipmentPoint) => d.name, 
     pointColor: pointColorAccessor,
     pointRadius: pointRadiusAccessor,
-    pointAltitude: (d: MockDppPoint | MockShipmentPoint) => ('simulatedStatus' in d) ? 0.03 : 0.02, // Slightly higher altitude for shipment points
-    onPointClick: onPointClick,
+    pointAltitude: (d: MockDppPoint | MockShipmentPoint) => ('simulatedStatus' in d) ? 0.03 : 0.02, 
+    onPointClick: (point: any) => onPointClick(point as MockDppPoint | MockShipmentPoint),
 
     arcsData: arcsData,
     arcLabel: 'label',
     arcColor: arcColorAccessor,
     arcStroke: arcStrokeAccessor,
-    onArcClick: onArcClick,
+    onArcClick: (arc: any) => onArcClick(arc as MockArc),
 
     polygonsData: polygonsData,
     polygonCapColor: polygonCapColorAccessor,
@@ -219,12 +220,12 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
     },
     customThreeObjectUpdate: (obj: any, cpData: any) => {
         if(globeEl.current){ 
-            Object.assign(obj.position, globeEl.current.getCoords(cpData.lat, cpData.lng, 0.035)); // Slightly higher altitude for checkpoint sprites
+            Object.assign(obj.position, globeEl.current.getCoords(cpData.lat, cpData.lng, 0.035)); 
         }
     },
     onCustomLayerClick: (obj: any, event: MouseEvent) => { 
         if (obj && (obj as any).checkpointData) {
-          onCheckpointClick((obj as any).checkpointData);
+          onCheckpointClick((obj as any).checkpointData as MockCustomsCheckpoint);
         }
     },
   };
@@ -236,4 +237,4 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
   );
 };
 
-export default GlobeVisualizationInternal;
+export default React.memo(GlobeVisualizationInternal);

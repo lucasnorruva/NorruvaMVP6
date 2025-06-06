@@ -6,7 +6,17 @@ import Globe, { type GlobeMethods, type GlobeProps as ReactGlobeProps } from 're
 import { Color } from 'three'; // Import Color from three
 
 // Define the props for our GlobeVisualization component
-export interface GlobeVisualizationProps extends Omit<ReactGlobeProps, 'ref'> {
+// Removed polygon-related props
+export interface GlobeVisualizationProps extends Omit<ReactGlobeProps, 
+  'ref' | 
+  'polygonsData' | 
+  'polygonCapColor' | 
+  'polygonSideColor' | 
+  'polygonStrokeColor' | 
+  'polygonAltitude' | 
+  'onPolygonClick' |
+  'onPolygonHover'
+> {
   globeRef?: React.Ref<GlobeMethods>;
   backgroundColor?: string; // Allow passing background color for the globe canvas
 }
@@ -26,11 +36,11 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
         globeInstance.controls().maxDistance = 800; // Max zoom distance
 
         // Explicitly set the renderer's clear color and alpha
-        // This is important if the parent div has a background color and you want the globe canvas itself to be transparent
-        // or a specific color.
         const renderer = globeInstance.renderer();
         if (renderer) {
-          renderer.setClearColor(new Color(backgroundColor), backgroundColor === '#00000000' || backgroundColor === 'transparent' ? 0 : 1);
+           // If backgroundColor is 'transparent' or an RGBA with 0 alpha, set clearAlpha to 0. Otherwise, 1.
+          const isTransparent = backgroundColor === 'transparent' || backgroundColor === '#00000000' || (backgroundColor.startsWith('rgba') && backgroundColor.endsWith('0)'));
+          renderer.setClearColor(new Color(backgroundColor), isTransparent ? 0 : 1);
         }
       }
     }, [backgroundColor]);
@@ -47,12 +57,12 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
 
     // Default Globe settings can be part of globeProps or overridden here
     const defaultGlobeProps: Partial<ReactGlobeProps> = {
-      globeImageUrl: '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg',
-      bumpImageUrl: '//unpkg.com/three-globe/example/img/earth-topology.png',
+      // globeImageUrl is now expected to be passed via globeProps, e.g., earth-political.jpg
+      bumpImageUrl: "//unpkg.com/three-globe/example/img/earth-topology.png",
       showAtmosphere: true,
       atmosphereColor: '#4682B4', // A nice steel blue
       atmosphereAltitude: 0.25,
-      enablePointerInteraction: true,
+      enablePointerInteraction: true, // Still allow general globe interaction
       animateIn: true,
     };
 
@@ -61,6 +71,7 @@ export const GlobeVisualization = forwardRef<GlobeMethods, GlobeVisualizationPro
         ref={globeEl}
         {...defaultGlobeProps}
         {...globeProps} // User-provided props will override defaults
+        // Polygon props are no longer passed here
       />
     );
   }

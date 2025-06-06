@@ -1,14 +1,13 @@
 
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Globe as GlobeIconLucide, Info, MapPin, Palette, ZoomIn, ZoomOut, Maximize, AlertTriangle, Loader2 } from "lucide-react";
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
 
 // Dynamically import the globe visualization component to ensure it's client-side only
 const ClientOnlyGlobe = dynamic(
@@ -25,108 +24,19 @@ const ClientOnlyGlobe = dynamic(
 );
 
 // --- Color & Style Constants ---
-const EU_BLUE_COLOR = '#00008B';         // Dark Blue for EU countries
-const NON_EU_GREY_COLOR = '#D1D5DB';     // Light Grey for non-EU countries
-const COUNTRY_BORDER_COLOR = '#000000';  // Black for country borders
-const OCEAN_TEXTURE_URL = '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg'; // Light blue oceans
+const GLOBE_TEXTURE_URL = '//unpkg.com/three-globe/example/img/earth-political.jpg'; // Texture with pre-rendered borders and colors
 const GLOBE_PAGE_BACKGROUND_COLOR = '#0a0a0a'; // Dark background for the page/globe area
 const ATMOSPHERE_COLOR = '#4682B4'; // Steel Blue for atmosphere
 
-// List of EU Member States (ISO A2 Codes) - common source of truth
-const EU_MEMBER_STATES = [
-  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU',
-  'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'
-];
-
-interface GeoJsonFeatureProperties {
-  ADMIN: string; // Country name
-  ISO_A2: string; // ISO A2 Code
-  POP_EST?: number; // Estimated Population
-  [key: string]: any; // Allow other properties
-}
-
-interface GeoJsonFeature {
-  type: string;
-  properties: GeoJsonFeatureProperties;
-  geometry: any;
-}
-
-interface SelectedCountryInfo {
-  name: string;
-  iso_a2: string;
-  population?: string;
-  [key: string]: any;
-}
-
 export default function DppGlobalTrackerPage() {
-  const { toast } = useToast();
-  const [countryPolygons, setCountryPolygons] = useState<GeoJsonFeature[]>([]);
-  const [selectedCountryInfo, setSelectedCountryInfo] = useState<SelectedCountryInfo | null>(null);
-  const [isLoadingGeoJson, setIsLoadingGeoJson] = useState(true);
-  const [geoJsonError, setGeoJsonError] = useState<string | null>(null);
-  const [globeKey, setGlobeKey] = useState(Date.now()); // Used to force re-mount of globe if needed
-
-  // Refs for globe controls
-  const globeEl = React.useRef<any>();
-
-  useEffect(() => {
-    setIsLoadingGeoJson(true);
-    setGeoJsonError(null);
-    fetch('/ne_110m_admin_0_countries.geojson')
-      .then(res => {
-        if (!res.ok) {
-          throw new Error(`Failed to fetch GeoJSON: ${res.status} ${res.statusText}. Expected URL: ${res.url}`);
-        }
-        return res.json();
-      })
-      .then(data => {
-        if (data && data.features) {
-          setCountryPolygons(data.features);
-        } else {
-          throw new Error("GeoJSON data is not in the expected FeatureCollection format or is empty.");
-        }
-        setIsLoadingGeoJson(false);
-      })
-      .catch(error => {
-        console.warn("Error loading GeoJSON data:", error.message);
-        setGeoJsonError(error.message || "Could not load country outline data. Please ensure 'ne_110m_admin_0_countries.geojson' is in the /public folder and the server is running.");
-        toast({
-          variant: "destructive",
-          title: "Map Data Error",
-          description: `Could not load country data. ${error.message}. Check console & file location.`,
-          duration: 10000,
-        });
-        setIsLoadingGeoJson(false);
-      });
-  }, []);
-
-  const polygonCapColorAccessor = useMemo(() => (feat: GeoJsonFeature) =>
-    EU_MEMBER_STATES.includes(feat.properties.ISO_A2) ? EU_BLUE_COLOR : NON_EU_GREY_COLOR,
-    []
-  );
-
-  const polygonSideColorAccessor = useMemo(() => () => 'rgba(0, 0, 0, 0.05)', []); // Subtle side color
-  const polygonStrokeColorAccessor = useMemo(() => () => COUNTRY_BORDER_COLOR, []);
-  const polygonAltitudeAccessor = useMemo(() => () => 0.01, []); // Slight uniform altitude for better visibility
-
-  const handlePolygonClick = (polygon: GeoJsonFeature) => {
-    const props = polygon.properties;
-    setSelectedCountryInfo({
-      name: props.ADMIN || 'N/A',
-      iso_a2: props.ISO_A2 || 'N/A',
-      population: props.POP_EST ? props.POP_EST.toLocaleString() : 'N/A',
-      continent: props.CONTINENT || 'N/A',
-      region: props.REGION_WB || 'N/A',
-    });
-  };
+  const globeEl = useRef<any>(); // Ref for globe controls
 
   const handleZoomIn = () => globeEl.current?.pointOfView({ altitude: globeEl.current.pointOfView().altitude / 1.5 }, 500);
   const handleZoomOut = () => globeEl.current?.pointOfView({ altitude: globeEl.current.pointOfView().altitude * 1.5 }, 500);
   const handleResetView = () => globeEl.current?.pointOfView({ lat: 20, lng: 0, altitude: 2.5 }, 1000);
 
-
   return (
-    <div className="flex flex-col h-[calc(100vh-var(--header-height,4rem)-2rem)] bg-background"> {/* Adjust height based on your header */}
+    <div className="flex flex-col h-[calc(100vh-var(--header-height,4rem)-2rem)] bg-background">
       <header className="p-4 border-b sticky top-0 bg-background z-20">
         <h1 className="text-2xl font-headline font-semibold text-primary flex items-center">
           <GlobeIconLucide className="mr-3 h-7 w-7" />
@@ -143,20 +53,9 @@ export default function DppGlobalTrackerPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {selectedCountryInfo ? (
-                <div className="space-y-1 text-sm">
-                  <h3 className="font-semibold text-primary mb-1">{selectedCountryInfo.name}</h3>
-                  <p><strong className="text-muted-foreground">ISO A2:</strong> {selectedCountryInfo.iso_a2}</p>
-                  <p><strong className="text-muted-foreground">Population (Est.):</strong> {selectedCountryInfo.population}</p>
-                  <p><strong className="text-muted-foreground">Continent:</strong> {selectedCountryInfo.continent}</p>
-                  <p><strong className="text-muted-foreground">Region:</strong> {selectedCountryInfo.region}</p>
-                  <p className="mt-2 pt-2 border-t text-xs text-muted-foreground">DPP Compliance: Pending (Mock)</p>
-                </div>
-              ) : (
                 <p className="text-sm text-muted-foreground">
-                  Click on a country to view details. Use mouse/touch to rotate and zoom the globe.
+                  Use mouse/touch to rotate and zoom the globe. Country details are based on the selected map texture.
                 </p>
-              )}
             </CardContent>
           </Card>
           <Card className="shadow-sm">
@@ -167,17 +66,8 @@ export default function DppGlobalTrackerPage() {
             </CardHeader>
             <CardContent className="space-y-2 text-xs">
                <div className="flex items-center">
-                  <span style={{ backgroundColor: EU_BLUE_COLOR }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span>
-                  <span>EU Member State</span>
-                </div>
-                <div className="flex items-center">
-                  <span style={{ backgroundColor: NON_EU_GREY_COLOR }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span>
-                  <span>Non-EU Country</span>
-                </div>
-                 <div className="flex items-center">
-                  <span style={{ backgroundColor: COUNTRY_BORDER_COLOR }} className="h-3 w-0.5 mr-2"></span>
-                  <span className="border-t border-black inline-block h-0 w-2.5 align-middle mr-1"></span>
-                  <span>Country Borders</span>
+                  <span style={{ backgroundImage: `url(${GLOBE_TEXTURE_URL})`, backgroundSize: 'cover' }} className="h-3 w-3 rounded-full mr-2 border border-black/30 opacity-70"></span>
+                  <span>Country Colors & Borders (from texture)</span>
                 </div>
                 <div className="flex items-center">
                   <span style={{ backgroundColor: '#77b5fe' }} className="h-3 w-3 rounded-full mr-2 border border-black/30 opacity-50"></span>
@@ -204,39 +94,19 @@ export default function DppGlobalTrackerPage() {
         </aside>
 
         <div className="row-span-1 col-start-2 relative overflow-hidden" style={{ backgroundColor: GLOBE_PAGE_BACKGROUND_COLOR }}>
-          {geoJsonError && !isLoadingGeoJson && (
-            <div className="absolute inset-0 flex items-center justify-center z-10 p-4">
-              <Alert variant="destructive" className="max-w-md">
-                <AlertTriangle className="h-5 w-5" />
-                <AlertTitle>Map Data Error</AlertTitle>
-                <AlertDescription>
-                  {geoJsonError} Please verify the file `ne_110m_admin_0_countries.geojson` is in the `/public` directory of your project, the filename is exact (case-sensitive), and restart the development server.
-                </AlertDescription>
-              </Alert>
-            </div>
-          )}
-          {!geoJsonError && (
             <ClientOnlyGlobe
-              key={globeKey} // Force re-mount if key changes (e.g., on error then fix)
               globeRef={globeEl}
-              globeImageUrl={OCEAN_TEXTURE_URL}
+              globeImageUrl={GLOBE_TEXTURE_URL}
               bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
-              backgroundColor={GLOBE_PAGE_BACKGROUND_COLOR}
+              backgroundColor={GLOBE_PAGE_BACKGROUND_COLOR} // Ensure globe component uses this for its canvas clear color
               atmosphereColor={ATMOSPHERE_COLOR}
               atmosphereAltitude={0.25}
-              polygonsData={countryPolygons}
-              polygonCapColor={polygonCapColorAccessor}
-              polygonSideColor={polygonSideColorAccessor}
-              polygonStrokeColor={polygonStrokeColorAccessor}
-              polygonAltitude={polygonAltitudeAccessor}
-              onPolygonClick={handlePolygonClick}
-              polygonsTransitionDuration={300}
+              // Polygon related props are removed
             />
-          )}
         </div>
       </main>
       <footer className="p-2 border-t text-center text-xs text-muted-foreground sticky bottom-0 bg-background z-20">
-        DPP Global Tracker - 3D Interactive Globe. Click countries for mock data.
+        DPP Global Tracker - 3D Interactive Globe. Country borders and colors are rendered from the globe texture.
       </footer>
     </div>
   );

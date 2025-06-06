@@ -10,9 +10,8 @@ import { Globe as GlobeIconLucide, Info, MapPin, ZoomIn, ZoomOut, Maximize, Aler
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import type { GlobeMethods } from 'react-globe.gl';
-import * as topojson from 'topojson-client'; // Import all of topojson-client
+import * as topojson from 'topojson-client';
 
-// Dynamically import the GlobeVisualization component
 const ClientOnlyGlobe = dynamic(
   () => import('@/components/dpp-tracker/GlobeVisualization').then(mod => mod.GlobeVisualization),
   {
@@ -26,13 +25,12 @@ const ClientOnlyGlobe = dynamic(
   }
 );
 
-// --- Color & Style Constants ---
-const EU_BLUE_COLOR = '#00008B'; // Dark blue for EU
-const NON_EU_GREY_COLOR = '#D1D5DB'; // Light grey for non-EU
-const COUNTRY_BORDER_COLOR = '#000000'; // Black for borders
+const EU_BLUE_COLOR = 'rgba(0, 0, 139, 0.7)'; // Dark blue with some transparency
+const NON_EU_GREY_COLOR = 'rgba(209, 213, 219, 0.6)'; // Light grey with some transparency
+const COUNTRY_BORDER_COLOR = 'rgba(0, 0, 0, 0.5)'; // Black for borders
 const GLOBE_PAGE_BACKGROUND_COLOR = '#0a0a0a'; // Dark background for the page/globe area
 const ATMOSPHERE_COLOR = '#4682B4'; // Steel blue for atmosphere
-const OCEAN_TEXTURE_URL = '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg'; // Light blue oceans
+const OCEAN_TEXTURE_URL = '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg';
 
 const EU_MEMBER_STATES_ISO_A2 = [
   'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR',
@@ -40,17 +38,15 @@ const EU_MEMBER_STATES_ISO_A2 = [
   'SI', 'ES', 'SE'
 ];
 
-// Helper to get ISO A2 code, robustly checking common property names
+// Helper to get ISO A2 code
 const getCountryISO_A2 = (feature: any): string | undefined => {
   if (!feature || !feature.properties) return undefined;
   const props = feature.properties;
-  // Fixes for specific entities in world-atlas
-  if (props.sovereignt === "Somaliland") return "SO"; 
-  if (props.sovereignt === "N. Cyprus") return "CY"; 
-  return props.iso_a2 || props.ISO_A2 || props.ISO_A2_EH || props.ADM0_A3; 
+  if (props.sovereignt === "Somaliland") return "SO";
+  if (props.sovereignt === "N. Cyprus") return "CY";
+  return props.iso_a2 || props.ISO_A2 || props.ISO_A2_EH || props.ADM0_A3;
 };
 
-// Helper to get country name, robustly checking common property names
 const getCountryName = (feature: any): string => {
   if (!feature || !feature.properties) return 'Unknown Territory';
   const props = feature.properties;
@@ -66,6 +62,24 @@ interface SelectedCountryProperties {
   [key: string]: any;
 }
 
+interface ShipmentPoint {
+  id: string;
+  name: string;
+  lat: number;
+  lng: number;
+  size: number;
+  color: string;
+  status: 'In Transit' | 'Customs Review' | 'Cleared' | 'Delayed';
+}
+
+const MOCK_SHIPMENT_POINTS: ShipmentPoint[] = [
+  { id: 'ship001', name: 'Shipment Alpha', lat: 34.0522, lng: -118.2437, size: 0.5, color: 'rgba(0, 255, 0, 0.75)', status: 'In Transit' }, // Los Angeles
+  { id: 'ship002', name: 'Shipment Bravo', lat: 51.5074, lng: -0.1278, size: 0.6, color: 'rgba(255, 165, 0, 0.75)', status: 'Customs Review' }, // London
+  { id: 'ship003', name: 'Shipment Charlie', lat: 35.6895, lng: 139.6917, size: 0.4, color: 'rgba(0, 0, 255, 0.75)', status: 'Cleared' }, // Tokyo
+  { id: 'ship004', name: 'Shipment Delta (EU)', lat: 48.8566, lng: 2.3522, size: 0.55, color: 'rgba(255,0,0,0.75)', status: 'Delayed' }, // Paris (EU)
+];
+
+
 export default function DppGlobalTrackerPage() {
   const globeEl = useRef<GlobeMethods | undefined>();
   const { toast } = useToast();
@@ -74,6 +88,7 @@ export default function DppGlobalTrackerPage() {
   const [geoJsonError, setGeoJsonError] = useState<string | null>(null);
   const [isLoadingGeoJson, setIsLoadingGeoJson] = useState(true);
   const [selectedCountryInfo, setSelectedCountryInfo] = useState<SelectedCountryProperties | null>(null);
+  const [shipmentPoints, setShipmentPoints] = useState<ShipmentPoint[]>(MOCK_SHIPMENT_POINTS);
 
   useEffect(() => {
     const fetchGeoJson = async () => {
@@ -86,33 +101,24 @@ export default function DppGlobalTrackerPage() {
           throw new Error(`Failed to fetch GeoJSON: ${response.status} ${response.statusText}. Server said: ${errorText.substring(0,100)}. URL: ${response.url}`);
         }
         const world = await response.json();
-        
+
         if (world.objects && world.objects.countries) {
-          // Use topojson.feature to convert TopoJSON to GeoJSON
           const geoJsonFeatures = (topojson.feature(world, world.objects.countries) as any).features;
-          
+
           let missingNameCount = 0;
           let missingIsoA2Count = 0;
 
           geoJsonFeatures.forEach((feature: any) => {
-            if (!feature.properties) {
-              missingNameCount++;
-              missingIsoA2Count++;
-              return;
-            }
-            const name = feature.properties.sovereignt || feature.properties.name || feature.properties.NAME || feature.properties.NAME_EN || feature.properties.ADMIN;
-            const iso_a2 = feature.properties.iso_a2 || feature.properties.ISO_A2 || feature.properties.ISO_A2_EH;
-            
-            if (!name) missingNameCount++;
-            if (!iso_a2 && feature.properties.sovereignt !== "Somaliland" && feature.properties.sovereignt !== "N. Cyprus") { 
-              if (!feature.properties.ADM0_A3) missingIsoA2Count++;
-            }
+            const name = getCountryName(feature);
+            const iso_a2 = getCountryISO_A2(feature);
+            if (!name || name === 'Unknown Country' || name === 'Unknown Territory') missingNameCount++;
+            if (!iso_a2) missingIsoA2Count++;
           });
 
           if (missingNameCount > 0 || missingIsoA2Count > 0) {
             const message = `GeoJSON Validation: ${missingNameCount} countries missing name. ${missingIsoA2Count} countries missing ISO A2 code. Some map features or info might be incomplete.`;
             console.warn(message);
-            if (missingNameCount > geoJsonFeatures.length * 0.1 || missingIsoA2Count > geoJsonFeatures.length * 0.1) { // If more than 10% issues
+            if (missingNameCount > geoJsonFeatures.length * 0.1 || missingIsoA2Count > geoJsonFeatures.length * 0.1) {
               toast({
                 variant: "default",
                 title: "Map Data Inconsistencies",
@@ -149,7 +155,7 @@ export default function DppGlobalTrackerPage() {
     return NON_EU_GREY_COLOR;
   }, []);
 
-  const polygonSideColorAccessor = useCallback(() => 'rgba(0, 0, 0, 0.05)', []);
+  const polygonSideColorAccessor = useCallback(() => 'rgba(0,0,0,0.05)', []);
   const polygonStrokeColorAccessor = useCallback(() => COUNTRY_BORDER_COLOR, []);
   const polygonAltitudeAccessor = useCallback(() => 0.01, []);
 
@@ -164,22 +170,20 @@ export default function DppGlobalTrackerPage() {
         pop_est: props.POP_EST || props.pop_est || props.POP_MAX || "N/A",
       });
        if (globeEl.current) {
-        // Example: Focus on the clicked country
-        const center = { lat: props.latitude || 0, lng: props.longitude || 0, altitude: 1.5 }; // Adjust altitude as needed
-        try {
-          // Get centroid if available, otherwise use lat/lng or default
-          const centroid = (polygon.geometry && polygon.geometry.type === 'Polygon' && polygon.geometry.coordinates) ?
-             // A simple way to get a point; for multipolygons, this would be more complex
-             { lat: polygon.geometry.coordinates[0][0][1], lng: polygon.geometry.coordinates[0][0][0] } :
-             (polygon.geometry && polygon.geometry.type === 'MultiPolygon' && polygon.geometry.coordinates) ?
-             { lat: polygon.geometry.coordinates[0][0][0][1], lng: polygon.geometry.coordinates[0][0][0][0] } :
+        const centroid = (polygon.geometry && (polygon.geometry.type === 'Polygon' || polygon.geometry.type === 'MultiPolygon')) ?
+             (topojson.feature(polygon, polygon.geometry) as any).properties.centroid || [0,0] : // This part might be tricky without a proper centroid function
              { lat: 0, lng: 0};
-
-          globeEl.current.pointOfView({ lat: centroid.lat, lng: centroid.lng, altitude: 1 }, 750);
-        } catch (e) {
-            console.warn("Could not calculate centroid for focusing, using default.", e);
-            globeEl.current.pointOfView({ lat: 0, lng: 0, altitude: 1.5}, 750);
+        let targetLat = centroid.lat || (polygon.properties.latitude);
+        let targetLng = centroid.lng || (polygon.properties.longitude);
+        
+        if (!targetLat && polygon.bbox) { // Fallback to bounding box center
+            targetLat = (polygon.bbox[1] + polygon.bbox[3]) / 2;
+            targetLng = (polygon.bbox[0] + polygon.bbox[2]) / 2;
         }
+        targetLat = targetLat || 0;
+        targetLng = targetLng || 0;
+
+        globeEl.current.pointOfView({ lat: targetLat, lng: targetLng, altitude: 1.5 }, 750);
       }
     } else {
       setSelectedCountryInfo(null);
@@ -189,6 +193,14 @@ export default function DppGlobalTrackerPage() {
   const handleZoomIn = () => globeEl.current?.pointOfView({ altitude: Math.max(0.1, (globeEl.current.pointOfView().altitude || 2.5) / 1.5) }, 500);
   const handleZoomOut = () => globeEl.current?.pointOfView({ altitude: Math.min(5, (globeEl.current.pointOfView().altitude || 2.5) * 1.5) }, 500);
   const handleResetView = () => globeEl.current?.pointOfView({ lat: 20, lng: 0, altitude: 2.5 }, 1000);
+
+  // Accessors for shipment points
+  const pointLatAccessor = useCallback((p: ShipmentPoint) => p.lat, []);
+  const pointLngAccessor = useCallback((p: ShipmentPoint) => p.lng, []);
+  const pointColorAccessor = useCallback((p: ShipmentPoint) => p.color, []);
+  const pointAltitudeAccessor = useCallback(() => 0.02, []); // Slightly above surface
+  const pointRadiusAccessor = useCallback((p: ShipmentPoint) => p.size, []);
+
 
   return (
     <div className="flex flex-col h-[calc(100vh-var(--header-height,4rem)-2rem)] bg-background">
@@ -214,13 +226,12 @@ export default function DppGlobalTrackerPage() {
                   {selectedCountryInfo.iso_a2 && <p><strong>Code:</strong> {selectedCountryInfo.iso_a2}</p>}
                   {selectedCountryInfo.continent && <p><strong>Continent:</strong> {selectedCountryInfo.continent}</p>}
                   {selectedCountryInfo.subregion && <p><strong>Region:</strong> {selectedCountryInfo.subregion}</p>}
-                  {selectedCountryInfo.pop_est && typeof selectedCountryInfo.pop_est === 'number' && <p><strong>Population:</strong> {selectedCountryInfo.pop_est.toLocaleString()}</p>}
-                  {selectedCountryInfo.pop_est && typeof selectedCountryInfo.pop_est === 'string' && <p><strong>Population:</strong> {selectedCountryInfo.pop_est}</p>}
-                   <p className="mt-2 text-xs text-muted-foreground">Shipment/Compliance Data: (Mock - To be implemented)</p>
+                  {selectedCountryInfo.pop_est && <p><strong>Population Est.:</strong> {Number(selectedCountryInfo.pop_est).toLocaleString()}</p>}
+                  <p className="mt-2 text-xs text-muted-foreground">Shipment/Compliance Data: (Mock - To be implemented)</p>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  Click on a country to view its details. Rotate and zoom the globe.
+                  Click on a country to view its details. Rotate and zoom the globe. Shipment markers show current mock activities.
                 </p>
               )}
             </CardContent>
@@ -246,7 +257,14 @@ export default function DppGlobalTrackerPage() {
                 </div>
                  <div className="flex items-center">
                   <span style={{ backgroundImage: `url(${OCEAN_TEXTURE_URL})`, backgroundSize: 'cover' }} className="h-3 w-3 rounded-full mr-2 border border-black/30 opacity-70"></span>
-                  <span>Oceans (Light Blue Texture)</span>
+                  <span>Oceans (Blue Marble Texture)</span>
+                </div>
+                <div className="mt-2 pt-2 border-t">
+                    <p className="font-medium mb-1">Shipment Markers:</p>
+                    <div className="flex items-center"><span style={{ backgroundColor: 'rgba(0, 255, 0, 0.75)' }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span><span>In Transit</span></div>
+                    <div className="flex items-center"><span style={{ backgroundColor: 'rgba(255, 165, 0, 0.75)' }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span><span>Customs Review</span></div>
+                    <div className="flex items-center"><span style={{ backgroundColor: 'rgba(0, 0, 255, 0.75)' }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span><span>Cleared</span></div>
+                    <div className="flex items-center"><span style={{ backgroundColor: 'rgba(255,0,0,0.75)' }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span><span>Delayed</span></div>
                 </div>
             </CardContent>
           </Card>
@@ -291,7 +309,7 @@ export default function DppGlobalTrackerPage() {
               <ClientOnlyGlobe
                 globeRef={globeEl}
                 globeImageUrl={OCEAN_TEXTURE_URL}
-                backgroundColor="rgba(0,0,0,0)" 
+                backgroundColor="rgba(0,0,0,0)"
                 atmosphereColor={ATMOSPHERE_COLOR}
                 atmosphereAltitude={0.25}
                 polygonsData={countryPolygons}
@@ -301,6 +319,12 @@ export default function DppGlobalTrackerPage() {
                 polygonAltitude={polygonAltitudeAccessor}
                 onPolygonClick={handlePolygonClick}
                 polygonsTransitionDuration={0}
+                pointsData={shipmentPoints}
+                pointLat={pointLatAccessor}
+                pointLng={pointLngAccessor}
+                pointAltitude={pointAltitudeAccessor}
+                pointRadius={pointRadiusAccessor}
+                pointColor={pointColorAccessor}
               />
             )}
             {!isLoadingGeoJson && !geoJsonError && countryPolygons.length === 0 && (
@@ -322,3 +346,4 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
+

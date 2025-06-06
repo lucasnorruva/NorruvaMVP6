@@ -75,11 +75,11 @@ export default function AppSidebarContent() {
         isActive = true;
     } else if (href === "/dpp-global-tracker" && pathname === href) { 
         isActive = true;
-    } else if (href === "/customs-dashboard" && pathname === href) { 
+    } else if (href === "/customs-dashboard" && pathname === href) { // Exact match for customs dashboard
         isActive = true;
     } else if (href === "/compliance/pathways" && pathname.startsWith("/compliance/pathways/battery-regulation")) {
         isActive = true;
-    } else if (href === "/compliance/pathways" && pathname !== href) {
+    } else if (href === "/compliance/pathways" && pathname !== href && !pathname.startsWith("/compliance/pathways/")) { // Ensure main "Compliance Pathways" is not active if on a sub-page unless it's a direct sub-page
         isActive = false;
     }
 
@@ -148,3 +148,6 @@ export default function AppSidebarContent() {
     </>
   );
 }
+
+
+    

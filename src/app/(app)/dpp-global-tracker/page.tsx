@@ -29,7 +29,11 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 
-const GlobeVisualization = React.lazy(() => import('@/components/dpp-tracker/GlobeVisualization'));
+const GlobeVisualizationInternal = React.lazy(() => import('@/components/dpp-tracker/GlobeVisualization'));
+
+// Wrapped GlobeVisualization for React.memo
+const GlobeVisualization = React.memo(GlobeVisualizationInternal);
+
 
 export interface MockDppPoint {
   id: string;
@@ -50,12 +54,11 @@ export interface MockDppPoint {
 export interface MockArc {
   id: string;
   shipmentId: string;
-  direction: 'inbound_eu' | 'outbound_eu' | 'internal_eu';
+  direction: 'inbound_eu' | 'outbound_eu' | 'internal_eu' | 'other';
   startLat: number;
   startLng: number;
   endLat: number;
   endLng: number;
-  color: string | string[];
   label?: string;
   stroke?: number;
   timestamp: number;
@@ -83,7 +86,7 @@ export interface MockShipmentPoint {
   lng: number;
   name: string;
   size: number;
-  direction: 'inbound_eu' | 'outbound_eu' | 'internal_eu';
+  direction: 'inbound_eu' | 'outbound_eu' | 'internal_eu' | 'other';
   color?: string;
   arcId: string;
   arcLabel?: string;
@@ -92,14 +95,12 @@ export interface MockShipmentPoint {
   dppComplianceBadgeVariant?: 'default' | 'secondary' | 'outline' | 'destructive';
   eta?: string;
   progressPercentage?: number;
-  // For simulation
   currentLat?: number;
   currentLng?: number;
-  simulationProgress?: number; // 0 to 1
+  simulationProgress?: number; 
   simulatedStatus: 'in_transit' | 'at_customs' | 'customs_inspection' | 'delayed' | 'cleared' | 'data_sync_delayed';
-  // New fields from step 1
   ceMarkingStatus: 'valid' | 'missing' | 'pending_verification';
-  cbamDeclarationStatus: 'submitted' | 'required' | 'cleared';
+  cbamDeclarationStatus: 'submitted' | 'required' | 'cleared' | 'not_applicable';
   dppComplianceNotes: string[];
 }
 
@@ -126,12 +127,18 @@ export const CHECKPOINT_AIRPORT_COLOR = 'rgba(100, 60, 170, 0.9)';
 export const CHECKPOINT_LAND_BORDER_COLOR = 'rgba(200, 100, 30, 0.9)';
 
 // Shipment status colors
-const SHIPMENT_IN_TRANSIT_COLOR_GLOBE = 'rgba(0, 123, 255, 0.9)'; // Blue
-const SHIPMENT_AT_CUSTOMS_COLOR_GLOBE = 'rgba(255, 165, 0, 0.9)';  // Orange
-const SHIPMENT_INSPECTION_COLOR_GLOBE = 'rgba(220, 53, 69, 0.9)'; // Red
-const SHIPMENT_DELAYED_COLOR_GLOBE = 'rgba(255, 193, 7, 0.9)';    // Yellow
-const SHIPMENT_CLEARED_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)';   // Green
-const SHIPMENT_DATA_SYNC_DELAYED_COLOR_GLOBE = 'rgba(108, 117, 125, 0.9)'; // Grey for data sync issues
+const SHIPMENT_IN_TRANSIT_COLOR_GLOBE = 'rgba(0, 123, 255, 0.9)'; 
+const SHIPMENT_AT_CUSTOMS_COLOR_GLOBE = 'rgba(255, 165, 0, 0.9)';  
+const SHIPMENT_INSPECTION_COLOR_GLOBE = 'rgba(220, 53, 69, 0.9)'; 
+const SHIPMENT_DELAYED_COLOR_GLOBE = 'rgba(255, 193, 7, 0.9)';    
+const SHIPMENT_CLEARED_COLOR_GLOBE = 'rgba(40, 167, 69, 0.9)';   
+const SHIPMENT_DATA_SYNC_DELAYED_COLOR_GLOBE = 'rgba(108, 117, 125, 0.9)'; 
+
+// Arc (Trade Route) Colors
+const ARC_INBOUND_EU_COLOR = 'rgba(50, 120, 220, 0.8)'; // Distinct Blue
+const ARC_OUTBOUND_EU_COLOR = 'rgba(30, 180, 100, 0.8)'; // Distinct Green
+const ARC_INTERNAL_EU_COLOR = 'rgba(150, 100, 200, 0.8)'; // Distinct Purple
+const ARC_DEFAULT_COLOR = 'rgba(128, 128, 128, 0.7)'; // Grey for others
 
 
 const initialMockPointsData: MockDppPoint[] = [
@@ -146,11 +153,12 @@ const initialMockPointsData: MockDppPoint[] = [
 ];
 
 const initialMockArcsData: MockArc[] = [
-  { id: 'arc1', shipmentId: 'SH001', direction: 'inbound_eu', startLat: 22.3193, startLng: 114.1694, endLat: 50.8503, endLng: 4.3517, label: 'Textiles to EU', timestamp: 2023, transportMode: 'sea', productId: 'DPP002', color: VIBRANT_TEAL },
-  { id: 'arc2', shipmentId: 'SH002', direction: 'outbound_eu', startLat: -14.2350, startLng: -51.9253, endLat: 22.3193, endLng: 114.1694, label: 'Materials to Asia', timestamp: 2022, transportMode: 'sea', color: SATURATED_BLUE },
-  { id: 'arc3', shipmentId: 'SH003', direction: 'outbound_eu', startLat: 50.8503, startLng: 4.3517, endLat: 34.0522, endLng: -118.2437, label: 'Electronics to US', timestamp: 2024, transportMode: 'air', productId: 'DPP001', color: ACCENT_PURPLE },
-  { id: 'arc4', shipmentId: 'SH004', direction: 'inbound_eu', startLat: 22.5431, startLng: 114.0579, endLat: 50.1109, endLng: 8.6821, label: 'Electronics to Frankfurt', timestamp: 2023, transportMode: 'rail', color: SATURATED_BLUE },
-  { id: 'arc5', shipmentId: 'SH005', direction: 'internal_eu', startLat: 12.9716, startLng: 77.5946, endLat: -1.2921, endLng: 36.8219, label: 'Appliances EOL to Nairobi', timestamp: 2024, transportMode: 'road', productId: 'DPP005', color: VIBRANT_TEAL },
+  { id: 'arc1', shipmentId: 'SH001', direction: 'inbound_eu', startLat: 22.3193, startLng: 114.1694, endLat: 50.8503, endLng: 4.3517, label: 'Textiles to EU', timestamp: 2023, transportMode: 'sea', productId: 'DPP002' },
+  { id: 'arc2', shipmentId: 'SH002', direction: 'other', startLat: -14.2350, startLng: -51.9253, endLat: 22.3193, endLng: 114.1694, label: 'Materials to Asia (Non-EU)', timestamp: 2022, transportMode: 'sea' },
+  { id: 'arc3', shipmentId: 'SH003', direction: 'outbound_eu', startLat: 50.8503, startLng: 4.3517, endLat: 34.0522, endLng: -118.2437, label: 'Electronics to US', timestamp: 2024, transportMode: 'air', productId: 'DPP001' },
+  { id: 'arc4', shipmentId: 'SH004', direction: 'inbound_eu', startLat: 22.5431, startLng: 114.0579, endLat: 50.1109, endLng: 8.6821, label: 'Electronics to Frankfurt', timestamp: 2023, transportMode: 'rail' },
+  { id: 'arc5', shipmentId: 'SH005', direction: 'other', startLat: 12.9716, startLng: 77.5946, endLat: -1.2921, endLng: 36.8219, label: 'Appliances EOL to Nairobi (Non-EU)', timestamp: 2024, transportMode: 'road', productId: 'DPP005' },
+  { id: 'arc6', shipmentId: 'SH006', direction: 'internal_eu', startLat: 50.8503, startLng: 4.3517, endLat: 50.1109, endLng: 8.6821, label: 'Parts Brussels to Frankfurt', timestamp: 2024, transportMode: 'road', productId: 'DPP00X'},
 ];
 
 const initialMockShipmentPointsData: MockShipmentPoint[] = initialMockArcsData.map((arc, index) => {
@@ -175,7 +183,7 @@ const initialMockShipmentPointsData: MockShipmentPoint[] = initialMockArcsData.m
         eta: etaDate.toISOString().split('T')[0],
         progressPercentage: 0, 
         ceMarkingStatus: index % 3 === 0 ? 'valid' : (index % 3 === 1 ? 'pending_verification' : 'missing'),
-        cbamDeclarationStatus: index % 2 === 0 ? 'submitted' : 'required',
+        cbamDeclarationStatus: index % 2 === 0 ? 'submitted' : (index % 3 === 0 ? 'cleared' : 'not_applicable'),
         dppComplianceNotes: index % 2 === 0 ? ['Awaiting final quality check report.', 'Eco-packaging verified.'] : ['Partial component data received.'],
     };
 });
@@ -218,30 +226,8 @@ const Legend: React.FC<{ title: string; colorMap: Record<string, string>, classN
   </Card>
 );
 
-const DppGlobalTrackerClientContainer: React.FC<any & {isClient: boolean }> = ({ isClient, ...globeProps }) => {
-  if (!isClient) {
-    return (
-      <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <span className="ml-2">Loading Globe Context...</span>
-      </div>
-    );
-  }
-  return (
-    <div className="w-full h-full bg-card" style={{ position: 'relative', zIndex: 1 }}>
-      <Suspense fallback={
-        <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <span className="ml-2">Loading 3D Globe Visualization...</span>
-        </div>
-      }>
-        <GlobeVisualization {...globeProps} />
-      </Suspense>
-    </div>
-  );
-};
 
-const SHIPMENTS_TO_SIMULATE = ['SH001', 'SH004'];
+const SHIPMENTS_TO_SIMULATE = ['SH001', 'SH004', 'SH006'];
 const SIMULATION_INTERVAL = 2000; 
 const SIMULATION_STEP = 0.02; 
 
@@ -285,8 +271,13 @@ export default function DppGlobalTrackerPage() {
       .catch(err => {
         console.error("Error fetching GeoJSON data:", err);
         setIsLoadingGeoJson(false);
+        toast({
+          title: "Map Data Error",
+          description: "Could not load geographic data for the globe.",
+          variant: "destructive",
+        });
       });
-  }, []);
+  }, [toast]);
 
   useEffect(() => {
     let simulationToastShown = false;
@@ -309,11 +300,10 @@ export default function DppGlobalTrackerPage() {
             const prevStatus = updatedShipment.simulatedStatus;
             
             // Simulate data sync delay randomly
-            if (Math.random() < 0.05 && updatedShipment.simulatedStatus !== 'data_sync_delayed' && updatedShipment.simulationProgress < 0.95) {
+            if (Math.random() < 0.02 && updatedShipment.simulatedStatus !== 'data_sync_delayed' && updatedShipment.simulationProgress < 0.95) { // Reduced chance for sync delay
                 updatedShipment.simulatedStatus = 'data_sync_delayed';
             } else if (updatedShipment.simulatedStatus === 'data_sync_delayed') {
-                // If it was delayed, recover to in_transit or previous logical state after one cycle
-                updatedShipment.simulatedStatus = 'in_transit'; // Simplified recovery
+                updatedShipment.simulatedStatus = 'in_transit'; 
             }
 
 
@@ -328,7 +318,7 @@ export default function DppGlobalTrackerPage() {
             }
 
             if (updatedShipment.simulatedStatus !== 'data_sync_delayed') {
-                 updatedShipment.simulationProgress += SIMULATION_STEP;
+                 updatedShipment.simulationProgress = (updatedShipment.simulationProgress || 0) + SIMULATION_STEP;
             }
            
             if (updatedShipment.simulationProgress > 1) updatedShipment.simulationProgress = 1;
@@ -338,13 +328,11 @@ export default function DppGlobalTrackerPage() {
             updatedShipment.progressPercentage = Math.round(updatedShipment.simulationProgress * 100);
 
 
-            // Determine status based on progress if not data_sync_delayed
             if (updatedShipment.simulatedStatus !== 'data_sync_delayed') {
                 if (updatedShipment.simulationProgress >= 0.4 && updatedShipment.simulationProgress <= 0.7) { 
                     if (prevStatus === 'in_transit' || prevStatus === 'data_sync_delayed') {
                          updatedShipment.simulatedStatus = 'at_customs';
-                         // Simulate compliance data validation
-                         if (Math.random() < 0.20) { // 20% chance of a compliance issue
+                         if (Math.random() < 0.20) { 
                             const issues = ["Awaiting CBAM Declaration", "CE Marking Verification Pending", "Battery Passport Data Missing"];
                             const randomIssue = issues[Math.floor(Math.random() * issues.length)];
                             updatedShipment.dppComplianceStatusText = randomIssue;
@@ -368,7 +356,7 @@ export default function DppGlobalTrackerPage() {
                 } else { 
                     if(prevStatus !== 'in_transit' && prevStatus !== 'delayed' && prevStatus !== 'data_sync_delayed') {
                         updatedShipment.simulatedStatus = 'in_transit';
-                        updatedShipment.dppComplianceStatusText = "DPP Data Verified for Transit"; // Reset compliance text
+                        updatedShipment.dppComplianceStatusText = "DPP Data Verified for Transit"; 
                         updatedShipment.dppComplianceBadgeVariant = "default";
                     }
                 }
@@ -380,7 +368,7 @@ export default function DppGlobalTrackerPage() {
             }
 
 
-            if (updatedShipment.simulatedStatus !== prevStatus && updatedShipment.simulatedStatus !== 'compliance_alert') { // Don't toast for internal 'compliance_alert'
+            if (updatedShipment.simulatedStatus !== prevStatus && updatedShipment.simulatedStatus !== 'compliance_alert') { 
                 let toastMessage = `Shipment ${updatedShipment.id} is now ${updatedShipment.simulatedStatus.replace('_', ' ')}.`;
                 let toastVariant: 'default' | 'destructive' = 'default';
                 if (updatedShipment.simulatedStatus === 'delayed' || updatedShipment.simulatedStatus === 'customs_inspection' || updatedShipment.simulatedStatus === 'data_sync_delayed') {
@@ -469,6 +457,17 @@ export default function DppGlobalTrackerPage() {
       }
     }
   }, []);
+  
+  const arcColorAccessor = useCallback((arc: MockArc): string | string[] => {
+    switch (arc.direction) {
+      case 'inbound_eu': return ARC_INBOUND_EU_COLOR;
+      case 'outbound_eu': return ARC_OUTBOUND_EU_COLOR;
+      case 'internal_eu': return ARC_INTERNAL_EU_COLOR;
+      case 'other':
+      default: return ARC_DEFAULT_COLOR;
+    }
+  }, []);
+
 
   const pointRadiusAccessor = useCallback((point: MockDppPoint | MockShipmentPoint) => {
     if ('direction' in point && point.direction) {
@@ -554,11 +553,10 @@ export default function DppGlobalTrackerPage() {
     "Shipment (Delayed)": SHIPMENT_DELAYED_COLOR_GLOBE,
     "Shipment (Cleared)": SHIPMENT_CLEARED_COLOR_GLOBE,
     "Shipment (Data Sync Delay)": SHIPMENT_DATA_SYNC_DELAYED_COLOR_GLOBE,
-    "Sea Route": `${SATURATED_BLUE} to ${VIBRANT_TEAL}`,
-    "Air Route": ACCENT_PURPLE,
-    "Road Route": ORANGE_COLOR,
-    "Rail Route": CORNFLOWER_BLUE_COLOR,
-    "Other Point/Route": GREY_COLOR,
+    "Route (Inbound EU)": ARC_INBOUND_EU_COLOR,
+    "Route (Outbound EU)": ARC_OUTBOUND_EU_COLOR,
+    "Route (Internal EU)": ARC_INTERNAL_EU_COLOR,
+    "Route (Other)": ARC_DEFAULT_COLOR,
   };
 
   const handleSimulateCheckpointUpdate = () => {
@@ -691,25 +689,33 @@ export default function DppGlobalTrackerPage() {
                     <span className="ml-2">Loading Geographic Data...</span>
                 </div>
             ) : (
-                <DppGlobalTrackerClientContainer
-                    isClient={isClient}
-                    globeRef={globeRefMain}
-                    pointsData={combinedPointsForGlobe}
-                    arcsData={filteredArcs}
-                    polygonsData={countryPolygons}
-                    customsCheckpointsData={mockCustomsCheckpointsDataState}
-                    polygonCapColorAccessor={polygonCapColorAccessor}
-                    polygonSideColorAccessor={polygonSideColorAccessor}
-                    polygonStrokeColorAccessor={polygonStrokeColorAccessor}
-                    onPointClick={handlePointClick}
-                    onArcClick={handleArcClick}
-                    onCheckpointClick={handleCheckpointClick}
-                    pointColorAccessor={pointColorAccessor}
-                    pointRadiusAccessor={pointRadiusAccessor}
-                    arcColorAccessor={(arc: MockArc) => arc.color}
-                    arcStrokeAccessor={(arc: MockArc) => (arc.stroke || 0.2) + (arc.productId ? 0.1 : 0)}
-                    globeBackgroundColor={WHITE_BACKGROUND_COLOR}
-                />
+              <Suspense fallback={
+                <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                  <span className="ml-2">Loading 3D Globe Visualization...</span>
+                </div>
+              }>
+                {isClient && (
+                    <GlobeVisualization
+                        globeRef={globeRefMain}
+                        pointsData={combinedPointsForGlobe}
+                        arcsData={filteredArcs}
+                        polygonsData={countryPolygons}
+                        customsCheckpointsData={mockCustomsCheckpointsDataState}
+                        polygonCapColorAccessor={polygonCapColorAccessor}
+                        polygonSideColorAccessor={polygonSideColorAccessor}
+                        polygonStrokeColorAccessor={polygonStrokeColorAccessor}
+                        onPointClick={handlePointClick}
+                        onArcClick={handleArcClick}
+                        onCheckpointClick={handleCheckpointClick}
+                        pointColorAccessor={pointColorAccessor}
+                        pointRadiusAccessor={pointRadiusAccessor}
+                        arcColorAccessor={arcColorAccessor}
+                        arcStrokeAccessor={(arc: MockArc) => (arc.stroke || 0.2) + (arc.productId ? 0.1 : 0)}
+                        globeBackgroundColor={WHITE_BACKGROUND_COLOR}
+                    />
+                )}
+                </Suspense>
             )}
           </div>
 
@@ -779,6 +785,3 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
-
-
-    

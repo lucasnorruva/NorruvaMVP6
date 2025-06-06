@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } fr
 import { feature as topojsonFeature } from 'topojson-client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw, SearchCheck } from "lucide-react";
+import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw, SearchCheck, BarChart3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
@@ -19,7 +19,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useRole } from '@/contexts/RoleContext';
 import {
   AlertDialog,
-  AlertDialogAction,
   AlertDialogCancel,
   AlertDialogContent,
   AlertDialogDescription,
@@ -28,6 +27,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip } from 'recharts';
+import { ChartContainer, ChartTooltipContent } from '@/components/ui/chart';
+
 
 const GlobeVisualizationInternal = React.lazy(() => import('@/components/dpp-tracker/GlobeVisualization'));
 
@@ -164,6 +166,13 @@ const initialMockArcsData: MockArc[] = [
 const initialMockShipmentPointsData: MockShipmentPoint[] = initialMockArcsData.map((arc, index) => {
     const etaDate = new Date();
     etaDate.setDate(etaDate.getDate() + (index + 1) * 7);
+    let simulatedStatus: MockShipmentPoint['simulatedStatus'] = 'in_transit';
+    if (index % 5 === 1) simulatedStatus = 'at_customs';
+    else if (index % 5 === 2) simulatedStatus = 'customs_inspection';
+    else if (index % 5 === 3) simulatedStatus = 'delayed';
+    else if (index % 5 === 4) simulatedStatus = 'cleared';
+
+
     return {
         id: arc.shipmentId,
         lat: arc.startLat, 
@@ -171,7 +180,7 @@ const initialMockShipmentPointsData: MockShipmentPoint[] = initialMockArcsData.m
         currentLat: arc.startLat,
         currentLng: arc.startLng,
         simulationProgress: 0, 
-        simulatedStatus: 'in_transit', 
+        simulatedStatus: simulatedStatus, 
         name: `Shipment ${arc.shipmentId}`,
         size: 0.15,
         direction: arc.direction,
@@ -438,6 +447,39 @@ export default function DppGlobalTrackerPage() {
     return [...filteredDppPoints, ...currentShipments];
   }, [filteredDppPoints, mockShipmentPointsDataState, filteredArcs, shipmentStatusFilter]);
 
+  const shipmentStatusAnalyticsData = useMemo(() => {
+    const counts: Record<MockShipmentPoint['simulatedStatus'], number> = {
+      in_transit: 0,
+      at_customs: 0,
+      customs_inspection: 0,
+      delayed: 0,
+      cleared: 0,
+      data_sync_delayed: 0,
+    };
+    mockShipmentPointsDataState.forEach(shipment => {
+      counts[shipment.simulatedStatus] = (counts[shipment.simulatedStatus] || 0) + 1;
+    });
+    return Object.entries(counts).map(([status, count]) => ({
+      status: status.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase()), // Format status for display
+      count,
+    }));
+  }, [mockShipmentPointsDataState]);
+
+  const dppCategoryAnalyticsData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    mockDppPointsData.forEach(point => {
+      counts[point.category] = (counts[point.category] || 0) + 1;
+    });
+    return Object.entries(counts).map(([category, count]) => ({ category, count }));
+  }, [mockDppPointsData]);
+
+  const chartConfig = {
+    count: {
+      label: "Count",
+      color: "hsl(var(--primary))",
+    },
+  } satisfies import("@/components/ui/chart").ChartConfig;
+
 
   const pointColorAccessor = useCallback((point: MockDppPoint | MockShipmentPoint) => {
     if ('simulatedStatus' in point && point.simulatedStatus) {
@@ -638,7 +680,7 @@ export default function DppGlobalTrackerPage() {
           <CardDescription>Adjust filters to refine the displayed data on the globe. Shipment simulation is active.</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mb-6 items-end">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mb-6 items-stretch">
             <div title="Filter DPP location points by their assigned category.">
               <Label htmlFor="category-filter" className="text-sm font-medium">Filter by Category (Locations)</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -690,6 +732,55 @@ export default function DppGlobalTrackerPage() {
         </CardContent>
       </Card>
       
+       <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="font-headline flex items-center">
+            <BarChart3 className="mr-2 h-5 w-5 text-primary" />
+            Shipment Analytics (Mock)
+          </CardTitle>
+          <CardDescription>Summary of current mock shipment data.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="grid md:grid-cols-2 gap-6 items-start">
+            <div>
+              <h4 className="text-md font-semibold mb-2">Shipment Counts by Status</h4>
+              <ul className="space-y-1 text-sm">
+                {shipmentStatusAnalyticsData.map(item => (
+                  <li key={item.status} className="flex justify-between">
+                    <span>{item.status}:</span>
+                    <span className="font-medium">{item.count}</span>
+                  </li>
+                ))}
+              </ul>
+              <h4 className="text-md font-semibold mt-4 mb-2">DPP Location Points by Category</h4>
+              <ul className="space-y-1 text-sm">
+                {dppCategoryAnalyticsData.map(item => (
+                  <li key={item.category} className="flex justify-between">
+                    <span>{item.category}:</span>
+                    <span className="font-medium">{item.count}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+            <div>
+              <h4 className="text-md font-semibold mb-2">Shipments by Status (Chart)</h4>
+              <ChartContainer config={chartConfig} className="aspect-video h-[250px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={shipmentStatusAnalyticsData} layout="vertical" margin={{ right: 20, left: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" horizontal={false} />
+                    <XAxis type="number" dataKey="count" stroke="hsl(var(--muted-foreground))" fontSize={12} />
+                    <YAxis type="category" dataKey="status" stroke="hsl(var(--muted-foreground))" fontSize={10} width={100} interval={0}/>
+                    <RechartsTooltip cursor={{ fill: 'hsl(var(--muted))' }} content={<ChartTooltipContent />} />
+                    <Bar dataKey="count" fill="hsl(var(--primary))" radius={4} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </ChartContainer>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Global Product Passport Visualization</CardTitle>
@@ -802,4 +893,3 @@ export default function DppGlobalTrackerPage() {
   );
 }
 
-    

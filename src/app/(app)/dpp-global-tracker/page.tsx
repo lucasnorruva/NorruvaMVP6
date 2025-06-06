@@ -26,21 +26,39 @@ const ClientOnlyGlobe = dynamic(
   }
 );
 
-const LIGHT_GREY_LAND_COLOR = 'rgba(211, 211, 211, 0.85)'; // Light grey for all countries
+const EU_COUNTRIES_ISO_A2 = [
+  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU',
+  'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'
+];
+
+const LIGHT_GREY_LAND_COLOR = 'rgba(211, 211, 211, 0.85)'; // Light grey for all countries (overridden for EU)
+const EU_COUNTRY_COLOR = 'rgba(0, 51, 153, 0.85)'; // Dark blue for EU countries
 const COUNTRY_BORDER_COLOR = 'rgba(0, 0, 0, 1)'; // Black for borders
 const GLOBE_PAGE_BACKGROUND_COLOR = '#0a0a0a'; // Very dark grey / off-black
 const ATMOSPHERE_COLOR = '#4682B4'; // Steel blue for atmosphere
 const OCEAN_TEXTURE_URL = '//unpkg.com/three-globe/example/img/earth-day.jpg'; // Texture with light blue oceans
 
+
 const getCountryISO_A2 = (feature: any): string | undefined => {
   if (!feature || !feature.properties) return undefined;
   const props = feature.properties;
-  if (props.iso_a2 && props.iso_a2 !== "-99") return props.iso_a2;
+
+  // Most reliable primary sources
   if (props.ISO_A2 && props.ISO_A2 !== "-99") return props.ISO_A2;
-  if (props.SOVEREIGNT === "Somaliland") return "SO";
-  if (props.SOVEREIGNT === "N. Cyprus") return "CY";
-  if (props.ADMIN === "Kosovo") return "XK";
-  return props.ADM0_A3 || props.WB_A2 || props.GU_A3;
+  if (props.iso_a2 && props.iso_a2 !== "-99") return props.iso_a2;
+  
+  // Handle known specific cases from world-atlas
+  if (props.SOVEREIGNT === "Somaliland") return "SO"; // Somaliland is de facto independent but uses Somalia's ISO code area.
+  if (props.SOVEREIGNT === "N. Cyprus") return "CY"; // Northern Cyprus, internationally recognized as part of Cyprus.
+  if (props.ADMIN === "Kosovo") return "XK"; // Kosovo uses a user-assigned code.
+
+  // General fallbacks (prefer 2-letter codes if available)
+  if (props.WB_A2 && props.WB_A2 !== "-99") return props.WB_A2;
+  if (props.GU_A3 && props.GU_A3 !== "-99" && props.GU_A3.length === 2) return props.GU_A3; // If GU_A3 happens to be 2 letters
+  if (props.ADM0_A3 && props.ADM0_A3 !== "-99" && props.ADM0_A3.length === 2) return props.ADM0_A3; // If ADM0_A3 happens to be 2 letters
+  
+  // If strictly need an ISO A2 and above failed, it's effectively undefined for our needs
+  return undefined;
 };
 
 const getCountryName = (feature: any): string => {
@@ -48,6 +66,7 @@ const getCountryName = (feature: any): string => {
   const props = feature.properties;
   return props.NAME_EN || props.NAME || props.ADMIN || props.SOVEREIGNT || 'Unknown Country';
 };
+
 
 interface SelectedCountryProperties {
   name?: string;
@@ -132,9 +151,9 @@ export default function DppGlobalTrackerPage() {
           if (missingNameCount > 0 || missingIsoA2Count > 0) {
             const message = `GeoJSON Validation: ${missingNameCount} countries missing identifiable name. ${missingIsoA2Count} countries missing identifiable ISO A2 code. Some map features or info might be incomplete.`;
             console.warn(message);
-            if (missingNameCount > geoJsonFeatures.length * 0.1 || missingIsoA2Count > geoJsonFeatures.length * 0.1) {
+            if (missingNameCount > geoJsonFeatures.length * 0.1 || missingIsoA2Count > geoJsonFeatures.length * 0.1) { // Toast if > 10% are problematic
                 toast({
-                    variant: "default",
+                    variant: "default", // Changed to default as it's informational
                     title: "Map Data Inconsistencies",
                     description: `Found ${missingNameCount} countries missing names and ${missingIsoA2Count} missing ISO codes. Some map details might be affected.`,
                     duration: 8000,
@@ -161,7 +180,11 @@ export default function DppGlobalTrackerPage() {
     fetchGeoJson();
   }, [toast]);
 
-  const polygonCapColorAccessor = useCallback(() => LIGHT_GREY_LAND_COLOR, []);
+  const polygonCapColorAccessor = useCallback((feature: any) => {
+    const isoA2 = getCountryISO_A2(feature);
+    return isoA2 && EU_COUNTRIES_ISO_A2.includes(isoA2) ? EU_COUNTRY_COLOR : LIGHT_GREY_LAND_COLOR;
+  }, []);
+
   const polygonSideColorAccessor = useCallback(() => 'rgba(0,0,0,0.05)', []);
   const polygonStrokeColorAccessor = useCallback(() => COUNTRY_BORDER_COLOR, []);
   const polygonAltitudeAccessor = useCallback(() => 0.01, []);
@@ -245,7 +268,7 @@ export default function DppGlobalTrackerPage() {
               {selectedCountryInfo ? (
                 <div className="text-sm space-y-1">
                   <h3 className="font-semibold text-base text-primary">{selectedCountryInfo.name || "Unknown Country"}</h3>
-                  {selectedCountryInfo.iso_a2 && <p><strong>Code:</strong> {selectedCountryInfo.iso_a2}</p>}
+                  {selectedCountryInfo.iso_a2 && <p><strong>ISO A2 Code:</strong> {selectedCountryInfo.iso_a2}</p>}
                   {selectedCountryInfo.continent && <p><strong>Continent:</strong> {selectedCountryInfo.continent}</p>}
                   {selectedCountryInfo.subregion && <p><strong>Region:</strong> {selectedCountryInfo.subregion}</p>}
                   {selectedCountryInfo.pop_est && <p><strong>Population Est.:</strong> {Number(selectedCountryInfo.pop_est).toLocaleString()}</p>}
@@ -267,7 +290,11 @@ export default function DppGlobalTrackerPage() {
             <CardContent className="space-y-2 text-xs">
                <div className="flex items-center">
                   <span style={{ backgroundColor: LIGHT_GREY_LAND_COLOR }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span>
-                  <span>Countries</span>
+                  <span>Non-EU Countries</span>
+                </div>
+                 <div className="flex items-center">
+                  <span style={{ backgroundColor: EU_COUNTRY_COLOR }} className="h-3 w-3 rounded-full mr-2 border border-black/30"></span>
+                  <span>EU Countries</span>
                 </div>
                 <div className="flex items-center">
                   <span className="h-3 w-3 rounded-full mr-2 border-2 border-black bg-transparent opacity-70"></span>
@@ -341,7 +368,7 @@ export default function DppGlobalTrackerPage() {
                 polygonStrokeColor={polygonStrokeColorAccessor}
                 polygonAltitude={polygonAltitudeAccessor}
                 onPolygonClick={handlePolygonClick}
-                polygonsTransitionDuration={0} // Set to 0 for instant color changes
+                polygonsTransitionDuration={0} 
                 pointsData={shipmentPoints}
                 pointLat={pointLatAccessor}
                 pointLng={pointLngAccessor}

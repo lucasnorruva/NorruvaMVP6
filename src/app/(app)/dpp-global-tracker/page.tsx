@@ -16,8 +16,6 @@ import { cn } from "@/lib/utils";
 // Dynamically import GlobeVisualization
 const GlobeVisualization = React.lazy(() => import('@/components/dpp-tracker/GlobeVisualization'));
 
-console.log("DPPGlobalTrackerPage: Script start - PARSING TEST - Dynamic Import for GlobeVisualization.");
-
 export interface MockDppPoint {
   id: string;
   lat: number;
@@ -30,7 +28,7 @@ export interface MockDppPoint {
   manufacturer?: string;
   gtin?: string;
   complianceSummary?: string;
-  color?: string; // Added for direct color control if needed by globe
+  color?: string;
 }
 
 export interface MockArc {
@@ -47,13 +45,19 @@ export interface MockArc {
   productId?: string;
 }
 
-const diagnosticPointsMinimal: MockDppPoint[] = [
-  { id: "DIAG_001", lat: 48.8566, lng: 2.3522, name: "Paris Test Point", size: 0.3, category: 'Retail Outlet', status: 'compliant', timestamp: 2023, color: 'rgba(255,0,0,1)' },
-  { id: "DIAG_002", lat: 51.5074, lng: 0.1278, name: "London Test Point", size: 0.3, category: 'Distribution Hub', status: 'pending', timestamp: 2023, color: 'rgba(255,0,0,1)' },
-];
+const diagnosticPointsMinimal: MockDppPoint[] = []; // Keep minimal for clean look
 const diagnosticArcsMinimal: MockArc[] = [];
 const diagnosticLabelsMinimal: any[] = [];
-const diagnosticPolygonsMinimal: any[] = [];
+
+const euMemberCountryCodes = [
+  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR', 'HU',
+  'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'
+];
+
+const EU_BLUE_COLOR = 'rgba(25, 118, 210, 0.95)'; // Target blue
+const NON_EU_LAND_COLOR = 'rgba(240, 230, 210, 1)'; // Light beige
+const BORDER_COLOR = 'rgba(80, 80, 80, 0.7)'; // Darker grey borders
+const WHITE_OCEAN_COLOR = 'rgba(255, 255, 255, 1)';
 
 
 const Legend: React.FC<{ title: string; colorMap: Record<string, string>, className?: string }> = ({ title, colorMap, className }) => (
@@ -75,126 +79,9 @@ const Legend: React.FC<{ title: string; colorMap: Record<string, string>, classN
   </Card>
 );
 
-// This component will contain the Globe and be dynamically imported
-// For this iteration, it's defined inline for simplicity of fixing the current error source.
-// Normally, this would be in its own file like '@/components/dpp-tracker/GlobeVisualization.tsx'
-// but the error is in this file, so keeping it here to ensure the fix is applied to current code.
-
-interface GlobeVisualizationProps {
-  pointsData: MockDppPoint[];
-  arcsData: MockArc[];
-  labelsData: any[];
-  polygonsData: any[];
-  onPointClick: (point: MockDppPoint) => void;
-  onArcClick: (arc: MockArc) => void;
-  pointColorAccessor: (point: MockDppPoint) => string;
-  pointRadiusAccessor: (point: MockDppPoint) => number;
-  arcColorAccessor: (arc: MockArc) => string | string[];
-  arcStrokeAccessor: (arc: MockArc) => number;
-}
-
-// Create the GlobeVisualization component (can be moved to its own file later)
-const InternalGlobeVisualization: React.FC<GlobeVisualizationProps> = ({
-  pointsData,
-  arcsData,
-  labelsData,
-  polygonsData,
-  onPointClick,
-  onArcClick,
-  pointColorAccessor,
-  pointRadiusAccessor,
-  arcColorAccessor,
-  arcStrokeAccessor
-}) => {
-  const globeEl = useRef<any | undefined>();
-  const Globe = require('react-globe.gl').default; // Require inside component for client-side
-
-  console.log("GlobeVisualization: Rendering. Minimal props for parsing test.");
-
-  useEffect(() => {
-    console.log("GlobeVisualization: useEffect triggered.");
-    if (globeEl.current) {
-      console.log("GlobeVisualization: Globe instance (globeEl.current) IS available.");
-      try {
-        // Settings from when the black globe was visible
-        globeEl.current.pointOfView({ lat: 20, lng: 0, altitude: 3.5 }); 
-        console.log("GlobeVisualization: pointOfView set.");
-        
-        const controls = globeEl.current.controls();
-        if (controls) {
-            controls.autoRotate = false;
-            controls.enableZoom = true;
-            controls.minDistance = 50;
-            controls.maxDistance = 1500;
-            console.log("GlobeVisualization: Globe controls configured.");
-        } else {
-            console.warn("GlobeVisualization: globeEl.current.controls() is null or undefined.");
-        }
-      } catch (e) {
-        console.error("GlobeVisualization: Error configuring globe controls or POV", e);
-      }
-    } else {
-      console.warn("GlobeVisualization: Globe instance (globeEl.current) NOT available in useEffect.");
-    }
-  }, []);
-
-  const globeProps = {
-    backgroundColor: "rgba(10, 10, 30, 1)", // Dark ocean
-    // globeImageUrl: undefined, // Default grey sphere
-    // bumpImageUrl: "//unpkg.com/three-globe/example/img/earth-topology.png", 
-
-    pointsData: pointsData,
-    pointLabel: 'name',
-    pointColor: pointColorAccessor,
-    pointRadius: pointRadiusAccessor,
-    pointAltitude: 0.02,
-    onPointClick: onPointClick,
-    
-    arcsData: arcsData,
-    arcLabel: 'label',
-    arcColor: arcColorAccessor,
-    arcStroke: arcStrokeAccessor,
-    arcDashLength: 0.4,
-    arcDashGap: 0.2,
-    arcDashAnimateTime: 2000,
-    arcAltitudeAutoScale: 0.3,
-    onArcClick: onArcClick,
-
-    labelsData: labelsData,
-    labelLat: (d: any) => d.lat,
-    labelLng: (d: any) => d.lng,
-    labelText: (d: any) => d.name,
-    labelSize: 0.22, // Adjusted
-    labelDotRadius: 0.18, // Adjusted
-    labelColor: () => 'rgba(255, 255, 255, 0.95)',
-    labelResolution: 2,
-    labelAltitude: 0.018, // Adjusted
-
-    polygonsData: polygonsData,
-    polygonCapColor: () => 'rgba(200, 200, 200, 0.7)', // Default grey for polygons for this test
-    polygonSideColor: () => 'rgba(0,0,0,0)',
-    polygonStrokeColor: () => 'rgba(50,50,50,0.7)',
-    polygonAltitude: 0.01,
-  };
-  console.log("GlobeVisualization: Minimal GlobeProps prepared for parsing test.");
-
-  return (
-    <div className="w-full h-full" style={{ position: 'relative', zIndex: 20, border: '2px dashed red' }}>
-      { Globe && <Globe ref={globeEl} {...globeProps} /> }
-    </div>
-  );
-};
-// Define InternalGlobeVisualization as the default export for the dynamic import path
-// This helps React.lazy find it correctly.
-// (This is a bit of a workaround if it were in a separate file, but fine here)
-const components = { default: InternalGlobeVisualization };
-
-
-const DppGlobalTrackerClientContainer: React.FC<GlobeVisualizationProps & {isClient: boolean}> = ({ isClient, ...globeProps }) => {
-  console.log("DppGlobalTrackerClientContainer: Rendering. isClient:", isClient);
-
+// This component is used for client-side rendering logic
+const DppGlobalTrackerClientContainer: React.FC<any & {isClient: boolean}> = ({ isClient, ...globeProps }) => {
   if (!isClient) {
-    console.log("DppGlobalTrackerClientContainer: Not client yet, rendering loading message for GlobeVisualization context.");
     return (
       <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -202,16 +89,14 @@ const DppGlobalTrackerClientContainer: React.FC<GlobeVisualizationProps & {isCli
       </div>
     );
   }
-  console.log("DppGlobalTrackerClientContainer: Client is true, attempting to render Suspense + GlobeVisualization.");
   return (
-    <div className="w-full h-full" style={{ position: 'relative', zIndex: 1, border: '2px dashed blue' }}>
+    <div className="w-full h-full" style={{ position: 'relative', zIndex: 1 }}>
       <Suspense fallback={
         <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground border">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
           <span className="ml-2">Loading 3D Globe Visualization...</span>
         </div>
       }>
-        {/* Use the dynamically imported component here */}
         <GlobeVisualization {...globeProps} />
       </Suspense>
     </div>
@@ -219,96 +104,147 @@ const DppGlobalTrackerClientContainer: React.FC<GlobeVisualizationProps & {isCli
 };
 
 export default function DppGlobalTrackerPage() {
-  console.log("DppGlobalTrackerPage: Rendering component - AGGRESSIVE PARSING TEST. Dynamic import, simplified page logic.");
   const [isClient, setIsClient] = useState(false);
   const [selectedPoint, setSelectedPoint] = useState<MockDppPoint | null>(null);
   const [selectedArc, setSelectedArc] = useState<MockArc | null>(null);
+  const [countryPolygons, setCountryPolygons] = useState<any[]>([]);
+  const [isLoadingGeoJson, setIsLoadingGeoJson] = useState(true);
 
   useEffect(() => {
-    console.log("DppGlobalTrackerPage: useEffect triggered. Setting isClient to true.");
     setIsClient(true);
+    // Fetch GeoJSON data for country polygons
+    fetch('//unpkg.com/world-atlas/countries-110m.json')
+      .then(res => res.json())
+      .then(countries => {
+        // @ts-ignore
+        const landFeatures = countries.objects.land.geometries.map(obj => topojson.feature(countries, obj));
+        // @ts-ignore
+        const countryFeatures = countries.objects.countries.geometries.map(obj => topojson.feature(countries, obj));
+        setCountryPolygons(countryFeatures);
+        setIsLoadingGeoJson(false);
+      })
+      .catch(err => {
+        console.error("Error fetching GeoJSON data:", err);
+        setIsLoadingGeoJson(false);
+        // Optionally set an error state here
+      });
   }, []);
 
   const handlePointClick = useCallback((point: MockDppPoint) => {
-    console.log("Point clicked:", point);
     setSelectedPoint(point);
     setSelectedArc(null);
   }, []);
 
   const handleArcClick = useCallback((arc: MockArc) => {
-    console.log("Arc clicked:", arc);
     setSelectedArc(arc);
     setSelectedPoint(null);
   }, []);
 
-  const pointColorAccessor = useCallback((p: MockDppPoint) => p.color || 'rgba(255,0,0,1)', []);
-  const pointRadiusAccessor = useCallback(() => 0.3, []);
-  const arcColorAccessor = useCallback((a: MockArc) => a.color, []);
+  const pointColorAccessor = useCallback(() => 'rgba(255, 0, 0, 0.7)', []); // Keep points red for now if any
+  const pointRadiusAccessor = useCallback(() => 0.25, []);
+  const arcColorAccessor = useCallback(() => 'rgba(0, 255, 0, 0.5)', []); // Keep arcs green if any
   const arcStrokeAccessor = useCallback(() => 0.3, []);
 
-  const simpleDiagnosticLegendMap = {
-    "Test Point": "red",
-    "Ocean": "rgba(10, 10, 30, 1)", // Updated ocean color to dark
-    "Land (default)": "grey (default sphere)",
+  const polygonCapColorAccessor = useCallback((feat: any) => {
+    const countryCode = feat.properties.ISO_A2; // Ensure your GeoJSON has this property
+    return euMemberCountryCodes.includes(countryCode) ? EU_BLUE_COLOR : NON_EU_LAND_COLOR;
+  }, []);
+
+  const polygonSideColorAccessor = useCallback(() => 'rgba(0, 0, 0, 0)', []); // Flat look
+
+  const polygonStrokeColorAccessor = useCallback(() => BORDER_COLOR, []);
+
+
+  const globeLegendMap = {
+    "EU Member State": EU_BLUE_COLOR,
+    "Non-EU Country": NON_EU_LAND_COLOR,
+    "Ocean / Background": "White", // Representing the white background
+    "Country Borders": BORDER_COLOR,
   };
-  
-  // All complex state and callbacks that were previously here are removed for this test.
-  // If this parses, the issue was in the removed JavaScript.
+
+  // Removed complex filter/data layer states for now, focus on appearance
+  const [activeDataLayer, setActiveDataLayer] = useState('overview');
+  const [yearFilter, setYearFilter] = useState<number[]>([2024]);
 
   return (
     <div className="space-y-8 bg-background">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-headline font-semibold flex items-center">
           <GlobeIconLucide className="mr-3 h-8 w-8 text-primary" />
-          DPP Global Tracker (Diagnostic - Window Error Fix)
+          DPP Global Tracker
         </h1>
       </div>
 
-      <Alert variant="destructive" className="border-red-500/50 text-red-700">
-        <Info className="h-5 w-5" />
-        <AlertTitle className="font-semibold">Diagnostic Mode Active - Window Error Fix Attempt</AlertTitle>
-        <AlertDescription>
-          Attempting to fix 'window is not defined' by dynamically loading the globe.
-          Globe should be default grey on a DARK background, with red test points.
-          All filters, legends, and complex globe features are disabled.
-        </AlertDescription>
-      </Alert>
-
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Globe Visualization Container</CardTitle>
-          <CardDescription>The globe should appear within the area below. If this page loads without a Next.js parsing error or 'window' error, the basic structure is correct.</CardDescription>
+          <CardTitle>Global Product Passport Visualization</CardTitle>
+          <CardDescription>Interact with the globe to explore product origins, supply chains, and compliance status across regions.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+            <div className="md:col-span-1">
+              <Label htmlFor="data-layer-select" className="text-sm font-medium">Data Layer</Label>
+              <Select value={activeDataLayer} onValueChange={setActiveDataLayer}>
+                <SelectTrigger id="data-layer-select">
+                  <SelectValue placeholder="Select data layer" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="overview"><LayersIcon className="h-4 w-4 mr-2 inline-block" />Geopolitical Overview</SelectItem>
+                  <SelectItem value="supply_chain" disabled><Route className="h-4 w-4 mr-2 inline-block" />Supply Chain Routes (Soon)</SelectItem>
+                  <SelectItem value="compliance_hotspots" disabled><Filter className="h-4 w-4 mr-2 inline-block" />Compliance Hotspots (Soon)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="md:col-span-2">
+              <Label htmlFor="year-slider" className="text-sm font-medium">Year Filter: {yearFilter[0]}</Label>
+              <Slider
+                id="year-slider"
+                min={2020}
+                max={2025}
+                step={1}
+                value={yearFilter}
+                onValueChange={(value) => setYearFilter(value)}
+                className="mt-2"
+                disabled // Keep disabled for now
+              />
+            </div>
+          </div>
+
           <div
             className="w-full h-[600px] rounded-md overflow-hidden border relative bg-card"
-            style={{ position: 'relative', zIndex: 0 }}
           >
-            <DppGlobalTrackerClientContainer 
-              isClient={isClient}
-              pointsData={diagnosticPointsMinimal}
-              arcsData={diagnosticArcsMinimal}
-              labelsData={diagnosticLabelsMinimal}
-              polygonsData={diagnosticPolygonsMinimal}
-              onPointClick={handlePointClick}
-              onArcClick={handleArcClick}
-              pointColorAccessor={pointColorAccessor}
-              pointRadiusAccessor={pointRadiusAccessor}
-              arcColorAccessor={arcColorAccessor}
-              arcStrokeAccessor={arcStrokeAccessor}
-            />
+            {isLoadingGeoJson ? (
+                 <div className="w-full h-full bg-muted rounded-md flex items-center justify-center text-muted-foreground">
+                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                    <span className="ml-2">Loading Geographic Data...</span>
+                </div>
+            ) : (
+                <DppGlobalTrackerClientContainer 
+                    isClient={isClient}
+                    pointsData={diagnosticPointsMinimal}
+                    arcsData={diagnosticArcsMinimal}
+                    labelsData={diagnosticLabelsMinimal}
+                    polygonsData={countryPolygons}
+                    polygonCapColorAccessor={polygonCapColorAccessor}
+                    polygonSideColorAccessor={polygonSideColorAccessor}
+                    polygonStrokeColorAccessor={polygonStrokeColorAccessor}
+                    onPointClick={handlePointClick}
+                    onArcClick={handleArcClick}
+                    pointColorAccessor={pointColorAccessor}
+                    pointRadiusAccessor={pointRadiusAccessor}
+                    arcColorAccessor={arcColorAccessor}
+                    arcStrokeAccessor={arcStrokeAccessor}
+                    globeBackgroundColor={WHITE_OCEAN_COLOR} // Pass white ocean color
+                />
+            )}
           </div>
           
-          <div className="opacity-30 pointer-events-none mt-6">
-            <CardDescription className="text-center">
-                (UI Controls, Filters, and complex Globe features are temporarily removed for this diagnostic test)
-            </CardDescription>
-            <Legend title="Diagnostic Legend" colorMap={simpleDiagnosticLegendMap} className="mt-2 mx-auto w-fit" />
+          <div className="mt-6">
+             <Legend title="Map Legend" colorMap={globeLegendMap} className="mt-2 mx-auto w-fit sm:w-auto" />
           </div>
         </CardContent>
       </Card>
 
-      {/* Info Cards - keep these simple for now */}
       {selectedPoint && <PointInfoCard pointData={selectedPoint} onClose={() => setSelectedPoint(null)} />}
       {selectedArc && <ArcInfoCard arcData={selectedArc} onClose={() => setSelectedArc(null)} />}
 

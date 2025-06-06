@@ -25,7 +25,7 @@ import React, { useState } from "react";
 import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow";
 import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
 import { generateProductName } from "@/ai/flows/generate-product-name-flow.ts";
-import { generateProductDescription } from "@/ai/flows/generate-product-description-flow"; // Added new import
+import { generateProductDescription } from "@/ai/flows/generate-product-description-flow";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";
 import Image from "next/image";
@@ -107,7 +107,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(initialData?.imageUrl || null);
   const [isSuggestingName, setIsSuggestingName] = useState(false);
-  const [isSuggestingDescription, setIsSuggestingDescription] = useState(false); // New state
+  const [isSuggestingDescription, setIsSuggestingDescription] = useState(false);
 
 
   React.useEffect(() => {
@@ -147,6 +147,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         productCategory: productCategory || undefined 
       });
       form.setValue("productName", result.productName, { shouldValidate: true });
+      (initialData as InitialProductFormData).productNameOrigin = 'AI_EXTRACTED';
       toast({ title: "Product Name Suggested!", description: `AI suggested: "${result.productName}"`, variant: "default" });
     } catch (error) {
       console.error("Failed to suggest product name:", error);
@@ -173,9 +174,10 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       const result = await generateProductDescription({
         productName: productName,
         productCategory: productCategory || undefined,
-        keyFeatures: materials || undefined, // Using materials as keyFeatures for now
+        keyFeatures: materials || undefined,
       });
       form.setValue("productDescription", result.productDescription, { shouldValidate: true });
+      (initialData as InitialProductFormData).productDescriptionOrigin = 'AI_EXTRACTED';
       toast({ title: "Product Description Suggested!", description: "AI has generated a product description.", variant: "default" });
     } catch (error) {
       console.error("Failed to suggest product description:", error);
@@ -233,6 +235,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       });
       form.setValue("imageUrl", result.imageUrl, { shouldValidate: true });
       setCurrentImageUrl(result.imageUrl);
+      if (initialData) (initialData as InitialProductFormData).imageUrlOrigin = 'AI_EXTRACTED';
       toast({title: "Image Generated Successfully", description: "The product image has been updated."});
     } catch (error) {
       console.error("Failed to generate image:", error);
@@ -251,6 +254,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     const currentClaims = form.getValues("sustainabilityClaims") || "";
     const newClaims = currentClaims ? `${currentClaims}\n- ${claim}` : `- ${claim}`;
     form.setValue("sustainabilityClaims", newClaims, { shouldValidate: true });
+    if (initialData) (initialData as InitialProductFormData).sustainabilityClaimsOrigin = 'AI_EXTRACTED'; // Mark as AI assisted
   };
 
   const formContent = (
@@ -268,7 +272,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
                     Product Name 
                     <AiIndicator fieldOrigin={initialData?.productNameOrigin} fieldName="Product Name" />
                   </FormLabel>
-                  <Button type="button" variant="ghost" size="sm" onClick={handleSuggestName} disabled={isSuggestingName || isSubmitting}>
+                  <Button type="button" variant="ghost" size="sm" onClick={handleSuggestName} disabled={isSuggestingName || isSubmitting || isGeneratingImage}>
                     {isSuggestingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
                     <span className="ml-2">{isSuggestingName ? "Suggesting..." : "Suggest Name"}</span>
                   </Button>
@@ -281,7 +285,10 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             )}
           />
           <div className="space-y-2">
-             <FormLabel>Product Image</FormLabel>
+             <FormLabel className="flex items-center">
+                Product Image
+                <AiIndicator fieldOrigin={initialData?.imageUrlOrigin} fieldName="Product Image" />
+            </FormLabel>
             {currentImageUrl ? (
               <div className="w-full max-w-sm border rounded-md overflow-hidden">
                 <AspectRatio ratio={4/3}>
@@ -291,21 +298,21 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             ) : (
               <div className="w-full max-w-sm h-40 border border-dashed rounded-md flex flex-col items-center justify-center bg-muted text-muted-foreground">
                 <ImageIcon className="h-10 w-10 mb-2" />
-                <p className="text-sm">No image generated yet.</p>
+                <p className="text-sm">No image provided or generated yet.</p>
               </div>
             )}
              <FormField
                 control={form.control}
                 name="imageUrl"
                 render={({ field }) => (
-                  <FormItem className="hidden"> {/* Hidden as it's controlled by button and state */}
+                  <FormItem className="hidden"> 
                     <FormControl>
                       <Input {...field} />
                     </FormControl>
                   </FormItem>
                 )}
               />
-            <Button type="button" variant="secondary" onClick={handleGenerateImage} disabled={isGeneratingImage || isSubmitting}>
+            <Button type="button" variant="secondary" onClick={handleGenerateImage} disabled={isGeneratingImage || isSubmitting || isSuggestingName || isSuggestingDescription}>
               {isGeneratingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
               <span className="ml-2">{isGeneratingImage ? "Generating..." : "Generate Image with AI"}</span>
             </Button>
@@ -348,7 +355,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
                     Product Description
                     <AiIndicator fieldOrigin={initialData?.productDescriptionOrigin} fieldName="Product Description" />
                   </FormLabel>
-                  <Button type="button" variant="ghost" size="sm" onClick={handleSuggestDescription} disabled={isSuggestingDescription || isSubmitting}>
+                  <Button type="button" variant="ghost" size="sm" onClick={handleSuggestDescription} disabled={isSuggestingDescription || isSubmitting || isGeneratingImage}>
                     {isSuggestingDescription ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
                     <span className="ml-2">{isSuggestingDescription ? "Suggesting..." : "Suggest Description"}</span>
                   </Button>
@@ -429,7 +436,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
                         Sustainability Claims
                         <AiIndicator fieldOrigin={initialData?.sustainabilityClaimsOrigin} fieldName="Sustainability Claims" />
                     </FormLabel>
-                    <Button type="button" variant="ghost" size="sm" onClick={handleSuggestClaims} disabled={isSuggestingClaims || isSubmitting}>
+                    <Button type="button" variant="ghost" size="sm" onClick={handleSuggestClaims} disabled={isSuggestingClaims || isSubmitting || isGeneratingImage}>
                         {isSuggestingClaims ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
                         <span className="ml-2">{isSuggestingClaims ? "Suggesting..." : "Suggest Claims"}</span>
                     </Button>
@@ -595,7 +602,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
               {formContent}
             </CardContent>
           </Card>
-          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName || isSuggestingDescription}>
+          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={!!isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName || isSuggestingDescription}>
             {(isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName || isSuggestingDescription) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isSubmitting ? "Saving Product..." : "Save Product"}
           </Button>
@@ -613,3 +620,5 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
+
+    

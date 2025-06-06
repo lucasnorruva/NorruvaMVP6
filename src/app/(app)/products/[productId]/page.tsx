@@ -8,9 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight, Sparkles, Copy as CopyIcon, ImagePlus, ImageIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-// Tooltip components are removed from imports as they are being removed from usage in this file
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -30,6 +29,8 @@ import { checkProductCompliance } from '@/ai/flows/check-product-compliance-flow
 import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow';
 import type { InitialProductFormData } from '@/app/(app)/products/new/page';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
+import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow";
 
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -295,7 +296,20 @@ const TrustSignalIcon = ({ isVerified, VerifiedIcon = CheckCircle2, UnverifiedIc
 // Simplified DataOriginIcon: Renders icon only, no tooltip
 const DataOriginIcon = ({ origin }: { origin?: 'AI_EXTRACTED' | 'manual' }) => {
   if (origin === 'AI_EXTRACTED') {
-    return <Cpu className="h-4 w-4 text-info ml-1" />;
+    return (
+        <TooltipProvider>
+            <Tooltip delayDuration={100}>
+                <TooltipTrigger asChild>
+                    <button type="button" className="ml-1.5 cursor-help align-middle border-none bg-transparent p-0">
+                        <Cpu className="h-4 w-4 text-info" />
+                    </button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>This field was suggested by AI.</p>
+                </TooltipContent>
+            </Tooltip>
+        </TooltipProvider>
+    );
   }
   return null;
 };
@@ -375,6 +389,10 @@ export default function ProductDetailPage() {
   const [isCheckingCompliance, setIsCheckingCompliance] = useState(false);
   const [isSyncingEprel, setIsSyncingEprel] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
+  const [suggestedClaimsList, setSuggestedClaimsList] = useState<string[]>([]);
+
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -556,9 +574,58 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleGenerateProductImage = async () => {
+    if (!product) return;
+    setIsGeneratingImage(true);
+    try {
+      const result = await generateProductImage({
+        productName: product.productName,
+        productCategory: product.category,
+      });
+      
+      setProduct(prev => {
+        if (!prev) return null;
+        const updatedProduct = { 
+          ...prev, 
+          imageUrl: result.imageUrl, 
+          imageUrlOrigin: 'AI_EXTRACTED' as ('AI_EXTRACTED' | 'manual'),
+          lastUpdated: new Date().toISOString()
+        };
+
+        if (prev.productId.startsWith("USER_PROD")) {
+          const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+          let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+          const productIndex = userProducts.findIndex(p => p.id === prev.productId);
+          if (productIndex > -1) {
+            userProducts[productIndex] = {
+              ...userProducts[productIndex],
+              imageUrl: result.imageUrl,
+              imageUrlOrigin: 'AI_EXTRACTED',
+              lastUpdated: updatedProduct.lastUpdated,
+            };
+            localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
+          }
+        }
+        return updatedProduct;
+      });
+
+      toast({ title: "Image Generated Successfully", description: "The product image has been updated.", variant: "default" });
+    } catch (error) {
+      console.error("Failed to generate image:", error);
+      toast({
+        title: "Error Generating Image",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        variant: "destructive",
+        action: <AlertTriangle className="text-white" />,
+      });
+    } finally {
+      setIsGeneratingImage(false);
+    }
+  };
+
   const handleProductFormSubmit = async (data: ProductFormData) => {
     if (!product) return;
-    setIsEditing(true); // Using isEditing to represent form submission loading state
+    setIsEditing(true); 
 
     try {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
@@ -567,11 +634,11 @@ export default function ProductDetailPage() {
 
       if (productIndex > -1) {
         const updatedProductData: StoredUserProduct = {
-          ...userProducts[productIndex], // Keep existing fields not in ProductFormData
-          ...data, // Apply updated form data
-          id: product.productId, // Ensure ID is maintained
-          status: userProducts[productIndex].status, // Preserve original status unless changed by form
-          compliance: userProducts[productIndex].compliance, // Preserve original compliance unless changed
+          ...userProducts[productIndex], 
+          ...data, 
+          id: product.productId, 
+          status: userProducts[productIndex].status, 
+          compliance: userProducts[productIndex].compliance, 
           lastUpdated: new Date().toISOString(),
         };
         userProducts[productIndex] = updatedProductData;
@@ -580,7 +647,7 @@ export default function ProductDetailPage() {
         setProduct(prev => prev ? ({ ...prev, ...updatedProductData, productName: data.productName || prev.productName, productDescription: data.productDescription || prev.productDescription, manufacturer: data.manufacturer || prev.manufacturer, modelNumber: data.modelNumber || prev.modelNumber, materials: data.materials || prev.materials, sustainabilityClaims: data.sustainabilityClaims || prev.sustainabilityClaims, specifications: data.specifications ? (typeof data.specifications === 'string' ? JSON.parse(data.specifications) : data.specifications) : prev.specifications, energyLabel: data.energyLabel || prev.energyLabel, category: data.productCategory || prev.category, imageUrl: data.imageUrl || prev.imageUrl, batteryChemistry: data.batteryChemistry, stateOfHealth: data.stateOfHealth, carbonFootprintManufacturing: data.carbonFootprintManufacturing, recycledContentPercentage: data.recycledContentPercentage, lastUpdated: updatedProductData.lastUpdated }) : null);
 
         toast({ title: "Product Updated", description: `${updatedProductData.productName} has been updated successfully.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
-        setIsEditing(false); // Turn off editing mode
+        setIsEditing(false); 
       } else {
         throw new Error("Product not found for update in local storage.");
       }
@@ -633,6 +700,45 @@ export default function ProductDetailPage() {
     });
   };
 
+  const handleSuggestSustainabilityClaims = async () => {
+    if (!product) return;
+    setIsSuggestingClaims(true);
+    setSuggestedClaimsList([]);
+    try {
+      const result = await suggestSustainabilityClaims({
+        productCategory: product.category || "Unknown",
+        productName: product.productName,
+        productDescription: product.description,
+        materials: product.materials,
+      });
+      setSuggestedClaimsList(result.claims);
+      if (result.claims.length > 0) {
+        toast({ title: "Sustainability Claims Suggested", description: "Review the suggestions below. Click to copy.", variant: "default" });
+      } else {
+        toast({ title: "No Specific Claims Suggested", description: "Try adding more product details like category or materials for better suggestions.", variant: "default" });
+      }
+    } catch (error) {
+      console.error("Failed to suggest claims:", error);
+      toast({
+        title: "Error Suggesting Claims",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        variant: "destructive",
+        action: <AlertTriangle className="text-white" />,
+      });
+    } finally {
+      setIsSuggestingClaims(false);
+    }
+  };
+
+  const handleCopyClaim = (claimText: string) => {
+    navigator.clipboard.writeText(claimText);
+    toast({
+      title: "Claim Copied!",
+      description: `"${claimText.substring(0,30)}..." copied to clipboard.`,
+      variant: "default"
+    });
+  };
+
 
   if (product === undefined) { return <ProductDetailSkeleton />; }
   if (!product) { notFound(); return null; }
@@ -645,7 +751,8 @@ export default function ProductDetailPage() {
   const canSimulateCompliance = currentRole === 'admin' || currentRole === 'manufacturer';
   const canSyncEprel = currentRole === 'admin' || currentRole === 'manufacturer';
   const canAdvanceLifecycle = (currentRole === 'admin' || currentRole === 'manufacturer') && product.currentLifecyclePhaseIndex < product.lifecyclePhases.length - 1;
-
+  const canGenerateImage = (currentRole === 'admin' || currentRole === 'manufacturer') && (!product.imageUrl || product.imageUrl.includes('placehold.co'));
+  const canSuggestClaims = currentRole === 'admin' || currentRole === 'manufacturer';
 
   return (
     
@@ -707,7 +814,7 @@ export default function ProductDetailPage() {
             <ProductForm
               id="product-form-in-detail-page"
               onSubmit={handleProductFormSubmit}
-              isSubmitting={isEditing && (form.formState.isSubmitting)} // Example, adapt as needed
+              isSubmitting={isEditing && (isCheckingCompliance || isSyncingEprel)} 
               initialData={{
                 productName: product.productName,
                 gtin: product.gtin,
@@ -755,7 +862,7 @@ export default function ProductDetailPage() {
                   <CardContent className="space-y-6">
                     <div className="grid md:grid-cols-2 gap-6 items-start">
                         <div>
-                            <AspectRatio ratio={4/3} className="bg-muted rounded-md overflow-hidden">
+                            <AspectRatio ratio={4/3} className="bg-muted rounded-md overflow-hidden border">
                               <Image
                                 src={product.imageUrl || "https://placehold.co/600x400.png?text=No+Image"}
                                 alt={product.productName}
@@ -765,7 +872,15 @@ export default function ProductDetailPage() {
                                 priority={product.imageUrl ? !product.imageUrl.startsWith("data:") : true}
                               />
                             </AspectRatio>
-                            <DataOriginIcon origin={product.imageUrlOrigin}/>
+                            <div className="flex items-center mt-1">
+                                <DataOriginIcon origin={product.imageUrlOrigin}/>
+                                {canGenerateImage && (
+                                    <Button variant="outline" size="sm" onClick={handleGenerateProductImage} disabled={isGeneratingImage} className="ml-auto text-xs">
+                                        {isGeneratingImage ? <Loader2 className="mr-1.5 h-3 w-3 animate-spin" /> : <ImagePlus className="mr-1.5 h-3 w-3" />}
+                                        {isGeneratingImage ? "Generating..." : "Regenerate Image"}
+                                    </Button>
+                                )}
+                            </div>
                         </div>
                         <div className="space-y-3">
                              <div><strong className="text-foreground/80 block">Description:</strong> <span className="text-muted-foreground text-sm">{product.description}</span> <DataOriginIcon origin={product.descriptionOrigin} /></div>
@@ -960,6 +1075,32 @@ export default function ProductDetailPage() {
             <TabsContent value="sustainability" className="mt-4">
               <Card> <CardHeader> <CardTitle className="flex items-center"><Zap className="mr-2 h-5 w-5 text-accent" />Detailed Sustainability Information</CardTitle> <CardDescription>In-depth data on materials, carbon footprint, circularity, etc.</CardDescription> </CardHeader>
                 <CardContent className="space-y-6">
+                  {canSuggestClaims && (
+                    <Card className="shadow-sm border-dashed">
+                      <CardHeader>
+                        <CardTitle className="text-md font-semibold flex items-center"><Sparkles className="mr-2 h-4 w-4 text-info" />AI Sustainability Claim Suggestions</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                        <Button onClick={handleSuggestSustainabilityClaims} disabled={isSuggestingClaims} variant="secondary">
+                          {isSuggestingClaims ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                          {isSuggestingClaims ? "Suggesting..." : "Suggest Claims with AI"}
+                        </Button>
+                        {suggestedClaimsList.length > 0 && (
+                          <div className="mt-4 space-y-2">
+                            <p className="text-sm text-muted-foreground">Click a suggestion to copy it:</p>
+                            <div className="flex flex-wrap gap-2">
+                              {suggestedClaimsList.map((claim, index) => (
+                                <Button key={index} variant="outline" size="sm" onClick={() => handleCopyClaim(claim)} className="text-xs">
+                                  <CopyIcon className="mr-1.5 h-3 w-3" /> {claim}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
+
                   <div className="grid md:grid-cols-2 gap-6">
                     {product.materialComposition && product.materialComposition.length > 0 && ( <Card className="shadow-sm"> <CardHeader> <CardTitle className="text-lg flex items-center"><Leaf className="mr-2 h-4 w-4 text-green-500" />Material Composition</CardTitle> </CardHeader> <CardContent> <ChartContainer config={chartConfig} className="aspect-square h-[250px] w-full"> <ResponsiveContainer width="100%" height="100%"> <PieChart> <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} /> <Pie data={product.materialComposition} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => { const RADIAN = Math.PI / 180; const radius = innerRadius + (outerRadius - innerRadius) * 0.5; const x = cx + radius * Math.cos(-midAngle * RADIAN); const y = cy + radius * Math.sin(-midAngle * RADIAN); return ( <text x={x} y={y} fill="hsl(var(--primary-foreground))" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-medium"> {`${(percent * 100).toFixed(0)}%`} </text> ); }}> {product.materialComposition.map((entry, index) => ( <Cell key={`cell-${index}`} fill={entry.fill} className={cn("stroke-background focus:outline-none", entry.fill.startsWith("hsl") ? "" : entry.fill)} /> ))} </Pie> <ChartLegend content={<ChartLegendContent nameKey="name" />} className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center" /> </PieChart> </ResponsiveContainer> </ChartContainer> </CardContent> </Card> )}
                     {product.historicalCarbonFootprint && product.historicalCarbonFootprint.length > 0 && ( <Card className="shadow-sm"> <CardHeader> <CardTitle className="text-lg flex items-center"><BarChart3 className="mr-2 h-4 w-4 text-red-500" />Carbon Footprint Trend</CardTitle> <CardDescription> (kg CO₂e over time)</CardDescription> </CardHeader> <CardContent> <ChartContainer config={chartConfig} className="aspect-video h-[250px] w-full"> <ResponsiveContainer width="100%" height="100%"> <LineChart data={product.historicalCarbonFootprint} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}> <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /> <XAxis dataKey="year" stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} dy={5} /> <YAxis stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} /> <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} /> <Line type="monotone" dataKey="value" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ fill: "hsl(var(--chart-1))", r:4 }} activeDot={{r:6}} name="kg CO₂e" /> </LineChart> </ResponsiveContainer> </ChartContainer> </CardContent> </Card> )}
@@ -1049,3 +1190,5 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
+
+    

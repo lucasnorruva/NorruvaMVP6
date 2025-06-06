@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label";
 import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
 import ArcInfoCard from '@/components/dpp-tracker/ArcInfoCard';
 import { cn } from "@/lib/utils";
+import { feature as topojsonFeature } from 'topojson-client'; // Import topojson-client
 
 // Dynamically import GlobeVisualization
 const GlobeVisualization = React.lazy(() => import('@/components/dpp-tracker/GlobeVisualization'));
@@ -45,8 +46,13 @@ export interface MockArc {
   productId?: string;
 }
 
-const diagnosticPointsMinimal: MockDppPoint[] = []; // Keep minimal for clean look
-const diagnosticArcsMinimal: MockArc[] = [];
+const diagnosticPointsMinimal: MockDppPoint[] = [
+  // { id: 'brussels', lat: 50.8503, lng: 4.3517, name: 'Brussels (EU HQ)', size: 0.5, category: 'Distribution Hub', status: 'compliant', timestamp: 2024, color: 'red' },
+  // { id: 'beijing', lat: 39.9042, lng: 116.4074, name: 'Beijing Factory', size: 0.5, category: 'Manufacturing Site', status: 'pending', timestamp: 2024, color: 'red' },
+];
+const diagnosticArcsMinimal: MockArc[] = [
+  // { id: 'arc1', startLat: 39.9042, startLng: 116.4074, endLat: 50.8503, endLng: 4.3517, color: 'rgba(0, 255, 0, 0.6)', label: 'Shipment Route 1', stroke: 0.3, timestamp: 2024, transportMode: 'sea' }
+];
 const diagnosticLabelsMinimal: any[] = [];
 
 const euMemberCountryCodes = [
@@ -54,9 +60,9 @@ const euMemberCountryCodes = [
   'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK', 'SI', 'ES', 'SE'
 ];
 
-const EU_BLUE_COLOR = 'rgba(25, 118, 210, 0.95)'; // Target blue
-const NON_EU_LAND_COLOR = 'rgba(240, 230, 210, 1)'; // Light beige
-const BORDER_COLOR = 'rgba(80, 80, 80, 0.7)'; // Darker grey borders
+const EU_BLUE_COLOR = 'rgba(25, 118, 210, 0.95)';
+const NON_EU_LAND_COLOR = 'rgba(240, 230, 210, 1)';
+const BORDER_COLOR = 'rgba(80, 80, 80, 0.7)';
 const WHITE_OCEAN_COLOR = 'rgba(255, 255, 255, 1)';
 
 
@@ -112,21 +118,19 @@ export default function DppGlobalTrackerPage() {
 
   useEffect(() => {
     setIsClient(true);
-    // Fetch GeoJSON data for country polygons
     fetch('//unpkg.com/world-atlas/countries-110m.json')
       .then(res => res.json())
       .then(countries => {
         // @ts-ignore
-        const landFeatures = countries.objects.land.geometries.map(obj => topojson.feature(countries, obj));
+        const landFeatures = countries.objects.land.geometries.map(obj => topojsonFeature(countries, obj));
         // @ts-ignore
-        const countryFeatures = countries.objects.countries.geometries.map(obj => topojson.feature(countries, obj));
+        const countryFeatures = countries.objects.countries.geometries.map(obj => topojsonFeature(countries, obj));
         setCountryPolygons(countryFeatures);
         setIsLoadingGeoJson(false);
       })
       .catch(err => {
         console.error("Error fetching GeoJSON data:", err);
         setIsLoadingGeoJson(false);
-        // Optionally set an error state here
       });
   }, []);
 
@@ -140,29 +144,27 @@ export default function DppGlobalTrackerPage() {
     setSelectedPoint(null);
   }, []);
 
-  const pointColorAccessor = useCallback(() => 'rgba(255, 0, 0, 0.7)', []); // Keep points red for now if any
+  const pointColorAccessor = useCallback(() => 'rgba(255, 0, 0, 0.7)', []);
   const pointRadiusAccessor = useCallback(() => 0.25, []);
-  const arcColorAccessor = useCallback(() => 'rgba(0, 255, 0, 0.5)', []); // Keep arcs green if any
+  const arcColorAccessor = useCallback(() => 'rgba(0, 255, 0, 0.5)', []);
   const arcStrokeAccessor = useCallback(() => 0.3, []);
 
   const polygonCapColorAccessor = useCallback((feat: any) => {
-    const countryCode = feat.properties.ISO_A2; // Ensure your GeoJSON has this property
+    const countryCode = feat.properties?.ISO_A2 || feat.properties?.iso_a2; // Handle potential variations in property name
     return euMemberCountryCodes.includes(countryCode) ? EU_BLUE_COLOR : NON_EU_LAND_COLOR;
   }, []);
 
-  const polygonSideColorAccessor = useCallback(() => 'rgba(0, 0, 0, 0)', []); // Flat look
-
+  const polygonSideColorAccessor = useCallback(() => 'rgba(0, 0, 0, 0)', []);
   const polygonStrokeColorAccessor = useCallback(() => BORDER_COLOR, []);
 
 
   const globeLegendMap = {
     "EU Member State": EU_BLUE_COLOR,
     "Non-EU Country": NON_EU_LAND_COLOR,
-    "Ocean / Background": "White", // Representing the white background
+    "Ocean / Background": "White",
     "Country Borders": BORDER_COLOR,
   };
 
-  // Removed complex filter/data layer states for now, focus on appearance
   const [activeDataLayer, setActiveDataLayer] = useState('overview');
   const [yearFilter, setYearFilter] = useState<number[]>([2024]);
 
@@ -205,7 +207,7 @@ export default function DppGlobalTrackerPage() {
                 value={yearFilter}
                 onValueChange={(value) => setYearFilter(value)}
                 className="mt-2"
-                disabled // Keep disabled for now
+                disabled 
               />
             </div>
           </div>
@@ -234,7 +236,7 @@ export default function DppGlobalTrackerPage() {
                     pointRadiusAccessor={pointRadiusAccessor}
                     arcColorAccessor={arcColorAccessor}
                     arcStrokeAccessor={arcStrokeAccessor}
-                    globeBackgroundColor={WHITE_OCEAN_COLOR} // Pass white ocean color
+                    globeBackgroundColor={WHITE_OCEAN_COLOR}
                 />
             )}
           </div>

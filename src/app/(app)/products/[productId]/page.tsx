@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight, Sparkles, Copy as CopyIcon, ImagePlus, ImageIcon, CheckSquare } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight, Sparkles, Copy as CopyIcon, ImagePlus, ImageIcon, CheckSquare, ChevronDown, ChevronUp } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -92,6 +92,7 @@ export interface MockProductType {
   lastUpdated: string;
   manufacturer: string;
   manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
+  manufacturerVerified?: boolean; // Added for consistency with product detail page
   modelNumber: string;
   modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
   description: string;
@@ -106,7 +107,7 @@ export interface MockProductType {
   sustainabilityClaimsVerified?: boolean;
   energyLabel: string;
   energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
-  specifications: Record<string, string>;
+  specifications: Record<string, string> | string; // Allow string for user-added
   specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
   lifecycleEvents: Array<{ id: string; type: string; timestamp: string; location: string; details: string; isBlockchainAnchored?: boolean; transactionHash?: string }>;
   complianceData: Record<string, { status: string; lastChecked: string; reportId: string; isVerified?: boolean }>;
@@ -246,13 +247,13 @@ const MOCK_PRODUCTS: MockProductType[] = [
     isDppBlockchainAnchored: false,
     dppAnchorTransactionHash: undefined,
     currentLifecyclePhaseIndex: 1,
-    lifecyclePhases: [ 
-      { id: "lc007", name: "Materials Sourcing", icon: PackageSearch, status: 'completed', timestamp: "2024-02-01T10:00:00Z", location: "Global Suppliers", details: "Sourcing of PC, Al, LED chips, battery components. Conflict minerals check completed. Supplier data for battery chemistry (e.g. Cobalt source) recorded for Battery Regulation.", complianceMetrics: [{ name: "Conflict Minerals Report", status: "compliant", reportLink: "#" }, { name: "Supplier Chemical Safety Data Sheets", status: "compliant" }], sustainabilityMetrics: [{ name: "Supplier Diversity Score", value: 60, unit: "/100", targetValue: 75 }, {name: "Battery Component Traceability", status: "compliant"}], keyDocuments: [{name: "Conflict Minerals Due Diligence Report", type: "PDF", url:"#"}], subEvents: [{name:"Battery Cells Received", timestamp: "2024-02-15T00:00:00Z", status:"completed"}]}, 
-      { id: "lc008", name: "Manufacturing", icon: Factory, status: 'in_progress', timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Assembly in Shenzhen. Batch #LEDB456. Initial battery SoH recorded. SCIP notification for SVHC in components submitted. Carbon footprint of manufacturing calculated.", complianceMetrics: [{ name: "Factory Safety Audit (ISO 45001)", status: "compliant", reportLink: "#" }, {name: "SCIP Database Submission", status: "compliant", reportLink: "#"}], sustainabilityMetrics: [{ name: "Carbon Footprint (Mfg.)", value: 5.2, unit: "kg CO2e/pack", targetValue: 5.0 }, { name: "Recycled Packaging Used", value: 90, unit: "%", targetValue: 100}], responsibleParty: "BrightSpark Manufacturing Unit"}, 
-      { id: "lc009", name: "Distribution", icon: Truck, status: 'pending', timestamp: "2024-03-15T10:00:00Z", location: "Global Distribution Network", details: "Global distribution. Awaiting final packaging data for carbon footprint update of distribution phase. Customs documents generated.", complianceMetrics: [], sustainabilityMetrics: [{name: "Logistics Efficiency Score", value: 7, unit:"/10 (target)"}] }, 
-      { id: "lc010", name: "Retail Sale", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-04-01T00:00:00Z", location: "Online & Physical Stores", details: "Available through various retail channels. EPREL data to be displayed at point of sale. Consumer warranty registration activated on sale.", complianceMetrics: [{name: "EPREL Label Display", status: "pending_review"}], sustainabilityMetrics: [] }, 
-      { id: "lc011", name: "Use & Maintenance", icon: Users, status: 'upcoming', timestamp: "2024-04-02T00:00:00Z", location: "Consumer Homes & Businesses", details: "Estimated 3-year useful life for battery. OTA firmware updates enhance performance and security. Battery replacement guide in DPP for consumers/technicians.", sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }, {name: "Firmware Update Frequency", value: 2, unit: "updates/yr (avg)"}] }, 
-      { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'issue', timestamp: "2027-04-01T00:00:00Z", location: "Designated Collection Points", details: "Battery designed for removal. Documentation for EU Battery Regulation (EU 2023/1542) is overdue, impacting certified recycling pathway.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}, {name: "EU Battery Reg. Documentation", status: "non_compliant", reportLink: "#"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]} 
+    lifecyclePhases: [
+      { id: "lc007", name: "Materials Sourcing", icon: PackageSearch, status: 'completed', timestamp: "2024-02-01T10:00:00Z", location: "Global Suppliers", details: "Sourcing of PC, Al, LED chips, battery components. Conflict minerals check completed. Supplier data for battery chemistry (e.g. Cobalt source) recorded for Battery Regulation.", complianceMetrics: [{ name: "Conflict Minerals Report", status: "compliant", reportLink: "#" }, { name: "Supplier Chemical Safety Data Sheets", status: "compliant" }], sustainabilityMetrics: [{ name: "Supplier Diversity Score", value: 60, unit: "/100", targetValue: 75 }, {name: "Battery Component Traceability", status: "compliant"}], keyDocuments: [{name: "Conflict Minerals Due Diligence Report", type: "PDF", url:"#"}], subEvents: [{name:"Battery Cells Received", timestamp: "2024-02-15T00:00:00Z", status:"completed"}]},
+      { id: "lc008", name: "Manufacturing", icon: Factory, status: 'in_progress', timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Assembly in Shenzhen. Batch #LEDB456. Initial battery SoH recorded. SCIP notification for SVHC in components submitted. Carbon footprint of manufacturing calculated.", complianceMetrics: [{ name: "Factory Safety Audit (ISO 45001)", status: "compliant", reportLink: "#" }, {name: "SCIP Database Submission", status: "compliant", reportLink: "#"}], sustainabilityMetrics: [{ name: "Carbon Footprint (Mfg.)", value: 5.2, unit: "kg CO2e/pack", targetValue: 5.0 }, { name: "Recycled Packaging Used", value: 90, unit: "%", targetValue: 100}], responsibleParty: "BrightSpark Manufacturing Unit"},
+      { id: "lc009", name: "Distribution", icon: Truck, status: 'pending', timestamp: "2024-03-15T10:00:00Z", location: "Global Distribution Network", details: "Global distribution. Awaiting final packaging data for carbon footprint update of distribution phase. Customs documents generated.", complianceMetrics: [], sustainabilityMetrics: [{name: "Logistics Efficiency Score", value: 7, unit:"/10 (target)"}] },
+      { id: "lc010", name: "Retail Sale", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-04-01T00:00:00Z", location: "Online & Physical Stores", details: "Available through various retail channels. EPREL data to be displayed at point of sale. Consumer warranty registration activated on sale.", complianceMetrics: [{name: "EPREL Label Display", status: "pending_review"}], sustainabilityMetrics: [] },
+      { id: "lc011", name: "Use & Maintenance", icon: Users, status: 'upcoming', timestamp: "2024-04-02T00:00:00Z", location: "Consumer Homes & Businesses", details: "Estimated 3-year useful life for battery. OTA firmware updates enhance performance and security. Battery replacement guide in DPP for consumers/technicians.", sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }, {name: "Firmware Update Frequency", value: 2, unit: "updates/yr (avg)"}] },
+      { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'issue', timestamp: "2027-04-01T00:00:00Z", location: "Designated Collection Points", details: "Battery designed for removal. Documentation for EU Battery Regulation (EU 2023/1542) is overdue, impacting certified recycling pathway.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}, {name: "EU Battery Reg. Documentation", status: "non_compliant", reportLink: "#"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]}
     ],
     overallCompliance: { gdpr: { status: "not_applicable", lastChecked: "2024-07-01T10:00:00Z" }, eprel: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" }, ebsiVerified: { status: "pending_review", verificationId: "PENDING_EBSI_CHECK", lastChecked: "2024-07-20T10:00:00Z" },  scip: { status: "compliant", declarationId: "SCIP-XYZ789", lastChecked: "2024-07-01T10:00:00Z" }, csrd: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" } },
     notifications: [ { id: "n003", type: "error", message: "Battery Regulation documentation overdue! Action required.", date: "2024-07-19T10:00:00Z" }, { id: "n004", type: "warning", message: "EPREL registration data needs review by end of week.", date: "2024-07-22T10:00:00Z" }, { id: "n005", type: "info", message: "Firmware update v1.2 successfully deployed.", date: "2024-08-01T02:00:00Z"} ],
@@ -289,8 +290,8 @@ const getDefaultMockProductValues = (id: string): MockProductType => ({
   specifications: {},
   lifecycleEvents: [],
   complianceData: {},
-  isDppBlockchainAnchored: false, 
-  dppAnchorTransactionHash: undefined, 
+  isDppBlockchainAnchored: false,
+  dppAnchorTransactionHash: undefined,
   currentLifecyclePhaseIndex: 0,
   lifecyclePhases: [ { id: `lc_user_${id}_1`, name: "Created", icon: PackageSearch, status: 'completed', timestamp: new Date().toISOString(), location: "System", details: "Product entry created by user." }, { id: `lc_user_${id}_2`, name: "Pending Review", icon: Factory, status: 'in_progress', details: "Awaiting further data input and review." } ],
   overallCompliance: {
@@ -339,63 +340,139 @@ const chartConfig = {
   materials: {},
 } satisfies import("@/components/ui/chart").ChartConfig;
 
-const calculateDppCompleteness = (product: MockProductType): { score: number; filledFields: number; totalFields: number; missingFields: string[] } => {
-  const essentialFieldsConfig: Array<{ key: keyof MockProductType | string; label: string; check?: (p: MockProductType) => boolean; categoryScope?: string[] }> = [
-    { key: 'productName', label: 'Product Name' },
-    { key: 'gtin', label: 'GTIN' },
-    { key: 'category', label: 'Category' },
-    { key: 'manufacturer', label: 'Manufacturer' },
-    { key: 'modelNumber', label: 'Model Number' },
-    { key: 'description', label: 'Description' },
-    { key: 'imageUrl', label: 'Image URL', check: (p) => !!p.imageUrl && !p.imageUrl.includes('placehold.co') && !p.imageUrl.includes('?text=') },
-    { key: 'materials', label: 'Materials' },
-    { key: 'sustainabilityClaims', label: 'Sustainability Claims' },
-    { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] },
-    { key: 'specifications', label: 'Specifications', check: (p) => p.specifications && Object.keys(p.specifications).length > 0 },
-    { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 },
-    { key: 'complianceData', label: 'Compliance Data', check: (p) => p.complianceData && Object.keys(p.complianceData).length > 0 },
-  ];
+interface FieldConfig {
+  key: keyof MockProductType | string;
+  label: string;
+  section: DppSectionName;
+  check?: (p: MockProductType) => boolean;
+  categoryScope?: string[];
+}
 
-  const isBatteryRelevantCategory = product.category?.toLowerCase().includes('electronics') || product.category?.toLowerCase().includes('automotive parts') || product.category?.toLowerCase().includes('battery');
-  if (isBatteryRelevantCategory || product.batteryChemistry) {
-    essentialFieldsConfig.push({ key: 'batteryChemistry', label: 'Battery Chemistry' });
-    essentialFieldsConfig.push({ key: 'stateOfHealth', label: 'Battery State of Health (SoH)', check: p => typeof p.stateOfHealth === 'number' });
-    essentialFieldsConfig.push({ key: 'carbonFootprintManufacturing', label: 'Battery Mfg. Carbon Footprint', check: p => typeof p.carbonFootprintManufacturing === 'number' });
-    essentialFieldsConfig.push({ key: 'recycledContentPercentage', label: 'Battery Recycled Content', check: p => typeof p.recycledContentPercentage === 'number' });
-  }
+type DppSectionName = 'Basic Info' | 'Sustainability' | 'Specifications' | 'Lifecycle' | 'Compliance' | 'Battery';
 
-  let filledCount = 0;
-  const missingFields: string[] = [];
-  let actualTotalFields = 0;
+interface SectionCompleteness {
+  sectionName: DppSectionName;
+  score: number;
+  filledFields: number;
+  totalFields: number;
+  missingFieldsInSection: string[];
+}
 
-  essentialFieldsConfig.forEach(fieldConfig => {
+interface DppCompletenessResult {
+  overallScore: number;
+  overallFilledFields: number;
+  overallTotalFields: number;
+  sections: SectionCompleteness[];
+}
+
+
+const ESSENTIAL_FIELDS_CONFIG: FieldConfig[] = [
+  { key: 'productName', label: 'Product Name', section: 'Basic Info' },
+  { key: 'gtin', label: 'GTIN', section: 'Basic Info' },
+  { key: 'category', label: 'Category', section: 'Basic Info' },
+  { key: 'manufacturer', label: 'Manufacturer', section: 'Basic Info' },
+  { key: 'modelNumber', label: 'Model Number', section: 'Basic Info' },
+  { key: 'description', label: 'Description', section: 'Basic Info' },
+  { key: 'imageUrl', label: 'Image URL', section: 'Basic Info', check: (p) => !!p.imageUrl && !p.imageUrl.includes('placehold.co') && !p.imageUrl.includes('?text=') },
+  { key: 'materials', label: 'Materials', section: 'Sustainability' },
+  { key: 'sustainabilityClaims', label: 'Sustainability Claims', section: 'Sustainability' },
+  { key: 'energyLabel', label: 'Energy Label', section: 'Sustainability', categoryScope: ['Appliances', 'Electronics'] },
+  { key: 'specifications', label: 'Specifications', section: 'Specifications', check: (p) => {
+      if (typeof p.specifications === 'string') return !!p.specifications && p.specifications.trim() !== '' && p.specifications.trim() !== '{}';
+      if (typeof p.specifications === 'object' && p.specifications !== null) return Object.keys(p.specifications).length > 0;
+      return false;
+    }
+  },
+  { key: 'lifecycleEvents', label: 'Lifecycle Events', section: 'Lifecycle', check: (p) => (p.lifecycleEvents || []).length > 0 },
+  { key: 'complianceData', label: 'Compliance Data', section: 'Compliance', check: (p) => p.complianceData && Object.keys(p.complianceData).length > 0 },
+  { key: 'batteryChemistry', label: 'Battery Chemistry', section: 'Battery', categoryScope: ['Electronics', 'Automotive Parts', 'Battery'] },
+  { key: 'stateOfHealth', label: 'Battery State of Health (SoH)', section: 'Battery', check: p => typeof p.stateOfHealth === 'number', categoryScope: ['Electronics', 'Automotive Parts', 'Battery'] },
+  { key: 'carbonFootprintManufacturing', label: 'Battery Mfg. Carbon Footprint', section: 'Battery', check: p => typeof p.carbonFootprintManufacturing === 'number', categoryScope: ['Electronics', 'Automotive Parts', 'Battery'] },
+  { key: 'recycledContentPercentage', label: 'Battery Recycled Content', section: 'Battery', check: p => typeof p.recycledContentPercentage === 'number', categoryScope: ['Electronics', 'Automotive Parts', 'Battery'] },
+];
+
+
+const calculateDppCompleteness = (product: MockProductType): DppCompletenessResult => {
+  const sectionsData: Record<DppSectionName, { filled: number; total: number; missing: string[] }> = {
+    'Basic Info': { filled: 0, total: 0, missing: [] },
+    'Sustainability': { filled: 0, total: 0, missing: [] },
+    'Specifications': { filled: 0, total: 0, missing: [] },
+    'Lifecycle': { filled: 0, total: 0, missing: [] },
+    'Compliance': { filled: 0, total: 0, missing: [] },
+    'Battery': { filled: 0, total: 0, missing: [] },
+  };
+
+  let overallFilled = 0;
+  let overallTotalApplicable = 0;
+
+  ESSENTIAL_FIELDS_CONFIG.forEach(fieldConfig => {
+    const productCategoryLower = product.category?.toLowerCase();
+    let isFieldApplicable = true;
+
     if (fieldConfig.categoryScope) {
-      const productCategoryLower = product.category?.toLowerCase();
       if (!productCategoryLower || !fieldConfig.categoryScope.some(scope => productCategoryLower.includes(scope.toLowerCase()))) {
-        return;
+        isFieldApplicable = false;
       }
     }
-    actualTotalFields++;
-    let isFieldFilled = false;
-    if (fieldConfig.check) {
-      isFieldFilled = fieldConfig.check(product);
-    } else {
-      const value = product[fieldConfig.key as keyof MockProductType];
-      if (typeof value === 'object' && value !== null) { 
-        isFieldFilled = Object.keys(value).length > 0;
+    
+    // Special handling for battery section based on product category OR if battery data is present
+    if (fieldConfig.section === 'Battery') {
+        const isBatteryRelevantCategory = product.category?.toLowerCase().includes('electronics') || product.category?.toLowerCase().includes('automotive parts') || product.category?.toLowerCase().includes('battery');
+        const hasSomeBatteryData = product.batteryChemistry || product.stateOfHealth !== undefined || product.carbonFootprintManufacturing !== undefined || product.recycledContentPercentage !== undefined;
+        if (!isBatteryRelevantCategory && !hasSomeBatteryData) {
+            isFieldApplicable = false;
+        }
+    }
+
+
+    if (isFieldApplicable) {
+      sectionsData[fieldConfig.section].total++;
+      overallTotalApplicable++;
+
+      let isFieldFilled = false;
+      if (fieldConfig.check) {
+        isFieldFilled = fieldConfig.check(product);
       } else {
-        isFieldFilled = value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A';
+        const value = product[fieldConfig.key as keyof MockProductType];
+        if (typeof value === 'object' && value !== null) {
+          isFieldFilled = Object.keys(value).length > 0;
+        } else {
+          isFieldFilled = value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A';
+        }
       }
-    }
-    if (isFieldFilled) {
-      filledCount++;
-    } else {
-      missingFields.push(fieldConfig.label);
+
+      if (isFieldFilled) {
+        sectionsData[fieldConfig.section].filled++;
+        overallFilled++;
+      } else {
+        sectionsData[fieldConfig.section].missing.push(fieldConfig.label);
+      }
     }
   });
-  const score = actualTotalFields > 0 ? Math.round((filledCount / actualTotalFields) * 100) : 0;
-  return { score, filledFields: filledCount, totalFields: actualTotalFields, missingFields };
+
+  const sectionsArray: SectionCompleteness[] = (Object.keys(sectionsData) as DppSectionName[])
+    .filter(sectionName => sectionsData[sectionName].total > 0) // Only include sections with applicable fields
+    .map(sectionName => {
+        const section = sectionsData[sectionName];
+        return {
+            sectionName,
+            score: section.total > 0 ? Math.round((section.filled / section.total) * 100) : 100, // Score 100 if no fields applicable to section or all filled
+            filledFields: section.filled,
+            totalFields: section.total,
+            missingFieldsInSection: section.missing,
+        };
+    });
+  
+  const overallScore = overallTotalApplicable > 0 ? Math.round((overallFilled / overallTotalApplicable) * 100) : 100;
+
+  return {
+    overallScore,
+    overallFilledFields: overallFilled,
+    overallTotalFields: overallTotalApplicable,
+    sections: sectionsArray,
+  };
 };
+
 
 // Helper to determine new origin status
 const determineOrigin = (
@@ -406,8 +483,8 @@ const determineOrigin = (
    // If user clears a field that had a value, it's a manual action.
    // If a field was empty and user provides a value, it's manual.
    // If a field had a value and user changes it to another non-empty value, it's manual.
-  if (currentValue !== previousValue) {
-    if ( (previousValue !== undefined && previousValue !== null && previousValue !== "") && (currentValue === "" || currentValue === null || currentValue === undefined) ) {
+  if (String(currentValue) !== String(previousValue)) { // Compare as strings to handle undefined/null/empty variations
+    if ( (previousValue !== undefined && previousValue !== null && String(previousValue).trim() !== "") && (currentValue === "" || currentValue === null || currentValue === undefined) ) {
         return 'manual'; // User cleared an existing field
     }
     if (currentValue !== "" && currentValue !== null && currentValue !== undefined) {
@@ -464,7 +541,7 @@ export default function ProductDetailPage() {
 
 
           foundProduct = {
-            ...defaults, 
+            ...defaults,
             productId: storedProduct.id,
             productName: storedProduct.productName || "User Added Product",
             productNameOrigin: storedProduct.productNameOrigin,
@@ -488,7 +565,7 @@ export default function ProductDetailPage() {
             sustainabilityClaimsOrigin: storedProduct.sustainabilityClaimsOrigin,
             energyLabel: storedProduct.energyLabel || "N/A",
             energyLabelOrigin: storedProduct.energyLabelOrigin,
-            specifications: parsedSpecifications, 
+            specifications: parsedSpecifications,
             specificationsOrigin: storedProduct.specificationsOrigin,
             batteryChemistry: storedProduct.batteryChemistry,
             batteryChemistryOrigin: storedProduct.batteryChemistryOrigin,
@@ -507,7 +584,7 @@ export default function ProductDetailPage() {
       if (!foundProduct) {
         foundProduct = MOCK_PRODUCTS.find(p => p.productId === productId);
       }
-      
+
       setProduct(foundProduct);
       if (foundProduct) {
         setInitialProductDataForEdit({
@@ -568,7 +645,7 @@ export default function ProductDetailPage() {
           case 'retailer': newDefaultTab = 'sustainability'; break;
           case 'recycler': newDefaultTab = hasBatteryData ? 'battery' : 'sustainability'; break;
           case 'verifier': newDefaultTab = 'compliance'; break;
-          case 'admin': newDefaultTab = 'overview'; break; 
+          case 'admin': newDefaultTab = 'overview'; break;
           default: newDefaultTab = 'overview';
         }
       }
@@ -661,10 +738,10 @@ export default function ProductDetailPage() {
         productName: product.productName,
         productCategory: product.category,
       });
-      
-      const updatedProductState: MockProductType = { 
-        ...product, 
-        imageUrl: result.imageUrl, 
+
+      const updatedProductState: MockProductType = {
+        ...product,
+        imageUrl: result.imageUrl,
         imageUrlOrigin: 'AI_EXTRACTED' as ('AI_EXTRACTED' | 'manual'),
         lastUpdated: new Date().toISOString()
       };
@@ -711,11 +788,13 @@ export default function ProductDetailPage() {
 
       if (productIndex > -1) {
         const currentStoredProduct = userProducts[productIndex];
+        // initialProductDataForEdit holds the state of the product *before* this current edit session started.
+        // This is crucial for determining which fields the user actually changed vs. what was pre-filled by AI or previous edits.
         const productDataBeforeThisEditSession = initialProductDataForEdit;
 
 
         const updatedProductData: StoredUserProduct = {
-          ...currentStoredProduct, 
+          ...currentStoredProduct,
           id: product.productId,
           productName: formDataFromForm.productName || currentStoredProduct.productName,
           gtin: formDataFromForm.gtin || currentStoredProduct.gtin,
@@ -732,7 +811,7 @@ export default function ProductDetailPage() {
           stateOfHealth: formDataFromForm.stateOfHealth !== undefined && formDataFromForm.stateOfHealth !== null ? formDataFromForm.stateOfHealth : currentStoredProduct.stateOfHealth,
           carbonFootprintManufacturing: formDataFromForm.carbonFootprintManufacturing !== undefined && formDataFromForm.carbonFootprintManufacturing !== null ? formDataFromForm.carbonFootprintManufacturing : currentStoredProduct.carbonFootprintManufacturing,
           recycledContentPercentage: formDataFromForm.recycledContentPercentage !== undefined && formDataFromForm.recycledContentPercentage !== null ? formDataFromForm.recycledContentPercentage : currentStoredProduct.recycledContentPercentage,
-          
+
           lastUpdated: new Date().toISOString(),
           productNameOrigin: determineOrigin(formDataFromForm.productName, productDataBeforeThisEditSession.productName, productDataBeforeThisEditSession.productNameOrigin),
           productDescriptionOrigin: determineOrigin(formDataFromForm.productDescription, productDataBeforeThisEditSession.productDescription, productDataBeforeThisEditSession.productDescriptionOrigin),
@@ -748,14 +827,14 @@ export default function ProductDetailPage() {
           carbonFootprintManufacturingOrigin: determineOrigin(formDataFromForm.carbonFootprintManufacturing, productDataBeforeThisEditSession.carbonFootprintManufacturing, productDataBeforeThisEditSession.carbonFootprintManufacturingOrigin),
           recycledContentPercentageOrigin: determineOrigin(formDataFromForm.recycledContentPercentage, productDataBeforeThisEditSession.recycledContentPercentage, productDataBeforeThisEditSession.recycledContentPercentageOrigin),
         };
-        
+
         userProducts[productIndex] = updatedProductData;
         localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
 
         setProduct(prev => {
           if (!prev) return null;
           const displayProduct: MockProductType = {
-            ...prev, 
+            ...prev,
             productId: updatedProductData.id,
             productName: updatedProductData.productName || "Error",
             productNameOrigin: updatedProductData.productNameOrigin,
@@ -792,17 +871,47 @@ export default function ProductDetailPage() {
           };
           return displayProduct;
         });
-        setInitialProductDataForEdit(updatedProductData); 
+        // After successful save, the new data becomes the baseline for the next edit session.
+        setInitialProductDataForEdit({
+            productName: updatedProductData.productName,
+            productNameOrigin: updatedProductData.productNameOrigin,
+            gtin: updatedProductData.gtin,
+            productDescription: updatedProductData.productDescription,
+            productDescriptionOrigin: updatedProductData.productDescriptionOrigin,
+            manufacturer: updatedProductData.manufacturer,
+            manufacturerOrigin: updatedProductData.manufacturerOrigin,
+            modelNumber: updatedProductData.modelNumber,
+            modelNumberOrigin: updatedProductData.modelNumberOrigin,
+            materials: updatedProductData.materials,
+            materialsOrigin: updatedProductData.materialsOrigin,
+            sustainabilityClaims: updatedProductData.sustainabilityClaims,
+            sustainabilityClaimsOrigin: updatedProductData.sustainabilityClaimsOrigin,
+            specifications: typeof updatedProductData.specifications === 'string' ? updatedProductData.specifications : JSON.stringify(updatedProductData.specifications),
+            specificationsOrigin: updatedProductData.specificationsOrigin,
+            energyLabel: updatedProductData.energyLabel,
+            energyLabelOrigin: updatedProductData.energyLabelOrigin,
+            productCategory: updatedProductData.productCategory,
+            imageUrl: updatedProductData.imageUrl,
+            imageUrlOrigin: updatedProductData.imageUrlOrigin,
+            batteryChemistry: updatedProductData.batteryChemistry,
+            batteryChemistryOrigin: updatedProductData.batteryChemistryOrigin,
+            stateOfHealth: updatedProductData.stateOfHealth,
+            stateOfHealthOrigin: updatedProductData.stateOfHealthOrigin,
+            carbonFootprintManufacturing: updatedProductData.carbonFootprintManufacturing,
+            carbonFootprintManufacturingOrigin: updatedProductData.carbonFootprintManufacturingOrigin,
+            recycledContentPercentage: updatedProductData.recycledContentPercentage,
+            recycledContentPercentageOrigin: updatedProductData.recycledContentPercentageOrigin,
+        });
 
         toast({ title: "Product Updated", description: `${updatedProductData.productName} has been updated successfully.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
-        setIsEditing(false); 
+        setIsEditing(false);
       } else {
         throw new Error("Product not found for update in local storage.");
       }
     } catch (e) {
       console.error("Failed to update product:", e);
       toast({ title: `Product Update Failed`, description: `Could not update the product. ${e instanceof Error ? e.message : ''}`, variant: "destructive" });
-       setIsEditing(false); 
+       setIsEditing(false);
     }
   };
 
@@ -826,7 +935,7 @@ export default function ProductDetailPage() {
 
       const nextIdx = currentIdx + 1;
       newPhases[nextIdx] = { ...newPhases[nextIdx], status: 'in_progress', timestamp: new Date().toISOString() };
-      
+
       const newLifecycleEvent = {
         id: `EVT_SIM_${Date.now()}`,
         type: "Stage Advanced (Simulated)",
@@ -921,21 +1030,20 @@ export default function ProductDetailPage() {
   if (product === undefined) { return <ProductDetailSkeleton />; }
   if (!product) { notFound(); return null; }
 
-  const currentYear = new Date().getFullYear().toString();
   const dppCompleteness = calculateDppCompleteness(product);
 
   const canEditProduct = (currentRole === 'admin' || currentRole === 'manufacturer') && product.productId.startsWith("USER_PROD");
   const canSimulateCompliance = currentRole === 'admin' || currentRole === 'manufacturer';
   const canSyncEprel = currentRole === 'admin' || currentRole === 'manufacturer';
   const canAdvanceLifecycle = (currentRole === 'admin' || currentRole === 'manufacturer') && product.currentLifecyclePhaseIndex < product.lifecyclePhases.length - 1;
-  
+
   const isProductImagePlaceholder = !product.imageUrl || product.imageUrl.includes('placehold.co') || product.imageUrl.includes('?text=');
   const canGenerateImage = (currentRole === 'admin' || currentRole === 'manufacturer');
   const canSuggestClaims = currentRole === 'admin' || currentRole === 'manufacturer';
   const canVerifyDocuments = currentRole === 'admin' || currentRole === 'verifier';
 
   return (
-    
+
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -953,7 +1061,7 @@ export default function ProductDetailPage() {
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge variant={ product.status === "Active" ? "default" : product.status === "Archived" ? "secondary" : "outline" } className={cn( product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", product.status === "Draft" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {product.status} </Badge>
-            
+
             <Badge
               variant={ product.compliance === "Compliant" ? "default" : product.compliance === "Pending Documentation" ? "outline" : product.compliance === "Pending" ? "outline" : product.compliance === "N/A" ? "secondary" : "destructive" }
               className={cn(
@@ -996,7 +1104,7 @@ export default function ProductDetailPage() {
             <ProductForm
               id="product-form-in-detail-page"
               onSubmit={handleProductFormSubmit}
-              isSubmitting={(isCheckingCompliance || isSyncingEprel || isGeneratingImage || isSuggestingClaims) } 
+              isSubmitting={(isCheckingCompliance || isSyncingEprel || isGeneratingImage || isSuggestingClaims) }
               initialData={initialProductDataForEdit}
               isStandalonePage={false}
             />
@@ -1078,22 +1186,70 @@ export default function ProductDetailPage() {
                     <Card className="shadow-lg">
                       <CardHeader> <CardTitle className="flex items-center"><ListChecks className="mr-2 h-5 w-5 text-primary" />DPP Data Completeness</CardTitle> </CardHeader>
                       <CardContent>
-                        <TooltipProvider>
+                          <TooltipProvider>
                             <Tooltip delayDuration={100}>
-                                <TooltipTrigger asChild>
-                                <div className="cursor-help">
-                                    <div className="flex items-center justify-between mb-2">
-                                    <span className="text-lg font-semibold text-primary">{dppCompleteness.score}% Complete</span>
-                                    <span className="text-sm text-muted-foreground">{dppCompleteness.filledFields} / {dppCompleteness.totalFields} fields</span>
-                                    </div>
-                                    <Progress value={dppCompleteness.score} className="w-full h-3" />
+                              <TooltipTrigger asChild>
+                                <div className="cursor-help space-y-2">
+                                  <div className="flex items-center justify-between">
+                                    <span className="text-lg font-semibold text-primary">Overall: {dppCompleteness.overallScore}%</span>
+                                    <span className="text-sm text-muted-foreground">{dppCompleteness.overallFilledFields} / {dppCompleteness.overallTotalFields} fields</span>
+                                  </div>
+                                  <Progress value={dppCompleteness.overallScore} className="w-full h-3" />
                                 </div>
-                                </TooltipTrigger>
-                                <TooltipContent className="bg-background shadow-lg p-3 rounded-md border max-w-xs">
-                                {dppCompleteness.missingFields.length > 0 ? ( <> <p className="text-xs font-semibold">Missing essential fields:</p> <ul className="list-disc list-inside text-xs text-muted-foreground mt-1">{dppCompleteness.missingFields.map(field => <li key={field}>{field}</li>)}</ul> </> ) : ( <p className="text-xs text-green-600 flex items-center"><CheckCircle2 className="mr-1 h-3 w-3"/> All essential data present!</p> )}
-                                </TooltipContent>
+                              </TooltipTrigger>
+                              <TooltipContent className="bg-background shadow-lg p-3 rounded-md border max-w-xs w-64">
+                                <p className="text-sm font-semibold mb-2">Completeness Breakdown:</p>
+                                {dppCompleteness.sections.map(section => (
+                                  <div key={section.sectionName} className="mb-1.5">
+                                    <div className="flex justify-between items-center text-xs">
+                                      <span className="font-medium">{section.sectionName}:</span>
+                                      <span className={cn(section.score === 100 ? "text-green-600" : "text-foreground")}>{section.score}%</span>
+                                    </div>
+                                    {section.missingFieldsInSection.length > 0 && (
+                                      <ul className="list-disc list-inside text-xs text-muted-foreground pl-3">
+                                        {section.missingFieldsInSection.map(field => <li key={`${section.sectionName}-${field}`}>{field}</li>)}
+                                      </ul>
+                                    )}
+                                  </div>
+                                ))}
+                                {dppCompleteness.sections.every(s => s.missingFieldsInSection.length === 0 && s.score === 100) && (
+                                  <p className="text-xs text-green-600 flex items-center mt-1"><CheckCircle2 className="mr-1 h-3 w-3"/> All essential data present!</p>
+                                )}
+                              </TooltipContent>
                             </Tooltip>
-                        </TooltipProvider>
+                          </TooltipProvider>
+
+                          {/* Detailed section breakdown visible directly */}
+                          <Accordion type="single" collapsible className="w-full mt-4">
+                            <AccordionItem value="completeness-details">
+                              <AccordionTrigger className="text-sm py-2 hover:no-underline">
+                                <div className="flex items-center text-muted-foreground">
+                                  View Section Details
+                                  <ChevronDown className="h-4 w-4 ml-1 transition-transform duration-200 group-[data-state=open]:rotate-180" />
+                                </div>
+                              </AccordionTrigger>
+                              <AccordionContent className="pt-2 space-y-2">
+                                {dppCompleteness.sections.map(section => (
+                                  <div key={section.sectionName} className="p-2 bg-muted/50 rounded-md">
+                                    <div className="flex justify-between items-center text-sm font-medium">
+                                      <span>{section.sectionName}</span>
+                                      <span className={cn(section.score === 100 ? "text-green-600" : section.score > 60 ? "text-yellow-600" : "text-red-600")}>
+                                        {section.score}% ({section.filledFields}/{section.totalFields})
+                                      </span>
+                                    </div>
+                                    {section.missingFieldsInSection.length > 0 && (
+                                      <ul className="list-disc list-inside text-xs text-muted-foreground mt-1 pl-4">
+                                        {section.missingFieldsInSection.map(field => <li key={`detail-${section.sectionName}-${field}`}>{field}</li>)}
+                                      </ul>
+                                    )}
+                                    {section.score === 100 && section.totalFields > 0 && (
+                                       <p className="text-xs text-green-500 flex items-center mt-1"><CheckCircle2 className="h-3 w-3 mr-1"/>Complete</p>
+                                    )}
+                                  </div>
+                                ))}
+                              </AccordionContent>
+                            </AccordionItem>
+                          </Accordion>
                       </CardContent>
                     </Card>
                 </div>
@@ -1107,7 +1263,16 @@ export default function ProductDetailPage() {
                     <AccordionItem value="item-1">
                       <AccordionTrigger className="text-base">View Specifications</AccordionTrigger>
                       <AccordionContent className="space-y-2 pt-2">
-                        {product.specifications && Object.keys(product.specifications).length > 0 ? ( Object.entries(product.specifications).map(([key, value]) => ( <div key={key} className="flex flex-col sm:flex-row justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90">{key}:</span> <span className="text-muted-foreground text-left sm:text-right">{value}</span> </div> )) ) : ( <p className="text-sm text-muted-foreground">No specifications provided.</p> )}
+                        {product.specifications && (typeof product.specifications === 'object' ? Object.keys(product.specifications).length > 0 : product.specifications.trim() !== '' && product.specifications.trim() !== '{}') ? (
+                            Object.entries(typeof product.specifications === 'string' ? JSON.parse(product.specifications || '{}') : product.specifications).map(([key, value]) => (
+                                <div key={key} className="flex flex-col sm:flex-row justify-between text-sm border-b pb-1">
+                                    <span className="font-medium text-foreground/90">{key}:</span>
+                                    <span className="text-muted-foreground text-left sm:text-right">{String(value)}</span>
+                                </div>
+                            ))
+                        ) : (
+                            <p className="text-sm text-muted-foreground">No specifications provided.</p>
+                        )}
                       </AccordionContent>
                     </AccordionItem>
                   </Accordion>
@@ -1160,9 +1325,9 @@ export default function ProductDetailPage() {
                                 <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={cn( "mb-1 sm:mb-0", data.status === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {data.status} </Badge>
                                 <div className="flex gap-2">
                                   {canVerifyDocuments && (
-                                    <Button 
-                                      variant="outline" 
-                                      size="sm" 
+                                    <Button
+                                      variant="outline"
+                                      size="sm"
                                       onClick={() => handleMockVerifyDocument(reg)}
                                       disabled={verifyingRegulationKey === reg || isCheckingCompliance || isSyncingEprel}
                                     >
@@ -1328,7 +1493,7 @@ export default function ProductDetailPage() {
         </>
       )}
     </div>
-    
+
   );
 }
 
@@ -1366,3 +1531,4 @@ function ProductDetailSkeleton() {
   )
 }
 
+    

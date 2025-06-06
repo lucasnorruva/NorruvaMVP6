@@ -24,7 +24,8 @@ import { Cpu, BatteryCharging, Loader2, Sparkles, ImagePlus, Image as ImageIcon 
 import React, { useState } from "react";
 import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow";
 import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
-import { generateProductName } from "@/ai/flows/generate-product-name-flow.ts"; // Corrected import
+import { generateProductName } from "@/ai/flows/generate-product-name-flow.ts";
+import { generateProductDescription } from "@/ai/flows/generate-product-description-flow"; // Added new import
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";
 import Image from "next/image";
@@ -52,6 +53,7 @@ const formSchema = z.object({
 export type ProductFormData = z.infer<typeof formSchema>;
 
 interface ProductFormProps {
+  id?: string; // Added id for form submission in ProductDetailPage
   initialData?: Partial<InitialProductFormData & { productCategory?: string; imageUrl?: string }>; 
   onSubmit: (data: ProductFormData) => Promise<void>;
   isSubmitting?: boolean;
@@ -77,7 +79,7 @@ const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' 
 };
 
 
-export default function ProductForm({ initialData, onSubmit, isSubmitting, isStandalonePage = true }: ProductFormProps) {
+export default function ProductForm({ id, initialData, onSubmit, isSubmitting, isStandalonePage = true }: ProductFormProps) {
   const form = useForm<ProductFormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -105,6 +107,7 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(initialData?.imageUrl || null);
   const [isSuggestingName, setIsSuggestingName] = useState(false);
+  const [isSuggestingDescription, setIsSuggestingDescription] = useState(false); // New state
 
 
   React.useEffect(() => {
@@ -155,6 +158,35 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
       });
     } finally {
       setIsSuggestingName(false);
+    }
+  };
+
+  const handleSuggestDescription = async () => {
+    setIsSuggestingDescription(true);
+    const { productName, productCategory, materials } = form.getValues();
+    if (!productName) {
+      toast({ title: "Product Name Required", description: "Please provide a product name to suggest a description.", variant: "destructive" });
+      setIsSuggestingDescription(false);
+      return;
+    }
+    try {
+      const result = await generateProductDescription({
+        productName: productName,
+        productCategory: productCategory || undefined,
+        keyFeatures: materials || undefined, // Using materials as keyFeatures for now
+      });
+      form.setValue("productDescription", result.productDescription, { shouldValidate: true });
+      toast({ title: "Product Description Suggested!", description: "AI has generated a product description.", variant: "default" });
+    } catch (error) {
+      console.error("Failed to suggest product description:", error);
+      toast({
+        title: "Error Suggesting Description",
+        description: error instanceof Error ? error.message : "An unknown error occurred.",
+        variant: "destructive",
+        action: <AlertTriangle className="text-white" />,
+      });
+    } finally {
+      setIsSuggestingDescription(false);
     }
   };
 
@@ -311,10 +343,16 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
             name="productDescription"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="flex items-center">
-                  Product Description
-                  <AiIndicator fieldOrigin={initialData?.productDescriptionOrigin} fieldName="Product Description" />
-                </FormLabel>
+                <div className="flex items-center justify-between">
+                  <FormLabel className="flex items-center">
+                    Product Description
+                    <AiIndicator fieldOrigin={initialData?.productDescriptionOrigin} fieldName="Product Description" />
+                  </FormLabel>
+                  <Button type="button" variant="ghost" size="sm" onClick={handleSuggestDescription} disabled={isSuggestingDescription || isSubmitting}>
+                    {isSuggestingDescription ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
+                    <span className="ml-2">{isSuggestingDescription ? "Suggesting..." : "Suggest Description"}</span>
+                  </Button>
+                </div>
                 <FormControl>
                   <Textarea placeholder="Detailed description of the product..." {...field} rows={4} />
                 </FormControl>
@@ -557,8 +595,8 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
               {formContent}
             </CardContent>
           </Card>
-          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName}>
-            {(isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName || isSuggestingDescription}>
+            {(isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName || isSuggestingDescription) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isSubmitting ? "Saving Product..." : "Save Product"}
           </Button>
         </form>
@@ -568,12 +606,9 @@ export default function ProductForm({ initialData, onSubmit, isSubmitting, isSta
 
   return (
      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+        <form id={id} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6"> {/* Ensure form has an ID if used externally */}
           {formContent}
-           <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName}>
-            {(isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSubmitting ? "Saving Changes..." : "Save Changes"}
-          </Button>
+           {/* Button is rendered by parent component when not standalone */}
         </form>
     </Form>
   );

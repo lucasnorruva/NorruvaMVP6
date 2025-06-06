@@ -11,7 +11,7 @@ import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDo
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react'; 
 import { cn } from '@/lib/utils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+// Tooltip components are removed as their usage is being removed from this file.
 
 // Define a type for icon mapping
 type IconName = "Leaf" | "Recycle" | "ShieldCheck" | "Cpu" | "Zap";
@@ -337,16 +337,7 @@ export default function PublicPassportPage({ params }: Props) {
                           <div className="flex justify-between items-center">
                             <span className="font-medium">{cert.name}</span>
                             {cert.isVerified && (
-                              <TooltipProvider>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <span className="cursor-help">
-                                      <ShieldCheck className="h-4 w-4 text-green-500" />
-                                    </span>
-                                  </TooltipTrigger>
-                                  <TooltipContent><p>Verified Certification</p></TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
+                                <ShieldCheck className="h-4 w-4 text-green-500" title="Verified Certification" />
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5">Authority: {cert.authority}</p>
@@ -377,18 +368,11 @@ export default function PublicPassportPage({ params }: Props) {
                     {product.anchorTransactionHash && (
                         <div className="flex flex-col">
                         <span className="text-muted-foreground">Product Record Hash:</span>
-                        <TooltipProvider>
-                            <Tooltip delayDuration={100}>
-                            <TooltipTrigger asChild>
-                                <span className="font-mono text-xs break-all text-foreground truncate cursor-help">
-                                {product.anchorTransactionHash}
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent side="top" align="start">
-                                <p className="max-w-xs break-all">{product.anchorTransactionHash}</p>
-                            </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
+                        
+                        <span className="font-mono text-xs break-all text-foreground truncate" title={product.anchorTransactionHash}>
+                          {product.anchorTransactionHash}
+                        </span>
+                        
                         </div>
                     )}
                     {product.blockchainPlatform && (

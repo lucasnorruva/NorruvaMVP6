@@ -10,7 +10,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
 import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide, ChevronRight } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+// Tooltip components are removed from imports as they are being removed from usage in this file
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
@@ -29,6 +29,7 @@ import { useToast } from '@/hooks/use-toast';
 import { checkProductCompliance } from '@/ai/flows/check-product-compliance-flow';
 import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow';
 import type { InitialProductFormData } from '@/app/(app)/products/new/page';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -283,46 +284,22 @@ const getDefaultMockProductValues = (id: string): MockProductType => ({
   verificationLog: [{ id: `vlog_user_${id}`, event: "DPP Created by User", timestamp: new Date().toISOString(), actor: "User" }],
 });
 
-const TrustSignalIcon = ({ isVerified, tooltipText, VerifiedIcon = CheckCircle2, UnverifiedIcon = Info, customClasses }: { isVerified?: boolean, tooltipText: string, VerifiedIcon?: React.ElementType, UnverifiedIcon?: React.ElementType, customClasses?: string }) => {
+// Simplified TrustSignalIcon: Renders icon only, no tooltip
+const TrustSignalIcon = ({ isVerified, VerifiedIcon = CheckCircle2, UnverifiedIcon = Info, customClasses }: { isVerified?: boolean, VerifiedIcon?: React.ElementType, UnverifiedIcon?: React.ElementType, customClasses?: string }) => {
   if (isVerified === undefined) return null;
   const IconToRender = isVerified ? VerifiedIcon : UnverifiedIcon;
   const colorClass = isVerified ? 'text-green-500' : 'text-yellow-600';
-
-  return (
-    <TooltipProvider>
-      <Tooltip delayDuration={100}>
-        <TooltipTrigger asChild>
-          <span className='cursor-help'>
-            <IconToRender className={cn("h-4 w-4 ml-1", colorClass, customClasses)} />
-          </span>
-        </TooltipTrigger>
-        <TooltipContent>
-          <p>{tooltipText}</p>
-        </TooltipContent>
-      </Tooltip>
-    </TooltipProvider>
-  )
+  return <IconToRender className={cn("h-4 w-4 ml-1", colorClass, customClasses)} />;
 };
 
-const DataOriginIcon = ({ origin, fieldName }: { origin?: 'AI_EXTRACTED' | 'manual', fieldName: string }) => {
+// Simplified DataOriginIcon: Renders icon only, no tooltip
+const DataOriginIcon = ({ origin }: { origin?: 'AI_EXTRACTED' | 'manual' }) => {
   if (origin === 'AI_EXTRACTED') {
-    return (
-      <TooltipProvider>
-        <Tooltip delayDuration={100}>
-          <TooltipTrigger asChild>
-             <span className="cursor-help">
-                <Cpu className="h-4 w-4 text-info ml-1" />
-             </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{fieldName} data suggested by AI.</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
+    return <Cpu className="h-4 w-4 text-info ml-1" />;
   }
   return null;
 };
+
 
 const chartConfig = {
   carbon: { label: "Carbon Footprint (kg CO₂e)", color: "hsl(var(--chart-1))" },
@@ -671,55 +648,40 @@ export default function ProductDetailPage() {
 
 
   return (
-    <TooltipProvider>
+    
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <div className="flex items-center">
             <h1 className="text-3xl font-headline font-semibold">{product.productName}</h1>
-            <DataOriginIcon origin={product.productNameOrigin} fieldName="Product Name" />
+            <DataOriginIcon origin={product.productNameOrigin} />
             {product.isDppBlockchainAnchored && (
-                <Tooltip delayDuration={100}>
-                  <TooltipTrigger asChild>
-                     <span className="cursor-help"><Fingerprint className="h-6 w-6 text-primary ml-2" /></span>
-                  </TooltipTrigger>
-                  <TooltipContent><p>DPP is anchored on blockchain.</p></TooltipContent>
-                </Tooltip>
+                <Fingerprint className="h-6 w-6 text-primary ml-2" title="DPP is anchored on blockchain." />
             )}
             {product.isDppBlockchainAnchored && product.dppAnchorTransactionHash && (
-                 <Tooltip delayDuration={100}>
-                    <TooltipTrigger asChild>
-                        <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}>
-                            <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" />
-                        </Button>
-                    </TooltipTrigger>
-                    <TooltipContent><p>View anchor on Blockchain Explorer (mock).</p></TooltipContent>
-                 </Tooltip>
+                 <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)} title={`View anchor on Blockchain Explorer (mock). Tx: ${product.dppAnchorTransactionHash}`}>
+                     <ExternalLink className="h-4 w-4 text-primary/70 hover:text-primary" />
+                 </Button>
             )}
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             <Badge variant={ product.status === "Active" ? "default" : product.status === "Archived" ? "secondary" : "outline" } className={cn( product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", product.status === "Draft" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {product.status} </Badge>
-            <Tooltip delayDuration={100}>
-              <TooltipTrigger asChild>
-                <Badge
-                  variant={ product.compliance === "Compliant" ? "default" : product.compliance === "Pending Documentation" ? "outline" : product.compliance === "Pending" ? "outline" : product.compliance === "N/A" ? "secondary" : "destructive" }
-                  className={cn(
-                    product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "",
-                    (product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "",
-                    product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" : "",
-                    "cursor-help"
-                  )}
-                >
-                  {product.compliance}
-                  {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />}
-                  {(product.compliance === "Pending" || product.compliance === "Pending Documentation") && <Info className="h-3 w-3 ml-1" />}
-                  {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1" />}
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Overall compliance status. Last checked: {product.complianceLastChecked ? new Date(product.complianceLastChecked).toLocaleDateString() : "N/A"}</p>
-              </TooltipContent>
-            </Tooltip>
+            
+            <Badge
+              variant={ product.compliance === "Compliant" ? "default" : product.compliance === "Pending Documentation" ? "outline" : product.compliance === "Pending" ? "outline" : product.compliance === "N/A" ? "secondary" : "destructive" }
+              className={cn(
+                "cursor-help",
+                product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "",
+                (product.compliance === "Pending" || product.compliance === "Pending Documentation") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "",
+                product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" : ""
+              )}
+              title={`Overall compliance status. Last checked: ${product.complianceLastChecked ? new Date(product.complianceLastChecked).toLocaleDateString() : "N/A"}`}
+            >
+              {product.compliance}
+              {product.compliance === "Compliant" && <CheckCircle2 className="h-3 w-3 ml-1" />}
+              {(product.compliance === "Pending" || product.compliance === "Pending Documentation") && <Info className="h-3 w-3 ml-1" />}
+              {product.compliance === "Non-Compliant" && <AlertTriangle className="h-3 w-3 ml-1" />}
+            </Badge>
             <span className="text-sm text-muted-foreground">Last updated: {new Date(product.lastUpdated).toLocaleDateString()}</span>
           </div>
         </div>
@@ -803,18 +765,18 @@ export default function ProductDetailPage() {
                                 priority={product.imageUrl ? !product.imageUrl.startsWith("data:") : true}
                               />
                             </AspectRatio>
-                            <DataOriginIcon origin={product.imageUrlOrigin} fieldName="Product Image"/>
+                            <DataOriginIcon origin={product.imageUrlOrigin}/>
                         </div>
                         <div className="space-y-3">
-                             <div><strong className="text-foreground/80 block">Description:</strong> <span className="text-muted-foreground text-sm">{product.description}</span> <DataOriginIcon origin={product.descriptionOrigin} fieldName="Description" /></div>
-                             <div><strong className="text-foreground/80 block">GTIN:</strong> <span className="text-muted-foreground text-sm">{product.gtin || "N/A"}</span> <TrustSignalIcon isVerified={product.gtinVerified} tooltipText={product.gtinVerified ? "GTIN Verified" : "GTIN Not Verified"}/> </div>
+                             <div><strong className="text-foreground/80 block">Description:</strong> <span className="text-muted-foreground text-sm">{product.description}</span> <DataOriginIcon origin={product.descriptionOrigin} /></div>
+                             <div><strong className="text-foreground/80 block">GTIN:</strong> <span className="text-muted-foreground text-sm">{product.gtin || "N/A"}</span> <TrustSignalIcon isVerified={product.gtinVerified} /> </div>
                              <div><strong className="text-foreground/80 block">Category:</strong> <span className="text-muted-foreground text-sm">{product.category || "N/A"}</span></div>
-                             <div><strong className="text-foreground/80 block">Manufacturer:</strong> <span className="text-muted-foreground text-sm">{product.manufacturer || "N/A"}</span> <TrustSignalIcon isVerified={product.manufacturerVerified} tooltipText={product.manufacturerVerified ? "Manufacturer Verified" : "Manufacturer Not Verified"}/></div>
+                             <div><strong className="text-foreground/80 block">Manufacturer:</strong> <span className="text-muted-foreground text-sm">{product.manufacturer || "N/A"}</span> <TrustSignalIcon isVerified={product.manufacturerVerified} /></div>
                              <div><strong className="text-foreground/80 block">Model:</strong> <span className="text-muted-foreground text-sm">{product.modelNumber || "N/A"}</span></div>
                         </div>
                     </div>
                     <div className="mt-4 pt-4 border-t">
-                      <h4 className="text-md font-semibold mb-2 flex items-center"> <Leaf className="h-5 w-5 mr-2 text-accent" />Key Sustainability Info <TrustSignalIcon isVerified={product.sustainabilityClaimsVerified} tooltipText={product.sustainabilityClaimsVerified ? "Sustainability Claims Verified" : "Sustainability Claims Pending Verification"}/> </h4>
+                      <h4 className="text-md font-semibold mb-2 flex items-center"> <Leaf className="h-5 w-5 mr-2 text-accent" />Key Sustainability Info <TrustSignalIcon isVerified={product.sustainabilityClaimsVerified} /> </h4>
                       <p className="text-sm text-muted-foreground mb-1"><strong>Materials:</strong> {product.materials || "N/A"}</p>
                       <p className="text-sm text-muted-foreground mb-1"><strong>Claims:</strong> {product.sustainabilityClaims || "N/A"}</p>
                       <p className="text-sm text-muted-foreground"><strong>Energy Label:</strong> <Badge variant="secondary">{product.energyLabel || "N/A"}</Badge></p>
@@ -839,20 +801,22 @@ export default function ProductDetailPage() {
                     <Card className="shadow-lg">
                       <CardHeader> <CardTitle className="flex items-center"><ListChecks className="mr-2 h-5 w-5 text-primary" />DPP Data Completeness</CardTitle> </CardHeader>
                       <CardContent>
-                        <Tooltip delayDuration={100}>
-                            <TooltipTrigger asChild>
-                            <div className="cursor-help">
-                                <div className="flex items-center justify-between mb-2">
-                                <span className="text-lg font-semibold text-primary">{dppCompleteness.score}% Complete</span>
-                                <span className="text-sm text-muted-foreground">{dppCompleteness.filledFields} / {dppCompleteness.totalFields} fields</span>
+                        <TooltipProvider>
+                            <Tooltip delayDuration={100}>
+                                <TooltipTrigger asChild>
+                                <div className="cursor-help">
+                                    <div className="flex items-center justify-between mb-2">
+                                    <span className="text-lg font-semibold text-primary">{dppCompleteness.score}% Complete</span>
+                                    <span className="text-sm text-muted-foreground">{dppCompleteness.filledFields} / {dppCompleteness.totalFields} fields</span>
+                                    </div>
+                                    <Progress value={dppCompleteness.score} className="w-full h-3" />
                                 </div>
-                                <Progress value={dppCompleteness.score} className="w-full h-3" />
-                            </div>
-                            </TooltipTrigger>
-                            <TooltipContent className="bg-background shadow-lg p-3 rounded-md border max-w-xs">
-                            {dppCompleteness.missingFields.length > 0 ? ( <> <p className="text-xs font-semibold">Missing essential fields:</p> <ul className="list-disc list-inside text-xs text-muted-foreground mt-1">{dppCompleteness.missingFields.map(field => <li key={field}>{field}</li>)}</ul> </> ) : ( <p className="text-xs text-green-600 flex items-center"><CheckCircle2 className="mr-1 h-3 w-3"/> All essential data present!</p> )}
-                            </TooltipContent>
-                        </Tooltip>
+                                </TooltipTrigger>
+                                <TooltipContent className="bg-background shadow-lg p-3 rounded-md border max-w-xs">
+                                {dppCompleteness.missingFields.length > 0 ? ( <> <p className="text-xs font-semibold">Missing essential fields:</p> <ul className="list-disc list-inside text-xs text-muted-foreground mt-1">{dppCompleteness.missingFields.map(field => <li key={field}>{field}</li>)}</ul> </> ) : ( <p className="text-xs text-green-600 flex items-center"><CheckCircle2 className="mr-1 h-3 w-3"/> All essential data present!</p> )}
+                                </TooltipContent>
+                            </Tooltip>
+                        </TooltipProvider>
                       </CardContent>
                     </Card>
                 </div>
@@ -878,10 +842,10 @@ export default function ProductDetailPage() {
               <TabsContent value="battery" className="mt-4">
                 <Card> <CardHeader> <CardTitle className="flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-primary" />EU Battery Passport Information</CardTitle> <CardDescription>Key data points relevant to the EU Battery Regulation.</CardDescription> </CardHeader>
                   <CardContent className="space-y-3">
-                    {product.batteryChemistry && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Battery Chemistry <DataOriginIcon origin={product.batteryChemistryOrigin} fieldName="Battery Chemistry" /></span> <span className="text-muted-foreground">{product.batteryChemistry}</span> </div> )}
-                    {product.stateOfHealth !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">State of Health (SoH) <DataOriginIcon origin={product.stateOfHealthOrigin} fieldName="State of Health" /></span> <span className="text-muted-foreground">{product.stateOfHealth}%</span> </div> )}
-                    {product.carbonFootprintManufacturing !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Manufacturing Carbon Footprint <DataOriginIcon origin={product.carbonFootprintManufacturingOrigin} fieldName="Carbon Footprint" /></span> <span className="text-muted-foreground">{product.carbonFootprintManufacturing} kg CO₂e</span> </div> )}
-                    {product.recycledContentPercentage !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Recycled Content <DataOriginIcon origin={product.recycledContentPercentageOrigin} fieldName="Recycled Content" /></span> <span className="text-muted-foreground">{product.recycledContentPercentage}%</span> </div> )}
+                    {product.batteryChemistry && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Battery Chemistry <DataOriginIcon origin={product.batteryChemistryOrigin} /></span> <span className="text-muted-foreground">{product.batteryChemistry}</span> </div> )}
+                    {product.stateOfHealth !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">State of Health (SoH) <DataOriginIcon origin={product.stateOfHealthOrigin} /></span> <span className="text-muted-foreground">{product.stateOfHealth}%</span> </div> )}
+                    {product.carbonFootprintManufacturing !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Manufacturing Carbon Footprint <DataOriginIcon origin={product.carbonFootprintManufacturingOrigin} /></span> <span className="text-muted-foreground">{product.carbonFootprintManufacturing} kg CO₂e</span> </div> )}
+                    {product.recycledContentPercentage !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Recycled Content <DataOriginIcon origin={product.recycledContentPercentageOrigin} /></span> <span className="text-muted-foreground">{product.recycledContentPercentage}%</span> </div> )}
                     {!product.batteryChemistry && product.stateOfHealth === undefined && product.carbonFootprintManufacturing === undefined && product.recycledContentPercentage === undefined && (
                         <p className="text-sm text-muted-foreground">No battery-specific information provided for this product.</p>
                     )}
@@ -910,7 +874,7 @@ export default function ProductDetailPage() {
                         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
                             <div>
                                 <CardTitle className="text-md flex items-center">
-                                    <span className="flex items-center"> {reg}  <TrustSignalIcon  isVerified={data.isVerified}  tooltipText={data.isVerified ? `${reg} Verified` : `${reg} Status Pending Verification`} VerifiedIcon={CheckCircle2} UnverifiedIcon={Info} /> </span>
+                                    <span className="flex items-center"> {reg}  <TrustSignalIcon isVerified={data.isVerified} /> </span>
                                 </CardTitle>
                                 <p className="text-xs text-muted-foreground mt-1">Last Checked: {new Date(data.lastChecked).toLocaleDateString()}</p>
                                 {data.reportId && <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>}
@@ -976,9 +940,9 @@ export default function ProductDetailPage() {
                         <div className="flex justify-between items-start mb-1">
                            <div className="font-semibold text-primary flex items-center">
                             {event.type}
-                            {event.isBlockchainAnchored && ( <Server className="h-4 w-4 text-primary ml-2" /> )}
+                            {event.isBlockchainAnchored && ( <Server className="h-4 w-4 text-primary ml-2" title="This lifecycle event is recorded on the blockchain."/> )}
                             {event.isBlockchainAnchored && event.transactionHash && (
-                                <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}>
+                                <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)} title={`View event on Blockchain Explorer (mock). Tx: ${event.transactionHash}`}>
                                     <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" />
                                 </Button>
                             )}
@@ -1005,7 +969,7 @@ export default function ProductDetailPage() {
                     {product.recyclabilityScore && ( <Card className="bg-muted/50 p-4"> <CardTitle className="text-sm font-medium flex items-center text-foreground/80 mb-1"><Recycle className="mr-2 h-4 w-4 text-green-600"/>Recyclability Score</CardTitle> <p className="text-2xl font-bold">{product.recyclabilityScore.value}<span className="text-sm font-normal text-muted-foreground">{product.recyclabilityScore.unit}</span></p> <p className="text-xs text-muted-foreground">Based on material & design</p> </Card> )}
                     {product.repairabilityIndex && ( <Card className="bg-muted/50 p-4"> <CardTitle className="text-sm font-medium flex items-center text-foreground/80 mb-1"><Wrench className="mr-2 h-4 w-4 text-orange-500"/>Repairability Index</CardTitle> <p className="text-2xl font-bold">{product.repairabilityIndex.value}<span className="text-sm font-normal text-muted-foreground"> / {product.repairabilityIndex.scale}</span></p> <p className="text-xs text-muted-foreground">Based on ESPR draft</p> </Card> )}
                   </div>
-                  {product.certifications && product.certifications.length > 0 && ( <div className="pt-4 border-t"> <CardTitle className="text-md font-semibold mb-2 flex items-center"><Award className="mr-2 h-5 w-5 text-primary"/>Certifications & Standards</CardTitle> <ul className="space-y-2"> {product.certifications.map(cert => ( <li key={cert.name} className="flex items-center justify-between text-sm p-2 bg-background rounded-md border hover:bg-muted/30 transition-colors"> <div className="flex items-center"> <TrustSignalIcon isVerified={cert.verified} tooltipText={cert.verified ? "Verified Certification" : "Self-Declared / Pending Verification"} VerifiedIcon={CheckCircle2} UnverifiedIcon={Target} customClasses={cn(cert.verified ? 'text-green-500' : 'text-yellow-600')} /> <span className="ml-2 font-medium">{cert.name}</span> <span className="text-muted-foreground ml-1 text-xs">({cert.authority})</span> </div> {cert.link && <Link href={cert.link} target="_blank" rel="noopener noreferrer"><Button variant="link" size="sm" className="h-auto p-0">Details <ExternalLink className="ml-1 h-3 w-3"/></Button></Link>} </li> ))} </ul> </div> )}
+                  {product.certifications && product.certifications.length > 0 && ( <div className="pt-4 border-t"> <CardTitle className="text-md font-semibold mb-2 flex items-center"><Award className="mr-2 h-5 w-5 text-primary"/>Certifications & Standards</CardTitle> <ul className="space-y-2"> {product.certifications.map(cert => ( <li key={cert.name} className="flex items-center justify-between text-sm p-2 bg-background rounded-md border hover:bg-muted/30 transition-colors"> <div className="flex items-center"> <TrustSignalIcon isVerified={cert.verified} VerifiedIcon={CheckCircle2} UnverifiedIcon={Target} customClasses={cn(cert.verified ? 'text-green-500' : 'text-yellow-600')} /> <span className="ml-2 font-medium">{cert.name}</span> <span className="text-muted-foreground ml-1 text-xs">({cert.authority})</span> </div> {cert.link && <Link href={cert.link} target="_blank" rel="noopener noreferrer"><Button variant="link" size="sm" className="h-auto p-0">Details <ExternalLink className="ml-1 h-3 w-3"/></Button></Link>} </li> ))} </ul> </div> )}
                   {(!product.materialComposition || product.materialComposition.length === 0) && (!product.historicalCarbonFootprint || product.historicalCarbonFootprint.length === 0) && !product.waterUsage && !product.recyclabilityScore && !product.repairabilityIndex && (!product.certifications || product.certifications.length === 0) && ( <p className="text-sm text-muted-foreground">Detailed sustainability information is not yet available for this product.</p> )}
                 </CardContent>
               </Card>
@@ -1048,7 +1012,7 @@ export default function ProductDetailPage() {
         </>
       )}
     </div>
-    </TooltipProvider>
+    
   );
 }
 
@@ -1085,4 +1049,3 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
-

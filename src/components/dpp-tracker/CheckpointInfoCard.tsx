@@ -4,7 +4,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { X, MapPin, Ship, Plane, Building2, Package, ShieldCheck, ShieldAlert, ShieldQuestion, Info, FileText } from "lucide-react";
+import { X, MapPin, Ship, Plane, Building2 as LandBorderIcon, Package, ShieldCheck, ShieldAlert, ShieldQuestion, Info, FileText } from "lucide-react";
 import { type MockCustomsCheckpoint } from '@/app/(app)/dpp-global-tracker/page'; 
 import { cn } from '@/lib/utils';
 import { Badge } from '@/components/ui/badge';
@@ -20,12 +20,12 @@ export default function CheckpointInfoCard({ checkpointData, onClose }: Checkpoi
     switch (type) {
       case 'port': return <Ship className="h-5 w-5 mr-2 text-blue-600" />;
       case 'airport': return <Plane className="h-5 w-5 mr-2 text-purple-600" />;
-      case 'land_border': return <Building2 className="h-5 w-5 mr-2 text-orange-600" />;
+      case 'land_border': return <LandBorderIcon className="h-5 w-5 mr-2 text-orange-600" />;
       default: return <MapPin className="h-5 w-5 mr-2 text-gray-600" />;
     }
   };
 
-  const getCustomsStatusBadge = (status: MockCustomsCheckpoint['overallCustomsStatus']) => {
+  const getOverallCustomsStatusBadge = (status: MockCustomsCheckpoint['overallCustomsStatus']) => {
     switch (status) {
       case 'cleared':
         return <Badge variant="default" className="bg-green-100 text-green-700 border-green-300"><ShieldCheck className="mr-1 h-3 w-3" /> Cleared</Badge>;
@@ -39,17 +39,17 @@ export default function CheckpointInfoCard({ checkpointData, onClose }: Checkpoi
     }
   };
   
-  const getDppHealthBadge = (health: MockCustomsCheckpoint['dppComplianceHealth']) => {
+  const getDppComplianceHealthBadge = (health: MockCustomsCheckpoint['dppComplianceHealth']) => {
      switch (health) {
       case 'good':
-        return <Badge variant="default" className="bg-green-100 text-green-700 border-green-300">Good</Badge>;
+        return <Badge variant="default" className="bg-green-100 text-green-700 border-green-300"><ShieldCheck className="mr-1 h-3 w-3" /> Good</Badge>;
       case 'fair':
-        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-300">Fair</Badge>;
+        return <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-300"><ShieldAlert className="mr-1 h-3 w-3 text-yellow-600" /> Fair</Badge>;
       case 'poor':
-        return <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-300">Poor</Badge>;
+        return <Badge variant="destructive" className="bg-red-100 text-red-700 border-red-300"><ShieldAlert className="mr-1 h-3 w-3" /> Poor</Badge>;
       case 'unknown':
       default:
-        return <Badge variant="secondary">Unknown</Badge>;
+        return <Badge variant="secondary"><ShieldQuestion className="mr-1 h-3 w-3" />Unknown</Badge>;
     }
   };
 
@@ -77,18 +77,18 @@ export default function CheckpointInfoCard({ checkpointData, onClose }: Checkpoi
             <span className="text-foreground font-semibold">{checkpointData.currentShipmentCount.toLocaleString()}</span>
           </div>
           <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
-            <span className="font-medium text-foreground/90 flex items-center"><ShieldQuestion className="h-4 w-4 mr-2 text-muted-foreground" /> Customs Status:</span>
-            {getCustomsStatusBadge(checkpointData.overallCustomsStatus)}
+            <span className="font-medium text-foreground/90 flex items-center"><ShieldQuestion className="h-4 w-4 mr-2 text-muted-foreground" /> Overall Customs Status:</span>
+            {getOverallCustomsStatusBadge(checkpointData.overallCustomsStatus)}
           </div>
           <div className="flex items-center justify-between p-2 bg-muted/50 rounded-md">
             <span className="font-medium text-foreground/90 flex items-center"><FileText className="h-4 w-4 mr-2 text-muted-foreground" /> DPP Compliance Health:</span>
-            {getDppHealthBadge(checkpointData.dppComplianceHealth)}
+            {getDppComplianceHealthBadge(checkpointData.dppComplianceHealth)}
           </div>
           
           <div className="pt-3 mt-2 border-t border-border">
             <p className="text-xs text-muted-foreground">
-              This card shows operational and compliance overview for the selected customs checkpoint. 
-              Detailed shipment data passing through would be available in a full system.
+              This card shows an operational and aggregated DPP compliance overview for the selected customs checkpoint. 
+              Individual shipment DPP details would be accessible via QR codes in a full system.
             </p>
           </div>
         </CardContent>

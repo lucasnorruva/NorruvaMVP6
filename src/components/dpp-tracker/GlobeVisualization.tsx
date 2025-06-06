@@ -3,8 +3,16 @@
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
-// Removed: import { Text } from 'troika-three-text';
-import { MapPin, Ship, Plane, Building2 } from 'lucide-react'; // Using Building2 for land border
+import { MapPin, Ship, Plane, Building2 as LandBorderIcon } from 'lucide-react'; 
+import {
+    DPP_HEALTH_GOOD_COLOR,
+    DPP_HEALTH_FAIR_COLOR,
+    DPP_HEALTH_POOR_COLOR,
+    CHECKPOINT_PORT_COLOR,
+    CHECKPOINT_AIRPORT_COLOR,
+    CHECKPOINT_LAND_BORDER_COLOR
+} from '@/app/(app)/dpp-global-tracker/page';
+
 
 interface MockDppPoint {
   id: string;
@@ -48,12 +56,14 @@ interface MockCustomsCheckpoint {
   icon?: React.ElementType;
 }
 
-// Define colors for customs statuses
-const CHECKPOINT_CLEARED_COLOR_THREE = new THREE.Color(0x4caf50); // Green
-const CHECKPOINT_PENDING_COLOR_THREE = new THREE.Color(0xffeb3b); // Yellow
-const CHECKPOINT_INSPECTION_COLOR_THREE = new THREE.Color(0xf44336); // Red
-const CHECKPOINT_PORT_COLOR_THREE = new THREE.Color(0x3c46b4); // Blueish (from CHECKPOINT_PORT_COLOR)
-const CHECKPOINT_AIRPORT_COLOR_THREE = new THREE.Color(0x643caA); // Purplish (from CHECKPOINT_AIRPORT_COLOR)
+// Convert RGBA strings to THREE.Color instances
+const DPP_HEALTH_GOOD_THREE_COLOR = new THREE.Color(DPP_HEALTH_GOOD_COLOR.replace('rgba(', 'rgb(').slice(0, -4) + ')');
+const DPP_HEALTH_FAIR_THREE_COLOR = new THREE.Color(DPP_HEALTH_FAIR_COLOR.replace('rgba(', 'rgb(').slice(0, -4) + ')');
+const DPP_HEALTH_POOR_THREE_COLOR = new THREE.Color(DPP_HEALTH_POOR_COLOR.replace('rgba(', 'rgb(').slice(0, -4) + ')');
+const CHECKPOINT_PORT_THREE_COLOR = new THREE.Color(CHECKPOINT_PORT_COLOR.replace('rgba(', 'rgb(').slice(0, -4) + ')');
+const CHECKPOINT_AIRPORT_THREE_COLOR = new THREE.Color(CHECKPOINT_AIRPORT_COLOR.replace('rgba(', 'rgb(').slice(0, -4) + ')');
+const CHECKPOINT_LAND_BORDER_THREE_COLOR = new THREE.Color(CHECKPOINT_LAND_BORDER_COLOR.replace('rgba(', 'rgb(').slice(0, -4) + ')');
+const GREY_THREE_COLOR = new THREE.Color('grey');
 
 
 const getIconCanvas = (IconComponent: React.ElementType, color: THREE.Color, size = 64): HTMLCanvasElement => {
@@ -62,23 +72,29 @@ const getIconCanvas = (IconComponent: React.ElementType, color: THREE.Color, siz
   canvas.height = size;
   const ctx = canvas.getContext('2d');
   if (ctx) {
-    // Fallback to a colored circle as a placeholder
     ctx.beginPath();
     ctx.arc(size / 2, size / 2, size / 2.5, 0, 2 * Math.PI, false);
     ctx.fillStyle = `#${color.getHexString()}`;
     ctx.fill();
     
-    ctx.font = `${size / 2}px sans-serif`;
-    ctx.fillStyle = 'white';
+    ctx.font = `${size / 2.2}px sans-serif`; // Slightly smaller font for better fit
+    ctx.fillStyle = 'white'; // Ensure contrast
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    const iconName = IconComponent.displayName || IconComponent.name || "CP";
-    ctx.fillText(iconName.substring(0,1) || "?", size / 2, size / 2);
+    
+    // Placeholder for icon rendering - In a real scenario, you'd draw the SVG path
+    // For this mock, we'll use a character based on the icon component if available.
+    let char = '?';
+    if (IconComponent === Ship) char = 'S';
+    else if (IconComponent === Plane) char = 'A';
+    else if (IconComponent === LandBorderIcon) char = 'L';
+    else if (IconComponent === MapPin) char = 'M';
+
+    ctx.fillText(char, size / 2, size / 2 + 2); // +2 for better vertical centering
   }
   return canvas;
 };
 
-// Removed createTextSprite function as it depended on troika-three-text
 
 interface GlobeVisualizationProps {
   pointsData: MockDppPoint[];
@@ -146,31 +162,34 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
     }
   }, [GlobeComponent]); 
 
-  const checkpointColorLogic = (checkpoint: MockCustomsCheckpoint): THREE.Color => {
-    switch (checkpoint.overallCustomsStatus) {
-      case 'cleared': return CHECKPOINT_CLEARED_COLOR_THREE;
-      case 'pending': return CHECKPOINT_PENDING_COLOR_THREE;
-      case 'inspection_required': return CHECKPOINT_INSPECTION_COLOR_THREE;
-      case 'operational':
+  const checkpointPrimaryColorLogic = (checkpoint: MockCustomsCheckpoint): THREE.Color => {
+    switch (checkpoint.dppComplianceHealth) {
+      case 'good': return DPP_HEALTH_GOOD_THREE_COLOR;
+      case 'fair': return DPP_HEALTH_FAIR_THREE_COLOR;
+      case 'poor': return DPP_HEALTH_POOR_THREE_COLOR;
+      case 'unknown':
       default:
-        return checkpoint.type === 'port' ? CHECKPOINT_PORT_COLOR_THREE : CHECKPOINT_AIRPORT_COLOR_THREE;
+        if (checkpoint.type === 'port') return CHECKPOINT_PORT_THREE_COLOR;
+        if (checkpoint.type === 'airport') return CHECKPOINT_AIRPORT_THREE_COLOR;
+        if (checkpoint.type === 'land_border') return CHECKPOINT_LAND_BORDER_THREE_COLOR;
+        return GREY_THREE_COLOR; 
     }
   };
 
   const checkpointSprites = useMemo(() => {
     return customsCheckpointsData.map(cp => {
-      const color = checkpointColorLogic(cp);
+      const color = checkpointPrimaryColorLogic(cp);
       let IconComp = MapPin; 
       if (cp.type === 'port') IconComp = Ship;
       else if (cp.type === 'airport') IconComp = Plane;
-      else if (cp.type === 'land_border') IconComp = Building2;
+      else if (cp.type === 'land_border') IconComp = LandBorderIcon;
       
       const canvas = getIconCanvas(IconComp, color, 32); 
       const map = new THREE.CanvasTexture(canvas);
       map.needsUpdate = true; 
-      const material = new THREE.SpriteMaterial({ map: map, depthTest: false, transparent: true });
+      const material = new THREE.SpriteMaterial({ map: map, depthTest: false, transparent: true, sizeAttenuation: false }); // sizeAttenuation: false helps keep size consistent
       const sprite = new THREE.Sprite(material);
-      sprite.scale.set(6, 6, 1); 
+      sprite.scale.set(8, 8, 1); // Adjusted scale for better visibility
       
       (sprite as any).checkpointData = cp; 
       return sprite;
@@ -207,20 +226,24 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
     polygonsTransitionDuration: 0, 
 
     customLayerData: customsCheckpointsData,
-    customThreeObject: (cpData: any, globeRadius: number) => {
+    customThreeObject: (cpData: any) => { // Removed globeRadius as it's not directly provided here
         const cp = cpData as MockCustomsCheckpoint;
         const index = customsCheckpointsData.findIndex(item => item.id === cp.id);
         if (index !== -1 && checkpointSprites[index]) {
           return checkpointSprites[index];
         }
-        const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ color: 'purple' }));
+        // Fallback if sprite not found (should not happen if memoized correctly)
+        const fallbackMaterial = new THREE.SpriteMaterial({ color: 'purple' });
+        const sprite = new THREE.Sprite(fallbackMaterial);
         sprite.scale.set(5, 5, 1);
         return sprite;
     },
-    customThreeObjectUpdate: (obj: any, cpData: any, globeRadius: number) => {
-        Object.assign(obj.position, globeEl.current.getCoords(cpData.lat, cpData.lng, 0.025 * globeRadius));
+    customThreeObjectUpdate: (obj: any, cpData: any) => { // Removed globeRadius
+        if(globeEl.current){
+            Object.assign(obj.position, globeEl.current.getCoords(cpData.lat, cpData.lng, 0.03)); // Use a fixed altitude factor
+        }
     },
-    onCustomLayerClick: (obj: any, event: MouseEvent, { lat, lng, altitude }: any) => {
+    onCustomLayerClick: (obj: any) => { // Simplified params
         if (obj && (obj as any).checkpointData) {
           onCheckpointClick((obj as any).checkpointData);
         }
@@ -235,3 +258,4 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
 };
 
 export default GlobeVisualization;
+

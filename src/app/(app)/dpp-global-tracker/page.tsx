@@ -73,11 +73,13 @@ const NON_EU_LAND_COLOR_LIGHT_BLUE = 'rgba(173, 216, 230, 0.95)';
 const BORDER_COLOR_MEDIUM_BLUE = 'rgba(70, 130, 180, 0.7)';
 const WHITE_BACKGROUND_COLOR = 'rgba(255, 255, 255, 1)';
 
-const CHECKPOINT_PORT_COLOR = 'rgba(60, 70, 180, 0.9)'; // A distinct blue for ports
-const CHECKPOINT_AIRPORT_COLOR = 'rgba(100, 60, 170, 0.9)'; // A distinct purple for airports
-const CHECKPOINT_CLEARED_COLOR = 'rgba(76, 175, 80, 0.9)'; // Green
-const CHECKPOINT_PENDING_COLOR = 'rgba(255, 235, 59, 0.9)'; // Yellow
-const CHECKPOINT_INSPECTION_COLOR = 'rgba(244, 67, 54, 0.9)'; // Red
+// Colors for DPP Compliance Health and specific customs statuses
+export const DPP_HEALTH_GOOD_COLOR = 'rgba(76, 175, 80, 0.9)'; // Green
+export const DPP_HEALTH_FAIR_COLOR = 'rgba(255, 235, 59, 0.9)'; // Yellow
+export const DPP_HEALTH_POOR_COLOR = 'rgba(244, 67, 54, 0.9)'; // Red
+export const CHECKPOINT_PORT_COLOR = 'rgba(60, 70, 180, 0.9)'; 
+export const CHECKPOINT_AIRPORT_COLOR = 'rgba(100, 60, 170, 0.9)';
+export const CHECKPOINT_LAND_BORDER_COLOR = 'rgba(200, 100, 30, 0.9)'; // Brownish-orange for land border
 
 
 const mockPointsData: MockDppPoint[] = [
@@ -106,6 +108,7 @@ const mockCustomsCheckpointsData: MockCustomsCheckpoint[] = [
   { id: 'airport_cdg', lat: 49.0097, lng: 2.5479, name: 'Paris CDG Airport Customs', type: 'airport', currentShipmentCount: 620, overallCustomsStatus: 'operational', dppComplianceHealth: 'good', icon: Plane },
   { id: 'port_la', lat: 33.7292, lng: -118.2620, name: 'Port of Los Angeles Customs', type: 'port', currentShipmentCount: 1500, overallCustomsStatus: 'operational', dppComplianceHealth: 'unknown', icon: Ship },
   { id: 'port_shanghai', lat: 31.3925, lng: 121.5201, name: 'Port of Shanghai Customs', type: 'port', currentShipmentCount: 2100, overallCustomsStatus: 'cleared', dppComplianceHealth: 'good', icon: Ship },
+  { id: 'border_pl_ua', lat: 50.0792, lng: 23.8607, name: 'PL-UA Land Border Crossing', type: 'land_border', currentShipmentCount: 350, overallCustomsStatus: 'pending', dppComplianceHealth: 'fair', icon: Truck }
 ];
 
 
@@ -259,11 +262,12 @@ export default function DppGlobalTrackerPage() {
     "Non-EU Country": NON_EU_LAND_COLOR_LIGHT_BLUE,
     "Country Borders": BORDER_COLOR_MEDIUM_BLUE,
     "Globe Background": WHITE_BACKGROUND_COLOR,
-    "Customs Cleared": CHECKPOINT_CLEARED_COLOR,
-    "Customs Pending": CHECKPOINT_PENDING_COLOR,
-    "Customs Inspection Req.": CHECKPOINT_INSPECTION_COLOR,
-    "Customs Port (Operational)": CHECKPOINT_PORT_COLOR,
-    "Customs Airport (Operational)": CHECKPOINT_AIRPORT_COLOR,
+    "Checkpoint (DPP Good)": DPP_HEALTH_GOOD_COLOR,
+    "Checkpoint (DPP Fair)": DPP_HEALTH_FAIR_COLOR,
+    "Checkpoint (DPP Poor)": DPP_HEALTH_POOR_COLOR,
+    "Port (DPP Unknown/Operational)": CHECKPOINT_PORT_COLOR,
+    "Airport (DPP Unknown/Operational)": CHECKPOINT_AIRPORT_COLOR,
+    "Land Border (DPP Unknown/Operational)": CHECKPOINT_LAND_BORDER_COLOR,
     "Electronics Point": SATURATED_BLUE,
     "Appliances Point": VIBRANT_TEAL,
     "Textiles Point": ACCENT_PURPLE,

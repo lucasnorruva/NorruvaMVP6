@@ -16,6 +16,16 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 const availableRegulations = [
   { value: "all", label: "All Regulations" },
@@ -31,6 +41,8 @@ interface SortConfig {
   direction: 'ascending' | 'descending' | null;
 }
 
+const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
+
 export default function DPPLiveDashboardPage() {
   const router = useRouter();
   const { toast } = useToast();
@@ -44,11 +56,21 @@ export default function DPPLiveDashboardPage() {
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
   const [manualProductId, setManualProductId] = useState("");
   const [isScanDialogOpen, setIsScanDialogOpen] = useState(false);
+  const [productToDeleteId, setProductToDeleteId] = useState<string | null>(null);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
 
   useEffect(() => {
-    setTimeout(() => {
-      setDpps(MOCK_DPPS);
-    }, 500);
+    // Load initial mock DPPs and user-added products from localStorage
+    const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+    const userAddedProducts: DigitalProductPassport[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+    
+    // Combine and filter out duplicates if any mock product ID was overwritten by a user product
+    const combinedProducts = [
+      ...MOCK_DPPS.filter(mockDpp => !userAddedProducts.find(userDpp => userDpp.id === mockDpp.id)),
+      ...userAddedProducts
+    ];
+    setDpps(combinedProducts);
   }, []);
 
   const availableCategories = useMemo(() => {
@@ -66,7 +88,7 @@ export default function DPPLiveDashboardPage() {
       }
       if (filters.regulation !== "all") {
         const complianceData = dpp.compliance[filters.regulation as keyof typeof dpp.compliance];
-        if (!complianceData || complianceData.status !== "compliant") {
+        if (!complianceData || (typeof complianceData === 'object' && 'status' in complianceData && complianceData.status !== "compliant")) {
           return false;
         }
       }
@@ -87,10 +109,9 @@ export default function DPPLiveDashboardPage() {
           valA = new Date(a.metadata.last_updated).getTime();
           valB = new Date(b.metadata.last_updated).getTime();
         } else if (sortConfig.key === 'id' || sortConfig.key === 'productName' || sortConfig.key === 'category') {
-           valA = a[sortConfig.key];
-           valB = b[sortConfig.key];
+           valA = a[sortConfig.key as keyof DigitalProductPassport];
+           valB = b[sortConfig.key as keyof DigitalProductPassport];
         } else {
-            // For other keys or complex objects, default to no specific value or handle as needed
             valA = a[sortConfig.key as keyof DigitalProductPassport];
             valB = b[sortConfig.key as keyof DigitalProductPassport];
         }
@@ -123,7 +144,7 @@ export default function DPPLiveDashboardPage() {
         const regulationChecks = Object.values(dpp.compliance).filter(Boolean);
         if (regulationChecks.length === 0 && Object.keys(dpp.compliance).length > 0) return false; 
         if (regulationChecks.length === 0 && Object.keys(dpp.compliance).length === 0) return true; 
-        return regulationChecks.every(r => r.status === 'compliant');
+        return regulationChecks.every(r => typeof r === 'object' && r !== null && 'status' in r && r.status === 'compliant');
     }).length;
     const compliantPercentage = totalDPPs > 0 ? ((fullyCompliantDPPsCount / totalDPPs) * 100).toFixed(1) + "%" : "0%";
     const pendingReviewDPPs = dpps.filter(d => d.metadata.status === 'pending_review').length;
@@ -153,10 +174,9 @@ export default function DPPLiveDashboardPage() {
 
   const handleFindProductFromScan = () => {
     if (manualProductId.trim()) {
-      // Check if product exists in MOCK_DPPS or a more robust check in a real app
-      const productExists = MOCK_DPPS.some(p => p.id === manualProductId.trim());
+      const productExists = MOCK_DPPS.some(p => p.id === manualProductId.trim()) || dpps.some(p => p.id === manualProductId.trim());
       if (productExists) {
-        router.push(`/products/${manualProductId.trim()}`);
+        router.push(`/passport/${manualProductId.trim()}`); // Navigate to public passport viewer
         setIsScanDialogOpen(false);
         setManualProductId("");
       } else {
@@ -175,6 +195,35 @@ export default function DPPLiveDashboardPage() {
     }
   };
 
+  const handleDeleteRequest = (productId: string) => {
+    setProductToDeleteId(productId);
+    setIsDeleteDialogOpen(true);
+  };
+
+  const confirmDeleteProduct = () => {
+    if (!productToDeleteId) return;
+
+    const productIsUserAdded = productToDeleteId.startsWith("USER_PROD");
+    
+    if (productIsUserAdded) {
+      const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+      let userProducts: DigitalProductPassport[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+      userProducts = userProducts.filter(p => p.id !== productToDeleteId);
+      localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
+    }
+
+    setDpps(prevDpps => prevDpps.filter(p => p.id !== productToDeleteId));
+    
+    const productName = dpps.find(p=>p.id === productToDeleteId)?.productName || productToDeleteId;
+    toast({
+      title: "Product Deleted",
+      description: `Product "${productName}" has been deleted.`,
+    });
+
+    setIsDeleteDialogOpen(false);
+    setProductToDeleteId(null);
+  };
+
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -186,14 +235,14 @@ export default function DPPLiveDashboardPage() {
             <DialogTrigger asChild>
               <Button variant="outline">
                 <QrCode className="mr-2 h-5 w-5" />
-                Scan Product QR (Mock)
+                Scan Product QR
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
               <DialogHeader>
                 <DialogTitle>Scan Product QR Code</DialogTitle>
                 <DialogDescription>
-                  This is a mock scanner. In a real app, you could use your camera. For now, enter a Product ID manually.
+                  This is a mock scanner. In a real app, you could use your camera. For now, enter a Product ID manually to view its public passport.
                 </DialogDescription>
               </DialogHeader>
               <div className="my-4 h-48 bg-muted border-2 border-dashed border-border rounded-md flex flex-col items-center justify-center">
@@ -253,9 +302,29 @@ export default function DPPLiveDashboardPage() {
           <CardDescription>Overview of all managed DPPs. Click ID to view details. Click headers to sort.</CardDescription>
         </CardHeader>
         <CardContent>
-          <DPPTable dpps={sortedAndFilteredDPPs} onSort={handleSort} sortConfig={sortConfig} />
+          <DPPTable dpps={sortedAndFilteredDPPs} onSort={handleSort} sortConfig={sortConfig} onDeleteProduct={handleDeleteRequest} />
         </CardContent>
       </Card>
+
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the product
+              "{dpps.find(p=>p.id === productToDeleteId)?.productName || productToDeleteId}".
+              {productToDeleteId && !productToDeleteId.startsWith("USER_PROD") && " (This is a system mock product; deletion will only remove it from view for this session.)"}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={() => setProductToDeleteId(null)}>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmDeleteProduct} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
     </div>
   );
 }

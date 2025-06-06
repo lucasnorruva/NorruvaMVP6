@@ -18,6 +18,7 @@ interface DPPTableProps {
   dpps: DigitalProductPassport[];
   onSort: (key: SortableKeys) => void;
   sortConfig: { key: SortableKeys | null; direction: 'ascending' | 'descending' | null };
+  onDeleteProduct?: (productId: string) => void; // Optional: if delete is handled by parent
 }
 
 interface ComplianceDetails {
@@ -79,17 +80,18 @@ const SortableHeader: React.FC<{
   );
 };
 
-export const DPPTable: React.FC<DPPTableProps> = ({ dpps, onSort, sortConfig }) => {
+export const DPPTable: React.FC<DPPTableProps> = ({ dpps, onSort, sortConfig, onDeleteProduct }) => {
   const router = useRouter();
 
   const handleDPPDelete = (dppId: string) => {
-    alert(`Mock: Deleting DPP ${dppId}`);
+    if (onDeleteProduct) {
+      onDeleteProduct(dppId);
+    } else {
+      // Fallback or default behavior if parent doesn't provide handler
+      alert(`Mock: Deleting DPP ${dppId}. Parent handler not provided.`);
+    }
   };
   
-  const handleDPPEdit = (dppId: string) => {
-    alert(`Mock: Navigating to edit DPP ${dppId}`);
-  };
-
   return (
     <Table>
       <TableHeader>
@@ -180,14 +182,14 @@ export const DPPTable: React.FC<DPPTableProps> = ({ dpps, onSort, sortConfig }) 
                           <Eye className="mr-2 h-4 w-4" /> View Details
                        </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDPPEdit(dpp.id)}>
-                      <Edit className="mr-2 h-4 w-4" /> Edit (Mock)
+                    <DropdownMenuItem onClick={() => router.push(`/products/new?edit=${dpp.id}`)}>
+                      <Edit className="mr-2 h-4 w-4" /> Edit
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => handleDPPDelete(dpp.id)}
                       className="text-destructive focus:text-destructive focus:bg-destructive/10"
                     >
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete (Mock)
+                      <Trash2 className="mr-2 h-4 w-4" /> Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

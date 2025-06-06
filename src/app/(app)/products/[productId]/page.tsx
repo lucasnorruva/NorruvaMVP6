@@ -8,7 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon as ServerIconLucide } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
@@ -736,7 +736,7 @@ export default function ProductDetailPage() {
               <TabsTrigger value="compliance"><ShieldCheck className="mr-1.5 h-4 w-4" />Compliance</TabsTrigger>
               <TabsTrigger value="lifecycle"><GitBranch className="mr-1.5 h-4 w-4" />Lifecycle</TabsTrigger>
               <TabsTrigger value="sustainability"><Zap className="mr-1.5 h-4 w-4" />Sustainability</TabsTrigger>
-              <TabsTrigger value="verification"><ServerIcon className="mr-1.5 h-4 w-4" />Verification Log</TabsTrigger>
+              <TabsTrigger value="verification"><ServerIconLucide className="mr-1.5 h-4 w-4" />Verification Log</TabsTrigger>
             </TabsList>
 
             <TabsContent value="overview" className="mt-4">
@@ -891,10 +891,14 @@ export default function ProductDetailPage() {
                       <AccordionContent className="pt-2">
                         {product.lifecycleEvents && product.lifecycleEvents.length > 0 ? ( <ul className="space-y-4"> {product.lifecycleEvents.map((event) => ( <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors">
                         <div className="flex justify-between items-start mb-1">
-                          <div className="font-semibold text-primary flex items-center"> {/* Container for type and icons */}
+                           <div className="font-semibold text-primary flex items-center"> {/* Changed from p to div */}
                             {event.type}
-                            {event.isBlockchainAnchored && ( <Tooltip delayDuration={100}> <TooltipTrigger className="cursor-help"> <Server className="h-4 w-4 text-primary ml-2" /> </TooltipTrigger> <TooltipContent> <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p> </TooltipContent> </Tooltip> )}
-                            {event.isBlockchainAnchored && event.transactionHash && ( <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}> <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" /> </Button> </TooltipTrigger> <TooltipContent> <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p> </TooltipContent> </Tooltip> )}
+                            {event.isBlockchainAnchored && ( <Server className="h-4 w-4 text-primary ml-2" /> )}
+                            {event.isBlockchainAnchored && event.transactionHash && (
+                                <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}>
+                                    <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" />
+                                </Button>
+                            )}
                           </div>
                           <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleDateString()}</p>
                         </div>
@@ -927,7 +931,7 @@ export default function ProductDetailPage() {
             <TabsContent value="verification" className="mt-4">
               <Card>
                 <CardHeader>
-                  <CardTitle className="flex items-center"><ServerIcon className="mr-2 h-5 w-5 text-primary" />Verification & Audit Log</CardTitle>
+                  <CardTitle className="flex items-center"><ServerIconLucide className="mr-2 h-5 w-5 text-primary" />Verification & Audit Log</CardTitle>
                   <CardDescription>Chronological record of key verification events and DPP status changes.</CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -998,3 +1002,6 @@ function ProductDetailSkeleton() {
     </div>
   )
 }
+
+
+    

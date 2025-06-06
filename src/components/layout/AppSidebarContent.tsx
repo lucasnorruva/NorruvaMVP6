@@ -17,7 +17,7 @@ import {
   ListChecks,
   BarChartHorizontal, 
   Globe,
-  ClipboardList // Added for Customs Dashboard
+  ClipboardList 
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import {
@@ -40,7 +40,7 @@ const navItems = [
   { href: "/dpp-global-tracker", label: "Global Tracker", icon: Globe },
   { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList }, 
   { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
-  { href: "/compliance/pathways", label: "Compliance Pathways", icon: ListChecks }, // Updated href
+  { href: "/compliance/pathways", label: "Compliance Pathways", icon: ListChecks },
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
   { href: "/sustainability", label: "Sustainability Reporting", icon: FileText },
   { href: "/sustainability/compare", label: "Compare Sustainability", icon: BarChartHorizontal },
@@ -67,19 +67,20 @@ export default function AppSidebarContent() {
        isActive = true;
     } else if (href === "/dashboard" && pathname !== href) { // Exact match for dashboard
       isActive = false;
-    } else if (href === "/sustainability" && pathname.startsWith("/sustainability/compare")) {
-        isActive = false; // "/sustainability/compare" should not make "/sustainability" active
+    } else if (href === "/sustainability" && pathname === "/sustainability/compare") { // If on compare, main sustainability should not be active
+        isActive = false; 
+    } else if (href === "/sustainability/compare" && pathname === href) { // Compare page is active
+        isActive = true;
+    } else if (href === "/sustainability" && pathname === href) { // Main sustainability page is active
+        isActive = true;
     } else if (href === "/dpp-global-tracker" && pathname === href) { 
         isActive = true;
     } else if (href === "/customs-dashboard" && pathname === href) { 
         isActive = true;
-    } else if (href === "/sustainability/compare" && pathname === href) { 
-        isActive = true;
     } else if (href === "/compliance/pathways" && pathname.startsWith("/compliance/pathways/battery-regulation")) {
-        // Keep /compliance/pathways active if on a sub-page like battery-regulation
         isActive = true;
     } else if (href === "/compliance/pathways" && pathname !== href) {
-        isActive = false; // Ensure only exact match or deeper path makes it active
+        isActive = false;
     }
 
 

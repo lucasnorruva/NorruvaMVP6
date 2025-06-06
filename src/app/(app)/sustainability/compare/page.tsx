@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { BarChartHorizontal, BarChart3, Droplet, Recycle, Wrench } from 'lucide-react'; // Added more icons
+import { BarChartHorizontal, BarChart3, Droplet, Recycle, Wrench } from 'lucide-react';
 
 // Simplified product type for selection
 interface ProductForSelection {

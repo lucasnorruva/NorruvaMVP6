@@ -300,10 +300,13 @@ export default function DppGlobalTrackerPage() {
             const prevStatus = updatedShipment.simulatedStatus;
             
             // Simulate data sync delay randomly
-            if (Math.random() < 0.02 && updatedShipment.simulatedStatus !== 'data_sync_delayed' && updatedShipment.simulationProgress < 0.95) { // Reduced chance for sync delay
+            if (Math.random() < 0.02 && updatedShipment.simulatedStatus !== 'data_sync_delayed' && updatedShipment.simulationProgress < 0.95) { 
                 updatedShipment.simulatedStatus = 'data_sync_delayed';
             } else if (updatedShipment.simulatedStatus === 'data_sync_delayed') {
-                updatedShipment.simulatedStatus = 'in_transit'; 
+                // Potentially resolve sync delay after some time
+                if (Math.random() < 0.3) { // 30% chance to resolve sync delay
+                  updatedShipment.simulatedStatus = 'in_transit'; 
+                }
             }
 
 
@@ -337,33 +340,38 @@ export default function DppGlobalTrackerPage() {
                             const randomIssue = issues[Math.floor(Math.random() * issues.length)];
                             updatedShipment.dppComplianceStatusText = randomIssue;
                             updatedShipment.dppComplianceBadgeVariant = "destructive";
+                            updatedShipment.dppComplianceNotes = [randomIssue];
                             showShipmentToast(updatedShipment.id, "compliance_alert", `Compliance Alert: Shipment ${updatedShipment.id} - ${randomIssue}.`, "destructive");
                          } else {
                             updatedShipment.dppComplianceStatusText = "DPP Data Review In Progress";
                             updatedShipment.dppComplianceBadgeVariant = "outline";
+                            updatedShipment.dppComplianceNotes = ["Standard DPP data checks underway."];
                          }
                     } else if (prevStatus === 'at_customs') {
                         const randomEvent = Math.random();
                         if (randomEvent < 0.1) updatedShipment.simulatedStatus = 'customs_inspection';
-                        else if (randomEvent < 0.15) updatedShipment.simulatedStatus = 'delayed'; 
+                        else if (randomEvent < 0.15 && updatedShipment.simulatedStatus !== 'customs_inspection') updatedShipment.simulatedStatus = 'delayed'; 
                     }
                 } else if (updatedShipment.simulationProgress > 0.7) { 
                      if (prevStatus === 'customs_inspection' || prevStatus === 'delayed' || prevStatus === 'at_customs') {
                         updatedShipment.simulatedStatus = 'cleared'; 
                         updatedShipment.dppComplianceStatusText = "All DPP Data Verified";
                         updatedShipment.dppComplianceBadgeVariant = "default";
+                        updatedShipment.dppComplianceNotes = ["Customs cleared successfully."];
                      }
                 } else { 
                     if(prevStatus !== 'in_transit' && prevStatus !== 'delayed' && prevStatus !== 'data_sync_delayed') {
                         updatedShipment.simulatedStatus = 'in_transit';
                         updatedShipment.dppComplianceStatusText = "DPP Data Verified for Transit"; 
                         updatedShipment.dppComplianceBadgeVariant = "default";
+                        updatedShipment.dppComplianceNotes = ["In transit to next checkpoint."];
                     }
                 }
                 if (updatedShipment.simulationProgress >= 1) {
                     updatedShipment.simulatedStatus = 'cleared';
                     updatedShipment.dppComplianceStatusText = "All DPP Data Verified";
                     updatedShipment.dppComplianceBadgeVariant = "default";
+                    updatedShipment.dppComplianceNotes = ["Customs cleared successfully."];
                 }
             }
 
@@ -626,12 +634,12 @@ export default function DppGlobalTrackerPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle>Global Product Passport Visualization</CardTitle>
-          <CardDescription>Interact with the globe to explore product origins, supply chains, and compliance status across regions. Shipment simulation is active.</CardDescription>
+          <CardTitle>Filters & Controls</CardTitle>
+          <CardDescription>Adjust filters to refine the displayed data on the globe. Shipment simulation is active.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6 items-stretch">
-            <div>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 mb-6 items-end">
+            <div title="Filter DPP location points by their assigned category.">
               <Label htmlFor="category-filter" className="text-sm font-medium">Filter by Category (Locations)</Label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
                 <SelectTrigger id="category-filter" className="w-full mt-1">
@@ -644,7 +652,7 @@ export default function DppGlobalTrackerPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="lg:col-span-1">
+            <div className="lg:col-span-1" title="Filter data points and arcs up to the selected year.">
               <Label htmlFor="year-slider" className="text-sm font-medium">Filter by Year (Up to): {yearFilter[0]}</Label>
               <Slider
                 id="year-slider"
@@ -656,7 +664,7 @@ export default function DppGlobalTrackerPage() {
                 className="mt-3"
               />
             </div>
-            <div>
+            <div title="Filter active shipments by their current simulated status.">
               <Label htmlFor="shipment-status-filter" className="text-sm font-medium">Filter by Shipment Status</Label>
               <Select value={shipmentStatusFilter} onValueChange={(value) => setShipmentStatusFilter(value as MockShipmentPoint['simulatedStatus'] | 'all')}>
                  <SelectTrigger id="shipment-status-filter" className="w-full mt-1">
@@ -669,17 +677,25 @@ export default function DppGlobalTrackerPage() {
                  </SelectContent>
               </Select>
             </div>
-            <div className="flex flex-col gap-2 justify-end">
-                 <Button onClick={handleSimulateCheckpointUpdate} variant="outline" className="w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2 col-span-1 sm:col-span-2 lg:col-span-3 lg:justify-end">
+                 <Button onClick={handleSimulateCheckpointUpdate} variant="outline" className="w-full sm:w-auto" title="Simulate random updates to customs checkpoint data.">
                     <RefreshCw className="mr-2 h-4 w-4" />
                     Simulate Checkpoint Update
                  </Button>
-                <Button onClick={handleResetGlobeView} variant="outline" className="w-full">
+                <Button onClick={handleResetGlobeView} variant="outline" className="w-full sm:w-auto" title="Reset the globe to its default position and zoom level.">
                     <GlobeIconLucide className="mr-2 h-4 w-4" /> Reset Globe View
                 </Button>
             </div>
           </div>
-
+        </CardContent>
+      </Card>
+      
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle>Global Product Passport Visualization</CardTitle>
+          <CardDescription>Interact with the globe to explore product origins, supply chains, and compliance status across regions.</CardDescription>
+        </CardHeader>
+        <CardContent>
           <div
             className="w-full h-[60vh] md:h-[600px] rounded-md overflow-hidden border relative bg-card"
           >
@@ -785,3 +801,5 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
+
+    

@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
-import { Text } from 'troika-three-text';
+// Removed: import { Text } from 'troika-three-text';
 import { MapPin, Ship, Plane, Building2 } from 'lucide-react'; // Using Building2 for land border
 
 interface MockDppPoint {
@@ -62,44 +62,23 @@ const getIconCanvas = (IconComponent: React.ElementType, color: THREE.Color, siz
   canvas.height = size;
   const ctx = canvas.getContext('2d');
   if (ctx) {
-    // For lucide icons, they are typically rendered as SVG strings.
-    // This is a simplified way to draw; a proper SVG renderer might be needed for complex icons.
-    // Or, if lucide-react gives direct access to SVG paths, one could use those.
-    // For simplicity, we'll just draw a colored circle as a placeholder if direct SVG rendering is complex.
-    
-    // Fallback to a colored circle if direct SVG path rendering is too complex here
+    // Fallback to a colored circle as a placeholder
     ctx.beginPath();
     ctx.arc(size / 2, size / 2, size / 2.5, 0, 2 * Math.PI, false);
     ctx.fillStyle = `#${color.getHexString()}`;
     ctx.fill();
     
-    // Text as a placeholder for the icon itself, if direct SVG rendering isn't straightforward.
     ctx.font = `${size / 2}px sans-serif`;
     ctx.fillStyle = 'white';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    // This part is tricky, as IconComponent is a React component.
-    // A more robust solution would involve rendering the React component to an SVG string, then to canvas.
-    // For now, we'll use a simple initial from the icon name or a placeholder.
     const iconName = IconComponent.displayName || IconComponent.name || "CP";
     ctx.fillText(iconName.substring(0,1) || "?", size / 2, size / 2);
   }
   return canvas;
 };
 
-const createTextSprite = (text: string, color = 'white', fontSize = 10, background = 'rgba(0,0,0,0.25)') => {
-  const textMesh = new Text();
-  textMesh.text = text;
-  textMesh.fontSize = fontSize;
-  textMesh.color = new THREE.Color(color);
-  textMesh.anchorX = 'center';
-  textMesh.anchorY = 'middle';
-  // Add a simple background plane for better readability
-  // This is a more advanced troika-three-text feature, or you can create a separate plane
-  textMesh.sync(); // Important to get dimensions
-  return textMesh;
-};
-
+// Removed createTextSprite function as it depended on troika-three-text
 
 interface GlobeVisualizationProps {
   pointsData: MockDppPoint[];
@@ -178,23 +157,21 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
     }
   };
 
-  // Memoize sprite creation logic
   const checkpointSprites = useMemo(() => {
     return customsCheckpointsData.map(cp => {
       const color = checkpointColorLogic(cp);
-      let IconComp = MapPin; // Default
+      let IconComp = MapPin; 
       if (cp.type === 'port') IconComp = Ship;
       else if (cp.type === 'airport') IconComp = Plane;
       else if (cp.type === 'land_border') IconComp = Building2;
       
-      const canvas = getIconCanvas(IconComp, color, 32); // Smaller icon size
+      const canvas = getIconCanvas(IconComp, color, 32); 
       const map = new THREE.CanvasTexture(canvas);
       map.needsUpdate = true; 
       const material = new THREE.SpriteMaterial({ map: map, depthTest: false, transparent: true });
       const sprite = new THREE.Sprite(material);
-      sprite.scale.set(6, 6, 1); // Adjust scale as needed
+      sprite.scale.set(6, 6, 1); 
       
-      // Attach data to sprite for click handling
       (sprite as any).checkpointData = cp; 
       return sprite;
     });
@@ -236,7 +213,6 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
         if (index !== -1 && checkpointSprites[index]) {
           return checkpointSprites[index];
         }
-        // Fallback if sprite not found (should not happen if memoized correctly)
         const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ color: 'purple' }));
         sprite.scale.set(5, 5, 1);
         return sprite;
@@ -259,4 +235,3 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
 };
 
 export default GlobeVisualization;
-

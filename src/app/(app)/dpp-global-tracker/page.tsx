@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw, SearchCheck, BarChart3, BellRing, History as HistoryIcon, ChevronDown, AlertTriangle } from "lucide-react";
+import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon, ShieldCheck, ShieldAlert, ShieldQuestion, Building2 as LandBorderIcon, RefreshCw, SearchCheck, BarChart3, BellRing, History as HistoryIcon, ChevronDown, AlertTriangle as AlertTriangleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
@@ -110,8 +110,8 @@ type NotificationType = 'compliance_alert' | 'delay_alert' | 'status_change';
 
 
 const GLOBE_BACKGROUND_COLOR = '#0a0a0a'; 
-const EU_BLUE_COLOR = '#234E70'; // Dark Blue for EU Countries (from image)
-const NON_EU_LAND_COLOR_LIGHT_BLUE = '#D1D5DB'; // Light Grey for Non-EU Countries (from image)
+const EU_BLUE_COLOR = '#00008B'; // Dark Blue for EU Countries
+const NON_EU_LAND_COLOR_LIGHT_BLUE = '#D1D5DB'; // Light Grey for Non-EU Countries
 const COUNTRY_BORDER_COLOR = '#000000'; // Black for country borders
 
 export const DPP_HEALTH_GOOD_COLOR = 'rgba(76, 175, 80, 0.9)';
@@ -135,7 +135,7 @@ export const ARC_DEFAULT_COLOR = 'rgba(128, 128, 128, 0.7)';
 
 
 const EU_MEMBER_STATES = [
-  "Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czech Republic", 
+  "Austria", "Belgium", "Bulgaria", "Croatia", "Cyprus", "Czech Rep.", // Abbreviated for potential map label matching
   "Denmark", "Estonia", "Finland", "France", "Germany", "Greece", "Hungary", 
   "Ireland", "Italy", "Latvia", "Lithuania", "Luxembourg", "Malta", 
   "Netherlands", "Poland", "Portugal", "Romania", "Slovakia", "Slovenia", 
@@ -379,7 +379,6 @@ export default function DppGlobalTrackerPage() {
           setGeoJsonError(false);
         }
         // If data is null, geoJsonError is already true from the previous .then()
-        setIsLoadingGeoJson(false);
       })
       .catch(error => {
         // This catch block handles network errors or issues with res.json() itself
@@ -390,8 +389,10 @@ export default function DppGlobalTrackerPage() {
           variant: "destructive",
           duration: 10000,
         });
-        setIsLoadingGeoJson(false);
         setGeoJsonError(true); // Ensure geoJsonError is true
+      })
+      .finally(() => {
+          setIsLoadingGeoJson(false);
       });
   }, [toast]);
 
@@ -738,12 +739,11 @@ export default function DppGlobalTrackerPage() {
   }, []); 
   
   const polygonSideColorAccessor = useCallback((feature: any) => {
-    const countryName = feature.properties.ADMIN;
-    return EU_MEMBER_STATES.includes(countryName) ? EU_BLUE_COLOR : NON_EU_LAND_COLOR_LIGHT_BLUE;
+     return 'rgba(0,0,0,0)'; // Transparent sides for "lined out" look
   }, []);
 
   const polygonStrokeColorAccessor = useCallback(() => COUNTRY_BORDER_COLOR, []); 
-  const polygonAltitudeAccessor = useCallback(() => 0.001, []); 
+  const polygonAltitudeAccessor = useCallback(() => 0.005, []); // Uniform low altitude
 
   const handleFocusEurope = useCallback(() => {
     if (globeRefMain.current) {
@@ -807,10 +807,10 @@ export default function DppGlobalTrackerPage() {
       {isClient && geoJsonError && !isLoadingGeoJson && (
         <div className="p-4 flex-shrink-0"> 
           <Alert variant="destructive"> 
-            <AlertTriangle className="h-4 w-4" />
+            <AlertTriangleIcon className="h-4 w-4" />
             <AlertTitle>Map Data Issue</AlertTitle>
             <AlertDescription>
-              Could not load country border data. The globe will function, but borders may be unavailable.
+              Could not load country border data (GeoJSON file missing or inaccessible). The globe will function, but borders may be unavailable.
               Please ensure 'ne_110m_admin_0_countries.geojson' is in the /public folder.
             </AlertDescription>
           </Alert>
@@ -972,7 +972,6 @@ export default function DppGlobalTrackerPage() {
                       polygonStrokeColorAccessor={polygonStrokeColorAccessor}
                       polygonAltitudeAccessor={polygonAltitudeAccessor}
                       globeBackgroundColor={GLOBE_BACKGROUND_COLOR}
-                      // globeImageUrl will be handled by GlobeVisualization component
                       atmosphereColor="#3a82f6" 
                       atmosphereAltitude={0.25} 
                   />
@@ -1079,6 +1078,3 @@ const shipmentStatusOptions: { value: MockShipmentPoint['simulatedStatus'] | 'al
   { value: 'cleared', label: 'Cleared' },
   { value: 'data_sync_delayed', label: 'Data Sync Delayed' },
 ];
-
-
-    

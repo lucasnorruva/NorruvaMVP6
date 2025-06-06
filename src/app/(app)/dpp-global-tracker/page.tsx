@@ -110,8 +110,9 @@ type NotificationType = 'compliance_alert' | 'delay_alert' | 'status_change';
 
 
 const GLOBE_BACKGROUND_COLOR = '#0a0a0a'; 
-const EU_BLUE_COLOR = '#2563EB'; 
-const NON_EU_LAND_COLOR_LIGHT_BLUE = '#64748B'; 
+const EU_BLUE_COLOR = '#234E70'; // Dark Blue for EU Countries (from image)
+const NON_EU_LAND_COLOR_LIGHT_BLUE = '#D1D5DB'; // Light Grey for Non-EU Countries (from image)
+const COUNTRY_BORDER_COLOR = '#000000'; // Black for country borders
 
 export const DPP_HEALTH_GOOD_COLOR = 'rgba(76, 175, 80, 0.9)';
 export const DPP_HEALTH_FAIR_COLOR = 'rgba(255, 235, 59, 0.9)';
@@ -192,7 +193,8 @@ const Legend: React.FC<{ title: string; colorMap: Record<string, string>, classN
           )}
           <span className={`h-3 w-3 rounded-sm mr-2 border ${onToggleVisibility && visibility && !visibility[name] ? 'opacity-30' : ''}`} style={{ 
             backgroundColor: color.startsWith("rgba") || color.startsWith("#") ? color : undefined,
-            backgroundImage: name.toLowerCase().includes("gradient") || name.toLowerCase().includes(" to ") ? `linear-gradient(to right, ${color.split(' to ')[0]}, ${color.split(' to ')[1] || color.split(' to ')[0]})` : undefined
+            backgroundImage: name.toLowerCase().includes("gradient") || name.toLowerCase().includes(" to ") ? `linear-gradient(to right, ${color.split(' to ')[0]}, ${color.split(' to ')[1] || color.split(' to ')[0]})` : undefined,
+            borderColor: name === "Country Border (Black)" ? 'hsl(var(--muted-foreground))' : (color.startsWith("rgba") || color.startsWith("#") ? color : 'hsl(var(--border))')
           }} />
           <label htmlFor={`legend-toggle-${name.replace(/\s+/g, '-')}`} className={`flex-1 ${onToggleVisibility && visibility && !visibility[name] ? 'opacity-50' : ''}`}>
             {name}
@@ -331,7 +333,9 @@ export default function DppGlobalTrackerPage() {
   const [tradeRouteCategoryFilter, setTradeRouteCategoryFilter] = useState('all');
 
   const [legendVisibility, setLegendVisibility] = useState<Record<string, boolean>>({
-    "Country Border": true,
+    "EU Member State (Dark Blue Fill)": true,
+    "Non-EU Country (Light Grey Fill)": true,
+    "Country Border (Black)": true,
     "Route (Import into EU)": true,
     "Route (Export from EU)": true,
     "Route (Internal EU)": true,
@@ -607,27 +611,37 @@ export default function DppGlobalTrackerPage() {
   const handleCheckpointClick = useCallback((checkpoint: MockCustomsCheckpoint) => { setSelectedCheckpoint(checkpoint); setSelectedPoint(null); setSelectedArc(null); setSelectedShipment(null); }, []);
   const handleInspectProductsAtCheckpoint = useCallback((checkpoint: MockCustomsCheckpoint) => { setInspectingCheckpoint(checkpoint); setIsInspectionModalOpen(true); }, []);
 
-
-  const globeLegendMap = useMemo(() => ({
-    "Country Border": 'rgba(200, 200, 200, 0.6)',
-    "Route (Import into EU)": ARC_INBOUND_EU_COLOR,
-    "Route (Export from EU)": ARC_OUTBOUND_EU_COLOR,
-    "Route (Internal EU)": ARC_INTERNAL_EU_COLOR,
-    "Route (Other)": ARC_DEFAULT_COLOR,
-    "DPP Location (Good Compliance)": DPP_HEALTH_GOOD_COLOR,
-    "DPP Location (Fair Compliance)": DPP_HEALTH_FAIR_COLOR,
-    "DPP Location (Poor Compliance)": DPP_HEALTH_POOR_COLOR,
-    "Shipment (In Transit)": SHIPMENT_IN_TRANSIT_COLOR_GLOBE,
-    "Shipment (At Customs)": SHIPMENT_AT_CUSTOMS_COLOR_GLOBE,
-    "Shipment (Inspection)": SHIPMENT_INSPECTION_COLOR_GLOBE,
-    "Shipment (Cleared)": SHIPMENT_CLEARED_COLOR_GLOBE,
-    "Checkpoint (DPP Good/Green 'G')": DPP_HEALTH_GOOD_COLOR,
-    "Checkpoint (DPP Fair/Yellow 'F')": DPP_HEALTH_FAIR_COLOR,
-    "Checkpoint (DPP Poor/Red 'P')": DPP_HEALTH_POOR_COLOR,
-    "Port (Blue 'S')": CHECKPOINT_PORT_COLOR, 
-    "Airport (Purple 'A')": CHECKPOINT_AIRPORT_COLOR, 
-    "Land Border (Orange 'L')": CHECKPOINT_LAND_BORDER_COLOR, 
-  }), []);
+  const dynamicGlobeLegendMap = useMemo(() => {
+    const map: Record<string, string> = {
+      "EU Member State (Dark Blue Fill)": EU_BLUE_COLOR,
+      "Non-EU Country (Light Grey Fill)": NON_EU_LAND_COLOR_LIGHT_BLUE,
+      "Country Border (Black)": COUNTRY_BORDER_COLOR,
+    };
+    
+    if (tradeFlowsVisible) {
+        map["Route (Import into EU)"] = ARC_INBOUND_EU_COLOR;
+        map["Route (Export from EU)"] = ARC_OUTBOUND_EU_COLOR;
+        map["Route (Internal EU)"] = ARC_INTERNAL_EU_COLOR;
+        map["Route (Other)"] = ARC_DEFAULT_COLOR;
+    }
+    
+    Object.assign(map, {
+        "DPP Location (Good Compliance)": DPP_HEALTH_GOOD_COLOR,
+        "DPP Location (Fair Compliance)": DPP_HEALTH_FAIR_COLOR,
+        "DPP Location (Poor Compliance)": DPP_HEALTH_POOR_COLOR,
+        "Shipment (In Transit)": SHIPMENT_IN_TRANSIT_COLOR_GLOBE,
+        "Shipment (At Customs)": SHIPMENT_AT_CUSTOMS_COLOR_GLOBE,
+        "Shipment (Inspection)": SHIPMENT_INSPECTION_COLOR_GLOBE,
+        "Shipment (Cleared)": SHIPMENT_CLEARED_COLOR_GLOBE,
+        "Checkpoint (DPP Good/Green 'G')": DPP_HEALTH_GOOD_COLOR,
+        "Checkpoint (DPP Fair/Yellow 'F')": DPP_HEALTH_FAIR_COLOR,
+        "Checkpoint (DPP Poor/Red 'P')": DPP_HEALTH_POOR_COLOR,
+        "Port (Blue 'S')": CHECKPOINT_PORT_COLOR, 
+        "Airport (Purple 'A')": CHECKPOINT_AIRPORT_COLOR, 
+        "Land Border (Orange 'L')": CHECKPOINT_LAND_BORDER_COLOR, 
+    });
+    return map;
+  }, [tradeFlowsVisible]);
 
 
   const handleSimulateCheckpointUpdate = useCallback(() => {
@@ -718,9 +732,17 @@ export default function DppGlobalTrackerPage() {
 
   const arcStrokeAccessor = useCallback((arc: MockArc): number => arc.stroke || 0.2, []);
   
-  const polygonCapColorAccessor = useCallback(() => 'rgba(0,0,0,0)', []); 
-  const polygonSideColorAccessor = useCallback(() => 'rgba(0,0,0,0)', []); 
-  const polygonStrokeColorAccessor = useCallback(() => 'rgba(200, 200, 200, 0.6)', []); 
+  const polygonCapColorAccessor = useCallback((feature: any) => {
+    const countryName = feature.properties.ADMIN;
+    return EU_MEMBER_STATES.includes(countryName) ? EU_BLUE_COLOR : NON_EU_LAND_COLOR_LIGHT_BLUE;
+  }, []); 
+  
+  const polygonSideColorAccessor = useCallback((feature: any) => {
+    const countryName = feature.properties.ADMIN;
+    return EU_MEMBER_STATES.includes(countryName) ? EU_BLUE_COLOR : NON_EU_LAND_COLOR_LIGHT_BLUE;
+  }, []);
+
+  const polygonStrokeColorAccessor = useCallback(() => COUNTRY_BORDER_COLOR, []); 
   const polygonAltitudeAccessor = useCallback(() => 0.001, []); 
 
   const handleFocusEurope = useCallback(() => {
@@ -761,35 +783,6 @@ export default function DppGlobalTrackerPage() {
     setLegendVisibility(prev => ({ ...prev, [key]: !prev[key] }));
   };
   
-  const dynamicGlobeLegendMap = useMemo(() => {
-    const map: Record<string, string> = {
-      "Country Border": 'rgba(200, 200, 200, 0.6)',
-    };
-    
-    if (tradeFlowsVisible) {
-        map["Route (Import into EU)"] = ARC_INBOUND_EU_COLOR;
-        map["Route (Export from EU)"] = ARC_OUTBOUND_EU_COLOR;
-        map["Route (Internal EU)"] = ARC_INTERNAL_EU_COLOR;
-        map["Route (Other)"] = ARC_DEFAULT_COLOR;
-    }
-    
-    Object.assign(map, {
-        "DPP Location (Good Compliance)": DPP_HEALTH_GOOD_COLOR,
-        "DPP Location (Fair Compliance)": DPP_HEALTH_FAIR_COLOR,
-        "DPP Location (Poor Compliance)": DPP_HEALTH_POOR_COLOR,
-        "Shipment (In Transit)": SHIPMENT_IN_TRANSIT_COLOR_GLOBE,
-        "Shipment (At Customs)": SHIPMENT_AT_CUSTOMS_COLOR_GLOBE,
-        "Shipment (Inspection)": SHIPMENT_INSPECTION_COLOR_GLOBE,
-        "Shipment (Cleared)": SHIPMENT_CLEARED_COLOR_GLOBE,
-        "Checkpoint (DPP Good/Green 'G')": DPP_HEALTH_GOOD_COLOR,
-        "Checkpoint (DPP Fair/Yellow 'F')": DPP_HEALTH_FAIR_COLOR,
-        "Checkpoint (DPP Poor/Red 'P')": DPP_HEALTH_POOR_COLOR,
-        "Port (Blue 'S')": CHECKPOINT_PORT_COLOR, 
-        "Airport (Purple 'A')": CHECKPOINT_AIRPORT_COLOR, 
-        "Land Border (Orange 'L')": CHECKPOINT_LAND_BORDER_COLOR, 
-    });
-    return map;
-  }, [tradeFlowsVisible]);
 
   const onViewNotificationHistory = useCallback(() => {
     toast({
@@ -817,8 +810,8 @@ export default function DppGlobalTrackerPage() {
             <AlertTriangle className="h-4 w-4" />
             <AlertTitle>Map Data Issue</AlertTitle>
             <AlertDescription>
-              Could not load country border data. The globe will function, but borders may not be visible.
-              Please ensure 'ne_110m_admin_0_countries.geojson' is in the /public folder of your project.
+              Could not load country border data. The globe will function, but borders may be unavailable.
+              Please ensure 'ne_110m_admin_0_countries.geojson' is in the /public folder.
             </AlertDescription>
           </Alert>
         </div>
@@ -953,14 +946,15 @@ export default function DppGlobalTrackerPage() {
                         }
                         return legendVisibility[legendKey] !== false; 
                       })}
-                      arcsData={filteredArcs.filter(() => {
-                        const importVisible = legendVisibility["Route (Import into EU)"] !== false;
-                        const exportVisible = legendVisibility["Route (Export from EU)"] !== false;
-                        const internalVisible = legendVisibility["Route (Internal EU)"] !== false;
-                        const otherVisible = legendVisibility["Route (Other)"] !== false;
-                        return importVisible || exportVisible || internalVisible || otherVisible;
+                      arcsData={filteredArcs.filter((arc) => {
+                        let legendKey = "";
+                        if (arc.direction === "inbound_eu") legendKey = "Route (Import into EU)";
+                        else if (arc.direction === "outbound_eu") legendKey = "Route (Export from EU)";
+                        else if (arc.direction === "internal_eu") legendKey = "Route (Internal EU)";
+                        else legendKey = "Route (Other)";
+                        return legendVisibility[legendKey] !== false;
                       })}
-                      polygonsData={legendVisibility["Country Border"] && !geoJsonError ? countryPolygons : []}
+                      polygonsData={legendVisibility["Country Border (Black)"] && !geoJsonError ? countryPolygons : []}
                       customsCheckpointsData={mockCustomsCheckpointsDataState.filter(cp => {
                         const healthKey = `Checkpoint (DPP ${(cp.dppComplianceHealth || 'unknown').charAt(0).toUpperCase() + (cp.dppComplianceHealth || 'unknown').slice(1)}/${(cp.dppComplianceHealth || 'unknown').charAt(0).toUpperCase()})`;
                         const typeKey = `${cp.type.charAt(0).toUpperCase() + cp.type.slice(1).replace('_', ' ')} (${cp.type.charAt(0).toUpperCase()})`;
@@ -978,7 +972,7 @@ export default function DppGlobalTrackerPage() {
                       polygonStrokeColorAccessor={polygonStrokeColorAccessor}
                       polygonAltitudeAccessor={polygonAltitudeAccessor}
                       globeBackgroundColor={GLOBE_BACKGROUND_COLOR}
-                      globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
+                      // globeImageUrl will be handled by GlobeVisualization component
                       atmosphereColor="#3a82f6" 
                       atmosphereAltitude={0.25} 
                   />
@@ -1085,3 +1079,6 @@ const shipmentStatusOptions: { value: MockShipmentPoint['simulatedStatus'] | 'al
   { value: 'cleared', label: 'Cleared' },
   { value: 'data_sync_delayed', label: 'Data Sync Delayed' },
 ];
+
+
+    

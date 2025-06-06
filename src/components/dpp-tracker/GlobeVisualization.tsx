@@ -3,7 +3,7 @@
 
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as THREE from 'three';
-import { MapPin, Ship, Plane, Building2 as LandBorderIcon } from 'lucide-react'; 
+import { MapPin, Ship, Plane, Building2 as LandBorderIcon } from 'lucide-react';
 import {
     DPP_HEALTH_GOOD_COLOR,
     DPP_HEALTH_FAIR_COLOR,
@@ -72,25 +72,26 @@ const getIconCanvas = (IconComponent: React.ElementType, color: THREE.Color, siz
   canvas.height = size;
   const ctx = canvas.getContext('2d');
   if (ctx) {
+    // Draw a colored circle as background
     ctx.beginPath();
-    ctx.arc(size / 2, size / 2, size / 2.5, 0, 2 * Math.PI, false);
-    ctx.fillStyle = `#${color.getHexString()}`;
+    ctx.arc(size / 2, size / 2, size / 2.5, 0, 2 * Math.PI, false); // Slightly smaller radius for the circle
+    ctx.fillStyle = `#${color.getHexString()}`; // Use the THREE.Color hex string
     ctx.fill();
     
-    ctx.font = `${size / 2.2}px sans-serif`; // Slightly smaller font for better fit
-    ctx.fillStyle = 'white'; // Ensure contrast
+    // Draw the icon character (simplified)
+    // In a real app, you'd render the SVG path here for better quality
+    ctx.font = `${size / 2.2}px sans-serif`; // Icon size
+    ctx.fillStyle = 'white'; // Icon color (ensure contrast)
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     
-    // Placeholder for icon rendering - In a real scenario, you'd draw the SVG path
-    // For this mock, we'll use a character based on the icon component if available.
     let char = '?';
     if (IconComponent === Ship) char = 'S';
     else if (IconComponent === Plane) char = 'A';
-    else if (IconComponent === LandBorderIcon) char = 'L';
-    else if (IconComponent === MapPin) char = 'M';
+    else if (IconComponent === LandBorderIcon) char = 'L'; // Using LandBorderIcon as Building2 alias
+    else if (IconComponent === MapPin) char = 'M'; // Default
 
-    ctx.fillText(char, size / 2, size / 2 + 2); // +2 for better vertical centering
+    ctx.fillText(char, size / 2, size / 2 + 2); // Small adjustment for vertical centering
   }
   return canvas;
 };
@@ -168,11 +169,12 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
       case 'fair': return DPP_HEALTH_FAIR_THREE_COLOR;
       case 'poor': return DPP_HEALTH_POOR_THREE_COLOR;
       case 'unknown':
-      default:
+      default: // Fallback for 'unknown' or any other unhandled status
+        // For 'unknown' or 'operational' (if that's the primary status), use type-based color
         if (checkpoint.type === 'port') return CHECKPOINT_PORT_THREE_COLOR;
         if (checkpoint.type === 'airport') return CHECKPOINT_AIRPORT_THREE_COLOR;
         if (checkpoint.type === 'land_border') return CHECKPOINT_LAND_BORDER_THREE_COLOR;
-        return GREY_THREE_COLOR; 
+        return GREY_THREE_COLOR; // A very generic fallback
     }
   };
 
@@ -182,14 +184,14 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
       let IconComp = MapPin; 
       if (cp.type === 'port') IconComp = Ship;
       else if (cp.type === 'airport') IconComp = Plane;
-      else if (cp.type === 'land_border') IconComp = LandBorderIcon;
+      else if (cp.type === 'land_border') IconComp = LandBorderIcon; // Using alias
       
       const canvas = getIconCanvas(IconComp, color, 32); 
       const map = new THREE.CanvasTexture(canvas);
       map.needsUpdate = true; 
-      const material = new THREE.SpriteMaterial({ map: map, depthTest: false, transparent: true, sizeAttenuation: false }); // sizeAttenuation: false helps keep size consistent
+      const material = new THREE.SpriteMaterial({ map: map, depthTest: false, transparent: true, sizeAttenuation: false });
       const sprite = new THREE.Sprite(material);
-      sprite.scale.set(8, 8, 1); // Adjusted scale for better visibility
+      sprite.scale.set(8, 8, 1);
       
       (sprite as any).checkpointData = cp; 
       return sprite;
@@ -226,24 +228,25 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
     polygonsTransitionDuration: 0, 
 
     customLayerData: customsCheckpointsData,
-    customThreeObject: (cpData: any) => { // Removed globeRadius as it's not directly provided here
+    customThreeObject: (cpData: any) => {
         const cp = cpData as MockCustomsCheckpoint;
         const index = customsCheckpointsData.findIndex(item => item.id === cp.id);
         if (index !== -1 && checkpointSprites[index]) {
           return checkpointSprites[index];
         }
-        // Fallback if sprite not found (should not happen if memoized correctly)
+        // Fallback sprite (should ideally not be hit if checkpointSprites is correctly memoized and populated)
         const fallbackMaterial = new THREE.SpriteMaterial({ color: 'purple' });
         const sprite = new THREE.Sprite(fallbackMaterial);
-        sprite.scale.set(5, 5, 1);
+        sprite.scale.set(5, 5, 1); // Adjusted scale
+        (sprite as any).checkpointData = cp; // Attach data for click handling
         return sprite;
     },
-    customThreeObjectUpdate: (obj: any, cpData: any) => { // Removed globeRadius
+    customThreeObjectUpdate: (obj: any, cpData: any) => {
         if(globeEl.current){
-            Object.assign(obj.position, globeEl.current.getCoords(cpData.lat, cpData.lng, 0.03)); // Use a fixed altitude factor
+            Object.assign(obj.position, globeEl.current.getCoords(cpData.lat, cpData.lng, 0.03));
         }
     },
-    onCustomLayerClick: (obj: any) => { // Simplified params
+    onCustomLayerClick: (obj: any, event: MouseEvent, { lat, lng, altitude }: { lat: number; lng: number; altitude: number; }) => {
         if (obj && (obj as any).checkpointData) {
           onCheckpointClick((obj as any).checkpointData);
         }
@@ -258,4 +261,3 @@ const GlobeVisualization: React.FC<GlobeVisualizationProps> = ({
 };
 
 export default GlobeVisualization;
-

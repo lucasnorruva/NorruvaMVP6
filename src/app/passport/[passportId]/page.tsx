@@ -224,7 +224,7 @@ export default function PublicPassportPage({ params }: Props) {
                 height={600}
                 className="rounded-lg object-cover shadow-md aspect-[4/3]"
                 data-ai-hint={product.imageHint}
-                priority
+                priority={product.imageUrl ? !product.imageUrl.startsWith("data:") : true}
               />
             </div>
             <div className="space-y-6">
@@ -445,4 +445,3 @@ export default function PublicPassportPage({ params }: Props) {
     </div>
   );
 }
-

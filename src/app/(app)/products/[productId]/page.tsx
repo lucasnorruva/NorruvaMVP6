@@ -8,13 +8,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import Image from "next/image";
-import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, Info, Leaf, FileText, Truck, Recycle, Settings2, ShieldCheck, GitBranch, Zap, ExternalLink, Cpu, Fingerprint, Server, BatteryCharging, BarChart3, Percent, Factory, ShoppingBag as ShoppingBagIcon, PackageSearch, CalendarDays, MapPin, Droplet, Target, Users, Layers, Edit3, Wrench, Workflow, Loader2, ListChecks, Lightbulb, RefreshCw, QrCode as QrCodeIcon, FileJson, Award, ClipboardList, ServerIcon } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Progress } from '@/components/ui/progress';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import ProductForm, { type ProductFormData } from "@/components/products/ProductForm";
 
 import ProductLifecycleFlowchart, { type LifecyclePhase } from '@/components/products/ProductLifecycleFlowchart';
 import OverallProductCompliance, { type OverallComplianceData, type ProductNotification as OverallProductNotification, type ComplianceStatus } from '@/components/products/OverallProductCompliance';
@@ -26,7 +28,6 @@ import { useRole } from '@/contexts/RoleContext';
 import { useToast } from '@/hooks/use-toast';
 import { checkProductCompliance } from '@/ai/flows/check-product-compliance-flow';
 import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow';
-import type { ProductFormData } from '@/components/products/ProductForm';
 import type { InitialProductFormData } from '@/app/(app)/products/new/page';
 
 
@@ -67,6 +68,15 @@ interface HistoricalDataPoint {
   year: string;
   value: number;
 }
+
+interface VerificationLogEntry {
+  id: string;
+  event: string;
+  timestamp: string;
+  actor?: string; // e.g., Verifier name, System
+  details?: string;
+}
+
 export interface MockProductType { 
   productId: string;
   productName: string;
@@ -108,6 +118,7 @@ export interface MockProductType {
   lifecyclePhases: LifecyclePhase[];
   overallCompliance: OverallComplianceData;
   notifications: ProductNotification[];
+  verificationLog: VerificationLogEntry[];
 
   materialComposition?: MaterialComposition[];
   historicalCarbonFootprint?: HistoricalDataPoint[];
@@ -178,6 +189,13 @@ const MOCK_PRODUCTS: MockProductType[] = [
       { id: "n001", type: "info", message: "Quarterly sustainability report due next month.", date: "2024-07-10T10:00:00Z" },
       { id: "n002", type: "warning", message: "Supplier 'PolyCore' ethical audit expiring soon. Action recommended.", date: "2024-07-18T10:00:00Z" }
     ],
+    verificationLog: [
+      {id: "vlog001", event: "DPP Created", timestamp: "2024-01-10T09:00:00Z", actor: "System"},
+      {id: "vlog002", event: "Submitted for Verification", timestamp: "2024-01-12T11:30:00Z", actor: "Manufacturer: GreenTech"},
+      {id: "vlog003", event: "Verification Approved", timestamp: "2024-01-14T15:00:00Z", actor: "Verifier: CertiSure Inc.", details: "All claims verified."},
+      {id: "vlog004", event: "DPP Marked Complete", timestamp: "2024-01-15T08:00:00Z", actor: "System"},
+      {id: "vlog005", event: "Blockchain Anchor Created", timestamp: "2024-01-15T08:05:00Z", actor: "System", details: "Tx: 0x123mainanchor789xyzabc001"},
+    ],
     materialComposition: [ { name: 'Recycled Steel', value: 70, fill: 'hsl(var(--chart-1))' }, { name: 'Bio-Polymers', value: 20, fill: 'hsl(var(--chart-2))' }, { name: 'Glass', value: 10, fill: 'hsl(var(--chart-5))' }, ],
     historicalCarbonFootprint: [ { year: '2021', value: 250 }, { year: '2022', value: 220 }, { year: '2023', value: 200 }, { year: '2024', value: 180 }, ],
     waterUsage: { value: 500, unit: 'L/unit (mfg)', trend: 'down', trendValue: '-5%' },
@@ -217,6 +235,11 @@ const MOCK_PRODUCTS: MockProductType[] = [
     lifecyclePhases: [ { id: "lc007", name: "Materials Sourcing", icon: PackageSearch, status: 'completed', timestamp: "2024-02-01T10:00:00Z", location: "Global Suppliers", details: "Sourcing of PC, Al, LED chips, battery components. Conflict minerals check completed. Supplier data for battery chemistry (e.g. Cobalt source) recorded for Battery Regulation.", complianceMetrics: [{ name: "Conflict Minerals Report", status: "compliant", reportLink: "#" }, { name: "Supplier Chemical Safety Data Sheets", status: "compliant" }], sustainabilityMetrics: [{ name: "Supplier Diversity Score", value: 60, unit: "/100", targetValue: 75 }, {name: "Battery Component Traceability", status: "compliant"}] }, { id: "lc008", name: "Manufacturing", icon: Factory, status: 'in_progress', timestamp: "2024-03-01T10:00:00Z", location: "Shenzhen, China", details: "Assembly in Shenzhen. Batch #LEDB456. Initial battery SoH recorded. SCIP notification for SVHC in components submitted. Carbon footprint of manufacturing calculated.", complianceMetrics: [{ name: "Factory Safety Audit (ISO 45001)", status: "compliant", reportLink: "#" }, {name: "SCIP Database Submission", status: "compliant", reportLink: "#"}], sustainabilityMetrics: [{ name: "Carbon Footprint (Mfg.)", value: 5.2, unit: "kg CO2e/pack", targetValue: 5.0 }, { name: "Recycled Packaging Used", value: 90, unit: "%", targetValue: 100}] }, { id: "lc009", name: "Distribution", icon: Truck, status: 'pending', timestamp: "2024-03-15T10:00:00Z", location: "Global Distribution Network", details: "Global distribution. Awaiting final packaging data for carbon footprint update of distribution phase. Customs documents generated.", complianceMetrics: [], sustainabilityMetrics: [{name: "Logistics Efficiency Score", value: 7, unit:"/10 (target)"}] }, { id: "lc010", name: "Retail Sale", icon: ShoppingBagIcon, status: 'pending', timestamp: "2024-04-01T00:00:00Z", location: "Online & Physical Stores", details: "Available through various retail channels. EPREL data to be displayed at point of sale. Consumer warranty registration activated on sale.", complianceMetrics: [{name: "EPREL Label Display", status: "pending_review"}], sustainabilityMetrics: [] }, { id: "lc011", name: "Use & Maintenance", icon: Users, status: 'upcoming', timestamp: "2024-04-02T00:00:00Z", location: "Consumer Homes & Businesses", details: "Estimated 3-year useful life for battery. OTA firmware updates enhance performance and security. Battery replacement guide in DPP for consumers/technicians.", sustainabilityMetrics: [{ name: "Energy Savings (vs Incand.)", value: 85, unit: "%" }, {name: "Firmware Update Frequency", value: 2, unit: "updates/yr (avg)"}] }, { id: "lc012", name: "Battery EOL", icon: Recycle, status: 'issue', timestamp: "2027-04-01T00:00:00Z", location: "Designated Collection Points", details: "Battery designed for removal. Documentation for EU Battery Regulation (EU 2023/1542) is overdue, impacting certified recycling pathway.", complianceMetrics: [{name: "WEEE Compliance", status: "pending_review"}, {name: "EU Battery Reg. Documentation", status: "non_compliant", reportLink: "#"}], sustainabilityMetrics: [{name: "Battery Recyclability", value: 70, unit: "%", targetValue: 80}]} ],
     overallCompliance: { gdpr: { status: "not_applicable", lastChecked: "2024-07-01T10:00:00Z" }, eprel: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" }, ebsiVerified: { status: "pending_review", verificationId: "PENDING_EBSI_CHECK", lastChecked: "2024-07-20T10:00:00Z" },  scip: { status: "compliant", declarationId: "SCIP-XYZ789", lastChecked: "2024-07-01T10:00:00Z" }, csrd: { status: "pending_review", lastChecked: "2024-07-20T10:00:00Z" } },
     notifications: [ { id: "n003", type: "error", message: "Battery Regulation documentation overdue! Action required.", date: "2024-07-19T10:00:00Z" }, { id: "n004", type: "warning", message: "EPREL registration data needs review by end of week.", date: "2024-07-22T10:00:00Z" }, { id: "n005", type: "info", message: "Firmware update v1.2 successfully deployed.", date: "2024-08-01T02:00:00Z"} ],
+    verificationLog: [
+        {id: "vlog006", event: "DPP Created (AI Extracted)", timestamp: "2024-02-25T10:00:00Z", actor: "System"},
+        {id: "vlog007", event: "Submitted for Review", timestamp: "2024-03-01T11:00:00Z", actor: "Manufacturer: BrightSpark"},
+        {id: "vlog008", event: "Compliance Data Update (Battery Reg.)", timestamp: "2024-07-20T10:00:00Z", actor: "System", details: "Status changed to Pending Documentation."},
+    ],
     materialComposition: [ { name: 'Polycarbonate', value: 40, fill: 'hsl(var(--chart-1))' }, { name: 'Aluminum', value: 30, fill: 'hsl(var(--chart-2))' }, { name: 'LEDs & Electronics', value: 20, fill: 'hsl(var(--chart-3))' }, { name: 'Li-ion Cell', value: 10, fill: 'hsl(var(--chart-4))' }, ],
     historicalCarbonFootprint: [ { year: '2022', value: 6.5 }, { year: '2023', value: 5.8 }, { year: '2024', value: 5.2 }, ],
     waterUsage: { value: 10, unit: 'L/unit (mfg)' },
@@ -257,6 +280,7 @@ const getDefaultMockProductValues = (id: string): MockProductType => ({
     csrd: { status: "pending_review", lastChecked: new Date().toISOString() }, 
   },
   notifications: [ {id: `user_info_${id}`, type: "info", message: "This product was added by a user and may have incomplete data. Please review and update.", date: new Date().toISOString()} ],
+  verificationLog: [{ id: `vlog_user_${id}`, event: "DPP Created by User", timestamp: new Date().toISOString(), actor: "User" }],
 });
 
 const TrustSignalIcon = ({ isVerified, tooltipText, VerifiedIcon = CheckCircle2, UnverifiedIcon = Info, customClasses }: { isVerified?: boolean, tooltipText: string, VerifiedIcon?: React.ElementType, UnverifiedIcon?: React.ElementType, customClasses?: string }) => {
@@ -370,9 +394,10 @@ export default function ProductDetailPage() {
   const router = useRouter();
   const { currentRole } = useRole();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState('specifications'); 
+  const [activeTab, setActiveTab] = useState('overview'); 
   const [isCheckingCompliance, setIsCheckingCompliance] = useState(false);
   const [isSyncingEprel, setIsSyncingEprel] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -394,8 +419,6 @@ export default function ProductDetailPage() {
               parsedSpecifications = JSON.parse(storedProduct.specifications);
             } catch (e) {
               console.warn("Failed to parse specifications for user product:", storedProduct.id, e);
-              // Keep specifications as string if parsing fails, or handle as empty object
-              // For MockProductType, it expects Record<string, string>, so defaulting to empty.
             }
           } else if (typeof storedProduct.specifications === 'object' && storedProduct.specifications !== null) {
             parsedSpecifications = storedProduct.specifications as Record<string, string>;
@@ -453,7 +476,7 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     if (product) {
-      let newDefaultTab = 'specifications'; 
+      let newDefaultTab = 'overview'; 
       const criticalErrorNotification = product.notifications?.find(n => n.type === 'error');
       let errorDrivenTab: string | null = null;
       if (criticalErrorNotification) {
@@ -463,19 +486,21 @@ export default function ProductDetailPage() {
       }
       if (errorDrivenTab) { newDefaultTab = errorDrivenTab; } 
       else {
+         // Keep existing role-based logic or a sensible default if no error drives tab selection
         switch (currentRole) {
-          case 'manufacturer': newDefaultTab = 'specifications'; break;
+          case 'manufacturer': newDefaultTab = 'overview'; break;
           case 'supplier': newDefaultTab = 'specifications'; break;
           case 'retailer': newDefaultTab = 'sustainability'; break;
           case 'recycler': newDefaultTab = hasBatteryData ? 'battery' : 'sustainability'; break;
           case 'verifier': newDefaultTab = 'compliance'; break;
-          case 'admin': newDefaultTab = 'lifecycle'; break;
-          default: newDefaultTab = 'specifications';
+          case 'admin': newDefaultTab = 'overview'; break; // Default to overview for admin
+          default: newDefaultTab = 'overview';
         }
       }
       setActiveTab(newDefaultTab);
     }
   }, [currentRole, product, hasBatteryData]);
+
 
   const handleAskCopilotForRegulation = (regulationName: string, regulationStatus: string) => {
     if (!product) return;
@@ -554,6 +579,41 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleProductFormSubmit = async (data: ProductFormData) => {
+    if (!product) return;
+    setIsEditing(true); // Using isEditing to represent form submission loading state
+    
+    try {
+      const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+      let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+      const productIndex = userProducts.findIndex(p => p.id === product.productId);
+
+      if (productIndex > -1) {
+        const updatedProductData: StoredUserProduct = {
+          ...userProducts[productIndex], // Keep existing fields not in ProductFormData
+          ...data, // Apply updated form data
+          id: product.productId, // Ensure ID is maintained
+          status: userProducts[productIndex].status, // Preserve original status unless changed by form
+          compliance: userProducts[productIndex].compliance, // Preserve original compliance unless changed
+          lastUpdated: new Date().toISOString(),
+        };
+        userProducts[productIndex] = updatedProductData;
+        localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
+        
+        setProduct(prev => prev ? ({ ...prev, ...updatedProductData, productName: data.productName || prev.productName, productDescription: data.productDescription || prev.productDescription, manufacturer: data.manufacturer || prev.manufacturer, modelNumber: data.modelNumber || prev.modelNumber, materials: data.materials || prev.materials, sustainabilityClaims: data.sustainabilityClaims || prev.sustainabilityClaims, specifications: data.specifications ? (typeof data.specifications === 'string' ? JSON.parse(data.specifications) : data.specifications) : prev.specifications, energyLabel: data.energyLabel || prev.energyLabel, category: data.productCategory || prev.category, imageUrl: data.imageUrl || prev.imageUrl, batteryChemistry: data.batteryChemistry, stateOfHealth: data.stateOfHealth, carbonFootprintManufacturing: data.carbonFootprintManufacturing, recycledContentPercentage: data.recycledContentPercentage, lastUpdated: updatedProductData.lastUpdated }) : null);
+
+        toast({ title: "Product Updated", description: `${updatedProductData.productName} has been updated successfully.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
+        setIsEditing(false); // Turn off editing mode
+      } else {
+        throw new Error("Product not found for update in local storage.");
+      }
+    } catch (e) {
+      console.error("Failed to update product:", e);
+      toast({ title: `Product Update Failed`, description: `Could not update the product. ${e instanceof Error ? e.message : ''}`, variant: "destructive" });
+       setIsEditing(false);
+    }
+  };
+
 
   if (product === undefined) { return <ProductDetailSkeleton />; }
   if (!product) { notFound(); return null; }
@@ -576,17 +636,14 @@ export default function ProductDetailPage() {
             <h1 className="text-3xl font-headline font-semibold">{product.productName}</h1>
             <DataOriginIcon origin={product.productNameOrigin} fieldName="Product Name" />
             {product.isDppBlockchainAnchored && ( 
-              
                 <Tooltip delayDuration={100}> 
                   <TooltipTrigger asChild> 
                     <span><Fingerprint className="h-6 w-6 text-primary ml-2 cursor-help" /></span> 
                   </TooltipTrigger> 
                   <TooltipContent> <p>This Digital Product Passport is anchored on the blockchain, ensuring its integrity and authenticity.</p> </TooltipContent> 
                 </Tooltip> 
-              
             )}
             {product.isDppBlockchainAnchored && product.dppAnchorTransactionHash && ( 
-              
                 <Tooltip delayDuration={100}> 
                   <TooltipTrigger asChild>
                     <Button variant="ghost" size="icon" className="ml-1 h-7 w-7" onClick={() => alert(`Mock: View on Explorer - Tx: ${product.dppAnchorTransactionHash}`)}> 
@@ -595,7 +652,6 @@ export default function ProductDetailPage() {
                   </TooltipTrigger> 
                   <TooltipContent> <p>View on Blockchain Explorer (mock). Tx: {product.dppAnchorTransactionHash}</p> </TooltipContent> 
                 </Tooltip> 
-              
             )}
           </div>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -625,233 +681,276 @@ export default function ProductDetailPage() {
           </div>
         </div>
         <div className="flex gap-2 items-center">
-          {canEditProduct && (
-            <Link href={`/products/new?edit=${product.productId}`} passHref>
-              <Button variant="outline" size="sm"> <Edit3 className="mr-2 h-4 w-4" /> Edit Product </Button>
-            </Link>
+          {canEditProduct && !isEditing && (
+            <Button variant="outline" size="sm" onClick={() => setIsEditing(true)}> <Edit3 className="mr-2 h-4 w-4" /> Edit Product </Button>
           )}
+           {isEditing && (
+            <Button variant="outline" size="sm" onClick={() => setIsEditing(false)} className="bg-destructive/10 text-destructive hover:bg-destructive/20">Cancel Edit</Button>
+           )}
           <Link href={`/passport/${product.productId}`} passHref target="_blank"> <Button variant="outline"> <ExternalLink className="mr-2 h-4 w-4" /> View Public Passport </Button> </Link> 
         </div>
       </div>
       
-      <Card className="shadow-xl border-primary/20 bg-muted/30">
-        <CardHeader className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <div> <CardTitle className="text-2xl font-headline text-primary">Live DPP Status Overview</CardTitle> <CardDescription>Dynamic summary of product compliance, alerts, and lifecycle progress.</CardDescription> </div>
-           {canSimulateCompliance && (
-            <Button  onClick={handleSimulateComplianceCheck}  disabled={isCheckingCompliance || product.currentLifecyclePhaseIndex >= product.lifecyclePhases.length -1} variant="secondary" size="sm" > {isCheckingCompliance ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Workflow className="mr-2 h-4 w-4" />} Simulate Next Stage & Check Compliance </Button>
-           )}
-        </CardHeader>
-        <CardContent className="space-y-6"> 
-            <OverallProductCompliance  
-                complianceData={product.overallCompliance}  
-                notifications={product.notifications as OverallProductNotification[]}
-                onSyncEprel={handleSyncEprel}
-                isSyncingEprel={isSyncingEprel}
-                canSyncEprel={canSyncEprel}
-            /> 
-            {product.notifications && product.notifications.length > 0 && ( <ProductAlerts notifications={product.notifications} /> )} 
-            <ProductLifecycleFlowchart phases={product.lifecyclePhases} currentPhaseIndex={product.currentLifecyclePhaseIndex} /> 
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-lg overflow-hidden">
-        <div className="grid md:grid-cols-3">
-          <div className="md:col-span-1 p-6">
-            <AspectRatio ratio={4/3} className="bg-muted rounded-md overflow-hidden">
-              <Image
-                src={product.imageUrl || "https://placehold.co/600x400.png?text=No+Image"}
-                alt={product.productName}
-                fill
-                className="object-contain"
-                data-ai-hint={product.imageHint || (product.imageUrl?.includes("placehold.co") ? product.productName.split(" ").slice(0,2).join(" ") : "product " + product.category.toLowerCase())}
-                priority={!product.imageUrl?.startsWith("data:")} 
-              />
-            </AspectRatio>
-            <DataOriginIcon origin={product.imageUrlOrigin} fieldName="Product Image"/>
-          </div>
-          <div className="md:col-span-2 p-6">
-            <div className="flex items-center"> <CardTitle className="text-2xl mb-2">{product.productName}</CardTitle> <DataOriginIcon origin={product.productNameOrigin} fieldName="Product Name" /> </div>
-            <div className="flex items-start"> <CardDescription className="text-base mb-4">{product.description}</CardDescription> <DataOriginIcon origin={product.descriptionOrigin} fieldName="Description" /> </div>
-            <div className="grid grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center"> <strong className="text-foreground/80 mr-1">GTIN:</strong> {product.gtin || "N/A"}  <TrustSignalIcon  isVerified={product.gtinVerified}  tooltipText={product.gtinVerified ? "GTIN Verified" : "GTIN Not Verified"}  VerifiedIcon={CheckCircle2}  UnverifiedIcon={Info} /> </div>
-              <div><strong className="text-foreground/80">Category:</strong> {product.category || "N/A"}</div>
-              <div className="flex items-center"> <strong className="text-foreground/80 mr-1">Manufacturer:</strong> {product.manufacturer || "N/A"}  <TrustSignalIcon  isVerified={product.manufacturerVerified}  tooltipText={product.manufacturerVerified ? "Manufacturer Verified" : "Manufacturer Not Verified"} VerifiedIcon={CheckCircle2}  UnverifiedIcon={Info} /> </div>
-              <div><strong className="text-foreground/80">Model:</strong> {product.modelNumber || "N/A"}</div>
-            </div>
-            <div className="mt-4 pt-4 border-t">
-              <h4 className="text-md font-semibold mb-2 flex items-center"> <Leaf className="h-5 w-5 mr-2 text-accent" />Key Sustainability Info  <TrustSignalIcon  isVerified={product.sustainabilityClaimsVerified}  tooltipText={product.sustainabilityClaimsVerified ? "Sustainability Claims Verified" : "Sustainability Claims Pending Verification"} VerifiedIcon={CheckCircle2}  UnverifiedIcon={Info} /> </h4>
-              <p className="text-sm text-muted-foreground mb-1"><strong>Materials:</strong> {product.materials || "N/A"}</p>
-              <p className="text-sm text-muted-foreground mb-1"><strong>Claims:</strong> {product.sustainabilityClaims || "N/A"}</p>
-              <p className="text-sm text-muted-foreground"><strong>Energy Label:</strong> <Badge variant="secondary">{product.energyLabel || "N/A"}</Badge></p>
-            </div>
-          </div>
-        </div>
-      </Card>
-
-      <div className="grid md:grid-cols-2 gap-8">
+      {isEditing && canEditProduct ? (
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="flex items-center">
-              <ListChecks className="mr-2 h-5 w-5 text-primary" />
-              DPP Data Completeness
-            </CardTitle>
-            <CardDescription>
-              Indicates how complete the information for this Digital Product Passport is.
-            </CardDescription>
+            <CardTitle className="font-headline flex items-center"><Edit3 className="mr-2 h-5 w-5 text-primary"/>Editing: {product.productName}</CardTitle>
+            <CardDescription>Modify the details for this Digital Product Passport.</CardDescription>
           </CardHeader>
           <CardContent>
-            
-              <Tooltip delayDuration={100}>
-                <TooltipTrigger asChild>
-                  <div className="cursor-help">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-lg font-semibold text-primary">{dppCompleteness.score}% Complete</span>
-                      <span className="text-sm text-muted-foreground">
-                        {dppCompleteness.filledFields} / {dppCompleteness.totalFields} essential fields filled
-                      </span>
-                    </div>
-                    <Progress value={dppCompleteness.score} className="w-full h-3" />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent className="bg-background shadow-lg p-3 rounded-md border max-w-xs">
-                  {dppCompleteness.missingFields.length > 0 ? (
-                    <>
-                      <p className="text-xs font-semibold">Missing or incomplete essential fields:</p>
-                      <ul className="list-disc list-inside text-xs text-muted-foreground mt-1">
-                        {dppCompleteness.missingFields.map(field => <li key={field}>{field}</li>)}
-                      </ul>
-                    </>
-                  ) : (
-                    <p className="text-xs text-green-600 flex items-center">
-                      <CheckCircle2 className="mr-1 h-3 w-3"/> All essential data points appear to be present!
-                    </p>
-                  )}
-                </TooltipContent>
-              </Tooltip>
-            
+            <ProductForm 
+              onSubmit={handleProductFormSubmit} 
+              isSubmitting={isEditing && (form.formState.isSubmitting)} // Example, adapt as needed
+              initialData={{
+                productName: product.productName,
+                gtin: product.gtin,
+                productDescription: product.description,
+                manufacturer: product.manufacturer,
+                modelNumber: product.modelNumber,
+                materials: product.materials,
+                sustainabilityClaims: product.sustainabilityClaims,
+                specifications: typeof product.specifications === 'string' ? product.specifications : JSON.stringify(product.specifications, null, 2),
+                energyLabel: product.energyLabel,
+                productCategory: product.category,
+                imageUrl: product.imageUrl,
+                batteryChemistry: product.batteryChemistry,
+                stateOfHealth: product.stateOfHealth,
+                carbonFootprintManufacturing: product.carbonFootprintManufacturing,
+                recycledContentPercentage: product.recycledContentPercentage,
+                productNameOrigin: product.productNameOrigin,
+                productDescriptionOrigin: product.descriptionOrigin,
+                imageUrlOrigin: product.imageUrlOrigin,
+                // Add other ...Origin fields as needed
+              }}
+              isStandalonePage={false}
+            />
           </CardContent>
         </Card>
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <QrCodeIcon className="mr-2 h-5 w-5 text-primary" />
-              DPP Access QR Code
-            </CardTitle>
-            <CardDescription>
-              Scan this QR code to view the public Digital Product Passport for this product.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center sm:items-start sm:flex-row gap-4">
-            <div className="p-2 border rounded-md bg-white">
-              <Image
-                src={`https://placehold.co/150x150.png?text=QR+${product.productId}`}
-                alt={`QR Code for ${product.productName}`}
-                width={150}
-                height={150}
-                className="object-contain"
-                data-ai-hint="QR code"
-              />
-            </div>
-            <div className="space-y-2 text-center sm:text-left">
-              <p className="text-sm text-muted-foreground">
-                Provides quick access to key product information, sustainability details, and compliance status.
-              </p>
-              <Link href={`/passport/${product.productId}`} passHref target="_blank">
-                <Button variant="outline" size="sm">
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  View Public Passport
-                </Button>
-              </Link>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      ) : (
+        <>
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7">
+              <TabsTrigger value="overview"><FileText className="mr-1.5 h-4 w-4" />Overview</TabsTrigger>
+              <TabsTrigger value="specifications"><Settings2 className="mr-1.5 h-4 w-4" />Specs</TabsTrigger>
+              {hasBatteryData && <TabsTrigger value="battery"><BatteryCharging className="mr-1.5 h-4 w-4" />Battery</TabsTrigger>}
+              <TabsTrigger value="compliance"><ShieldCheck className="mr-1.5 h-4 w-4" />Compliance</TabsTrigger>
+              <TabsTrigger value="lifecycle"><GitBranch className="mr-1.5 h-4 w-4" />Lifecycle</TabsTrigger>
+              <TabsTrigger value="sustainability"><Zap className="mr-1.5 h-4 w-4" />Sustainability</TabsTrigger>
+              <TabsTrigger value="verification"><ServerIcon className="mr-1.5 h-4 w-4" />Verification Log</TabsTrigger>
+            </TabsList>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className={cn("grid w-full", hasBatteryData ? "grid-cols-2 sm:grid-cols-5" : "grid-cols-2 sm:grid-cols-4")}>
-          <TabsTrigger value="specifications"><Settings2 className="mr-2 h-4 w-4" />Specifications</TabsTrigger>
-          {hasBatteryData && <TabsTrigger value="battery"><BatteryCharging className="mr-2 h-4 w-4" />Battery Details</TabsTrigger>}
-          <TabsTrigger value="compliance"><ShieldCheck className="mr-2 h-4 w-4" />Compliance</TabsTrigger>
-          <TabsTrigger value="lifecycle"><GitBranch className="mr-2 h-4 w-4" />Lifecycle</TabsTrigger>
-          <TabsTrigger value="sustainability"><Zap className="mr-2 h-4 w-4" />Sustainability</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="specifications" className="mt-4">
-          <Card> <CardHeader> <CardTitle>Detailed Specifications</CardTitle> </CardHeader>
-            <CardContent className="space-y-2">
-              {product.specifications && Object.keys(product.specifications).length > 0 ? ( Object.entries(product.specifications).map(([key, value]) => ( <div key={key} className="flex flex-col sm:flex-row justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90">{key}:</span> <span className="text-muted-foreground text-left sm:text-right">{value}</span> </div> )) ) : ( <p className="text-sm text-muted-foreground">No specifications provided.</p> )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {hasBatteryData && (
-          <TabsContent value="battery" className="mt-4">
-            <Card> <CardHeader> <CardTitle className="flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-primary" />EU Battery Passport Information</CardTitle> <CardDescription>Key data points relevant to the EU Battery Regulation.</CardDescription> </CardHeader>
-              <CardContent className="space-y-3">
-                {product.batteryChemistry && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Battery Chemistry <DataOriginIcon origin={product.batteryChemistryOrigin} fieldName="Battery Chemistry" /></span> <span className="text-muted-foreground">{product.batteryChemistry}</span> </div> )}
-                {product.stateOfHealth !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">State of Health (SoH) <DataOriginIcon origin={product.stateOfHealthOrigin} fieldName="State of Health" /></span> <span className="text-muted-foreground">{product.stateOfHealth}%</span> </div> )}
-                {product.carbonFootprintManufacturing !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Manufacturing Carbon Footprint <DataOriginIcon origin={product.carbonFootprintManufacturingOrigin} fieldName="Carbon Footprint" /></span> <span className="text-muted-foreground">{product.carbonFootprintManufacturing} kg CO₂e</span> </div> )}
-                {product.recycledContentPercentage !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Recycled Content <DataOriginIcon origin={product.recycledContentPercentageOrigin} fieldName="Recycled Content" /></span> <span className="text-muted-foreground">{product.recycledContentPercentage}%</span> </div> )}
-                {!product.batteryChemistry && product.stateOfHealth === undefined && product.carbonFootprintManufacturing === undefined && product.recycledContentPercentage === undefined && (
-                    <p className="text-sm text-muted-foreground">No battery-specific information provided for this product.</p>
-                )}
-                <p className="text-xs text-muted-foreground pt-2">Additional battery passport information such as performance, durability, and detailed material composition would be displayed here as available.</p>
-              </CardContent>
-            </Card>
-          </TabsContent>
-        )}
-
-        <TabsContent value="compliance" className="mt-4">
-          <Card> <CardHeader> <CardTitle>Compliance Records</CardTitle> <CardDescription>Status of compliance with key regulations.</CardDescription> </CardHeader>
-            <CardContent className="space-y-4">
-              {product.complianceData && Object.keys(product.complianceData).length > 0 ? ( Object.entries(product.complianceData).map(([reg, data]) => ( 
-              <Card key={reg} className="bg-muted/50 p-4 rounded-lg"> 
-                <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
-                    <div>
-                        <CardTitle className="text-md flex items-center"> 
-                            <span className="flex items-center"> {reg}  <TrustSignalIcon  isVerified={data.isVerified}  tooltipText={data.isVerified ? `${reg} Verified` : `${reg} Status Pending Verification`} VerifiedIcon={CheckCircle2} UnverifiedIcon={Info} /> </span> 
-                        </CardTitle> 
-                        <p className="text-xs text-muted-foreground mt-1">Last Checked: {new Date(data.lastChecked).toLocaleDateString()}</p> 
-                        {data.reportId && <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>} 
+            <TabsContent value="overview" className="mt-4">
+              <div className="grid md:grid-cols-3 gap-6">
+                <Card className="md:col-span-2 shadow-lg">
+                  <CardHeader>
+                    <CardTitle className="text-xl font-semibold">Product Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    <div className="grid md:grid-cols-2 gap-6 items-start">
+                        <div>
+                            <AspectRatio ratio={4/3} className="bg-muted rounded-md overflow-hidden">
+                              <Image
+                                src={product.imageUrl || "https://placehold.co/600x400.png?text=No+Image"}
+                                alt={product.productName}
+                                fill
+                                className="object-contain"
+                                data-ai-hint={product.imageHint || (product.imageUrl?.includes("placehold.co") ? product.productName.split(" ").slice(0,2).join(" ") : "product " + product.category.toLowerCase())}
+                                priority={product.imageUrl ? !product.imageUrl.startsWith("data:") : true}
+                              />
+                            </AspectRatio>
+                            <DataOriginIcon origin={product.imageUrlOrigin} fieldName="Product Image"/>
+                        </div>
+                        <div className="space-y-3">
+                             <div><strong className="text-foreground/80 block">Description:</strong> <span className="text-muted-foreground text-sm">{product.description}</span> <DataOriginIcon origin={product.descriptionOrigin} fieldName="Description" /></div>
+                             <div><strong className="text-foreground/80 block">GTIN:</strong> <span className="text-muted-foreground text-sm">{product.gtin || "N/A"}</span> <TrustSignalIcon isVerified={product.gtinVerified} tooltipText={product.gtinVerified ? "GTIN Verified" : "GTIN Not Verified"}/> </div>
+                             <div><strong className="text-foreground/80 block">Category:</strong> <span className="text-muted-foreground text-sm">{product.category || "N/A"}</span></div>
+                             <div><strong className="text-foreground/80 block">Manufacturer:</strong> <span className="text-muted-foreground text-sm">{product.manufacturer || "N/A"}</span> <TrustSignalIcon isVerified={product.manufacturerVerified} tooltipText={product.manufacturerVerified ? "Manufacturer Verified" : "Manufacturer Not Verified"}/></div>
+                             <div><strong className="text-foreground/80 block">Model:</strong> <span className="text-muted-foreground text-sm">{product.modelNumber || "N/A"}</span></div>
+                        </div>
                     </div>
-                    <div className="flex flex-col items-start sm:items-end gap-2 mt-2 sm:mt-0">
-                        <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={cn( data.status === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {data.status} </Badge> 
-                        <Button variant="outline" size="sm" onClick={() => handleAskCopilotForRegulation(reg, data.status)}>
-                            <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" /> Ask AI Copilot
+                    <div className="mt-4 pt-4 border-t">
+                      <h4 className="text-md font-semibold mb-2 flex items-center"> <Leaf className="h-5 w-5 mr-2 text-accent" />Key Sustainability Info <TrustSignalIcon isVerified={product.sustainabilityClaimsVerified} tooltipText={product.sustainabilityClaimsVerified ? "Sustainability Claims Verified" : "Sustainability Claims Pending Verification"}/> </h4>
+                      <p className="text-sm text-muted-foreground mb-1"><strong>Materials:</strong> {product.materials || "N/A"}</p>
+                      <p className="text-sm text-muted-foreground mb-1"><strong>Claims:</strong> {product.sustainabilityClaims || "N/A"}</p>
+                      <p className="text-sm text-muted-foreground"><strong>Energy Label:</strong> <Badge variant="secondary">{product.energyLabel || "N/A"}</Badge></p>
+                    </div>
+                  </CardContent>
+                </Card>
+                <div className="space-y-6">
+                    <Card className="shadow-lg">
+                      <CardHeader>
+                        <CardTitle className="flex items-center"><QrCodeIcon className="mr-2 h-5 w-5 text-primary" />DPP Access QR Code</CardTitle>
+                      </CardHeader>
+                      <CardContent className="flex flex-col items-center gap-3">
+                        <div className="p-2 border rounded-md bg-white">
+                          <Image src={`https://placehold.co/200x200.png?text=QR+${product.productId}`} alt={`QR Code for ${product.productName}`} width={200} height={200} data-ai-hint="QR code" />
+                        </div>
+                        <p className="text-xs text-muted-foreground text-center">Scan this QR code to view the public Digital Product Passport.</p>
+                        <Button variant="outline" size="sm" className="w-full" onClick={() => alert("Mock: Manage QR Code (e.g., download, customize options if any).")}>
+                          <Settings2 className="mr-2 h-4 w-4" /> Manage Digital QR Code
                         </Button>
-                    </div>
+                      </CardContent>
+                    </Card>
+                    <Card className="shadow-lg">
+                      <CardHeader> <CardTitle className="flex items-center"><ListChecks className="mr-2 h-5 w-5 text-primary" />DPP Data Completeness</CardTitle> </CardHeader>
+                      <CardContent>
+                        <Tooltip delayDuration={100}>
+                            <TooltipTrigger asChild>
+                            <div className="cursor-help">
+                                <div className="flex items-center justify-between mb-2">
+                                <span className="text-lg font-semibold text-primary">{dppCompleteness.score}% Complete</span>
+                                <span className="text-sm text-muted-foreground">{dppCompleteness.filledFields} / {dppCompleteness.totalFields} fields</span>
+                                </div>
+                                <Progress value={dppCompleteness.score} className="w-full h-3" />
+                            </div>
+                            </TooltipTrigger>
+                            <TooltipContent className="bg-background shadow-lg p-3 rounded-md border max-w-xs">
+                            {dppCompleteness.missingFields.length > 0 ? ( <> <p className="text-xs font-semibold">Missing essential fields:</p> <ul className="list-disc list-inside text-xs text-muted-foreground mt-1">{dppCompleteness.missingFields.map(field => <li key={field}>{field}</li>)}</ul> </> ) : ( <p className="text-xs text-green-600 flex items-center"><CheckCircle2 className="mr-1 h-3 w-3"/> All essential data present!</p> )}
+                            </TooltipContent>
+                        </Tooltip>
+                      </CardContent>
+                    </Card>
                 </div>
-              </Card> )) ) : ( <p className="text-sm text-muted-foreground">No specific compliance records available for this product.</p> )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="lifecycle" className="mt-4">
-          <Card> <CardHeader> <CardTitle>Product Lifecycle Events</CardTitle> <CardDescription>Key events in the product's journey.</CardDescription> </CardHeader>
-            <CardContent>
-              {product.lifecycleEvents && product.lifecycleEvents.length > 0 ? ( <ul className="space-y-4"> {product.lifecycleEvents.map((event) => ( <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors"> <div className="flex justify-between items-start mb-1"> <p className="font-semibold text-primary flex items-center"> {event.type} {event.isBlockchainAnchored && ( <Tooltip delayDuration={100}> <TooltipTrigger className="cursor-help"> <Server className="h-4 w-4 text-primary ml-2" /> </TooltipTrigger> <TooltipContent> <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p> </TooltipContent> </Tooltip> )} {event.isBlockchainAnchored && event.transactionHash && ( <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}> <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" /> </Button> </TooltipTrigger> <TooltipContent> <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p> </TooltipContent> </Tooltip> )} </p> <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleDateString()}</p> </div> <p className="text-sm text-muted-foreground">Location: {event.location}</p> <p className="text-sm text-muted-foreground">Details: {event.details}</p> </li> ))} </ul> ) : ( <p className="text-sm text-muted-foreground">No lifecycle events recorded for this product.</p> )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="sustainability" className="mt-4">
-          <Card> <CardHeader> <CardTitle className="flex items-center"><Zap className="mr-2 h-5 w-5 text-accent" />Detailed Sustainability Information</CardTitle> <CardDescription>In-depth data on materials, carbon footprint, circularity, etc.</CardDescription> </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="grid md:grid-cols-2 gap-6">
-                {product.materialComposition && product.materialComposition.length > 0 && ( <Card className="shadow-sm"> <CardHeader> <CardTitle className="text-lg flex items-center"><Leaf className="mr-2 h-4 w-4 text-green-500" />Material Composition</CardTitle> </CardHeader> <CardContent> <ChartContainer config={chartConfig} className="aspect-square h-[250px] w-full"> <ResponsiveContainer width="100%" height="100%"> <PieChart> <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} /> <Pie data={product.materialComposition} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => { const RADIAN = Math.PI / 180; const radius = innerRadius + (outerRadius - innerRadius) * 0.5; const x = cx + radius * Math.cos(-midAngle * RADIAN); const y = cy + radius * Math.sin(-midAngle * RADIAN); return ( <text x={x} y={y} fill="hsl(var(--primary-foreground))" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-medium"> {`${(percent * 100).toFixed(0)}%`} </text> ); }}> {product.materialComposition.map((entry, index) => ( <Cell key={`cell-${index}`} fill={entry.fill} className={cn("stroke-background focus:outline-none", entry.fill.startsWith("hsl") ? "" : entry.fill)} /> ))} </Pie> <ChartLegend content={<ChartLegendContent nameKey="name" />} className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center" /> </PieChart> </ResponsiveContainer> </ChartContainer> </CardContent> </Card> )}
-                {product.historicalCarbonFootprint && product.historicalCarbonFootprint.length > 0 && ( <Card className="shadow-sm"> <CardHeader> <CardTitle className="text-lg flex items-center"><BarChart3 className="mr-2 h-4 w-4 text-red-500" />Carbon Footprint Trend</CardTitle> <CardDescription> (kg CO₂e over time)</CardDescription> </CardHeader> <CardContent> <ChartContainer config={chartConfig} className="aspect-video h-[250px] w-full"> <ResponsiveContainer width="100%" height="100%"> <LineChart data={product.historicalCarbonFootprint} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}> <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /> <XAxis dataKey="year" stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} dy={5} /> <YAxis stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} /> <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} /> <Line type="monotone" dataKey="value" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ fill: "hsl(var(--chart-1))", r:4 }} activeDot={{r:6}} name="kg CO₂e" /> </LineChart> </ResponsiveContainer> </ChartContainer> </CardContent> </Card> )}
               </div>
-              <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t">
-                {product.waterUsage && ( <Card className="bg-muted/50 p-4"> <CardTitle className="text-sm font-medium flex items-center text-foreground/80 mb-1"><Droplet className="mr-2 h-4 w-4 text-blue-500"/>Water Usage</CardTitle> <p className="text-2xl font-bold">{product.waterUsage.value} <span className="text-sm font-normal text-muted-foreground">{product.waterUsage.unit}</span></p> {product.waterUsage.trend && <p className={cn("text-xs", product.waterUsage.trend === 'down' ? 'text-green-600' : 'text-red-600')}>{product.waterUsage.trendValue} vs last period</p>} </Card> )}
-                 {product.recyclabilityScore && ( <Card className="bg-muted/50 p-4"> <CardTitle className="text-sm font-medium flex items-center text-foreground/80 mb-1"><Recycle className="mr-2 h-4 w-4 text-green-600"/>Recyclability Score</CardTitle> <p className="text-2xl font-bold">{product.recyclabilityScore.value}<span className="text-sm font-normal text-muted-foreground">{product.recyclabilityScore.unit}</span></p> <p className="text-xs text-muted-foreground">Based on material & design</p> </Card> )}
-                {product.repairabilityIndex && ( <Card className="bg-muted/50 p-4"> <CardTitle className="text-sm font-medium flex items-center text-foreground/80 mb-1"><Wrench className="mr-2 h-4 w-4 text-orange-500"/>Repairability Index</CardTitle> <p className="text-2xl font-bold">{product.repairabilityIndex.value}<span className="text-sm font-normal text-muted-foreground"> / {product.repairabilityIndex.scale}</span></p> <p className="text-xs text-muted-foreground">Based on ESPR draft</p> </Card> )}
-              </div>
-              {product.certifications && product.certifications.length > 0 && ( <div className="pt-4 border-t"> <CardTitle className="text-md font-semibold mb-2 flex items-center"><CheckCircle2 className="mr-2 h-5 w-5 text-primary"/>Certifications & Standards</CardTitle> <ul className="space-y-2"> {product.certifications.map(cert => ( <li key={cert.name} className="flex items-center justify-between text-sm p-2 bg-background rounded-md border hover:bg-muted/30 transition-colors"> <div className="flex items-center"> <TrustSignalIcon  isVerified={cert.verified}  tooltipText={cert.verified ? "Verified Certification" : "Self-Declared / Pending Verification"} VerifiedIcon={CheckCircle2} UnverifiedIcon={Target} customClasses={cn(cert.verified ? 'text-green-500' : 'text-yellow-600')}  /> <span className="ml-2 font-medium">{cert.name}</span> <span className="text-muted-foreground ml-1 text-xs">({cert.authority})</span> </div> {cert.link && <Link href={cert.link} target="_blank" rel="noopener noreferrer"><Button variant="link" size="sm" className="h-auto p-0">Details <ExternalLink className="ml-1 h-3 w-3"/></Button></Link>} </li> ))} </ul> </div> )}
-              {(!product.materialComposition || product.materialComposition.length === 0) && (!product.historicalCarbonFootprint || product.historicalCarbonFootprint.length === 0) && !product.waterUsage && !product.recyclabilityScore && !product.repairabilityIndex && (!product.certifications || product.certifications.length === 0) && ( <p className="text-sm text-muted-foreground">Detailed sustainability information is not yet available for this product.</p> )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+            </TabsContent>
+
+            <TabsContent value="specifications" className="mt-4">
+              <Card> <CardHeader> <CardTitle className="flex items-center"><Settings2 className="mr-2 h-5 w-5 text-primary" />Detailed Specifications</CardTitle> </CardHeader>
+                <CardContent>
+                  <Accordion type="single" collapsible defaultValue="item-1">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger className="text-base">View Specifications</AccordionTrigger>
+                      <AccordionContent className="space-y-2 pt-2">
+                        {product.specifications && Object.keys(product.specifications).length > 0 ? ( Object.entries(product.specifications).map(([key, value]) => ( <div key={key} className="flex flex-col sm:flex-row justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90">{key}:</span> <span className="text-muted-foreground text-left sm:text-right">{value}</span> </div> )) ) : ( <p className="text-sm text-muted-foreground">No specifications provided.</p> )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            {hasBatteryData && (
+              <TabsContent value="battery" className="mt-4">
+                <Card> <CardHeader> <CardTitle className="flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-primary" />EU Battery Passport Information</CardTitle> <CardDescription>Key data points relevant to the EU Battery Regulation.</CardDescription> </CardHeader>
+                  <CardContent className="space-y-3">
+                    {product.batteryChemistry && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Battery Chemistry <DataOriginIcon origin={product.batteryChemistryOrigin} fieldName="Battery Chemistry" /></span> <span className="text-muted-foreground">{product.batteryChemistry}</span> </div> )}
+                    {product.stateOfHealth !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">State of Health (SoH) <DataOriginIcon origin={product.stateOfHealthOrigin} fieldName="State of Health" /></span> <span className="text-muted-foreground">{product.stateOfHealth}%</span> </div> )}
+                    {product.carbonFootprintManufacturing !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Manufacturing Carbon Footprint <DataOriginIcon origin={product.carbonFootprintManufacturingOrigin} fieldName="Carbon Footprint" /></span> <span className="text-muted-foreground">{product.carbonFootprintManufacturing} kg CO₂e</span> </div> )}
+                    {product.recycledContentPercentage !== undefined && ( <div className="flex items-center justify-between text-sm border-b pb-1"> <span className="font-medium text-foreground/90 flex items-center">Recycled Content <DataOriginIcon origin={product.recycledContentPercentageOrigin} fieldName="Recycled Content" /></span> <span className="text-muted-foreground">{product.recycledContentPercentage}%</span> </div> )}
+                    {!product.batteryChemistry && product.stateOfHealth === undefined && product.carbonFootprintManufacturing === undefined && product.recycledContentPercentage === undefined && (
+                        <p className="text-sm text-muted-foreground">No battery-specific information provided for this product.</p>
+                    )}
+                    <p className="text-xs text-muted-foreground pt-2">Additional battery passport information such as performance, durability, and detailed material composition would be displayed here as available.</p>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            )}
+
+            <TabsContent value="compliance" className="mt-4">
+                <OverallProductCompliance  
+                    complianceData={product.overallCompliance}  
+                    onSyncEprel={handleSyncEprel}
+                    isSyncingEprel={isSyncingEprel}
+                    canSyncEprel={canSyncEprel}
+                /> 
+                <Card className="mt-6">
+                    <CardHeader>
+                        <CardTitle className="text-lg">Specific Regulation Status</CardTitle>
+                        <CardDescription>Detailed compliance status for individual regulations.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                    {product.complianceData && Object.keys(product.complianceData).length > 0 ? ( Object.entries(product.complianceData).map(([reg, data]) => ( 
+                    <Card key={reg} className="bg-muted/50 p-4 rounded-lg"> 
+                        <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-2">
+                            <div>
+                                <CardTitle className="text-md flex items-center"> 
+                                    <span className="flex items-center"> {reg}  <TrustSignalIcon  isVerified={data.isVerified}  tooltipText={data.isVerified ? `${reg} Verified` : `${reg} Status Pending Verification`} VerifiedIcon={CheckCircle2} UnverifiedIcon={Info} /> </span> 
+                                </CardTitle> 
+                                <p className="text-xs text-muted-foreground mt-1">Last Checked: {new Date(data.lastChecked).toLocaleDateString()}</p> 
+                                {data.reportId && <p className="text-xs text-muted-foreground">Report ID: {data.reportId}</p>} 
+                            </div>
+                            <div className="flex flex-col items-start sm:items-end gap-2 mt-2 sm:mt-0">
+                                <Badge variant={data.status === "Compliant" ? "default" : data.status.startsWith("Pending") ? "outline" : "destructive"} className={cn( data.status === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" : "", data.status.startsWith("Pending") ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : "" )}> {data.status} </Badge> 
+                                <Button variant="outline" size="sm" onClick={() => handleAskCopilotForRegulation(reg, data.status)}>
+                                    <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" /> Ask AI Copilot
+                                </Button>
+                            </div>
+                        </div>
+                    </Card> )) ) : ( <p className="text-sm text-muted-foreground">No specific compliance records available for this product.</p> )}
+                    </CardContent>
+                </Card>
+            </TabsContent>
+
+            <TabsContent value="lifecycle" className="mt-4">
+              <ProductLifecycleFlowchart phases={product.lifecyclePhases} currentPhaseIndex={product.currentLifecyclePhaseIndex} />
+              <Card className="mt-6"> <CardHeader> <CardTitle className="flex items-center"><GitBranch className="mr-2 h-5 w-5 text-primary" />Lifecycle Events Log</CardTitle> <CardDescription>Detailed history of key events in the product's journey.</CardDescription> </CardHeader>
+                <CardContent>
+                  <Accordion type="single" collapsible defaultValue="item-1">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger className="text-base">View Events Log</AccordionTrigger>
+                      <AccordionContent className="pt-2">
+                        {product.lifecycleEvents && product.lifecycleEvents.length > 0 ? ( <ul className="space-y-4"> {product.lifecycleEvents.map((event) => ( <li key={event.id} className="border p-3 rounded-md bg-background hover:bg-muted/30 transition-colors"> <div className="flex justify-between items-start mb-1"> <p className="font-semibold text-primary flex items-center"> {event.type} {event.isBlockchainAnchored && ( <Tooltip delayDuration={100}> <TooltipTrigger className="cursor-help"> <Server className="h-4 w-4 text-primary ml-2" /> </TooltipTrigger> <TooltipContent> <p>This lifecycle event is recorded on the blockchain, providing an immutable audit trail.</p> </TooltipContent> </Tooltip> )} {event.isBlockchainAnchored && event.transactionHash && ( <Tooltip delayDuration={100}> <TooltipTrigger asChild> <Button variant="ghost" size="icon" className="ml-1 h-5 w-5" onClick={() => alert(`Mock: View on Explorer - Event Tx: ${event.transactionHash}`)}> <ExternalLink className="h-3 w-3 text-primary/70 hover:text-primary" /> </Button> </TooltipTrigger> <TooltipContent> <p>View event on Blockchain Explorer (mock). Tx: {event.transactionHash}</p> </TooltipContent> </Tooltip> )} </p> <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleDateString()}</p> </div> <p className="text-sm text-muted-foreground">Location: {event.location}</p> <p className="text-sm text-muted-foreground">Details: {event.details}</p> </li> ))} </ul> ) : ( <p className="text-sm text-muted-foreground">No lifecycle events recorded for this product.</p> )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="sustainability" className="mt-4">
+              <Card> <CardHeader> <CardTitle className="flex items-center"><Zap className="mr-2 h-5 w-5 text-accent" />Detailed Sustainability Information</CardTitle> <CardDescription>In-depth data on materials, carbon footprint, circularity, etc.</CardDescription> </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-6">
+                    {product.materialComposition && product.materialComposition.length > 0 && ( <Card className="shadow-sm"> <CardHeader> <CardTitle className="text-lg flex items-center"><Leaf className="mr-2 h-4 w-4 text-green-500" />Material Composition</CardTitle> </CardHeader> <CardContent> <ChartContainer config={chartConfig} className="aspect-square h-[250px] w-full"> <ResponsiveContainer width="100%" height="100%"> <PieChart> <ChartTooltip content={<ChartTooltipContent nameKey="name" hideLabel />} /> <Pie data={product.materialComposition} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={80} labelLine={false} label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => { const RADIAN = Math.PI / 180; const radius = innerRadius + (outerRadius - innerRadius) * 0.5; const x = cx + radius * Math.cos(-midAngle * RADIAN); const y = cy + radius * Math.sin(-midAngle * RADIAN); return ( <text x={x} y={y} fill="hsl(var(--primary-foreground))" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central" className="text-xs font-medium"> {`${(percent * 100).toFixed(0)}%`} </text> ); }}> {product.materialComposition.map((entry, index) => ( <Cell key={`cell-${index}`} fill={entry.fill} className={cn("stroke-background focus:outline-none", entry.fill.startsWith("hsl") ? "" : entry.fill)} /> ))} </Pie> <ChartLegend content={<ChartLegendContent nameKey="name" />} className="-translate-y-2 flex-wrap gap-2 [&>*]:basis-1/4 [&>*]:justify-center" /> </PieChart> </ResponsiveContainer> </ChartContainer> </CardContent> </Card> )}
+                    {product.historicalCarbonFootprint && product.historicalCarbonFootprint.length > 0 && ( <Card className="shadow-sm"> <CardHeader> <CardTitle className="text-lg flex items-center"><BarChart3 className="mr-2 h-4 w-4 text-red-500" />Carbon Footprint Trend</CardTitle> <CardDescription> (kg CO₂e over time)</CardDescription> </CardHeader> <CardContent> <ChartContainer config={chartConfig} className="aspect-video h-[250px] w-full"> <ResponsiveContainer width="100%" height="100%"> <LineChart data={product.historicalCarbonFootprint} margin={{ top: 5, right: 20, left: -10, bottom: 5 }}> <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" /> <XAxis dataKey="year" stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} dy={5} /> <YAxis stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} /> <ChartTooltip cursor={false} content={<ChartTooltipContent indicator="line" />} /> <Line type="monotone" dataKey="value" stroke="hsl(var(--chart-1))" strokeWidth={2} dot={{ fill: "hsl(var(--chart-1))", r:4 }} activeDot={{r:6}} name="kg CO₂e" /> </LineChart> </ResponsiveContainer> </ChartContainer> </CardContent> </Card> )}
+                  </div>
+                  <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 pt-4 border-t">
+                    {product.waterUsage && ( <Card className="bg-muted/50 p-4"> <CardTitle className="text-sm font-medium flex items-center text-foreground/80 mb-1"><Droplet className="mr-2 h-4 w-4 text-blue-500"/>Water Usage</CardTitle> <p className="text-2xl font-bold">{product.waterUsage.value} <span className="text-sm font-normal text-muted-foreground">{product.waterUsage.unit}</span></p> {product.waterUsage.trend && <p className={cn("text-xs", product.waterUsage.trend === 'down' ? 'text-green-600' : 'text-red-600')}>{product.waterUsage.trendValue} vs last period</p>} </Card> )}
+                    {product.recyclabilityScore && ( <Card className="bg-muted/50 p-4"> <CardTitle className="text-sm font-medium flex items-center text-foreground/80 mb-1"><Recycle className="mr-2 h-4 w-4 text-green-600"/>Recyclability Score</CardTitle> <p className="text-2xl font-bold">{product.recyclabilityScore.value}<span className="text-sm font-normal text-muted-foreground">{product.recyclabilityScore.unit}</span></p> <p className="text-xs text-muted-foreground">Based on material & design</p> </Card> )}
+                    {product.repairabilityIndex && ( <Card className="bg-muted/50 p-4"> <CardTitle className="text-sm font-medium flex items-center text-foreground/80 mb-1"><Wrench className="mr-2 h-4 w-4 text-orange-500"/>Repairability Index</CardTitle> <p className="text-2xl font-bold">{product.repairabilityIndex.value}<span className="text-sm font-normal text-muted-foreground"> / {product.repairabilityIndex.scale}</span></p> <p className="text-xs text-muted-foreground">Based on ESPR draft</p> </Card> )}
+                  </div>
+                  {product.certifications && product.certifications.length > 0 && ( <div className="pt-4 border-t"> <CardTitle className="text-md font-semibold mb-2 flex items-center"><Award className="mr-2 h-5 w-5 text-primary"/>Certifications & Standards</CardTitle> <ul className="space-y-2"> {product.certifications.map(cert => ( <li key={cert.name} className="flex items-center justify-between text-sm p-2 bg-background rounded-md border hover:bg-muted/30 transition-colors"> <div className="flex items-center"> <TrustSignalIcon isVerified={cert.verified} tooltipText={cert.verified ? "Verified Certification" : "Self-Declared / Pending Verification"} VerifiedIcon={CheckCircle2} UnverifiedIcon={Target} customClasses={cn(cert.verified ? 'text-green-500' : 'text-yellow-600')} /> <span className="ml-2 font-medium">{cert.name}</span> <span className="text-muted-foreground ml-1 text-xs">({cert.authority})</span> </div> {cert.link && <Link href={cert.link} target="_blank" rel="noopener noreferrer"><Button variant="link" size="sm" className="h-auto p-0">Details <ExternalLink className="ml-1 h-3 w-3"/></Button></Link>} </li> ))} </ul> </div> )}
+                  {(!product.materialComposition || product.materialComposition.length === 0) && (!product.historicalCarbonFootprint || product.historicalCarbonFootprint.length === 0) && !product.waterUsage && !product.recyclabilityScore && !product.repairabilityIndex && (!product.certifications || product.certifications.length === 0) && ( <p className="text-sm text-muted-foreground">Detailed sustainability information is not yet available for this product.</p> )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+
+            <TabsContent value="verification" className="mt-4">
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center"><ServerIcon className="mr-2 h-5 w-5 text-primary" />Verification & Audit Log</CardTitle>
+                  <CardDescription>Chronological record of key verification events and DPP status changes.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Accordion type="single" collapsible defaultValue="item-1">
+                    <AccordionItem value="item-1">
+                      <AccordionTrigger className="text-base">View Verification Log</AccordionTrigger>
+                      <AccordionContent className="pt-2">
+                        {product.verificationLog && product.verificationLog.length > 0 ? (
+                          <ul className="space-y-3">
+                            {product.verificationLog.map((log) => (
+                              <li key={log.id} className="border-l-2 pl-3 py-1.5 text-sm relative group hover:border-primary transition-colors">
+                                <div className="absolute -left-[5px] top-2.5 h-2 w-2 rounded-full bg-border group-hover:bg-primary transition-colors"></div>
+                                <p className="font-medium text-foreground/90">{log.event}
+                                  {log.actor && <span className="text-xs text-muted-foreground ml-1">by {log.actor}</span>}
+                                </p>
+                                <p className="text-xs text-muted-foreground">{new Date(log.timestamp).toLocaleString()}</p>
+                                {log.details && <p className="text-xs text-muted-foreground mt-0.5 italic">{log.details}</p>}
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-sm text-muted-foreground">No verification log entries available.</p>
+                        )}
+                      </AccordionContent>
+                    </AccordionItem>
+                  </Accordion>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
+        </>
+      )}
     </div>
     </TooltipProvider>
   );
@@ -861,15 +960,34 @@ function ProductDetailSkeleton() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4"> <div> <Skeleton className="h-10 w-3/4 mb-2" /> <Skeleton className="h-6 w-1/2" /> </div> <div className="flex gap-2"> <Skeleton className="h-10 w-40" /> </div> </div>
-      <Card className="shadow-xl border-primary/20 bg-muted/30"> <CardHeader> <Skeleton className="h-8 w-1/2 mb-2" /> </CardHeader> <CardContent className="space-y-6"> <Skeleton className="h-24 w-full" />  <Skeleton className="h-16 w-full" />  <Skeleton className="h-48 w-full" />  </CardContent> </Card>
-      <Card className="shadow-lg overflow-hidden"> <div className="grid md:grid-cols-3"> <div className="md:col-span-1 p-6"> <AspectRatio ratio={4/3} className="bg-muted rounded-md overflow-hidden"> <Skeleton className="h-full w-full" /> </AspectRatio> </div> <div className="md:col-span-2 p-6 space-y-4"> <Skeleton className="h-8 w-3/4" /> <Skeleton className="h-20 w-full" /> <div className="grid grid-cols-2 gap-4"> <Skeleton className="h-6 w-full" /> <Skeleton className="h-6 w-full" /> <Skeleton className="h-6 w-full" /> <Skeleton className="h-6 w-full" /> </div> <div className="mt-4 pt-4 border-t space-y-2"> <Skeleton className="h-6 w-1/3 mb-2" /> <Skeleton className="h-5 w-full" /> <Skeleton className="h-5 w-full" /> <Skeleton className="h-5 w-1/2" /> </div> </div> </div> </Card>
-      <div className="grid md:grid-cols-2 gap-8">
-        <Card className="shadow-lg"> <CardHeader> <Skeleton className="h-7 w-1/2 mb-1" /> <Skeleton className="h-4 w-3/4" /> </CardHeader> <CardContent> <div className="flex items-center justify-between mb-2"> <Skeleton className="h-8 w-1/4" /> <Skeleton className="h-5 w-1/3" /> </div> <Skeleton className="h-3 w-full" /> <div className="mt-3 space-y-1"> <Skeleton className="h-4 w-1/2" /> <Skeleton className="h-3 w-1/3" /> <Skeleton className="h-3 w-1/3" /> </div> </CardContent> </Card>
-        <Card className="shadow-lg"> <CardHeader> <Skeleton className="h-7 w-1/2 mb-1" /> <Skeleton className="h-4 w-3/4" /> </CardHeader> <CardContent className="flex flex-col items-center sm:items-start sm:flex-row gap-4"> <Skeleton className="h-[150px] w-[150px]" /> <div className="space-y-2 flex-1"> <Skeleton className="h-5 w-full" /> <Skeleton className="h-8 w-1/2" /></div> </CardContent> </Card>
+      <Skeleton className="h-12 w-full md:w-2/3" /> {/* Tabs Skeleton */}
+      <div className="grid md:grid-cols-3 gap-6 mt-4">
+        <Card className="md:col-span-2 shadow-lg">
+            <CardHeader><Skeleton className="h-8 w-1/2" /></CardHeader>
+            <CardContent className="space-y-6">
+                <div className="grid md:grid-cols-2 gap-6 items-start">
+                    <div><Skeleton className="aspect-[4/3] w-full rounded-md" /></div>
+                    <div className="space-y-3">
+                        <Skeleton className="h-6 w-3/4" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-full" />
+                        <Skeleton className="h-4 w-2/3" />
+                    </div>
+                </div>
+                <div className="mt-4 pt-4 border-t">
+                    <Skeleton className="h-6 w-1/3 mb-2" />
+                    <Skeleton className="h-4 w-full" />
+                    <Skeleton className="h-4 w-5/6" />
+                </div>
+            </CardContent>
+        </Card>
+        <div className="space-y-6">
+            <Card><CardHeader><Skeleton className="h-7 w-3/4" /></CardHeader><CardContent><Skeleton className="w-[200px] h-[200px] mx-auto" /><Skeleton className="h-4 w-full mt-2"/><Skeleton className="h-8 w-full mt-2"/></CardContent></Card>
+            <Card><CardHeader><Skeleton className="h-7 w-3/4" /></CardHeader><CardContent><Skeleton className="h-6 w-1/2 mb-2"/><Skeleton className="h-3 w-full"/></CardContent></Card>
+        </div>
       </div>
-      <Skeleton className="h-10 w-full md:w-2/3" /> 
-      <Card className="mt-4"> <CardHeader> <Skeleton className="h-7 w-1/3" /> <Skeleton className="h-5 w-2/3" /> </CardHeader> <CardContent className="space-y-3"> <Skeleton className="h-8 w-full" /> <Skeleton className="h-8 w-full" /> <Skeleton className="h-8 w-full" /> </CardContent> </Card>
     </div>
   )
 }
+
 

@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } fr
 import { feature as topojsonFeature } from 'topojson-client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package, Zap, Building } from "lucide-react";
+import { Loader2, Globe as GlobeIconLucide, Info, Settings2, Layers as LayersIcon, Filter, Palette, MapPin, TrendingUp, Link as LinkIcon, Route, Ship, Plane, Truck, Train, Package as PackageIcon, Zap, Building, Recycle as RecycleIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Slider } from "@/components/ui/slider";
@@ -14,6 +14,7 @@ import PointInfoCard from '@/components/dpp-tracker/PointInfoCard';
 import ArcInfoCard from '@/components/dpp-tracker/ArcInfoCard';
 import { cn } from "@/lib/utils";
 
+// Dynamically import GlobeVisualization as it's client-side only
 const GlobeVisualization = React.lazy(() => import('@/components/dpp-tracker/GlobeVisualization'));
 
 export interface MockDppPoint {
@@ -28,7 +29,7 @@ export interface MockDppPoint {
   manufacturer?: string;
   gtin?: string;
   complianceSummary?: string;
-  color?: string; // Can be overridden by accessor
+  color?: string; 
   icon?: React.ElementType;
 }
 
@@ -38,7 +39,7 @@ export interface MockArc {
   startLng: number;
   endLat: number;
   endLng: number;
-  color: string | string[]; // Can be overridden by accessor
+  color: string | string[]; 
   label?: string;
   stroke?: number;
   timestamp: number; // Year
@@ -46,25 +47,31 @@ export interface MockArc {
   productId?: string;
 }
 
-// PRD Colors
-const SATURATED_BLUE = 'rgba(41, 171, 226, 0.9)'; // #29ABE2 with some alpha
-const VIBRANT_TEAL = 'rgba(0, 128, 128, 0.9)';   // #008080 with some alpha
-const ACCENT_PURPLE = 'rgba(124, 58, 237, 0.9)'; // A purple for contrast, like info color
+// PRD Colors & Theme Colors
+const SATURATED_BLUE = 'rgba(41, 171, 226, 0.9)'; // #29ABE2 from --primary
+const VIBRANT_TEAL = 'rgba(0, 128, 128, 0.9)';   // #008080 from --accent
+const ACCENT_PURPLE = 'rgba(124, 58, 237, 0.9)'; // from --info
+const BROWN_COLOR = 'rgba(139, 69, 19, 0.9)'; // For Raw Material
+const ORANGE_COLOR = 'rgba(255, 165, 0, 0.9)'; // For Distribution/Warning-like
+const DARK_GREEN_COLOR = 'rgba(0, 100, 0, 0.9)'; // For Recycling
+const CORNFLOWER_BLUE_COLOR = 'rgba(100, 149, 237, 0.7)'; // For Rail
 
 // Base Map Colors
 const EU_BLUE_COLOR = 'rgba(0, 80, 150, 0.95)';
 const NON_EU_LAND_COLOR_LIGHT_BLUE = 'rgba(173, 216, 230, 0.95)';
 const BORDER_COLOR_MEDIUM_BLUE = 'rgba(70, 130, 180, 0.7)';
 const WHITE_BACKGROUND_COLOR = 'rgba(255, 255, 255, 1)';
+const GREY_COLOR = 'rgba(128, 128, 128, 0.8)';
+
 
 const mockPointsData: MockDppPoint[] = [
-  { id: 'eu_electronics_factory', lat: 50.8503, lng: 4.3517, name: 'EU Electronics Hub (Brussels)', size: 0.3, category: 'Electronics', status: 'compliant', timestamp: 2024, manufacturer: 'EuroChip', gtin: '111222333', icon: Package },
+  { id: 'eu_electronics_factory', lat: 50.8503, lng: 4.3517, name: 'EU Electronics Hub (Brussels)', size: 0.3, category: 'Electronics', status: 'compliant', timestamp: 2024, manufacturer: 'EuroChip', gtin: '111222333', icon: PackageIcon },
   { id: 'asia_textile_factory', lat: 22.3193, lng: 114.1694, name: 'Asia Textile Plant (Hong Kong)', size: 0.25, category: 'Textiles', status: 'pending', timestamp: 2023, manufacturer: 'SilkRoad Co.', gtin: '444555666', icon: Zap },
   { id: 'us_appliance_dist', lat: 34.0522, lng: -118.2437, name: 'US Appliance Distributor (LA)', size: 0.2, category: 'Appliances', status: 'compliant', timestamp: 2024, manufacturer: 'HomeGoods Inc.', gtin: '777888999', icon: Building },
   { id: 'sa_material_source', lat: -14.2350, lng: -51.9253, name: 'Brazil Raw Material Site', size: 0.15, category: 'Raw Material Source', status: 'unknown', timestamp: 2022, icon: LayersIcon },
-  { id: 'africa_recycling_hub', lat: -1.2921, lng: 36.8219, name: 'Nairobi Recycling Center', size: 0.18, category: 'Recycling Facility', status: 'compliant', timestamp: 2023, icon: Recycle },
+  { id: 'africa_recycling_hub', lat: -1.2921, lng: 36.8219, name: 'Nairobi Recycling Center', size: 0.18, category: 'Recycling Facility', status: 'compliant', timestamp: 2023, icon: RecycleIcon },
   { id: 'eu_distribution_frankfurt', lat: 50.1109, lng: 8.6821, name: 'Frankfurt Distribution Center', size: 0.22, category: 'Distribution Hub', status: 'compliant', timestamp: 2024, icon: Truck },
-  { id: 'china_manufacturing_shenzhen', lat: 22.5431, lng: 114.0579, name: 'Shenzhen Electronics Mfg.', size: 0.3, category: 'Electronics', status: 'pending', timestamp: 2023, manufacturer: 'GlobalElectro', gtin: '101010101', icon: Package },
+  { id: 'china_manufacturing_shenzhen', lat: 22.5431, lng: 114.0579, name: 'Shenzhen Electronics Mfg.', size: 0.3, category: 'Electronics', status: 'pending', timestamp: 2023, manufacturer: 'GlobalElectro', gtin: '101010101', icon: PackageIcon },
   { id: 'india_appliances_bangalore', lat: 12.9716, lng: 77.5946, name: 'Bangalore Appliance Factory', size: 0.25, category: 'Appliances', status: 'compliant', timestamp: 2024, manufacturer: 'IndiaHome', gtin: '202020202', icon: Building },
 ];
 
@@ -92,7 +99,9 @@ const Legend: React.FC<{ title: string; colorMap: Record<string, string>, classN
     <CardContent className="px-3 pb-3 space-y-1">
       {Object.entries(colorMap).map(([name, color]) => (
         <div key={name} className="flex items-center text-xs">
-          <span className="h-3 w-3 rounded-sm mr-2" style={{ backgroundColor: color }} />
+          <span className="h-3 w-3 rounded-sm mr-2 border" style={{ backgroundColor: color.startsWith("rgba") || color.startsWith("#") ? color : undefined, 
+            backgroundImage: name.toLowerCase().includes("gradient") || name.toLowerCase().includes(" to ") ? `linear-gradient(to right, ${color.split(' to ')[0]}, ${color.split(' to ')[1] || color.split(' to ')[0]})` : undefined
+          }} />
           <span>{name}</span>
         </div>
       ))}
@@ -135,11 +144,11 @@ export default function DppGlobalTrackerPage() {
 
   useEffect(() => {
     setIsClient(true);
+    setIsLoadingGeoJson(true);
     fetch('//unpkg.com/world-atlas/countries-110m.json')
       .then(res => res.json())
       .then(countries => {
-        // @ts-ignore
-        const countryFeatures = countries.objects.countries.geometries.map(obj => topojsonFeature(countries, obj));
+        const countryFeatures = countries.objects.countries.geometries.map((obj: any) => topojsonFeature(countries, obj));
         setCountryPolygons(countryFeatures);
         setIsLoadingGeoJson(false);
       })
@@ -160,7 +169,6 @@ export default function DppGlobalTrackerPage() {
   const filteredArcs = useMemo(() => {
     return mockArcsData.filter(arc => {
       const yearMatch = arc.timestamp <= yearFilter[0];
-      // Could add more arc-specific filters if needed, e.g., transportMode
       return yearMatch;
     });
   }, [yearFilter]);
@@ -170,27 +178,26 @@ export default function DppGlobalTrackerPage() {
       case 'Electronics': return SATURATED_BLUE;
       case 'Appliances': return VIBRANT_TEAL;
       case 'Textiles': return ACCENT_PURPLE;
-      case 'Raw Material Source': return 'rgba(139, 69, 19, 0.9)'; // Brown
-      case 'Distribution Hub': return 'rgba(255, 165, 0, 0.9)'; // Orange
-      case 'Recycling Facility': return 'rgba(0, 100, 0, 0.9)'; // Dark Green
-      default: return 'rgba(128, 128, 128, 0.8)'; // Grey
+      case 'Raw Material Source': return BROWN_COLOR;
+      case 'Distribution Hub': return ORANGE_COLOR;
+      case 'Recycling Facility': return DARK_GREEN_COLOR;
+      default: return GREY_COLOR;
     }
   }, []);
   
-  const pointRadiusAccessor = useCallback((point: MockDppPoint) => point.size * 0.8 + 0.1, []); // Adjust size scaling
+  const pointRadiusAccessor = useCallback((point: MockDppPoint) => point.size * 0.8 + 0.1, []); 
 
   const arcColorAccessor = useCallback((arc: MockArc) => {
      switch (arc.transportMode) {
-      case 'sea': return [SATURATED_BLUE, VIBRANT_TEAL]; // Gradient
+      case 'sea': return [SATURATED_BLUE, VIBRANT_TEAL]; 
       case 'air': return ACCENT_PURPLE;
-      case 'road': return 'rgba(255, 165, 0, 0.7)'; // Orange
-      case 'rail': return 'rgba(100, 149, 237, 0.7)'; // Cornflower Blue
-      default: return 'rgba(128, 128, 128, 0.5)'; // Grey
+      case 'road': return ORANGE_COLOR; 
+      case 'rail': return CORNFLOWER_BLUE_COLOR; 
+      default: return GREY_COLOR; 
     }
   }, []);
   
   const arcStrokeAccessor = useCallback((arc: MockArc) => (arc.stroke || 0.2) + (arc.productId ? 0.1 : 0), []);
-
 
   const handlePointClick = useCallback((point: MockDppPoint) => {
     setSelectedPoint(point);
@@ -219,8 +226,14 @@ export default function DppGlobalTrackerPage() {
     "Electronics Point": SATURATED_BLUE,
     "Appliances Point": VIBRANT_TEAL,
     "Textiles Point": ACCENT_PURPLE,
-    "Sea Route": `${SATURATED_BLUE} to ${VIBRANT_TEAL}`,
+    "Raw Material Site": BROWN_COLOR,
+    "Distribution Hub": ORANGE_COLOR,
+    "Recycling Facility": DARK_GREEN_COLOR,
+    "Sea Route (Gradient)": `${SATURATED_BLUE} to ${VIBRANT_TEAL}`,
     "Air Route": ACCENT_PURPLE,
+    "Road Route": ORANGE_COLOR,
+    "Rail Route": CORNFLOWER_BLUE_COLOR,
+    "Other Point/Route": GREY_COLOR,
   };
 
   return (
@@ -279,7 +292,7 @@ export default function DppGlobalTrackerPage() {
                     isClient={isClient}
                     pointsData={filteredPoints}
                     arcsData={filteredArcs}
-                    labelsData={[]} // Keeping labelsData empty for now
+                    labelsData={[]} 
                     polygonsData={countryPolygons}
                     polygonCapColorAccessor={polygonCapColorAccessor}
                     polygonSideColorAccessor={polygonSideColorAccessor}

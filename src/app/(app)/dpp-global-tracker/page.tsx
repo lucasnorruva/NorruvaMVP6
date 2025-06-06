@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback, Suspense, useMemo } from 'react';
@@ -182,7 +181,7 @@ const initialMockShipmentPointsData: MockShipmentPoint[] = initialMockArcsData.m
         simulationProgress: 0, 
         simulatedStatus: simulatedStatus, 
         name: `Shipment ${arc.shipmentId}`,
-        size: 0.15,
+        size: 0.15, // Standardized size for shipment markers for now
         direction: arc.direction,
         arcId: arc.id,
         arcLabel: arc.label,
@@ -295,8 +294,8 @@ export default function DppGlobalTrackerPage() {
       });
   }, [toast]);
 
-  useEffect(() => {
-    if (SHIPMENTS_TO_SIMULATE.length > 0 && !simulationActiveToastShown) {
+ useEffect(() => {
+    if (isClient && SHIPMENTS_TO_SIMULATE.length > 0 && !simulationActiveToastShown) {
       const timer = setTimeout(() => {
         toast({
           title: "Shipment Simulation Active",
@@ -306,43 +305,31 @@ export default function DppGlobalTrackerPage() {
       }, 150); 
       return () => clearTimeout(timer);
     }
-  }, [simulationActiveToastShown, toast]);
+  }, [isClient, simulationActiveToastShown, toast]);
 
 
-  const showShipmentToast = useCallback((shipmentId: string, status: string, message: string, variant: 'default' | 'destructive' = 'default', type: NotificationType) => {
+ const showShipmentToast = useCallback((shipmentId: string, status: string, message: string, variant: 'default' | 'destructive' = 'default', type: NotificationType) => {
     let allowToast = false;
     switch (type) {
-        case 'compliance_alert':
-            allowToast = notificationPrefs.complianceIssues;
-            break;
-        case 'delay_alert':
-            allowToast = notificationPrefs.shipmentDelays;
-            break;
-        case 'status_change':
-            allowToast = notificationPrefs.statusChanges;
-            break;
-        default:
-            allowToast = true; 
+        case 'compliance_alert': allowToast = notificationPrefs.complianceIssues; break;
+        case 'delay_alert': allowToast = notificationPrefs.shipmentDelays; break;
+        case 'status_change': allowToast = notificationPrefs.statusChanges; break;
+        default: allowToast = true; 
     }
-
     if (!allowToast) return;
 
     const now = Date.now();
-    setLastToastForShipment(prevLastToast => {
-        const lastToastInfo = prevLastToast[shipmentId];
-        if (!lastToastInfo || lastToastInfo.status !== status || (now - lastToastInfo.time > 5000)) {
-            setTimeout(() => { 
-                toast({
-                    title: "Shipment Update",
-                    description: message,
-                    variant: variant,
-                });
+    setLastToastForShipment(prev => {
+        const lastToastInfo = prev[shipmentId];
+        if (!lastToastInfo || lastToastInfo.status !== status || (now - lastToastInfo.time > 5000)) { // Only toast if status changed or enough time passed
+            setTimeout(() => { // Defer toast to next tick
+                toast({ title: "Shipment Update", description: message, variant: variant });
             }, 0);
-            return { ...prevLastToast, [shipmentId]: { status, time: now } };
+            return { ...prev, [shipmentId]: { status, time: now } };
         }
-        return prevLastToast;
+        return prev;
     });
-  }, [toast, notificationPrefs.complianceIssues, notificationPrefs.shipmentDelays, notificationPrefs.statusChanges]);
+}, [toast, notificationPrefs.complianceIssues, notificationPrefs.shipmentDelays, notificationPrefs.statusChanges]);
 
  useEffect(() => {
     const intervalId = setInterval(() => {
@@ -387,9 +374,8 @@ export default function DppGlobalTrackerPage() {
                             updatedShipment.dppComplianceStatusText = randomIssue;
                             updatedShipment.dppComplianceBadgeVariant = "destructive";
                             updatedShipment.dppComplianceNotes = [randomIssue, "Documentation review required."];
-                            // This specific internal status change for compliance alert will trigger a toast with its own type
                             showShipmentToast(updatedShipment.id, "compliance_alert", `Compliance Alert: Shipment ${updatedShipment.id} - ${randomIssue}.`, "destructive", "compliance_alert");
-                            toastType = null; // Prevent double toast if main status also changed
+                            toastType = null; 
                          } else {
                             updatedShipment.dppComplianceStatusText = "DPP Data Review In Progress";
                             updatedShipment.dppComplianceBadgeVariant = "outline";
@@ -514,7 +500,7 @@ export default function DppGlobalTrackerPage() {
 
 
   const pointColorAccessor = useCallback((point: MockDppPoint | MockShipmentPoint) => {
-    if ('simulatedStatus' in point && point.simulatedStatus) {
+    if ('simulatedStatus' in point && point.simulatedStatus) { // Check if it's a MockShipmentPoint
       const shipment = point as MockShipmentPoint;
       switch (shipment.simulatedStatus) {
         case 'in_transit': return SHIPMENT_IN_TRANSIT_COLOR_GLOBE;
@@ -525,9 +511,9 @@ export default function DppGlobalTrackerPage() {
         case 'data_sync_delayed': return SHIPMENT_DATA_SYNC_DELAYED_COLOR_GLOBE;
         default: return GREY_COLOR;
       }
-    } else {
+    } else { // It's a MockDppPoint
       const dppPoint = point as MockDppPoint;
-      if (dppPoint.icon) return 'rgba(0,0,0,0)';
+      if (dppPoint.icon) return 'rgba(0,0,0,0)'; // Transparent if icon is used (though icons aren't rendered as simple points)
       switch (dppPoint.category) {
         case 'Electronics': return SATURATED_BLUE;
         case 'Appliances': return VIBRANT_TEAL;
@@ -552,21 +538,21 @@ export default function DppGlobalTrackerPage() {
 
 
   const pointRadiusAccessor = useCallback((point: MockDppPoint | MockShipmentPoint) => {
-    if ('direction' in point && point.direction) {
-      return 0.12;
-    } else {
+    if ('simulatedStatus' in point && point.simulatedStatus) { // It's a MockShipmentPoint
+      return 0.12; // Slightly smaller fixed size for shipment markers
+    } else { // It's a MockDppPoint
        const dppPoint = point as MockDppPoint;
-      return dppPoint.size * 0.8 + 0.1;
+      return dppPoint.size * 0.8 + 0.1; // Original logic for DPP points
     }
   }, []);
 
   const handlePointClick = useCallback((point: MockDppPoint | MockShipmentPoint) => {
-    if ('direction' in point && point.direction) {
+    if ('simulatedStatus' in point && point.simulatedStatus) { // It's a MockShipmentPoint
       setSelectedShipment(point as MockShipmentPoint);
       setSelectedPoint(null);
       setSelectedArc(null);
       setSelectedCheckpoint(null);
-    } else {
+    } else { // It's a MockDppPoint
       setSelectedPoint(point as MockDppPoint);
       setSelectedShipment(null);
       setSelectedArc(null);
@@ -960,4 +946,3 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
-

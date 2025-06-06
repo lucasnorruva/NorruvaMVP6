@@ -70,7 +70,7 @@ const getIconCanvas = (IconComponent: React.ElementType, color: THREE.Color, siz
 
 
 interface GlobeVisualizationProps {
-  globeRef?: React.MutableRefObject<any | undefined>; // Added globeRef prop
+  globeRef?: React.MutableRefObject<any | undefined>; 
   pointsData: Array<MockDppPoint | MockShipmentPoint>;
   arcsData: MockArc[];
   polygonsData: any[];
@@ -89,7 +89,7 @@ interface GlobeVisualizationProps {
 }
 
 const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
-  globeRef: externalGlobeRef, // Use externalGlobeRef
+  globeRef: externalGlobeRef, 
   pointsData,
   arcsData,
   polygonsData,
@@ -106,8 +106,8 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
   polygonStrokeColorAccessor,
   globeBackgroundColor
 }) => {
-  const internalGlobeRef = useRef<any | undefined>(); // Internal ref if no external one is provided
-  const globeEl = externalGlobeRef || internalGlobeRef; // Use external if available, else internal
+  const internalGlobeRef = useRef<any | undefined>(); 
+  const globeEl = externalGlobeRef || internalGlobeRef; 
 
   const [GlobeComponent, setGlobeComponent] = useState<React.ComponentType<any> | null>(null);
 
@@ -123,7 +123,8 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
   useEffect(() => {
     if (globeEl.current && GlobeComponent) {
       try {
-        globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.2 });
+        // Setting initial PoV slightly higher to see more of the globe
+        globeEl.current.pointOfView({ lat: 45, lng: 10, altitude: 2.5 }); 
         const controls = globeEl.current.controls();
         if (controls) {
             controls.autoRotate = false;
@@ -184,10 +185,10 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
     globeImageUrl: undefined, 
 
     pointsData: pointsData,
-    pointLabel: 'name',
+    pointLabel: (d: MockDppPoint | MockShipmentPoint) => d.name, // Ensure label uses 'name'
     pointColor: pointColorAccessor,
     pointRadius: pointRadiusAccessor,
-    pointAltitude: (d: MockDppPoint | MockShipmentPoint) => ('direction' in d && d.direction) ? 0.025 : 0.02, 
+    pointAltitude: (d: MockDppPoint | MockShipmentPoint) => ('simulatedStatus' in d) ? 0.03 : 0.02, // Slightly higher altitude for shipment points
     onPointClick: onPointClick,
 
     arcsData: arcsData,
@@ -218,7 +219,7 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
     },
     customThreeObjectUpdate: (obj: any, cpData: any) => {
         if(globeEl.current){ 
-            Object.assign(obj.position, globeEl.current.getCoords(cpData.lat, cpData.lng, 0.03)); 
+            Object.assign(obj.position, globeEl.current.getCoords(cpData.lat, cpData.lng, 0.035)); // Slightly higher altitude for checkpoint sprites
         }
     },
     onCustomLayerClick: (obj: any, event: MouseEvent) => { 
@@ -235,6 +236,4 @@ const GlobeVisualizationInternal: React.FC<GlobeVisualizationProps> = ({
   );
 };
 
-// const GlobeVisualization = React.memo(GlobeVisualizationInternal); // Memoization is good
-export default GlobeVisualizationInternal; // Exporting internal directly if React.memo is handled by parent or not strictly needed now
-
+export default GlobeVisualizationInternal;

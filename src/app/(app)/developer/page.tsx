@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,13 +14,29 @@ import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 
-const mockApiKeys = [
+interface ApiKey {
+  id: string;
+  key: string;
+  type: "Sandbox" | "Production";
+  created: string;
+  lastUsed: string;
+  status: "Active" | "Pending Approval" | "Revoked";
+}
+
+interface WebhookEntry {
+  id: string;
+  url: string;
+  events: string[];
+  status: "Active" | "Disabled" | "Error";
+}
+
+const initialMockApiKeys: ApiKey[] = [
   { id: "key_sandbox_1", key: "sand_sk_xxxx1234ABCD...", type: "Sandbox", created: "2024-07-01", lastUsed: "2024-07-28", status: "Active" },
   { id: "key_prod_req_1", key: "N/A (Request Pending)", type: "Production", created: "2024-07-25", lastUsed: "N/A", status: "Pending Approval" },
   { id: "key_prod_active_1", key: "prod_sk_xxxx5678EFGH...", type: "Production", created: "2024-06-15", lastUsed: "2024-07-29", status: "Active" },
 ];
 
-const mockWebhooks = [
+const initialMockWebhooks: WebhookEntry[] = [
   { id: "wh_1", url: "https://api.example.com/webhook/product-updates", events: ["product.created", "product.updated", "dpp.status.changed"], status: "Active" },
   { id: "wh_2", url: "https://api.example.com/webhook/compliance-changes", events: ["compliance.status.changed"], status: "Disabled" },
   { id: "wh_3", url: "https://user.integrations.com/norruva/events", events: ["product.lifecycle.event.added", "product.deleted"], status: "Active" },
@@ -89,6 +105,9 @@ const MOCK_COMPLIANCE_SUMMARIES: Record<string, any> = {
 export default function DeveloperPortalPage() {
   const { toast } = useToast();
 
+  const [apiKeys, setApiKeys] = useState<ApiKey[]>(initialMockApiKeys);
+  const [webhooks, setWebhooks] = useState<WebhookEntry[]>(initialMockWebhooks);
+
   const [getProductId, setGetProductId] = useState<string>("PROD001");
   const [getProductResponse, setGetProductResponse] = useState<string | null>(null);
   const [isGetProductLoading, setIsGetProductLoading] = useState(false);
@@ -108,17 +127,72 @@ export default function DeveloperPortalPage() {
   const [isGetComplianceLoading, setIsGetComplianceLoading] = useState(false);
 
 
-  const handleCopyKey = (apiKey: string) => {
-    if (apiKey.startsWith("N/A")) {
+  const handleCopyKey = (apiKeyToCopy: string) => {
+    if (apiKeyToCopy.startsWith("N/A")) {
         toast({ title: "Key Not Available", description: "This key is pending approval or not yet generated."});
         return;
     }
-    navigator.clipboard.writeText(apiKey);
+    navigator.clipboard.writeText(apiKeyToCopy);
     toast({
       title: "API Key Copied!",
       description: "The API key has been copied to your clipboard.",
     });
   };
+
+  const handleGenerateSandboxKey = () => {
+    const newKeyId = `key_sandbox_${Date.now().toString().slice(-5)}`;
+    const newKey: ApiKey = {
+      id: newKeyId,
+      key: `sand_sk_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}...`,
+      type: "Sandbox",
+      created: new Date().toISOString().split('T')[0],
+      lastUsed: "Never",
+      status: "Active"
+    };
+    setApiKeys(prevKeys => [newKey, ...prevKeys]);
+    toast({ title: "Sandbox Key Generated", description: `New key ${newKey.key.substring(0,15)}... created.` });
+  };
+
+  const handleRequestProductionKey = () => {
+    const newReqId = `key_prod_req_${Date.now().toString().slice(-5)}`;
+    const newRequest: ApiKey = {
+      id: newReqId,
+      key: "N/A (Request Pending)",
+      type: "Production",
+      created: new Date().toISOString().split('T')[0],
+      lastUsed: "N/A",
+      status: "Pending Approval"
+    };
+    setApiKeys(prevKeys => [newRequest, ...prevKeys]);
+    toast({ title: "Production Key Requested", description: "Your request for a production key has been submitted (mock)." });
+  };
+  
+  const handleDeleteApiKey = (keyId: string) => {
+    setApiKeys(prevKeys => prevKeys.filter(key => key.id !== keyId));
+    toast({ title: "API Key Deleted", description: `Key ID ${keyId} has been removed (mock).`, variant: "destructive" });
+  };
+
+  const handleAddWebhook = () => {
+    const newWebhookId = `wh_${Date.now().toString().slice(-5)}`;
+    const newWebhook: WebhookEntry = {
+      id: newWebhookId,
+      url: `https://new.webhook.example.com/handler/${newWebhookId}`,
+      events: ["product.updated", "dpp.verified"],
+      status: "Active"
+    };
+    setWebhooks(prevWebhooks => [newWebhook, ...prevWebhooks]);
+    toast({ title: "Webhook Added", description: `New webhook for ${newWebhook.url} created (mock).` });
+  };
+
+  const handleEditWebhook = (webhookId: string) => {
+    toast({ title: "Mock Action", description: `Edit functionality for webhook ${webhookId} is not implemented.` });
+  };
+
+  const handleDeleteWebhook = (webhookId: string) => {
+    setWebhooks(prevWebhooks => prevWebhooks.filter(wh => wh.id !== webhookId));
+    toast({ title: "Webhook Deleted", description: `Webhook ID ${webhookId} has been removed (mock).`, variant: "destructive" });
+  };
+
 
   const handleMockGetProductDetails = async () => {
     setIsGetProductLoading(true);
@@ -156,6 +230,7 @@ export default function DeveloperPortalPage() {
         const requestBody = JSON.parse(postLifecycleEventBody);
         if (!MOCK_API_PRODUCTS[postLifecycleEventProductId]) {
             setPostLifecycleEventResponse(JSON.stringify({ error: "Product not found", productId: postLifecycleEventProductId }, null, 2));
+            setIsPostLifecycleEventLoading(false); // Ensure loading state is reset
             return;
         }
         const response = {
@@ -219,7 +294,7 @@ export default function DeveloperPortalPage() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-xl border-primary/20">
+      <Card className="shadow-xl border-primary/20" id="api-playground">
         <CardHeader>
           <CardTitle className="font-headline flex items-center"><PlayCircle className="mr-3 h-6 w-6 text-primary" /> Interactive API Playground</CardTitle>
           <CardDescription>Experiment with Norruva API endpoints in this interactive sandbox. This environment uses mock data and simulated responses, allowing you to test integrations safely.</CardDescription>
@@ -324,7 +399,7 @@ export default function DeveloperPortalPage() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-lg">
+      <Card className="shadow-lg" id="api-keys">
         <CardHeader>
           <CardTitle className="font-headline flex items-center"><KeyRound className="mr-3 h-6 w-6 text-primary" /> API Keys</CardTitle>
           <CardDescription>Manage your API keys for accessing Norruva platform services.</CardDescription>
@@ -342,7 +417,7 @@ export default function DeveloperPortalPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockApiKeys.map((apiKey) => (
+              {apiKeys.map((apiKey) => (
                 <TableRow key={apiKey.id}>
                   <TableCell className="font-mono text-sm">{apiKey.key}</TableCell>
                   <TableCell><Badge variant={apiKey.type === "Sandbox" ? "secondary" : "default"}>{apiKey.type}</Badge></TableCell>
@@ -363,7 +438,7 @@ export default function DeveloperPortalPage() {
                     <Button variant="ghost" size="icon" onClick={() => handleCopyKey(apiKey.key)} title="Copy Key" disabled={apiKey.status === 'Pending Approval'}>
                       <Copy className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" title="Delete Key (Mock)" className="text-destructive hover:text-destructive">
+                    <Button variant="ghost" size="icon" title="Delete Key" onClick={() => handleDeleteApiKey(apiKey.id)} className="text-destructive hover:text-destructive">
                       <Trash2 className="h-4 w-4" />
                     </Button>
                   </TableCell>
@@ -372,17 +447,17 @@ export default function DeveloperPortalPage() {
             </TableBody>
           </Table>
           <div className="flex flex-wrap gap-4">
-            <Button variant="secondary">
-              <PlusCircle className="mr-2 h-5 w-5" /> Generate New Sandbox Key (Mock)
+            <Button variant="secondary" onClick={handleGenerateSandboxKey}>
+              <PlusCircle className="mr-2 h-5 w-5" /> Generate New Sandbox Key
             </Button>
-            <Button variant="outline">Request Production Key (Mock)</Button>
+            <Button variant="outline" onClick={handleRequestProductionKey}>Request Production Key</Button>
           </div>
           <p className="text-xs text-muted-foreground">API keys provide access to your account data. Keep them secure and do not share them publicly.</p>
         </CardContent>
       </Card>
 
       <div className="grid md:grid-cols-2 gap-6">
-        <Card className="shadow-lg">
+        <Card className="shadow-lg" id="api-docs">
           <CardHeader>
             <CardTitle className="font-headline flex items-center"><BookOpen className="mr-3 h-6 w-6 text-primary" /> API Documentation &amp; Guides</CardTitle>
             <CardDescription>Explore detailed documentation, integration guides, and best practices for building with Norruva DPP APIs.</CardDescription>
@@ -442,7 +517,7 @@ export default function DeveloperPortalPage() {
                     </TableRow>
                 </TableHeader>
                 <TableBody>
-                    {mockWebhooks.map(wh => (
+                    {webhooks.map(wh => (
                         <TableRow key={wh.id}>
                             <TableCell className="truncate max-w-[150px] sm:max-w-[200px] text-sm font-mono">{wh.url}</TableCell>
                             <TableCell className="text-xs max-w-[120px] truncate">{wh.events.join(', ')}</TableCell>
@@ -457,10 +532,10 @@ export default function DeveloperPortalPage() {
                                 </Badge>
                             </TableCell>
                             <TableCell className="text-right space-x-1">
-                                <Button variant="ghost" size="icon" title="Edit Webhook (Mock)">
+                                <Button variant="ghost" size="icon" title="Edit Webhook" onClick={() => handleEditWebhook(wh.id)}>
                                   <Edit2 className="h-4 w-4" />
                                 </Button>
-                                 <Button variant="ghost" size="icon" title="Delete Webhook (Mock)" className="text-destructive hover:text-destructive">
+                                 <Button variant="ghost" size="icon" title="Delete Webhook" onClick={() => handleDeleteWebhook(wh.id)} className="text-destructive hover:text-destructive">
                                     <Trash2 className="h-4 w-4" />
                                 </Button>
                             </TableCell>
@@ -468,15 +543,15 @@ export default function DeveloperPortalPage() {
                     ))}
                 </TableBody>
             </Table>
-             <Button variant="secondary">
-              <PlusCircle className="mr-2 h-5 w-5" /> Add New Webhook (Mock)
+             <Button variant="secondary" onClick={handleAddWebhook}>
+              <PlusCircle className="mr-2 h-5 w-5" /> Add New Webhook
             </Button>
             <p className="text-xs text-muted-foreground">Get notified about product updates, compliance changes, and more by registering webhook endpoints.</p>
           </CardContent>
         </Card>
       </div>
       
-      <Card className="shadow-lg">
+      <Card className="shadow-lg" id="developer-resources">
         <CardHeader>
           <CardTitle className="font-headline flex items-center"><Lightbulb className="mr-3 h-6 w-6 text-primary" /> Developer Resources</CardTitle>
           <CardDescription>Find SDKs, code samples, templates, tutorials, and GitHub resources to accelerate your DPP integration.</CardDescription>
@@ -492,7 +567,7 @@ export default function DeveloperPortalPage() {
              <p className="text-xs text-muted-foreground mt-2">Official SDKs are under development. Check back soon for updates.</p>
           </div>
           <div className="space-y-3">
-            <div>
+            <div id="tutorials">
                 <h4 className="font-semibold mb-1">Code Samples &amp; Templates</h4>
                  <p className="text-sm text-muted-foreground">Access a library of code snippets and project templates for common integration scenarios like DPP creation, event logging, and compliance checks.</p>
                 <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
@@ -688,6 +763,7 @@ export default function DeveloperPortalPage() {
     
 
     
+
 
 
 

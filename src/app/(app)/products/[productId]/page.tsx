@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import ProductContainer from '@/components/products/detail/ProductContainer';
 import { SIMPLE_MOCK_PRODUCTS, USER_PRODUCTS_LOCAL_STORAGE_KEY, MOCK_DPPS } from '@/types/dpp'; // Added MOCK_DPPS
-import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct, ProductComplianceSummary, DigitalProductPassport, ComplianceDetailItem, SimpleLifecycleEvent } from '@/types/dpp';
+import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct, ProductComplianceSummary, DigitalProductPassport, ComplianceDetailItem, SimpleLifecycleEvent, CustomAttribute } from '@/types/dpp';
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow';
@@ -140,6 +140,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         repairability: dpp.productDetails?.repairabilityScore ? { score: dpp.productDetails.repairabilityScore.value, scale: dpp.productDetails.repairabilityScore.scale, detailsUrl: dpp.productDetails.repairabilityScore.reportUrl } : undefined,
         recyclabilityInfo: dpp.productDetails?.recyclabilityInformation ? { percentage: dpp.productDetails.recyclabilityInformation.recycledContentPercentage, instructionsUrl: dpp.productDetails.recyclabilityInformation.instructionsUrl } : undefined,
         supplyChainLinks: dpp.supplyChainLinks || [],
+        customAttributes: dpp.productDetails?.customAttributes || [], // Map custom attributes
     };
 }
 
@@ -162,8 +163,15 @@ export default function ProductDetailPage() {
           const userProductToDisplay = userProducts.find(p => p.id === productId);
           if (userProductToDisplay) {
             
-            // Convert StoredUserProduct to a structure that can be mapped by mapDppToSimpleProductDetail
-            // This involves creating a temporary DigitalProductPassport-like object
+            let parsedCustomAttributes: CustomAttribute[] = [];
+            if (userProductToDisplay.customAttributesJsonString) {
+                try {
+                    parsedCustomAttributes = JSON.parse(userProductToDisplay.customAttributesJsonString);
+                } catch (e) {
+                    console.error("Failed to parse customAttributesJsonString from localStorage", e);
+                }
+            }
+
             const tempDppForMapping: Partial<DigitalProductPassport> = {
               id: userProductToDisplay.id,
               productName: userProductToDisplay.productName || "N/A",
@@ -182,11 +190,10 @@ export default function ProductDetailPage() {
                 sustainabilityClaims: userProductToDisplay.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
                 materials: userProductToDisplay.materials?.split(',').map(m => ({ name: m.trim() })) || [], // Basic mapping
                 energyLabel: userProductToDisplay.energyLabel,
+                customAttributes: parsedCustomAttributes, // Use parsed attributes
               },
-              // Basic compliance mapping, expand if StoredUserProduct has richer compliance
               compliance: {
                 eprel: userProductToDisplay.complianceSummary?.eprel,
-                // Add other specific regulations here if StoredUserProduct has them
               },
               ebsiVerification: userProductToDisplay.complianceSummary?.ebsi ? {
                 status: userProductToDisplay.complianceSummary.ebsi.status as EbsiVerificationDetails['status'], // Cast might be needed
@@ -199,7 +206,6 @@ export default function ProductDetailPage() {
                   timestamp: e.date,
                   location: e.location,
                   data: e.notes ? { notes: e.notes } : undefined,
-                  // transactionHash mapping if available
               })),
               supplyChainLinks: userProductToDisplay.supplyChainLinks || [],
             };
@@ -211,7 +217,19 @@ export default function ProductDetailPage() {
         if (dppFromMocks) {
             foundProduct = mapDppToSimpleProductDetail(dppFromMocks);
         } else {
-            foundProduct = SIMPLE_MOCK_PRODUCTS.find(p => p.id === productId);
+            // Fallback to SIMPLE_MOCK_PRODUCTS if not found in MOCK_DPPS
+            // This path might need adjustment if SIMPLE_MOCK_PRODUCTS doesn't contain customAttributes
+            const simpleMockProduct = SIMPLE_MOCK_PRODUCTS.find(p => p.id === productId);
+            if(simpleMockProduct) {
+                 // If SIMPLE_MOCK_PRODUCTS are to be displayed and might have customAttributes,
+                 // they should be mapped similarly or ensure SimpleProductDetail includes them
+                 // For now, assuming they are already correctly structured or don't have them.
+                foundProduct = simpleMockProduct;
+                if (simpleMockProduct && !simpleMockProduct.customAttributes) {
+                  // If customAttributes might come from a JSON string on SIMPLE_MOCK_PRODUCTS (unlikely based on current structure)
+                  // you'd parse it here. Otherwise, it will be undefined.
+                }
+            }
         }
       }
       

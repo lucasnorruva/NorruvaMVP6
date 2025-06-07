@@ -14,8 +14,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info } from "lucide-react";
-import React, { useState } from "react";
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle } from "lucide-react"; // Added XCircle
+import React, { useState, useEffect } from "react"; // Added useEffect
 import { useToast } from "@/hooks/use-toast";
 import BasicInfoFormSection from "./form/BasicInfoFormSection";
 import ProductImageFormSection from "./form/ProductImageFormSection";
@@ -31,6 +31,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessa
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import type { CustomAttribute } from "@/types/dpp";
 
 
 const formSchema = z.object({
@@ -51,6 +52,7 @@ const formSchema = z.object({
   stateOfHealth: z.coerce.number().nullable().optional(),
   carbonFootprintManufacturing: z.coerce.number().nullable().optional(),
   recycledContentPercentage: z.coerce.number().nullable().optional(),
+  customAttributesJsonString: z.string().optional(), // Added for custom attributes
 });
 
 export type ProductFormData = z.infer<typeof formSchema>;
@@ -108,6 +110,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       stateOfHealth: initialData?.stateOfHealth ?? undefined,
       carbonFootprintManufacturing: initialData?.carbonFootprintManufacturing ?? undefined,
       recycledContentPercentage: initialData?.recycledContentPercentage ?? undefined,
+      customAttributesJsonString: initialData?.customAttributesJsonString || "", // Initialize custom attributes
     },
   });
 
@@ -119,8 +122,28 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isSuggestingSpecs, setIsSuggestingSpecs] = useState(false);
+
+  const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>([]);
+  const [currentCustomKey, setCurrentCustomKey] = useState("");
+  const [currentCustomValue, setCurrentCustomValue] = useState("");
   
-  React.useEffect(() => {
+  useEffect(() => {
+    if (initialData?.customAttributesJsonString) {
+      try {
+        const parsedAttributes = JSON.parse(initialData.customAttributesJsonString);
+        if (Array.isArray(parsedAttributes)) {
+          setCustomAttributes(parsedAttributes);
+        }
+      } catch (e) {
+        console.error("Failed to parse custom attributes JSON:", e);
+        setCustomAttributes([]);
+      }
+    } else {
+      setCustomAttributes([]);
+    }
+  }, [initialData?.customAttributesJsonString]);
+
+  useEffect(() => {
     if (initialData) {
       form.reset({
         productName: initialData.productName || "",
@@ -140,9 +163,19 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         stateOfHealth: initialData.stateOfHealth ?? undefined,
         carbonFootprintManufacturing: initialData.carbonFootprintManufacturing ?? undefined,
         recycledContentPercentage: initialData.recycledContentPercentage ?? undefined,
+        customAttributesJsonString: initialData.customAttributesJsonString || "",
       });
     }
   }, [initialData, form]);
+  
+  const handleFormSubmit = (data: ProductFormData) => {
+    const dataToSubmit = {
+      ...data,
+      customAttributesJsonString: JSON.stringify(customAttributes)
+    };
+    onSubmit(dataToSubmit);
+  };
+
 
   const callSuggestNameAI = async () => {
     const result = await handleSuggestNameAI(form, toast, setIsSuggestingName);
@@ -181,6 +214,34 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     const newClaimsValue = currentClaimsValue ? `${currentClaimsValue}\n- ${claim}` : `- ${claim}`;
     form.setValue("sustainabilityClaims", newClaimsValue, { shouldValidate: true });
   };
+
+  const handleAddCustomAttribute = () => {
+    if (currentCustomKey.trim() && currentCustomValue.trim()) {
+      // Check for duplicate keys
+      if (customAttributes.some(attr => attr.key.toLowerCase() === currentCustomKey.trim().toLowerCase())) {
+        toast({
+          title: "Duplicate Key",
+          description: "An attribute with this key already exists. Please use a unique key.",
+          variant: "destructive",
+        });
+        return;
+      }
+      setCustomAttributes([...customAttributes, { key: currentCustomKey.trim(), value: currentCustomValue.trim() }]);
+      setCurrentCustomKey("");
+      setCurrentCustomValue("");
+    } else {
+      toast({
+        title: "Missing Input",
+        description: "Please provide both a key and a value for the custom attribute.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleRemoveCustomAttribute = (keyToRemove: string) => {
+    setCustomAttributes(customAttributes.filter(attr => attr.key !== keyToRemove));
+  };
+
 
   const formContent = (
     <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5', 'item-custom-attributes']} className="w-full">
@@ -256,37 +317,53 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         <AccordionTrigger className="text-lg font-semibold">Custom Attributes</AccordionTrigger>
         <AccordionContent className="space-y-4 pt-4">
           <p className="text-sm text-muted-foreground">
-            Define additional key-value pairs specific to this product category or your internal tracking needs.
-            This feature allows for extending the standard DPP schema.
+            Define additional key-value pairs specific to this product.
           </p>
-          <Card className="bg-muted/50">
-            <CardContent className="p-4 space-y-3">
-              <div className="text-sm">
-                <Label className="font-semibold text-foreground/80">Example Attribute 1:</Label>
-                <p><span className="text-muted-foreground">Name:</span> EcoRating</p>
-                <p><span className="text-muted-foreground">Value:</span> Gold</p>
-              </div>
-              <div className="text-sm border-t pt-3">
-                <Label className="font-semibold text-foreground/80">Example Attribute 2:</Label>
-                <p><span className="text-muted-foreground">Name:</span> SpecialFeature</p>
-                <p><span className="text-muted-foreground">Value:</span> Waterproof IP68</p>
-              </div>
-            </CardContent>
-          </Card>
-          <TooltipProvider>
-            <Tooltip delayDuration={100}>
-              <TooltipTrigger asChild>
-                <div className="inline-block"> 
-                  <Button type="button" variant="outline" disabled>
-                    <PlusCircle className="mr-2 h-4 w-4" /> Add Custom Attribute
+          {customAttributes.length > 0 && (
+            <div className="space-y-2 rounded-md border p-3 bg-muted/30">
+              <FormLabel className="text-xs text-muted-foreground">Current Custom Attributes:</FormLabel>
+              {customAttributes.map((attr, index) => (
+                <div key={index} className="flex items-center justify-between text-sm p-1.5 bg-background rounded shadow-sm">
+                  <div>
+                    <span className="font-medium">{attr.key}:</span>
+                    <span className="text-muted-foreground ml-1">{attr.value}</span>
+                  </div>
+                  <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveCustomAttribute(attr.key)} className="h-6 w-6 text-destructive hover:text-destructive">
+                    <XCircle className="h-4 w-4" />
                   </Button>
                 </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p className="flex items-center"><Info className="h-4 w-4 mr-2 text-info" /> Feature coming soon. For demonstration purposes.</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
+              ))}
+            </div>
+          )}
+          <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+            <FormItem>
+              <FormLabel htmlFor="customAttrKey" className="text-xs">Attribute Key</FormLabel>
+              <FormControl>
+                <Input 
+                  id="customAttrKey" 
+                  value={currentCustomKey} 
+                  onChange={(e) => setCurrentCustomKey(e.target.value)} 
+                  placeholder="e.g., Color Code"
+                  className="h-9"
+                />
+              </FormControl>
+            </FormItem>
+            <FormItem>
+              <FormLabel htmlFor="customAttrValue" className="text-xs">Attribute Value</FormLabel>
+              <FormControl>
+                <Input 
+                  id="customAttrValue" 
+                  value={currentCustomValue} 
+                  onChange={(e) => setCurrentCustomValue(e.target.value)} 
+                  placeholder="e.g., #FF0000"
+                  className="h-9"
+                />
+              </FormControl>
+            </FormItem>
+            <Button type="button" variant="outline" onClick={handleAddCustomAttribute} className="h-9 mt-auto sm:mt-0">
+              <PlusCircle className="mr-2 h-4 w-4" /> Add
+            </Button>
+          </div>
         </AccordionContent>
       </AccordionItem>
     </Accordion>
@@ -295,7 +372,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   if (isStandalonePage) {
     return (
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-8">
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="font-headline">Product Information</CardTitle>
@@ -314,7 +391,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
   return (
      <Form {...form}>
-        <form id={id} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">{formContent}</form>
+        <form id={id} onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">{formContent}</form>
     </Form>
   );
 }
+

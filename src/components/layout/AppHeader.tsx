@@ -29,10 +29,10 @@ import { cn } from "@/lib/utils";
 
 
 const mockNotifications = [
-  { id: "notif1", title: "Compliance Update", description: "Product PROD001 status changed to 'Compliant'.", time: "5m ago" },
-  { id: "notif2", title: "New API Key", description: "Sandbox key 'sand_sk_...cdef' generated.", time: "1h ago" },
-  { id: "notif3", title: "System Maintenance", description: "Scheduled for Sunday 2 AM UTC.", time: "1d ago" },
-  { id: "notif4", title: "Data Request", description: "Manufacturer 'EcoGoods Inc.' requests data for Component Z.", time: "2d ago" },
+  { id: "notif1", title: "Compliance Update", description: "Product PROD001 status changed to 'Compliant'. All checks passed successfully after recent data submission.", time: "5m ago" },
+  { id: "notif2", title: "New API Key Generated", description: "A new Sandbox API key 'sand_sk_...cdef' was generated for your account.", time: "1h ago" },
+  { id: "notif3", title: "System Maintenance Scheduled", description: "Important: System maintenance is scheduled for Sunday 2 AM UTC. Expect brief downtime.", time: "1d ago" },
+  { id: "notif4", title: "Data Request from EcoGoods Inc.", description: "Manufacturer 'EcoGoods Inc.' requests updated specifications for Component Z (Part No. CZ-885).", time: "2d ago" },
 ];
 
 export default function AppHeader() {
@@ -98,7 +98,7 @@ export default function AppHeader() {
               <span className="sr-only">Notifications</span>
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-80">
+          <DropdownMenuContent align="end" className="w-80 sm:w-96">
             <DropdownMenuLabel className="flex justify-between items-center">
               <span>Notifications</span>
               {mockNotifications.length > 0 && (
@@ -107,13 +107,13 @@ export default function AppHeader() {
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             {mockNotifications.length > 0 ? (
-              mockNotifications.slice(0, 4).map(notification => ( // Show max 4 notifications
+              mockNotifications.slice(0, 4).map(notification => ( 
                 <DropdownMenuItem key={notification.id} className="flex flex-col items-start gap-1 py-2 px-3 cursor-pointer hover:bg-muted/50">
                   <div className="flex justify-between w-full items-center">
                     <span className="text-sm font-semibold text-foreground">{notification.title}</span>
                     <span className="text-xs text-muted-foreground">{notification.time}</span>
                   </div>
-                  <p className="text-xs text-muted-foreground w-full truncate">{notification.description}</p>
+                  <p className="text-xs text-muted-foreground w-full whitespace-normal">{notification.description}</p>
                 </DropdownMenuItem>
               ))
             ) : (
@@ -165,3 +165,4 @@ export default function AppHeader() {
     </header>
   );
 }
+

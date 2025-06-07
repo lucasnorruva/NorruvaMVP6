@@ -430,6 +430,12 @@ export default function DeveloperPortalPage() {
                     <li><Link href="/developer/docs/deployment-monitoring" className="hover:underline flex items-center"><ServerIconShadcn className="mr-1.5 h-4 w-4 inline-block"/>Deployment &amp; Monitoring Guide</Link></li>
                  </ul>
             </div>
+             <div className="space-y-2 pt-3 border-t">
+                <h4 className="font-semibold">Security &amp; Privacy</h4>
+                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
+                    <li><Link href="/developer/docs/data-privacy" className="hover:underline flex items-center"><VenetianMask className="mr-1.5 h-4 w-4 inline-block"/>Data Privacy & GDPR Guide</Link></li>
+                 </ul>
+            </div>
             <Button variant="default" className="w-full sm:w-auto mt-3" asChild>
                 <Link href="/developer/docs/api-reference">
                     <FileJson className="mr-2 h-5 w-5" /> View Full API Reference
@@ -567,7 +573,7 @@ export default function DeveloperPortalPage() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-lg">
+      <Card className="shadow-lg" id="security-privacy">
         <CardHeader>
           <CardTitle className="font-headline flex items-center"><Lock className="mr-3 h-6 w-6 text-primary" /> Security &amp; Data Privacy</CardTitle>
           <CardDescription>Resources on securing DPP applications, GDPR compliance, and data integrity.</CardDescription>
@@ -584,7 +590,7 @@ export default function DeveloperPortalPage() {
             <h4 className="font-semibold text-md mb-1 flex items-center"><VenetianMask className="mr-2 h-4 w-4 text-accent"/>GDPR Compliance for Developers</h4>
             <p className="text-sm text-muted-foreground">Understand your responsibilities under GDPR when processing personal data associated with Digital Product Passports. Access guidelines and checklists.</p>
              <Button variant="link" className="p-0 h-auto text-primary hover:underline mt-1" asChild>
-                <Link href="/developer/docs/data-privacy">View GDPR Resources</Link>
+                <Link href="/developer/docs/data-privacy">View Data Privacy & GDPR Guide</Link>
             </Button>
           </div>
            <div className="pt-3 border-t">

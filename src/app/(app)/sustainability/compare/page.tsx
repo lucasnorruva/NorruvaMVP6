@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { BarChartHorizontal, BarChart3, Droplet, Recycle, Wrench } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 // Simplified product type for selection
 interface ProductForSelection {

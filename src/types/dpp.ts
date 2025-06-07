@@ -68,6 +68,11 @@ export interface ProductSupplyChainLink {
   notes?: string;
 }
 
+export interface CustomAttribute {
+  key: string;
+  value: string;
+}
+
 export interface DigitalProductPassport {
   id: string;
   version?: number;
@@ -105,6 +110,7 @@ export interface DigitalProductPassport {
     energyLabel?: string;
     repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
     recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
+    customAttributes?: CustomAttribute[]; // Added custom attributes here
   };
 
   lifecycleEvents?: LifecycleEvent[];
@@ -174,7 +180,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       energyLabel: "A++",
       imageUrl: "https://placehold.co/600x400.png",
       imageHint: "refrigerator appliance",
-      materials: [{name: "Recycled Steel", percentage: 70, isRecycled: true}]
+      materials: [{name: "Recycled Steel", percentage: 70, isRecycled: true}],
+      customAttributes: [{key: "EcoRating", value: "Gold"}, {key: "SpecialFeature", value: "AI Defrost"}],
     },
     compliance: {
       eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-07-01T00:00:00Z" },
@@ -350,6 +357,7 @@ export interface SimpleProductDetail {
   supplyChainLinks?: ProductSupplyChainLink[];
   complianceSummary?: ProductComplianceSummary;
   lifecycleEvents?: SimpleLifecycleEvent[];
+  customAttributes?: CustomAttribute[]; // Added custom attributes
 }
 
 // This type is used when storing user-created/edited products in localStorage.
@@ -389,7 +397,8 @@ export interface StoredUserProduct {
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[]; 
-  complianceSummary?: ProductComplianceSummary; 
+  complianceSummary?: ProductComplianceSummary;
+  customAttributesJsonString?: string; // Added for storing custom attributes
 }
 
 // Initial mock product data for /products page (more detailed than SimpleProductDetail)
@@ -419,6 +428,7 @@ export interface RichMockProduct {
   recycledContentPercentage?: number | null;
   ebsiVerification?: EbsiVerificationDetails;
   supplyChainLinks?: ProductSupplyChainLink[]; // Added for completeness
+  customAttributesJsonString?: string; // Added for consistency
 }
 
 
@@ -476,7 +486,8 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
       { id: "lc003", eventName: "Shipped to Distributor", date: "2024-01-20T00:00:00Z", location: "Logistics Hub, Hamburg", status: "Completed", iconName: "Truck" },
       { id: "lc004", eventName: "First Retail Sale", date: "2024-02-10T00:00:00Z", location: "Paris, France", status: "Completed", iconName: "ShoppingCart" },
       { id: "lc005", eventName: "Scheduled Maintenance", date: "2025-02-15T00:00:00Z", notes: "Filter replacement due.", status: "Upcoming", iconName: "Wrench" },
-    ]
+    ],
+    customAttributes: [{key: "EcoRating", value: "Gold"}, {key: "SpecialFeature", value: "AI Defrost"}]
   },
   {
     id: "PROD002",
@@ -606,6 +617,7 @@ export interface DisplayableProduct {
   recycledContentPercentage?: number | null;
   ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A'; // For DisplayableProduct on list view
   supplyChainLinks?: ProductSupplyChainLink[];
+  customAttributesJsonString?: string; // Added for product list consistency
 }
 
 // --- Types for Public Passport Page ---
@@ -653,6 +665,7 @@ export interface PublicProductInfo {
   ebsiVerificationId?: string;
   lifecycleHighlights?: LifecycleHighlight[];
   certifications?: PublicCertification[];
+  customAttributes?: CustomAttribute[]; // Added
 }
 
 export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
@@ -692,7 +705,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { name: "CE Marking", authority: "Self-Certified (Manufacturer)", expiryDate: "N/A", isVerified: true },
       { name: "ISO 9001:2015", authority: "TUV SUD", expiryDate: "2026-05-20", link: "#", isVerified: false },
       { name: "Green Product Award 2024", authority: "EcoChoice Org", expiryDate: "N/A", link: "#", isVerified: true },
-    ]
+    ],
+    customAttributes: [{key: "EcoRating", value: "Gold"}, {key: "SpecialFeature", value: "AI Defrost"}]
   },
   "PROD002": {
     passportId: "PROD002",
@@ -729,3 +743,4 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ]
   }
 };
+

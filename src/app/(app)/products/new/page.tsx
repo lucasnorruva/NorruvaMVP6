@@ -13,7 +13,7 @@ import { extractProductData } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, Loader2, ScanLine, Info, Cpu, Edit, FileWarning } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary } from "@/types/dpp";
+import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute } from "@/types/dpp";
 
 const fileToDataUri = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
@@ -37,6 +37,7 @@ export interface InitialProductFormData extends ProductFormData {
   stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
   carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
+  customAttributesJsonString?: string; // Added for custom attributes
   // imageUrlOrigin is now part of ProductFormData
 }
 
@@ -68,6 +69,7 @@ interface StoredUserProduct extends ProductFormData { // Now includes imageUrlOr
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
+  customAttributesJsonString?: string; // Added for storing custom attributes
 }
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -113,6 +115,7 @@ export default function AddNewProductPage() {
     materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
     imageUrl: "", imageHint: "", imageUrlOrigin: undefined,
     batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined,
+    customAttributesJsonString: "", // Added for custom attributes
     productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined,
     modelNumberOrigin: undefined, materialsOrigin: undefined, sustainabilityClaimsOrigin: undefined,
     energyLabelOrigin: undefined, specificationsOrigin: undefined, batteryChemistryOrigin: undefined,
@@ -134,6 +137,7 @@ export default function AddNewProductPage() {
           carbonFootprintManufacturing: productToEdit.carbonFootprintManufacturing ?? undefined,
           recycledContentPercentage: productToEdit.recycledContentPercentage ?? undefined,
           specificationsOrigin: productToEdit.specificationsOrigin, // Ensure this is loaded
+          customAttributesJsonString: productToEdit.customAttributesJsonString || "", // Load custom attributes
           // imageUrlOrigin is already part of productToEdit due to StoredUserProduct extending ProductFormData
         };
         setCurrentProductDataForForm(editData);
@@ -202,6 +206,7 @@ export default function AddNewProductPage() {
       aiInitialFormData.imageUrl = ""; // Ensure it's reset if AI doesn't provide it
       aiInitialFormData.imageHint = "";
       aiInitialFormData.imageUrlOrigin = undefined;
+      aiInitialFormData.customAttributesJsonString = ""; // Reset custom attributes
 
       setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData}));
       setAiExtractionAppliedSuccessfully(true);
@@ -251,6 +256,7 @@ export default function AddNewProductPage() {
         stateOfHealth: formDataFromForm.stateOfHealth !== undefined && formDataFromForm.stateOfHealth !== null ? formDataFromForm.stateOfHealth : dataPriorToThisEdit.stateOfHealth,
         carbonFootprintManufacturing: formDataFromForm.carbonFootprintManufacturing !== undefined && formDataFromForm.carbonFootprintManufacturing !== null ? formDataFromForm.carbonFootprintManufacturing : dataPriorToThisEdit.carbonFootprintManufacturing,
         recycledContentPercentage: formDataFromForm.recycledContentPercentage !== undefined && formDataFromForm.recycledContentPercentage !== null ? formDataFromForm.recycledContentPercentage : dataPriorToThisEdit.recycledContentPercentage,
+        customAttributesJsonString: formDataFromForm.customAttributesJsonString || dataPriorToThisEdit.customAttributesJsonString, // Save custom attributes
 
         productNameOrigin: determineOrigin(formDataFromForm.productName, dataPriorToThisEdit.productName, dataPriorToThisEdit.productNameOrigin),
         productDescriptionOrigin: determineOrigin(formDataFromForm.productDescription, dataPriorToThisEdit.productDescription, dataPriorToThisEdit.productDescriptionOrigin),
@@ -411,3 +417,4 @@ export default function AddNewProductPage() {
     </div>
   );
 }
+

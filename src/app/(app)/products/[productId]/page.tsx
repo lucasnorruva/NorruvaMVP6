@@ -6,9 +6,9 @@ import { useEffect, useState } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import ProductContainer from '@/components/products/detail/ProductContainer';
 import { SIMPLE_MOCK_PRODUCTS, USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp'; // Corrected import
-import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct } from '@/types/dpp';
+import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct } from '@/types/dpp'; // Added StoredUserProduct
 import { Loader2 } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast"; // Added useToast
 
 export default function ProductDetailPage() {
   const params = useParams();
@@ -44,17 +44,16 @@ export default function ProductDetailPage() {
               // Example for specifications: assuming StoredUserProduct.specifications is a JSON string
               specifications: userProductToDisplay.specifications ? JSON.parse(userProductToDisplay.specifications) : undefined,
               // Map complianceSummary and lifecycleEvents if they are part of StoredUserProduct
-              // For now, these might be undefined for USER_PROD if not explicitly mapped or added.
-              complianceSummary: userProductToDisplay.complianceSummary, // Assuming StoredUserProduct now has this
-              lifecycleEvents: userProductToDisplay.lifecycleEvents,     // Assuming StoredUserProduct now has this
+              complianceSummary: userProductToDisplay.complianceSummary, 
+              lifecycleEvents: userProductToDisplay.lifecycleEvents,     
             };
           }
         }
       }
       
-      setTimeout(() => {
+      setTimeout(() => { // Simulate fetch delay
         setProduct(foundProduct || null);
-      }, 300); // Simulate fetch delay
+      }, 300); 
     }
   }, [productId]);
 
@@ -89,6 +88,7 @@ export default function ProductDetailPage() {
         console.error("Error saving supply chain to localStorage:", error);
       }
     } else {
+        // For mock products, changes are only in-memory for the session
         toast({ title: "Supply Chain Updated (Session Only)", description: "Supply chain links updated for this session (mock product).", variant: "default" });
     }
   };

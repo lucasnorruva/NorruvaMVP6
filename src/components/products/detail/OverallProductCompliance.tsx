@@ -1,3 +1,4 @@
+
 // --- File: OverallProductCompliance.tsx ---
 // Description: Component to display overall product compliance, including a prominent overall status badge.
 "use client";
@@ -16,7 +17,7 @@ import type { ProductComplianceSummary } from '@/types/dpp';
 export interface ComplianceStatus {
   status: string;
   lastChecked: string;
-  entryId?: string;
+  id?: string; // Changed from entryId for EPREL
   verificationId?: string;
   declarationId?: string;
   url?: string;
@@ -56,8 +57,8 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
 
   if (title.includes("EBSI") && data.verificationId && data.verificationId !== "PENDING_EBSI_CHECK" && data.status.toLowerCase() === 'verified') {
     detailsText = `Verified (ID: ${data.verificationId}) - ${detailsText}`;
-  } else if (title.includes("EPREL") && data.entryId && data.status.toLowerCase() === 'registered'){
-     detailsText = `Entry ID: ${data.entryId} - ${detailsText}`;
+  } else if (title.includes("EPREL") && data.id && (data.status.toLowerCase() === 'registered' || data.status.toLowerCase() === 'synced successfully' || data.status.toLowerCase() === 'data mismatch')){
+     detailsText = `Entry ID: ${data.id} - ${detailsText}`;
   } else if (title.includes("EBSI") && data.verificationId === "PENDING_EBSI_CHECK" && data.status.toLowerCase() === 'pending') {
      detailsText = `Verification Pending - ${detailsText}`;
   } else if (data.status.toLowerCase() === 'not applicable' || data.status.toLowerCase() === 'n/a') {
@@ -68,7 +69,7 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
   return (
     <div className="flex items-center justify-between p-3 bg-background rounded-md border hover:bg-muted/30 transition-colors">
       <div className="flex items-center">
-        {IconComponent} 
+        {React.cloneElement(IconComponent, { className: cn(IconComponent.props.className)})} {/* Removed hardcoded class override */}
         <div className="ml-3">
           <span className="text-sm font-medium">{titleText}</span>
           {detailsText && <span className="block text-xs text-muted-foreground">{detailsText}</span>}
@@ -77,7 +78,7 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
       <div className="flex items-center gap-2">
         {actionButton}
         <Badge variant={badgeVariant} className={cn("text-xs capitalize", badgeClasses)}>
-          {data.status.replace('_', ' ')}
+          {data.status.replace(/_/g, ' ').replace(/\b(eprel|in)\b/gi, match => match.toLowerCase())} {/* Nicer formatting */}
         </Badge>
       </div>
     </div>

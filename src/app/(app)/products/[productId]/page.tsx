@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import ProductContainer from '@/components/products/detail/ProductContainer';
 import { SIMPLE_MOCK_PRODUCTS, USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
-import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct } from '@/types/dpp';
+import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct, ProductComplianceSummary } from '@/types/dpp';
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow';
@@ -29,6 +29,14 @@ export default function ProductDetailPage() {
           const userProducts: StoredUserProduct[] = JSON.parse(storedProductsString);
           const userProductToDisplay = userProducts.find(p => p.id === productId);
           if (userProductToDisplay) {
+            // Ensure complianceSummary and its eprel/ebsi fields are objects
+            const complianceSummary: ProductComplianceSummary = {
+              overallStatus: userProductToDisplay.complianceSummary?.overallStatus || "N/A",
+              eprel: userProductToDisplay.complianceSummary?.eprel || { status: "N/A", lastChecked: new Date().toISOString() },
+              ebsi: userProductToDisplay.complianceSummary?.ebsi || { status: "N/A", lastChecked: new Date().toISOString() },
+              specificRegulations: userProductToDisplay.complianceSummary?.specificRegulations || [],
+            };
+
             foundProduct = {
               id: userProductToDisplay.id,
               productName: userProductToDisplay.productName || "N/A",
@@ -43,7 +51,7 @@ export default function ProductDetailPage() {
               supplyChainLinks: userProductToDisplay.supplyChainLinks || [],
               keySustainabilityPoints: userProductToDisplay.sustainabilityClaims?.split('\n').map(s => s.trim()).filter(Boolean) || [],
               specifications: userProductToDisplay.specifications ? JSON.parse(userProductToDisplay.specifications) : undefined,
-              complianceSummary: userProductToDisplay.complianceSummary, 
+              complianceSummary: complianceSummary, 
               lifecycleEvents: userProductToDisplay.lifecycleEvents,
               keyCompliancePoints: [], 
               materialsUsed: userProductToDisplay.materials ? userProductToDisplay.materials.split(',').map(m => ({name: m.trim()})) : [],
@@ -108,37 +116,41 @@ export default function ProductDetailPage() {
         modelNumber: product.modelNumber,
       });
 
-      const updatedProduct = {
+      const updatedProduct: SimpleProductDetail = {
         ...product,
         complianceSummary: {
           ...product.complianceSummary,
+          overallStatus: product.complianceSummary?.overallStatus || "N/A", // Keep existing overallStatus or default
           eprel: {
-            ...product.complianceSummary?.eprel,
+            id: result.eprelId || product.complianceSummary?.eprel?.id, // Preserve old ID if new one isn't returned
             status: result.syncStatus,
-            id: result.eprelId || product.complianceSummary?.eprel?.id,
             lastChecked: result.lastChecked,
+            url: product.complianceSummary?.eprel?.url, // Preserve existing URL
           },
-          overallStatus: product.complianceSummary?.overallStatus || "N/A",
           ebsi: product.complianceSummary?.ebsi,
           specificRegulations: product.complianceSummary?.specificRegulations,
         },
       };
-      setProduct(updatedProduct as SimpleProductDetail); 
+      setProduct(updatedProduct); 
 
       if (product.id.startsWith("USER_PROD")) {
         const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
         let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
         const productIndex = userProducts.findIndex(p => p.id === product.id);
         if (productIndex > -1) {
-          userProducts[productIndex].complianceSummary = updatedProduct.complianceSummary;
-          userProducts[productIndex].lastUpdated = result.lastChecked;
+          // Ensure complianceSummary exists on the stored product before updating its eprel part
+          if (!userProducts[productIndex].complianceSummary) {
+            userProducts[productIndex].complianceSummary = { overallStatus: "N/A" };
+          }
+           userProducts[productIndex].complianceSummary!.eprel = updatedProduct.complianceSummary?.eprel;
+           userProducts[productIndex].lastUpdated = result.lastChecked;
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
         }
       }
       toast({ title: "EPREL Sync", description: result.message, variant: result.syncStatus.toLowerCase().includes('error') || result.syncStatus.toLowerCase().includes('mismatch') ? "destructive" : "default" });
 
     } catch (error) {
-      toast({ title: "EPREL Sync Error", description: "An unexpected error occurred during EPREL sync.", variant: "destructive" });
+      toast({ title: "EPREL Sync Error", description: `An unexpected error occurred during EPREL sync. ${error instanceof Error ? error.message : ''}`, variant: "destructive" });
       console.error("EPREL Sync Error:", error);
     } finally {
       setIsSyncingEprel(false);

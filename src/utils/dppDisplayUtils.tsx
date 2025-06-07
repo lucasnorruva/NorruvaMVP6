@@ -1,10 +1,11 @@
+
 // --- File: dppDisplayUtils.tsx ---
 // Description: Utility functions for generating display details (text, icons, variants) for DPP compliance, EBSI status, and completeness.
 "use client"; 
 
 import React from "react"; 
 import type { DigitalProductPassport, EbsiVerificationDetails, DisplayableProduct, ProductComplianceSummary, SimpleLifecycleEvent } from "@/types/dpp";
-import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertCircle, AlertTriangle, CheckCircle2, RefreshCw, Loader2 } from 'lucide-react'; // Added RefreshCw, Loader2
 import { cn } from "@/lib/utils";
 
 interface ComplianceDetails {
@@ -223,3 +224,4 @@ export const getStatusBadgeClasses = (status?: string): string => {
         default: return "bg-muted text-muted-foreground";
     }
 };
+

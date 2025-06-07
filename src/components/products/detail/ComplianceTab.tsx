@@ -1,3 +1,4 @@
+
 // --- File: ComplianceTab.tsx ---
 // Description: Displays compliance-related information for a product.
 "use client";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { ShieldCheck, Info, Fingerprint, Link as LinkIcon, FileText, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // Updated import
+import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; 
 
 interface ComplianceTabProps {
   product: SimpleProductDetail;
@@ -27,10 +28,14 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     return <p className="text-muted-foreground p-4">Compliance summary not available for this product.</p>;
   }
 
+  // Ensure eprel and ebsi fields are always objects for OverallProductComplianceComponent
+  const eprelData = summary.eprel || { status: 'N/A', lastChecked: new Date().toISOString() };
+  const ebsiData = summary.ebsi || { status: 'N/A', lastChecked: new Date().toISOString() };
+  
   const overallComplianceData = {
     gdpr: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('gdpr')) || { status: 'N/A', lastChecked: new Date().toISOString() },
-    eprel: summary.eprel || { status: 'N/A', lastChecked: new Date().toISOString() },
-    ebsiVerified: summary.ebsi || { status: 'N/A', lastChecked: new Date().toISOString() },
+    eprel: eprelData,
+    ebsiVerified: ebsiData,
     scip: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('scip')) || { status: 'N/A', lastChecked: new Date().toISOString() },
     csrd: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('csrd')) || { status: 'N/A', lastChecked: new Date().toISOString() },
   };
@@ -40,7 +45,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     <div className="space-y-6">
       <OverallProductComplianceComponent 
         complianceData={overallComplianceData}
-        overallStatusText={summary.overallStatus} // Pass the overall status text
+        overallStatusText={summary.overallStatus} 
         onSyncEprel={onSyncEprel}
         isSyncingEprel={isSyncingEprel}
         canSyncEprel={canSyncEprel}

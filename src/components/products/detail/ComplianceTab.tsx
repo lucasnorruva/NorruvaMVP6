@@ -1,16 +1,16 @@
-
 // --- File: ComplianceTab.tsx ---
 // Description: Displays compliance-related information for a product.
 "use client";
 
 import type { SimpleProductDetail, ComplianceDetailItem, ProductComplianceSummary } from "@/types/dpp";
-import OverallProductComplianceComponent from "@/components/products/detail/OverallProductCompliance"; // Renamed to avoid conflict
+import OverallProductComplianceComponent from "@/components/products/detail/OverallProductCompliance"; 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, AlertTriangle, Info, Fingerprint, Link as LinkIcon, FileText, ExternalLink } from "lucide-react";
+import { ShieldCheck, Info, Fingerprint, Link as LinkIcon, FileText, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // Updated import
 
 interface ComplianceTabProps {
   product: SimpleProductDetail;
@@ -18,70 +18,6 @@ interface ComplianceTabProps {
   isSyncingEprel: boolean;
   canSyncEprel: boolean;
 }
-
-const getStatusIcon = (status: ComplianceDetailItem['status'] | ProductComplianceSummary['overallStatus'] | ProductComplianceSummary['eprel']['status'] | ProductComplianceSummary['ebsi']['status'] | string) => {
-  switch (status?.toLowerCase()) {
-    case 'compliant':
-    case 'registered':
-    case 'verified':
-    case 'synced successfully':
-      return <ShieldCheck className="h-5 w-5 text-green-500" />;
-    case 'non-compliant':
-    case 'error':
-    case 'error during sync':
-      return <AlertTriangle className="h-5 w-5 text-red-500" />;
-    case 'pending':
-    case 'pending review':
-    case 'in progress':
-    case 'data incomplete':
-    case 'data mismatch':
-    case 'product not found in eprel':
-      return <Info className="h-5 w-5 text-yellow-500" />;
-    case 'not applicable':
-    case 'n/a':
-    case 'not found':
-    case 'not verified':
-    default:
-      return <Info className="h-5 w-5 text-muted-foreground" />;
-  }
-};
-
-const getStatusBadgeVariant = (status: ComplianceDetailItem['status'] | ProductComplianceSummary['overallStatus'] | ProductComplianceSummary['eprel']['status'] | ProductComplianceSummary['ebsi']['status'] | string): "default" | "destructive" | "outline" | "secondary" => {
-  switch (status?.toLowerCase()) {
-    case 'compliant':
-    case 'registered':
-    case 'verified':
-    case 'synced successfully':
-      return "default";
-    case 'non-compliant':
-    case 'error':
-    case 'error during sync':
-      return "destructive";
-    case 'pending':
-    case 'pending review':
-    case 'in progress':
-    case 'data incomplete':
-    case 'data mismatch':
-    case 'product not found in eprel':
-      return "outline";
-    case 'not applicable':
-    case 'n/a':
-    case 'not found':
-    case 'not verified':
-    default:
-      return "secondary";
-  }
-};
-
-const getStatusBadgeClasses = (status: ComplianceDetailItem['status'] | ProductComplianceSummary['overallStatus'] | ProductComplianceSummary['eprel']['status'] | ProductComplianceSummary['ebsi']['status'] | string) => {
-    switch (status?.toLowerCase()) {
-        case 'compliant': case 'registered': case 'verified': case 'synced successfully': return "bg-green-100 text-green-700 border-green-300";
-        case 'non-compliant': case 'error': case 'error during sync': return "bg-red-100 text-red-700 border-red-300";
-        case 'pending': case 'pending review': case 'in progress': case 'data incomplete': case 'data mismatch': case 'product not found in eprel': return "bg-yellow-100 text-yellow-700 border-yellow-300";
-        case 'not applicable': case 'n/a': case 'not found': case 'not verified':
-        default: return "bg-muted text-muted-foreground";
-    }
-};
 
 
 export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, canSyncEprel }: ComplianceTabProps) {
@@ -104,6 +40,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     <div className="space-y-6">
       <OverallProductComplianceComponent 
         complianceData={overallComplianceData}
+        overallStatusText={summary.overallStatus} // Pass the overall status text
         onSyncEprel={onSyncEprel}
         isSyncingEprel={isSyncingEprel}
         canSyncEprel={canSyncEprel}

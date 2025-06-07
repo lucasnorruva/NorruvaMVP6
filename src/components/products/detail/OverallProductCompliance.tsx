@@ -1,13 +1,17 @@
-
+// --- File: OverallProductCompliance.tsx ---
+// Description: Component to display overall product compliance, including a prominent overall status badge.
 "use client";
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertCircle, Info as InfoIcon, ShieldQuestion, ShieldCheck, AlertTriangle, ExternalLink, RefreshCw, Loader2 } from 'lucide-react'; // Added InfoIcon
+import { AlertTriangle, RefreshCw, Loader2, Info as InfoIconFromLucide } from 'lucide-react'; // Renamed Info to InfoIconFromLucide
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
+import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // Import centralized utils
+import type { ProductComplianceSummary } from '@/types/dpp';
+
 
 export interface ComplianceStatus {
   status: string;
@@ -36,6 +40,7 @@ export interface ProductNotification {
 
 interface OverallProductComplianceProps {
   complianceData: OverallComplianceData;
+  overallStatusText: ProductComplianceSummary['overallStatus']; // New prop for overall status
   notifications?: ProductNotification[];
   onSyncEprel?: () => Promise<void>;
   isSyncingEprel?: boolean;
@@ -43,75 +48,28 @@ interface OverallProductComplianceProps {
 }
 
 const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionButton?: React.ReactNode }> = ({ title, data, actionButton }) => {
-  let IconComponent = InfoIcon;
-  let badgeVariant: "default" | "secondary" | "destructive" | "outline" = "outline";
-  let badgeClasses = "bg-muted text-muted-foreground";
+  const IconComponent = getStatusIcon(data.status);
+  const badgeVariant = getStatusBadgeVariant(data.status);
+  const badgeClasses = getStatusBadgeClasses(data.status);
   let titleText = title;
   let detailsText = `Last checked: ${new Date(data.lastChecked).toLocaleDateString()}`;
-  const statusLower = data.status?.toLowerCase();
 
-  switch (statusLower) {
-    case 'compliant':
-    case 'registered':
-    case 'verified':
-    case 'synced successfully':
-      IconComponent = ShieldCheck;
-      badgeVariant = "default";
-      badgeClasses = "bg-green-500/20 text-green-700 border-green-500/30";
-      if (title.includes("EBSI") && data.verificationId && data.verificationId !== "PENDING_EBSI_CHECK") {
-        detailsText = `Verified (ID: ${data.verificationId}) - ${detailsText}`;
-      } else if (title.includes("EPREL") && data.entryId){
-         detailsText = `Entry ID: ${data.entryId} - ${detailsText}`;
-      }
-      break;
-    case 'non_compliant':
-    case 'error':
-    case 'error during sync':
-      IconComponent = AlertCircle;
-      badgeVariant = "destructive";
-      badgeClasses = "bg-red-500/20 text-red-700 border-red-500/30";
-      break;
-    case 'pending_review':
-    case 'pending':
-    case 'data mismatch':
-      IconComponent = InfoIcon;
-      badgeVariant = "outline";
-      badgeClasses = "bg-yellow-500/20 text-yellow-700 border-yellow-500/30";
-       if (title.includes("EBSI") && data.verificationId === "PENDING_EBSI_CHECK") {
-         detailsText = `Verification Pending - ${detailsText}`;
-      }
-      break;
-    case 'in_progress':
-      IconComponent = InfoIcon;
-      badgeVariant = "outline";
-      badgeClasses = "bg-blue-500/20 text-blue-700 border-blue-500/30";
-      break;
-    case 'product not found in eprel':
-      IconComponent = ShieldQuestion;
-      badgeVariant = "outline";
-      badgeClasses = "bg-purple-500/20 text-purple-700 border-purple-500/30"; // Changed to purple for distinction
-      break;
-    case 'not_applicable':
-    case 'n/a':
-      IconComponent = ShieldQuestion;
-      badgeVariant = "secondary";
-      badgeClasses = "bg-gray-500/20 text-gray-700 border-gray-500/30";
-      detailsText = `Not applicable for this product. Last checked: ${new Date(data.lastChecked).toLocaleDateString()}`;
-      break;
-    default:
-      IconComponent = InfoIcon; // Default for any other unhandled status
-      badgeVariant = "outline"; // A neutral outline
-      badgeClasses = "bg-blue-500/20 text-blue-700 border-blue-500/30"; // Default to info-like blue
-      break;
+  if (title.includes("EBSI") && data.verificationId && data.verificationId !== "PENDING_EBSI_CHECK" && data.status.toLowerCase() === 'verified') {
+    detailsText = `Verified (ID: ${data.verificationId}) - ${detailsText}`;
+  } else if (title.includes("EPREL") && data.entryId && data.status.toLowerCase() === 'registered'){
+     detailsText = `Entry ID: ${data.entryId} - ${detailsText}`;
+  } else if (title.includes("EBSI") && data.verificationId === "PENDING_EBSI_CHECK" && data.status.toLowerCase() === 'pending') {
+     detailsText = `Verification Pending - ${detailsText}`;
+  } else if (data.status.toLowerCase() === 'not applicable' || data.status.toLowerCase() === 'n/a') {
+     detailsText = `Not applicable for this product. Last checked: ${new Date(data.lastChecked).toLocaleDateString()}`;
   }
+
 
   return (
     <div className="flex items-center justify-between p-3 bg-background rounded-md border hover:bg-muted/30 transition-colors">
       <div className="flex items-center">
-        <IconComponent className={cn("h-5 w-5 mr-3 flex-shrink-0",
-          badgeClasses.split(' ')[1] // Use the text color from badgeClasses for the icon
-        )} />
-        <div>
+        {IconComponent} 
+        <div className="ml-3">
           <span className="text-sm font-medium">{titleText}</span>
           {detailsText && <span className="block text-xs text-muted-foreground">{detailsText}</span>}
         </div>
@@ -126,12 +84,16 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
   );
 };
 
-const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ complianceData, notifications, onSyncEprel, isSyncingEprel, canSyncEprel }) => {
+const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ complianceData, overallStatusText, notifications, onSyncEprel, isSyncingEprel, canSyncEprel }) => {
   if (!complianceData) {
     return <p className="text-muted-foreground">Overall compliance data not available.</p>;
   }
 
   const hasErrorNotifications = notifications?.some(n => n.type === 'error');
+  
+  const overallStatusIcon = getStatusIcon(overallStatusText);
+  const overallStatusBadgeVariant = getStatusBadgeVariant(overallStatusText);
+  const overallStatusBadgeClasses = getStatusBadgeClasses(overallStatusText);
 
   const eprelSyncButton = (onSyncEprel) ? (
     <TooltipProvider>
@@ -153,7 +115,7 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
             <p>Sync with EPREL Database</p>
           ) : (
             <p className="flex items-center">
-              <InfoIcon className="h-4 w-4 mr-2 text-info" />
+              <InfoIconFromLucide className="h-4 w-4 mr-2 text-info" />
               Model number required to sync.
             </p>
           )}
@@ -165,14 +127,27 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
   return (
     <Card className={cn("shadow-md", hasErrorNotifications && "border-destructive border-2")}>
       <CardHeader>
-        <CardTitle className={cn("text-lg font-headline flex items-center", hasErrorNotifications && "text-destructive")}>
-          {hasErrorNotifications && <AlertTriangle className="mr-2 h-5 w-5" />}
-          Overall Product Compliance
-        </CardTitle>
-        <CardDescription>
-          Summary of the product's adherence to key regulations.
-          {hasErrorNotifications && <span className="block text-destructive font-medium mt-1">Attention: Critical alerts require review.</span>}
-        </CardDescription>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <CardTitle className={cn("text-lg font-headline flex items-center", hasErrorNotifications && "text-destructive")}>
+              {hasErrorNotifications && <AlertTriangle className="mr-2 h-5 w-5" />}
+              Overall Product Compliance
+            </CardTitle>
+            <CardDescription className="mt-1">
+              Summary of the product's adherence to key regulations.
+              {hasErrorNotifications && <span className="block text-destructive font-medium mt-1">Attention: Critical alerts require review.</span>}
+            </CardDescription>
+          </div>
+          {overallStatusText && overallStatusText !== 'N/A' && (
+            <div className="flex flex-col items-start sm:items-end mt-2 sm:mt-0">
+              <span className="text-xs text-muted-foreground mb-0.5">Overall Status</span>
+              <Badge variant={overallStatusBadgeVariant} className={cn("text-sm px-3 py-1 capitalize", overallStatusBadgeClasses)}>
+                {React.cloneElement(overallStatusIcon, { className: cn(overallStatusIcon.props.className, "mr-2 h-4 w-4") })}
+                {overallStatusText.replace('_', ' ')}
+              </Badge>
+            </div>
+          )}
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         <ComplianceItem title="GDPR Data Privacy" data={complianceData.gdpr} />

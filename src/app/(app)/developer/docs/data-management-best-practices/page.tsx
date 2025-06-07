@@ -3,7 +3,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Layers, Shield, RotateCcw, Users, CheckSquare, Search, DatabaseBackup, Link as LinkIcon } from "lucide-react";
+import { Layers, Shield, RotateCcw, Users, CheckSquare, Search, DatabaseBackup, Link as LinkIcon, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -19,7 +19,7 @@ export default function DataManagementBestPracticesPage() {
           Data Management Best Practices
         </h1>
         <Button variant="outline" asChild>
-            <Link href="/developer">Back to Developer Portal</Link>
+            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
         </Button>
       </div>
 

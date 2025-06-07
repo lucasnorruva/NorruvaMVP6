@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ShieldAlert, UserCheck, Info, VenetianMask, FileText, Trash2, DownloadCloud } from "lucide-react";
+import { ShieldAlert, UserCheck, Info, VenetianMask, FileText, Trash2, DownloadCloud, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -16,7 +16,7 @@ export default function DataPrivacyPage() {
           Data Privacy & GDPR Compliance
         </h1>
         <Button variant="outline" asChild>
-            <Link href="/developer">Back to Developer Portal</Link>
+            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
         </Button>
       </div>
 
@@ -124,4 +124,3 @@ export default function DataPrivacyPage() {
     </div>
   );
 }
-

@@ -3,7 +3,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scale, Info, Settings } from "lucide-react";
+import { Scale, Info, Settings, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -16,7 +16,7 @@ export default function RegulatoryAlignmentPage() {
           Regulatory Alignment (ESPR, EPREL, etc.)
         </h1>
         <Button variant="outline" asChild>
-            <Link href="/developer">Back to Developer Portal</Link>
+            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
         </Button>
       </div>
 

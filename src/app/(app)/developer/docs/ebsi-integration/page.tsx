@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers, QrCode, FileCog } from "lucide-react"; 
+import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers, QrCode, FileCog, ArrowLeft } from "lucide-react"; 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -14,7 +14,7 @@ export default function EbsiIntegrationOverviewPage() {
           EBSI Integration Overview
         </h1>
         <Button variant="outline" asChild>
-            <Link href="/developer">Back to Developer Portal</Link>
+            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
         </Button>
       </div>
 

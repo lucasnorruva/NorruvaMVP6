@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Server, Cloud, Shield, ArrowUpCircle, BarChart, Info, Settings, Globe, Eye, Activity, TrendingUp, DatabaseZap, Zap } from "lucide-react"; 
+import { Server, Cloud, Shield, ArrowUpCircle, BarChart, Info, Settings, Globe, Eye, Activity, TrendingUp, DatabaseZap, Zap, ArrowLeft } from "lucide-react"; 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -14,7 +14,7 @@ export default function DeploymentMonitoringPage() {
           Deployment & Monitoring (Conceptual)
         </h1>
         <Button variant="outline" asChild>
-            <Link href="/developer">Back to Developer Portal</Link>
+            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
         </Button>
       </div>
 
@@ -188,4 +188,3 @@ export default function DeploymentMonitoringPage() {
     </div>
   );
 }
-

@@ -70,7 +70,7 @@ export default function ProductDetailPage() {
     if (!product) return;
 
     const updatedProduct = { ...product, supplyChainLinks: updatedLinks };
-    setProduct(updatedProduct); // Update local state for immediate UI reflection
+    setProduct(updatedProduct); 
 
     if (product.id.startsWith("USER_PROD")) {
       try {
@@ -79,11 +79,10 @@ export default function ProductDetailPage() {
         
         const productIndex = userProducts.findIndex(p => p.id === product.id);
         if (productIndex > -1) {
-          // Ensure we're updating the correct product in the array from local storage
           userProducts[productIndex] = {
-            ...userProducts[productIndex], // Preserve other properties of StoredUserProduct
-            supplyChainLinks: updatedLinks, // Only update the supply chain links
-            lastUpdated: new Date().toISOString(), // Also update lastUpdated timestamp
+            ...userProducts[productIndex], 
+            supplyChainLinks: updatedLinks, 
+            lastUpdated: new Date().toISOString(), 
           };
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
           toast({
@@ -116,19 +115,18 @@ export default function ProductDetailPage() {
         modelNumber: product.modelNumber,
       });
 
+      const currentComplianceSummary = product.complianceSummary || { overallStatus: "N/A" };
       const updatedProduct: SimpleProductDetail = {
         ...product,
         complianceSummary: {
-          ...product.complianceSummary,
-          overallStatus: product.complianceSummary?.overallStatus || "N/A", 
+          ...currentComplianceSummary,
+          overallStatus: currentComplianceSummary.overallStatus, 
           eprel: {
-            id: result.eprelId || product.complianceSummary?.eprel?.id, 
+            id: result.eprelId || currentComplianceSummary.eprel?.id, 
             status: result.syncStatus,
             lastChecked: result.lastChecked,
-            url: product.complianceSummary?.eprel?.url, 
+            url: currentComplianceSummary.eprel?.url, 
           },
-          ebsi: product.complianceSummary?.ebsi,
-          specificRegulations: product.complianceSummary?.specificRegulations,
         },
       };
       setProduct(updatedProduct); 
@@ -141,8 +139,8 @@ export default function ProductDetailPage() {
           if (!userProducts[productIndex].complianceSummary) {
             userProducts[productIndex].complianceSummary = { overallStatus: "N/A" };
           }
-           userProducts[productIndex].complianceSummary!.eprel = updatedProduct.complianceSummary?.eprel;
-           userProducts[productIndex].lastUpdated = result.lastChecked;
+          userProducts[productIndex].complianceSummary!.eprel = updatedProduct.complianceSummary?.eprel;
+          userProducts[productIndex].lastUpdated = result.lastChecked;
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
         }
       }

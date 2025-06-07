@@ -223,3 +223,5 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
     </Card>
   );
 }
+
+    

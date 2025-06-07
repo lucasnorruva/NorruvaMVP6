@@ -3,15 +3,16 @@
 // Description: Displays compliance-related information for a product.
 "use client";
 
-import type { SimpleProductDetail, ComplianceDetailItem, ProductComplianceSummary } from "@/types/dpp";
+import type { SimpleProductDetail, ProductComplianceSummary } from "@/types/dpp";
 import OverallProductComplianceComponent from "@/components/products/detail/OverallProductCompliance"; 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ShieldCheck, Info, Fingerprint, Link as LinkIcon, FileText, ExternalLink } from "lucide-react";
+import { ShieldCheck, Info, Fingerprint, Link as LinkIcon, FileText, ExternalLink, ListChecks } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; 
+import React from "react";
 
 interface ComplianceTabProps {
   product: SimpleProductDetail;
@@ -119,7 +120,10 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
       {summary.specificRegulations && summary.specificRegulations.length > 0 && (
         <Card className="shadow-sm">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold">Specific Regulations Adherence</CardTitle>
+            <CardTitle className="text-lg font-semibold flex items-center">
+              <ListChecks className="mr-2 h-5 w-5 text-primary" /> {/* Added Icon */}
+              Specific Regulations Adherence
+            </CardTitle>
             <CardDescription>Details on compliance with various regulations.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">

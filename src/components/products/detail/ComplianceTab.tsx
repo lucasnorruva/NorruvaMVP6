@@ -4,7 +4,7 @@
 "use client";
 
 import type { SimpleProductDetail, ComplianceDetailItem, ProductComplianceSummary } from "@/types/dpp";
-import OverallProductCompliance from "@/components/products/detail/OverallProductCompliance";
+import OverallProductComplianceComponent from "@/components/products/detail/OverallProductCompliance"; // Renamed to avoid conflict
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -102,7 +102,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
 
   return (
     <div className="space-y-6">
-      <OverallProductCompliance 
+      <OverallProductComplianceComponent 
         complianceData={overallComplianceData}
         onSyncEprel={onSyncEprel}
         isSyncingEprel={isSyncingEprel}
@@ -161,23 +161,30 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
             <CardTitle className="text-lg font-semibold">Specific Regulations Adherence</CardTitle>
             <CardDescription>Details on compliance with various regulations.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-4">
             {summary.specificRegulations.map((reg, index) => (
-              <div key={index} className="p-3 border rounded-md bg-muted/30">
-                <div className="flex justify-between items-center mb-1">
-                  <h4 className="font-medium text-sm">{reg.regulationName}</h4>
-                  <Badge variant={getStatusBadgeVariant(reg.status)} className={getStatusBadgeClasses(reg.status)}>{reg.status}</Badge>
+              <div key={index} className="p-4 border rounded-lg bg-background hover:shadow-md transition-shadow">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="font-medium text-md text-foreground flex items-center">
+                    {getStatusIcon(reg.status)}
+                    <span className="ml-2">{reg.regulationName}</span>
+                  </h4>
+                  <Badge variant={getStatusBadgeVariant(reg.status)} className={cn("text-xs capitalize", getStatusBadgeClasses(reg.status))}>
+                      {reg.status}
+                  </Badge>
                 </div>
-                <p className="text-xs text-muted-foreground">Last Checked: {new Date(reg.lastChecked).toLocaleDateString()}</p>
-                {reg.verificationId && <p className="text-xs text-muted-foreground truncate" title={reg.verificationId}>Verification ID: {reg.verificationId}</p>}
-                {reg.notes && <p className="text-xs text-muted-foreground mt-1">Notes: {reg.notes}</p>}
-                {reg.detailsUrl && (
-                  <Button variant="link" size="sm" asChild className="p-0 h-auto text-primary mt-1 text-xs">
-                    <Link href={reg.detailsUrl} target="_blank" rel="noopener noreferrer">
-                      View Details <ExternalLink className="ml-1 h-3 w-3" />
-                    </Link>
-                  </Button>
-                )}
+                <div className="text-xs space-y-1">
+                  <p><strong className="text-muted-foreground">Last Checked:</strong> {new Date(reg.lastChecked).toLocaleDateString()}</p>
+                  {reg.verificationId && <p className="truncate" title={reg.verificationId}><strong className="text-muted-foreground">Verification ID:</strong> {reg.verificationId}</p>}
+                  {reg.notes && <p><strong className="text-muted-foreground">Notes:</strong> {reg.notes}</p>}
+                  {reg.detailsUrl && (
+                    <Button variant="link" size="sm" asChild className="p-0 h-auto text-primary mt-1.5">
+                      <Link href={reg.detailsUrl} target="_blank" rel="noopener noreferrer">
+                        View Details <ExternalLink className="ml-1 h-3 w-3" />
+                      </Link>
+                    </Button>
+                  )}
+                </div>
               </div>
             ))}
           </CardContent>

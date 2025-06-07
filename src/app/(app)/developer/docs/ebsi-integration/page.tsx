@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers } from "lucide-react"; // Added Database
+import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers, QrCode, FileCog } from "lucide-react"; 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -187,7 +187,95 @@ export default function EbsiIntegrationOverviewPage() {
         </CardContent>
       </Card>
 
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center"><QrCode className="mr-2 h-5 w-5 text-primary"/>QR Code Integration with EBSI</CardTitle>
+          <CardDescription>
+            Conceptual overview of integrating QR codes for physical product linkage in an EBSI-enabled DPP ecosystem.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Data Encoding in QR Codes</h3>
+            <p className="text-sm">
+              QR codes on products could encode various identifiers to link to the DPP:
+            </p>
+            <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+              <li>A URL pointing to the human-readable public DPP viewer (e.g., <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">https://dpp.norruva.com/passport/{'{productId}'}</code>).</li>
+              <li>A Decentralized Identifier (DID) of the product or its manufacturer.</li>
+              <li>A reference to a key Verifiable Credential (e.g., a VC summarizing key attributes or authenticity).</li>
+            </ul>
+             <p className="text-sm mt-1">The choice depends on the use case and desired level of directness vs. indirection.</p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Security and Access Control</h3>
+            <p className="text-sm">
+              QR codes themselves are public. Security relies on the endpoint they resolve to:
+            </p>
+            <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+              <li>Endpoints must use HTTPS.</li>
+              <li>Access to sensitive or detailed DPP data should require further authentication or authorization, potentially involving the scanner presenting their own VCs to prove their role or permissions.</li>
+              <li>Publicly accessible information via QR scan should be carefully curated.</li>
+            </ul>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Offline Scenarios (Conceptual)</h3>
+            <p className="text-sm">
+              For scenarios requiring offline verification, QR codes could potentially encode a signed, self-contained VC (e.g., using <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">VC-JWT</code> or <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">CBOR-LD</code>) with essential product information. This is more complex but offers offline capabilities.
+            </p>
+          </section>
+        </CardContent>
+      </Card>
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center"><FileCog className="mr-2 h-5 w-5 text-primary"/>Role of Smart Contracts with EBSI</CardTitle>
+          <CardDescription>
+            Smart contracts can play a crucial role in automating, governing, and enhancing the trustworthiness of DPPs within an EBSI-integrated system.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <section>
+            <h3 className="font-semibold text-lg mb-2">DPP Lifecycle Management</h3>
+            <p className="text-sm">
+              Smart contracts can manage the state transitions of a DPP (e.g., 'draft', 'published', 'recalled', 'recycled'). They can enforce rules for who can trigger these transitions and log events immutably.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Verifiable Credential (VC) Management</h3>
+            <p className="text-sm">
+              Contracts could facilitate aspects of VC lifecycle:
+            </p>
+            <ul className="list-disc list-inside text-sm space-y-1 ml-4">
+              <li>Registering VCs or their proofs on-chain.</li>
+              <li>Managing VC revocation lists (e.g., through a VC Status List 2021 approach).</li>
+              <li>Automating verification checks based on predefined rules.</li>
+            </ul>
+          </section>
+          <section>
+            <h3 className="font-semibold text-lg mb-2">Access Control Logic</h3>
+            <p className="text-sm">
+              Define and enforce granular permissions for who can view or update specific sections of a DPP. This could be integrated with DIDs and VCs, allowing role-based access.
+            </p>
+          </section>
+           <section>
+            <h3 className="font-semibold text-lg mb-2">Interacting with EBSI Services</h3>
+            <p className="text-sm">
+              Smart contracts might act as oracles or bridges to interact with EBSI core services, for example, to trigger a notarisation request on EBSI or query an EBSI-trusted VC registry.
+            </p>
+          </section>
+           <section>
+            <h3 className="font-semibold text-lg mb-2">Data Integrity & Auditability</h3>
+            <p className="text-sm">
+              Smart contracts can validate data hashes against on-chain anchors, ensuring that off-chain DPP data hasn't been tampered with. They provide an immutable audit trail of significant DPP events and attestations.
+            </p>
+          </section>
+        </CardContent>
+      </Card>
+
     </div>
   );
 }
+    
+
     

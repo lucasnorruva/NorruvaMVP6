@@ -13,9 +13,8 @@ import { Label } from "@/components/ui/label";
 import { FormDescription, FormField, FormItem, FormControl } from "@/components/ui/form";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Cpu, ImagePlus, ImageIcon, Loader2 } from "lucide-react";
-import type { ToastInput } from "@/hooks/use-toast"; // Simplified toast type
+import type { ToastInput } from "@/hooks/use-toast";
 
-// Simplified toast function type signature from useToast
 type ToastFn = (input: ToastInput) => void;
 
 interface ProductImageFormSectionProps {
@@ -26,14 +25,13 @@ interface ProductImageFormSectionProps {
   setIsGenerating: (isGenerating: boolean) => void;
   aiImageHelper: (
     form: UseFormReturn<ProductFormData>,
-    toast: ToastFn, // Use the simplified ToastFn type
+    toast: ToastFn,
     setLoadingState: (loading: boolean) => void
   ) => Promise<string | null>;
   initialImageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  toast: ToastFn; // Pass toast function
+  toast: ToastFn;
 }
 
-// Local AiIndicator for this component
 const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' | 'manual', fieldName: string }) => {
   if (fieldOrigin === 'AI_EXTRACTED') {
     return (
@@ -70,6 +68,11 @@ export default function ProductImageFormSection({
     }
   };
 
+  const productNameForHint = form.getValues("productName") || "product";
+  const categoryForHint = form.getValues("productCategory") || "";
+  const imageHint = (currentImageUrl && currentImageUrl.startsWith("data:")) ? `${productNameForHint} ${categoryForHint}`.trim().split(" ").slice(0,2).join(" ") : productNameForHint.split(" ").slice(0,2).join(" ");
+
+
   return (
     <div className="space-y-2">
       <Label className="flex items-center">
@@ -79,7 +82,13 @@ export default function ProductImageFormSection({
       {currentImageUrl ? (
         <div className="w-full max-w-sm border rounded-md overflow-hidden shadow-sm">
           <AspectRatio ratio={4 / 3} className="bg-muted">
-            <Image src={currentImageUrl} alt="Generated product image" layout="fill" objectFit="contain" />
+            <Image 
+              src={currentImageUrl} 
+              alt="Generated product image" 
+              layout="fill" 
+              objectFit="contain" 
+              data-ai-hint={imageHint}
+            />
           </AspectRatio>
         </div>
       ) : (
@@ -88,7 +97,6 @@ export default function ProductImageFormSection({
           <p className="text-sm">No image provided or generated yet.</p>
         </div>
       )}
-      {/* Hidden FormField to hold the imageUrl value for react-hook-form */}
       <FormField
         control={form.control}
         name="imageUrl"
@@ -114,3 +122,5 @@ export default function ProductImageFormSection({
     </div>
   );
 }
+
+    

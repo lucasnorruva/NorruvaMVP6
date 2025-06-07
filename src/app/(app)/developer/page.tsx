@@ -1,4 +1,6 @@
 
+// --- File: page.tsx (Developer Portal) ---
+// Description: Main page for the Developer Portal, providing access to API keys, documentation, and tools.
 "use client";
 
 import React, { useState, useEffect } from 'react';
@@ -7,28 +9,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn } from "lucide-react";
+import { Badge } from "@/components/ui/badge"; // Badge is used by child components, not directly here anymore
+import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
+// Removed cn import as it's not directly used after refactoring. Child components will handle their own styling.
 
-interface ApiKey {
-  id: string;
-  key: string;
-  type: "Sandbox" | "Production";
-  created: string;
-  lastUsed: string;
-  status: "Active" | "Pending Approval" | "Revoked";
-}
+// Import the new components
+import ApiKeysManager, { type ApiKey } from '@/components/developer/ApiKeysManager';
+import WebhooksManager, { type WebhookEntry } from '@/components/developer/WebhooksManager';
 
-interface WebhookEntry {
-  id: string;
-  url: string;
-  events: string[];
-  status: "Active" | "Disabled" | "Error";
-}
+// ApiKey and WebhookEntry interfaces remain here as they define the state for this page.
+// export interface ApiKey { // This will now be imported from ApiKeysManager.tsx or defined there if not exported
+//   id: string;
+//   key: string;
+//   type: "Sandbox" | "Production";
+//   created: string;
+//   lastUsed: string;
+//   status: "Active" | "Pending Approval" | "Revoked";
+// }
+
+// export interface WebhookEntry { // This will now be imported from WebhooksManager.tsx or defined there
+//   id: string;
+//   url: string;
+//   events: string[];
+//   status: "Active" | "Disabled" | "Error";
+// }
 
 const initialMockApiKeys: ApiKey[] = [
   { id: "key_sandbox_1", key: "sand_sk_xxxx1234ABCD...", type: "Sandbox", created: "2024-07-01", lastUsed: "2024-07-28", status: "Active" },
@@ -42,7 +48,6 @@ const initialMockWebhooks: WebhookEntry[] = [
   { id: "wh_3", url: "https://user.integrations.com/norruva/events", events: ["product.lifecycle.event.added", "product.deleted"], status: "Active" },
 ];
 
-// Simplified mock product data for API responses
 const MOCK_API_PRODUCTS: Record<string, any> = {
   "PROD001": {
     productId: "PROD001",
@@ -395,66 +400,16 @@ export default function DeveloperPortalPage() {
               )}
             </CardContent>
           </Card>
-
         </CardContent>
       </Card>
 
-      <Card className="shadow-lg" id="api-keys">
-        <CardHeader>
-          <CardTitle className="font-headline flex items-center"><KeyRound className="mr-3 h-6 w-6 text-primary" /> API Keys</CardTitle>
-          <CardDescription>Manage your API keys for accessing Norruva platform services.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Key (Partial)</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Last Used</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {apiKeys.map((apiKey) => (
-                <TableRow key={apiKey.id}>
-                  <TableCell className="font-mono text-sm">{apiKey.key}</TableCell>
-                  <TableCell><Badge variant={apiKey.type === "Sandbox" ? "secondary" : "default"}>{apiKey.type}</Badge></TableCell>
-                  <TableCell>{apiKey.created}</TableCell>
-                  <TableCell>{apiKey.lastUsed}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={apiKey.status === "Active" ? "default" : "outline"}
-                      className={cn(
-                        apiKey.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "",
-                        apiKey.status === "Pending Approval" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""
-                      )}
-                    >
-                      {apiKey.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right space-x-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleCopyKey(apiKey.key)} title="Copy Key" disabled={apiKey.status === 'Pending Approval'}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" title="Delete Key" onClick={() => handleDeleteApiKey(apiKey.id)} className="text-destructive hover:text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          <div className="flex flex-wrap gap-4">
-            <Button variant="secondary" onClick={handleGenerateSandboxKey}>
-              <PlusCircle className="mr-2 h-5 w-5" /> Generate New Sandbox Key
-            </Button>
-            <Button variant="outline" onClick={handleRequestProductionKey}>Request Production Key</Button>
-          </div>
-          <p className="text-xs text-muted-foreground">API keys provide access to your account data. Keep them secure and do not share them publicly.</p>
-        </CardContent>
-      </Card>
+      <ApiKeysManager
+        apiKeys={apiKeys}
+        onCopyKey={handleCopyKey}
+        onGenerateSandboxKey={handleGenerateSandboxKey}
+        onRequestProductionKey={handleRequestProductionKey}
+        onDeleteApiKey={handleDeleteApiKey}
+      />
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="shadow-lg" id="api-docs">
@@ -501,56 +456,12 @@ export default function DeveloperPortalPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg">
-          <CardHeader>
-            <CardTitle className="font-headline flex items-center"><Webhook className="mr-3 h-6 w-6 text-primary" /> Webhooks</CardTitle>
-            <CardDescription>Configure webhooks to receive real-time notifications for events.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Table>
-                <TableHeader>
-                    <TableRow>
-                        <TableHead>Endpoint URL</TableHead>
-                        <TableHead>Events</TableHead>
-                        <TableHead>Status</TableHead>
-                        <TableHead className="text-right">Actions</TableHead>
-                    </TableRow>
-                </TableHeader>
-                <TableBody>
-                    {webhooks.map(wh => (
-                        <TableRow key={wh.id}>
-                            <TableCell className="truncate max-w-[150px] sm:max-w-[200px] text-sm font-mono">{wh.url}</TableCell>
-                            <TableCell className="text-xs max-w-[120px] truncate">{wh.events.join(', ')}</TableCell>
-                            <TableCell>
-                                <Badge
-                                  variant={wh.status === "Active" ? "default" : "outline"}
-                                  className={cn(
-                                    wh.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : 
-                                    wh.status === "Disabled" ? "bg-muted text-muted-foreground border-border" : 
-                                    "bg-red-500/20 text-red-700 border-red-500/30" // Error status
-                                  )}
-                                >
-                                  {wh.status}
-                                </Badge>
-                            </TableCell>
-                            <TableCell className="text-right space-x-1">
-                                <Button variant="ghost" size="icon" title="Edit Webhook" onClick={() => handleEditWebhook(wh.id)}>
-                                  <Edit2 className="h-4 w-4" />
-                                </Button>
-                                 <Button variant="ghost" size="icon" title="Delete Webhook" onClick={() => handleDeleteWebhook(wh.id)} className="text-destructive hover:text-destructive">
-                                    <Trash2 className="h-4 w-4" />
-                                </Button>
-                            </TableCell>
-                        </TableRow>
-                    ))}
-                </TableBody>
-            </Table>
-             <Button variant="secondary" onClick={handleAddWebhook}>
-              <PlusCircle className="mr-2 h-5 w-5" /> Add New Webhook
-            </Button>
-            <p className="text-xs text-muted-foreground">Get notified about product updates, compliance changes, and more by registering webhook endpoints.</p>
-          </CardContent>
-        </Card>
+        <WebhooksManager
+          webhooks={webhooks}
+          onAddWebhook={handleAddWebhook}
+          onEditWebhook={handleEditWebhook}
+          onDeleteWebhook={handleDeleteWebhook}
+        />
       </div>
       
       <Card className="shadow-lg" id="developer-resources">

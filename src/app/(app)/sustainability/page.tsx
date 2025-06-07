@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
 import { generateCsrdSummary } from '@/ai/flows/generate-csrd-summary-flow';
 import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'; // Added Alert imports
 
 // Placeholder data for charts and reports
 const emissionData = {

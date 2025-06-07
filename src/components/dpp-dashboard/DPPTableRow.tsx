@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { MoreHorizontal, Eye, Edit as EditIconLucide, Settings as SettingsIcon, Bot, Trash2 } from "lucide-react";
+import { MoreHorizontal, Eye, Edit as EditIconLucide, Settings as SettingsIcon, Bot, Trash2, ExternalLink } from "lucide-react";
 import type { DigitalProductPassport } from "@/types/dpp";
 import { getOverallComplianceDetails, getEbsiStatusDetails } from "@/utils/dppDisplayUtils.tsx";
 import { cn } from "@/lib/utils";
@@ -36,7 +36,8 @@ export function DPPTableRow({ dpp, onDeleteProduct, onViewAiSummary }: DPPTableR
   return (
     <TableRow key={dpp.id} className="hover:bg-muted/50 transition-colors">
       <TableCell className="font-medium">
-        <Link href={`/passport/${dpp.id}`} className="text-primary hover:underline" target="_blank" title="View Public Passport (Opens in new tab)">
+        {/* Main ID link now points to internal product details page */}
+        <Link href={`/products/${dpp.id}`} className="text-primary hover:underline" title="View Internal Product Details">
           {dpp.id}
         </Link>
       </TableCell>
@@ -114,9 +115,9 @@ export function DPPTableRow({ dpp, onDeleteProduct, onViewAiSummary }: DPPTableR
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              {/* Changed href to point to internal product detail page */}
-              <Link href={`/products/${dpp.id}`}>
-                <Eye className="mr-2 h-4 w-4" /> View Details
+              {/* Action menu item now links to public passport and opens in new tab */}
+              <Link href={`/passport/${dpp.id}`} target="_blank" rel="noopener noreferrer">
+                <ExternalLink className="mr-2 h-4 w-4" /> View Public Passport
               </Link>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() => onViewAiSummary(dpp.id)}>
@@ -143,4 +144,3 @@ export function DPPTableRow({ dpp, onDeleteProduct, onViewAiSummary }: DPPTableR
     </TableRow>
   );
 }
-

@@ -1,4 +1,6 @@
 
+"use client";
+
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Rocket, KeyRound, Send, BookOpen, Info } from "lucide-react";
@@ -22,7 +24,7 @@ export default function QuickStartGuidePage() {
         <Info className="h-4 w-4" />
         <AlertTitle>Work in Progress</AlertTitle>
         <AlertDescription>
-          This guide is currently a placeholder. Detailed information and code examples will be added soon.
+          This guide provides conceptual steps. Detailed code examples and SDKs will be added soon.
         </AlertDescription>
       </Alert>
 
@@ -110,7 +112,6 @@ export default function QuickStartGuidePage() {
           </ul>
         </CardContent>
       </Card>
-
     </div>
   );
 }

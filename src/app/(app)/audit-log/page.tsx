@@ -76,7 +76,7 @@ export default function AuditLogPage() {
       default:
         variant = "outline";
         className = "bg-blue-100 text-blue-700 border-blue-300";
-        Icon = UserCircle; // Changed to UserCircle for Info for variety
+        Icon = UserCircle; 
         break;
     }
     return <Badge variant={variant} className={cn("capitalize text-xs", className)}><Icon className="mr-1 h-3 w-3"/>{status}</Badge>;

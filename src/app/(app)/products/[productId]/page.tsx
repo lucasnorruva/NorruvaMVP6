@@ -1,4 +1,3 @@
-
 // --- File: page.tsx (Product Detail Page) ---
 // Description: Main page component for displaying individual product details.
 "use client";
@@ -39,10 +38,15 @@ export default function ProductDetailPage() {
               description: userProductToDisplay.productDescription,
               imageUrl: userProductToDisplay.imageUrl,
               // Map other relevant fields from StoredUserProduct to SimpleProductDetail
-              // For now, focusing on fields needed for already implemented tabs and supply chain
               supplyChainLinks: userProductToDisplay.supplyChainLinks || [],
-              // You might need to construct complianceSummary and lifecycleEvents from StoredUserProduct
-              // if they are managed there. For now, they might be undefined for USER_PROD if not explicitly mapped.
+              // For fields that might be in StoredUserProduct but need to align with SimpleProductDetail:
+              keySustainabilityPoints: userProductToDisplay.sustainabilityClaims?.split('\n').map(s => s.trim()).filter(Boolean) || [],
+              // Example for specifications: assuming StoredUserProduct.specifications is a JSON string
+              specifications: userProductToDisplay.specifications ? JSON.parse(userProductToDisplay.specifications) : undefined,
+              // Map complianceSummary and lifecycleEvents if they are part of StoredUserProduct
+              // For now, these might be undefined for USER_PROD if not explicitly mapped or added.
+              complianceSummary: userProductToDisplay.complianceSummary, // Assuming StoredUserProduct now has this
+              lifecycleEvents: userProductToDisplay.lifecycleEvents,     // Assuming StoredUserProduct now has this
             };
           }
         }
@@ -105,5 +109,3 @@ export default function ProductDetailPage() {
 
   return <ProductContainer product={product} onSupplyChainUpdate={handleSupplyChainUpdate} />;
 }
-
-    

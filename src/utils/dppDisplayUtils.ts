@@ -1,8 +1,9 @@
+
 // --- File: dppDisplayUtils.ts ---
 // Description: Utility functions for generating display details (text, icons, variants) for DPP compliance, EBSI status, and completeness.
 
-import type { DigitalProductPassport, EbsiVerificationDetails, DisplayableProduct } from "@/types/dpp";
-import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertCircle, AlertTriangle } from 'lucide-react';
+import type { DigitalProductPassport, EbsiVerificationDetails, DisplayableProduct, RichMockProduct, StoredUserProduct, ProductComplianceSummary, SimpleLifecycleEvent } from "@/types/dpp";
+import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
 import React from "react";
 
 interface ComplianceDetails {
@@ -24,9 +25,11 @@ export const getOverallComplianceDetails = (dpp: DigitalProductPassport): Compli
 
   if (regulationsChecked.length === 0) {
     if (Object.keys(dpp.compliance).length === 0) {
-      return { text: "N/A", variant: "secondary", icon: <ShieldQuestion className="h-5 w-5 text-muted-foreground" />, tooltipText: "No regulations applicable or tracked." };
+      const iconElement = <ShieldQuestion className="h-5 w-5 text-muted-foreground" />;
+      return { text: "N/A", variant: "secondary", icon: iconElement, tooltipText: "No regulations applicable or tracked." };
     }
-    return { text: "No Data", variant: "outline", icon: <ShieldQuestion className="h-5 w-5 text-muted-foreground" />, tooltipText: "Compliance data not yet available." };
+    const iconElement = <ShieldQuestion className="h-5 w-5 text-muted-foreground" />;
+    return { text: "No Data", variant: "outline", icon: iconElement, tooltipText: "Compliance data not yet available." };
   }
 
   regulationsChecked.forEach(reg => {
@@ -36,37 +39,47 @@ export const getOverallComplianceDetails = (dpp: DigitalProductPassport): Compli
   });
 
   if (nonCompliantCount > 0) {
-    return { text: "Non-Compliant", variant: "destructive", icon: <ShieldAlert className="h-5 w-5 text-destructive" />, tooltipText: "One or more regulations are non-compliant." };
+    const iconElement = <ShieldAlert className="h-5 w-5 text-destructive" />;
+    return { text: "Non-Compliant", variant: "destructive", icon: iconElement, tooltipText: "One or more regulations are non-compliant." };
   }
   if (pendingCount > 0) {
-    return { text: "Pending", variant: "outline", icon: <InfoIcon className="h-5 w-5 text-yellow-500" />, tooltipText: "One or more regulations are pending." };
+    const iconElement = <InfoIcon className="h-5 w-5 text-yellow-500" />;
+    return { text: "Pending", variant: "outline", icon: iconElement, tooltipText: "One or more regulations are pending." };
   }
   if (compliantCount === regulationsChecked.length && regulationsChecked.length > 0) {
-    return { text: "Fully Compliant", variant: "default", icon: <ShieldCheck className="h-5 w-5 text-green-500" />, tooltipText: "All tracked regulations compliant." };
+    const iconElement = <ShieldCheck className="h-5 w-5 text-green-500" />;
+    return { text: "Fully Compliant", variant: "default", icon: iconElement, tooltipText: "All tracked regulations compliant." };
   }
-  return { text: "Review Needed", variant: "outline", icon: <ShieldQuestion className="h-5 w-5 text-muted-foreground" />, tooltipText: "Compliance status requires review." };
+  const iconElement = <ShieldQuestion className="h-5 w-5 text-muted-foreground" />;
+  return { text: "Review Needed", variant: "outline", icon: iconElement, tooltipText: "Compliance status requires review." };
 };
 
 export const getEbsiStatusDetails = (status?: EbsiVerificationDetails['status']): EbsiStatusDisplayDetails => {
   if (!status) {
-    return { text: "N/A", variant: "secondary", icon: <ShieldQuestion className="h-4 w-4 text-muted-foreground" />, tooltipText: "EBSI status unknown." };
+    const iconElement = <ShieldQuestion className="h-4 w-4 text-muted-foreground" />;
+    return { text: "N/A", variant: "secondary", icon: iconElement, tooltipText: "EBSI status unknown." };
   }
   switch (status) {
     case 'verified':
-      return { text: "Verified", variant: "default", icon: <ShieldCheck className="h-4 w-4 text-green-500" />, tooltipText: "EBSI verification successful." };
+      const verifiedIcon = <ShieldCheck className="h-4 w-4 text-green-500" />;
+      return { text: "Verified", variant: "default", icon: verifiedIcon, tooltipText: "EBSI verification successful." };
     case 'pending_verification':
-      return { text: "Pending", variant: "outline", icon: <InfoIcon className="h-4 w-4 text-yellow-500" />, tooltipText: "EBSI verification pending." };
+      const pendingIcon = <InfoIcon className="h-4 w-4 text-yellow-500" />;
+      return { text: "Pending", variant: "outline", icon: pendingIcon, tooltipText: "EBSI verification pending." };
     case 'not_verified':
-      return { text: "Not Verified", variant: "destructive", icon: <AlertCircle className="h-4 w-4 text-red-500" />, tooltipText: "EBSI verification failed." };
+      const notVerifiedIcon = <AlertCircle className="h-4 w-4 text-red-500" />;
+      return { text: "Not Verified", variant: "destructive", icon: notVerifiedIcon, tooltipText: "EBSI verification failed." };
     case 'error':
-      return { text: "Error", variant: "destructive", icon: <AlertTriangle className="h-4 w-4 text-red-700" />, tooltipText: "Error during EBSI verification." };
+      const errorIcon = <AlertTriangle className="h-4 w-4 text-red-700" />;
+      return { text: "Error", variant: "destructive", icon: errorIcon, tooltipText: "Error during EBSI verification." };
     default:
-      return { text: "Unknown", variant: "secondary", icon: <ShieldQuestion className="h-4 w-4 text-muted-foreground" />, tooltipText: "EBSI status is unknown." };
+      const unknownIcon = <ShieldQuestion className="h-4 w-4 text-muted-foreground" />;
+      return { text: "Unknown", variant: "secondary", icon: unknownIcon, tooltipText: "EBSI status is unknown." };
   }
 };
 
 export const calculateDppCompletenessForList = (product: DisplayableProduct): { score: number; filledFields: number; totalFields: number; missingFields: string[] } => {
-  const essentialFieldsConfig: Array<{ key: keyof DisplayableProduct; label: string; check?: (p: DisplayableProduct) => boolean; categoryScope?: string[] }> = [
+  const essentialFieldsConfig: Array<{ key: keyof DisplayableProduct | string; label: string; check?: (p: DisplayableProduct) => boolean; categoryScope?: string[] }> = [
     { key: 'productName', label: 'Product Name' },
     { key: 'gtin', label: 'GTIN' },
     { key: 'category', label: 'Category', check: p => !!(p.category || p.productCategory) },
@@ -74,8 +87,8 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
     { key: 'modelNumber', label: 'Model Number' },
     { key: 'description', label: 'Description', check: p => !!(p.description || p.productDescription) },
     { key: 'imageUrl', label: 'Image URL', check: (p) => !!p.imageUrl && !p.imageUrl.includes('placehold.co') && !p.imageUrl.includes('?text=') },
-    { key: 'materials', label: 'Materials' },
-    { key: 'sustainabilityClaims', label: 'Sustainability Claims' },
+    { key: 'materials', label: 'Materials Info', check: p => !!p.materials && p.materials.trim() !== '' },
+    { key: 'sustainabilityClaims', label: 'Sustainability Claims', check: p => !!p.sustainabilityClaims && p.sustainabilityClaims.trim() !== '' },
     { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] },
     { key: 'specifications', label: 'Specifications', check: (p) => {
         if (typeof p.specifications === 'string') return !!p.specifications && p.specifications.trim() !== '' && p.specifications.trim() !== '{}';
@@ -84,7 +97,10 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
       }
     },
     { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 },
-    { key: 'complianceSummary', label: 'Compliance Summary', check: (p) => p.complianceSummary && ( (p.complianceSummary.specificRegulations && p.complianceSummary.specificRegulations.length > 0) || !!p.complianceSummary.eprel || !!p.complianceSummary.ebsi ) },
+    { key: 'complianceSummary.overallStatus', label: 'Overall Compliance Status', check: (p) => p.complianceSummary?.overallStatus !== undefined && p.complianceSummary.overallStatus !== 'N/A' },
+    { key: 'complianceSummary.eprel.status', label: 'EPREL Status', check: (p) => p.complianceSummary?.eprel?.status !== undefined && p.complianceSummary.eprel.status !== 'N/A' && p.complianceSummary.eprel.status !== 'Not Found'},
+    { key: 'complianceSummary.ebsi.status', label: 'EBSI Status', check: (p) => p.complianceSummary?.ebsi?.status !== undefined && p.complianceSummary.ebsi.status !== 'N/A' && p.complianceSummary.ebsi.status !== 'Not Verified' && p.complianceSummary.ebsi.status !== 'Error' },
+    { key: 'complianceSummary.specificRegulations', label: 'Specific Regulations Count', check: (p) => (p.complianceSummary?.specificRegulations || []).length > 0 },
   ];
 
   const currentCategory = product.category || product.productCategory;
@@ -104,7 +120,7 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
   essentialFieldsConfig.forEach(fieldConfig => {
     if (fieldConfig.categoryScope) {
       const productCategoryLower = currentCategory?.toLowerCase();
-      if (!productCategoryLower || !fieldConfig.categoryScope.some(scope => productCategoryLower.includes(scope.toLowerCase()))) { return; } // Skip field if not in scope
+      if (!productCategoryLower || !fieldConfig.categoryScope.some(scope => productCategoryLower.includes(scope.toLowerCase()))) { return; } 
     }
     actualTotalFields++;
 
@@ -112,7 +128,18 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
     if (fieldConfig.check) {
       isFieldFilled = fieldConfig.check(product);
     } else {
-      const value = product[fieldConfig.key];
+      // Access nested properties using a helper or careful checks
+      const keys = (fieldConfig.key as string).split('.');
+      let value: any = product;
+      for (const k of keys) {
+        if (value && typeof value === 'object' && k in value) {
+          value = value[k];
+        } else {
+          value = undefined;
+          break;
+        }
+      }
+      
       if (typeof value === 'object' && value !== null) {
         isFieldFilled = Object.keys(value).length > 0 || (Array.isArray(value) && value.length > 0);
       } else {

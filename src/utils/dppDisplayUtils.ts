@@ -1,10 +1,12 @@
 
 // --- File: dppDisplayUtils.ts ---
 // Description: Utility functions for generating display details (text, icons, variants) for DPP compliance, EBSI status, and completeness.
+"use client"; 
 
-import type { DigitalProductPassport, EbsiVerificationDetails, DisplayableProduct, RichMockProduct, StoredUserProduct, ProductComplianceSummary, SimpleLifecycleEvent } from "@/types/dpp";
-import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
-import React from "react";
+import React from "react"; 
+import type { DigitalProductPassport, EbsiVerificationDetails, DisplayableProduct, ProductComplianceSummary, SimpleLifecycleEvent } from "@/types/dpp";
+import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertCircle, AlertTriangle, CheckCircle2, RefreshCw, Loader2 } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
 interface ComplianceDetails {
   text: string;
@@ -33,9 +35,10 @@ export const getOverallComplianceDetails = (dpp: DigitalProductPassport): Compli
   }
 
   regulationsChecked.forEach(reg => {
-    if (reg.status === 'compliant') compliantCount++;
-    else if (reg.status === 'pending') pendingCount++;
-    else if (reg.status === 'non_compliant') nonCompliantCount++;
+    const status = reg.status?.toLowerCase();
+    if (status === 'compliant' || status === 'registered' || status === 'conformant' || status === 'synced successfully') compliantCount++;
+    else if (status === 'pending' || status === 'pending_review' || status === 'pending_assessment' || status === 'pending_verification' || status === 'in progress' || status === 'data incomplete') pendingCount++;
+    else if (status === 'non_compliant' || status === 'non_conformant' || status === 'error' || status === 'data mismatch' || status === 'product not found in eprel') nonCompliantCount++;
   });
 
   if (nonCompliantCount > 0) {
@@ -50,8 +53,8 @@ export const getOverallComplianceDetails = (dpp: DigitalProductPassport): Compli
     const iconElement = <ShieldCheck className="h-5 w-5 text-green-500" />;
     return { text: "Fully Compliant", variant: "default", icon: iconElement, tooltipText: "All tracked regulations compliant." };
   }
-  const iconElement = <ShieldQuestion className="h-5 w-5 text-muted-foreground" />;
-  return { text: "Review Needed", variant: "outline", icon: iconElement, tooltipText: "Compliance status requires review." };
+  const iconElementDefault = <ShieldQuestion className="h-5 w-5 text-muted-foreground" />;
+  return { text: "Review Needed", variant: "outline", icon: iconElementDefault, tooltipText: "Compliance status requires review." };
 };
 
 export const getEbsiStatusDetails = (status?: EbsiVerificationDetails['status']): EbsiStatusDisplayDetails => {
@@ -97,9 +100,9 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
       }
     },
     { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 },
-    { key: 'complianceSummary.overallStatus', label: 'Overall Compliance Status', check: (p) => p.complianceSummary?.overallStatus !== undefined && p.complianceSummary.overallStatus !== 'N/A' },
-    { key: 'complianceSummary.eprel.status', label: 'EPREL Status', check: (p) => p.complianceSummary?.eprel?.status !== undefined && p.complianceSummary.eprel.status !== 'N/A' && p.complianceSummary.eprel.status !== 'Not Found'},
-    { key: 'complianceSummary.ebsi.status', label: 'EBSI Status', check: (p) => p.complianceSummary?.ebsi?.status !== undefined && p.complianceSummary.ebsi.status !== 'N/A' && p.complianceSummary.ebsi.status !== 'Not Verified' && p.complianceSummary.ebsi.status !== 'Error' },
+    { key: 'complianceSummary.overallStatus', label: 'Overall Compliance Status', check: (p) => p.complianceSummary?.overallStatus !== undefined && p.complianceSummary.overallStatus.toLowerCase() !== 'n/a' },
+    { key: 'complianceSummary.eprel.status', label: 'EPREL Status', check: (p) => p.complianceSummary?.eprel?.status !== undefined && p.complianceSummary.eprel.status.toLowerCase() !== 'n/a' && !p.complianceSummary.eprel.status.toLowerCase().includes('not found') && !p.complianceSummary.eprel.status.toLowerCase().includes('not applicable')},
+    { key: 'complianceSummary.ebsi.status', label: 'EBSI Status', check: (p) => p.complianceSummary?.ebsi?.status !== undefined && p.complianceSummary.ebsi.status.toLowerCase() !== 'n/a' && p.complianceSummary.ebsi.status.toLowerCase() !== 'not verified' && p.complianceSummary.ebsi.status.toLowerCase() !== 'error' },
     { key: 'complianceSummary.specificRegulations', label: 'Specific Regulations Count', check: (p) => (p.complianceSummary?.specificRegulations || []).length > 0 },
   ];
 
@@ -118,17 +121,19 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
   let actualTotalFields = 0;
 
   essentialFieldsConfig.forEach(fieldConfig => {
+    // Skip category-scoped fields if the category doesn't match
     if (fieldConfig.categoryScope) {
       const productCategoryLower = currentCategory?.toLowerCase();
-      if (!productCategoryLower || !fieldConfig.categoryScope.some(scope => productCategoryLower.includes(scope.toLowerCase()))) { return; } 
+      if (!productCategoryLower || !fieldConfig.categoryScope.some(scope => productCategoryLower.includes(scope.toLowerCase()))) { 
+        return; // Skip this field, don't increment actualTotalFields
+      }
     }
-    actualTotalFields++;
+    actualTotalFields++; // Increment for fields that are applicable
 
     let isFieldFilled = false;
     if (fieldConfig.check) {
       isFieldFilled = fieldConfig.check(product);
     } else {
-      // Access nested properties using a helper or careful checks
       const keys = (fieldConfig.key as string).split('.');
       let value: any = product;
       for (const k of keys) {
@@ -139,11 +144,11 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
           break;
         }
       }
-      
+
       if (typeof value === 'object' && value !== null) {
         isFieldFilled = Object.keys(value).length > 0 || (Array.isArray(value) && value.length > 0);
       } else {
-        isFieldFilled = value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A';
+        isFieldFilled = value !== null && value !== undefined && String(value).trim() !== '' && String(value).toLowerCase().trim() !== 'n/a';
       }
     }
 
@@ -157,3 +162,80 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
   const score = actualTotalFields > 0 ? Math.round((filledCount / actualTotalFields) * 100) : 0;
   return { score, filledFields: filledCount, totalFields: actualTotalFields, missingFields };
 };
+
+
+// Utility functions for status display (moved from ComplianceTab)
+export const getStatusIcon = (status?: string): JSX.Element => {
+  switch (status?.toLowerCase()) {
+    case 'compliant':
+    case 'registered':
+    case 'verified':
+    case 'synced successfully':
+    case 'conformant': 
+      return <ShieldCheck className="h-5 w-5 text-green-500" />;
+    case 'non-compliant':
+    case 'non_conformant': 
+    case 'error':
+    case 'error during sync':
+      return <AlertTriangle className="h-5 w-5 text-red-500" />;
+    case 'pending':
+    case 'pending review':
+    case 'pending_review': 
+    case 'pending_assessment': 
+    case 'pending_verification': 
+    case 'in progress':
+    case 'data incomplete':
+    case 'data mismatch':
+    case 'product not found in eprel':
+      return <InfoIcon className="h-5 w-5 text-yellow-500" />;
+    case 'not applicable':
+    case 'n/a':
+    case 'not found':
+    case 'not verified':
+    default:
+      return <InfoIcon className="h-5 w-5 text-muted-foreground" />;
+  }
+};
+
+export const getStatusBadgeVariant = (status?: string): "default" | "destructive" | "outline" | "secondary" => {
+  switch (status?.toLowerCase()) {
+    case 'compliant':
+    case 'registered':
+    case 'verified':
+    case 'synced successfully':
+    case 'conformant':
+      return "default";
+    case 'non-compliant':
+    case 'non_conformant':
+    case 'error':
+    case 'error during sync':
+      return "destructive";
+    case 'pending':
+    case 'pending review':
+    case 'pending_review':
+    case 'pending_assessment':
+    case 'pending_verification':
+    case 'in progress':
+    case 'data incomplete':
+    case 'data mismatch':
+    case 'product not found in eprel':
+      return "outline";
+    case 'not applicable':
+    case 'n/a':
+    case 'not found':
+    case 'not verified':
+    default:
+      return "secondary";
+  }
+};
+
+export const getStatusBadgeClasses = (status?: string): string => {
+    switch (status?.toLowerCase()) {
+        case 'compliant': case 'registered': case 'verified': case 'synced successfully': case 'conformant': return "bg-green-100 text-green-700 border-green-300";
+        case 'non-compliant': case 'non_conformant': case 'error': case 'error during sync': return "bg-red-100 text-red-700 border-red-300";
+        case 'pending': case 'pending review': case 'pending_review': case 'pending_assessment': case 'pending_verification': case 'in progress': case 'data incomplete': case 'data mismatch': case 'product not found in eprel': return "bg-yellow-100 text-yellow-700 border-yellow-300";
+        case 'not applicable': case 'n/a': case 'not found': case 'not verified':
+        default: return "bg-muted text-muted-foreground";
+    }
+};
+

@@ -292,6 +292,28 @@ export default function PublicPassportPage({ params }: Props) {
                 </CardContent>
               </Card>
             </div>
+            
+            {product.customAttributes && product.customAttributes.length > 0 && (
+              <div className="mt-8 pt-6 border-t border-border">
+                <Card className="border-0 shadow-none">
+                  <CardHeader className="px-0 pt-0 pb-4">
+                    <CardTitle className="text-xl text-primary flex items-center">
+                      <InfoIcon className="mr-2 h-6 w-6" /> Additional Information
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm px-0 pb-0">
+                    <dl className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2">
+                      {product.customAttributes.map((attr, index) => (
+                        <div key={index} className="flex">
+                          <dt className="font-medium text-muted-foreground w-1/3 truncate">{attr.key}:</dt>
+                          <dd className="text-foreground/90 w-2/3 whitespace-pre-wrap">{attr.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                  </CardContent>
+                </Card>
+              </div>
+            )}
 
             <div className="mt-8 pt-6 border-t border-border">
                  <Card className="md:col-span-2 lg:col-span-1 border-0 shadow-none">
@@ -372,3 +394,4 @@ export default function PublicPassportPage({ params }: Props) {
     </div>
   );
 }
+

@@ -32,12 +32,12 @@ export default function DataPrivacyPage() {
         <CardHeader>
           <CardTitle>Introduction</CardTitle>
           <CardDescription>
-            The Norruva Digital Product Passport (DPP) platform is designed with data privacy and compliance with regulations like GDPR at its core. This guide outlines our conceptual approach to handling personal data and ensuring data subject rights.
+            The Norruva Digital Product Passport (DPP) platform is designed with data privacy and compliance with regulations like GDPR as fundamental considerations. This guide outlines our conceptual approach to handling personal data and ensuring data subject rights, providing important context for developers building on or integrating with our platform.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p>
-            Digital Product Passports, while primarily focused on product data, may involve processing personal data related to manufacturers, suppliers, consumers (e.g., warranty registration, repair history), or platform users. Protecting this data is paramount.
+            While DPPs primarily focus on product-specific data, they can intersect with personal data related to manufacturers, suppliers, consumers (e.g., through warranty registration or repair history), or platform users. Ensuring the robust protection of any such personal data is paramount.
           </p>
         </CardContent>
       </Card>
@@ -110,10 +110,18 @@ export default function DataPrivacyPage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm">
-            Developers integrating with the Norruva DPP API are also responsible for ensuring their applications handle personal data in compliance with GDPR and other applicable data privacy regulations. This includes managing user consent, securing API keys, and respecting data subject rights for any data processed within their own systems.
+            Developers building applications that integrate with or utilize the Norruva DPP API must also uphold their responsibilities under GDPR and other relevant data privacy laws. Key considerations include:
           </p>
+          <ul className="list-disc list-inside text-sm space-y-1.5 mt-3 text-muted-foreground">
+            <li>Securely managing API keys and access credentials as detailed in our <Link href="/developer/docs/authentication" className="text-primary hover:underline">Authentication Guide</Link>.</li>
+            <li>Implementing appropriate consent mechanisms if your application collects or processes personal data from users.</li>
+            <li>Ensuring any personal data processed or stored within your own systems is handled securely, in line with data minimization principles, and only for legitimate purposes.</li>
+            <li>Respecting data subject rights for data under your control, providing mechanisms for users to exercise their rights.</li>
+            <li>Clearly communicating your application's data privacy practices to your users through a comprehensive privacy policy.</li>
+          </ul>
         </CardContent>
       </Card>
     </div>
   );
 }
+

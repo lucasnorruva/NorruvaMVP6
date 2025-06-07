@@ -12,7 +12,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Label } from "@/components/ui/label";
 import { FormDescription, FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Input } from "@/components/ui/input"; // Added Input
+import { Input } from "@/components/ui/input";
 import { Cpu, ImagePlus, ImageIcon, Loader2 } from "lucide-react";
 import type { ToastInput } from "@/hooks/use-toast";
 
@@ -68,7 +68,9 @@ export default function ProductImageFormSection({
         setCurrentImageUrl(value.imageUrl || null);
       }
     });
-    setCurrentImageUrl(form.getValues("imageUrl") || initialImageUrl || null);
+    // Ensure initial value is set from form or prop
+    const formImageUrl = form.getValues("imageUrl");
+    setCurrentImageUrl(formImageUrl || initialImageUrl || null);
     return () => subscription.unsubscribe();
   }, [form, initialImageUrl]);
 
@@ -77,7 +79,7 @@ export default function ProductImageFormSection({
     const newImageUrl = await aiImageHelper(form, toast, setIsGeneratingImageState);
     if (newImageUrl) {
       form.setValue("imageUrl", newImageUrl, { shouldValidate: true });
-      setCurrentImageUrl(newImageUrl); 
+      // The useEffect above will handle setting currentImageUrl via form.watch
     }
   };
 
@@ -85,10 +87,9 @@ export default function ProductImageFormSection({
   const categoryForHint = form.getValues("productCategory") || "";
   const userProvidedHint = form.getValues("imageHint");
 
-  // Prioritize user-provided hint for data-ai-hint
   const imageHintForDisplay = userProvidedHint 
     ? userProvidedHint.trim().split(" ").slice(0,2).join(" ")
-    : (currentImageUrl && currentImageUrl.startsWith("data:"))
+    : (currentImageUrl && currentImageUrl.startsWith("data:")) // If it's an AI generated image
       ? `${productNameForHint} ${categoryForHint}`.trim().split(" ").slice(0,2).join(" ")
       : productNameForHint.split(" ").slice(0,2).join(" ");
 
@@ -144,8 +145,8 @@ export default function ProductImageFormSection({
         render={({ field }) => (
           <FormItem className="mt-3">
             <FormLabel className="text-sm">Image Hint (for AI Generation)</FormLabel>
-            <FormControl><Input placeholder="e.g., minimalist, studio shot, on wood table" {...field} /></FormControl>
-            <FormDescription className="text-xs">Optional. Provide keywords to guide AI image generation.</FormDescription>
+            <FormControl><Input placeholder="e.g., minimalist, studio shot" {...field} /></FormControl>
+            <FormDescription className="text-xs">Optional. Provide keywords to guide AI image generation (max 2 words).</FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -154,4 +155,3 @@ export default function ProductImageFormSection({
     </div>
   );
 }
-

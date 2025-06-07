@@ -75,7 +75,7 @@ export default function ApiReferencePage() {
       imageUrl: "https://placehold.co/600x400.png", // Placeholder image
       imageHint: "smart watch wearable"
     },
-    compliance: { battery_regulation: { status: "not_applicable" } },
+    compliance: { battery_regulation: { status: "not_applicable" } }, // Simplified compliance for example
     ebsiVerification: { status: "pending_verification", lastChecked: new Date().toISOString() },
     lifecycleEvents: [],
     certifications: [],
@@ -274,7 +274,7 @@ export default function ApiReferencePage() {
               <pre className="bg-muted p-3 rounded-md text-xs overflow-x-auto mt-2">
                 <code>
                   {`{
-  "qrIdentifier": "PROD001"
+  "qrIdentifier": "DPP001"
 }`}
                 </code>
               </pre>
@@ -440,5 +440,5 @@ export default function ApiReferencePage() {
   );
 }
     
-
-
+    
+    

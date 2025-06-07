@@ -17,7 +17,7 @@ export default function ErrorPage({
 }) {
   useEffect(() => {
     // Log the error to an error reporting service
-    console.error(error);
+    console.error("Error Page Caught:", error);
   }, [error]);
 
   return (
@@ -29,7 +29,7 @@ export default function ErrorPage({
           </div>
           <CardTitle className="text-3xl font-headline text-destructive">Oops! Something Went Wrong</CardTitle>
           <CardDescription className="text-md text-muted-foreground mt-2">
-            We're sorry, but an unexpected error occurred.
+            We're sorry for the inconvenience. An unexpected error has occurred while trying to process your request. Our team has been notified of this issue (conceptually).
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
@@ -44,9 +44,10 @@ export default function ErrorPage({
           <div>
             <p className="text-sm text-foreground mb-2 font-medium">What you can try:</p>
             <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-              <li>Click the "Try Again" button below.</li>
-              <li>Check your internet connection.</li>
-              <li>Return to the dashboard and try navigating again.</li>
+              <li>Click the "Try Again" button below to refresh the page.</li>
+              <li>Ensure your internet connection is stable.</li>
+              <li>Return to the <Link href="/dashboard" className="text-primary hover:underline">Dashboard</Link> and try navigating again.</li>
+              <li>If the problem persists, please note the error details and contact support (if available).</li>
             </ul>
           </div>
 

@@ -1,5 +1,6 @@
 // --- File: dpp.ts ---
 // Description: TypeScript type definitions for Digital Product Passports and related entities.
+import type { LucideIcon } from 'lucide-react'; // Added for iconName type
 
 // Interface for a single lifecycle event
 export interface LifecycleEvent {
@@ -295,6 +296,17 @@ export interface ProductComplianceSummary {
   specificRegulations?: ComplianceDetailItem[];
 }
 
+// Interface for a simplified lifecycle event for the detail page
+export interface SimpleLifecycleEvent {
+  id: string;
+  eventName: string;
+  date: string; // ISO Date string
+  location?: string;
+  notes?: string;
+  status: 'Completed' | 'In Progress' | 'Upcoming' | 'Delayed' | 'Cancelled';
+  iconName?: keyof typeof import('lucide-react'); // Allows suggesting specific Lucide icons
+}
+
 
 export interface SimpleProductDetail {
   id: string;
@@ -308,14 +320,16 @@ export interface SimpleProductDetail {
   imageUrl?: string;
   imageHint?: string;
   keySustainabilityPoints?: string[];
-  keyCompliancePoints?: string[]; // Kept for overview, but detailed in complianceSummary
+  // keyCompliancePoints kept for overview, detailed in complianceSummary
+  keyCompliancePoints?: string[];
   specifications?: Record<string, string>;
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
   repairability?: { score: number; scale: number; detailsUrl?: string };
   recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
   supplyChainLinks?: ProductSupplyChainLink[];
-  complianceSummary?: ProductComplianceSummary; // New structured compliance field
+  complianceSummary?: ProductComplianceSummary;
+  lifecycleEvents?: SimpleLifecycleEvent[]; // Added lifecycle events
 }
 
 export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
@@ -331,7 +345,7 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     imageUrl: "https://placehold.co/600x400.png",
     imageHint: "modern refrigerator kitchen",
     keySustainabilityPoints: ["Energy Star Certified", "Made with 70% recycled steel", "95% recyclable at end-of-life", "Low Global Warming Potential (GWP) refrigerant"],
-    keyCompliancePoints: ["EU Ecodesign Compliant", "EU Energy Labelling Compliant", "EPREL Registered: EPREL_REG_12345"], // General points
+    keyCompliancePoints: ["EU Ecodesign Compliant", "EU Energy Labelling Compliant", "EPREL Registered: EPREL_REG_12345"],
     specifications: { "Capacity": "400L", "Warranty": "5 years", "Dimensions": "180x70x65 cm", "Color": "Stainless Steel", "Noise Level": "38 dB"},
     materialsUsed: [
       { name: "Recycled Steel", percentage: 70, source: "Certified Recycler A", isRecycled: true },
@@ -354,7 +368,14 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
         { regulationName: "RoHS Directive 2011/65/EU", status: "Compliant", lastChecked: "2024-06-10" },
         { regulationName: "WEEE Directive 2012/19/EU", status: "Compliant", lastChecked: "2024-06-10" },
       ]
-    }
+    },
+    lifecycleEvents: [
+      { id: "lc001", eventName: "Manufacturing Complete", date: "2024-01-15T00:00:00Z", location: "EcoFactory, Germany", status: "Completed", iconName: "Factory" },
+      { id: "lc002", eventName: "Quality Assurance Passed", date: "2024-01-16T00:00:00Z", location: "EcoFactory, Germany", status: "Completed", iconName: "ShieldCheck" },
+      { id: "lc003", eventName: "Shipped to Distributor", date: "2024-01-20T00:00:00Z", location: "Logistics Hub, Hamburg", status: "Completed", iconName: "Truck" },
+      { id: "lc004", eventName: "First Retail Sale", date: "2024-02-10T00:00:00Z", location: "Paris, France", status: "Completed", iconName: "ShoppingCart" },
+      { id: "lc005", eventName: "Scheduled Maintenance", date: "2025-02-15T00:00:00Z", notes: "Filter replacement due.", status: "Upcoming", iconName: "Wrench" },
+    ]
   },
   {
     id: "PROD002",
@@ -390,7 +411,12 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
         { regulationName: "EMC Directive 2014/30/EU", status: "Pending", lastChecked: "2024-07-01", notes: "Awaiting test report" },
         { regulationName: "EU Battery Regulation (if applicable)", status: "Data Incomplete", lastChecked: "2024-07-20", notes: "Internal battery component data needed."},
       ]
-    }
+    },
+    lifecycleEvents: [
+      { id: "lc006", eventName: "Production Started", date: "2024-03-01T00:00:00Z", location: "Shenzhen, China", status: "In Progress", iconName: "Cog" },
+      { id: "lc007", eventName: "Firmware Update v1.2 Deployment", date: "2024-08-01T00:00:00Z", notes: "Improved energy efficiency algorithm.", status: "Upcoming", iconName: "UploadCloud" },
+      { id: "lc008", eventName: "Batch Testing", date: "2024-03-10T00:00:00Z", status: "Completed", iconName: "ClipboardCheck"},
+    ]
   },
   {
     id: "USER_PROD123456",
@@ -421,7 +447,12 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
       specificRegulations: [
         { regulationName: "TSCA Title VI", status: "Pending", lastChecked: "2024-07-18", notes: "Awaiting supplier declaration for finish."}
       ]
-    }
+    },
+    lifecycleEvents: [
+        { id: "lc_user_001", eventName: "Design Finalized", date: "2024-06-01T00:00:00Z", status: "Completed", iconName: "PenTool"},
+        { id: "lc_user_002", eventName: "Material Sourcing", date: "2024-06-05T00:00:00Z", status: "In Progress", iconName: "Search"},
+        { id: "lc_user_003", eventName: "Assembly Scheduled", date: "2024-08-15T00:00:00Z", status: "Upcoming", iconName: "CalendarCheck"},
+    ]
   }
 ];
 
@@ -431,7 +462,7 @@ export interface Supplier {
   contactPerson?: string;
   email?: string;
   location?: string;
-  materialsSupplied: string;
+  materialsSupplied: string; // Comma-separated list or general description for now
   status: 'Active' | 'Inactive' | 'Pending Review';
   lastUpdated: string;
 }

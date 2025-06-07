@@ -122,7 +122,7 @@ export default function RateLimitingPage() {
             <li><code className="text-xs">X-RateLimit-Reset</code>: The time (in UTC epoch seconds) when the current window resets.</li>
           </ul>
           <p className="text-sm mt-2">
-            Additionally, the <Link href="/developer#api-usage" className="text-primary hover:underline">API Usage & Reporting section (mock)</Link> of the Developer Portal would provide a dashboard to visualize your usage over time.
+            Additionally, the <Link href="/developer#settings_usage" className="text-primary hover:underline">API Usage & Reporting section</Link> of the Developer Portal (under the 'Settings & Usage' tab) would provide a dashboard to visualize your usage over time (mock concept).
           </p>
         </CardContent>
       </Card>

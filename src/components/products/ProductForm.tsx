@@ -1,8 +1,11 @@
 
 "use client";
+// --- File: ProductForm.tsx ---
+// Description: Main form component for creating or editing product DPPs.
+// Now uses aiFormHelpers.ts for AI logic and ProductImageFormSection for image UI.
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, type UseFormReturn } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,18 +21,18 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import type { InitialProductFormData } from "@/app/(app)/products/new/page"; 
+import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu, BatteryCharging, Loader2, Sparkles, ImagePlus, Image as ImageIcon } from "lucide-react";
+import { Cpu, BatteryCharging, Loader2, Sparkles } from "lucide-react";
 import React, { useState } from "react";
-import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow";
-import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
-import { generateProductName } from "@/ai/flows/generate-product-name-flow.ts";
-import { generateProductDescription } from "@/ai/flows/generate-product-description-flow";
 import { useToast } from "@/hooks/use-toast";
-import { AlertTriangle } from "lucide-react";
-import Image from "next/image";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
+import ProductImageFormSection from "./form/ProductImageFormSection"; // New import
+import {
+  handleSuggestNameAI,
+  handleSuggestDescriptionAI,
+  handleSuggestClaimsAI,
+  handleGenerateImageAI, // This will be passed to ProductImageFormSection
+} from "@/utils/aiFormHelpers"; // New import
 
 const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
@@ -39,11 +42,10 @@ const formSchema = z.object({
   modelNumber: z.string().optional(),
   materials: z.string().optional().describe("Key materials used in the product, e.g., Cotton, Recycled Polyester, Aluminum."),
   sustainabilityClaims: z.string().optional().describe("Brief sustainability claims, e.g., 'Made with 50% recycled content', 'Carbon neutral production'."),
-  specifications: z.string().optional(), 
+  specifications: z.string().optional(),
   energyLabel: z.string().optional(),
   productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
-  imageUrl: z.string().optional().describe("URL or Data URI of the product image."),
-  // Battery Regulation Fields
+  imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")), // Accept empty string or valid URL
   batteryChemistry: z.string().optional(),
   stateOfHealth: z.coerce.number().nullable().optional(),
   carbonFootprintManufacturing: z.coerce.number().nullable().optional(),
@@ -53,13 +55,15 @@ const formSchema = z.object({
 export type ProductFormData = z.infer<typeof formSchema>;
 
 interface ProductFormProps {
-  id?: string; // Added id for form submission in ProductDetailPage
-  initialData?: Partial<InitialProductFormData & { productCategory?: string; imageUrl?: string }>; 
+  id?: string;
+  initialData?: Partial<InitialProductFormData & { productCategory?: string; imageUrl?: string }>;
   onSubmit: (data: ProductFormData) => Promise<void>;
   isSubmitting?: boolean;
-  isStandalonePage?: boolean; 
+  isStandalonePage?: boolean;
 }
 
+// Moved AiIndicator here as it's used by multiple fields in this form.
+// ProductImageFormSection will have its own local version or receive this as prop if needed.
 const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' | 'manual', fieldName: string }) => {
   if (fieldOrigin === 'AI_EXTRACTED') {
     return (
@@ -103,12 +107,11 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
   const { toast } = useToast();
   const [suggestedClaims, setSuggestedClaims] = useState<string[]>([]);
-  const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
-  const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(initialData?.imageUrl || null);
   const [isSuggestingName, setIsSuggestingName] = useState(false);
   const [isSuggestingDescription, setIsSuggestingDescription] = useState(false);
-
+  const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
+  const [isGeneratingImage, setIsGeneratingImage] = useState(false); // For ProductImageFormSection
+  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(initialData?.imageUrl || null);
 
   React.useEffect(() => {
     if (initialData) {
@@ -133,132 +136,38 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     }
   }, [initialData, form]);
 
-  const handleSuggestName = async () => {
-    setIsSuggestingName(true);
-    const { productDescription, productCategory } = form.getValues();
-    if (!productDescription && !productCategory) {
-      toast({ title: "Input Required", description: "Please provide a product description or category to suggest a name.", variant: "destructive" });
-      setIsSuggestingName(false);
-      return;
-    }
-    try {
-      const result = await generateProductName({ 
-        productDescription: productDescription || "", 
-        productCategory: productCategory || undefined 
-      });
-      form.setValue("productName", result.productName, { shouldValidate: true });
-      (initialData as InitialProductFormData).productNameOrigin = 'AI_EXTRACTED';
-      toast({ title: "Product Name Suggested!", description: `AI suggested: "${result.productName}"`, variant: "default" });
-    } catch (error) {
-      console.error("Failed to suggest product name:", error);
-      toast({
-        title: "Error Suggesting Name",
-        description: error instanceof Error ? error.message : "An unknown error occurred.",
-        variant: "destructive",
-        action: <AlertTriangle className="text-white" />,
-      });
-    } finally {
-      setIsSuggestingName(false);
-    }
+  const callSuggestNameAI = async () => {
+    await handleSuggestNameAI(form, toast, setIsSuggestingName);
+    if (initialData) (initialData as InitialProductFormData).productNameOrigin = 'AI_EXTRACTED';
   };
 
-  const handleSuggestDescription = async () => {
-    setIsSuggestingDescription(true);
-    const { productName, productCategory, materials } = form.getValues();
-    if (!productName) {
-      toast({ title: "Product Name Required", description: "Please provide a product name to suggest a description.", variant: "destructive" });
-      setIsSuggestingDescription(false);
-      return;
-    }
-    try {
-      const result = await generateProductDescription({
-        productName: productName,
-        productCategory: productCategory || undefined,
-        keyFeatures: materials || undefined,
-      });
-      form.setValue("productDescription", result.productDescription, { shouldValidate: true });
-      (initialData as InitialProductFormData).productDescriptionOrigin = 'AI_EXTRACTED';
-      toast({ title: "Product Description Suggested!", description: "AI has generated a product description.", variant: "default" });
-    } catch (error) {
-      console.error("Failed to suggest product description:", error);
-      toast({
-        title: "Error Suggesting Description",
-        description: error instanceof Error ? error.message : "An unknown error occurred.",
-        variant: "destructive",
-        action: <AlertTriangle className="text-white" />,
-      });
-    } finally {
-      setIsSuggestingDescription(false);
-    }
+  const callSuggestDescriptionAI = async () => {
+    await handleSuggestDescriptionAI(form, toast, setIsSuggestingDescription);
+    if (initialData) (initialData as InitialProductFormData).productDescriptionOrigin = 'AI_EXTRACTED';
+  };
+  
+  const callSuggestClaimsAI = async () => {
+    const claims = await handleSuggestClaimsAI(form, toast, setIsSuggestingClaims);
+    if (claims) setSuggestedClaims(claims);
   };
 
-  const handleSuggestClaims = async () => {
-    setIsSuggestingClaims(true);
-    setSuggestedClaims([]);
-    const formData = form.getValues();
-    try {
-      const result = await suggestSustainabilityClaims({
-        productCategory: formData.productCategory || "Unknown",
-        productName: formData.productName,
-        productDescription: formData.productDescription,
-        materials: formData.materials,
-      });
-      setSuggestedClaims(result.claims);
-      if (result.claims.length === 0) {
-        toast({ title: "No specific claims suggested.", description: "Try adding more product details like category or materials."});
-      }
-    } catch (error) {
-      console.error("Failed to suggest claims:", error);
-      toast({
-        title: "Error Suggesting Claims",
-        description: error instanceof Error ? error.message : "An unknown error occurred.",
-        variant: "destructive",
-        action: <AlertTriangle className="text-white" />,
-      });
-    } finally {
-      setIsSuggestingClaims(false);
-    }
-  };
-
-  const handleGenerateImage = async () => {
-    setIsGeneratingImage(true);
-    const formData = form.getValues();
-    if (!formData.productName) {
-      toast({title: "Product Name Required", description: "Please enter a product name before generating an image.", variant: "destructive"});
-      setIsGeneratingImage(false);
-      return;
-    }
-    try {
-      const result = await generateProductImage({
-        productName: formData.productName,
-        productCategory: formData.productCategory,
-      });
-      form.setValue("imageUrl", result.imageUrl, { shouldValidate: true });
-      setCurrentImageUrl(result.imageUrl);
-      if (initialData) (initialData as InitialProductFormData).imageUrlOrigin = 'AI_EXTRACTED';
-      toast({title: "Image Generated Successfully", description: "The product image has been updated."});
-    } catch (error) {
-      console.error("Failed to generate image:", error);
-      toast({
-        title: "Error Generating Image",
-        description: error instanceof Error ? error.message : "An unknown error occurred.",
-        variant: "destructive",
-        action: <AlertTriangle className="text-white" />,
-      });
-    } finally {
-      setIsGeneratingImage(false);
-    }
+  const handleImageGenerated = (newImageUrl: string) => {
+    form.setValue("imageUrl", newImageUrl, { shouldValidate: true });
+    setCurrentImageUrl(newImageUrl);
+    if (initialData) (initialData as InitialProductFormData).imageUrlOrigin = 'AI_EXTRACTED';
   };
 
   const handleClaimClick = (claim: string) => {
-    const currentClaims = form.getValues("sustainabilityClaims") || "";
-    const newClaims = currentClaims ? `${currentClaims}\n- ${claim}` : `- ${claim}`;
-    form.setValue("sustainabilityClaims", newClaims, { shouldValidate: true });
-    if (initialData) (initialData as InitialProductFormData).sustainabilityClaimsOrigin = 'AI_EXTRACTED'; // Mark as AI assisted
+    const currentClaimsValue = form.getValues("sustainabilityClaims") || "";
+    const newClaimsValue = currentClaimsValue ? `${currentClaimsValue}\n- ${claim}` : `- ${claim}`;
+    form.setValue("sustainabilityClaims", newClaimsValue, { shouldValidate: true });
+    if (initialData) (initialData as InitialProductFormData).sustainabilityClaimsOrigin = 'AI_EXTRACTED';
   };
+  
+  const anyAISuggestionInProgress = isSuggestingName || isSuggestingDescription || isSuggestingClaims || isGeneratingImage;
 
   const formContent = (
-    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4']} className="w-full">
+    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5']} className="w-full">
       <AccordionItem value="item-1">
         <AccordionTrigger className="text-lg font-semibold">Basic Information</AccordionTrigger>
         <AccordionContent className="space-y-6 pt-4">
@@ -268,65 +177,24 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel className="flex items-center">
-                    Product Name 
-                    <AiIndicator fieldOrigin={initialData?.productNameOrigin} fieldName="Product Name" />
-                  </FormLabel>
-                  <Button type="button" variant="ghost" size="sm" onClick={handleSuggestName} disabled={isSuggestingName || isSubmitting || isGeneratingImage}>
+                  <FormLabel className="flex items-center">Product Name <AiIndicator fieldOrigin={initialData?.productNameOrigin} fieldName="Product Name" /></FormLabel>
+                  <Button type="button" variant="ghost" size="sm" onClick={callSuggestNameAI} disabled={anyAISuggestionInProgress || isSubmitting}>
                     {isSuggestingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
                     <span className="ml-2">{isSuggestingName ? "Suggesting..." : "Suggest Name"}</span>
                   </Button>
                 </div>
-                <FormControl>
-                  <Input placeholder="e.g., EcoBoiler X1" {...field} />
-                </FormControl>
+                <FormControl><Input placeholder="e.g., EcoBoiler X1" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <div className="space-y-2">
-             <FormLabel className="flex items-center">
-                Product Image
-                <AiIndicator fieldOrigin={initialData?.imageUrlOrigin} fieldName="Product Image" />
-            </FormLabel>
-            {currentImageUrl ? (
-              <div className="w-full max-w-sm border rounded-md overflow-hidden">
-                <AspectRatio ratio={4/3}>
-                  <Image src={currentImageUrl} alt="Generated product image" layout="fill" objectFit="contain" />
-                </AspectRatio>
-              </div>
-            ) : (
-              <div className="w-full max-w-sm h-40 border border-dashed rounded-md flex flex-col items-center justify-center bg-muted text-muted-foreground">
-                <ImageIcon className="h-10 w-10 mb-2" />
-                <p className="text-sm">No image provided or generated yet.</p>
-              </div>
-            )}
-             <FormField
-                control={form.control}
-                name="imageUrl"
-                render={({ field }) => (
-                  <FormItem className="hidden"> 
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            <Button type="button" variant="secondary" onClick={handleGenerateImage} disabled={isGeneratingImage || isSubmitting || isSuggestingName || isSuggestingDescription}>
-              {isGeneratingImage ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
-              <span className="ml-2">{isGeneratingImage ? "Generating..." : "Generate Image with AI"}</span>
-            </Button>
-            <FormDescription>AI will attempt to generate an image based on product name and category.</FormDescription>
-          </div>
           <FormField
             control={form.control}
             name="gtin"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>GTIN (Global Trade Item Number)</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., 01234567890123" {...field} />
-                </FormControl>
+                <FormLabel>GTIN</FormLabel>
+                <FormControl><Input placeholder="e.g., 01234567890123" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -337,10 +205,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Product Category</FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., Electronics, Apparel, Homeware" {...field} />
-                </FormControl>
-                 <FormDescription>Used to help generate relevant suggestions.</FormDescription>
+                <FormControl><Input placeholder="e.g., Electronics, Apparel" {...field} /></FormControl>
+                <FormDescription>Used to help generate relevant suggestions.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -351,243 +217,90 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                  <FormLabel className="flex items-center">
-                    Product Description
-                    <AiIndicator fieldOrigin={initialData?.productDescriptionOrigin} fieldName="Product Description" />
-                  </FormLabel>
-                  <Button type="button" variant="ghost" size="sm" onClick={handleSuggestDescription} disabled={isSuggestingDescription || isSubmitting || isGeneratingImage}>
+                  <FormLabel className="flex items-center">Product Description <AiIndicator fieldOrigin={initialData?.productDescriptionOrigin} fieldName="Product Description" /></FormLabel>
+                  <Button type="button" variant="ghost" size="sm" onClick={callSuggestDescriptionAI} disabled={anyAISuggestionInProgress || isSubmitting}>
                     {isSuggestingDescription ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
                     <span className="ml-2">{isSuggestingDescription ? "Suggesting..." : "Suggest Description"}</span>
                   </Button>
                 </div>
-                <FormControl>
-                  <Textarea placeholder="Detailed description of the product..." {...field} rows={4} />
-                </FormControl>
+                <FormControl><Textarea placeholder="Detailed description..." {...field} rows={4} /></FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
           <div className="grid md:grid-cols-2 gap-6">
-            <FormField
-              control={form.control}
-              name="manufacturer"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center">
-                    Manufacturer
-                    <AiIndicator fieldOrigin={initialData?.manufacturerOrigin} fieldName="Manufacturer" />
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., GreenTech Inc." {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="modelNumber"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center">
-                    Model Number
-                    <AiIndicator fieldOrigin={initialData?.modelNumberOrigin} fieldName="Model Number" />
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., GTX-EB-001" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormField control={form.control} name="manufacturer" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Manufacturer <AiIndicator fieldOrigin={initialData?.manufacturerOrigin} fieldName="Manufacturer" /></FormLabel> <FormControl><Input placeholder="e.g., GreenTech Inc." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="modelNumber" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Model Number <AiIndicator fieldOrigin={initialData?.modelNumberOrigin} fieldName="Model Number" /></FormLabel> <FormControl><Input placeholder="e.g., GTX-EB-001" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           </div>
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="item-5"> {/* New: Product Image Section */}
+        <AccordionTrigger className="text-lg font-semibold">Product Image</AccordionTrigger>
+        <AccordionContent className="pt-4">
+          <ProductImageFormSection
+            currentImageUrl={currentImageUrl}
+            form={form}
+            onImageGenerated={handleImageGenerated}
+            isGenerating={isGeneratingImage}
+            setIsGenerating={setIsGeneratingImage}
+            aiImageHelper={handleGenerateImageAI} // Pass the specific helper
+            initialImageUrlOrigin={initialData?.imageUrlOrigin}
+            toast={toast} // Pass toast for use inside the component
+          />
         </AccordionContent>
       </AccordionItem>
 
       <AccordionItem value="item-2">
         <AccordionTrigger className="text-lg font-semibold">Sustainability & Compliance</AccordionTrigger>
         <AccordionContent className="space-y-6 pt-4">
-           <FormField
-            control={form.control}
-            name="materials"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center">
-                    Key Materials
-                    <AiIndicator fieldOrigin={initialData?.materialsOrigin} fieldName="Key Materials" />
-                </FormLabel>
-                <FormControl>
-                  <Textarea placeholder="e.g., Organic Cotton, Recycled PET, Aluminum Alloy" {...field} rows={3}/>
-                </FormControl>
-                <FormDescription>
-                  List the primary materials used in the product.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+           <FormField control={form.control} name="materials" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Key Materials <AiIndicator fieldOrigin={initialData?.materialsOrigin} fieldName="Key Materials" /></FormLabel> <FormControl><Textarea placeholder="e.g., Organic Cotton, Recycled PET" {...field} rows={3}/></FormControl> <FormDescription>Primary materials used.</FormDescription> <FormMessage /> </FormItem> )}/>
           <FormField
             control={form.control}
             name="sustainabilityClaims"
             render={({ field }) => (
               <FormItem>
                 <div className="flex items-center justify-between">
-                    <FormLabel className="flex items-center">
-                        Sustainability Claims
-                        <AiIndicator fieldOrigin={initialData?.sustainabilityClaimsOrigin} fieldName="Sustainability Claims" />
-                    </FormLabel>
-                    <Button type="button" variant="ghost" size="sm" onClick={handleSuggestClaims} disabled={isSuggestingClaims || isSubmitting || isGeneratingImage}>
+                    <FormLabel className="flex items-center">Sustainability Claims <AiIndicator fieldOrigin={initialData?.sustainabilityClaimsOrigin} fieldName="Sustainability Claims" /></FormLabel>
+                    <Button type="button" variant="ghost" size="sm" onClick={callSuggestClaimsAI} disabled={anyAISuggestionInProgress || isSubmitting}>
                         {isSuggestingClaims ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
                         <span className="ml-2">{isSuggestingClaims ? "Suggesting..." : "Suggest Claims"}</span>
                     </Button>
                 </div>
-                <FormControl>
-                  <Textarea placeholder="e.g., - Made with 70% recycled materials\n- Carbon neutral certified\n- Biodegradable packaging" {...field} rows={3}/>
-                </FormControl>
-                 <FormDescription>
-                  Highlight key sustainability features. Click "Suggest Claims" for AI assistance.
-                </FormDescription>
+                <FormControl><Textarea placeholder="e.g., - Made with 70% recycled materials" {...field} rows={3}/></FormControl>
+                <FormDescription>Highlight key sustainability features.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
           />
-          {isSuggestingClaims && (
-            <div className="flex items-center text-sm text-muted-foreground">
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Generating suggestions...
-            </div>
-          )}
           {suggestedClaims.length > 0 && (
             <div className="space-y-2 pt-2">
-              <p className="text-sm font-medium text-muted-foreground">Click to add a suggestion:</p>
-              <div className="flex flex-wrap gap-2">
-                {suggestedClaims.map((claim, index) => (
-                  <Button key={index} type="button" variant="outline" size="sm" onClick={() => handleClaimClick(claim)}>
-                    {claim}
-                  </Button>
-                ))}
-              </div>
+              <p className="text-sm font-medium text-muted-foreground">Click to add suggestion:</p>
+              <div className="flex flex-wrap gap-2">{suggestedClaims.map((claim, index) => ( <Button key={index} type="button" variant="outline" size="sm" onClick={() => handleClaimClick(claim)}>{claim}</Button> ))}</div>
             </div>
           )}
-
-          <FormField
-            control={form.control}
-            name="energyLabel"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="flex items-center">
-                    Energy Label
-                    <AiIndicator fieldOrigin={initialData?.energyLabelOrigin} fieldName="Energy Label" />
-                </FormLabel>
-                <FormControl>
-                  <Input placeholder="e.g., A++" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <FormField control={form.control} name="energyLabel" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Energy Label <AiIndicator fieldOrigin={initialData?.energyLabelOrigin} fieldName="Energy Label" /></FormLabel> <FormControl><Input placeholder="e.g., A++" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
         </AccordionContent>
       </AccordionItem>
       
       <AccordionItem value="item-3">
         <AccordionTrigger className="text-lg font-semibold">Technical Specifications</AccordionTrigger>
         <AccordionContent className="pt-4">
-           <FormField
-              control={form.control}
-              name="specifications"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center">
-                    Specifications (JSON format)
-                    <AiIndicator fieldOrigin={initialData?.specificationsOrigin} fieldName="Specifications" />
-                  </FormLabel>
-                  <FormControl>
-                    <Textarea placeholder='e.g., { "color": "blue", "weight": "10kg" }' {...field} rows={5} />
-                  </FormControl>
-                  <FormDescription>
-                    Enter detailed product specifications as a JSON object. If AI extracted this, ensure it is valid JSON.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+           <FormField control={form.control} name="specifications" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Specifications (JSON) <AiIndicator fieldOrigin={initialData?.specificationsOrigin} fieldName="Specifications" /></FormLabel> <FormControl><Textarea placeholder='e.g., { "color": "blue", "weight": "10kg" }' {...field} rows={5} /></FormControl> <FormDescription>Enter as a JSON object.</FormDescription> <FormMessage /> </FormItem> )}/>
         </AccordionContent>
       </AccordionItem>
 
       <AccordionItem value="item-4">
-        <AccordionTrigger className="text-lg font-semibold flex items-center">
-            <BatteryCharging className="mr-2 h-5 w-5 text-primary" /> Battery Passport Details
-        </AccordionTrigger>
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-primary" /> Battery Details</AccordionTrigger>
         <AccordionContent className="space-y-6 pt-4">
-            <FormField
-              control={form.control}
-              name="batteryChemistry"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center">
-                    Battery Chemistry
-                    <AiIndicator fieldOrigin={initialData?.batteryChemistryOrigin} fieldName="Battery Chemistry" />
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Li-ion NMC, LFP" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="stateOfHealth"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center">
-                    State of Health (%)
-                    <AiIndicator fieldOrigin={initialData?.stateOfHealthOrigin} fieldName="State of Health" />
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="e.g., 98" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="carbonFootprintManufacturing"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center">
-                    Manufacturing Carbon Footprint (kg CO₂e)
-                    <AiIndicator fieldOrigin={initialData?.carbonFootprintManufacturingOrigin} fieldName="Carbon Footprint" />
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="e.g., 75.5" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="recycledContentPercentage"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center">
-                    Recycled Content (%)
-                    <AiIndicator fieldOrigin={initialData?.recycledContentPercentageOrigin} fieldName="Recycled Content" />
-                  </FormLabel>
-                  <FormControl>
-                    <Input type="number" placeholder="e.g., 15" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <FormField control={form.control} name="batteryChemistry" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Battery Chemistry <AiIndicator fieldOrigin={initialData?.batteryChemistryOrigin} fieldName="Battery Chemistry" /></FormLabel> <FormControl><Input placeholder="e.g., Li-ion NMC" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="stateOfHealth" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">State of Health (%) <AiIndicator fieldOrigin={initialData?.stateOfHealthOrigin} fieldName="State of Health" /></FormLabel> <FormControl><Input type="number" placeholder="e.g., 98" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)} /></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="carbonFootprintManufacturing" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Mfg. Carbon Footprint (kg CO₂e) <AiIndicator fieldOrigin={initialData?.carbonFootprintManufacturingOrigin} fieldName="Carbon Footprint" /></FormLabel> <FormControl><Input type="number" placeholder="e.g., 75.5" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)} /></FormControl> <FormMessage /> </FormItem> )}/>
+            <FormField control={form.control} name="recycledContentPercentage" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Recycled Content (%) <AiIndicator fieldOrigin={initialData?.recycledContentPercentageOrigin} fieldName="Recycled Content" /></FormLabel> <FormControl><Input type="number" placeholder="e.g., 15" {...field} value={field.value ?? ''} onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)} /></FormControl> <FormMessage /> </FormItem> )}/>
         </AccordionContent>
       </AccordionItem>
     </Accordion>
   );
-
 
   if (isStandalonePage) {
     return (
@@ -596,15 +309,13 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="font-headline">Product Information</CardTitle>
-              <CardDescription>Fill in the details for the Digital Product Passport. Fields suggested by AI will be marked with a <Cpu className="inline h-4 w-4 text-info align-middle" /> icon.</CardDescription>
+              <CardDescription>Fill in the details. AI suggestions are marked with a <Cpu className="inline h-4 w-4 text-info align-middle" /> icon.</CardDescription>
             </CardHeader>
-            <CardContent>
-              {formContent}
-            </CardContent>
+            <CardContent>{formContent}</CardContent>
           </Card>
-          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={!!isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName || isSuggestingDescription}>
-            {(isSubmitting || isGeneratingImage || isSuggestingClaims || isSuggestingName || isSuggestingDescription) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSubmitting ? "Saving Product..." : "Save Product"}
+          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={!!isSubmitting || anyAISuggestionInProgress}>
+            {(isSubmitting || anyAISuggestionInProgress) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting ? "Saving..." : (anyAISuggestionInProgress ? "AI Processing..." : "Save Product")}
           </Button>
         </form>
       </Form>
@@ -613,12 +324,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
   return (
      <Form {...form}>
-        <form id={id} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6"> {/* Ensure form has an ID if used externally */}
-          {formContent}
-           {/* Button is rendered by parent component when not standalone */}
-        </form>
+        <form id={id} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">{formContent}</form>
     </Form>
   );
 }
-
-    

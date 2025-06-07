@@ -1,17 +1,17 @@
 
-"use client"; // Converted to client component for state management
+"use client"; 
 
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award } from 'lucide-react'; // Added Award icon
+import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Settings, UploadCloud, QrCode, HardHat as ToolIcon, ClipboardCheck } from 'lucide-react'; // Added new icons
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react'; 
 import { cn } from '@/lib/utils';
-// Tooltip components are removed as their usage is being removed from this file.
+import { useRole } from '@/contexts/RoleContext'; // Import useRole
 
 // Define a type for icon mapping
 type IconName = "Leaf" | "Recycle" | "ShieldCheck" | "Cpu" | "Zap";
@@ -41,7 +41,7 @@ interface PublicCertification {
   authority: string;
   expiryDate?: string;
   link?: string;
-  isVerified?: boolean; // General verification status for UI
+  isVerified?: boolean; 
 }
 
 interface PublicProductInfo {
@@ -64,10 +64,9 @@ interface PublicProductInfo {
   ebsiStatus?: 'verified' | 'pending' | 'not_verified';
   ebsiVerificationId?: string;
   lifecycleHighlights?: LifecycleHighlight[];
-  certifications?: PublicCertification[]; // Added for certifications
+  certifications?: PublicCertification[]; 
 }
 
-// Mock data for public passports - in a real app, this would come from an API
 const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
   "PROD001": {
     passportId: "PROD001",
@@ -149,9 +148,9 @@ export default function PublicPassportPage({ params }: Props) {
   const [product, setProduct] = useState<PublicProductInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
+  const { currentRole } = useRole(); // Get current role
 
   useEffect(() => {
-    // Simulate API call
     const fetchedProduct = MOCK_PUBLIC_PASSPORTS[params.passportId];
     if (fetchedProduct) {
       setProduct(fetchedProduct);
@@ -192,6 +191,61 @@ export default function PublicPassportPage({ params }: Props) {
     }
   };
 
+  const RoleSpecificCard = () => {
+    let title = "Role-Specific Actions & Tips";
+    let IconComponent: React.ElementType = InfoIcon;
+    let content: React.ReactNode = null;
+
+    switch(currentRole) {
+      case 'admin':
+        IconComponent = Settings;
+        content = <p className="text-sm text-muted-foreground">Admin Tip: Oversee data integrity and user access through the main platform settings. <Link href="/settings" className="text-primary hover:underline">Go to Settings</Link>.</p>;
+        break;
+      case 'manufacturer':
+        IconComponent = Building; // Using Building icon for manufacturer context
+        content = <p className="text-sm text-muted-foreground">Manufacturer View: Ensure all product data is accurate and up-to-date. Consider initiating a new compliance check if recent changes were made (Mock).</p>;
+        if (product.ebsiStatus === 'pending') {
+            content = <>
+                {content}
+                <p className="text-sm text-orange-600 mt-2">Action Required: EBSI verification is pending. Please review and complete necessary steps via your dashboard.</p>
+            </>;
+        }
+        break;
+      case 'supplier':
+        IconComponent = UploadCloud;
+        content = <p className="text-sm text-muted-foreground">Supplier Action: If you supply components for this product, ensure your material declarations are up-to-date in the system. (Mock)</p>;
+        break;
+      case 'retailer':
+        IconComponent = QrCode;
+        content = <p className="text-sm text-muted-foreground">Retailer Tip: Utilize this DPP QR code on product displays for enhanced customer transparency and engagement. Access marketing assets from the product detail page (Mock).</p>;
+        break;
+      case 'recycler':
+        IconComponent = ToolIcon;
+        content = <p className="text-sm text-muted-foreground">Recycler Info: Detailed disassembly guides and material recovery sheets are typically available in the 'Technical Docs' section or linked from lifecycle events. (Mock)</p>;
+        break;
+      case 'verifier':
+        IconComponent = ClipboardCheck;
+        content = <p className="text-sm text-muted-foreground">Verifier Action: Plan next audit cycle or request further documentation for this product from the verifier dashboard. (Mock)</p>;
+        break;
+      default:
+        return null; // No specific card for unknown roles
+    }
+
+    return (
+      <Card className="mt-10 shadow-md">
+        <CardHeader>
+          <CardTitle className="text-xl text-primary flex items-center">
+            <IconComponent className="mr-2 h-6 w-6" /> {title}
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {content}
+        </CardContent>
+      </Card>
+    );
+  };
+
+
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
       <header className="py-6 bg-card shadow-sm">
@@ -230,7 +284,9 @@ export default function PublicPassportPage({ params }: Props) {
             <div className="space-y-6">
               <Card className="bg-muted border-border">
                 <CardHeader>
-                  <CardTitle className="text-xl text-primary">Product Story</CardTitle>
+                  <CardTitle className="text-xl text-primary">
+                    {currentRole === 'manufacturer' ? "Product Story (Manufacturer View)" : "Product Story"}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
                   <p className="text-foreground leading-relaxed">{displayProductStory}</p>
@@ -243,6 +299,9 @@ export default function PublicPassportPage({ params }: Props) {
                       {isStoryExpanded ? "Read Less" : "Read More"}
                       {isStoryExpanded ? <ChevronUp className="ml-1 h-4 w-4" /> : <ChevronDown className="ml-1 h-4 w-4" />}
                     </Button>
+                  )}
+                  {currentRole === 'recycler' && (
+                    <p className="text-xs text-muted-foreground mt-3">Recyclers: Focus on 'Materials Composition' and 'Lifecycle' sections for EOL details.</p>
                   )}
                 </CardContent>
               </Card>
@@ -265,6 +324,9 @@ export default function PublicPassportPage({ params }: Props) {
                       );
                     })}
                   </ul>
+                  {currentRole === 'retailer' && (
+                    <p className="text-xs text-muted-foreground mt-3">Key consumer-facing sustainability points.</p>
+                  )}
                 </CardContent>
               </Card>
             </div>
@@ -289,6 +351,9 @@ export default function PublicPassportPage({ params }: Props) {
                     <Link href={product.manufacturerWebsite} target="_blank" rel="noopener noreferrer" className="inline-flex items-center text-primary hover:underline">
                       Visit Website <ExternalLink className="ml-1 h-4 w-4" />
                     </Link>
+                  )}
+                  {currentRole === 'manufacturer' && (
+                    <Button variant="link" size="sm" className="p-0 h-auto mt-1 text-primary block">View Internal Details (Mock)</Button>
                   )}
                 </CardContent>
               </Card>
@@ -406,18 +471,22 @@ export default function PublicPassportPage({ params }: Props) {
                     <CardTitle className="text-xl text-primary">Compliance Overview</CardTitle>
                 </CardHeader>
                 <CardContent className="px-0 pb-0">
-                    <p className="text-foreground">{product.complianceSummary}</p>
-                    {product.learnMoreLink && (
-                        <Link href={product.learnMoreLink} passHref className="mt-3 inline-block">
-                        <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
-                            Learn More About Our Standards
-                        </Button>
-                        </Link>
-                    )}
+                  {currentRole === 'verifier' && (
+                    <p className="text-sm font-semibold text-info mb-2">Auditor View: Access detailed compliance records and initiate audits via the main dashboard.</p>
+                  )}
+                  <p className="text-foreground">{product.complianceSummary}</p>
+                  {product.learnMoreLink && (
+                      <Link href={product.learnMoreLink} passHref className="mt-3 inline-block">
+                      <Button variant="outline" className="border-primary text-primary hover:bg-primary/10">
+                          Learn More About Our Standards
+                      </Button>
+                      </Link>
+                  )}
                 </CardContent>
             </div>
           </div>
         </div>
+        <RoleSpecificCard /> {/* Add the new role-specific card here */}
       </main>
 
       <footer className="py-8 bg-foreground text-background text-center mt-12">
@@ -429,3 +498,4 @@ export default function PublicPassportPage({ params }: Props) {
     </div>
   );
 }
+

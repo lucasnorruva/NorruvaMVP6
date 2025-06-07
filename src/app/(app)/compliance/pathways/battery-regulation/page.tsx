@@ -47,35 +47,32 @@ export default function BatteryRegulationPathwayPage() {
     setFormData(prev => ({ ...prev, [`${step}_${field}`]: value }));
   };
 
+  // --- Function: handleAskCopilot ---
+  // Description: Simulates asking the AI Co-Pilot for help regarding a specific step in the wizard.
+  // Uses toasts to provide feedback and mock AI responses.
   const handleAskCopilot = async (stepContext: string) => {
     setIsLoadingCopilot(true);
     toast({
       title: "Asking AI Co-Pilot...",
       description: `Getting information related to: ${stepContext}`,
     });
-    // In a real implementation, you would call queryComplianceCopilot here
-    // For example:
-    // try {
-    //   const response = await queryComplianceCopilot({ query: `What are the key requirements for ${stepContext} in the EU Battery Regulation?` });
-    //   toast({
-    //     title: "Co-Pilot Response",
-    //     description: response.answer,
-    //     duration: 9000,
-    //   });
-    // } catch (error) {
-    //   toast({ variant: "destructive", title: "Co-Pilot Error", description: "Could not get a response."});
-    // }
-    await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API call
+
+    // Simulate API call delay
+    await new Promise(resolve => setTimeout(resolve, 1500)); 
+
     let mockResponseDescription = `For ${stepContext}, ensure all data is accurate and verifiable according to the EU Battery Regulation. Specific guidance can be found in the relevant annexes of the regulation.`;
-    if (stepContext === euBatteryRegulationSteps[0].title) {
+
+    if (stepContext === euBatteryRegulationSteps[0].title) { // General Information
         mockResponseDescription = `For General Information, ensure you provide accurate battery model identifiers and clearly define all typical intended uses. If a safety data sheet (SDS) is available, linking its URL strengthens your compliance position. Refer to Annex VI of the EU Battery Regulation for specific data elements required under this section.`;
-    } else if (stepContext === euBatteryRegulationSteps[1].title) {
+    } else if (stepContext === euBatteryRegulationSteps[1].title) { // Manufacturer Details
         mockResponseDescription = `For Manufacturer Details, clearly identify the legal manufacturer, including their registered trade name and postal address. The contact person (name, email, phone) should be easily reachable for compliance inquiries. Ensure this information precisely matches official business registries.`;
     }
+    // For other steps, the generic mockResponseDescription will be used.
+
      toast({
         title: "AI Co-Pilot (Mock Response)",
         description: mockResponseDescription,
-        duration: 10000,
+        duration: 10000, // Increased duration for better readability
       });
     setIsLoadingCopilot(false);
   };
@@ -97,6 +94,7 @@ export default function BatteryRegulationPathwayPage() {
   };
   
   const renderStepContent = (stepId: string) => {
+    const currentStepDetails = euBatteryRegulationSteps.find(s => s.id === stepId);
     switch (stepId) {
       case "step1":
         return (
@@ -154,7 +152,6 @@ export default function BatteryRegulationPathwayPage() {
         );
       // Add cases for other steps here as they are developed
       default:
-        const currentStepDetails = euBatteryRegulationSteps.find(s => s.id === stepId);
         return (
             <Card>
                 <CardHeader>
@@ -163,7 +160,7 @@ export default function BatteryRegulationPathwayPage() {
                 </CardHeader>
                 <CardContent>
                     <p className="text-muted-foreground">Content for {currentStepDetails?.title || "this step"} will be available soon.</p>
-                     <Button className="mt-4" variant="outline" size="sm" onClick={() => handleAskCopilot(currentStepDetails?.title || "this step")} disabled={isLoadingCopilot}>
+                     <Button className="mt-4" variant="outline" size="sm" onClick={() => handleAskCopilot(currentStepDetails?.title || "this step context")} disabled={isLoadingCopilot}>
                         {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
                         Ask Co-Pilot about this step
                     </Button>

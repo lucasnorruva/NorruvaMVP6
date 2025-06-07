@@ -59,6 +59,15 @@ interface StoredUserProduct extends ProductFormData {
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
   productCategory?: string;
   imageUrl?: string;
+  // Added missing fields from StoredUserProduct that are in SimpleProductDetail
+  keySustainabilityPoints?: string[];
+  keyCompliancePoints?: string[];
+  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
+  energyLabelRating?: string;
+  repairability?: { score: number; scale: number; detailsUrl?: string };
+  recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
+  supplyChainLinks?: any[]; // Using 'any' for simplicity, should be ProductSupplyChainLink[]
+  lifecycleEvents?: any[]; // Using 'any' for simplicity, should be SimpleLifecycleEvent[]
 }
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -70,17 +79,14 @@ const determineOrigin = (
   previousOrigin: 'AI_EXTRACTED' | 'manual' | undefined
 ): 'AI_EXTRACTED' | 'manual' | undefined => {
   if (currentValue !== previousValue) {
-     // If user clears a field that had a value, it's a manual action.
-     // If a field was empty and user provides a value, it's manual.
-     // If a field had a value and user changes it to another non-empty value, it's manual.
     if ( (previousValue !== undefined && previousValue !== null && previousValue !== "") && (currentValue === "" || currentValue === null || currentValue === undefined) ) {
-        return 'manual'; // User cleared an existing field
+        return 'manual'; 
     }
     if (currentValue !== "" && currentValue !== null && currentValue !== undefined) {
-        return 'manual'; // User provided or changed a value
+        return 'manual'; 
     }
   }
-  return previousOrigin; // Otherwise, preserve initial origin
+  return previousOrigin; 
 };
 
 
@@ -114,7 +120,6 @@ export default function AddNewProductPage() {
       if (productToEdit) {
         const editData: Partial<InitialProductFormData> = {
           ...productToEdit,
-          // Ensure numeric fields that might be null/undefined are handled correctly
           stateOfHealth: productToEdit.stateOfHealth ?? undefined,
           carbonFootprintManufacturing: productToEdit.carbonFootprintManufacturing ?? undefined,
           recycledContentPercentage: productToEdit.recycledContentPercentage ?? undefined,
@@ -141,11 +146,13 @@ export default function AddNewProductPage() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setFile(event.target.files[0]);
-      setCurrentProductDataForForm(prev => ({ // Reset relevant fields, keep GTIN etc. if user typed manually before AI
-        ...prev, 
+      setCurrentProductDataForForm(prev => ({ 
+        gtin: prev.gtin, // Keep GTIN if manually entered
+        productCategory: prev.productCategory, // Keep category if manually entered
         productName: "", productDescription: "", manufacturer: "", modelNumber: "",
         materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", 
         batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined,
+        imageUrl: "",
         productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined, modelNumberOrigin: undefined,
         materialsOrigin: undefined, sustainabilityClaimsOrigin: undefined, specificationsOrigin: undefined, energyLabelOrigin: undefined,
         batteryChemistryOrigin: undefined, stateOfHealthOrigin: undefined, carbonFootprintManufacturingOrigin: undefined, recycledContentPercentageOrigin: undefined,
@@ -174,14 +181,23 @@ export default function AddNewProductPage() {
       if (result.productDescription) { aiInitialFormData.productDescription = result.productDescription; aiInitialFormData.productDescriptionOrigin = 'AI_EXTRACTED'; }
       if (result.manufacturer) { aiInitialFormData.manufacturer = result.manufacturer; aiInitialFormData.manufacturerOrigin = 'AI_EXTRACTED'; }
       if (result.modelNumber) { aiInitialFormData.modelNumber = result.modelNumber; aiInitialFormData.modelNumberOrigin = 'AI_EXTRACTED'; }
-      if (result.specifications && Object.keys(result.specifications).length > 0) { aiInitialFormData.specifications = JSON.stringify(result.specifications, null, 2); aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED'; } else { aiInitialFormData.specifications = ""; }
+      
+      if (result.specifications && Object.keys(result.specifications).length > 0) { 
+        aiInitialFormData.specifications = JSON.stringify(result.specifications, null, 2); 
+        aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED'; 
+      } else { 
+        aiInitialFormData.specifications = ""; 
+        if (result.specifications) aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED'; // Mark if AI attempted
+      }
+
       if (result.energyLabel) { aiInitialFormData.energyLabel = result.energyLabel; aiInitialFormData.energyLabelOrigin = 'AI_EXTRACTED'; }
+      
+      // Battery specific fields
       if (result.batteryChemistry) { aiInitialFormData.batteryChemistry = result.batteryChemistry; aiInitialFormData.batteryChemistryOrigin = 'AI_EXTRACTED'; }
       if (result.stateOfHealth !== undefined && result.stateOfHealth !== null) { aiInitialFormData.stateOfHealth = result.stateOfHealth; aiInitialFormData.stateOfHealthOrigin = 'AI_EXTRACTED'; }
       if (result.carbonFootprintManufacturing !== undefined && result.carbonFootprintManufacturing !== null) { aiInitialFormData.carbonFootprintManufacturing = result.carbonFootprintManufacturing; aiInitialFormData.carbonFootprintManufacturingOrigin = 'AI_EXTRACTED'; }
       if (result.recycledContentPercentage !== undefined && result.recycledContentPercentage !== null) { aiInitialFormData.recycledContentPercentage = result.recycledContentPercentage; aiInitialFormData.recycledContentPercentageOrigin = 'AI_EXTRACTED'; }
       
-      // Merge AI data with existing form data (e.g., if user typed GTIN manually first)
       setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData}));
       setAiExtractionAppliedSuccessfully(true);
       
@@ -209,7 +225,6 @@ export default function AddNewProductPage() {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
       let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
 
-      // currentProductDataForForm holds the state before this specific form submission (could be from AI extraction or load-for-edit)
       const dataPriorToThisEdit = currentProductDataForForm;
 
       const productToSave: StoredUserProduct = {
@@ -247,6 +262,9 @@ export default function AddNewProductPage() {
         status: (isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.status) : "Draft") || "Draft",
         compliance: (isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.compliance) : "N/A") || "N/A",
         lastUpdated: new Date().toISOString(),
+        // Initialize potentially missing fields for StoredUserProduct to align with SimpleProductDetail structure if needed later
+        supplyChainLinks: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.supplyChainLinks) || [] : [],
+        lifecycleEvents: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.lifecycleEvents) || [] : [],
       };
 
 
@@ -272,7 +290,7 @@ export default function AddNewProductPage() {
         materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
         imageUrl: "",
         batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined
-       }); // Reset form holder
+       }); 
       setAiExtractionAppliedSuccessfully(false);
       if (!isEditMode) setActiveTab("ai-extraction");
       
@@ -392,3 +410,5 @@ export default function AddNewProductPage() {
     </div>
   );
 }
+
+    

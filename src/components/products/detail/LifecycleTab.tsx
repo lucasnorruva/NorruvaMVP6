@@ -75,8 +75,6 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
             }
         }
         if (!foundPreviousStage) {
-            // If no completed/in-progress stage found before, use the immediate previous event's name
-            // This covers cases where previous events might all be 'Upcoming' but represents the sequence
             currentLifecycleStageName = product.lifecycleEvents[currentIndex - 1].eventName;
         }
     }
@@ -146,7 +144,6 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
 
           {product.lifecycleEvents.map((event, index) => {
             const IconComponent = getIconComponent(event.iconName);
-            const isLastEvent = index === product.lifecycleEvents!.length - 1;
             const canAdvance = (event.status === 'Upcoming' || event.status === 'In Progress');
             
             return (
@@ -155,23 +152,37 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
                   <IconComponent className="h-3 w-3 text-primary" />
                 </div>
                 
-                <div className={cn("ml-8 w-full p-4 border rounded-lg shadow-sm bg-background hover:shadow-md transition-shadow", isLastEvent ? "mb-0" : "mb-4")}>
-                  <div className="flex justify-between items-start mb-1">
+                <div className={cn(
+                  "ml-8 w-full p-4 border rounded-lg shadow-sm bg-background hover:shadow-md transition-shadow"
+                )}>
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1.5">
                     <h4 className="font-semibold text-md text-foreground">{event.eventName}</h4>
-                    <Badge variant={getStatusBadgeVariant(event.status)} className={cn("text-xs", getStatusBadgeClasses(event.status))}>
+                    <Badge 
+                      variant={getStatusBadgeVariant(event.status)} 
+                      className={cn("text-xs capitalize mt-1 sm:mt-0", getStatusBadgeClasses(event.status))}
+                    >
                       {event.status}
                     </Badge>
                   </div>
-                  <p className="text-xs text-muted-foreground mb-1">
-                    {new Date(event.date).toLocaleDateString()} {event.location && ` - ${event.location}`}
-                  </p>
-                  {event.notes && <p className="text-sm text-foreground/80">{event.notes}</p>}
+                  <div className="text-xs text-muted-foreground mb-2 flex flex-wrap gap-x-3 gap-y-1">
+                    <span className="flex items-center">
+                      <LucideIcons.CalendarDays className="h-3.5 w-3.5 mr-1 text-muted-foreground/80" />
+                      {new Date(event.date).toLocaleDateString()}
+                    </span>
+                    {event.location && (
+                      <span className="flex items-center">
+                        <LucideIcons.MapPin className="h-3.5 w-3.5 mr-1 text-muted-foreground/80" />
+                        {event.location}
+                      </span>
+                    )}
+                  </div>
+                  {event.notes && <p className="text-sm text-foreground/80 mb-3">{event.notes}</p>}
 
                   {canAdvance && (
                     <Button 
                       size="sm" 
                       variant="outline" 
-                      className="mt-3 text-xs"
+                      className="mt-2 text-xs"
                       onClick={() => handleAdvanceStage(event, index)}
                       disabled={isLoadingComplianceCheck === event.id}
                     >

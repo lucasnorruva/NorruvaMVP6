@@ -1,4 +1,3 @@
-
 // --- File: dpp.ts ---
 // Description: TypeScript type definitions for Digital Product Passports and related entities.
 
@@ -281,7 +280,14 @@ export interface SimpleProductDetail {
   imageHint?: string;
   keySustainabilityPoints?: string[];
   keyCompliancePoints?: string[];
-  specifications?: Record<string, string>; 
+  specifications?: Record<string, string>;
+  // New fields for SustainabilityTab
+  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
+  energyLabelRating?: string; // e.g., "A++", "B"
+  repairability?: { score: number; scale: number; detailsUrl?: string };
+  recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
+  // Fields for supply chain (added previously, ensure they are here if not)
+  supplyChainLinks?: ProductSupplyChainLink[];
 }
 
 export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
@@ -296,13 +302,25 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     description: "State-of-the-art energy efficient refrigerator, built with sustainable materials and smart energy management. Features advanced frost-free systems and optimized airflow for even temperature distribution.",
     imageUrl: "https://placehold.co/600x400.png",
     imageHint: "modern refrigerator kitchen",
-    keySustainabilityPoints: ["Energy Star Certified A+++", "Made with 70% recycled steel", "95% recyclable at end-of-life"],
-    keyCompliancePoints: ["EU Ecodesign Compliant", "EU Energy Labelling Compliant", "EPREL Registered: EPREL_REG_12345"],
-    specifications: { "Capacity": "400L", "Warranty": "5 years", "Dimensions": "180x70x65 cm", "Color": "Stainless Steel"}
+    keySustainabilityPoints: ["Energy Star Certified", "Made with 70% recycled steel", "95% recyclable at end-of-life", "Low Global Warming Potential (GWP) refrigerant"],
+    keyCompliancePoints: ["EU Ecodesign Compliant", "EU Energy Labelling Compliant", "EPREL Registered: EPREL_REG_12345", "RoHS Compliant"],
+    specifications: { "Capacity": "400L", "Warranty": "5 years", "Dimensions": "180x70x65 cm", "Color": "Stainless Steel", "Noise Level": "38 dB"},
+    materialsUsed: [
+      { name: "Recycled Steel", percentage: 70, source: "Certified Recycler A", isRecycled: true },
+      { name: "Bio-based Polymers (Insulation)", percentage: 15, source: "EcoPoly Corp" },
+      { name: "Tempered Glass (Shelves)", percentage: 10, source: "GlassWorld Inc." }
+    ],
+    energyLabelRating: "A+++",
+    repairability: { score: 8.5, scale: 10, detailsUrl: "/repair/PROD001" },
+    recyclabilityInfo: { percentage: 95, instructionsUrl: "/recycling/PROD001" },
+    supplyChainLinks: [
+      { supplierId: "SUP001", suppliedItem: "Compressor Unit XJ-500", notes: "Primary compressor supplier. Audited for fair labor practices." },
+      { supplierId: "SUP002", suppliedItem: "Recycled Steel Panels (70%)", notes: "Certified recycled content from post-consumer sources." }
+    ]
   },
   {
     id: "PROD002",
-    productName: "Smart LED Bulb Pack (4-pack)",
+    productName: "Smart LED Bulb (4-Pack)",
     category: "Electronics",
     status: "Active",
     manufacturer: "BrightSpark Electronics",
@@ -311,9 +329,20 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     description: "Tunable white and color smart LED bulbs, designed for long lifespan and connectivity with smart home systems. Uses 85% less energy than traditional incandescent bulbs.",
     imageUrl: "https://placehold.co/600x400.png",
     imageHint: "led bulbs packaging",
-    keySustainabilityPoints: ["Uses 85% less energy", "Recyclable packaging materials", "Mercury-free design"],
-    keyCompliancePoints: ["RoHS Compliant", "CE Marked"],
-    specifications: { "Lumens": "800lm per bulb", "Connectivity": "Wi-Fi, Bluetooth", "Lifespan": "25,000 hours", "Color Temperature": "2700K-6500K"}
+    keySustainabilityPoints: ["Uses 85% less energy", "Recyclable packaging materials", "Mercury-free design", "Long lifespan (25,000 hours)"],
+    keyCompliancePoints: ["RoHS Compliant", "CE Marked", "FCC Certified"],
+    specifications: { "Lumens": "800lm per bulb", "Connectivity": "Wi-Fi, Bluetooth", "Lifespan": "25,000 hours", "Color Temperature": "2700K-6500K", "Wattage": "9W (Equivalent to 60W)"},
+    materialsUsed: [
+      { name: "Polycarbonate (Housing)", percentage: 60, isRecycled: false },
+      { name: "Aluminum (Heat Sink)", percentage: 30, isRecycled: true },
+      { name: "Electronic Components", percentage: 10 }
+    ],
+    energyLabelRating: "A+",
+    repairability: { score: 6.0, scale: 10, detailsUrl: "/repair/PROD002" },
+    recyclabilityInfo: { percentage: 75, instructionsUrl: "/recycling/PROD002" },
+    supplyChainLinks: [
+       { supplierId: "SUP004", suppliedItem: "LED Chips & Drivers", notes: "Specialized electronics supplier." }
+    ]
   },
   {
     id: "USER_PROD123456", 
@@ -326,9 +355,17 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     description: "A handcrafted wooden chair made from sustainably sourced oak. Each chair is unique and built to last.",
     imageUrl: "https://placehold.co/600x400.png",
     imageHint: "wooden chair artisan",
-    keySustainabilityPoints: ["Sustainably Sourced Oak", "Handcrafted Locally", "Durable Design"],
-    keyCompliancePoints: ["TSCA Title VI Compliant (Formaldehyde)"],
-    specifications: { "Material": "Solid Oak", "Finish": "Natural Oil", "Weight Capacity": "120kg" }
+    keySustainabilityPoints: ["Sustainably Sourced Oak", "Handcrafted Locally", "Durable Design", "Low VOC Finish"],
+    keyCompliancePoints: ["TSCA Title VI Compliant (Formaldehyde)", "General Product Safety Regulations"],
+    specifications: { "Material": "Solid Oak", "Finish": "Natural Oil", "Weight Capacity": "120kg", "Dimensions": "45cm x 50cm x 90cm" },
+    materialsUsed: [
+        { name: "FSC Certified Oak Wood", percentage: 95, source: "Sustainable Forests Co-op" },
+        { name: "Natural Oil Finish", percentage: 5, source: "EcoFinishes Ltd." }
+    ],
+    energyLabelRating: "N/A",
+    repairability: { score: 7.5, scale: 10 },
+    recyclabilityInfo: { percentage: 80, instructionsUrl: "/recycling/USER_PROD123456"},
+    supplyChainLinks: []
   }
 ];
 
@@ -348,5 +385,5 @@ export const MOCK_SUPPLIERS: Supplier[] = [
   { id: "SUP001", name: "GreenCompress Ltd.", contactPerson: "Sarah Miller", email: "sarah.miller@greencompress.com", location: "Stuttgart, Germany", materialsSupplied: "Eco-friendly compressors, Cooling units", status: "Active", lastUpdated: "2024-07-15T10:00:00Z" },
   { id: "SUP002", name: "RecycleSteel Corp.", contactPerson: "John Davis", email: "jdavis@recyclesteel.com", location: "Rotterdam, Netherlands", materialsSupplied: "Recycled steel panels, Stainless steel components", status: "Active", lastUpdated: "2024-06-20T14:30:00Z" },
   { id: "SUP003", name: "Organic Textiles Co.", contactPerson: "Aisha Khan", email: "akhan@organictextiles.com", location: "Coimbatore, India", materialsSupplied: "GOTS certified organic cotton yarn, Natural dyes", status: "Active", lastUpdated: "2024-07-01T09:00:00Z" },
-  { id: "SUP004", name: "PolySolutions Inc.", contactPerson: "Mike Chen", email: "chen.m@polysolutions.com", location: "Shanghai, China", materialsSupplied: "Recycled PET pellets, Bio-polymers", status: "Pending Review", lastUpdated: "2024-05-10T11:00:00Z" },
+  { id: "SUP004", name: "PolySolutions Inc.", contactPerson: "Mike Chen", email: "chen.m@polysolutions.com", location: "Shanghai, China", materialsSupplied: "Recycled PET pellets, Bio-polymers, LED Chips & Drivers", status: "Pending Review", lastUpdated: "2024-05-10T11:00:00Z" },
 ];

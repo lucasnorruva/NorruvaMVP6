@@ -129,6 +129,7 @@ export interface DigitalProductPassport {
   dataController?: string; // DID or legal entity
   accessControlPolicyUrl?: string;
   privacyPolicyUrl?: string;
+  supplyChainLinks?: ProductSupplyChainLink[]; // Added for supply chain management
 }
 
 export interface DashboardFiltersState {
@@ -169,6 +170,10 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ],
     certifications: [
       {id: "cert1", name: "Energy Star", issuer: "EPA", issueDate: "2024-01-01", documentUrl: "#", transactionHash: "0xcertAnchor1"}
+    ],
+    supplyChainLinks: [
+      { supplierId: "SUP001", suppliedItem: "Compressor Unit XJ-500", notes: "Primary compressor supplier." },
+      { supplierId: "SUP002", suppliedItem: "Recycled Steel Panels", notes: "Certified recycled content." }
     ]
   },
   {
@@ -189,6 +194,9 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-20T00:00:00Z"},
     consumerScans: 300,
     blockchainIdentifiers: { platform: "MockChain" }, // No anchor hash
+    supplyChainLinks: [
+       { supplierId: "SUP003", suppliedItem: "Organic Cotton Yarn", notes: "GOTS Certified Supplier" }
+    ]
   },
   {
     id: "DPP003",
@@ -203,6 +211,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     consumerScans: 2100,
      productDetails: { description: "A recycled phone case."},
      blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0x789polymerAnchorHash000333"},
+     supplyChainLinks: []
   },
   {
     id: "DPP004",
@@ -214,7 +223,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eu_espr: { status: "compliant" },
     },
     consumerScans: 850,
-    productDetails: { description: "A modular sofa."} // No blockchainIdentifiers
+    productDetails: { description: "A modular sofa."}, // No blockchainIdentifiers
+    supplyChainLinks: []
   },
   {
     id: "DPP005",
@@ -242,6 +252,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       {id: "cert_bat_01", name: "UN 38.3 Transport Test", issuer: "TestCert Ltd.", issueDate: "2024-07-01", documentUrl: "#", transactionHash: "0xcertAnchorBat1"}
     ],
     blockchainIdentifiers: { platform: "BatteryChain", anchorTransactionHash: "0xevBatteryAnchorHash555AAA"},
+    supplyChainLinks: []
   },
    {
     id: "DPP006",
@@ -254,8 +265,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       us_scope3: { status: "non_compliant" }, 
     },
     consumerScans: 1520,
-    productDetails: { description: "Fairtrade coffee beans.", imageUrl: "https://placehold.co/600x400.png", imageHint: "coffee beans bag"}
-    // No blockchainIdentifiers
+    productDetails: { description: "Fairtrade coffee beans.", imageUrl: "https://placehold.co/600x400.png", imageHint: "coffee beans bag"},
+    supplyChainLinks: []
   },
   {
     id: "DPP007",
@@ -272,6 +283,104 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     consumerScans: 980,
     productDetails: { description: "A smart thermostat.", imageUrl: "https://placehold.co/600x400.png", imageHint: "smart thermostat device"},
     blockchainIdentifiers: { platform: "SmartHomeChain", anchorTransactionHash: "0xthermoAnchorHash777BBB"},
+    supplyChainLinks: []
   }
 ];
 
+// --- New types for refactored Product Detail Page ---
+export interface SimpleProductDetail {
+  id: string;
+  productName: string;
+  category: string;
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending'; // Simplified status
+  manufacturer?: string;
+  gtin?: string;
+  modelNumber?: string;
+  description?: string;
+  imageUrl?: string;
+  imageHint?: string;
+  // Simplified key details for overview
+  keySustainabilityPoints?: string[];
+  keyCompliancePoints?: string[];
+  specifications?: Record<string, string>; // Simple key-value for now
+}
+
+export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
+  {
+    id: "PROD001",
+    productName: "EcoFriendly Refrigerator X2000",
+    category: "Appliances",
+    status: "Active",
+    manufacturer: "GreenTech Appliances",
+    gtin: "01234567890123",
+    modelNumber: "X2000-ECO",
+    description: "State-of-the-art energy efficient refrigerator, built with sustainable materials and smart energy management. Features advanced frost-free systems and optimized airflow for even temperature distribution.",
+    imageUrl: "https://placehold.co/600x400.png",
+    imageHint: "modern refrigerator kitchen",
+    keySustainabilityPoints: ["Energy Star Certified A+++", "Made with 70% recycled steel", "95% recyclable at end-of-life"],
+    keyCompliancePoints: ["EU Ecodesign Compliant", "EU Energy Labelling Compliant", "EPREL Registered: EPREL_REG_12345"],
+    specifications: { "Capacity": "400L", "Warranty": "5 years", "Dimensions": "180x70x65 cm", "Color": "Stainless Steel"}
+  },
+  {
+    id: "PROD002",
+    productName: "Smart LED Bulb Pack (4-pack)",
+    category: "Electronics",
+    status: "Active",
+    manufacturer: "BrightSpark Electronics",
+    gtin: "98765432109876",
+    modelNumber: "BS-LED-S04B",
+    description: "Tunable white and color smart LED bulbs, designed for long lifespan and connectivity with smart home systems. Uses 85% less energy than traditional incandescent bulbs.",
+    imageUrl: "https://placehold.co/600x400.png",
+    imageHint: "led bulbs packaging",
+    keySustainabilityPoints: ["Uses 85% less energy", "Recyclable packaging materials", "Mercury-free design"],
+    keyCompliancePoints: ["RoHS Compliant", "CE Marked"],
+    specifications: { "Lumens": "800lm per bulb", "Connectivity": "Wi-Fi, Bluetooth", "Lifespan": "25,000 hours", "Color Temperature": "2700K-6500K"}
+  },
+  // Add more simple mock products if needed, ensure IDs match those expected from lists.
+  {
+    id: "USER_PROD123456", // Example of a user-added product ID structure
+    productName: "Custom Craft Wooden Chair",
+    category: "Furniture",
+    status: "Draft",
+    manufacturer: "Artisan Woodworks",
+    gtin: "11223344556677",
+    modelNumber: "CWC-001",
+    description: "A handcrafted wooden chair made from sustainably sourced oak. Each chair is unique and built to last.",
+    imageUrl: "https://placehold.co/600x400.png",
+    imageHint: "wooden chair artisan",
+    keySustainabilityPoints: ["Sustainably Sourced Oak", "Handcrafted Locally", "Durable Design"],
+    keyCompliancePoints: ["TSCA Title VI Compliant (Formaldehyde)"],
+    specifications: { "Material": "Solid Oak", "Finish": "Natural Oil", "Weight Capacity": "120kg" }
+  }
+];
+// --- End of new types for refactored Product Detail Page ---
+
+
+// --- For Supply Chain Module ---
+export interface Supplier {
+  id: string;
+  name: string;
+  contactPerson?: string;
+  email?: string;
+  location?: string;
+  materialsSupplied: string; // Comma-separated list or general description
+  status: 'Active' | 'Inactive' | 'Pending Review';
+  lastUpdated: string; // ISO date string
+}
+
+export interface ProductSupplyChainLink {
+  supplierId: string;
+  suppliedItem: string; // e.g., "Battery Cells", "Recycled Aluminum Casing"
+  notes?: string;
+}
+
+export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
+export const MOCK_SUPPLIERS: Supplier[] = [
+  { id: "SUP001", name: "GreenCompress Ltd.", contactPerson: "Sarah Miller", email: "sarah.miller@greencompress.com", location: "Stuttgart, Germany", materialsSupplied: "Eco-friendly compressors, Cooling units", status: "Active", lastUpdated: "2024-07-15T10:00:00Z" },
+  { id: "SUP002", name: "RecycleSteel Corp.", contactPerson: "John Davis", email: "jdavis@recyclesteel.com", location: "Rotterdam, Netherlands", materialsSupplied: "Recycled steel panels, Stainless steel components", status: "Active", lastUpdated: "2024-06-20T14:30:00Z" },
+  { id: "SUP003", name: "Organic Textiles Co.", contactPerson: "Aisha Khan", email: "akhan@organictextiles.com", location: "Coimbatore, India", materialsSupplied: "GOTS certified organic cotton yarn, Natural dyes", status: "Active", lastUpdated: "2024-07-01T09:00:00Z" },
+  { id: "SUP004", name: "PolySolutions Inc.", contactPerson: "Mike Chen", email: "chen.m@polysolutions.com", location: "Shanghai, China", materialsSupplied: "Recycled PET pellets, Bio-polymers", status: "Pending Review", lastUpdated: "2024-05-10T11:00:00Z" },
+];
+// --- End of Supply Chain Module types ---
+
+    

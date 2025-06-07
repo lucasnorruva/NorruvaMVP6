@@ -8,11 +8,11 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useRole } from '@/contexts/RoleContext';
-import type { PublicProductInfo } from '@/types/dpp'; // Import the PublicProductInfo type
+import type { PublicProductInfo } from '@/types/dpp'; 
 import { Settings, Building, UploadCloud, QrCode, HardHat as ToolIcon, ClipboardCheck, Info as InfoIcon } from 'lucide-react';
 
 interface RoleSpecificCardProps {
-  product: PublicProductInfo; // Use the imported type
+  product: PublicProductInfo; 
 }
 
 export default function RoleSpecificCard({ product }: RoleSpecificCardProps) {
@@ -107,5 +107,3 @@ export default function RoleSpecificCard({ product }: RoleSpecificCardProps) {
     </Card>
   );
 }
-
-    

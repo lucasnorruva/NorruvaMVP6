@@ -13,15 +13,15 @@ import { Button } from '@/components/ui/button';
 import { 
   Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, 
   ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot,
-  Factory, Truck, ShoppingCart, Wrench, UploadCloud, ClipboardCheck, Cog, Search, PenTool, CalendarCheck // Added new icons
+  Factory, Truck, ShoppingCart, Wrench, UploadCloud, ClipboardCheck, Cog, Search, PenTool, CalendarCheck
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react'; 
 import { cn } from '@/lib/utils';
 import { useRole } from '@/contexts/RoleContext';
-import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification } from '@/types/dpp'; // Moved types
-import { MOCK_PUBLIC_PASSPORTS } from '@/types/dpp'; // Moved mock data
-import RoleSpecificCard from '@/components/passport/RoleSpecificCard'; // Import the new component
+import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification } from '@/types/dpp';
+import { MOCK_PUBLIC_PASSPORTS } from '@/types/dpp'; 
+import RoleSpecificCard from '@/components/passport/RoleSpecificCard';
 
 const iconMap: Record<IconName, React.ElementType> = {
   Leaf,
@@ -39,18 +39,30 @@ const iconMap: Record<IconName, React.ElementType> = {
   CalendarCheck,
   UploadCloud,
   ClipboardCheck,
-  ListChecks, // Added ListChecks to map for default
-  Award, // Added Award to map
-  // Add other icons from lucide-react as needed by IconName type and used in data
-  // Example:
-  // Package: LucideIcons.Package, (assuming LucideIcons is imported as *)
-  // Or specific imports like:
-  // Package, // if 'Package' is directly imported from 'lucide-react'
-  AlertTriangle: AlertCircle, // Example if 'AlertTriangle' was the key in data but you want to render AlertCircle
-  Briefcase: Building, // if Briefcase icon is used in IconName type
-  User: Building, // if User icon is used in IconName type
-  // The IconName type is `keyof typeof import('lucide-react')`, so all lucide icons are valid keys.
-  // We only need to ensure the ones *actually used* in mock data or as defaults are here and imported.
+  ListChecks, 
+  Award, 
+  AlertTriangle: AlertCircle, 
+  Briefcase: Building, 
+  User: Building, 
+  // Lucide icons that might be used as keys in data.
+  // If an icon is directly used e.g. <Factory />, it doesn't need to be in iconMap explicitly
+  // unless its name is stored as a string in `iconName` property of data.
+  // For instance, if data had `iconName: "Package"`, then `Package: LucideIcons.Package` would be needed.
+  // Since we are importing them directly and using them, this map is primarily for dynamic icon rendering based on string names.
+  History: HistoryIcon,
+  Building: Building,
+  ExternalLink: ExternalLink,
+  Fingerprint: Fingerprint,
+  Server: ServerIcon, // Corrected to ServerIcon from lucide-react
+  Info: InfoIcon,
+  Bot: Bot,
+  Package: Zap, // Example, as Package is not imported directly. Could be any other.
+  Camera: Zap, // Added Camera as it's in lucide-react
+  Circle: Zap, // Added Circle
+  Square: Zap, // Added Square
+  // Ensure all icons referenced by string names in `lifecycleHighlights` or other dynamic data are here.
+  // If an icon (e.g. `Factory`) is used as `<Factory />` it does not need to be in the map.
+  // Only if it's `event.iconName = "Factory"` then `Factory: Factory` is needed here.
 };
 
 
@@ -383,7 +395,3 @@ export default function PublicPassportPage({ params }: Props) {
     </div>
   );
 }
-
-    
-
-    

@@ -1,25 +1,27 @@
+
 // --- File: ProductContainer.tsx ---
 // Description: Main layout component for the product detail view, managing tabs.
 "use client";
 
 import { useState } from "react";
-import type { SimpleProductDetail } from "@/types/dpp";
+import type { SimpleProductDetail, ProductSupplyChainLink } from "@/types/dpp"; // Added ProductSupplyChainLink
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductHeader from "./ProductHeader";
 import OverviewTab from "./OverviewTab";
 import SustainabilityTab from './SustainabilityTab';
 import ComplianceTab from './ComplianceTab';
 import LifecycleTab from './LifecycleTab';
-import SupplyChainTab from './SupplyChainTab'; // Import SupplyChainTab
+import SupplyChainTab from './SupplyChainTab';
 
 import { Package, Leaf, ShieldCheck, History, Layers } from 'lucide-react';
 
 
 interface ProductContainerProps {
   product: SimpleProductDetail;
+  onSupplyChainUpdate: (updatedLinks: ProductSupplyChainLink[]) => void; // Added prop
 }
 
-export default function ProductContainer({ product }: ProductContainerProps) {
+export default function ProductContainer({ product, onSupplyChainUpdate }: ProductContainerProps) { // Added prop
   const [activeTab, setActiveTab] = useState("overview");
 
   if (!product) {
@@ -66,7 +68,7 @@ export default function ProductContainer({ product }: ProductContainerProps) {
         </TabsContent>
 
          <TabsContent value="supplyChain" className="mt-6">
-          <SupplyChainTab product={product} />
+          <SupplyChainTab product={product} onSupplyChainLinksChange={onSupplyChainUpdate} /> {/* Passed prop */}
         </TabsContent>
       </Tabs>
     </div>

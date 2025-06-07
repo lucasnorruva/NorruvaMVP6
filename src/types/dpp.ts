@@ -288,8 +288,8 @@ export interface ComplianceDetailItem {
 export interface ProductComplianceSummary {
   overallStatus: 'Compliant' | 'Non-Compliant' | 'Pending Review' | 'N/A' | 'Data Incomplete';
   eprel?: {
-    id?: string;
-    status: 'Registered' | 'Pending' | 'Not Found' | 'N/A' | 'Error';
+    id?: string; // This can be the eprelId from the flow
+    status: string; // Made generic string to accommodate flow output from sync-eprel-data-flow
     url?: string;
     lastChecked: string;
   };

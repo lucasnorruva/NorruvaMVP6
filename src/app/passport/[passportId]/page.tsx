@@ -10,7 +10,11 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot } from 'lucide-react';
+import { 
+  Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, 
+  ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot,
+  Factory, Truck, ShoppingCart, Wrench, UploadCloud, ClipboardCheck, Cog, Search, PenTool, CalendarCheck // Added new icons
+} from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react'; 
 import { cn } from '@/lib/utils';
@@ -25,7 +29,7 @@ const iconMap: Record<IconName, React.ElementType> = {
   ShieldCheck,
   Cpu,
   Zap,
-  Factory, // Assuming Factory is a LucideIcon, if not, replace or handle
+  Factory, 
   Truck,
   ShoppingCart,
   Wrench,
@@ -34,7 +38,18 @@ const iconMap: Record<IconName, React.ElementType> = {
   PenTool,
   CalendarCheck,
   UploadCloud,
-  ClipboardCheck
+  ClipboardCheck,
+  ListChecks, // Added ListChecks to map for default
+  // Add other icons from lucide-react as needed by IconName type and used in data
+  // Example:
+  // Package: LucideIcons.Package, (assuming LucideIcons is imported as *)
+  // Or specific imports like:
+  // Package, // if 'Package' is directly imported from 'lucide-react'
+  AlertTriangle: AlertCircle, // Example if 'AlertTriangle' was the key in data but you want to render AlertCircle
+  Briefcase: Building, // if Briefcase icon is used in IconName type
+  User: Building, // if User icon is used in IconName type
+  // The IconName type is `keyof typeof import('lucide-react')`, so all lucide icons are valid keys.
+  // We only need to ensure the ones *actually used* in mock data or as defaults are here and imported.
 };
 
 
@@ -224,22 +239,22 @@ export default function PublicPassportPage({ params }: Props) {
                      <HistoryIcon className="mr-2 h-6 w-6" /> Product Journey Highlights
                   </CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-3">
+                <CardContent>
                   {product.lifecycleHighlights && product.lifecycleHighlights.length > 0 ? (
-                    <ul className="space-y-2">
+                    <ul className="space-y-3">
                       {product.lifecycleHighlights.map((event, index) => {
-                        const IconComponent = event.iconName ? iconMap[event.iconName] : ListChecks;
+                        const IconComponent = event.iconName && iconMap[event.iconName] ? iconMap[event.iconName] : ListChecks;
                         return (
-                          <li key={index} className="text-sm text-foreground border-b border-border/50 pb-1.5 last:border-b-0 flex items-start">
-                            <IconComponent className="h-4 w-4 mr-2 mt-0.5 text-primary flex-shrink-0" />
-                            <div>
+                          <li key={index} className="text-sm text-foreground border-b border-border/50 pb-2 last:border-b-0 last:pb-0 flex items-start">
+                            <IconComponent className="h-5 w-5 mr-3 mt-0.5 text-primary flex-shrink-0" />
+                            <div className="flex-grow">
                                 <div className="flex justify-between items-center">
                                     <span className="font-medium">{event.stage}</span>
                                     <span className="text-xs text-muted-foreground">{event.date}</span>
                                 </div>
                                 {event.details && <p className="text-xs text-muted-foreground mt-0.5">{event.details}</p>}
                                 {event.isEbsiVerified && (
-                                    <Badge variant="default" className="mt-1 text-xs bg-green-100 text-green-700 border-green-300">
+                                    <Badge variant="default" className="mt-1.5 text-xs bg-green-100 text-green-700 border-green-300">
                                     <ShieldCheck className="mr-1 h-3 w-3" /> EBSI Verified
                                     </Badge>
                                 )}
@@ -367,5 +382,7 @@ export default function PublicPassportPage({ params }: Props) {
     </div>
   );
 }
+
+    
 
     

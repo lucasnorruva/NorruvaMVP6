@@ -656,9 +656,10 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ebsiVerificationId: "EBSI-VC-ATTR-XYZ-00123",
     lifecycleHighlights: [
       { stage: "Manufactured", date: "2024-01-15", details: "Production batch #PB789 at EcoFactory, Germany.", isEbsiVerified: true, iconName: "Factory" },
+      { stage: "Quality Assurance", date: "2024-01-16", details: "Passed all quality checks.", isEbsiVerified: true, iconName: "ShieldCheck" },
       { stage: "Shipped to Distributor", date: "2024-01-20", details: "Container #C0N741N3R.", isEbsiVerified: true, iconName: "Truck" },
       { stage: "Sold to Consumer", date: "2024-02-10", details: "Retail Store, Paris. Warranty activated.", isEbsiVerified: false, iconName: "ShoppingCart" },
-      { stage: "Scheduled Maintenance", date: "2025-02-15", details: "Filter replacement complete.", isEbsiVerified: false, iconName: "Wrench" },
+      { stage: "Scheduled Maintenance", date: "2025-02-15", details: "Filter replacement due.", isEbsiVerified: false, iconName: "Wrench" },
     ],
     certifications: [
       { name: "EU Energy Label", authority: "European Commission", expiryDate: "N/A", link: "#", isVerified: true },
@@ -692,6 +693,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { stage: "Manufactured", date: "2024-03-01", details: "Batch #LEDB456, Shenzhen.", isEbsiVerified: true, iconName: "Factory" },
       { stage: "Imported to EU", date: "2024-03-15", details: "Rotterdam Port, Netherlands.", isEbsiVerified: false, iconName: "Truck" },
       { stage: "Firmware Update v1.2", date: "2024-08-01", details: "Improved energy efficiency algorithm.", isEbsiVerified: true, iconName: "UploadCloud" },
+      { stage: "Product Registration", date: "2024-03-20", details: "Registered in EPREL (pending full data).", isEbsiVerified: false, iconName: "ClipboardCheck" },
     ],
     certifications: [
       { name: "RoHS Compliance", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
@@ -699,3 +701,5 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ]
   }
 };
+
+    

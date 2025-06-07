@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 export default function QuickStartGuidePage() {
   const curlExample = `
 curl -X GET \\
-  'http://localhost:9002/api/v1/dpp/PROD001' \\ # Replace with your actual API base URL
+  'http://localhost:9002/api/v1/dpp/DPP001' \\ # Using DPP001 which exists in MOCK_DPPS
   -H 'Authorization: Bearer YOUR_SANDBOX_API_KEY'
   `;
 
@@ -100,7 +100,7 @@ curl -X GET \\
             </code>
           </pre>
           <p>
-            A successful request will return a JSON object containing the DPP data for product <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">PROD001</code>.
+            A successful request will return a JSON object containing the DPP data for product <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">DPP001</code>.
           </p>
           <p className="text-sm text-muted-foreground">
             You can also use the <Link href="/developer#playground" className="text-primary hover:underline">Interactive API Playground</Link> on the Developer Portal (select the "Playground" tab) to send test requests without writing code.

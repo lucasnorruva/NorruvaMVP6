@@ -33,7 +33,7 @@ export default function WebhooksManager({
   onDeleteWebhook,
 }: WebhooksManagerProps) {
   return (
-    <Card className="shadow-lg">
+    <Card className="shadow-lg" id="webhooks-manager">
       <CardHeader>
         <CardTitle className="font-headline flex items-center"><Webhook className="mr-3 h-6 w-6 text-primary" /> Webhooks</CardTitle>
         <CardDescription>Configure webhooks to receive real-time notifications for events.</CardDescription>
@@ -57,9 +57,10 @@ export default function WebhooksManager({
                   <Badge
                     variant={wh.status === "Active" ? "default" : "outline"}
                     className={cn(
-                      wh.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : 
-                      wh.status === "Disabled" ? "bg-muted text-muted-foreground border-border" : 
-                      "bg-red-500/20 text-red-700 border-red-500/30" // Error status
+                      "capitalize",
+                      wh.status === "Active" && "bg-green-100 text-green-700 border-green-300",
+                      wh.status === "Disabled" && "bg-muted text-muted-foreground border-border",
+                      wh.status === "Error" && "bg-red-100 text-red-700 border-red-300"
                     )}
                   >
                     {wh.status}
@@ -75,6 +76,13 @@ export default function WebhooksManager({
                 </TableCell>
               </TableRow>
             ))}
+            {webhooks.length === 0 && (
+                <TableRow>
+                    <TableCell colSpan={4} className="text-center text-muted-foreground py-4">
+                        No webhooks configured.
+                    </TableCell>
+                </TableRow>
+            )}
           </TableBody>
         </Table>
         <Button variant="secondary" onClick={onAddWebhook}>

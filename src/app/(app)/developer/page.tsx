@@ -444,6 +444,7 @@ export default function DeveloperPortalPage() {
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
                     <li><Link href="/developer/docs/api-reference" className="hover:underline flex items-center"><BookText className="mr-1.5 h-4 w-4 inline-block"/>API Reference</Link> <span className="text-xs text-muted-foreground">(Endpoints, Schemas)</span></li>
                     <li><Link href="/developer/docs/authentication" className="hover:underline flex items-center"><KeyRound className="mr-1.5 h-4 w-4 inline-block"/>Authentication</Link> <span className="text-xs text-muted-foreground">(API Keys)</span></li>
+                    <li><Link href="/developer/docs/webhooks-guide" className="hover:underline flex items-center"><Webhook className="mr-1.5 h-4 w-4 inline-block"/>Webhooks Guide</Link> <span className="text-xs text-muted-foreground">(Event Notifications)</span></li>
                     <li><Link href="/developer/docs/rate-limiting" className="hover:underline flex items-center"><Clock className="mr-1.5 h-4 w-4 inline-block"/>Rate Limiting &amp; Usage</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
                     <li><Link href="/developer/docs/error-codes" className="hover:underline flex items-center"><ErrorIcon className="mr-1.5 h-4 w-4 inline-block"/>Error Codes &amp; Handling</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
                 </ul>

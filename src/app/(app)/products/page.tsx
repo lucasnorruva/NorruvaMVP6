@@ -26,7 +26,7 @@ import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from "@/types/dpp";
 import ProductManagementFiltersComponent, { type ProductManagementFilterState } from "@/components/products/ProductManagementFiltersComponent";
 import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
 import { ProductListRow } from "@/components/products/ProductListRow";
-import { calculateDppCompletenessForList } from "@/utils/dppDisplayUtils.tsx"; // Updated import
+import { calculateDppCompletenessForList } from "@/utils/dppDisplayUtils.tsx"; // Updated import to .tsx
 import { cn } from "@/lib/utils";
 
 const initialMockProductsData: RichMockProduct[] = [
@@ -96,7 +96,7 @@ export default function ProductsPage() {
     compliance: "All",
     category: "All",
   });
-  
+
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
 
   useEffect(() => {
@@ -105,8 +105,7 @@ export default function ProductsPage() {
 
     const userAddedDisplayable: DisplayableProduct[] = userAddedStoredProducts.map(p => ({
       ...p,
-      productId: p.id, 
-      // Map StoredUserProduct to DisplayableProduct, ensuring complianceSummary and lifecycleEvents are handled
+      productId: p.id,
       complianceSummary: p.complianceSummary || { overallStatus: 'N/A', eprel: { status: 'N/A', lastChecked: p.lastUpdated }, ebsi: { status: 'N/A', lastChecked: p.lastUpdated } },
       lifecycleEvents: p.lifecycleEvents || [],
     }));
@@ -164,7 +163,7 @@ export default function ProductsPage() {
     if (filters.category !== "All") {
       tempProducts = tempProducts.filter(p => (p.category || p.productCategory) === filters.category);
     }
-    
+
     if (sortConfig.key && sortConfig.direction) {
       tempProducts.sort((a, b) => {
         let valA: any;
@@ -177,10 +176,10 @@ export default function ProductsPage() {
           valA = a.completeness.score;
           valB = b.completeness.score;
         } else {
-          valA = (a as any)[sortConfig.key!]; // Added type assertion
-          valB = (b as any)[sortConfig.key!]; // Added type assertion
+          valA = (a as any)[sortConfig.key!];
+          valB = (b as any)[sortConfig.key!];
         }
-        
+
         if (valA === undefined || valA === null) valA = (typeof valA === 'number') ? -Infinity : "";
         if (valB === undefined || valB === null) valB = (typeof valB === 'number') ? -Infinity : "";
 
@@ -189,7 +188,7 @@ export default function ProductsPage() {
           valA = valA.toLowerCase();
           valB = valB.toLowerCase();
         }
-        
+
         if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
         if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
         return 0;
@@ -291,7 +290,7 @@ export default function ProductsPage() {
             </TableHeader>
             <TableBody>
               {filteredAndSortedProducts.map((product) => (
-                <ProductListRow 
+                <ProductListRow
                     key={product.id}
                     product={product}
                     completenessData={product.completeness}

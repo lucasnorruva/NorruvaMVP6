@@ -112,11 +112,11 @@ export interface DigitalProductPassport {
   traceability?: TraceabilityInfo;
 
   compliance: {
-    eprel?: { // Changed from eprelId: string to an object
+    eprel?: { 
       id?: string;
-      status: string; // e.g., 'Registered', 'Pending', 'Not Found', 'Synced Successfully', 'Data Mismatch'
+      status: string; 
       url?: string;
-      lastChecked: string; // ISO Date string
+      lastChecked: string; 
     };
     esprConformity?: {
       assessmentId?: string;
@@ -167,7 +167,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     productName: "EcoSmart Refrigerator X500",
     category: "Appliances",
     manufacturer: { name: "GreenTech Appliances"},
-    modelNumber: "X500-ECO", // Added model number for EPREL sync
+    modelNumber: "X500-ECO", 
     metadata: { last_updated: "2024-07-28T10:00:00Z", status: "published", dppStandardVersion: "CIRPASS v0.9 Draft" },
     productDetails: {
       description: "An eco friendly fridge.",
@@ -367,6 +367,7 @@ export interface StoredUserProduct {
   productCategory?: string;
   imageUrl?: string;
   imageHint?: string; 
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
   batteryChemistry?: string;
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
@@ -386,7 +387,6 @@ export interface StoredUserProduct {
   stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
   carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[]; 
   complianceSummary?: ProductComplianceSummary; 
@@ -729,5 +729,3 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ]
   }
 };
-
-

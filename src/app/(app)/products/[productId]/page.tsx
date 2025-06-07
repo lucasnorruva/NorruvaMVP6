@@ -29,7 +29,6 @@ export default function ProductDetailPage() {
           const userProducts: StoredUserProduct[] = JSON.parse(storedProductsString);
           const userProductToDisplay = userProducts.find(p => p.id === productId);
           if (userProductToDisplay) {
-            // Ensure complianceSummary and its eprel/ebsi fields are objects
             const complianceSummary: ProductComplianceSummary = {
               overallStatus: userProductToDisplay.complianceSummary?.overallStatus || "N/A",
               eprel: userProductToDisplay.complianceSummary?.eprel || { status: "N/A", lastChecked: new Date().toISOString() },
@@ -47,7 +46,7 @@ export default function ProductDetailPage() {
               modelNumber: userProductToDisplay.modelNumber,
               description: userProductToDisplay.productDescription,
               imageUrl: userProductToDisplay.imageUrl,
-              imageHint: userProductToDisplay.imageHint,
+              imageHint: userProductToDisplay.imageHint, // Pass imageHint
               supplyChainLinks: userProductToDisplay.supplyChainLinks || [],
               keySustainabilityPoints: userProductToDisplay.sustainabilityClaims?.split('\n').map(s => s.trim()).filter(Boolean) || [],
               specifications: userProductToDisplay.specifications ? JSON.parse(userProductToDisplay.specifications) : undefined,
@@ -120,12 +119,12 @@ export default function ProductDetailPage() {
         ...product,
         complianceSummary: {
           ...product.complianceSummary,
-          overallStatus: product.complianceSummary?.overallStatus || "N/A", // Keep existing overallStatus or default
+          overallStatus: product.complianceSummary?.overallStatus || "N/A", 
           eprel: {
-            id: result.eprelId || product.complianceSummary?.eprel?.id, // Preserve old ID if new one isn't returned
+            id: result.eprelId || product.complianceSummary?.eprel?.id, 
             status: result.syncStatus,
             lastChecked: result.lastChecked,
-            url: product.complianceSummary?.eprel?.url, // Preserve existing URL
+            url: product.complianceSummary?.eprel?.url, 
           },
           ebsi: product.complianceSummary?.ebsi,
           specificRegulations: product.complianceSummary?.specificRegulations,
@@ -138,7 +137,6 @@ export default function ProductDetailPage() {
         let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
         const productIndex = userProducts.findIndex(p => p.id === product.id);
         if (productIndex > -1) {
-          // Ensure complianceSummary exists on the stored product before updating its eprel part
           if (!userProducts[productIndex].complianceSummary) {
             userProducts[productIndex].complianceSummary = { overallStatus: "N/A" };
           }
@@ -184,5 +182,3 @@ export default function ProductDetailPage() {
     />
   );
 }
-
-    

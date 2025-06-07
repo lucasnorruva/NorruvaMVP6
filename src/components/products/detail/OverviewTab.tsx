@@ -19,7 +19,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   }
 
   const imageDisplayUrl = product.imageUrl || "https://placehold.co/400x300.png?text=No+Image";
-  const imageDisplayHint = product.imageHint || product.productName.split(" ").slice(0,2).join(" ") || "product image";
+  const imageDisplayHint = product.imageHint || product.productName?.split(" ").slice(0,2).join(" ") || "product image";
 
   return (
     <div className="grid md:grid-cols-3 gap-6">

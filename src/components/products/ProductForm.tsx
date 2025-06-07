@@ -19,7 +19,7 @@ import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import BasicInfoFormSection from "./form/BasicInfoFormSection";
 import ProductImageFormSection from "./form/ProductImageFormSection";
-import BatteryDetailsFormSection from "./form/BatteryDetailsFormSection"; // New import
+import BatteryDetailsFormSection from "./form/BatteryDetailsFormSection"; 
 import {
   handleSuggestNameAI,
   handleSuggestDescriptionAI,
@@ -46,6 +46,7 @@ const formSchema = z.object({
   productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
   imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")),
   imageHint: z.string().max(30, "Hint should be concise, max 2-3 words or 30 chars.").optional(),
+  imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   batteryChemistry: z.string().optional(),
   stateOfHealth: z.coerce.number().nullable().optional(),
   carbonFootprintManufacturing: z.coerce.number().nullable().optional(),
@@ -102,6 +103,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       productCategory: initialData?.productCategory || "",
       imageUrl: initialData?.imageUrl || "",
       imageHint: initialData?.imageHint || "",
+      imageUrlOrigin: initialData?.imageUrlOrigin || undefined,
       batteryChemistry: initialData?.batteryChemistry || "",
       stateOfHealth: initialData?.stateOfHealth ?? undefined,
       carbonFootprintManufacturing: initialData?.carbonFootprintManufacturing ?? undefined,
@@ -133,6 +135,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         productCategory: initialData.productCategory || "",
         imageUrl: initialData.imageUrl || "",
         imageHint: initialData.imageHint || "",
+        imageUrlOrigin: initialData.imageUrlOrigin || undefined,
         batteryChemistry: initialData.batteryChemistry || "",
         stateOfHealth: initialData.stateOfHealth ?? undefined,
         carbonFootprintManufacturing: initialData.carbonFootprintManufacturing ?? undefined,

@@ -41,7 +41,7 @@ const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' 
             <Cpu className="h-4 w-4 text-info" />
           </TooltipTrigger>
           <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI document extraction.</p>
+            <p>This {fieldName.toLowerCase()} was suggested by AI document extraction or generation.</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -68,7 +68,6 @@ export default function ProductImageFormSection({
         setCurrentImageUrl(value.imageUrl || null);
       }
     });
-    // Ensure initial value is set from form or prop
     const formImageUrl = form.getValues("imageUrl");
     setCurrentImageUrl(formImageUrl || initialImageUrl || null);
     return () => subscription.unsubscribe();
@@ -79,7 +78,7 @@ export default function ProductImageFormSection({
     const newImageUrl = await aiImageHelper(form, toast, setIsGeneratingImageState);
     if (newImageUrl) {
       form.setValue("imageUrl", newImageUrl, { shouldValidate: true });
-      // The useEffect above will handle setting currentImageUrl via form.watch
+      form.setValue("imageUrlOrigin", "AI_EXTRACTED", { shouldValidate: true });
     }
   };
 
@@ -89,7 +88,7 @@ export default function ProductImageFormSection({
 
   const imageHintForDisplay = userProvidedHint 
     ? userProvidedHint.trim().split(" ").slice(0,2).join(" ")
-    : (currentImageUrl && currentImageUrl.startsWith("data:")) // If it's an AI generated image
+    : (currentImageUrl && currentImageUrl.startsWith("data:")) 
       ? `${productNameForHint} ${categoryForHint}`.trim().split(" ").slice(0,2).join(" ")
       : productNameForHint.split(" ").slice(0,2).join(" ");
 
@@ -97,8 +96,8 @@ export default function ProductImageFormSection({
   return (
     <div className="space-y-2">
       <Label className="flex items-center">
-        Product Image
-        <AiIndicator fieldOrigin={initialImageUrlOrigin} fieldName="Product Image" />
+        Product Image URL
+        <AiIndicator fieldOrigin={form.getValues("imageUrlOrigin") || initialImageUrlOrigin} fieldName="Product Image URL" />
       </Label>
       {currentImageUrl ? (
         <div className="w-full max-w-sm border rounded-md overflow-hidden shadow-sm">

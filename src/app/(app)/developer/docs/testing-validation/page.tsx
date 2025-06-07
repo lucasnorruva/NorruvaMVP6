@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { TestTube2, QrCode, Link as LinkIconPath, Info, ShieldCheck, ListChecks, UserCheckIcon, DatabaseZap, GitCompareArrows, GlobeLock, FileBadge, AlertTriangle as AlertTriangleIcon, SearchCheck, Palette, SmartphoneDevice } from "lucide-react"; // Added more icons
+import { TestTube2, QrCode, Link as LinkIconPath, Info, ShieldCheck, ListChecks, UserCheckIcon, DatabaseZap, GitCompareArrows, GlobeLock, FileBadge, AlertTriangle as AlertTriangleIcon, SearchCheck, Palette, SmartphoneDevice, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -14,7 +14,7 @@ export default function TestingValidationPage() {
           Testing and Validation (Conceptual)
         </h1>
         <Button variant="outline" asChild>
-            <Link href="/developer">Back to Developer Portal</Link>
+            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
         </Button>
       </div>
 

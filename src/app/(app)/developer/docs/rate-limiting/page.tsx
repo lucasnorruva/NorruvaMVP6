@@ -1,8 +1,9 @@
+
 // --- File: page.tsx (Rate Limiting Docs) ---
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Info, Clock, AlertTriangle } from "lucide-react";
+import { Info, Clock, AlertTriangle, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -24,7 +25,7 @@ export default function RateLimitingPage() {
           API Rate Limiting & Usage
         </h1>
         <Button variant="outline" asChild>
-            <Link href="/developer">Back to Developer Portal</Link>
+            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
         </Button>
       </div>
 
@@ -141,4 +142,3 @@ export default function RateLimitingPage() {
     </div>
   );
 }
-

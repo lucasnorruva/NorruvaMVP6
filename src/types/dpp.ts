@@ -259,7 +259,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         status: "pending",
         carbonFootprint: { value: 120, unit: "kg CO2e/kWh" },
         recycledContent: [{ material: "Cobalt", percentage: 15 }],
-        stateOfHealth: {value: 98, unit: '%', measurementDate: "2024-07-15T00:00:00Z"}, // Corrected: Provide actual values
+        stateOfHealth: {value: 98, unit: '%', measurementDate: "2024-07-15T00:00:00Z"}, // Corrected
       },
       eu_espr: { status: "pending" },
     },

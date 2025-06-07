@@ -1,4 +1,3 @@
-
 // --- File: DPPTableRow.tsx ---
 // Description: Component to render a single row in the DPPTable for the Live Dashboard.
 "use client";
@@ -11,16 +10,15 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { MoreHorizontal, Eye, Edit as EditIconLucide, Settings as SettingsIcon, Bot } from "lucide-react";
+import { MoreHorizontal, Eye, Edit as EditIconLucide, Settings as SettingsIcon, Bot, Trash2 } from "lucide-react"; // Added Trash2
 import type { DigitalProductPassport } from "@/types/dpp";
-import { getOverallComplianceDetails, getEbsiStatusDetails } from "@/utils/dppDisplayUtils";
+import { getOverallComplianceDetails, getEbsiStatusDetails } from "@/utils/dppDisplayUtils.tsx"; // Updated import
 import { cn } from "@/lib/utils";
 
 interface DPPTableRowProps {
   dpp: DigitalProductPassport;
-  onDeleteProduct?: (productId: string) => void; // Make optional as not all tables might use delete
+  onDeleteProduct?: (productId: string) => void;
   onViewAiSummary: (productId: string) => void;
-  // Add other actions if needed, e.g., onEditProduct, onDPPSettings
 }
 
 export function DPPTableRow({ dpp, onDeleteProduct, onViewAiSummary }: DPPTableRowProps) {
@@ -29,7 +27,7 @@ export function DPPTableRow({ dpp, onDeleteProduct, onViewAiSummary }: DPPTableR
   const ebsiStatusDetails = getEbsiStatusDetails(dpp.ebsiVerification?.status);
 
   const handleDPPSettings = (dppId: string) => {
-    alert(`Mock: Opening settings for DPP ${dppId}.`); // Placeholder
+    alert(`Mock: Opening settings for DPP ${dppId}.`);
   };
 
   return (
@@ -113,7 +111,7 @@ export function DPPTableRow({ dpp, onDeleteProduct, onViewAiSummary }: DPPTableR
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
-              <Link href={`/products/${dpp.id}`}> {/* Link to internal product detail */}
+              <Link href={`/products/${dpp.id}`}>
                 <Eye className="mr-2 h-4 w-4" /> View Details
               </Link>
             </DropdownMenuItem>

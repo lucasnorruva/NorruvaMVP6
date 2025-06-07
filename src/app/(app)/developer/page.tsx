@@ -550,7 +550,7 @@ export default function DeveloperPortalPage() {
             </div>
             
             <div className="pt-4 border-t border-border/70">
-              <h4 className="font-semibold text-md mb-2">Integration Guides & Best Practices</h4>
+              <h4 className="font-semibold text-md mb-2">Integration Guides &amp; Best Practices</h4>
               <ul className="list-none space-y-2.5 text-sm pl-0">
                 <li><Link href="/developer/guides/quick-start" className="text-primary hover:underline flex items-center"><Rocket className="mr-2 h-4 w-4"/>Quick Start Integration Guide</Link></li>
                 <li><Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline flex items-center"><Share2 className="mr-2 h-4 w-4"/>EBSI Integration Overview</Link></li>
@@ -560,7 +560,7 @@ export default function DeveloperPortalPage() {
             </div>
             
             <div className="pt-4 border-t border-border/70">
-              <h4 className="font-semibold text-md mb-2">Testing & Validation</h4>
+              <h4 className="font-semibold text-md mb-2">Testing &amp; Validation</h4>
               <ul className="list-none space-y-2.5 text-sm pl-0">
                 <li><Link href="/developer/docs/testing-validation" className="text-primary hover:underline flex items-center"><TestTube2 className="mr-2 h-4 w-4"/>Testing &amp; Validation Guide</Link></li>
               </ul>
@@ -574,7 +574,7 @@ export default function DeveloperPortalPage() {
             </div>
             
             <div className="pt-4 border-t border-border/70">
-              <h4 className="font-semibold text-md mb-2">Security & Privacy</h4>
+              <h4 className="font-semibold text-md mb-2">Security &amp; Privacy</h4>
               <ul className="list-none space-y-2.5 text-sm pl-0">
                 <li><Link href="/developer/docs/data-privacy" className="text-primary hover:underline flex items-center"><VenetianMask className="mr-2 h-4 w-4"/>Data Privacy &amp; GDPR Guide</Link></li>
               </ul>
@@ -605,7 +605,7 @@ export default function DeveloperPortalPage() {
             </div>
             <div className="space-y-5">
               <div id="code-samples" className="space-y-3">
-                <h4 className="font-semibold text-md flex items-center"><FileCode className="mr-2 h-5 w-5 text-accent"/>Code Samples & Templates</h4>
+                <h4 className="font-semibold text-md flex items-center"><FileCode className="mr-2 h-5 w-5 text-accent"/>Code Samples &amp; Templates</h4>
                 <p className="text-sm text-muted-foreground -mt-2">
                   Access a library of code snippets and project templates for common integration scenarios.
                 </p>
@@ -763,4 +763,5 @@ export default function DeveloperPortalPage() {
 }
 
     
+
 

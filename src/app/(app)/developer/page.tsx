@@ -12,7 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge"; 
-import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, Zap as ZapIcon, ServerCrash } from "lucide-react";
+import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
@@ -146,6 +146,13 @@ const platformAnnouncements = [
   { id: "ann1", date: "Aug 1, 2024", title: "New API Version v1.1 Released", summary: "Version 1.1 of the DPP API is now live, featuring enhanced query parameters for lifecycle events and new endpoints for supplier data management. Check the API Reference for details.", link: "/developer/docs/api-reference" },
   { id: "ann2", date: "Jul 25, 2024", title: "Webinar: Navigating EU Battery Regulation", summary: "Join us next week for a deep dive into using the Norruva platform to comply with the new EU Battery Regulation requirements. Registration is open.", link: "#" },
   { id: "ann3", date: "Jul 15, 2024", title: "Sandbox Environment Maintenance", summary: "Scheduled maintenance for the Sandbox environment will occur on July 20th, 02:00-04:00 UTC. Production environment will not be affected.", link: "#" },
+];
+
+const DataFlowKPIs = [
+    { title: "DPP Creation Success Rate", value: "99.8%", icon: CheckCircle, color: "text-green-500", description: "Successful DPP initial creations via API." },
+    { title: "Average Data Ingestion Time", value: "1.2s", icon: Clock, color: "text-blue-500", description: "Time from API call to DPP visibility." },
+    { title: "DPP Retrieval Speed (P95)", value: "250ms", icon: ZapIcon, color: "text-info", description: "95th percentile for public API GET /dpp/{id}." },
+    { title: "Webhook Delivery Success", value: "99.95%", icon: Send, color: "text-green-500", description: "Successful event notifications to subscribed endpoints." },
 ];
 
 
@@ -389,13 +396,15 @@ export default function DeveloperPortalPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card className="shadow-md lg:col-span-1">
               <CardHeader>
-                <CardTitle className="font-headline text-lg flex items-center"><BarChartBig className="mr-2 h-5 w-5 text-primary" /> API Usage Overview (<span className="capitalize">{currentEnvironment}</span>)</CardTitle>
+                <CardTitle className="font-headline text-lg flex items-center"><BarChartBig className="mr-2 h-5 w-5 text-primary" /> Key API Metrics & Health (<span className="capitalize">{currentEnvironment}</span>)</CardTitle>
                 <CardDescription>Mock conceptual API metrics for the current environment.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>API Calls (Last 24h):</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '1,234' : '105,678'}</span></div>
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Error Rate (Last 24h):</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '0.2%' : '0.05%'}</span></div>
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Avg. Latency:</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '120ms' : '85ms'}</span></div>
+                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>API Uptime (Last 7d):</span> <span className="font-semibold text-green-600">{currentEnvironment === 'sandbox' ? '99.95%' : '99.99%'}</span></div>
+                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Peak Requests/Sec:</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '15' : '250'}</span></div>
                 <Button variant="link" size="sm" className="p-0 h-auto text-primary mt-2" onClick={() => document.querySelector('#developer-portal-tabs [data-state="inactive"][value="settings_usage"]')?.ariaSelected === "false" ? (document.querySelector('#developer-portal-tabs [data-state="inactive"][value="settings_usage"]') as HTMLElement)?.click() : null}>View Full Usage Report</Button>
               </CardContent>
             </Card>
@@ -421,6 +430,38 @@ export default function DeveloperPortalPage() {
             </Card>
           </div>
 
+          <Card className="shadow-lg bg-card border-primary/10">
+            <CardHeader>
+                <CardTitle className="font-headline text-lg flex items-center"><Share2 className="mr-2 h-5 w-5 text-primary" />Conceptual API Data Flow & KPIs</CardTitle>
+                <CardDescription>Visualizing typical API interactions and target performance indicators.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-4">
+                    <h4 className="font-medium text-md text-foreground">Data Flow Example:</h4>
+                    <div className="p-4 border rounded-md bg-muted/50 space-y-3 text-sm">
+                        <div className="flex items-center gap-2"><Laptop className="h-5 w-5 text-info"/> Developer App <span className="text-muted-foreground mx-1">&rarr;</span> <ServerIconShadcn className="h-5 w-5 text-primary"/> Norruva API (DPP Create)</div>
+                        <div className="flex items-center gap-2 ml-4"><ServerIconShadcn className="h-5 w-5 text-primary"/> Norruva API <span className="text-muted-foreground mx-1">&rarr;</span> <DatabaseZap className="h-5 w-5 text-accent"/> DPP Storage/Blockchain</div>
+                        <div className="flex items-center gap-2 ml-4"><DatabaseZap className="h-5 w-5 text-accent"/> DPP Storage <span className="text-muted-foreground mx-1">&rarr;</span> <ServerIconShadcn className="h-5 w-5 text-primary"/> Norruva API (DPP Read)</div>
+                        <div className="flex items-center gap-2"><ServerIconShadcn className="h-5 w-5 text-primary"/> Norruva API <span className="text-muted-foreground mx-1">&rarr;</span> <Users className="h-5 w-5 text-info"/> Consumers/Verifiers</div>
+                        <div className="flex items-center gap-2 ml-4"><ServerIconShadcn className="h-5 w-5 text-primary"/> Norruva API <span className="text-muted-foreground mx-1">&rarr;</span> <Webhook className="h-5 w-5 text-info"/> Developer App (Events)</div>
+                    </div>
+                     <p className="text-xs text-muted-foreground">This is a simplified representation. Actual flows may involve more components like EBSI integration.</p>
+                </div>
+                <div className="space-y-3">
+                    <h4 className="font-medium text-md text-foreground">Key Performance Indicators (Targets):</h4>
+                    {DataFlowKPIs.map(kpi => (
+                        <div key={kpi.title} className="flex items-start p-2.5 border-b last:border-b-0 rounded-md hover:bg-muted/20">
+                            <kpi.icon className={cn("h-5 w-5 mr-3 mt-0.5 flex-shrink-0", kpi.color)} />
+                            <div>
+                                <span className="font-semibold text-sm text-foreground">{kpi.title}: <span className={cn("font-bold", kpi.color)}>{kpi.value}</span></span>
+                                <p className="text-xs text-muted-foreground">{kpi.description}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </CardContent>
+          </Card>
+
           <Card className="shadow-md">
             <CardHeader>
               <CardTitle className="font-headline text-lg flex items-center"><ZapIcon className="mr-2 h-5 w-5 text-primary" /> Quick Actions</CardTitle>
@@ -438,7 +479,7 @@ export default function DeveloperPortalPage() {
                 ) : action.targetTab ? (
                   <Button key={action.label} variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10" onClick={() => {
                     const targetTabTrigger = document.querySelector(`#developer-portal-tabs [data-state="inactive"][value="${action.targetTab}"]`) as HTMLElement | null;
-                    if (targetTabTrigger && targetTabTrigger.ariaSelected === "false") { // Check if already active to avoid unnecessary click
+                    if (targetTabTrigger && targetTabTrigger.ariaSelected === "false") {
                         targetTabTrigger.click();
                     } else if (targetTabTrigger?.ariaSelected === "true") {
                         // If already active, maybe scroll to section or do nothing.
@@ -760,4 +801,3 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
-

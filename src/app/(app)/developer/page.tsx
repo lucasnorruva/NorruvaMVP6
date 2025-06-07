@@ -19,9 +19,10 @@ import WebhooksManager, { type WebhookEntry } from '@/components/developer/Webho
 
 
 const initialMockApiKeys: ApiKey[] = [
-  { id: "key_sandbox_1", key: "sand_sk_xxxx1234ABCD...", type: "Sandbox", created: "2024-07-01", lastUsed: "2024-07-28", status: "Active" },
+  { id: "key_sandbox_1", key: "sand_sk_xxxx1234ABCD", type: "Sandbox", created: "2024-07-01", lastUsed: "2024-07-28", status: "Active" },
   { id: "key_prod_req_1", key: "N/A (Request Pending)", type: "Production", created: "2024-07-25", lastUsed: "N/A", status: "Pending Approval" },
-  { id: "key_prod_active_1", key: "prod_sk_xxxx5678EFGH...", type: "Production", created: "2024-06-15", lastUsed: "2024-07-29", status: "Active" },
+  { id: "key_prod_active_1", key: "prod_sk_xxxx5678EFGH", type: "Production", created: "2024-06-15", lastUsed: "2024-07-29", status: "Active" },
+  { id: "key_sandbox_revoked_1", key: "sand_sk_xxxxWXYZrevoked", type: "Sandbox", created: "2024-05-10", lastUsed: "2024-05-12", status: "Revoked" },
 ];
 
 const initialMockWebhooks: WebhookEntry[] = [
@@ -114,12 +115,17 @@ export default function DeveloperPortalPage() {
   const [isGetComplianceLoading, setIsGetComplianceLoading] = useState(false);
 
 
-  const handleCopyKey = (apiKeyToCopy: string) => {
-    if (apiKeyToCopy.startsWith("N/A")) {
-        toast({ title: "Key Not Available", description: "This key is pending approval or not yet generated."});
+  const handleCopyKey = (keyToCopy: string) => {
+    const keyEntry = apiKeys.find(k => k.key === keyToCopy);
+    if (keyEntry?.status === 'Pending Approval' || keyToCopy.startsWith("N/A") || keyEntry?.status === 'Revoked') {
+        toast({ 
+            title: "Key Not Available", 
+            description: `This key is ${keyEntry?.status?.toLowerCase() || 'not available for copying'}.`,
+            variant: "destructive"
+        });
         return;
     }
-    navigator.clipboard.writeText(apiKeyToCopy);
+    navigator.clipboard.writeText(keyToCopy);
     toast({
       title: "API Key Copied!",
       description: "The API key has been copied to your clipboard.",
@@ -130,14 +136,14 @@ export default function DeveloperPortalPage() {
     const newKeyId = `key_sandbox_${Date.now().toString().slice(-5)}`;
     const newKey: ApiKey = {
       id: newKeyId,
-      key: `sand_sk_${Math.random().toString(36).substring(2, 15)}${Math.random().toString(36).substring(2, 15)}...`,
+      key: `sand_sk_${Math.random().toString(36).substring(2, 10)}${Math.random().toString(36).substring(2, 10)}`,
       type: "Sandbox",
       created: new Date().toISOString().split('T')[0],
       lastUsed: "Never",
       status: "Active"
     };
     setApiKeys(prevKeys => [newKey, ...prevKeys]);
-    toast({ title: "Sandbox Key Generated", description: `New key ${newKey.key.substring(0,15)}... created.` });
+    toast({ title: "Sandbox Key Generated", description: `New key ${newKey.key.substring(0,12)}... created.` });
   };
 
   const handleRequestProductionKey = () => {
@@ -445,8 +451,8 @@ export default function DeveloperPortalPage() {
                     <li><Link href="/developer/docs/api-reference" className="hover:underline flex items-center"><BookText className="mr-1.5 h-4 w-4 inline-block"/>API Reference</Link> <span className="text-xs text-muted-foreground">(Endpoints, Schemas)</span></li>
                     <li><Link href="/developer/docs/authentication" className="hover:underline flex items-center"><KeyRound className="mr-1.5 h-4 w-4 inline-block"/>Authentication</Link> <span className="text-xs text-muted-foreground">(API Keys)</span></li>
                     <li><Link href="/developer/docs/webhooks-guide" className="hover:underline flex items-center"><Webhook className="mr-1.5 h-4 w-4 inline-block"/>Webhooks Guide</Link> <span className="text-xs text-muted-foreground">(Event Notifications)</span></li>
-                    <li><Link href="/developer/docs/rate-limiting" className="hover:underline flex items-center"><Clock className="mr-1.5 h-4 w-4 inline-block"/>Rate Limiting &amp; Usage</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
-                    <li><Link href="/developer/docs/error-codes" className="hover:underline flex items-center"><ErrorIcon className="mr-1.5 h-4 w-4 inline-block"/>Error Codes &amp; Handling</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
+                    <li><Link href="/developer/docs/rate-limiting" className="hover:underline flex items-center"><Clock className="mr-1.5 h-4 w-4 inline-block"/>Rate Limiting &amp; Usage</Link></li>
+                    <li><Link href="/developer/docs/error-codes" className="hover:underline flex items-center"><ErrorIcon className="mr-1.5 h-4 w-4 inline-block"/>Error Codes &amp; Handling</Link></li>
                 </ul>
             </div>
              <div className="space-y-2 pt-3 border-t">
@@ -454,8 +460,8 @@ export default function DeveloperPortalPage() {
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
                     <li><Link href="/developer/guides/quick-start" className="hover:underline flex items-center"><Rocket className="mr-1.5 h-4 w-4 inline-block"/>Quick Start Integration Guide</Link></li>
                     <li><Link href="/developer/docs/ebsi-integration" className="hover:underline flex items-center"><Share2 className="mr-1.5 h-4 w-4 inline-block"/>EBSI Integration Overview</Link></li>
-                    <li><Link href="/developer/docs/regulatory-alignment" className="hover:underline flex items-center"><Scale className="mr-1.5 h-4 w-4 inline-block"/>Regulatory Alignment (ESPR, EPREL)</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
-                    <li><Link href="/developer/docs/data-management-best-practices" className="hover:underline flex items-center"><LayersIcon className="mr-1.5 h-4 w-4 inline-block"/>Data Management Best Practices</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
+                    <li><Link href="/developer/docs/regulatory-alignment" className="hover:underline flex items-center"><Scale className="mr-1.5 h-4 w-4 inline-block"/>Regulatory Alignment (ESPR, EPREL)</Link></li>
+                    <li><Link href="/developer/docs/data-management-best-practices" className="hover:underline flex items-center"><LayersIcon className="mr-1.5 h-4 w-4 inline-block"/>Data Management Best Practices</Link></li>
                 </ul>
             </div>
             <div className="space-y-2 pt-3 border-t">

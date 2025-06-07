@@ -45,7 +45,7 @@ const initialMockWebhooks: WebhookEntry[] = [
 ];
 
 const MOCK_API_PRODUCTS: Record<string, any> = {
-  "DPP001": { // Changed from PROD001 to match API endpoint expectation
+  "DPP001": { 
     productId: "DPP001",
     productName: "EcoSmart Refrigerator X500 (from MOCK_DPPS)",
     category: "Appliances",
@@ -212,7 +212,7 @@ export default function DeveloperPortalPage() {
   const [putProductResponse, setPutProductResponse] = useState<string | null>(null);
   const [isPutProductLoading, setIsPutProductLoading] = useState(false);
 
-  const [deleteProductId, setDeleteProductId] = useState<string>("PROD003");
+  const [deleteProductId, setDeleteProductId] = useState<string>("PROD002"); // Changed from PROD003
   const [deleteProductResponse, setDeleteProductResponse] = useState<string | null>(null);
   const [isDeleteProductLoading, setIsDeleteProductLoading] = useState(false);
 
@@ -743,7 +743,7 @@ export default function DeveloperPortalPage() {
             <CardDescription>Experiment with Norruva API endpoints in this interactive sandbox. This environment uses mock data and simulated responses for the <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge> environment.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-              {/* GET /passport/{id} */}
+              {/* GET /api/v1/dpp/{productId} */}
               <Card>
                   <CardHeader>
                   <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/{'{productId}'}</CardTitle>
@@ -773,17 +773,42 @@ export default function DeveloperPortalPage() {
                   </CardContent>
               </Card>
 
-              {/* POST /passport */}
+              {/* GET /api/v1/dpp (List DPPs) */}
+              <Card>
+                  <CardHeader>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp</CardTitle>
+                  <CardDescription>Retrieve a list of all available Digital Product Passports (mock data).</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                  <div className="flex items-center justify-between">
+                      <Button onClick={handleMockListProducts} disabled={isListProductsLoading} variant="secondary">
+                          {isListProductsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                          {isListProductsLoading ? "Fetching..." : "Send Request"}
+                      </Button>
+                       <Select defaultValue="cURL" disabled>
+                          <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                          <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                      </Select>
+                  </div>
+                  {listProductsResponse && (
+                      <div className="mt-4">
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{listProductsResponse}</code></pre>
+                      </div>
+                  )}
+                  </CardContent>
+              </Card>
+
+              {/* POST /api/v1/dpp */}
               <Card>
                   <CardHeader>
                   <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp</CardTitle>
                   <CardDescription>Create a new Digital Product Passport (Conceptual).</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                  {/* Placeholder for POST body input - complex for this mock, linking to /products/new */}
                     <p className="text-sm text-muted-foreground">To create a new DPP with a full form, please use the <Link href="/products/new" className="text-primary hover:underline">Add New Product page</Link>. This playground simulates a basic create action.</p>
                   <div className="flex items-center justify-between">
-                    <Button onClick={() => toast({title: "Mock POST /dpp", description: "Simulated DPP creation request sent."})} variant="secondary">
+                    <Button onClick={() => toast({title: "Mock POST /api/v1/dpp", description: "Simulated DPP creation request sent."})} variant="secondary">
                         <Send className="mr-2 h-4 w-4" /> Send Create Request (Mock)
                     </Button>
                     <Select defaultValue="cURL" disabled>
@@ -794,7 +819,7 @@ export default function DeveloperPortalPage() {
                   </CardContent>
               </Card>
 
-              {/* PUT /passport/{id} */}
+              {/* PUT /api/v1/dpp/{productId} */}
               <Card>
                   <CardHeader>
                   <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>PUT /api/v1/dpp/{'{productId}'}</CardTitle>
@@ -828,7 +853,7 @@ export default function DeveloperPortalPage() {
                   </CardContent>
               </Card>
 
-              {/* DELETE /passport/{id} */}
+              {/* DELETE /api/v1/dpp/{productId} */}
               <Card>
                   <CardHeader>
                   <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>DELETE /api/v1/dpp/{'{productId}'}</CardTitle>
@@ -837,7 +862,7 @@ export default function DeveloperPortalPage() {
                   <CardContent className="space-y-4">
                   <div>
                       <Label htmlFor="productIdInput-delete">Product ID</Label>
-                      <Input id="productIdInput-delete" value={deleteProductId} onChange={(e) => setDeleteProductId(e.target.value)} placeholder="e.g., PROD003"/>
+                      <Input id="productIdInput-delete" value={deleteProductId} onChange={(e) => setDeleteProductId(e.target.value)} placeholder="e.g., PROD002"/>
                   </div>
                    <div className="flex items-center justify-between">
                     <Button onClick={handleMockDeleteProduct} disabled={isDeleteProductLoading} variant="destructive">
@@ -858,7 +883,71 @@ export default function DeveloperPortalPage() {
                   </CardContent>
               </Card>
               
-              {/* POST /passport/verify */}
+              {/* POST /api/v1/dpp/{productId}/lifecycle-events */}
+              <Card>
+                  <CardHeader>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp/{'{productId}'}/lifecycle-events</CardTitle>
+                  <CardDescription>Add a new lifecycle event to a specific DPP.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                  <div>
+                      <Label htmlFor="productIdInput-post-event">Product ID</Label>
+                      <Input id="productIdInput-post-event" value={postLifecycleEventProductId} onChange={(e) => setPostLifecycleEventProductId(e.target.value)} placeholder="e.g., DPP001"/>
+                  </div>
+                  <div>
+                      <Label htmlFor="postLifecycleEventBody">Request Body (JSON)</Label>
+                      <Textarea id="postLifecycleEventBody" value={postLifecycleEventBody} onChange={(e) => setPostLifecycleEventBody(e.target.value)} rows={5} className="font-mono text-xs"/>
+                  </div>
+                   <div className="flex items-center justify-between">
+                      <Button onClick={handleMockPostLifecycleEvent} disabled={isPostLifecycleEventLoading} variant="secondary">
+                          {isPostLifecycleEventLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                          {isPostLifecycleEventLoading ? "Sending..." : "Send Request"}
+                      </Button>
+                      <Select defaultValue="cURL" disabled>
+                          <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                          <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                      </Select>
+                  </div>
+                  {postLifecycleEventResponse && (
+                      <div className="mt-4">
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postLifecycleEventResponse}</code></pre>
+                      </div>
+                  )}
+                  </CardContent>
+              </Card>
+
+              {/* GET /api/v1/dpp/{productId}/compliance-summary */}
+              <Card>
+                  <CardHeader>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/{'{productId}'}/compliance-summary</CardTitle>
+                  <CardDescription>Retrieve a compliance summary for a specific product.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                  <div>
+                      <Label htmlFor="productIdInput-get-compliance">Product ID</Label>
+                      <Input id="productIdInput-get-compliance" value={getComplianceProductId} onChange={(e) => setGetComplianceProductId(e.target.value)} placeholder="e.g., DPP001" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                      <Button onClick={handleMockGetComplianceSummary} disabled={isGetComplianceLoading} variant="secondary">
+                          {isGetComplianceLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                          {isGetComplianceLoading ? "Fetching..." : "Send Request"}
+                      </Button>
+                       <Select defaultValue="cURL" disabled>
+                          <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                          <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                      </Select>
+                  </div>
+                  {getComplianceResponse && (
+                      <div className="mt-4">
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getComplianceResponse}</code></pre>
+                      </div>
+                  )}
+                  </CardContent>
+              </Card>
+
+              {/* POST /api/v1/dpp/verify */}
               <Card>
                   <CardHeader>
                   <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp/verify</CardTitle>
@@ -888,7 +977,7 @@ export default function DeveloperPortalPage() {
                   </CardContent>
               </Card>
              
-              {/* GET /passport/history/{id} */}
+              {/* GET /api/v1/dpp/history/{productId} */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center"><History className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/history/{'{productId}'}</CardTitle>
@@ -918,7 +1007,7 @@ export default function DeveloperPortalPage() {
                 </CardContent>
               </Card>
 
-              {/* POST /passport/import */}
+              {/* POST /api/v1/dpp/import */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center"><UploadCloud className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp/import</CardTitle>
@@ -938,7 +1027,6 @@ export default function DeveloperPortalPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  {/* In a real app, a file input or textarea for JSON/API data would go here */}
                   <p className="text-xs text-muted-foreground">For this mock, just select a type and send. A real implementation would include file upload or data input.</p>
                   <div className="flex items-center justify-between">
                     <Button onClick={handleMockPostImport} disabled={isPostImportLoading} variant="secondary">
@@ -959,7 +1047,7 @@ export default function DeveloperPortalPage() {
                 </CardContent>
               </Card>
 
-              {/* GET /passport/graph/{id} */}
+              {/* GET /api/v1/dpp/graph/{productId} */}
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center"><Share2 className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/graph/{'{productId}'}</CardTitle>
@@ -988,93 +1076,6 @@ export default function DeveloperPortalPage() {
                   )}
                 </CardContent>
               </Card>
-
-
-            <Card>
-                <CardHeader>
-                <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/products</CardTitle>
-                <CardDescription>Retrieve a list of products. (Mock returns all available mock products)</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <Button onClick={handleMockListProducts} disabled={isListProductsLoading} variant="secondary">
-                        {isListProductsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                        {isListProductsLoading ? "Fetching..." : "Send Request"}
-                    </Button>
-                     <Select defaultValue="cURL" disabled>
-                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                    </Select>
-                </div>
-                {listProductsResponse && (
-                    <div className="mt-4">
-                    <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
-                    <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{listProductsResponse}</code></pre>
-                    </div>
-                )}
-                </CardContent>
-            </Card>
-            
-            <Card>
-                <CardHeader>
-                <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /products/{'{productId}'}/lifecycle-events</CardTitle>
-                <CardDescription>Add a new lifecycle event to a product.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                <div>
-                    <Label htmlFor="productIdInput-post-event">Product ID</Label>
-                    <Input id="productIdInput-post-event" value={postLifecycleEventProductId} onChange={(e) => setPostLifecycleEventProductId(e.target.value)} placeholder="e.g., DPP001"/>
-                </div>
-                <div>
-                    <Label htmlFor="postLifecycleEventBody">Request Body (JSON)</Label>
-                    <Textarea id="postLifecycleEventBody" value={postLifecycleEventBody} onChange={(e) => setPostLifecycleEventBody(e.target.value)} rows={5} className="font-mono text-xs"/>
-                </div>
-                 <div className="flex items-center justify-between">
-                    <Button onClick={handleMockPostLifecycleEvent} disabled={isPostLifecycleEventLoading} variant="secondary">
-                        {isPostLifecycleEventLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                        {isPostLifecycleEventLoading ? "Sending..." : "Send Request"}
-                    </Button>
-                    <Select defaultValue="cURL" disabled>
-                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                    </Select>
-                </div>
-                {postLifecycleEventResponse && (
-                    <div className="mt-4">
-                    <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
-                    <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postLifecycleEventResponse}</code></pre>
-                    </div>
-                )}
-                </CardContent>
-            </Card>
-            <Card>
-                <CardHeader>
-                <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /products/{'{productId}'}/compliance-summary</CardTitle>
-                <CardDescription>Retrieve a compliance summary for a specific product.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                <div>
-                    <Label htmlFor="productIdInput-get-compliance">Product ID</Label>
-                    <Input id="productIdInput-get-compliance" value={getComplianceProductId} onChange={(e) => setGetComplianceProductId(e.target.value)} placeholder="e.g., DPP001" />
-                </div>
-                <div className="flex items-center justify-between">
-                    <Button onClick={handleMockGetComplianceSummary} disabled={isGetComplianceLoading} variant="secondary">
-                        {isGetComplianceLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                        {isGetComplianceLoading ? "Fetching..." : "Send Request"}
-                    </Button>
-                     <Select defaultValue="cURL" disabled>
-                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                    </Select>
-                </div>
-                {getComplianceResponse && (
-                    <div className="mt-4">
-                    <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
-                    <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getComplianceResponse}</code></pre>
-                    </div>
-                )}
-                </CardContent>
-            </Card>
             </CardContent>
         </Card>
         </TabsContent>

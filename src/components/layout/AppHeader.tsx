@@ -29,10 +29,10 @@ import { cn } from "@/lib/utils";
 
 
 const mockNotifications = [
-  { id: "notif1", title: "Compliance Update", description: "Product PROD001 status changed to 'Compliant'. All checks passed successfully after recent data submission.", time: "5m ago" },
+  { id: "notif1", title: "Compliance Update", description: "Product PROD001 status changed to 'Compliant'. All checks passed successfully after recent data submission for EU Battery Regulation and ESPR alignment checks.", time: "5m ago" },
   { id: "notif2", title: "New API Key Generated", description: "A new Sandbox API key 'sand_sk_...cdef' was generated for your account.", time: "1h ago" },
-  { id: "notif3", title: "System Maintenance Scheduled", description: "Important: System maintenance is scheduled for Sunday 2 AM UTC. Expect brief downtime.", time: "1d ago" },
-  { id: "notif4", title: "Data Request from EcoGoods Inc.", description: "Manufacturer 'EcoGoods Inc.' requests updated specifications for Component Z (Part No. CZ-885).", time: "2d ago" },
+  { id: "notif3", title: "System Maintenance Scheduled", description: "Important: System maintenance is scheduled for Sunday 2 AM UTC. Expect brief downtime of approximately 15-30 minutes for platform upgrades.", time: "1d ago" },
+  { id: "notif4", title: "Data Request from EcoGoods Inc.", description: "Manufacturer 'EcoGoods Inc.' requests updated specifications for Component Z (Part No. CZ-885). Please respond by EOD Friday.", time: "2d ago" },
 ];
 
 export default function AppHeader() {
@@ -108,7 +108,7 @@ export default function AppHeader() {
             <DropdownMenuSeparator />
             {mockNotifications.length > 0 ? (
               mockNotifications.slice(0, 4).map(notification => ( 
-                <DropdownMenuItem key={notification.id} className="flex flex-col items-start gap-1 py-2 px-3 cursor-pointer hover:bg-muted/50">
+                <DropdownMenuItem key={notification.id} className="flex flex-col items-start gap-1 py-2.5 px-3 cursor-pointer hover:bg-muted/50 focus:bg-muted/50" onClick={() => alert(`Mock: Navigating to notification ${notification.id}`)}>
                   <div className="flex justify-between w-full items-center">
                     <span className="text-sm font-semibold text-foreground">{notification.title}</span>
                     <span className="text-xs text-muted-foreground">{notification.time}</span>
@@ -125,7 +125,7 @@ export default function AppHeader() {
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link href="#" className="flex items-center justify-center text-sm text-primary py-2 cursor-pointer">
+                  <Link href="#" className="flex items-center justify-center text-sm text-primary py-2.5 cursor-pointer hover:underline focus:bg-accent/50">
                     View all notifications
                   </Link>
                 </DropdownMenuItem>

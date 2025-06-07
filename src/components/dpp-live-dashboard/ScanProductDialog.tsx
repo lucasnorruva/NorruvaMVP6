@@ -23,18 +23,18 @@ export function ScanProductDialog({ allDpps }: ScanProductDialogProps) {
   const [manualProductId, setManualProductId] = useState("");
   const [isScanDialogOpen, setIsScanDialogOpen] = useState(false);
 
-  const handleFindProductFromScan = () => {
+  const handleFindProduct = () => {
     if (manualProductId.trim()) {
       const productExists = allDpps.some(p => p.id === manualProductId.trim());
       if (productExists) {
         router.push(`/passport/${manualProductId.trim()}`);
-        setIsScanDialogOpen(false);
-        setManualProductId(""); // Reset for next time
+        setIsScanDialogOpen(false); // Close dialog on success
+        setManualProductId(""); // Reset input
       } else {
         toast({
           variant: "destructive",
           title: "Product Not Found",
-          description: `Product with ID "${manualProductId.trim()}" was not found.`,
+          description: `Product with ID "${manualProductId.trim()}" was not found. Please check the ID and try again.`,
         });
       }
     } else {
@@ -46,8 +46,15 @@ export function ScanProductDialog({ allDpps }: ScanProductDialogProps) {
     }
   };
 
+  const handleOpenChange = (open: boolean) => {
+    setIsScanDialogOpen(open);
+    if (!open) {
+      setManualProductId(""); // Clear input when dialog is closed
+    }
+  };
+
   return (
-    <Dialog open={isScanDialogOpen} onOpenChange={setIsScanDialogOpen}>
+    <Dialog open={isScanDialogOpen} onOpenChange={handleOpenChange}>
       <DialogTrigger asChild>
         <Button variant="outline">
           <QrCode className="mr-2 h-5 w-5" />
@@ -79,7 +86,7 @@ export function ScanProductDialog({ allDpps }: ScanProductDialogProps) {
               className="col-span-3"
               onKeyPress={(e) => {
                 if (e.key === 'Enter') {
-                  handleFindProductFromScan();
+                  handleFindProduct();
                 }
               }}
             />
@@ -87,9 +94,9 @@ export function ScanProductDialog({ allDpps }: ScanProductDialogProps) {
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button type="button" variant="outline" onClick={() => setManualProductId("")}>Cancel</Button>
+            <Button type="button" variant="outline">Cancel</Button>
           </DialogClose>
-          <Button type="button" onClick={handleFindProductFromScan}>Find Product</Button>
+          <Button type="button" onClick={handleFindProduct}>Find Product</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

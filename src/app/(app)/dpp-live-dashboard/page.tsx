@@ -7,7 +7,7 @@ import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle, Trash2 as DeleteIcon } from "lucide-react"; // Renamed Trash2 to avoid conflict
+import { PlusCircle } from "lucide-react"; // Renamed Trash2 to avoid conflict
 import {
   AlertDialog,
   AlertDialogAction,

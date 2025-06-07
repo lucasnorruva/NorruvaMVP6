@@ -4,7 +4,7 @@
 "use client";
 
 import { useState } from "react";
-import type { SimpleProductDetail, ProductSupplyChainLink } from "@/types/dpp"; // Added ProductSupplyChainLink
+import type { SimpleProductDetail, ProductSupplyChainLink } from "@/types/dpp";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductHeader from "./ProductHeader";
 import OverviewTab from "./OverviewTab";
@@ -18,10 +18,10 @@ import { Package, Leaf, ShieldCheck, History, Layers } from 'lucide-react';
 
 interface ProductContainerProps {
   product: SimpleProductDetail;
-  onSupplyChainUpdate: (updatedLinks: ProductSupplyChainLink[]) => void; // Added prop
+  onSupplyChainUpdate: (updatedLinks: ProductSupplyChainLink[]) => void;
 }
 
-export default function ProductContainer({ product, onSupplyChainUpdate }: ProductContainerProps) { // Added prop
+export default function ProductContainer({ product, onSupplyChainUpdate }: ProductContainerProps) {
   const [activeTab, setActiveTab] = useState("overview");
 
   if (!product) {
@@ -68,7 +68,7 @@ export default function ProductContainer({ product, onSupplyChainUpdate }: Produ
         </TabsContent>
 
          <TabsContent value="supplyChain" className="mt-6">
-          <SupplyChainTab product={product} onSupplyChainLinksChange={onSupplyChainUpdate} /> {/* Passed prop */}
+          <SupplyChainTab product={product} onSupplyChainLinksChange={onSupplyChainUpdate} />
         </TabsContent>
       </Tabs>
     </div>

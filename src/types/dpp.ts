@@ -185,8 +185,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       {id: "cert1", name: "Energy Star", issuer: "EPA", issueDate: "2024-01-01", documentUrl: "#", transactionHash: "0xcertAnchor1"}
     ],
     supplyChainLinks: [
-      { supplierId: "SUP001", suppliedItem: "Compressor Unit XJ-500", notes: "Primary compressor supplier." },
-      { supplierId: "SUP002", suppliedItem: "Recycled Steel Panels", notes: "Certified recycled content." }
+      { supplierId: "SUP001", suppliedItem: "Compressor Unit XJ-500", notes: "Primary compressor supplier for EU market. Audited for ethical sourcing." },
+      { supplierId: "SUP002", suppliedItem: "Recycled Steel Panels (70%)", notes: "Certified post-consumer recycled content." }
     ]
   },
   {
@@ -209,7 +209,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     consumerScans: 300,
     blockchainIdentifiers: { platform: "MockChain" },
     supplyChainLinks: [
-       { supplierId: "SUP003", suppliedItem: "Organic Cotton Yarn", notes: "GOTS Certified Supplier" }
+       { supplierId: "SUP003", suppliedItem: "Organic Cotton Yarn", notes: "GOTS Certified Supplier for all global production." }
     ]
   },
   {
@@ -260,7 +260,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         status: "pending",
         carbonFootprint: { value: 120, unit: "kg CO2e/kWh" },
         recycledContent: [{ material: "Cobalt", percentage: 15 }],
-        stateOfHealth: {value: 98, unit: '%', measurementDate: "2024-07-15T00:00:00Z"}, // Corrected
+        stateOfHealth: {value: 98, unit: '%', measurementDate: "2024-07-15T00:00:00Z"},
       },
       eu_espr: { status: "pending" },
     },
@@ -351,13 +351,13 @@ export interface StoredUserProduct {
   energyLabel?: string;
   productCategory?: string;
   imageUrl?: string;
-  imageHint?: string; // For AI image search
+  imageHint?: string; 
   batteryChemistry?: string;
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
   recycledContentPercentage?: number | null;
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending';
-  compliance: string; // Simplified overall compliance text for listing
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | string; // Allow string for flexibility
+  compliance: string; 
   lastUpdated: string;
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -373,39 +373,37 @@ export interface StoredUserProduct {
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
   supplyChainLinks?: ProductSupplyChainLink[];
-  // For full display on product list for completeness check
-  lifecycleEvents?: SimpleLifecycleEvent[]; // Using SimpleLifecycleEvent from SimpleProductDetail for consistency
-  complianceSummary?: ProductComplianceSummary; // Using ProductComplianceSummary for richer data
+  lifecycleEvents?: SimpleLifecycleEvent[]; 
+  complianceSummary?: ProductComplianceSummary; 
 }
 
 // Initial mock product data for /products page (more detailed than SimpleProductDetail)
 export interface RichMockProduct {
-  id: string; // Same as productId for mock data
+  id: string; 
   productId: string;
   productName: string;
   category?: string;
   status: 'Active' | 'Draft' | 'Archived' | 'Pending';
-  compliance: string; // Simplified for list view, e.g., "Compliant", "Pending"
-  lastUpdated: string; // ISO Date string
+  compliance: string; 
+  lastUpdated: string; 
   gtin?: string;
   manufacturer?: string;
   modelNumber?: string;
   description?: string;
   imageUrl?: string;
   imageHint?: string;
-  materials?: string; // Simple string for mock list, can be parsed if needed
-  sustainabilityClaims?: string; // Simple string
+  materials?: string; 
+  sustainabilityClaims?: string; 
   energyLabel?: string;
-  specifications?: Record<string, string> | string; // String for user, record for mock
-  lifecycleEvents?: SimpleLifecycleEvent[]; // Array of simplified events
-  complianceData?: Record<string, any>; // Generic object for mock initial compliance
-  // Battery related for completeness check, if not in complianceData
+  specifications?: Record<string, string> | string; 
+  lifecycleEvents?: SimpleLifecycleEvent[]; 
+  complianceSummary?: ProductComplianceSummary; 
   batteryChemistry?: string;
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
   recycledContentPercentage?: number | null;
-  // Added for consistency with PublicProductInfo and for RoleSpecificCard needs
   ebsiVerification?: EbsiVerificationDetails;
+  supplyChainLinks?: ProductSupplyChainLink[]; // Added for completeness
 }
 
 
@@ -434,7 +432,7 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     recyclabilityInfo: { percentage: 95, instructionsUrl: "#recycling-PROD001" },
     supplyChainLinks: [
       { supplierId: "SUP001", suppliedItem: "Compressor Unit XJ-500", notes: "Primary compressor supplier. Audited for fair labor practices." },
-      { supplierId: "SUP002", suppliedItem: "Recycled Steel Panels (70%)", notes: "Certified recycled content from post-consumer sources." }
+      { supplierId: "SUP002", suppliedItem: "Recycled Steel Panels (70%)", notes: "Certified post-consumer recycled content." }
     ],
     complianceSummary: {
       overallStatus: "Compliant",
@@ -477,7 +475,7 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     repairability: { score: 6.0, scale: 10, detailsUrl: "#repair-details-PROD002" },
     recyclabilityInfo: { percentage: 75, instructionsUrl: "#recycling-PROD002" },
     supplyChainLinks: [
-      { supplierId: "SUP004", suppliedItem: "LED Chips & Drivers", notes: "Specialized electronics supplier." }
+      { supplierId: "SUP004", suppliedItem: "LED Chips & Drivers", notes: "Specialized electronics supplier from Shanghai." }
     ],
     complianceSummary: {
       overallStatus: "Pending Review",
@@ -556,39 +554,36 @@ export const MOCK_SUPPLIERS: Supplier[] = [
 // Unified type for products displayed in the product list page
 export interface DisplayableProduct {
   id: string;
-  productId?: string; // From mock, can be same as id
+  productId?: string; 
   productName?: string;
-  category?: string; // From mock, or StoredUserProduct.productCategory
-  productCategory?: string; // From StoredUserProduct
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | string; // string for flexibility if StoredUserProduct.status is just string
-  compliance: string; // Simplified overall compliance text for listing
-  lastUpdated: string; // ISO date string
+  category?: string; 
+  productCategory?: string; 
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | string; 
+  compliance: string; 
+  lastUpdated: string; 
   gtin?: string;
   manufacturer?: string;
   modelNumber?: string;
-  description?: string; // From mock
-  productDescription?: string; // From StoredUserProduct
+  description?: string; 
+  productDescription?: string; 
   imageUrl?: string;
   imageHint?: string;
-  materials?: string; // Comma-separated or simple text from StoredUserProduct
-  sustainabilityClaims?: string; // Comma-separated or simple text from StoredUserProduct
+  materials?: string; 
+  sustainabilityClaims?: string; 
   energyLabel?: string;
-  specifications?: Record<string, string> | string; // mock is Record, Stored is string (JSON)
-  // For completeness check, try to get these from more detailed sources if available
-  lifecycleEvents?: SimpleLifecycleEvent[]; 
-  complianceSummary?: ProductComplianceSummary; // Richer compliance data
-  // Battery related for completeness check
+  specifications?: Record<string, string> | string; 
+  lifecycleEvents?: SimpleLifecycleEvent[];
+  complianceSummary?: ProductComplianceSummary; 
   batteryChemistry?: string;
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
   recycledContentPercentage?: number | null;
-  // Field to hold reference for RoleSpecificCard
-  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A';
+  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A'; // For DisplayableProduct on list view
+  supplyChainLinks?: ProductSupplyChainLink[];
 }
 
-
 // --- Types for Public Passport Page ---
-export type IconName = "Leaf" | "Recycle" | "ShieldCheck" | "Cpu" | "Zap" | "Factory" | "Truck" | "ShoppingCart" | "Wrench" | "Cog" | "Search" | "PenTool" | "CalendarCheck" | "UploadCloud" | "ClipboardCheck";
+export type IconName = keyof typeof import('lucide-react');
 
 export interface SustainabilityHighlight {
   iconName: IconName;
@@ -608,7 +603,7 @@ export interface PublicCertification {
   authority: string;
   expiryDate?: string;
   link?: string;
-  isVerified?: boolean; 
+  isVerified?: boolean;
 }
 
 export interface PublicProductInfo {
@@ -631,7 +626,7 @@ export interface PublicProductInfo {
   ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error';
   ebsiVerificationId?: string;
   lifecycleHighlights?: LifecycleHighlight[];
-  certifications?: PublicCertification[]; 
+  certifications?: PublicCertification[];
 }
 
 export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
@@ -641,7 +636,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     tagline: "Sustainable Cooling, Smart Living.",
     imageUrl: "https://placehold.co/800x600.png",
     imageHint: "modern refrigerator kitchen",
-    productStory: "Experience the future of refrigeration with the EcoFriendly Refrigerator X2000. Designed with both the planet and your lifestyle in mind, this appliance combines cutting-edge cooling technology with sustainable materials. Its spacious interior, smart energy management, and sleek design make it a perfect addition to any modern, eco-conscious home. We believe in transparency, and this Digital Product Passport gives you insight into its journey and impact. Built to last and designed for efficiency, the X2000 helps you reduce your environmental footprint without compromising on performance or style. More details include advanced frost-free systems, optimized airflow for even temperature distribution, and compartments designed for specific food types to prolong freshness. The user interface is intuitive, allowing easy control over temperature settings and special modes like vacation mode or quick cool.",
+    productStory: "Experience the future of refrigeration with the EcoFriendly Refrigerator X2000. Designed with both the planet and your lifestyle in mind, this appliance combines cutting-edge cooling technology with sustainable materials. Its spacious interior, smart energy management, and sleek design make it a perfect addition to any modern, eco-conscious home. We believe in transparency, and this Digital Product Passport gives you insight into its journey and impact. Built to last and designed for efficiency, the X2000 helps you reduce your environmental footprint without compromising on performance or style. More details include advanced frost-free systems, optimized airflow for even temperature distribution, and compartments designed for specific food types to prolong freshness.",
     sustainabilityHighlights: [
       { iconName: "Zap", text: "Energy Star Certified A+++" },
       { iconName: "Recycle", text: "Made with 70% recycled steel" },
@@ -649,10 +644,10 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { iconName: "Zap", text: "Smart energy consumption features" }
     ],
     manufacturerName: "GreenTech Appliances",
-    manufacturerWebsite: "#", 
+    manufacturerWebsite: "#",
     brandLogoUrl: "https://placehold.co/150x50.png?text=GreenTech",
-    learnMoreLink: "#", 
-    complianceSummary: "Fully compliant with EU Ecodesign and Energy Labelling regulations.",
+    learnMoreLink: "#",
+    complianceSummary: "Fully compliant with EU Ecodesign and Energy Labelling regulations. EBSI verified.",
     category: "Home Appliances",
     modelNumber: "X2000-ECO",
     anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef",
@@ -687,7 +682,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     manufacturerWebsite: "#",
     brandLogoUrl: "https://placehold.co/150x50.png?text=BrightSpark",
     learnMoreLink: "#",
-    complianceSummary: "Complies with EU energy efficiency and hazardous substance directives.",
+    complianceSummary: "Complies with EU energy efficiency and hazardous substance directives. EBSI verification pending.",
     category: "Electronics",
     modelNumber: "BS-LED-S04",
     anchorTransactionHash: "0xdef456ghi789jkl012mno345pqr678stu901vwx234yz567abcdef012345",
@@ -704,5 +699,3 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ]
   }
 };
-
-    

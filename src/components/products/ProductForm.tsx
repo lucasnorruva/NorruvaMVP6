@@ -33,7 +33,7 @@ import {
   handleSuggestDescriptionAI,
   handleSuggestClaimsAI,
   handleGenerateImageAI,
-} from "@/utils/aiFormHelpers.tsx";
+} from "@/utils/aiFormHelpers"; // Updated import to .tsx from .ts
 
 const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),

@@ -461,25 +461,25 @@ export default function DeveloperPortalPage() {
           <div>
             <h4 className="font-semibold mb-2">SDKs (Coming Soon)</h4>
             <ul className="space-y-2">
-              <li> <Button variant="outline" className="w-full justify-start" disabled> <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> JavaScript SDK </Button> </li>
-              <li> <Button variant="outline" className="w-full justify-start" disabled> <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> Python SDK </Button> </li>
-              <li> <Button variant="outline" className="w-full justify-start" disabled> <DownloadCloud className="mr-2 h-5 w-5 text-accent" /> Java SDK </Button> </li>
+              <li> <Button variant="outline" className="w-full justify-start" disabled> <FileCog className="mr-2 h-5 w-5 text-accent" /> JavaScript SDK </Button> </li>
+              <li> <Button variant="outline" className="w-full justify-start" disabled> <FileCog className="mr-2 h-5 w-5 text-accent" /> Python SDK </Button> </li>
+              <li> <Button variant="outline" className="w-full justify-start" disabled> <FileCog className="mr-2 h-5 w-5 text-accent" /> Java SDK </Button> </li>
             </ul>
              <p className="text-xs text-muted-foreground mt-2">Official SDKs are under development. Check back soon for updates.</p>
           </div>
           <div className="space-y-3">
-            <div id="tutorials">
+            <div id="code-samples">
                 <h4 className="font-semibold mb-1">Code Samples &amp; Templates</h4>
                  <p className="text-sm text-muted-foreground">Access a library of code snippets and project templates for common integration scenarios like DPP creation, event logging, and compliance checks.</p>
                 <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
-                  <Link href="#">Browse Code Samples (Mock)</Link>
+                  <Link href="#code-samples">Browse Code Samples (Mock)</Link>
                 </Button>
             </div>
-            <div>
+            <div id="tutorials">
                 <h4 className="font-semibold mb-1">Tutorials</h4>
                  <p className="text-sm text-muted-foreground">Follow step-by-step guides to implement specific DPP functionalities and use cases, such as blockchain anchoring or battery passport data submission.</p>
                  <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
-                  <Link href="#">View Tutorials (Mock)</Link>
+                  <Link href="#tutorials">View Tutorials (Mock)</Link>
                 </Button>
             </div>
             <div>

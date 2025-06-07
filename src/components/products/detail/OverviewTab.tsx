@@ -13,13 +13,29 @@ interface OverviewTabProps {
   product: SimpleProductDetail;
 }
 
+const getAiHintForImage = (product: SimpleProductDetail): string => {
+  if (product.imageHint && product.imageHint.trim()) {
+    return product.imageHint.trim().split(" ").slice(0, 2).join(" ");
+  }
+  if (product.productName && product.productName.trim()) {
+    const nameWords = product.productName.trim().split(" ");
+    if (nameWords.length === 1) return nameWords[0].toLowerCase();
+    return nameWords.slice(0, 2).join(" ").toLowerCase();
+  }
+  if (product.category && product.category.trim()) {
+    return product.category.trim().split(" ")[0].toLowerCase();
+  }
+  return "product photo"; // Default fallback
+};
+
+
 export default function OverviewTab({ product }: OverviewTabProps) {
   if (!product) {
     return <p className="text-muted-foreground p-4">Product data not available.</p>;
   }
 
   const imageDisplayUrl = product.imageUrl || "https://placehold.co/400x300.png?text=No+Image";
-  const imageDisplayHint = product.imageHint || product.productName?.split(" ").slice(0,2).join(" ") || "product image";
+  const aiHint = getAiHintForImage(product);
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -33,7 +49,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 alt={product.productName}
                 fill // Use fill for AspectRatio
                 className="object-contain" // object-contain to ensure full image is visible
-                data-ai-hint={imageDisplayHint}
+                data-ai-hint={aiHint}
                 priority={!imageDisplayUrl.startsWith("data:")} // Avoid priority for Data URIs
               />
             </AspectRatio>

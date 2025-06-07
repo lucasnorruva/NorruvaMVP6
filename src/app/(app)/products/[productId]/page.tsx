@@ -46,8 +46,7 @@ export default function ProductDetailPage() {
               modelNumber: userProductToDisplay.modelNumber,
               description: userProductToDisplay.productDescription,
               imageUrl: userProductToDisplay.imageUrl,
-              imageHint: userProductToDisplay.imageHint, // Pass imageHint
-              supplyChainLinks: userProductToDisplay.supplyChainLinks || [],
+              imageHint: userProductToDisplay.imageHint, // Ensure imageHint is passed
               keySustainabilityPoints: userProductToDisplay.sustainabilityClaims?.split('\n').map(s => s.trim()).filter(Boolean) || [],
               specifications: userProductToDisplay.specifications ? JSON.parse(userProductToDisplay.specifications) : undefined,
               complianceSummary: complianceSummary, 
@@ -55,6 +54,7 @@ export default function ProductDetailPage() {
               keyCompliancePoints: [], 
               materialsUsed: userProductToDisplay.materials ? userProductToDisplay.materials.split(',').map(m => ({name: m.trim()})) : [],
               energyLabelRating: userProductToDisplay.energyLabel,
+              supplyChainLinks: userProductToDisplay.supplyChainLinks || [],
             };
           }
         }

@@ -33,7 +33,7 @@ import {
   handleSuggestDescriptionAI,
   handleSuggestClaimsAI,
   handleGenerateImageAI,
-} from "@/utils/aiFormHelpers.tsx"; // Updated import extension
+} from "@/utils/aiFormHelpers.tsx";
 
 const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
@@ -136,7 +136,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   }, [initialData, form]);
 
   const callSuggestNameAI = async () => {
-    const result = await handleSuggestNameAI(form.getValues(), toast, setIsSuggestingName);
+    const result = await handleSuggestNameAI(form, toast, setIsSuggestingName);
     if (result) {
         form.setValue("productName", result, { shouldValidate: true });
         if (initialData) (initialData as InitialProductFormData).productNameOrigin = 'AI_EXTRACTED';
@@ -144,7 +144,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   };
 
   const callSuggestDescriptionAI = async () => {
-    const result = await handleSuggestDescriptionAI(form.getValues(), toast, setIsSuggestingDescription);
+    const result = await handleSuggestDescriptionAI(form, toast, setIsSuggestingDescription);
      if (result) {
         form.setValue("productDescription", result, { shouldValidate: true });
         if (initialData) (initialData as InitialProductFormData).productDescriptionOrigin = 'AI_EXTRACTED';
@@ -152,8 +152,12 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   };
   
   const callSuggestClaimsAI = async () => {
-    const claims = await handleSuggestClaimsAI(form.getValues(), toast, setIsSuggestingClaims);
-    if (claims) setSuggestedClaims(claims);
+    const claims = await handleSuggestClaimsAI(form, toast, setIsSuggestingClaims);
+    if (claims) {
+        setSuggestedClaims(claims);
+    } else {
+        setSuggestedClaims([]);
+    }
   };
 
   const handleImageGenerated = (newImageUrl: string) => {
@@ -183,7 +187,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
               <FormItem>
                 <div className="flex items-center justify-between">
                   <FormLabel className="flex items-center">Product Name <AiIndicator fieldOrigin={initialData?.productNameOrigin} fieldName="Product Name" /></FormLabel>
-                  <Button type="button" variant="ghost" size="sm" onClick={callSuggestNameAI} disabled={anyAISuggestionInProgress || isSubmitting}>
+                  <Button type="button" variant="ghost" size="sm" onClick={callSuggestNameAI} disabled={anyAISuggestionInProgress || !!isSubmitting}>
                     {isSuggestingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
                     <span className="ml-2">{isSuggestingName ? "Suggesting..." : "Suggest Name"}</span>
                   </Button>
@@ -195,7 +199,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           />
           <FormField control={form.control} name="gtin" render={({ field }) => ( <FormItem> <FormLabel>GTIN</FormLabel> <FormControl><Input placeholder="e.g., 01234567890123" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
           <FormField control={form.control} name="productCategory" render={({ field }) => ( <FormItem> <FormLabel>Product Category</FormLabel> <FormControl><Input placeholder="e.g., Electronics, Apparel" {...field} /></FormControl> <FormDescription>Used to help generate relevant suggestions.</FormDescription> <FormMessage /> </FormItem> )}/>
-          <FormField control={form.control} name="productDescription" render={({ field }) => ( <FormItem> <div className="flex items-center justify-between"> <FormLabel className="flex items-center">Product Description <AiIndicator fieldOrigin={initialData?.productDescriptionOrigin} fieldName="Product Description" /></FormLabel> <Button type="button" variant="ghost" size="sm" onClick={callSuggestDescriptionAI} disabled={anyAISuggestionInProgress || isSubmitting}> {isSuggestingDescription ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />} <span className="ml-2">{isSuggestingDescription ? "Suggesting..." : "Suggest Description"}</span> </Button> </div> <FormControl><Textarea placeholder="Detailed description..." {...field} rows={4} /></FormControl> <FormMessage /> </FormItem> )}/>
+          <FormField control={form.control} name="productDescription" render={({ field }) => ( <FormItem> <div className="flex items-center justify-between"> <FormLabel className="flex items-center">Product Description <AiIndicator fieldOrigin={initialData?.productDescriptionOrigin} fieldName="Product Description" /></FormLabel> <Button type="button" variant="ghost" size="sm" onClick={callSuggestDescriptionAI} disabled={anyAISuggestionInProgress || !!isSubmitting}> {isSuggestingDescription ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />} <span className="ml-2">{isSuggestingDescription ? "Suggesting..." : "Suggest Description"}</span> </Button> </div> <FormControl><Textarea placeholder="Detailed description..." {...field} rows={4} /></FormControl> <FormMessage /> </FormItem> )}/>
           <div className="grid md:grid-cols-2 gap-6">
             <FormField control={form.control} name="manufacturer" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Manufacturer <AiIndicator fieldOrigin={initialData?.manufacturerOrigin} fieldName="Manufacturer" /></FormLabel> <FormControl><Input placeholder="e.g., GreenTech Inc." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
             <FormField control={form.control} name="modelNumber" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Model Number <AiIndicator fieldOrigin={initialData?.modelNumberOrigin} fieldName="Model Number" /></FormLabel> <FormControl><Input placeholder="e.g., GTX-EB-001" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
@@ -212,7 +216,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             onImageGenerated={handleImageGenerated}
             isGenerating={isGeneratingImage}
             setIsGenerating={setIsGeneratingImage}
-            aiImageHelper={handleGenerateImageAI} // Pass the actual helper
+            aiImageHelper={handleGenerateImageAI} 
             initialImageUrlOrigin={initialData?.imageUrlOrigin}
             toast={toast}
           />
@@ -223,8 +227,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         <AccordionTrigger className="text-lg font-semibold">Sustainability & Compliance</AccordionTrigger>
         <AccordionContent className="space-y-6 pt-4">
            <FormField control={form.control} name="materials" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Key Materials <AiIndicator fieldOrigin={initialData?.materialsOrigin} fieldName="Key Materials" /></FormLabel> <FormControl><Textarea placeholder="e.g., Organic Cotton, Recycled PET" {...field} rows={3}/></FormControl> <FormDescription>Primary materials used.</FormDescription> <FormMessage /> </FormItem> )}/>
-          <FormField control={form.control} name="sustainabilityClaims" render={({ field }) => ( <FormItem> <div className="flex items-center justify-between"> <FormLabel className="flex items-center">Sustainability Claims <AiIndicator fieldOrigin={initialData?.sustainabilityClaimsOrigin} fieldName="Sustainability Claims" /></FormLabel> <Button type="button" variant="ghost" size="sm" onClick={callSuggestClaimsAI} disabled={anyAISuggestionInProgress || isSubmitting}> {isSuggestingClaims ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />} <span className="ml-2">{isSuggestingClaims ? "Suggesting..." : "Suggest Claims"}</span> </Button> </div> <FormControl><Textarea placeholder="e.g., - Made with 70% recycled materials" {...field} rows={3}/></FormControl> <FormDescription>Highlight key sustainability features.</FormDescription> <FormMessage /> </FormItem> )}/>
-          {suggestedClaims.length > 0 && ( <div className="space-y-2 pt-2"> <p className="text-sm font-medium text-muted-foreground">Click to add suggestion:</p> <div className="flex flex-wrap gap-2">{suggestedClaims.map((claim, index) => ( <Button key={index} type="button" variant="outline" size="sm" onClick={() => handleClaimClick(claim)}>{claim}</Button> ))}</div> </div> )}
+          <FormField control={form.control} name="sustainabilityClaims" render={({ field }) => ( <FormItem> <div className="flex items-center justify-between"> <FormLabel className="flex items-center">Sustainability Claims <AiIndicator fieldOrigin={initialData?.sustainabilityClaimsOrigin} fieldName="Sustainability Claims" /></FormLabel> <Button type="button" variant="ghost" size="sm" onClick={callSuggestClaimsAI} disabled={anyAISuggestionInProgress || !!isSubmitting}> {isSuggestingClaims ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />} <span className="ml-2">{isSuggestingClaims ? "Suggesting..." : "Suggest Claims"}</span> </Button> </div> <FormControl><Textarea placeholder="e.g., - Made with 70% recycled materials" {...field} rows={3}/></FormControl> <FormDescription>Highlight key sustainability features. Each claim on a new line, optionally start with '- '. AI suggestions will follow this format.</FormDescription> <FormMessage /> </FormItem> )}/>
+          {suggestedClaims.length > 0 && ( <div className="space-y-2 pt-2"> <p className="text-sm font-medium text-muted-foreground">Click to add suggested claim:</p> <div className="flex flex-wrap gap-2">{suggestedClaims.map((claim, index) => ( <Button key={index} type="button" variant="outline" size="sm" onClick={() => handleClaimClick(claim)}>{claim}</Button> ))}</div> </div> )}
           <FormField control={form.control} name="energyLabel" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Energy Label <AiIndicator fieldOrigin={initialData?.energyLabelOrigin} fieldName="Energy Label" /></FormLabel> <FormControl><Input placeholder="e.g., A++" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
         </AccordionContent>
       </AccordionItem>
@@ -257,7 +261,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             <CardContent>{formContent}</CardContent>
           </Card>
           <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={!!isSubmitting || anyAISuggestionInProgress}>
-            {(isSubmitting || anyAISuggestionInProgress) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {(!!isSubmitting || anyAISuggestionInProgress) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             {isSubmitting ? "Saving..." : (anyAISuggestionInProgress ? "AI Processing..." : "Save Product")}
           </Button>
         </form>
@@ -272,3 +276,4 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
+

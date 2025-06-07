@@ -66,9 +66,9 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
           product.status === "Active" ? "default" :
           product.status === "Archived" ? "secondary" : "outline"
         } className={cn(
-          product.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" :
+          product.status === "Active" ? "bg-green-100 text-green-700 border-green-300" :
           product.status === "Archived" ? "bg-muted text-muted-foreground border-border" :
-          "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" // Draft, Pending
+          "bg-yellow-100 text-yellow-700 border-yellow-300" // Draft, Pending
         )}>
           {product.status}
         </Badge>
@@ -79,10 +79,10 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
             product.compliance === "Pending" ? "outline" :
             product.compliance === "N/A" ? "secondary" : "destructive"
           } className={cn(
-            product.compliance === "Compliant" ? "bg-green-500/20 text-green-700 border-green-500/30" :
-            product.compliance === "Pending" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" :
+            product.compliance === "Compliant" ? "bg-green-100 text-green-700 border-green-300" :
+            product.compliance === "Pending" ? "bg-yellow-100 text-yellow-700 border-yellow-300" :
             product.compliance === "N/A" ? "bg-muted text-muted-foreground border-border" :
-            "bg-red-500/20 text-red-700 border-red-500/30"
+            "bg-red-100 text-red-700 border-red-300"
           )}>
           {product.compliance}
         </Badge>
@@ -92,22 +92,22 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
           <Tooltip delayDuration={100}>
             <TooltipTrigger asChild>
               <div className="flex items-center w-24 cursor-help">
-                <Progress value={completenessData.score} className="h-2 flex-grow" />
+                <Progress value={completenessData.score} className="h-2 flex-grow [&>div]:bg-primary" />
                 <span className="text-xs text-muted-foreground ml-1.5">{completenessData.score}%</span>
               </div>
             </TooltipTrigger>
-            <TooltipContent align="start" className="bg-background shadow-lg p-3 rounded-md border max-w-xs">
-              <p className="font-medium text-sm mb-1">DPP Completeness: {completenessData.score}%</p>
-              <p className="text-xs text-muted-foreground mb-1">({completenessData.filledFields}/{completenessData.totalFields} fields filled)</p>
+            <TooltipContent align="start" className="bg-background shadow-xl p-3 rounded-lg border max-w-xs z-50">
+              <p className="font-medium text-sm mb-1 text-foreground">DPP Completeness: {completenessData.score}%</p>
+              <p className="text-xs text-muted-foreground mb-1">({completenessData.filledFields}/{completenessData.totalFields} essential fields filled)</p>
               {completenessData.missingFields.length > 0 ? (
                 <>
-                  <p className="text-xs font-semibold mt-2">Missing essential fields:</p>
-                  <ul className="list-disc list-inside text-xs text-muted-foreground max-h-32 overflow-y-auto">
+                  <p className="text-xs font-semibold mt-2 text-foreground/90">Missing essential fields:</p>
+                  <ul className="list-disc list-inside text-xs text-muted-foreground max-h-32 overflow-y-auto space-y-0.5 mt-1">
                     {completenessData.missingFields.map(field => <li key={field}>{field}</li>)}
                   </ul>
                 </>
               ) : (
-                <p className="text-xs text-green-600 flex items-center"><CheckCircle2 className="mr-1 h-3 w-3"/>All essential fields filled!</p>
+                <p className="text-xs text-green-600 flex items-center mt-2"><CheckCircle2 className="mr-1 h-3.5 w-3.5"/>All essential fields filled!</p>
               )}
             </TooltipContent>
           </Tooltip>

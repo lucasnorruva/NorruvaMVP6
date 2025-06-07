@@ -90,7 +90,7 @@ export default function BatteryRegulationPathwayPage() {
     } else if (stepContext === euBatteryRegulationSteps[2].title) { // Material Composition
         mockResponseDescription = `For Material Composition, accurately declare percentages of Cobalt, Lithium, Natural Graphite, and Nickel if present. Specify presence and/or concentration of restricted substances like Lead, Mercury, and Cadmium. List any other SVHCs present above 0.1% w/w. Refer to Annex I of the EU Battery Regulation for detailed requirements and thresholds.`;
     } else if (stepContext === euBatteryRegulationSteps[3].title) { // Carbon Footprint
-        mockResponseDescription = `For Carbon Footprint, provide the total cradle-to-gate carbon footprint for the battery's manufacturing. Specify the unit (e.g., kg CO₂e/kWh) and data source (e.g., PEFCR, LCA study). If applicable, detail reductions from recycled content or specific footprints for transport and end-of-life. Refer to Annex II of the EU Battery Regulation.`;
+        mockResponseDescription = `For Carbon Footprint, provide the total cradle-to-gate carbon footprint for the battery's manufacturing. Specify the unit (e.g., kg CO₂e/kWh of total energy over service life) and data source (e.g., PEFCR for Batteries, internal LCA study). Optionally, detail reductions from recycled content, or specific footprints for transport and end-of-life. Refer to Annex II of the EU Battery Regulation for detailed requirements.`;
     }
 
 

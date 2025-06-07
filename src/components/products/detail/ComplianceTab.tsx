@@ -121,7 +121,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
-              <ListChecks className="mr-2 h-5 w-5 text-primary" /> {/* Added Icon */}
+              <ListChecks className="mr-2 h-5 w-5 text-primary" />
               Specific Regulations Adherence
             </CardTitle>
             <CardDescription>Details on compliance with various regulations.</CardDescription>
@@ -138,10 +138,10 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
                       {formatStatusString(reg.status)}
                   </Badge>
                 </div>
-                <div className="text-xs space-y-1">
-                  <p><strong className="text-muted-foreground">Last Checked:</strong> {new Date(reg.lastChecked).toLocaleDateString()}</p>
-                  {reg.verificationId && <p className="truncate" title={reg.verificationId}><strong className="text-muted-foreground">Verification ID:</strong> {reg.verificationId}</p>}
-                  {reg.notes && <p><strong className="text-muted-foreground">Notes:</strong> {reg.notes}</p>}
+                <div className="text-xs space-y-1 text-muted-foreground">
+                  <p><strong className="text-foreground/80">Last Checked:</strong> {new Date(reg.lastChecked).toLocaleDateString()}</p>
+                  {reg.verificationId && <p className="truncate" title={reg.verificationId}><strong className="text-foreground/80">Verification ID:</strong> {reg.verificationId}</p>}
+                  {reg.notes && <p><strong className="text-foreground/80">Notes:</strong> <span className="text-foreground/90">{reg.notes}</span></p>}
                   {reg.detailsUrl && (
                     <Button variant="link" size="sm" asChild className="p-0 h-auto text-primary mt-1.5">
                       <Link href={reg.detailsUrl} target="_blank" rel="noopener noreferrer">

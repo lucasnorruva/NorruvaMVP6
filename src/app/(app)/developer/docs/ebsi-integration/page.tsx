@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers, QrCode as QrCodeIcon, FileJson, CheckCircle } from "lucide-react"; // Added Database, QrCodeIcon, FileJson, CheckCircle
+import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers } from "lucide-react"; // Added Database
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -54,21 +54,21 @@ export default function EbsiIntegrationOverviewPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <section>
-            <h3 className="font-semibold text-lg mb-2 flex items-center"><CheckCircle className="mr-2 h-5 w-5 text-green-600" />Verifiable Credentials (VCs)</h3>
+            <h3 className="font-semibold text-lg mb-2">Verifiable Credentials (VCs)</h3>
             <p className="text-sm">
-              Key product attributes, certifications, lifecycle events, and compliance statements can be issued as VCs. These digitally signed credentials are tamper-proof and can be easily verified across borders using the EBSI trust framework. This enables reliable cross-border traceability of products and their associated claims.
+              Key product attributes, certifications, lifecycle events, and compliance statements can be issued as VCs. These digitally signed credentials are tamper-proof and can be easily verified across borders using the EBSI trust framework.
             </p>
           </section>
           <section>
-            <h3 className="font-semibold text-lg mb-2 flex items-center"><ShieldCheck className="mr-2 h-5 w-5 text-green-600" />ESSIF & Digital Signatures</h3>
+            <h3 className="font-semibold text-lg mb-2">ESSIF & Digital Signatures</h3>
             <p className="text-sm">
-              The European Self-Sovereign Identity Framework (ESSIF) allows manufacturers, verifiers, and other stakeholders to use Decentralized Identifiers (DIDs). These DIDs are used to issue and verify VCs through digital signatures, adhering to EBSI's cryptographic standards. This ensures the authenticity of data and the integrity of compliance claims within the DPP.
+              The European Self-Sovereign Identity Framework (ESSIF) allows manufacturers, verifiers, and other stakeholders to use Decentralized Identifiers (DIDs). These DIDs are used to issue and verify VCs through digital signatures.
             </p>
           </section>
           <section>
             <h3 className="font-semibold text-lg mb-2">Notarisation API</h3>
             <p className="text-sm">
-              Anchoring DPP data hashes or critical event proofs onto EBSI's ledger via the Notarisation API provides immutable timestamps and proof of existence, further enhancing data integrity.
+              Anchoring DPP data hashes or critical event proofs onto EBSI's ledger via the Notarisation API provides immutable timestamps and proof of existence.
             </p>
           </section>
         </CardContent>
@@ -187,103 +187,7 @@ export default function EbsiIntegrationOverviewPage() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center"><FileJson className="mr-2 h-5 w-5 text-primary"/>Smart Contracts for DPP Management (Conceptual)</CardTitle>
-          <CardDescription>
-            Outlining the role and key functions of smart contracts in the DPP ecosystem.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <section>
-            <h3 className="font-semibold text-lg mb-2">Purpose of Smart Contracts</h3>
-            <p className="text-sm">
-              Smart contracts would automate and enforce the rules governing Digital Product Passports on the blockchain. They manage the registration, updates, and lifecycle transitions of DPPs, ensuring data integrity and controlled access.
-            </p>
-          </section>
-          <section>
-            <h3 className="font-semibold text-lg mb-2">Key Conceptual Functions</h3>
-            <p className="text-sm">While specific implementation would vary, core functions might include:</p>
-            <ul className="list-disc list-inside space-y-1 text-sm mt-2">
-              <li><code>registerDPP(productId: string, dppHash: bytes32, initialMetadata: string)</code>: Creates a new DPP record on-chain, linking to off-chain data via its hash.</li>
-              <li><code>updateDPPHash(productId: string, newDppHash: bytes32)</code>: Updates the hash pointer for a DPP, effectively versioning it.</li>
-              <li><code>addLifecycleEvent(productId: string, eventType: string, eventDataHash: bytes32, eventTimestamp: uint256)</code>: Logs a new lifecycle event hash for a product.</li>
-              <li><code>transferOwnership(productId: string, newOwnerDID: string)</code>: Records a change in product ownership, potentially using DIDs.</li>
-              <li><code>addCertification(productId: string, certificationId: string, certHash: bytes32, issuerDID: string)</code>: Links a new certification to the DPP.</li>
-              <li><code>verifyDPP(productId: string) returns (bool)</code>: Checks the validity or status of a DPP based on on-chain rules.</li>
-            </ul>
-          </section>
-          <section>
-            <h3 className="font-semibold text-lg mb-2">Deployment & EBSI Interaction</h3>
-            <p className="text-sm">
-              These smart contracts would be deployed on the conceptually chosen blockchain platform (e.g., a permissioned EVM chain). For EBSI integration, they might interact with EBSI-compliant DIDs, store references to Verifiable Credentials (VCs) anchored on EBSI, or trigger notarisation events. This ensures that product data managed by the smart contracts is verifiable within the EBSI ecosystem, leveraging EBSI's trust infrastructure for cross-border operations.
-            </p>
-            <p className="text-xs text-muted-foreground mt-1">
-              This is a high-level conceptual outline. Actual smart contract development is complex and requires careful security auditing.
-            </p>
-          </section>
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="flex items-center"><QrCodeIcon className="mr-2 h-5 w-5 text-primary"/>QR Code Integration for DPP Access (Conceptual)</CardTitle>
-          <CardDescription>
-            Details on how QR codes would be generated and used to access Digital Product Passports.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <section>
-            <h3 className="font-semibold text-lg mb-2">Data to Encode in QR Codes</h3>
-            <p className="text-sm">
-              Each QR code should encode a unique identifier that reliably links to the specific product's Digital Product Passport. This could be:
-            </p>
-            <ul className="list-disc list-inside space-y-1 text-sm ml-4">
-              <li>A URL pointing to the public passport viewer, e.g., <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">https://norruva.com/passport/{'{productId}'}</code>.</li>
-              <li>A Decentralized Identifier (DID) for the product, which can then be resolved to its DPP data.</li>
-              <li>A unique hash or reference to the product's record on the blockchain.</li>
-            </ul>
-            <p className="text-sm mt-1">
-              The preferred method is often a URL that resolves through a secure backend, allowing for flexibility and updates.
-            </p>
-          </section>
-          <section>
-            <h3 className="font-semibold text-lg mb-2">Fallback URL Considerations</h3>
-            <p className="text-sm">
-              It's crucial to have a fallback mechanism. If a QR code scanner cannot directly interpret advanced data formats (like a DID), the encoded data should at least resolve to a human-readable web page providing product information and instructions.
-            </p>
-          </section>
-          <section>
-            <h3 className="font-semibold text-lg mb-2">Security Considerations for QR Generation</h3>
-            <ul className="list-disc list-inside space-y-1 text-sm">
-              <li>QR codes themselves <strong>must not</strong> contain sensitive personal data or private keys.</li>
-              <li>The endpoint the QR code resolves to <strong>must be secure (HTTPS)</strong> and interact with a trusted backend system.</li>
-              <li>Access to detailed or private DPP data via the QR code's link <strong>must be protected by robust authentication and authorization mechanisms</strong>, especially for information beyond publicly mandated data.</li>
-              <li>Consider measures against QR code tampering or phishing (e.g., signed QR codes if standards emerge, user education) if the QR codes are physically placed on products.</li>
-            </ul>
-          </section>
-          <section>
-            <h3 className="font-semibold text-lg mt-3 mb-2">Conceptual QR Code Scanning Process</h3>
-            <p className="text-sm">
-              When a user scans a product's QR code:
-            </p>
-            <ul className="list-disc list-inside space-y-1 text-sm ml-4">
-              <li>The scanner (e.g., a mobile app or a dedicated scanning device) decodes the unique identifier.</li>
-              <li>The identifier is used to query the Norruva platform's <strong>secure backend API</strong>.</li>
-              <li>The API retrieves the relevant DPP data, potentially fetching/verifying information from the underlying blockchain and EBSI infrastructure (conceptually). Access to sensitive data is conditional based on user roles and permissions.</li>
-              <li>The DPP Viewer displays the product information, including its (mock) blockchain data and EBSI compliance status.</li>
-              <li>For sensitive data sections within the DPP, user authentication (and authorization) <strong>will be required</strong>.</li>
-            </ul>
-            <p className="text-sm mt-1">
-              The goal is to provide a seamless experience from scan to information retrieval, ensuring data integrity, security, and compliance.
-            </p>
-          </section>
-        </CardContent>
-      </Card>
-
     </div>
   );
 }
-    
-
     

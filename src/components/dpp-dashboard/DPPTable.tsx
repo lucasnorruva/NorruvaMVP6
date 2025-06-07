@@ -4,7 +4,7 @@
 "use client";
 
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { DigitalProductPassport, SortConfig, SortableKeys } from "@/types/dpp"; // SortConfig and SortableKeys moved to types
+import type { DigitalProductPassport, SortConfig, SortableKeys } from "@/types/dpp";
 import { ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { DPPTableRow } from "./DPPTableRow"; // Import the new row component

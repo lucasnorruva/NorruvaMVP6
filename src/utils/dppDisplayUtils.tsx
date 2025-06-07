@@ -5,7 +5,7 @@
 
 import React from "react"; 
 import type { DigitalProductPassport, EbsiVerificationDetails, DisplayableProduct, ProductComplianceSummary, SimpleLifecycleEvent } from "@/types/dpp";
-import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertCircle, AlertTriangle, CheckCircle2, RefreshCw, Loader2 } from 'lucide-react'; // Added RefreshCw, Loader2
+import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertCircle, AlertTriangle, CheckCircle2, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from "@/lib/utils";
 
 interface ComplianceDetails {
@@ -35,9 +35,10 @@ export const getOverallComplianceDetails = (dpp: DigitalProductPassport): Compli
   }
 
   regulationsChecked.forEach(reg => {
-    if (reg.status === 'compliant') compliantCount++;
-    else if (reg.status === 'pending') pendingCount++;
-    else if (reg.status === 'non_compliant') nonCompliantCount++;
+    const status = reg.status?.toLowerCase();
+    if (status === 'compliant' || status === 'registered' || status === 'conformant' || status === 'synced successfully') compliantCount++;
+    else if (status === 'pending' || status === 'pending_review' || status === 'pending_assessment' || status === 'pending_verification' || status === 'in progress' || status === 'data incomplete') pendingCount++;
+    else if (status === 'non_compliant' || status === 'non_conformant' || status === 'error' || status === 'data mismatch' || status === 'product not found in eprel') nonCompliantCount++;
   });
 
   if (nonCompliantCount > 0) {
@@ -224,4 +225,3 @@ export const getStatusBadgeClasses = (status?: string): string => {
         default: return "bg-muted text-muted-foreground";
     }
 };
-

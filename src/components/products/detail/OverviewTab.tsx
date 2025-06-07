@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode } from "lucide-react";
+import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks } from "lucide-react";
 
 interface OverviewTabProps {
   product: SimpleProductDetail;
@@ -79,7 +79,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
         )}
       </div>
 
-      {/* Right Column: Description, Key Points, Specifications */}
+      {/* Right Column: Description, Key Points, Specifications, Custom Attributes */}
       <div className="md:col-span-2 space-y-6">
         {product.description ? (
           <Card className="shadow-sm">
@@ -188,7 +188,31 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             <CardContent><p className="text-sm text-muted-foreground">No specifications provided.</p></CardContent>
           </Card>
         )}
+
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center">
+              <ListChecks className="mr-2 h-5 w-5 text-primary" />
+              Custom Attributes
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            {product.customAttributes && product.customAttributes.length > 0 ? (
+              <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                {product.customAttributes.map((attr) => (
+                  <div key={attr.key} className="flex">
+                    <dt className="font-medium text-muted-foreground w-1/3 truncate">{attr.key}:</dt>
+                    <dd className="text-foreground/90 w-2/3">{attr.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p className="text-sm text-muted-foreground">No custom attributes provided.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
 }
+

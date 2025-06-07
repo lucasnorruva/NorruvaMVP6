@@ -11,8 +11,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge"; 
-import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
@@ -162,6 +162,7 @@ export default function DeveloperPortalPage() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>(initialMockApiKeys);
   const [webhooks, setWebhooks] = useState<WebhookEntry[]>(initialMockWebhooks);
   const [currentEnvironment, setCurrentEnvironment] = useState<string>("sandbox");
+  const mockOrganizationName = "Acme Innovations"; // Mock organization name
 
   const [getProductId, setGetProductId] = useState<string>("PROD001");
   const [getProductResponse, setGetProductResponse] = useState<string | null>(null);
@@ -180,6 +181,21 @@ export default function DeveloperPortalPage() {
   const [getComplianceProductId, setGetComplianceProductId] = useState<string>("PROD001");
   const [getComplianceResponse, setGetComplianceResponse] = useState<string | null>(null);
   const [isGetComplianceLoading, setIsGetComplianceLoading] = useState(false);
+
+  const [postVerifyProductId, setPostVerifyProductId] = useState<string>("PROD001");
+  const [postVerifyResponse, setPostVerifyResponse] = useState<string | null>(null);
+  const [isPostVerifyLoading, setIsPostVerifyLoading] = useState(false);
+
+  const [putProductId, setPutProductId] = useState<string>("PROD001");
+  const [putProductBody, setPutProductBody] = useState<string>(
+    JSON.stringify({ productDetails: { description: "Updated description with enhanced features." }, metadata: { status: "pending_review"} }, null, 2)
+  );
+  const [putProductResponse, setPutProductResponse] = useState<string | null>(null);
+  const [isPutProductLoading, setIsPutProductLoading] = useState(false);
+
+  const [deleteProductId, setDeleteProductId] = useState<string>("PROD003");
+  const [deleteProductResponse, setDeleteProductResponse] = useState<string | null>(null);
+  const [isDeleteProductLoading, setIsDeleteProductLoading] = useState(false);
 
 
   const handleCopyKey = (keyToCopy: string) => {
@@ -321,21 +337,85 @@ export default function DeveloperPortalPage() {
     setIsGetComplianceLoading(false);
   }
 
+  const handleMockPostVerify = async () => {
+    setIsPostVerifyLoading(true);
+    setPostVerifyResponse(null);
+    await new Promise(resolve => setTimeout(resolve, 600));
+    const product = MOCK_API_PRODUCTS[postVerifyProductId];
+    if (product) {
+        const mockVerificationResult = {
+            productId: postVerifyProductId,
+            verificationStatus: "Verified (Mock)",
+            complianceChecks: [
+                { regulation: "REACH", status: "Compliant", details: "All substances within limits." },
+                { regulation: "RoHS", status: "Compliant", details: "No restricted hazardous substances found." }
+            ],
+            authenticity: "Authentic (Mock)",
+            timestamp: new Date().toISOString()
+        };
+      setPostVerifyResponse(JSON.stringify(mockVerificationResult, null, 2));
+    } else {
+      setPostVerifyResponse(JSON.stringify({ error: "Product not found for verification", productId: postVerifyProductId }, null, 2));
+    }
+    setIsPostVerifyLoading(false);
+  };
+
+  const handleMockPutProduct = async () => {
+    setIsPutProductLoading(true);
+    setPutProductResponse(null);
+    await new Promise(resolve => setTimeout(resolve, 550));
+    const productExists = MOCK_API_PRODUCTS[putProductId];
+    if (productExists) {
+        try {
+            const requestBody = JSON.parse(putProductBody);
+            const updatedProduct = { ...productExists, ...requestBody, metadata: { ...productExists.metadata, ...requestBody.metadata, last_updated: new Date().toISOString() } };
+            setPutProductResponse(JSON.stringify(updatedProduct, null, 2));
+        } catch (e) {
+            setPutProductResponse(JSON.stringify({ error: "Invalid JSON in request body for PUT.", details: e instanceof Error ? e.message : String(e) }, null, 2));
+        }
+    } else {
+        setPutProductResponse(JSON.stringify({ error: "Product not found for update", productId: putProductId }, null, 2));
+    }
+    setIsPutProductLoading(false);
+  };
+
+  const handleMockDeleteProduct = async () => {
+    setIsDeleteProductLoading(true);
+    setDeleteProductResponse(null);
+    await new Promise(resolve => setTimeout(resolve, 450));
+    const productExists = MOCK_API_PRODUCTS[deleteProductId];
+    if (productExists) {
+      setDeleteProductResponse(JSON.stringify({ message: `Product ${deleteProductId} archived successfully (mock).`, status: "Archived", timestamp: new Date().toISOString() }, null, 2));
+    } else {
+      setDeleteProductResponse(JSON.stringify({ error: "Product not found for deletion", productId: deleteProductId }, null, 2));
+    }
+    setIsDeleteProductLoading(false);
+  };
+
+
+
   const dashboardQuickActions = [
     { label: "View My API Keys", href: "#", targetTab: "api_keys", icon: KeyRound },
     { label: "Explore API Reference", href: "/developer/docs/api-reference", icon: BookText },
     { label: "Manage Webhooks", href: "#", targetTab: "webhooks", icon: Webhook },
-    { label: "Check Service Status", href: "#", icon: ServerCrash, disabled: true, tooltip: "Service status page (mock) - Coming Soon" },
+    { label: "Check API Status", href: "#", icon: ServerCrash, targetTab: "dashboard", tooltip: "View API Status on Dashboard" },
   ];
+
+  const codeSampleLanguages = ["cURL", "JavaScript", "Python", "Java", "Go"];
 
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-headline font-bold text-primary">Developer Portal</h1>
         <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                <Building className="h-4 w-4" />
+                <span>Org: <span className="font-medium text-foreground">{mockOrganizationName}</span></span>
+            </div>
+            <Separator orientation="vertical" className="h-5" />
             <Label htmlFor="env-switcher" className="text-sm text-muted-foreground">Environment:</Label>
             <Select value={currentEnvironment} onValueChange={setCurrentEnvironment}>
-                <SelectTrigger id="env-switcher" className="w-[150px] bg-card shadow-sm">
+                <SelectTrigger id="env-switcher" className="w-[150px] bg-card shadow-sm h-9">
                     <SelectValue placeholder="Select Environment" />
                 </SelectTrigger>
                 <SelectContent>
@@ -351,17 +431,19 @@ export default function DeveloperPortalPage() {
                     </SelectItem>
                 </SelectContent>
             </Select>
-             <div className="relative w-full sm:w-auto md:max-w-xs ml-auto">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                <Input
-                type="search"
-                placeholder="Search Portal (Conceptual)..."
-                className="pl-10 bg-background shadow-sm"
-                disabled
-                />
-            </div>
         </div>
       </div>
+      
+      <div className="relative w-full sm:w-auto md:max-w-md ml-auto">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+        <Input
+            type="search"
+            placeholder="Search Portal (API docs, guides...)"
+            className="pl-10 bg-background shadow-sm h-10"
+            disabled // Conceptual search
+        />
+      </div>
+
 
       <Tabs defaultValue="dashboard" className="w-full" id="developer-portal-tabs">
         <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-7">
@@ -405,6 +487,7 @@ export default function DeveloperPortalPage() {
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Avg. Latency:</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '120ms' : '85ms'}</span></div>
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>API Uptime (Last 7d):</span> <span className="font-semibold text-green-600">{currentEnvironment === 'sandbox' ? '99.95%' : '99.99%'}</span></div>
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Peak Requests/Sec:</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '15' : '250'}</span></div>
+                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>API Status:</span> <span className="font-semibold text-green-600 flex items-center"><CheckCircle className="h-4 w-4 mr-1.5"/>All Systems Operational</span></div>
                 <Button variant="link" size="sm" className="p-0 h-auto text-primary mt-2" onClick={() => document.querySelector('#developer-portal-tabs [data-state="inactive"][value="settings_usage"]')?.ariaSelected === "false" ? (document.querySelector('#developer-portal-tabs [data-state="inactive"][value="settings_usage"]') as HTMLElement)?.click() : null}>View Full Usage Report</Button>
               </CardContent>
             </Card>
@@ -515,6 +598,10 @@ export default function DeveloperPortalPage() {
               onRequestProductionKey={handleRequestProductionKey}
               onDeleteApiKey={handleDeleteApiKey}
             />
+            <Card className="mt-6 shadow-md">
+              <CardHeader><CardTitle className="text-sm font-medium">Note on API Key Management</CardTitle></CardHeader>
+              <CardContent><p className="text-xs text-muted-foreground">Best practices include rotating keys regularly, restricting key permissions (future feature), and revoking compromised keys immediately.</p></CardContent>
+            </Card>
         </TabsContent>
 
         <TabsContent value="webhooks" className="mt-6">
@@ -524,6 +611,10 @@ export default function DeveloperPortalPage() {
               onEditWebhook={handleEditWebhook}
               onDeleteWebhook={handleDeleteWebhook}
             />
+            <Card className="mt-6 shadow-md">
+              <CardHeader><CardTitle className="text-sm font-medium">Future Enhancements</CardTitle></CardHeader>
+              <CardContent><p className="text-xs text-muted-foreground">A Webhook Test Suite with event replay, detailed logs, and signature verification debugging tools is planned.</p></CardContent>
+            </Card>
         </TabsContent>
 
         <TabsContent value="playground" className="mt-6 space-y-6">
@@ -533,39 +624,149 @@ export default function DeveloperPortalPage() {
             <CardDescription>Experiment with Norruva API endpoints in this interactive sandbox. This environment uses mock data and simulated responses for the <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge> environment.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
-            <Card>
-                <CardHeader>
-                <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products/{'{productId}'}</CardTitle>
-                <CardDescription>Retrieve details for a specific product by its ID.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                <div>
-                    <Label htmlFor="productIdInput-get">Product ID</Label>
-                    <Input id="productIdInput-get" value={getProductId} onChange={(e) => setGetProductId(e.target.value)} placeholder="e.g., PROD001" />
-                </div>
-                <Button onClick={handleMockGetProductDetails} disabled={isGetProductLoading} variant="secondary">
-                    {isGetProductLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                    {isGetProductLoading ? "Fetching..." : "Send Request"}
-                </Button>
-                {getProductResponse && (
-                    <div className="mt-4">
-                    <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
-                    <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getProductResponse}</code></pre>
-                    </div>
-                )}
-                </CardContent>
-            </Card>
+              {/* GET /passport/{id} */}
+              <Card>
+                  <CardHeader>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /passport/{'{productId}'}</CardTitle>
+                  <CardDescription>Retrieve details for a specific product by its ID.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                  <div>
+                      <Label htmlFor="productIdInput-get">Product ID</Label>
+                      <Input id="productIdInput-get" value={getProductId} onChange={(e) => setGetProductId(e.target.value)} placeholder="e.g., PROD001" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Button onClick={handleMockGetProductDetails} disabled={isGetProductLoading} variant="secondary">
+                        {isGetProductLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                        {isGetProductLoading ? "Fetching..." : "Send Request"}
+                    </Button>
+                    <Select defaultValue="cURL" disabled>
+                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  {getProductResponse && (
+                      <div className="mt-4">
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getProductResponse}</code></pre>
+                      </div>
+                  )}
+                  </CardContent>
+              </Card>
 
+              {/* PUT /passport/{id} */}
+              <Card>
+                  <CardHeader>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>PUT /passport/{'{productId}'}</CardTitle>
+                  <CardDescription>Update an existing Digital Product Passport.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                  <div>
+                      <Label htmlFor="productIdInput-put">Product ID</Label>
+                      <Input id="productIdInput-put" value={putProductId} onChange={(e) => setPutProductId(e.target.value)} placeholder="e.g., PROD001"/>
+                  </div>
+                  <div>
+                      <Label htmlFor="putProductBody">Request Body (JSON)</Label>
+                      <Textarea id="putProductBody" value={putProductBody} onChange={(e) => setPutProductBody(e.target.value)} rows={4} className="font-mono text-xs"/>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Button onClick={handleMockPutProduct} disabled={isPutProductLoading} variant="secondary">
+                        {isPutProductLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                        {isPutProductLoading ? "Sending..." : "Send Request"}
+                    </Button>
+                    <Select defaultValue="cURL" disabled>
+                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  {putProductResponse && (
+                      <div className="mt-4">
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{putProductResponse}</code></pre>
+                      </div>
+                  )}
+                  </CardContent>
+              </Card>
+
+              {/* DELETE /passport/{id} */}
+              <Card>
+                  <CardHeader>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>DELETE /passport/{'{productId}'}</CardTitle>
+                  <CardDescription>Archive a Digital Product Passport.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                  <div>
+                      <Label htmlFor="productIdInput-delete">Product ID</Label>
+                      <Input id="productIdInput-delete" value={deleteProductId} onChange={(e) => setDeleteProductId(e.target.value)} placeholder="e.g., PROD003"/>
+                  </div>
+                   <div className="flex items-center justify-between">
+                    <Button onClick={handleMockDeleteProduct} disabled={isDeleteProductLoading} variant="destructive">
+                        {isDeleteProductLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
+                        {isDeleteProductLoading ? "Deleting..." : "Send Request"}
+                    </Button>
+                    <Select defaultValue="cURL" disabled>
+                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  {deleteProductResponse && (
+                      <div className="mt-4">
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{deleteProductResponse}</code></pre>
+                      </div>
+                  )}
+                  </CardContent>
+              </Card>
+              
+              {/* POST /passport/verify */}
+              <Card>
+                  <CardHeader>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /passport/verify</CardTitle>
+                  <CardDescription>Perform compliance and authenticity checks on a DPP (mock).</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                  <div>
+                      <Label htmlFor="productIdInput-verify">Product ID to Verify</Label>
+                      <Input id="productIdInput-verify" value={postVerifyProductId} onChange={(e) => setPostVerifyProductId(e.target.value)} placeholder="e.g., PROD001"/>
+                  </div>
+                  {/* Conceptual: Add fields for verification parameters if needed */}
+                   <div className="flex items-center justify-between">
+                    <Button onClick={handleMockPostVerify} disabled={isPostVerifyLoading} variant="secondary">
+                        {isPostVerifyLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                        {isPostVerifyLoading ? "Verifying..." : "Send Request"}
+                    </Button>
+                    <Select defaultValue="cURL" disabled>
+                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  {postVerifyResponse && (
+                      <div className="mt-4">
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postVerifyResponse}</code></pre>
+                      </div>
+                  )}
+                  </CardContent>
+              </Card>
+
+
+            {/* GET /products (already exists) */}
             <Card>
                 <CardHeader>
-                <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products</CardTitle>
+                <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /products</CardTitle>
                 <CardDescription>Retrieve a list of products. (Mock returns all available mock products)</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                <Button onClick={handleMockListProducts} disabled={isListProductsLoading} variant="secondary">
-                    {isListProductsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                    {isListProductsLoading ? "Fetching..." : "Send Request"}
-                </Button>
+                <div className="flex items-center justify-between">
+                    <Button onClick={handleMockListProducts} disabled={isListProductsLoading} variant="secondary">
+                        {isListProductsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                        {isListProductsLoading ? "Fetching..." : "Send Request"}
+                    </Button>
+                     <Select defaultValue="cURL" disabled>
+                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                    </Select>
+                </div>
                 {listProductsResponse && (
                     <div className="mt-4">
                     <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
@@ -574,10 +775,11 @@ export default function DeveloperPortalPage() {
                 )}
                 </CardContent>
             </Card>
-
+            
+            {/* POST /products/{id}/lifecycle-events (already exists) */}
             <Card>
                 <CardHeader>
-                <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/products/{'{productId}'}/lifecycle-events</CardTitle>
+                <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /products/{'{productId}'}/lifecycle-events</CardTitle>
                 <CardDescription>Add a new lifecycle event to a product.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -589,10 +791,16 @@ export default function DeveloperPortalPage() {
                     <Label htmlFor="postLifecycleEventBody">Request Body (JSON)</Label>
                     <Textarea id="postLifecycleEventBody" value={postLifecycleEventBody} onChange={(e) => setPostLifecycleEventBody(e.target.value)} rows={5} className="font-mono text-xs"/>
                 </div>
-                <Button onClick={handleMockPostLifecycleEvent} disabled={isPostLifecycleEventLoading} variant="secondary">
-                    {isPostLifecycleEventLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                    {isPostLifecycleEventLoading ? "Sending..." : "Send Request"}
-                </Button>
+                 <div className="flex items-center justify-between">
+                    <Button onClick={handleMockPostLifecycleEvent} disabled={isPostLifecycleEventLoading} variant="secondary">
+                        {isPostLifecycleEventLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                        {isPostLifecycleEventLoading ? "Sending..." : "Send Request"}
+                    </Button>
+                    <Select defaultValue="cURL" disabled>
+                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                    </Select>
+                </div>
                 {postLifecycleEventResponse && (
                     <div className="mt-4">
                     <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
@@ -601,10 +809,10 @@ export default function DeveloperPortalPage() {
                 )}
                 </CardContent>
             </Card>
-
+             {/* GET /products/{id}/compliance-summary (already exists) */}
             <Card>
                 <CardHeader>
-                <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products/{'{productId}'}/compliance-summary</CardTitle>
+                <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /products/{'{productId}'}/compliance-summary</CardTitle>
                 <CardDescription>Retrieve a compliance summary for a specific product.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -612,10 +820,16 @@ export default function DeveloperPortalPage() {
                     <Label htmlFor="productIdInput-get-compliance">Product ID</Label>
                     <Input id="productIdInput-get-compliance" value={getComplianceProductId} onChange={(e) => setGetComplianceProductId(e.target.value)} placeholder="e.g., PROD001" />
                 </div>
-                <Button onClick={handleMockGetComplianceSummary} disabled={isGetComplianceLoading} variant="secondary">
-                    {isGetComplianceLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                    {isGetComplianceLoading ? "Fetching..." : "Send Request"}
-                </Button>
+                <div className="flex items-center justify-between">
+                    <Button onClick={handleMockGetComplianceSummary} disabled={isGetComplianceLoading} variant="secondary">
+                        {isGetComplianceLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                        {isGetComplianceLoading ? "Fetching..." : "Send Request"}
+                    </Button>
+                     <Select defaultValue="cURL" disabled>
+                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                    </Select>
+                </div>
                 {getComplianceResponse && (
                     <div className="mt-4">
                     <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
@@ -639,10 +853,11 @@ export default function DeveloperPortalPage() {
                     <h4 className="font-semibold text-md mb-1 flex items-center"><BookText className="mr-2 h-5 w-5 text-accent" />Core Documentation</h4>
                     <ul className="list-none space-y-1.5 text-sm">
                         <li><Link href="/developer/docs/api-reference" className="text-primary hover:underline flex items-center"><BookText className="mr-2 h-4 w-4"/>API Reference <span className="text-xs text-muted-foreground ml-1"> (Endpoints, Schemas)</span></Link></li>
-                        <li><Link href="/developer/docs/authentication" className="text-primary hover:underline flex items-center"><KeyRound className="mr-2 h-4 w-4"/>Authentication <span className="text-xs text-muted-foreground ml-1"> (API Keys)</span></Link></li>
+                        <li><Link href="/developer/docs/authentication" className="text-primary hover:underline flex items-center"><KeyRound className="mr-2 h-4 w-4"/>Authentication <span className="text-xs text-muted-foreground ml-1"> (API Keys, OAuth2 Concept)</span></Link></li>
                         <li><Link href="/developer/docs/webhooks-guide" className="text-primary hover:underline flex items-center"><Webhook className="mr-2 h-4 w-4"/>Webhooks Guide <span className="text-xs text-muted-foreground ml-1"> (Event Notifications)</span></Link></li>
                         <li><Link href="/developer/docs/rate-limiting" className="text-primary hover:underline flex items-center"><Clock className="mr-2 h-4 w-4"/>Rate Limiting &amp; Usage</Link></li>
                         <li><Link href="/developer/docs/error-codes" className="text-primary hover:underline flex items-center"><ErrorIcon className="mr-2 h-4 w-4"/>Error Codes &amp; Handling</Link></li>
+                        <li><Link href="#" className="text-primary hover:underline flex items-center opacity-50 cursor-not-allowed"><FileJson className="mr-2 h-4 w-4"/>API Changelog <Badge variant="outline" className="ml-2 text-xs">Coming Soon</Badge></Link></li>
                     </ul>
                 </div>
                 <div className="space-y-3">
@@ -652,6 +867,8 @@ export default function DeveloperPortalPage() {
                         <li><Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline flex items-center"><Share2 className="mr-2 h-4 w-4"/>EBSI Integration Overview</Link></li>
                         <li><Link href="/developer/docs/regulatory-alignment" className="text-primary hover:underline flex items-center"><Scale className="mr-2 h-4 w-4"/>Regulatory Alignment (ESPR, EPREL)</Link></li>
                         <li><Link href="/developer/docs/data-management-best-practices" className="text-primary hover:underline flex items-center"><LayersIcon className="mr-2 h-4 w-4"/>Data Management Best Practices</Link></li>
+                        <li><Link href="#" className="text-primary hover:underline flex items-center opacity-50 cursor-not-allowed"><Users className="mr-2 h-4 w-4"/>Manufacturer Onboarding <Badge variant="outline" className="ml-2 text-xs">Coming Soon</Badge></Link></li>
+                        <li><Link href="#" className="text-primary hover:underline flex items-center opacity-50 cursor-not-allowed"><ShieldCheck className="mr-2 h-4 w-4"/>Auditor Integration <Badge variant="outline" className="ml-2 text-xs">Coming Soon</Badge></Link></li>
                     </ul>
                 </div>
                  <div className="space-y-6">
@@ -679,65 +896,89 @@ export default function DeveloperPortalPage() {
         </TabsContent>
 
         <TabsContent value="resources" className="mt-6">
-          <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle className="font-headline flex items-center"><Wrench className="mr-3 h-6 w-6 text-primary" /> Developer Resources</CardTitle>
-                <CardDescription>Find SDKs, code samples, templates, tutorials, and GitHub resources to accelerate your DPP integration.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid md:grid-cols-2 gap-x-8 gap-y-6">
-                <div>
-                <h4 className="font-semibold mb-2 text-lg flex items-center"><FileCog className="mr-2 h-5 w-5 text-accent"/>SDKs (Coming Soon)</h4>
-                <ul className="space-y-2">
-                    <li> <Button variant="outline" className="w-full justify-start" disabled> <FileCog className="mr-2 h-5 w-5 text-muted-foreground" /> JavaScript SDK </Button> </li>
-                    <li> <Button variant="outline" className="w-full justify-start" disabled> <FileCog className="mr-2 h-5 w-5 text-muted-foreground" /> Python SDK </Button> </li>
-                    <li> <Button variant="outline" className="w-full justify-start" disabled> <FileCog className="mr-2 h-5 w-5 text-muted-foreground" /> Java SDK </Button> </li>
-                </ul>
-                <p className="text-xs text-muted-foreground mt-2">Official SDKs are under development. Check back soon for updates.</p>
-                </div>
-                <div className="space-y-5">
-                <div className="space-y-3">
-                    <h4 className="font-semibold text-lg mb-1 flex items-center"><FileCode className="mr-2 h-5 w-5 text-accent"/>Code Samples &amp; Templates</h4>
-                    <p className="text-sm text-muted-foreground -mt-2">
-                    Access a library of code snippets and project templates for common integration scenarios.
-                    </p>
-                    {mockCodeSamples.map(sample => (
-                    <div key={sample.id} className="p-3 border rounded-md bg-muted/30">
-                        <h5 className="text-sm font-medium text-foreground mb-0.5 flex items-center"><sample.icon className="mr-2 h-4 w-4 text-primary/80"/>{sample.title}</h5>
-                        <p className="text-xs text-muted-foreground mb-1.5">{sample.description}</p>
-                        <Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs" disabled>{sample.linkText}</Button>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="shadow-lg lg:col-span-1">
+              <CardHeader>
+                  <CardTitle className="font-headline flex items-center"><Wrench className="mr-3 h-6 w-6 text-primary" /> Developer Resources</CardTitle>
+                  <CardDescription>SDKs, tools, and samples to accelerate integration.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                  <div>
+                      <h4 className="font-semibold mb-1 text-md flex items-center"><FileCog className="mr-2 h-5 w-5 text-accent"/>SDKs (Conceptual)</h4>
+                      <ul className="space-y-1.5 text-sm">
+                          <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>JavaScript SDK <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
+                          <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>Python SDK <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
+                          <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>Java SDK <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
+                      </ul>
+                  </div>
+                  <div className="pt-3 border-t">
+                      <h4 className="font-semibold mb-1 text-md flex items-center"><Laptop className="mr-2 h-5 w-5 text-accent"/>Developer Tools (Conceptual)</h4>
+                      <ul className="space-y-1.5 text-sm">
+                          <li><Button variant="link" className="p-0 h-auto text-primary" disabled>Download OpenAPI 3.1 Spec</Button></li>
+                          <li><Button variant="link" className="p-0 h-auto text-primary" disabled>View Postman Collection</Button></li>
+                          <li><Button variant="link" className="p-0 h-auto text-primary" disabled>Mock DPP Generator</Button></li>
+                          <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>CLI Tool <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
+                      </ul>
+                  </div>
+              </CardContent>
+            </Card>
+            <Card className="shadow-lg lg:col-span-2">
+              <CardHeader>
+                  <CardTitle className="font-headline flex items-center"><FileCode className="mr-3 h-6 w-6 text-primary" /> Code Samples & Tutorials</CardTitle>
+                  <CardDescription>Practical examples and step-by-step guides.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                  <div className="space-y-3">
+                      <h4 className="font-semibold text-md mb-1 text-muted-foreground">Code Samples</h4>
+                      {mockCodeSamples.map(sample => (
+                      <div key={sample.id} className="p-3 border rounded-md bg-muted/30">
+                          <h5 className="text-sm font-medium text-foreground mb-0.5 flex items-center"><sample.icon className="mr-2 h-4 w-4 text-primary/80"/>{sample.title}</h5>
+                          <p className="text-xs text-muted-foreground mb-1.5">{sample.description}</p>
+                          <Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs" disabled>{sample.linkText}</Button>
+                      </div>
+                      ))}
+                  </div>
+                  <div className="space-y-3 pt-4 border-t">
+                      <h4 className="font-semibold text-md mb-1 text-muted-foreground">Tutorials</h4>
+                      {mockTutorials.map(tutorial => (
+                      <div key={tutorial.id} className="p-3 border rounded-md bg-muted/30">
+                          <h5 className="text-sm font-medium text-foreground mb-0.5 flex items-center"><tutorial.icon className="mr-2 h-4 w-4 text-primary/80"/>{tutorial.title}</h5>
+                          <p className="text-xs text-muted-foreground mb-1.5">{tutorial.description}</p>
+                          <Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs" disabled>{tutorial.linkText}</Button>
+                      </div>
+                      ))}
+                  </div>
+              </CardContent>
+            </Card>
+            <Card className="shadow-lg lg:col-span-3">
+                <CardHeader>
+                    <CardTitle className="font-headline flex items-center"><Bot className="mr-3 h-6 w-6 text-primary" /> AI & Smart Assist Features (Conceptual)</CardTitle>
+                    <CardDescription>Leverage AI to streamline your development and integration process.</CardDescription>
+                </CardHeader>
+                <CardContent className="grid md:grid-cols-2 gap-6">
+                    <div className="p-4 border rounded-md bg-muted/30">
+                        <h4 className="text-md font-semibold mb-1 flex items-center"><MessageSquare className="mr-2 h-5 w-5 text-accent"/>AI Doc Co-Pilot</h4>
+                        <p className="text-sm text-muted-foreground">Get live troubleshooting, code assistance, and answers to your API questions directly within the documentation or via a dedicated chat interface.</p>
+                        <Button variant="outline" size="sm" className="mt-3" asChild><Link href="/copilot">Access Co-Pilot</Link></Button>
                     </div>
-                    ))}
-                </div>
-                <div className="space-y-3 pt-4 border-t">
-                    <h4 className="font-semibold text-lg mb-1 flex items-center"><BookText className="mr-2 h-5 w-5 text-accent"/>Tutorials</h4>
-                    <p className="text-sm text-muted-foreground -mt-2">
-                        Follow step-by-step guides to implement specific DPP functionalities and use cases.
-                    </p>
-                    {mockTutorials.map(tutorial => (
-                    <div key={tutorial.id} className="p-3 border rounded-md bg-muted/30">
-                        <h5 className="text-sm font-medium text-foreground mb-0.5 flex items-center"><tutorial.icon className="mr-2 h-4 w-4 text-primary/80"/>{tutorial.title}</h5>
-                        <p className="text-xs text-muted-foreground mb-1.5">{tutorial.description}</p>
-                        <Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs" disabled>{tutorial.linkText}</Button>
+                    <div className="p-4 border rounded-md bg-muted/30">
+                        <h4 className="text-md font-semibold mb-1 flex items-center"><FileCog className="mr-2 h-5 w-5 text-accent"/>SDK Autogeneration Assistant</h4>
+                        <p className="text-sm text-muted-foreground">Specify your preferred language and receive AI-assisted guidance for generating tailored SDKs or client libraries. (Future Feature)</p>
                     </div>
-                    ))}
-                </div>
-                <div className="pt-4 border-t">
-                    <h4 className="font-semibold text-lg mb-1">GitHub Integration</h4>
-                    <p className="text-sm text-muted-foreground">Explore our open-source repositories, contribute to the ecosystem, find community projects, and raise issues related to our SDKs or platform.</p>
-                    <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
-                        <Link href="#" target="_blank" rel="noopener noreferrer">Norruva on GitHub (Mock) <ExternalLinkIcon className="inline h-3 w-3 ml-1" /></Link>
-                    </Button>
-                </div>
-                </div>
-            </CardContent>
-          </Card>
+                    <div className="p-4 border rounded-md bg-muted/30 md:col-span-2">
+                        <h4 className="text-md font-semibold mb-1 flex items-center"><Lightbulb className="mr-2 h-5 w-5 text-accent"/>Real-time AI Integration Suggestions</h4>
+                        <p className="text-sm text-muted-foreground">Receive contextual, AI-powered suggestions for best-practice integration patterns as you explore the API playground and documentation. (Future Feature)</p>
+                    </div>
+                </CardContent>
+            </Card>
+          </div>
         </TabsContent>
 
         <TabsContent value="settings_usage" className="mt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
            <Card className="shadow-lg lg:col-span-2">
                 <CardHeader>
                 <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage &amp; Reporting</CardTitle>
-                <CardDescription>Monitor your API usage, view logs, and understand integration performance (Mock Data for <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge>).</CardDescription>
+                <CardDescription>Monitor your API usage, view logs, and understand integration performance (Mock Data for <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge> environment for <Badge variant="outline">{mockOrganizationName}</Badge>).</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <div className="grid md:grid-cols-2 gap-4">
@@ -765,22 +1006,27 @@ export default function DeveloperPortalPage() {
                         <li><Link href="#" className="text-primary hover:underline">Webhook delivery success rates and retry attempts (Mock)</Link></li>
                     </ul>
                     <Button variant="outline" disabled>Access Full Reporting Dashboard (Coming Soon)</Button>
+                    <p className="text-xs text-muted-foreground mt-2">Note: Usage metrics are specific to '{mockOrganizationName}'. In a multi-tenant setup, admins would see aggregated views or switch tenant reports.</p>
                 </CardContent>
             </Card>
             <div className="space-y-6">
                 <Card className="shadow-lg">
                     <CardHeader>
-                    <CardTitle className="font-headline flex items-center"><Settings2 className="mr-3 h-6 w-6 text-primary" /> Advanced Settings</CardTitle>
-                    <CardDescription>Explore advanced capabilities and configurations for the <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge> environment.</CardDescription>
+                    <CardTitle className="font-headline flex items-center"><Settings2 className="mr-3 h-6 w-6 text-primary" /> Advanced Organization Settings</CardTitle>
+                    <CardDescription>Explore advanced capabilities and configurations for the <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge> environment for <Badge variant="outline">{mockOrganizationName}</Badge>.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                     <div>
-                        <h4 className="font-semibold text-md mb-1 flex items-center"><PackageSearch className="mr-2 h-5 w-5 text-accent"/>Customizable DPP Templates</h4>
-                        <p className="text-sm text-muted-foreground">Define custom data schemas and presentation templates. (Coming Soon)</p>
+                        <h4 className="font-semibold text-md mb-1 flex items-center"><PackageSearch className="mr-2 h-5 w-5 text-accent"/>Tenant Branding Customization</h4>
+                        <p className="text-sm text-muted-foreground">Apply your organization's logo and theme. (Conceptual)</p>
                     </div>
                     <div className="pt-3 border-t">
-                        <h4 className="font-semibold text-md mb-1 flex items-center"><Layers className="mr-2 h-5 w-5 text-accent"/>Advanced Query Options</h4>
-                        <p className="text-sm text-muted-foreground">Utilize powerful query capabilities for DPP data. (Docs Coming Soon)</p>
+                        <h4 className="font-semibold text-md mb-1 flex items-center"><Layers className="mr-2 h-5 w-5 text-accent"/>Data Schema Mapping</h4>
+                        <p className="text-sm text-muted-foreground">Configure custom data fields for your organization's DPPs. (Conceptual)</p>
+                    </div>
+                    <div className="pt-3 border-t">
+                        <h4 className="font-semibold text-md mb-1 flex items-center"><Users className="mr-2 h-5 w-5 text-accent"/>User Management for {mockOrganizationName}</h4>
+                        <p className="text-sm text-muted-foreground">Invite and manage users within your organization. (Conceptual - See main <Link href="/settings/users" className="text-primary hover:underline">Settings</Link>)</p>
                     </div>
                     </CardContent>
                 </Card>
@@ -801,3 +1047,4 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+

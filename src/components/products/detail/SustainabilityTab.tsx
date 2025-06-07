@@ -1,3 +1,4 @@
+
 // --- File: SustainabilityTab.tsx ---
 // Description: Displays sustainability-related information for a product.
 "use client";
@@ -31,7 +32,7 @@ const DetailItem: React.FC<{ label: string; value?: string | number | null; unit
 
 export default function SustainabilityTab({ product }: SustainabilityTabProps) {
   if (!product) {
-    return <p className="text-muted-foreground">Sustainability data not available.</p>;
+    return <p className="text-muted-foreground p-4">Sustainability data not available.</p>;
   }
 
   return (

@@ -2,7 +2,7 @@
 "use client";
 // --- File: ProductForm.tsx ---
 // Description: Main form component for creating or editing product DPPs.
-// Now uses aiFormHelpers.ts for AI logic and sub-components for sections.
+// Now uses aiFormHelpers.tsx for AI logic and sub-components for sections.
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormReturn } from "react-hook-form";
@@ -33,7 +33,7 @@ import {
   handleSuggestDescriptionAI,
   handleSuggestClaimsAI,
   handleGenerateImageAI,
-} from "@/utils/aiFormHelpers";
+} from "@/utils/aiFormHelpers.tsx"; // Updated import extension
 
 const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
@@ -56,11 +56,11 @@ const formSchema = z.object({
 export type ProductFormData = z.infer<typeof formSchema>;
 
 interface ProductFormProps {
-  id?: string;
+  id?: string; // For form ID if not standalone
   initialData?: Partial<InitialProductFormData & { productCategory?: string; imageUrl?: string }>;
   onSubmit: (data: ProductFormData) => Promise<void>;
   isSubmitting?: boolean;
-  isStandalonePage?: boolean;
+  isStandalonePage?: boolean; // True if this form is the main content of a page
 }
 
 const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' | 'manual', fieldName: string }) => {
@@ -212,7 +212,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             onImageGenerated={handleImageGenerated}
             isGenerating={isGeneratingImage}
             setIsGenerating={setIsGeneratingImage}
-            aiImageHelper={handleGenerateImageAI}
+            aiImageHelper={handleGenerateImageAI} // Pass the actual helper
             initialImageUrlOrigin={initialData?.imageUrlOrigin}
             toast={toast}
           />
@@ -265,6 +265,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     );
   }
 
+  // This case is for when the form is embedded, e.g. in a dialog
   return (
      <Form {...form}>
         <form id={id} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">{formContent}</form>

@@ -8,7 +8,7 @@ import type { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu, BatteryCharging } from "lucide-react";
+import { Cpu } from "lucide-react"; // Removed BatteryCharging as it's more relevant for AccordionTrigger
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 
@@ -67,7 +67,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
                 type="number"
                 placeholder="e.g., 98"
                 {...field}
-                value={field.value ?? ''}
+                value={field.value ?? ''} // Handle null/undefined for controlled number input
                 onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)}
               />
             </FormControl>
@@ -89,7 +89,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
                 type="number"
                 placeholder="e.g., 75.5"
                 {...field}
-                value={field.value ?? ''}
+                value={field.value ?? ''} // Handle null/undefined
                 onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)}
               />
             </FormControl>
@@ -111,7 +111,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
                 type="number"
                 placeholder="e.g., 15"
                 {...field}
-                value={field.value ?? ''}
+                value={field.value ?? ''} // Handle null/undefined
                 onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)}
               />
             </FormControl>

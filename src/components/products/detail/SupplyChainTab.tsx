@@ -18,6 +18,7 @@ import { Layers, Link2, Trash2, Edit3 as EditIcon, PlusCircle } from "lucide-rea
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/contexts/RoleContext";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import Link from "next/link"; // Import Link for the new message
 
 interface SupplyChainTabProps {
   product: SimpleProductDetail;
@@ -75,11 +76,11 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
       toast({ title: "Permission Denied", description: getDisabledTooltipText(), variant: "destructive" });
       return;
     }
-    if (!selectedSupplierId || !suppliedItem) {
+    if (!selectedSupplierId || !suppliedItem.trim()) {
       toast({ title: "Missing Information", description: "Please select a supplier and enter the supplied item.", variant: "destructive" });
       return;
     }
-    const newLink: ProductSupplyChainLink = { supplierId: selectedSupplierId, suppliedItem, notes: linkNotes };
+    const newLink: ProductSupplyChainLink = { supplierId: selectedSupplierId, suppliedItem: suppliedItem.trim(), notes: linkNotes.trim() };
     const updatedLinks = [...currentLinkedSuppliers, newLink];
     onSupplyChainLinksChange(updatedLinks);
     toast({ title: "Supplier Link Added", description: "The new link has been added." });
@@ -117,9 +118,13 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
       if (!canManageLinks) toast({ title: "Permission Denied", description: getDisabledTooltipText(), variant: "destructive" });
       return;
     }
+    if (!editSuppliedItem.trim()) {
+      toast({ title: "Missing Information", description: "Supplied item cannot be empty.", variant: "destructive" });
+      return;
+    }
     const updatedLinks = currentLinkedSuppliers.map(link =>
       link.supplierId === editingLink.supplierId && link.suppliedItem === editingLink.suppliedItem 
-        ? { ...link, suppliedItem: editSuppliedItem, notes: editLinkNotes }
+        ? { ...link, suppliedItem: editSuppliedItem.trim(), notes: editLinkNotes.trim() }
         : link
     );
     onSupplyChainLinksChange(updatedLinks);
@@ -168,17 +173,27 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
                 <DialogDescription>Select a supplier and specify the item they provide for this product.</DialogDescription>
               </DialogHeader>
               <div className="space-y-4 py-4">
-                <div>
-                  <Label htmlFor="supplier-select">Supplier</Label>
-                  <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId}>
-                    <SelectTrigger id="supplier-select">
-                      <SelectValue placeholder="Select a supplier" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableSuppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.materialsSupplied.substring(0,30)}...)</SelectItem>)}
-                    </SelectContent>
-                  </Select>
-                </div>
+                {availableSuppliers.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">
+                    No suppliers have been added to the system yet. You can add suppliers from the main{" "}
+                    <Link href="/suppliers" className="underline text-primary hover:text-primary/80">
+                      Supplier Management
+                    </Link>{" "}
+                    page.
+                  </p>
+                ) : (
+                  <div>
+                    <Label htmlFor="supplier-select">Supplier</Label>
+                    <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId}>
+                      <SelectTrigger id="supplier-select">
+                        <SelectValue placeholder="Select a supplier" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableSuppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.materialsSupplied.substring(0,30)}...)</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
                 <div>
                   <Label htmlFor="supplied-item">Supplied Item/Component</Label>
                   <Input id="supplied-item" value={suppliedItem} onChange={(e) => setSuppliedItem(e.target.value)} placeholder="e.g., Battery Cells, Organic Cotton"/>
@@ -190,7 +205,7 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setIsLinkDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleLinkSupplier}>Save Link</Button>
+                <Button onClick={handleLinkSupplier} disabled={availableSuppliers.length === 0}>Save Link</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

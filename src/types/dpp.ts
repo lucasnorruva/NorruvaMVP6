@@ -662,9 +662,10 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { stage: "Scheduled Maintenance", date: "2025-02-15", details: "Filter replacement due.", isEbsiVerified: false, iconName: "Wrench" },
     ],
     certifications: [
-      { name: "EU Energy Label", authority: "European Commission", expiryDate: "N/A", link: "#", isVerified: true },
+      { name: "EU Energy Label A+++", authority: "European Commission", expiryDate: "N/A", link: "#", isVerified: true },
       { name: "CE Marking", authority: "Self-Certified (Manufacturer)", expiryDate: "N/A", isVerified: true },
       { name: "ISO 9001:2015", authority: "TUV SUD", expiryDate: "2026-05-20", link: "#", isVerified: false },
+      { name: "Green Product Award 2024", authority: "EcoChoice Org", expiryDate: "N/A", link: "#", isVerified: true },
     ]
   },
   "PROD002": {
@@ -698,6 +699,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     certifications: [
       { name: "RoHS Compliance", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
       { name: "CE Marking", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
+      { name: "Bluetooth SIG Qualification", authority: "Bluetooth SIG", expiryDate: "2028-01-01", link:"#", isVerified: true },
     ]
   }
 };

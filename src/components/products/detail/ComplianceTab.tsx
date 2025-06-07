@@ -4,7 +4,7 @@
 "use client";
 
 import type { SimpleProductDetail, ComplianceDetailItem, ProductComplianceSummary } from "@/types/dpp";
-import OverallProductCompliance from "@/components/products/OverallProductCompliance"; // Import the sub-component
+import OverallProductCompliance from "@/components/products/detail/OverallProductCompliance"; // Corrected import path
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ interface ComplianceTabProps {
   canSyncEprel: boolean;
 }
 
-const getStatusIcon = (status: ComplianceDetailItem['status'] | ProductComplianceSummary['overallStatus'] | ProductComplianceSummary['eprel']['status'] | ProductComplianceSummary['ebsi']['status']) => {
+const getStatusIcon = (status: ComplianceDetailItem['status'] | ProductComplianceSummary['overallStatus'] | ProductComplianceSummary['eprel']['status'] | ProductComplianceSummary['ebsi']['status'] | string) => {
   switch (status?.toLowerCase()) {
     case 'compliant':
     case 'registered':
@@ -91,16 +91,20 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     return <p className="text-muted-foreground p-4">Compliance summary not available for this product.</p>;
   }
 
+  // Ensure all parts of complianceData for OverallProductCompliance are well-defined
+  const overallComplianceData = {
+    gdpr: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('gdpr')) || { status: 'N/A', lastChecked: new Date().toISOString() },
+    eprel: summary.eprel || { status: 'N/A', lastChecked: new Date().toISOString() },
+    ebsiVerified: summary.ebsi || { status: 'N/A', lastChecked: new Date().toISOString() },
+    scip: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('scip')) || { status: 'N/A', lastChecked: new Date().toISOString() },
+    csrd: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('csrd')) || { status: 'N/A', lastChecked: new Date().toISOString() },
+  };
+
+
   return (
     <div className="space-y-6">
       <OverallProductCompliance 
-        complianceData={{ // Map SimpleProductDetail compliance to OverallComplianceData
-            gdpr: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('gdpr')) || { status: 'N/A', lastChecked: new Date().toISOString() },
-            eprel: summary.eprel || { status: 'N/A', lastChecked: new Date().toISOString() },
-            ebsiVerified: summary.ebsi || { status: 'N/A', lastChecked: new Date().toISOString() },
-            scip: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('scip')) || { status: 'N/A', lastChecked: new Date().toISOString() },
-            csrd: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('csrd')) || { status: 'N/A', lastChecked: new Date().toISOString() },
-        }}
+        complianceData={overallComplianceData}
         onSyncEprel={onSyncEprel}
         isSyncingEprel={isSyncingEprel}
         canSyncEprel={canSyncEprel}
@@ -183,4 +187,3 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     </div>
   );
 }
-

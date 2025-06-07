@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertCircle, Info, ShieldQuestion, ShieldCheck, AlertTriangle, ExternalLink, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Button } from '../ui/button';
+import { Button } from '@/components/ui/button'; // Corrected import path
 
 export interface ComplianceStatus {
   status: string; // Allow any string for status from EPREL sync
@@ -74,7 +74,6 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
     case 'pending_review':
     case 'pending':
     case 'data mismatch':
-    case 'product not found in eprel':
       IconComponent = Info;
       badgeVariant = "outline";
       badgeClasses = "bg-yellow-500/20 text-yellow-700 border-yellow-500/30";
@@ -87,6 +86,11 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
       badgeVariant = "outline";
       badgeClasses = "bg-blue-500/20 text-blue-700 border-blue-500/30";
       break;
+    case 'product not found in eprel':
+      IconComponent = ShieldQuestion;
+      badgeVariant = "outline";
+      badgeClasses = "bg-purple-500/20 text-purple-700 border-purple-500/30";
+      break;
     case 'not_applicable':
     case 'n/a': // Handle N/A string which might come from initial mock
       IconComponent = ShieldQuestion;
@@ -97,7 +101,8 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
     default: // For any other unmapped status from EPREL sync
       IconComponent = Info;
       badgeVariant = "outline";
-      badgeClasses = "bg-purple-500/20 text-purple-700 border-purple-500/30"; // A distinct color for other statuses
+      // Using a more neutral "info" color for unmapped statuses.
+      badgeClasses = "bg-blue-500/20 text-blue-700 border-blue-500/30"; 
       break;
   }
 
@@ -175,4 +180,3 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
 };
 
 export default OverallProductCompliance;
-

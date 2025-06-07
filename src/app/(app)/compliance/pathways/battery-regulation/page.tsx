@@ -131,11 +131,11 @@ export default function BatteryRegulationPathwayPage() {
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="step1_batteryModel">Battery Model Name / Identifier</Label>
-                <Input id="step1_batteryModel" value={formData.step1_batteryModel || ""} onChange={(e) => handleInputChange("step1", "batteryModel", e.target.value)} placeholder="e.g., PowerCell Max 5000" />
+                <Input id="step1_batteryModel" value={formData.step1_batteryModel || ""} onChange={(e) => handleInputChange("step1", "batteryModel", e.target.value)} placeholder="e.g., PowerCell Max 5000, LFP-Module-48V" />
               </div>
               <div>
                 <Label htmlFor="step1_intendedApplication">Intended Application(s)</Label>
-                <Textarea id="step1_intendedApplication" value={formData.step1_intendedApplication || ""} onChange={(e) => handleInputChange("step1", "intendedApplication", e.target.value)} placeholder="e.g., Electric vehicles, Portable electronics, Grid storage" />
+                <Textarea id="step1_intendedApplication" value={formData.step1_intendedApplication || ""} onChange={(e) => handleInputChange("step1", "intendedApplication", e.target.value)} placeholder="e.g., Electric vehicles, Portable electronics, Grid storage, Industrial equipment" />
               </div>
               <div>
                 <Label htmlFor="step1_safetySheetUrl">Safety Data Sheet URL (Optional)</Label>
@@ -203,7 +203,7 @@ export default function BatteryRegulationPathwayPage() {
                     <Input id="step3_nickelPercentage" type="number" value={formData.step3_nickelPercentage || ""} onChange={(e) => handleInputChange("step3", "nickelPercentage", e.target.valueAsNumber)} placeholder="e.g., 20" />
                   </div>
                 </div>
-                <p className="text-xs text-muted-foreground">Declare the percentage by weight of these CRMs if present in the battery.</p>
+                <p className="text-xs text-muted-foreground mt-1">Declare the percentage by weight of these CRMs if present in the battery. Omit or use '0' if not present.</p>
               </div>
 
               <div className="space-y-4 p-4 border rounded-md bg-muted/30">
@@ -228,12 +228,13 @@ export default function BatteryRegulationPathwayPage() {
                     </RadioGroup>
                   </div>
                 </div>
-                 <p className="text-xs text-muted-foreground">Batteries shall not contain mercury >0.0005% or cadmium >0.002% by weight.</p>
+                 <p className="text-xs text-muted-foreground mt-1">Batteries shall not contain mercury >0.0005% or cadmium >0.002% by weight, or lead >0.01% by weight (unless specific exemptions apply).</p>
               </div>
               
               <div>
                 <Label htmlFor="step3_otherSVHCs">Other SVHCs (Substances of Very High Concern)</Label>
                 <Textarea id="step3_otherSVHCs" value={formData.step3_otherSVHCs || ""} onChange={(e) => handleInputChange("step3", "otherSVHCs", e.target.value)} placeholder="List any other SVHCs present above 0.1% w/w, their CAS numbers, and concentrations. E.g., Substance X (CAS: 123-45-6) - 0.15%" />
+                <p className="text-xs text-muted-foreground mt-1">Refer to the ECHA Candidate List for SVHCs.</p>
               </div>
 
               <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[2].title)} disabled={isLoadingCopilot}>
@@ -270,24 +271,28 @@ export default function BatteryRegulationPathwayPage() {
                   </Select>
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground -mt-4">Provide the total cradle-to-gate carbon footprint for the battery's manufacturing phase.</p>
               <div>
                 <Label htmlFor="step4_mfgCFDataSource">Data Source & Methodology</Label>
                 <Textarea id="step4_mfgCFDataSource" value={formData.step4_mfgCFDataSource || ""} onChange={(e) => handleInputChange("step4", "mfgCFDataSource", e.target.value)} placeholder="e.g., PEFCR for Batteries v1.2, Internal LCA study (2023), ISO 14067" />
-                <p className="text-xs text-muted-foreground mt-1">Specify the Product Environmental Footprint Category Rules (PEFCR) or other LCA methodology used.</p>
+                <p className="text-xs text-muted-foreground mt-1">Specify the Product Environmental Footprint Category Rules (PEFCR), relevant ISO standard (e.g., ISO 14067), or other LCA methodology used.</p>
               </div>
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
-                  <Label htmlFor="step4_recycledContentCFReduction">Reduction from Recycled Content (kg CO₂e, Optional)</Label>
-                  <Input id="step4_recycledContentCFReduction" type="number" value={formData.step4_recycledContentCFReduction || ""} onChange={(e) => handleInputChange("step4", "recycledContentCFReduction", e.target.valueAsNumber)} placeholder="e.g., 50" />
+                  <Label htmlFor="step4_recycledContentCFReduction">Reduction from Recycled Content (Optional)</Label>
+                  <Input id="step4_recycledContentCFReduction" type="number" value={formData.step4_recycledContentCFReduction || ""} onChange={(e) => handleInputChange("step4", "recycledContentCFReduction", e.target.valueAsNumber)} placeholder="e.g., 50 (kg CO₂e/kWh)" />
+                  <p className="text-xs text-muted-foreground mt-1">Estimated carbon footprint reduction attributable to recycled content.</p>
                 </div>
                  <div>
-                  <Label htmlFor="step4_transportCF">Transport Carbon Footprint (kg CO₂e, Optional)</Label>
-                  <Input id="step4_transportCF" type="number" value={formData.step4_transportCF || ""} onChange={(e) => handleInputChange("step4", "transportCF", e.target.valueAsNumber)} placeholder="e.g., 25.5" />
+                  <Label htmlFor="step4_transportCF">Transport Carbon Footprint (Optional)</Label>
+                  <Input id="step4_transportCF" type="number" value={formData.step4_transportCF || ""} onChange={(e) => handleInputChange("step4", "transportCF", e.target.valueAsNumber)} placeholder="e.g., 25.5 (kg CO₂e/kWh)" />
+                  <p className="text-xs text-muted-foreground mt-1">CF of transporting battery to first point of sale/use in EU.</p>
                 </div>
               </div>
               <div>
-                <Label htmlFor="step4_eolCF">End-of-Life Carbon Footprint/Credit (kg CO₂e, Optional)</Label>
-                <Input id="step4_eolCF" type="number" value={formData.step4_eolCF || ""} onChange={(e) => handleInputChange("step4", "eolCF", e.target.valueAsNumber)} placeholder="e.g., -10 (for credit)" />
+                <Label htmlFor="step4_eolCF">End-of-Life Carbon Footprint/Credit (Optional)</Label>
+                <Input id="step4_eolCF" type="number" value={formData.step4_eolCF || ""} onChange={(e) => handleInputChange("step4", "eolCF", e.target.valueAsNumber)} placeholder="e.g., -10 (kg CO₂e/kWh for credit)" />
+                <p className="text-xs text-muted-foreground mt-1">Estimated CF or credit associated with the battery's end-of-life phase.</p>
               </div>
 
 

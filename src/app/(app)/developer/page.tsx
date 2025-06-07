@@ -1,4 +1,3 @@
-
 // --- File: page.tsx (Developer Portal) ---
 // Description: Main page for the Developer Portal, providing access to API keys, documentation, and tools.
 "use client";
@@ -446,6 +445,41 @@ export default function DeveloperPortalPage() {
         onDeleteWebhook={handleDeleteWebhook}
       />
 
+      <Card className="shadow-lg" id="api-usage">
+        <CardHeader>
+          <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage &amp; Reporting</CardTitle>
+          <CardDescription>Monitor your API usage, view logs, and understand integration performance (Mock Data).</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+            <div className="grid md:grid-cols-2 gap-4">
+                <Card className="bg-muted/50">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-md font-medium flex items-center"><FileClock className="mr-2 h-4 w-4 text-info"/>Recent API Calls</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-2xl font-bold">1,234</p>
+                        <p className="text-xs text-muted-foreground">in the last 24 hours</p>
+                    </CardContent>
+                </Card>
+                <Card className="bg-muted/50">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-md font-medium flex items-center"><ShieldAlert className="mr-2 h-4 w-4 text-destructive"/>Error Rate</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-2xl font-bold">0.15%</p>
+                        <p className="text-xs text-muted-foreground">Average over the last 7 days</p>
+                    </CardContent>
+                </Card>
+            </div>
+            <ul className="list-disc list-inside text-sm space-y-1">
+                <li><Link href="#" className="text-primary hover:underline">View detailed API call logs (Mock)</Link></li>
+                <li><Link href="#" className="text-primary hover:underline">Webhook delivery success rates and retry attempts (Mock)</Link></li>
+                <li><Button variant="outline" size="sm" className="mt-1" disabled>Export usage reports (Coming Soon)</Button></li>
+            </ul>
+            <Button variant="outline" disabled>Access Full Reporting Dashboard (Coming Soon)</Button>
+        </CardContent>
+      </Card>
+
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="shadow-lg" id="api-docs">
           <CardHeader>
@@ -504,83 +538,48 @@ export default function DeveloperPortalPage() {
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg" id="api-usage">
+        <Card className="shadow-lg" id="developer-resources">
           <CardHeader>
-            <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage &amp; Reporting</CardTitle>
-            <CardDescription>Monitor your API usage, view logs, and understand integration performance (Mock Data).</CardDescription>
+            <CardTitle className="font-headline flex items-center"><Lightbulb className="mr-3 h-6 w-6 text-primary" /> Developer Resources</CardTitle>
+            <CardDescription>Find SDKs, code samples, templates, tutorials, and GitHub resources to accelerate your DPP integration.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                  <Card className="bg-muted/50">
-                      <CardHeader className="pb-2">
-                          <CardTitle className="text-md font-medium flex items-center"><FileClock className="mr-2 h-4 w-4 text-info"/>Recent API Calls</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                          <p className="text-2xl font-bold">1,234</p>
-                          <p className="text-xs text-muted-foreground">in the last 24 hours</p>
-                      </CardContent>
-                  </Card>
-                  <Card className="bg-muted/50">
-                      <CardHeader className="pb-2">
-                          <CardTitle className="text-md font-medium flex items-center"><ShieldAlert className="mr-2 h-4 w-4 text-destructive"/>Error Rate</CardTitle>
-                      </CardHeader>
-                      <CardContent>
-                          <p className="text-2xl font-bold">0.15%</p>
-                          <p className="text-xs text-muted-foreground">Average over the last 7 days</p>
-                      </CardContent>
-                  </Card>
-              </div>
-              <ul className="list-disc list-inside text-sm space-y-1">
-                  <li><Link href="#" className="text-primary hover:underline">View detailed API call logs (Mock)</Link></li>
-                  <li><Link href="#" className="text-primary hover:underline">Webhook delivery success rates and retry attempts (Mock)</Link></li>
-                  <li><Button variant="outline" size="sm" className="mt-1" disabled>Export usage reports (Coming Soon)</Button></li>
+          <CardContent className="grid md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-semibold mb-2">SDKs (Coming Soon)</h4>
+              <ul className="space-y-2">
+                <li> <Button variant="outline" className="w-full justify-start" disabled> <FileCog className="mr-2 h-5 w-5 text-accent" /> JavaScript SDK </Button> </li>
+                <li> <Button variant="outline" className="w-full justify-start" disabled> <FileCog className="mr-2 h-5 w-5 text-accent" /> Python SDK </Button> </li>
+                <li> <Button variant="outline" className="w-full justify-start" disabled> <FileCog className="mr-2 h-5 w-5 text-accent" /> Java SDK </Button> </li>
               </ul>
-              <Button variant="outline" disabled>Access Full Reporting Dashboard (Coming Soon)</Button>
+              <p className="text-xs text-muted-foreground mt-2">Official SDKs are under development. Check back soon for updates.</p>
+            </div>
+            <div className="space-y-3">
+              <div id="code-samples">
+                  <h4 className="font-semibold mb-1">Code Samples &amp; Templates</h4>
+                  <p className="text-sm text-muted-foreground">Access a library of code snippets and project templates for common integration scenarios like DPP creation, event logging, and compliance checks.</p>
+                  <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
+                    <Link href="#code-samples">Browse Code Samples (Mock)</Link>
+                  </Button>
+              </div>
+              <div id="tutorials">
+                  <h4 className="font-semibold mb-1">Tutorials</h4>
+                  <p className="text-sm text-muted-foreground">Follow step-by-step guides to implement specific DPP functionalities and use cases, such as blockchain anchoring or battery passport data submission.</p>
+                  <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
+                    <Link href="#tutorials">View Tutorials (Mock)</Link>
+                  </Button>
+              </div>
+              <div>
+                  <h4 className="font-semibold mb-1">GitHub Integration</h4>
+                  <p className="text-sm text-muted-foreground">Explore our open-source repositories, contribute to the ecosystem, find community projects, and raise issues related to our SDKs or platform.</p>
+                  <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
+                    <Link href="#" target="_blank" rel="noopener noreferrer">Norruva on GitHub (Mock) <ExternalLinkIcon className="inline h-3 w-3 ml-1" /></Link>
+                  </Button>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
       
-      <Card className="shadow-lg" id="developer-resources">
-        <CardHeader>
-          <CardTitle className="font-headline flex items-center"><Lightbulb className="mr-3 h-6 w-6 text-primary" /> Developer Resources</CardTitle>
-          <CardDescription>Find SDKs, code samples, templates, tutorials, and GitHub resources to accelerate your DPP integration.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid md:grid-cols-2 gap-6">
-          <div>
-            <h4 className="font-semibold mb-2">SDKs (Coming Soon)</h4>
-            <ul className="space-y-2">
-              <li> <Button variant="outline" className="w-full justify-start" disabled> <FileCog className="mr-2 h-5 w-5 text-accent" /> JavaScript SDK </Button> </li>
-              <li> <Button variant="outline" className="w-full justify-start" disabled> <FileCog className="mr-2 h-5 w-5 text-accent" /> Python SDK </Button> </li>
-              <li> <Button variant="outline" className="w-full justify-start" disabled> <FileCog className="mr-2 h-5 w-5 text-accent" /> Java SDK </Button> </li>
-            </ul>
-             <p className="text-xs text-muted-foreground mt-2">Official SDKs are under development. Check back soon for updates.</p>
-          </div>
-          <div className="space-y-3">
-            <div id="code-samples">
-                <h4 className="font-semibold mb-1">Code Samples &amp; Templates</h4>
-                 <p className="text-sm text-muted-foreground">Access a library of code snippets and project templates for common integration scenarios like DPP creation, event logging, and compliance checks.</p>
-                <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
-                  <Link href="#code-samples">Browse Code Samples (Mock)</Link>
-                </Button>
-            </div>
-            <div id="tutorials">
-                <h4 className="font-semibold mb-1">Tutorials</h4>
-                 <p className="text-sm text-muted-foreground">Follow step-by-step guides to implement specific DPP functionalities and use cases, such as blockchain anchoring or battery passport data submission.</p>
-                 <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
-                  <Link href="#tutorials">View Tutorials (Mock)</Link>
-                </Button>
-            </div>
-            <div>
-                <h4 className="font-semibold mb-1">GitHub Integration</h4>
-                 <p className="text-sm text-muted-foreground">Explore our open-source repositories, contribute to the ecosystem, find community projects, and raise issues related to our SDKs or platform.</p>
-                 <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
-                  <Link href="#" target="_blank" rel="noopener noreferrer">Norruva on GitHub (Mock) <ExternalLinkIcon className="inline h-3 w-3 ml-1" /></Link>
-                </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="font-headline flex items-center"><Settings2 className="mr-3 h-6 w-6 text-primary" /> Advanced Features &amp; Customization</CardTitle>

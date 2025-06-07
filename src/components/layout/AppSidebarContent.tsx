@@ -77,7 +77,7 @@ export default function AppSidebarContent() {
       // Exact match for /sustainability/compare
       isActive = (pathname === href);
     } else {
-      // General rule for all other links (including /developer, /settings, /products/new etc.)
+      // General rule for all other links (including /developer, /settings, /products/new, /suppliers etc.)
       // Parent link is active if current path starts with the parent's href.
       isActive = pathname.startsWith(href);
     }

@@ -58,7 +58,16 @@ export default function ApiKeysManager({
             {apiKeys.map((apiKey) => (
               <TableRow key={apiKey.id}>
                 <TableCell className="font-mono text-sm">{apiKey.key.startsWith("N/A") ? apiKey.key : `${apiKey.key.substring(0, 12)}...`}</TableCell>
-                <TableCell><Badge variant={apiKey.type === "Sandbox" ? "secondary" : "default"}>{apiKey.type}</Badge></TableCell>
+                <TableCell>
+                  <Badge 
+                    variant={apiKey.type === "Sandbox" ? "secondary" : "default"}
+                    className={cn(
+                      apiKey.type === "Sandbox" ? "bg-muted text-muted-foreground border-border" : "bg-primary/20 text-primary border-primary/30"
+                    )}
+                  >
+                    {apiKey.type}
+                  </Badge>
+                </TableCell>
                 <TableCell>{apiKey.created}</TableCell>
                 <TableCell>{apiKey.lastUsed}</TableCell>
                 <TableCell>

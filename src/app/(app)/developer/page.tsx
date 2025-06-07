@@ -9,32 +9,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge"; // Badge is used by child components, not directly here anymore
+import { Badge } from "@/components/ui/badge"; 
 import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-// Removed cn import as it's not directly used after refactoring. Child components will handle their own styling.
 
-// Import the new components
 import ApiKeysManager, { type ApiKey } from '@/components/developer/ApiKeysManager';
 import WebhooksManager, { type WebhookEntry } from '@/components/developer/WebhooksManager';
 
-// ApiKey and WebhookEntry interfaces remain here as they define the state for this page.
-// export interface ApiKey { // This will now be imported from ApiKeysManager.tsx or defined there if not exported
-//   id: string;
-//   key: string;
-//   type: "Sandbox" | "Production";
-//   created: string;
-//   lastUsed: string;
-//   status: "Active" | "Pending Approval" | "Revoked";
-// }
-
-// export interface WebhookEntry { // This will now be imported from WebhooksManager.tsx or defined there
-//   id: string;
-//   url: string;
-//   events: string[];
-//   status: "Active" | "Disabled" | "Error";
-// }
 
 const initialMockApiKeys: ApiKey[] = [
   { id: "key_sandbox_1", key: "sand_sk_xxxx1234ABCD...", type: "Sandbox", created: "2024-07-01", lastUsed: "2024-07-28", status: "Active" },
@@ -308,7 +290,7 @@ export default function DeveloperPortalPage() {
           {/* Get Product Details Endpoint */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center"><ServerIconShadcn className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products/{'{productId}'}</CardTitle>
+              <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products/{'{productId}'}</CardTitle>
               <CardDescription>Retrieve details for a specific product by its ID.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -332,7 +314,7 @@ export default function DeveloperPortalPage() {
           {/* List Products Endpoint */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center"><ServerIconShadcn className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products</CardTitle>
+              <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products</CardTitle>
               <CardDescription>Retrieve a list of products. (Mock returns all available mock products)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -352,7 +334,7 @@ export default function DeveloperPortalPage() {
           {/* POST Lifecycle Event Endpoint */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center"><ServerIconShadcn className="mr-2 h-5 w-5 text-info"/>POST /api/v1/products/{'{productId}'}/lifecycle-events</CardTitle>
+              <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/products/{'{productId}'}/lifecycle-events</CardTitle>
               <CardDescription>Add a new lifecycle event to a product.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -380,7 +362,7 @@ export default function DeveloperPortalPage() {
           {/* GET Compliance Summary Endpoint */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center"><ServerIconShadcn className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products/{'{productId}'}/compliance-summary</CardTitle>
+              <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products/{'{productId}'}/compliance-summary</CardTitle>
               <CardDescription>Retrieve a compliance summary for a specific product.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -445,7 +427,7 @@ export default function DeveloperPortalPage() {
              <div className="space-y-2 pt-3 border-t">
                 <h4 className="font-semibold">Operations</h4>
                  <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
-                    <li><Link href="/developer/docs/deployment-monitoring" className="hover:underline text-muted-foreground line-through flex items-center"><ServerIconShadcn className="mr-1.5 h-4 w-4 inline-block"/>Deployment &amp; Monitoring Guide</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
+                    <li><Link href="/developer/docs/deployment-monitoring" className="hover:underline flex items-center"><ServerIconShadcn className="mr-1.5 h-4 w-4 inline-block"/>Deployment &amp; Monitoring Guide</Link></li>
                  </ul>
             </div>
             <Button variant="default" className="w-full sm:w-auto mt-3" asChild>
@@ -658,5 +640,3 @@ export default function DeveloperPortalPage() {
   );
 }
 
-
-    

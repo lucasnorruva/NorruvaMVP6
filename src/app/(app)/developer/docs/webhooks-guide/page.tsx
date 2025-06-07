@@ -48,7 +48,7 @@ export default function WebhooksGuidePage() {
             <li>Retry mechanisms and error handling.</li>
           </ul>
           <p className="text-sm text-muted-foreground">
-            Detailed information, code examples, and setup instructions will be available here shortly. You can manage your webhooks in the <Link href="/developer#webhooks-manager" className="text-primary hover:underline">Webhooks section</Link> of the Developer Portal.
+            Detailed information, code examples, and setup instructions will be available here shortly. You can manage your webhooks in the <Link href="/developer#webhooks-manager" className="text-primary hover:underline">Webhooks Manager section</Link> of the Developer Portal.
           </p>
         </CardContent>
       </Card>

@@ -28,6 +28,12 @@ export default function ApiReferencePage() {
   };
   const exampleQrValidationResponse = JSON.stringify(qrValidationResponseExample, null, 2);
 
+  const error401 = JSON.stringify({ error: { code: 401, message: "API key missing or invalid." } }, null, 2);
+  const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }, null, 2);
+  const error400_qr = JSON.stringify({ error: { code: 400, message: "Invalid request body. 'qrIdentifier' is required." } }, null, 2);
+  const error500 = JSON.stringify({ error: { code: 500, message: "An unexpected error occurred on the server." } }, null, 2);
+
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
@@ -124,10 +130,28 @@ export default function ApiReferencePage() {
             </section>
              <section>
               <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
-                <ul className="list-disc list-inside text-sm space-y-1">
-                    <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>: API key missing or invalid.</li>
-                    <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>: Product with the given ID does not exist.</li>
-                    <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>: Server-side error.</li>
+                <ul className="list-disc list-inside text-sm space-y-2">
+                    <li>
+                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>: API key missing or invalid.
+                        <details className="border rounded-md mt-1">
+                            <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                            <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error401}</code></pre>
+                        </details>
+                    </li>
+                    <li>
+                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>: Product with the given ID does not exist.
+                         <details className="border rounded-md mt-1">
+                            <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                            <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error404}</code></pre>
+                        </details>
+                    </li>
+                    <li>
+                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>: Server-side error.
+                        <details className="border rounded-md mt-1">
+                            <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                            <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error500}</code></pre>
+                        </details>
+                    </li>
                 </ul>
             </section>
           </CardContent>
@@ -175,11 +199,35 @@ export default function ApiReferencePage() {
             </section>
              <section>
               <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
-                <ul className="list-disc list-inside text-sm space-y-1">
-                    <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Invalid request body or missing <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">qrIdentifier</code>.</li>
-                    <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>: API key missing or invalid.</li>
-                    <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>: Product with the given identifier does not exist or QR identifier is invalid.</li>
-                    <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>: Server-side error.</li>
+                <ul className="list-disc list-inside text-sm space-y-2">
+                     <li>
+                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Invalid request body or missing <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">qrIdentifier</code>.
+                        <details className="border rounded-md mt-1">
+                            <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                            <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error400_qr}</code></pre>
+                        </details>
+                    </li>
+                    <li>
+                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>: API key missing or invalid.
+                        <details className="border rounded-md mt-1">
+                            <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                            <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error401}</code></pre>
+                        </details>
+                    </li>
+                    <li>
+                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>: Product with the given identifier does not exist or QR identifier is invalid.
+                        <details className="border rounded-md mt-1">
+                            <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                            <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error404}</code></pre>
+                        </details>
+                    </li>
+                    <li>
+                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>: Server-side error.
+                        <details className="border rounded-md mt-1">
+                            <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                            <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error500}</code></pre>
+                        </details>
+                    </li>
                 </ul>
             </section>
           </CardContent>
@@ -190,3 +238,4 @@ export default function ApiReferencePage() {
   );
 }
     
+

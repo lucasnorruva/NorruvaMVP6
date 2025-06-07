@@ -29,6 +29,7 @@ const initialMockWebhooks: WebhookEntry[] = [
   { id: "wh_1", url: "https://api.example.com/webhook/product-updates", events: ["product.created", "product.updated", "dpp.status.changed"], status: "Active" },
   { id: "wh_2", url: "https://api.example.com/webhook/compliance-changes", events: ["compliance.status.changed"], status: "Disabled" },
   { id: "wh_3", url: "https://user.integrations.com/norruva/events", events: ["product.lifecycle.event.added", "product.deleted"], status: "Active" },
+  { id: "wh_4", url: "https://another.service/endpoint/failed-hook", events: ["product.updated"], status: "Error" },
 ];
 
 const MOCK_API_PRODUCTS: Record<string, any> = {
@@ -693,3 +694,4 @@ export default function DeveloperPortalPage() {
 }
 
     
+

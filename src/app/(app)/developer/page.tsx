@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIcon, History, UploadCloud, ShieldCheck } from "lucide-react";
+import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIcon, History, UploadCloud, ShieldCheck, Cpu, HardDrive } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
@@ -589,7 +589,7 @@ export default function DeveloperPortalPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card className="shadow-md lg:col-span-1">
               <CardHeader>
-                <CardTitle className="font-headline text-lg flex items-center"><BarChartBig className="mr-2 h-5 w-5 text-primary" /> Key API Metrics & Health (<span className="capitalize">{currentEnvironment}</span>)</CardTitle>
+                <CardTitle className="font-headline text-lg flex items-center"><BarChartBig className="mr-2 h-5 w-5 text-primary" /> Key API Metrics &amp; Health (<span className="capitalize">{currentEnvironment}</span>)</CardTitle>
                 <CardDescription>Mock conceptual API metrics for the current environment.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3 text-sm">
@@ -605,7 +605,7 @@ export default function DeveloperPortalPage() {
 
             <Card className="shadow-md lg:col-span-2">
               <CardHeader>
-                <CardTitle className="font-headline text-lg flex items-center"><Megaphone className="mr-2 h-5 w-5 text-primary" /> Platform News & Announcements</CardTitle>
+                <CardTitle className="font-headline text-lg flex items-center"><Megaphone className="mr-2 h-5 w-5 text-primary" /> Platform News &amp; Announcements</CardTitle>
                 <CardDescription>Stay updated with the latest from Norruva.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-3 text-sm max-h-60 overflow-y-auto">
@@ -626,7 +626,7 @@ export default function DeveloperPortalPage() {
 
           <Card className="shadow-lg bg-card border-primary/10">
             <CardHeader>
-                <CardTitle className="font-headline text-lg flex items-center"><Share2 className="mr-2 h-5 w-5 text-primary" />Conceptual API Data Flow & KPIs</CardTitle>
+                <CardTitle className="font-headline text-lg flex items-center"><Share2 className="mr-2 h-5 w-5 text-primary" />Conceptual API Data Flow &amp; KPIs</CardTitle>
                 <CardDescription>Visualizing typical API interactions and target performance indicators.</CardDescription>
             </CardHeader>
             <CardContent className="grid md:grid-cols-2 gap-6">
@@ -1081,7 +1081,7 @@ export default function DeveloperPortalPage() {
                     </ul>
                 </div>
                 <div className="space-y-3">
-                    <h4 className="font-semibold text-md mb-1 flex items-center"><Rocket className="mr-2 h-5 w-5 text-accent" />Integration Guides & Best Practices</h4>
+                    <h4 className="font-semibold text-md mb-1 flex items-center"><Rocket className="mr-2 h-5 w-5 text-accent" />Integration Guides &amp; Best Practices</h4>
                      <ul className="list-none space-y-1.5 text-sm">
                         <li><Link href="/developer/guides/quick-start" className="text-primary hover:underline flex items-center"><Rocket className="mr-2 h-4 w-4"/>Quick Start Integration Guide</Link></li>
                         <li><Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline flex items-center"><Share2 className="mr-2 h-4 w-4"/>EBSI Integration Overview</Link></li>
@@ -1178,7 +1178,7 @@ export default function DeveloperPortalPage() {
             
             <Card className="shadow-lg lg:col-span-3">
               <CardHeader>
-                  <CardTitle className="font-headline flex items-center"><FileCode className="mr-3 h-6 w-6 text-primary" /> Code Samples & Tutorials</CardTitle>
+                  <CardTitle className="font-headline flex items-center"><FileCode className="mr-3 h-6 w-6 text-primary" /> Code Samples &amp; Tutorials</CardTitle>
                   <CardDescription>Practical examples and step-by-step guides.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -1206,7 +1206,7 @@ export default function DeveloperPortalPage() {
             </Card>
             <Card className="shadow-lg lg:col-span-3">
                 <CardHeader>
-                    <CardTitle className="font-headline flex items-center"><Lightbulb className="mr-3 h-6 w-6 text-primary" /> AI & Smart Assist Features (Conceptual)</CardTitle>
+                    <CardTitle className="font-headline flex items-center"><Lightbulb className="mr-3 h-6 w-6 text-primary" /> AI &amp; Smart Assist Features (Conceptual)</CardTitle>
                     <CardDescription>Leverage AI to streamline your development and integration process.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-2 gap-6">
@@ -1301,4 +1301,5 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+
 

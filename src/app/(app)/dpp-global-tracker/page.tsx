@@ -92,11 +92,11 @@ export default function DppGlobalTrackerPage() {
       .then(res => res.json())
       .then((atlas: Topology) => {
         setCountries(atlas);
-        setInitialLoadComplete(true);
+        setInitialLoadComplete(true); // Set to true after data is fetched
       })
       .catch(err => {
         console.error("Error fetching country polygons:", err);
-        setInitialLoadComplete(true);
+        setInitialLoadComplete(true); // Also set to true on error to stop loading state
       });
   }, []);
 
@@ -104,6 +104,7 @@ export default function DppGlobalTrackerPage() {
     if (globeEl.current && globeReady) {
       globeEl.current.controls().autoRotate = true;
       globeEl.current.controls().autoRotateSpeed = 0.2;
+      // Start with a more zoomed-out global view
       globeEl.current.pointOfView({ lat: 20, lng: 0, altitude: 3.0 }, 1500);
     }
   }, [globeReady]);
@@ -177,9 +178,9 @@ export default function DppGlobalTrackerPage() {
         polygonSideColor={() => 'rgba(0, 0, 0, 0.02)'}
         polygonStrokeColor={() => 'rgba(120,120,120,0.2)'}
         
-        onGlobeReady={() => setTimeout(() => setGlobeReady(true), 200)}
+        onGlobeReady={() => setTimeout(() => setGlobeReady(true), 200)} // Slight delay for full init
         width={typeof window !== 'undefined' ? window.innerWidth : 600}
-        height={typeof window !== 'undefined' ? window.innerHeight - 64 : 400}
+        height={typeof window !== 'undefined' ? window.innerHeight - 64 : 400} // Adjust height if needed
       />
 
       {selectedInfo.data && (
@@ -243,3 +244,4 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
+

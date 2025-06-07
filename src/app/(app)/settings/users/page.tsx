@@ -97,7 +97,7 @@ export default function UserManagementPage() {
                         )}
                         <DropdownMenuSeparator />
                         {user.status !== "Deactivated" ? (
-                          <DropdownMenuItem className="text-orange-600 focus:text-orange-700 focus:bg-orange-500/10">
+                          <DropdownMenuItem className="text-warning focus:text-warning/90 focus:bg-warning/10">
                             <UserX className="mr-2 h-4 w-4" />
                             Deactivate User (Mock)
                           </DropdownMenuItem>

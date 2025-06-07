@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Added Select
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Lightbulb, HelpCircle, CheckCircle, Loader2, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -48,6 +49,12 @@ export default function BatteryRegulationPathwayPage() {
     step3_mercuryPresent: "no",
     step3_cadmiumPresent: "no",
     step3_otherSVHCs: "",
+    step4_mfgCarbonFootprint: "",
+    step4_mfgCFUnit: "kg_co2e_kwh_total_life",
+    step4_mfgCFDataSource: "",
+    step4_recycledContentCFReduction: "",
+    step4_transportCF: "",
+    step4_eolCF: "",
   });
   const [isLoadingCopilot, setIsLoadingCopilot] = useState(false);
   const { toast } = useToast();
@@ -59,6 +66,11 @@ export default function BatteryRegulationPathwayPage() {
   const handleRadioChange = (step: string, field: string, value: string) => {
     setFormData(prev => ({ ...prev, [`${step}_${field}`]: value }));
   };
+  
+  const handleSelectChange = (step: string, field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [`${step}_${field}`]: value }));
+  };
+
 
   const handleAskCopilot = async (stepContext: string) => {
     setIsLoadingCopilot(true);
@@ -77,7 +89,10 @@ export default function BatteryRegulationPathwayPage() {
         mockResponseDescription = `For Manufacturer Details, clearly identify the legal manufacturer, including their registered trade name and postal address. The contact person (name, email, phone) should be easily reachable for compliance inquiries. Ensure this information precisely matches official business registries.`;
     } else if (stepContext === euBatteryRegulationSteps[2].title) { // Material Composition
         mockResponseDescription = `For Material Composition, accurately declare percentages of Cobalt, Lithium, Natural Graphite, and Nickel if present. Specify presence and/or concentration of restricted substances like Lead, Mercury, and Cadmium. List any other SVHCs present above 0.1% w/w. Refer to Annex I of the EU Battery Regulation for detailed requirements and thresholds.`;
+    } else if (stepContext === euBatteryRegulationSteps[3].title) { // Carbon Footprint
+        mockResponseDescription = `For Carbon Footprint, provide the total cradle-to-gate carbon footprint for the battery's manufacturing. Specify the unit (e.g., kg CO₂e/kWh) and data source (e.g., PEFCR, LCA study). If applicable, detail reductions from recycled content or specific footprints for transport and end-of-life. Refer to Annex II of the EU Battery Regulation.`;
     }
+
 
      toast({
         title: "AI Co-Pilot (Mock Response)",
@@ -228,6 +243,61 @@ export default function BatteryRegulationPathwayPage() {
             </CardContent>
           </Card>
         );
+      case "step4":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>{euBatteryRegulationSteps[3].title}</CardTitle>
+              <CardDescription>{euBatteryRegulationSteps[3].description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="step4_mfgCarbonFootprint">Total Manufacturing Carbon Footprint</Label>
+                  <Input id="step4_mfgCarbonFootprint" type="number" value={formData.step4_mfgCarbonFootprint || ""} onChange={(e) => handleInputChange("step4", "mfgCarbonFootprint", e.target.valueAsNumber)} placeholder="e.g., 1500" />
+                </div>
+                <div>
+                  <Label htmlFor="step4_mfgCFUnit">Unit</Label>
+                  <Select value={formData.step4_mfgCFUnit} onValueChange={(value) => handleSelectChange("step4", "mfgCFUnit", value)}>
+                    <SelectTrigger id="step4_mfgCFUnit">
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="kg_co2e_kwh_total_life">kg CO₂e / kWh of total energy over service life</SelectItem>
+                      <SelectItem value="kg_co2e_per_battery">kg CO₂e / per battery unit</SelectItem>
+                      <SelectItem value="g_co2e_per_cell">g CO₂e / per cell</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="step4_mfgCFDataSource">Data Source & Methodology</Label>
+                <Textarea id="step4_mfgCFDataSource" value={formData.step4_mfgCFDataSource || ""} onChange={(e) => handleInputChange("step4", "mfgCFDataSource", e.target.value)} placeholder="e.g., PEFCR for Batteries v1.2, Internal LCA study (2023), ISO 14067" />
+                <p className="text-xs text-muted-foreground mt-1">Specify the Product Environmental Footprint Category Rules (PEFCR) or other LCA methodology used.</p>
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="step4_recycledContentCFReduction">Reduction from Recycled Content (kg CO₂e, Optional)</Label>
+                  <Input id="step4_recycledContentCFReduction" type="number" value={formData.step4_recycledContentCFReduction || ""} onChange={(e) => handleInputChange("step4", "recycledContentCFReduction", e.target.valueAsNumber)} placeholder="e.g., 50" />
+                </div>
+                 <div>
+                  <Label htmlFor="step4_transportCF">Transport Carbon Footprint (kg CO₂e, Optional)</Label>
+                  <Input id="step4_transportCF" type="number" value={formData.step4_transportCF || ""} onChange={(e) => handleInputChange("step4", "transportCF", e.target.valueAsNumber)} placeholder="e.g., 25.5" />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="step4_eolCF">End-of-Life Carbon Footprint/Credit (kg CO₂e, Optional)</Label>
+                <Input id="step4_eolCF" type="number" value={formData.step4_eolCF || ""} onChange={(e) => handleInputChange("step4", "eolCF", e.target.valueAsNumber)} placeholder="e.g., -10 (for credit)" />
+              </div>
+
+
+              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[3].title)} disabled={isLoadingCopilot}>
+                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+                Ask Co-Pilot about this step
+              </Button>
+            </CardContent>
+          </Card>
+        );
       default:
         return (
             <Card>
@@ -292,6 +362,3 @@ export default function BatteryRegulationPathwayPage() {
     </div>
   );
 }
-
-
-    

@@ -154,3 +154,4 @@ export default function ProductImageFormSection({
     </div>
   );
 }
+

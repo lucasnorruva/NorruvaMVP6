@@ -38,7 +38,7 @@ export interface InitialProductFormData extends ProductFormData {
   carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageHint?: string; 
+  // imageHint is already part of ProductFormData via formSchema
 }
 
 interface StoredUserProduct extends ProductFormData {
@@ -59,7 +59,7 @@ interface StoredUserProduct extends ProductFormData {
   carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageHint?: string;
+  // imageHint is already part of ProductFormData
   productCategory?: string;
   imageUrl?: string;
   keySustainabilityPoints?: string[];
@@ -121,7 +121,7 @@ export default function AddNewProductPage() {
       const productToEdit = userProducts.find(p => p.id === editProductId);
       if (productToEdit) {
         const editData: Partial<InitialProductFormData> = {
-          ...productToEdit,
+          ...productToEdit, // This includes imageHint if it was stored
           stateOfHealth: productToEdit.stateOfHealth ?? undefined,
           carbonFootprintManufacturing: productToEdit.carbonFootprintManufacturing ?? undefined,
           recycledContentPercentage: productToEdit.recycledContentPercentage ?? undefined,
@@ -154,7 +154,7 @@ export default function AddNewProductPage() {
         productName: "", productDescription: "", manufacturer: "", modelNumber: "",
         materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", 
         batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined,
-        imageUrl: "", imageHint: "",
+        imageUrl: "", imageHint: "", // Reset image hint on new file
         productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined, modelNumberOrigin: undefined,
         materialsOrigin: undefined, sustainabilityClaimsOrigin: undefined, specificationsOrigin: undefined, energyLabelOrigin: undefined,
         batteryChemistryOrigin: undefined, stateOfHealthOrigin: undefined, carbonFootprintManufacturingOrigin: undefined, recycledContentPercentageOrigin: undefined,
@@ -241,7 +241,7 @@ export default function AddNewProductPage() {
         energyLabel: formDataFromForm.energyLabel || dataPriorToThisEdit.energyLabel,
         productCategory: formDataFromForm.productCategory || dataPriorToThisEdit.productCategory,
         imageUrl: formDataFromForm.imageUrl || dataPriorToThisEdit.imageUrl,
-        imageHint: dataPriorToThisEdit.imageHint, // Preserve hint from initialData if available, not directly from form
+        imageHint: formDataFromForm.imageHint || dataPriorToThisEdit.imageHint, // Save imageHint
         batteryChemistry: formDataFromForm.batteryChemistry || dataPriorToThisEdit.batteryChemistry,
         stateOfHealth: formDataFromForm.stateOfHealth !== undefined && formDataFromForm.stateOfHealth !== null ? formDataFromForm.stateOfHealth : dataPriorToThisEdit.stateOfHealth,
         carbonFootprintManufacturing: formDataFromForm.carbonFootprintManufacturing !== undefined && formDataFromForm.carbonFootprintManufacturing !== null ? formDataFromForm.carbonFootprintManufacturing : dataPriorToThisEdit.carbonFootprintManufacturing,
@@ -256,6 +256,7 @@ export default function AddNewProductPage() {
         energyLabelOrigin: determineOrigin(formDataFromForm.energyLabel, dataPriorToThisEdit.energyLabel, dataPriorToThisEdit.energyLabelOrigin),
         specificationsOrigin: determineOrigin(formDataFromForm.specifications, dataPriorToThisEdit.specifications, dataPriorToThisEdit.specificationsOrigin),
         imageUrlOrigin: determineOrigin(formDataFromForm.imageUrl, dataPriorToThisEdit.imageUrl, dataPriorToThisEdit.imageUrlOrigin),
+        // Note: imageHintOrigin is not explicitly tracked, assumed manual if user edits the hint field.
         batteryChemistryOrigin: determineOrigin(formDataFromForm.batteryChemistry, dataPriorToThisEdit.batteryChemistry, dataPriorToThisEdit.batteryChemistryOrigin),
         stateOfHealthOrigin: determineOrigin(formDataFromForm.stateOfHealth, dataPriorToThisEdit.stateOfHealth, dataPriorToThisEdit.stateOfHealthOrigin),
         carbonFootprintManufacturingOrigin: determineOrigin(formDataFromForm.carbonFootprintManufacturing, dataPriorToThisEdit.carbonFootprintManufacturing, dataPriorToThisEdit.carbonFootprintManufacturingOrigin),

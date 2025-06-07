@@ -438,6 +438,13 @@ export default function DeveloperPortalPage() {
         onRequestProductionKey={handleRequestProductionKey}
         onDeleteApiKey={handleDeleteApiKey}
       />
+      
+      <WebhooksManager
+        webhooks={webhooks}
+        onAddWebhook={handleAddWebhook}
+        onEditWebhook={handleEditWebhook}
+        onDeleteWebhook={handleDeleteWebhook}
+      />
 
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="shadow-lg" id="api-docs">
@@ -497,12 +504,40 @@ export default function DeveloperPortalPage() {
           </CardContent>
         </Card>
 
-        <WebhooksManager
-          webhooks={webhooks}
-          onAddWebhook={handleAddWebhook}
-          onEditWebhook={handleEditWebhook}
-          onDeleteWebhook={handleDeleteWebhook}
-        />
+        <Card className="shadow-lg" id="api-usage">
+          <CardHeader>
+            <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage &amp; Reporting</CardTitle>
+            <CardDescription>Monitor your API usage, view logs, and understand integration performance (Mock Data).</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                  <Card className="bg-muted/50">
+                      <CardHeader className="pb-2">
+                          <CardTitle className="text-md font-medium flex items-center"><FileClock className="mr-2 h-4 w-4 text-info"/>Recent API Calls</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                          <p className="text-2xl font-bold">1,234</p>
+                          <p className="text-xs text-muted-foreground">in the last 24 hours</p>
+                      </CardContent>
+                  </Card>
+                  <Card className="bg-muted/50">
+                      <CardHeader className="pb-2">
+                          <CardTitle className="text-md font-medium flex items-center"><ShieldAlert className="mr-2 h-4 w-4 text-destructive"/>Error Rate</CardTitle>
+                      </CardHeader>
+                      <CardContent>
+                          <p className="text-2xl font-bold">0.15%</p>
+                          <p className="text-xs text-muted-foreground">Average over the last 7 days</p>
+                      </CardContent>
+                  </Card>
+              </div>
+              <ul className="list-disc list-inside text-sm space-y-1">
+                  <li><Link href="#" className="text-primary hover:underline">View detailed API call logs (Mock)</Link></li>
+                  <li><Link href="#" className="text-primary hover:underline">Webhook delivery success rates and retry attempts (Mock)</Link></li>
+                  <li><Button variant="outline" size="sm" className="mt-1" disabled>Export usage reports (Coming Soon)</Button></li>
+              </ul>
+              <Button variant="outline" disabled>Access Full Reporting Dashboard (Coming Soon)</Button>
+          </CardContent>
+        </Card>
       </div>
       
       <Card className="shadow-lg" id="developer-resources">
@@ -565,43 +600,8 @@ export default function DeveloperPortalPage() {
             </Button>
           </div>
           <p className="text-sm text-muted-foreground pt-3 border-t">
-            Information on API Rate Limiting and access to your API Usage &amp; Reporting dashboard (see below) are also key parts of our advanced feature set.
+            Information on API Rate Limiting and access to your API Usage &amp; Reporting dashboard (see above) are also key parts of our advanced feature set.
           </p>
-        </CardContent>
-      </Card>
-
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage &amp; Reporting</CardTitle>
-          <CardDescription>Monitor your API usage, view logs, and understand integration performance (Mock Data).</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-                <Card className="bg-muted/50">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-md font-medium flex items-center"><FileClock className="mr-2 h-4 w-4 text-info"/>Recent API Calls</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-2xl font-bold">1,234</p>
-                        <p className="text-xs text-muted-foreground">in the last 24 hours</p>
-                    </CardContent>
-                </Card>
-                 <Card className="bg-muted/50">
-                    <CardHeader className="pb-2">
-                        <CardTitle className="text-md font-medium flex items-center"><ShieldAlert className="mr-2 h-4 w-4 text-destructive"/>Error Rate</CardTitle>
-                    </CardHeader>
-                    <CardContent>
-                        <p className="text-2xl font-bold">0.15%</p>
-                        <p className="text-xs text-muted-foreground">Average over the last 7 days</p>
-                    </CardContent>
-                </Card>
-            </div>
-            <ul className="list-disc list-inside text-sm space-y-1">
-                <li><Link href="#" className="text-primary hover:underline">View detailed API call logs (Mock)</Link></li>
-                <li><Link href="#" className="text-primary hover:underline">Webhook delivery success rates and retry attempts (Mock)</Link></li>
-                <li><Button variant="outline" size="sm" className="mt-1" disabled>Export usage reports (Coming Soon)</Button></li>
-            </ul>
-             <Button variant="outline" disabled>Access Full Reporting Dashboard (Coming Soon)</Button>
         </CardContent>
       </Card>
 
@@ -700,5 +700,3 @@ export default function DeveloperPortalPage() {
 }
 
     
-
-

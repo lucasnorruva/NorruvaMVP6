@@ -1,11 +1,14 @@
 
+// --- File: page.tsx (Customs & Compliance Dashboard) ---
+// Description: Dashboard for customs officers and compliance managers to track products and alerts.
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, AlertTriangle, ShieldCheck, Package, CheckCircle, Clock, ListFilter, Truck, Ship, Plane, ScanLine, FileText, CalendarDays } from "lucide-react";
+import { BarChart3, AlertTriangle, ShieldCheck, Package, CheckCircle, Clock, Truck, Ship, Plane, ScanLine, FileText, CalendarDays } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
+import { cn } from "@/lib/utils";
 
 const mockTransitProducts = [
   { id: "PROD789", name: "Smart Thermostat G3", stage: "Approaching EU Border (Hamburg)", eta: "2024-08-10", dppStatus: "Compliant", transport: "Ship" },
@@ -91,11 +94,11 @@ export default function CustomsDashboardPage() {
                         product.dppStatus === "Pending Documentation" ? "outline" :
                         "destructive"
                       }
-                      className={
+                      className={cn(
                         product.dppStatus === "Compliant" ? "bg-green-100 text-green-700 border-green-300" :
                         product.dppStatus === "Pending Documentation" ? "bg-yellow-100 text-yellow-700 border-yellow-300" :
                         "bg-red-100 text-red-700 border-red-300"
-                      }
+                      )}
                     >
                       {product.dppStatus === "Compliant" && <CheckCircle className="mr-1 h-3 w-3" />}
                       {product.dppStatus === "Pending Documentation" && <Clock className="mr-1 h-3 w-3" />}
@@ -110,8 +113,8 @@ export default function CustomsDashboardPage() {
         </CardContent>
       </Card>
 
-      <div className="grid md:grid-cols-3 gap-6"> {/* Changed to 3 columns for the new card */}
-        <Card className="shadow-lg md:col-span-2"> {/* Timeline takes 2 columns */}
+      <div className="grid md:grid-cols-3 gap-6">
+        <Card className="shadow-lg md:col-span-2">
           <CardHeader>
             <CardTitle className="font-headline flex items-center"><CalendarDays className="mr-2 h-5 w-5 text-primary"/>Customs Inspection Timeline (Example: PROD789)</CardTitle>
             <CardDescription>Chronological overview of a product's journey through customs.</CardDescription>
@@ -131,7 +134,7 @@ export default function CustomsDashboardPage() {
                       <div className="flex justify-between items-center">
                         <p className="font-medium text-foreground">{event.title}</p>
                         {event.status && (
-                           <Badge variant={event.badgeVariant || "secondary"} className={badgeColorClass || "text-xs"}>
+                           <Badge variant={event.badgeVariant || "secondary"} className={cn(badgeColorClass, "text-xs")}>
                              {event.status}
                            </Badge>
                         )}
@@ -146,7 +149,7 @@ export default function CustomsDashboardPage() {
           </CardContent>
         </Card>
 
-        <div className="space-y-6 md:col-span-1"> {/* Existing cards take 1 column */}
+        <div className="space-y-6 md:col-span-1">
             <Card className="shadow-lg">
             <CardHeader>
                 <CardTitle className="font-headline flex items-center"><BarChart3 className="mr-2 h-5 w-5 text-primary"/>DPP Compliance Overview</CardTitle>
@@ -190,10 +193,11 @@ export default function CustomsDashboardPage() {
                     <li key={alert.id} className="p-3 border rounded-md bg-background hover:bg-muted/30">
                         <div className="flex justify-between items-start">
                         <p className="font-medium text-sm text-foreground">{alert.productId}: {alert.message}</p>
-                        <Badge variant={alert.severity === "High" ? "destructive" : alert.severity === "Medium" ? "outline" : "secondary"} className={
-                            alert.severity === "High" ? "bg-red-100 text-red-700 border-red-300" :
-                            alert.severity === "Medium" ? "bg-yellow-100 text-yellow-700 border-yellow-300" : ""
-                        }>
+                        <Badge variant={alert.severity === "High" ? "destructive" : alert.severity === "Medium" ? "outline" : "secondary"} className={cn(
+                            alert.severity === "High" ? "bg-red-100 text-red-700 border-red-300" : "",
+                            alert.severity === "Medium" ? "bg-yellow-100 text-yellow-700 border-yellow-300" : "",
+                            alert.severity === "Low" ? "bg-blue-100 text-blue-700 border-blue-300" : ""
+                        )}>
                             {alert.severity}
                         </Badge>
                         </div>
@@ -211,8 +215,5 @@ export default function CustomsDashboardPage() {
     </div>
   );
 }
-
-
-    
 
     

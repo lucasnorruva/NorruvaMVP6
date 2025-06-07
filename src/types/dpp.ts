@@ -1,7 +1,6 @@
-
 // --- File: dpp.ts ---
 // Description: TypeScript type definitions for Digital Product Passports and related entities.
-import type { LucideIcon } from 'lucide-react'; // Retained for SimpleLifecycleEvent iconName
+import type { LucideIcon } from 'lucide-react';
 
 // Local storage keys
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -126,7 +125,7 @@ export interface DigitalProductPassport {
       batteryPassportId?: string;
       carbonFootprint?: { value: number; unit: string; calculationMethod?: string; vcId?: string };
       recycledContent?: Array<{ material: string; percentage: number; vcId?: string }>;
-      stateOfHealth?: {value: number; unit: '%'; measurementDate: string; vcId?: string};
+      stateOfHealth?: {value: number; unit: string; measurementDate: string; vcId?: string};
       vcId?: string;
     };
   };
@@ -260,8 +259,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         status: "pending",
         carbonFootprint: { value: 120, unit: "kg CO2e/kWh" },
         recycledContent: [{ material: "Cobalt", percentage: 15 }],
-        stateOfHealth: {value: number; unit: '%'; measurementDate: string; vcId?: string};
-        vcId?: string;
+        stateOfHealth: {value: 98, unit: '%', measurementDate: "2024-07-15T00:00:00Z"}, // Corrected: Provide actual values
       },
       eu_espr: { status: "pending" },
     },
@@ -339,30 +337,27 @@ export interface SimpleProductDetail {
 }
 
 // This type is used when storing user-created/edited products in localStorage.
-// It's based on ProductFormData, but also includes DPP-specific fields that might be set.
 export interface StoredUserProduct {
-  id: string; // Unique ID for the product (e.g., USER_PRODxxxx)
-  // Fields from ProductFormData (zod schema in AddNewProductPage)
+  id: string;
   productName?: string;
   gtin?: string;
   productDescription?: string;
   manufacturer?: string;
   modelNumber?: string;
-  materials?: string; // Comma-separated or simple text for now
-  sustainabilityClaims?: string; // Comma-separated or simple text
+  materials?: string;
+  sustainabilityClaims?: string;
   specifications?: string; // JSON string
   energyLabel?: string;
   productCategory?: string;
   imageUrl?: string;
+  imageHint?: string; // For AI image search
   batteryChemistry?: string;
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
   recycledContentPercentage?: number | null;
-  // Additional fields for product listing and DPP structure
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending'; // Status of the product/DPP
-  compliance: string; // Simplified overall compliance text for listing for now
-  lastUpdated: string; // ISO date string
-  // Origin tracking for AI-assisted fields
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending';
+  compliance: string; // Simplified overall compliance text for listing
+  lastUpdated: string;
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
   manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -376,9 +371,38 @@ export interface StoredUserProduct {
   carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  // Fields that would be part of SimpleProductDetail for display
   supplyChainLinks?: ProductSupplyChainLink[];
-  // ... other fields from SimpleProductDetail could be added here if managed by user form
+  // For full display on product list for completeness check
+  lifecycleEvents?: SimpleLifecycleEvent[]; // Using SimpleLifecycleEvent from SimpleProductDetail for consistency
+  complianceSummary?: ProductComplianceSummary; // Using ProductComplianceSummary for richer data
+}
+
+// Initial mock product data for /products page (more detailed than SimpleProductDetail)
+export interface RichMockProduct {
+  id: string; // Same as productId for mock data
+  productId: string;
+  productName: string;
+  category?: string;
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending';
+  compliance: string; // Simplified for list view, e.g., "Compliant", "Pending"
+  lastUpdated: string; // ISO Date string
+  gtin?: string;
+  manufacturer?: string;
+  modelNumber?: string;
+  description?: string;
+  imageUrl?: string;
+  imageHint?: string;
+  materials?: string; // Simple string for mock list, can be parsed if needed
+  sustainabilityClaims?: string; // Simple string
+  energyLabel?: string;
+  specifications?: Record<string, string> | string; // String for user, record for mock
+  lifecycleEvents?: SimpleLifecycleEvent[]; // Array of simplified events
+  complianceData?: Record<string, any>; // Generic object for mock initial compliance
+  // Battery related for completeness check, if not in complianceData
+  batteryChemistry?: string;
+  stateOfHealth?: number | null;
+  carbonFootprintManufacturing?: number | null;
+  recycledContentPercentage?: number | null;
 }
 
 
@@ -517,8 +541,6 @@ export interface Supplier {
   lastUpdated: string;
 }
 
-// This was already defined in useDPPLiveData.ts, ensure it's here or imported if needed globally.
-// export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
 
 export const MOCK_SUPPLIERS: Supplier[] = [
   { id: "SUP001", name: "GreenCompress Ltd.", contactPerson: "Sarah Miller", email: "sarah.miller@greencompress.com", location: "Stuttgart, Germany", materialsSupplied: "Eco-friendly compressors, Cooling units", status: "Active", lastUpdated: "2024-07-15T10:00:00Z" },
@@ -527,33 +549,34 @@ export const MOCK_SUPPLIERS: Supplier[] = [
   { id: "SUP004", name: "PolySolutions Inc.", contactPerson: "Mike Chen", email: "chen.m@polysolutions.com", location: "Shanghai, China", materialsSupplied: "Recycled PET pellets, Bio-polymers, LED Chips & Drivers", status: "Pending Review", lastUpdated: "2024-05-10T11:00:00Z" },
 ];
 
-// DisplayableProduct type for Product Listing page, ensure it's compatible with calculateDppCompleteness
-// This might need to be reconciled with StoredUserProduct if they diverge too much or consolidated.
+
+// Unified type for products displayed in the product list page
 export interface DisplayableProduct {
   id: string;
-  productId?: string; // From mock, same as id
+  productId?: string; // From mock, can be same as id
   productName?: string;
-  category?: string; // From mock
-  productCategory?: string; // From StoredUserProduct/ProductFormDataType
-  status: string;
-  compliance: string;
-  lastUpdated: string;
+  category?: string; // From mock, or StoredUserProduct.productCategory
+  productCategory?: string; // From StoredUserProduct
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | string; // string for flexibility if StoredUserProduct.status is just string
+  compliance: string; // Simplified overall compliance text for listing
+  lastUpdated: string; // ISO date string
   gtin?: string;
   manufacturer?: string;
   modelNumber?: string;
   description?: string; // From mock
-  productDescription?: string; // From StoredUserProduct/ProductFormDataType
+  productDescription?: string; // From StoredUserProduct
   imageUrl?: string;
-  materials?: string; // From StoredUserProduct/ProductFormDataType (simple text for now)
-  sustainabilityClaims?: string; // From StoredUserProduct/ProductFormDataType (simple text for now)
-  energyLabel?: string; // Could be from mock or StoredUserProduct
+  imageHint?: string;
+  materials?: string; // Comma-separated or simple text from StoredUserProduct
+  sustainabilityClaims?: string; // Comma-separated or simple text from StoredUserProduct
+  energyLabel?: string;
   specifications?: Record<string, string> | string; // mock is Record, Stored is string (JSON)
-  lifecycleEvents?: Array<any>; // From mock
-  complianceData?: Record<string, any>; // From mock
-  batteryChemistry?: string; // From StoredUserProduct or mock productDetails
+  // For completeness check, try to get these from more detailed sources if available
+  lifecycleEvents?: SimpleLifecycleEvent[]; 
+  complianceSummary?: ProductComplianceSummary; // Richer compliance data
+  // Battery related for completeness check
+  batteryChemistry?: string;
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
   recycledContentPercentage?: number | null;
 }
-
-    

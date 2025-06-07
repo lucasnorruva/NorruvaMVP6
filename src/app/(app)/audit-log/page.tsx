@@ -47,8 +47,44 @@ export default function AuditLogPage() {
 
   const handleFilterChange = (filterName: keyof typeof filters, value: string) => {
     setFilters(prev => ({ ...prev, [filterName]: value }));
-    // In a real app, you would re-fetch or re-filter data here
   };
+
+  const filteredLogs = useMemo(() => {
+    return mockAuditLogs.filter(log => {
+      // Actor filter
+      if (filters.actor && !log.actor.toLowerCase().includes(filters.actor.toLowerCase())) {
+        return false;
+      }
+      // Action Type filter
+      if (filters.actionType !== "all" && log.actionType !== filters.actionType) {
+        return false;
+      }
+      // Date filter
+      const logDate = new Date(log.timestamp);
+      if (filters.dateFrom) {
+        const dateFromParts = filters.dateFrom.split('-').map(Number);
+        let filterDateFrom = new Date(dateFromParts[0], (dateFromParts[1] || 1) -1, dateFromParts[2] || 1);
+        filterDateFrom.setHours(0,0,0,0); // Start of day
+        if (logDate < filterDateFrom) return false;
+      }
+      if (filters.dateTo) {
+        const dateToParts = filters.dateTo.split('-').map(Number);
+        let filterDateTo = new Date(dateToParts[0], (dateToParts[1] || 12) -1, dateToParts[2] || 31);
+        filterDateTo.setHours(23,59,59,999); // End of day
+
+        // Adjust for month-only or year-only input for dateTo
+        if (dateToParts.length === 2) { // YYYY-MM
+            filterDateTo = new Date(dateToParts[0], dateToParts[1], 0); // Last day of month
+            filterDateTo.setHours(23,59,59,999);
+        } else if (dateToParts.length === 1) { // YYYY
+            filterDateTo = new Date(dateToParts[0], 11, 31); // Last day of year
+            filterDateTo.setHours(23,59,59,999);
+        }
+        if (logDate > filterDateTo) return false;
+      }
+      return true;
+    });
+  }, [filters]);
 
   const getStatusBadge = (status?: 'Success' | 'Failure' | 'Info' | 'Pending') => {
     if (!status) return null;
@@ -93,7 +129,7 @@ export default function AuditLogPage() {
             <FilterIcon className="mr-3 h-5 w-5 text-primary" />
             Filter Audit Logs
           </CardTitle>
-          <CardDescription>Refine the list of audit logs using the filters below. (Mock UI - filters are not functional)</CardDescription>
+          <CardDescription>Refine the list of audit logs using the filters below. Date format: YYYY-MM-DD, YYYY-MM, or YYYY.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div>
@@ -150,7 +186,7 @@ export default function AuditLogPage() {
             Activity Records
           </CardTitle>
           <CardDescription>
-            A chronological record of system events and user actions within the Norruva platform.
+            A chronological record of system events and user actions within the Norruva platform. Displaying {filteredLogs.length} of {mockAuditLogs.length} records.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -166,7 +202,7 @@ export default function AuditLogPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockAuditLogs.map((log) => (
+              {filteredLogs.map((log) => (
                 <TableRow key={log.id}>
                   <TableCell className="text-xs text-muted-foreground">
                     {new Date(log.timestamp).toLocaleString()}
@@ -178,10 +214,10 @@ export default function AuditLogPage() {
                   <TableCell className="text-right">{getStatusBadge(log.status as any)}</TableCell>
                 </TableRow>
               ))}
-              {mockAuditLogs.length === 0 && (
+              {filteredLogs.length === 0 && (
                 <TableRow>
                     <TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
-                        No audit logs available.
+                        No audit logs match your current filters.
                     </TableCell>
                 </TableRow>
               )}
@@ -192,3 +228,4 @@ export default function AuditLogPage() {
     </div>
   );
 }
+

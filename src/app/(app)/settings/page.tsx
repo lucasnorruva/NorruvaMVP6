@@ -4,8 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { UserCircle, Bell, Lock, Briefcase, FileCog, Users } from "lucide-react"; // Added Users icon
-import Link from "next/link"; // Added Link import
+import { UserCircle, Bell, Lock, Briefcase, FileCog, Users, KeyRound } from "lucide-react"; // Added KeyRound
+import Link from "next/link";
 
 export default function SettingsPage() {
   return (
@@ -86,12 +86,21 @@ export default function SettingsPage() {
             <Input id="orgName" defaultValue="Acme Corp" />
           </div>
            <Link href="/settings/users" passHref>
-            <Button variant="outline" className="w-full sm:w-auto">
-              <Users className="mr-2 h-4 w-4" />
-              Manage Users
+            <Button variant="outline" className="w-full sm:w-auto" asChild>
+              <a>
+                <Users className="mr-2 h-4 w-4" />
+                Manage Users
+              </a>
             </Button>
            </Link>
-           <Button variant="outline">API Keys</Button>
+           <Link href="/developer#api-keys" passHref>
+            <Button variant="outline" className="w-full sm:w-auto" asChild>
+              <a>
+                <KeyRound className="mr-2 h-4 w-4" />
+                Manage API Keys
+              </a>
+            </Button>
+           </Link>
            <Button variant="outline">
             <FileCog className="mr-2 h-4 w-4" />
             Customize Compliance Profile (Mock)

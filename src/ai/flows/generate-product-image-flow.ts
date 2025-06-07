@@ -64,3 +64,4 @@ const generateProductImageFlow = ai.defineFlow(
     return { imageUrl: media.url };
   }
 );
+

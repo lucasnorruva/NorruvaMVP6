@@ -1,3 +1,4 @@
+
 // --- File: aiFormHelpers.tsx ---
 // Description: Utility functions for handling AI-powered suggestions in product forms.
 "use client";
@@ -153,3 +154,4 @@ export async function handleGenerateImageAI(
     setLoadingState(false);
   }
 }
+

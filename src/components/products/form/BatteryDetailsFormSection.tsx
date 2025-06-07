@@ -8,7 +8,7 @@ import type { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu } from "lucide-react"; // Removed BatteryCharging as it's more relevant for AccordionTrigger
+import { Cpu } from "lucide-react";
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 
@@ -17,7 +17,6 @@ interface BatteryDetailsFormSectionProps {
   initialData?: Partial<InitialProductFormData>;
 }
 
-// Local AiIndicator for this component
 const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' | 'manual', fieldName: string }) => {
   if (fieldOrigin === 'AI_EXTRACTED') {
     return (
@@ -27,7 +26,7 @@ const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' 
             <Cpu className="h-4 w-4 text-info" />
           </TooltipTrigger>
           <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
+            <p>This {fieldName.toLowerCase()} was suggested by AI document extraction.</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -67,7 +66,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
                 type="number"
                 placeholder="e.g., 98"
                 {...field}
-                value={field.value ?? ''} // Handle null/undefined for controlled number input
+                value={field.value ?? ''} 
                 onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)}
               />
             </FormControl>
@@ -89,7 +88,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
                 type="number"
                 placeholder="e.g., 75.5"
                 {...field}
-                value={field.value ?? ''} // Handle null/undefined
+                value={field.value ?? ''} 
                 onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)}
               />
             </FormControl>
@@ -111,7 +110,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
                 type="number"
                 placeholder="e.g., 15"
                 {...field}
-                value={field.value ?? ''} // Handle null/undefined
+                value={field.value ?? ''} 
                 onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)}
               />
             </FormControl>
@@ -122,3 +121,4 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
     </div>
   );
 }
+

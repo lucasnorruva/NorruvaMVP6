@@ -40,6 +40,13 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     csrd: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('csrd')) || { status: 'N/A', lastChecked: new Date().toISOString() },
   };
 
+  const formatStatusString = (status: string): string => {
+    return status
+      .replace(/_/g, ' ')
+      .replace(/\b(eprel|in|id|url|co2e|kwh|mfg|svhc|sds|qa|gwp|voc)\b/gi, match => match.toUpperCase())
+      .replace(/\b\w/g, char => char.toUpperCase());
+  };
+
 
   return (
     <div className="space-y-6">
@@ -60,7 +67,13 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <p className="flex items-center">Status: <Badge variant={getStatusBadgeVariant(summary.eprel.status)} className={cn("ml-2", getStatusBadgeClasses(summary.eprel.status))}>{summary.eprel.status}</Badge></p>
+              <p className="flex items-center">
+                Status:
+                {React.cloneElement(getStatusIcon(summary.eprel.status), { className: "mx-2 h-4 w-4" })}
+                <Badge variant={getStatusBadgeVariant(summary.eprel.status)} className={cn("text-xs", getStatusBadgeClasses(summary.eprel.status))}>
+                  {formatStatusString(summary.eprel.status)}
+                </Badge>
+              </p>
               {summary.eprel.id && <p>ID: <span className="font-medium">{summary.eprel.id}</span></p>}
               <p>Last Checked: <span className="font-medium">{new Date(summary.eprel.lastChecked).toLocaleDateString()}</span></p>
               {summary.eprel.url && (
@@ -82,7 +95,13 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <p className="flex items-center">Status: <Badge variant={getStatusBadgeVariant(summary.ebsi.status)} className={cn("ml-2", getStatusBadgeClasses(summary.ebsi.status))}>{summary.ebsi.status}</Badge></p>
+              <p className="flex items-center">
+                Status:
+                {React.cloneElement(getStatusIcon(summary.ebsi.status), { className: "mx-2 h-4 w-4" })}
+                <Badge variant={getStatusBadgeVariant(summary.ebsi.status)} className={cn("text-xs", getStatusBadgeClasses(summary.ebsi.status))}>
+                  {formatStatusString(summary.ebsi.status)}
+                </Badge>
+              </p>
               {summary.ebsi.verificationId && <p className="truncate">Verification ID: <span className="font-medium font-mono text-xs" title={summary.ebsi.verificationId}>{summary.ebsi.verificationId}</span></p>}
                <p>Last Checked: <span className="font-medium">{new Date(summary.ebsi.lastChecked).toLocaleDateString()}</span></p>
               {summary.ebsi.transactionUrl && (
@@ -108,11 +127,11 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
               <div key={index} className="p-4 border rounded-lg bg-background hover:shadow-md transition-shadow">
                 <div className="flex justify-between items-start mb-2">
                   <h4 className="font-medium text-md text-foreground flex items-center">
-                    {getStatusIcon(reg.status)}
-                    <span className="ml-2">{reg.regulationName}</span>
+                    {React.cloneElement(getStatusIcon(reg.status), {className: "mr-2 h-5 w-5"})}
+                    {reg.regulationName}
                   </h4>
-                  <Badge variant={getStatusBadgeVariant(reg.status)} className={cn("text-xs capitalize", getStatusBadgeClasses(reg.status))}>
-                      {reg.status}
+                  <Badge variant={getStatusBadgeVariant(reg.status)} className={cn("text-xs", getStatusBadgeClasses(reg.status))}>
+                      {formatStatusString(reg.status)}
                   </Badge>
                 </div>
                 <div className="text-xs space-y-1">

@@ -100,9 +100,9 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
       }
     },
     { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 },
-    { key: 'complianceSummary.overallStatus', label: 'Overall Compliance Status', check: (p) => p.complianceSummary?.overallStatus !== undefined && p.complianceSummary.overallStatus !== 'N/A' },
-    { key: 'complianceSummary.eprel.status', label: 'EPREL Status', check: (p) => p.complianceSummary?.eprel?.status !== undefined && p.complianceSummary.eprel.status !== 'N/A' && p.complianceSummary.eprel.status !== 'Not Found'},
-    { key: 'complianceSummary.ebsi.status', label: 'EBSI Status', check: (p) => p.complianceSummary?.ebsi?.status !== undefined && p.complianceSummary.ebsi.status !== 'N/A' && p.complianceSummary.ebsi.status !== 'Not Verified' && p.complianceSummary.ebsi.status !== 'Error' },
+    { key: 'complianceSummary.overallStatus', label: 'Overall Compliance Status', check: (p) => p.complianceSummary?.overallStatus !== undefined && p.complianceSummary.overallStatus.toLowerCase() !== 'n/a' },
+    { key: 'complianceSummary.eprel.status', label: 'EPREL Status', check: (p) => p.complianceSummary?.eprel?.status !== undefined && p.complianceSummary.eprel.status.toLowerCase() !== 'n/a' && !p.complianceSummary.eprel.status.toLowerCase().includes('not found')},
+    { key: 'complianceSummary.ebsi.status', label: 'EBSI Status', check: (p) => p.complianceSummary?.ebsi?.status !== undefined && p.complianceSummary.ebsi.status.toLowerCase() !== 'n/a' && p.complianceSummary.ebsi.status.toLowerCase() !== 'not verified' && p.complianceSummary.ebsi.status.toLowerCase() !== 'error' },
     { key: 'complianceSummary.specificRegulations', label: 'Specific Regulations Count', check: (p) => (p.complianceSummary?.specificRegulations || []).length > 0 },
   ];
 
@@ -145,7 +145,7 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
       if (typeof value === 'object' && value !== null) {
         isFieldFilled = Object.keys(value).length > 0 || (Array.isArray(value) && value.length > 0);
       } else {
-        isFieldFilled = value !== null && value !== undefined && String(value).trim() !== '' && String(value).trim() !== 'N/A';
+        isFieldFilled = value !== null && value !== undefined && String(value).trim() !== '' && String(value).toLowerCase().trim() !== 'n/a';
       }
     }
 
@@ -168,13 +168,18 @@ export const getStatusIcon = (status?: string): JSX.Element => {
     case 'registered':
     case 'verified':
     case 'synced successfully':
+    case 'conformant': // Added from overall compliance logic
       return <ShieldCheck className="h-5 w-5 text-green-500" />;
     case 'non-compliant':
+    case 'non_conformant': // Added from overall compliance logic
     case 'error':
     case 'error during sync':
       return <AlertTriangle className="h-5 w-5 text-red-500" />;
     case 'pending':
     case 'pending review':
+    case 'pending_review': // Ensure this is caught
+    case 'pending_assessment': // Added
+    case 'pending_verification': // Added
     case 'in progress':
     case 'data incomplete':
     case 'data mismatch':
@@ -195,13 +200,18 @@ export const getStatusBadgeVariant = (status?: string): "default" | "destructive
     case 'registered':
     case 'verified':
     case 'synced successfully':
+    case 'conformant':
       return "default";
     case 'non-compliant':
+    case 'non_conformant':
     case 'error':
     case 'error during sync':
       return "destructive";
     case 'pending':
     case 'pending review':
+    case 'pending_review':
+    case 'pending_assessment':
+    case 'pending_verification':
     case 'in progress':
     case 'data incomplete':
     case 'data mismatch':
@@ -218,10 +228,11 @@ export const getStatusBadgeVariant = (status?: string): "default" | "destructive
 
 export const getStatusBadgeClasses = (status?: string): string => {
     switch (status?.toLowerCase()) {
-        case 'compliant': case 'registered': case 'verified': case 'synced successfully': return "bg-green-100 text-green-700 border-green-300";
-        case 'non-compliant': case 'error': case 'error during sync': return "bg-red-100 text-red-700 border-red-300";
-        case 'pending': case 'pending review': case 'in progress': case 'data incomplete': case 'data mismatch': case 'product not found in eprel': return "bg-yellow-100 text-yellow-700 border-yellow-300";
+        case 'compliant': case 'registered': case 'verified': case 'synced successfully': case 'conformant': return "bg-green-100 text-green-700 border-green-300";
+        case 'non-compliant': case 'non_conformant': case 'error': case 'error during sync': return "bg-red-100 text-red-700 border-red-300";
+        case 'pending': case 'pending review': case 'pending_review': case 'pending_assessment': case 'pending_verification': case 'in progress': case 'data incomplete': case 'data mismatch': case 'product not found in eprel': return "bg-yellow-100 text-yellow-700 border-yellow-300";
         case 'not applicable': case 'n/a': case 'not found': case 'not verified':
         default: return "bg-muted text-muted-foreground";
     }
 };
+

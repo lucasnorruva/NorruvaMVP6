@@ -55,6 +55,11 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
   let titleText = title;
   let detailsText = `Last checked: ${new Date(data.lastChecked).toLocaleDateString()}`;
 
+  const formattedStatus = data.status
+    .replace(/_/g, ' ')
+    .replace(/\b(eprel|in|id|url|co2e|kwh|mfg|svhc|sds|qa|gwp|voc)\b/gi, match => match.toUpperCase()) // Uppercase specific acronyms
+    .replace(/\b\w/g, char => char.toUpperCase()); // Capitalize each word for statuses like "Product Not Found In EPREL"
+
   if (title.includes("EBSI") && data.verificationId && data.verificationId !== "PENDING_EBSI_CHECK" && data.status.toLowerCase() === 'verified') {
     detailsText = `Verified (ID: ${data.verificationId}) - ${detailsText}`;
   } else if (title.includes("EPREL") && data.id && (data.status.toLowerCase() === 'registered' || data.status.toLowerCase() === 'synced successfully' || data.status.toLowerCase() === 'data mismatch')){
@@ -69,7 +74,7 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
   return (
     <div className="flex items-center justify-between p-3 bg-background rounded-md border hover:bg-muted/30 transition-colors">
       <div className="flex items-center">
-        {React.cloneElement(IconComponent, { className: cn(IconComponent.props.className)})} {/* Removed hardcoded class override */}
+        {IconComponent}
         <div className="ml-3">
           <span className="text-sm font-medium">{titleText}</span>
           {detailsText && <span className="block text-xs text-muted-foreground">{detailsText}</span>}
@@ -77,8 +82,8 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
       </div>
       <div className="flex items-center gap-2">
         {actionButton}
-        <Badge variant={badgeVariant} className={cn("text-xs capitalize", badgeClasses)}>
-          {data.status.replace(/_/g, ' ').replace(/\b(eprel|in)\b/gi, match => match.toLowerCase())} {/* Nicer formatting */}
+        <Badge variant={badgeVariant} className={cn("text-xs", badgeClasses)}>
+          {formattedStatus}
         </Badge>
       </div>
     </div>
@@ -95,10 +100,13 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
   const overallStatusIcon = getStatusIcon(overallStatusText);
   const overallStatusBadgeVariant = getStatusBadgeVariant(overallStatusText);
   const overallStatusBadgeClasses = getStatusBadgeClasses(overallStatusText);
+  const formattedOverallStatusText = overallStatusText
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, char => char.toUpperCase());
 
   const eprelSyncButton = (onSyncEprel) ? (
-    <TooltipProvider>
-      <Tooltip delayDuration={100}>
+    <TooltipProvider delayDuration={100}>
+      <Tooltip>
         <TooltipTrigger asChild>
           <Button
             variant="outline"
@@ -139,12 +147,12 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
               {hasErrorNotifications && <span className="block text-destructive font-medium mt-1">Attention: Critical alerts require review.</span>}
             </CardDescription>
           </div>
-          {overallStatusText && overallStatusText !== 'N/A' && (
+          {overallStatusText && overallStatusText.toLowerCase() !== 'n/a' && (
             <div className="flex flex-col items-start sm:items-end mt-2 sm:mt-0">
               <span className="text-xs text-muted-foreground mb-0.5">Overall Status</span>
-              <Badge variant={overallStatusBadgeVariant} className={cn("text-sm px-3 py-1 capitalize", overallStatusBadgeClasses)}>
+              <Badge variant={overallStatusBadgeVariant} className={cn("text-sm px-3 py-1", overallStatusBadgeClasses)}>
                 {React.cloneElement(overallStatusIcon, { className: cn(overallStatusIcon.props.className, "mr-2 h-4 w-4") })}
-                {overallStatusText.replace('_', ' ')}
+                {formattedOverallStatusText}
               </Badge>
             </div>
           )}
@@ -162,5 +170,4 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
 };
 
 export default OverallProductCompliance;
-
     

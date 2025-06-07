@@ -6,7 +6,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertCircle, Info as InfoIcon, ExternalLink, TrendingUp, TrendingDown, Minus, LucideIcon, CalendarDays, MapPin, FileText, ListChecks, User } from 'lucide-react';
+import { CheckCircle, AlertCircle, Info as InfoIcon, ExternalLink, TrendingUp, TrendingDown, Minus, LucideIcon, CalendarDays, MapPin, FileText, ListChecks, User, Link as LinkIconLucide } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip } from 'recharts';
 
@@ -195,14 +195,20 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
                               <FileText className="h-3.5 w-3.5 mr-1.5" />Key Documents
                             </h5>
                             <ul className="space-y-1 text-xs">
-                              {phase.keyDocuments.map(doc => (
-                                <li key={doc.name} className="flex items-center justify-between p-1.5 bg-muted/30 rounded-sm">
-                                  <span className="truncate pr-2 text-foreground/90">{doc.name} ({doc.type})</span>
-                                  <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                                    <ExternalLink className="h-3.5 w-3.5" />
-                                  </a>
-                                </li>
-                              ))}
+                              {phase.keyDocuments.map(doc => {
+                                const DocIcon = doc.type === 'PDF' ? FileText : LinkIconLucide;
+                                return (
+                                  <li key={doc.name} className="flex items-center justify-between p-1.5 bg-muted/30 rounded-sm">
+                                    <span className="truncate pr-2 text-foreground/90 flex items-center">
+                                      <DocIcon className="h-3.5 w-3.5 mr-1 flex-shrink-0" />
+                                      {doc.name}
+                                    </span>
+                                    <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                                      <ExternalLink className="h-3.5 w-3.5" />
+                                    </a>
+                                  </li>
+                                );
+                              })}
                             </ul>
                           </div>
                         )}

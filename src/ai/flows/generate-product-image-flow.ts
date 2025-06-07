@@ -14,7 +14,7 @@ import {z} from 'genkit';
 const GenerateProductImageInputSchema = z.object({
   productName: z.string().describe('The name of the product.'),
   productCategory: z.string().optional().describe('The category of the product (e.g., Electronics, Apparel).'),
-  // imageHint: z.string().optional().describe('Optional keywords to guide image style, e.g., "minimalist, studio shot".'),
+  imageHint: z.string().optional().describe('Optional keywords to guide image style, e.g., "minimalist, studio shot", "on a wooden table".'),
 });
 export type GenerateProductImageInput = z.infer<typeof GenerateProductImageInputSchema>;
 
@@ -42,9 +42,9 @@ const generateProductImageFlow = ai.defineFlow(
     if (input.productCategory) {
       promptParts.push(`Category: '${input.productCategory}'.`);
     }
-    // if (input.imageHint) {
-    //   promptParts.push(`Keywords for image style: '${input.imageHint}'.`);
-    // }
+    if (input.imageHint) {
+      promptParts.push(`Visual style or key elements to include based on this hint: '${input.imageHint}'.`);
+    }
     promptParts.push(`Focus on a clean, professional product shot on a simple background. Avoid text, logos, or human elements unless part of the product itself.`);
     
     const generationPrompt = promptParts.join(' ');

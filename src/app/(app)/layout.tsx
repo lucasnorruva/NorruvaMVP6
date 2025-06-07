@@ -1,11 +1,10 @@
-
 "use client"; // Add this because usePathname is a client hook
 import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation'; // Import usePathname
 import { SidebarProvider, Sidebar, SidebarInset } from "@/components/ui/sidebar";
 import AppHeader from "@/components/layout/AppHeader";
 import AppSidebarContent from "@/components/layout/AppSidebarContent";
-// RoleProvider is no longer imported or used here as it's moved to the root layout
+import { RoleProvider } from '@/contexts/RoleContext'; // ADD THIS IMPORT BACK
 
 export default function AppLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname(); // Get current pathname
@@ -21,18 +20,20 @@ export default function AppLayout({ children }: { children: ReactNode }) {
   }
 
   // Render the standard app layout for other routes
-  // RoleProvider is inherited from the root layout
+  // Wrap this part with RoleProvider to ensure AppHeader and its children have context
   return (
-    <SidebarProvider defaultOpen={true}>
-      <Sidebar variant="sidebar" collapsible="icon">
-        <AppSidebarContent />
-      </Sidebar>
-      <SidebarInset>
-        <AppHeader />
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
-          {children}
-        </main>
-      </SidebarInset>
-    </SidebarProvider>
+    <RoleProvider>
+      <SidebarProvider defaultOpen={true}>
+        <Sidebar variant="sidebar" collapsible="icon">
+          <AppSidebarContent />
+        </Sidebar>
+        <SidebarInset>
+          <AppHeader />
+          <main className="flex-1 p-4 md:p-6 lg:p-8">
+            {children}
+          </main>
+        </SidebarInset>
+      </SidebarProvider>
+    </RoleProvider>
   );
 }

@@ -110,7 +110,7 @@ export interface DigitalProductPassport {
     energyLabel?: string;
     repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
     recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
-    customAttributes?: CustomAttribute[]; // Added custom attributes here
+    customAttributes?: CustomAttribute[];
   };
 
   lifecycleEvents?: LifecycleEvent[];
@@ -357,7 +357,7 @@ export interface SimpleProductDetail {
   supplyChainLinks?: ProductSupplyChainLink[];
   complianceSummary?: ProductComplianceSummary;
   lifecycleEvents?: SimpleLifecycleEvent[];
-  customAttributes?: CustomAttribute[]; // Added custom attributes
+  customAttributes?: CustomAttribute[];
 }
 
 // This type is used when storing user-created/edited products in localStorage.
@@ -398,7 +398,7 @@ export interface StoredUserProduct {
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[]; 
   complianceSummary?: ProductComplianceSummary;
-  customAttributesJsonString?: string; // Added for storing custom attributes
+  customAttributesJsonString?: string;
 }
 
 // Initial mock product data for /products page (more detailed than SimpleProductDetail)
@@ -428,7 +428,7 @@ export interface RichMockProduct {
   recycledContentPercentage?: number | null;
   ebsiVerification?: EbsiVerificationDetails;
   supplyChainLinks?: ProductSupplyChainLink[]; // Added for completeness
-  customAttributesJsonString?: string; // Added for consistency
+  customAttributesJsonString?: string;
 }
 
 
@@ -617,7 +617,7 @@ export interface DisplayableProduct {
   recycledContentPercentage?: number | null;
   ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A'; // For DisplayableProduct on list view
   supplyChainLinks?: ProductSupplyChainLink[];
-  customAttributesJsonString?: string; // Added for product list consistency
+  customAttributesJsonString?: string;
 }
 
 // --- Types for Public Passport Page ---
@@ -665,7 +665,7 @@ export interface PublicProductInfo {
   ebsiVerificationId?: string;
   lifecycleHighlights?: LifecycleHighlight[];
   certifications?: PublicCertification[];
-  customAttributes?: CustomAttribute[]; // Added
+  customAttributes?: CustomAttribute[];
 }
 
 export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
@@ -706,7 +706,11 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { name: "ISO 9001:2015", authority: "TUV SUD", expiryDate: "2026-05-20", link: "#", isVerified: false },
       { name: "Green Product Award 2024", authority: "EcoChoice Org", expiryDate: "N/A", link: "#", isVerified: true },
     ],
-    customAttributes: [{key: "EcoRating", value: "Gold"}, {key: "SpecialFeature", value: "AI Defrost"}]
+    customAttributes: [
+      { key: "Eco Rating", value: "Gold Star" },
+      { key: "Special Feature", value: "AI-Optimized Cooling" },
+      { key: "Recycler Note", value: "Compressor contains R600a refrigerant. Handle with care." }
+    ]
   },
   "PROD002": {
     passportId: "PROD002",
@@ -741,6 +745,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { name: "CE Marking", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
       { name: "Bluetooth SIG Qualification", authority: "Bluetooth SIG", expiryDate: "2028-01-01", link:"#", isVerified: true },
     ]
+    // No custom attributes for PROD002 in this example
   }
 };
+
 

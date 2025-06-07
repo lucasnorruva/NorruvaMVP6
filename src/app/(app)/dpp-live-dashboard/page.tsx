@@ -21,7 +21,7 @@ import {
 import { DashboardFiltersComponent } from "@/components/dpp-dashboard/DashboardFiltersComponent";
 import { DPPTable } from "@/components/dpp-dashboard/DPPTable";
 import { DashboardMetrics } from "@/components/dpp-live-dashboard/DashboardMetrics";
-import { ScanProductDialog } from "@/components/dpp-live-dashboard/ScanProductDialog";
+import { ScanProductDialog } from "@/components/dpp-live-dashboard/ScanProductDialog"; // Import new component
 import { AiSummaryDialog } from "@/components/dpp-live-dashboard/AiSummaryDialog";
 import { useDPPLiveData } from '@/hooks/useDPPLiveData';
 import { generateProductSummary } from '@/ai/flows/generate-product-summary.ts';
@@ -106,7 +106,7 @@ export default function DPPLiveDashboardPage() {
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-headline font-semibold text-primary">Live DPP Dashboard</h1>
         <div className="flex gap-2">
-          <ScanProductDialog allDpps={dpps} />
+          <ScanProductDialog allDpps={dpps} /> {/* Use the dpps state from the hook */}
           <Link href="/products/new" passHref>
             <Button variant="secondary"><PlusCircle className="mr-2 h-5 w-5" />Create New DPP</Button>
           </Link>

@@ -17,7 +17,6 @@ import { Label } from "@/components/ui/label";
 import { Layers, Link2, Trash2, Edit3 as EditIcon, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/contexts/RoleContext";
-// import { cn } from "@/lib/utils"; // cn is not used here after recent changes
 
 interface SupplyChainTabProps {
   product: SimpleProductDetail;
@@ -29,7 +28,6 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
   const { currentRole } = useRole();
   const [isClient, setIsClient] = useState(false);
 
-  // No local linkedSuppliers state anymore, derived from props
   const currentLinkedSuppliers = useMemo(() => product.supplyChainLinks || [], [product.supplyChainLinks]);
 
   const [availableSuppliers, setAvailableSuppliers] = useState<Supplier[]>([]);
@@ -47,12 +45,13 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
 
   useEffect(() => {
     setIsClient(true);
+    // Fetch available suppliers from localStorage and merge with mocks
     const storedSuppliersString = localStorage.getItem(USER_SUPPLIERS_LOCAL_STORAGE_KEY);
     const userAddedSuppliers: Supplier[] = storedSuppliersString ? JSON.parse(storedSuppliersString) : [];
     const combinedSuppliers = [
       ...MOCK_SUPPLIERS.filter(mockSup => !userAddedSuppliers.find(userSup => userSup.id === mockSup.id)),
       ...userAddedSuppliers
-    ];
+    ].sort((a,b) => a.name.localeCompare(b.name));
     setAvailableSuppliers(combinedSuppliers);
   }, []);
 
@@ -68,7 +67,7 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
     const newLink: ProductSupplyChainLink = { supplierId: selectedSupplierId, suppliedItem, notes: linkNotes };
     const updatedLinks = [...currentLinkedSuppliers, newLink];
     onSupplyChainLinksChange(updatedLinks);
-    toast({ title: "Supplier Link Added", description: "The new link has been added to the product." });
+    toast({ title: "Supplier Link Added", description: "The new link has been added." });
     setIsLinkDialogOpen(false);
     setSelectedSupplierId("");
     setSuppliedItem("");
@@ -78,7 +77,7 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
   const handleUnlinkSupplier = (supplierIdToUnlink: string, itemSupplied: string) => {
     const updatedLinks = currentLinkedSuppliers.filter(link => !(link.supplierId === supplierIdToUnlink && link.suppliedItem === itemSupplied));
     onSupplyChainLinksChange(updatedLinks);
-    toast({ title: "Supplier Link Removed", description: "The link has been removed from the product." });
+    toast({ title: "Supplier Link Removed", description: "The link has been removed." });
   };
   
   const handleOpenEditDialog = (link: ProductSupplyChainLink) => {
@@ -93,7 +92,7 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
   const handleUpdateSupplierLink = () => {
     if (!editingLink) return;
     const updatedLinks = currentLinkedSuppliers.map(link =>
-      link.supplierId === editingLink.supplierId && link.suppliedItem === editingLink.suppliedItem
+      link.supplierId === editingLink.supplierId && link.suppliedItem === editingLink.suppliedItem // Assuming item is part of key for uniqueness
         ? { ...link, suppliedItem: editSuppliedItem, notes: editLinkNotes }
         : link
     );
@@ -136,7 +135,7 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
                       <SelectValue placeholder="Select a supplier" />
                     </SelectTrigger>
                     <SelectContent>
-                      {availableSuppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                      {availableSuppliers.map(s => <SelectItem key={s.id} value={s.id}>{s.name} ({s.materialsSupplied.substring(0,30)}...)</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -172,7 +171,7 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
               {currentLinkedSuppliers.map((link, index) => {
                 const supplier = availableSuppliers.find(s => s.id === link.supplierId);
                 return (
-                  <TableRow key={`${link.supplierId}-${index}`}>
+                  <TableRow key={`${link.supplierId}-${link.suppliedItem}-${index}`}>
                     <TableCell>{supplier?.name || link.supplierId}</TableCell>
                     <TableCell>{link.suppliedItem}</TableCell>
                     <TableCell className="text-xs text-muted-foreground max-w-xs truncate">{link.notes || '-'}</TableCell>

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge"; 
-import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info } from "lucide-react";
+import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
@@ -443,9 +443,9 @@ export default function DeveloperPortalPage() {
                 <h4 className="font-semibold">Core Documentation</h4>
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
                     <li><Link href="/developer/docs/api-reference" className="hover:underline flex items-center"><BookText className="mr-1.5 h-4 w-4 inline-block"/>API Reference</Link> <span className="text-xs text-muted-foreground">(Endpoints, Schemas)</span></li>
-                    <li><Link href="/developer/docs/authentication" className="hover:underline flex items-center"><KeyRound className="mr-1.5 h-4 w-4 inline-block"/>Authentication</Link> <span className="text-xs text-muted-foreground">(API Keys, OAuth 2.0)</span></li>
-                    <li><Link href="#" className="hover:underline text-muted-foreground line-through flex items-center"><LinkIconPath className="mr-1.5 h-4 w-4 inline-block"/>Rate Limiting &amp; Usage</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
-                    <li><Link href="#" className="hover:underline text-muted-foreground line-through flex items-center"><FileCog className="mr-1.5 h-4 w-4 inline-block"/>Error Codes &amp; Handling</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
+                    <li><Link href="/developer/docs/authentication" className="hover:underline flex items-center"><KeyRound className="mr-1.5 h-4 w-4 inline-block"/>Authentication</Link> <span className="text-xs text-muted-foreground">(API Keys)</span></li>
+                    <li><Link href="/developer/docs/rate-limiting" className="hover:underline flex items-center"><Clock className="mr-1.5 h-4 w-4 inline-block"/>Rate Limiting &amp; Usage</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
+                    <li><Link href="/developer/docs/error-codes" className="hover:underline flex items-center"><ErrorIcon className="mr-1.5 h-4 w-4 inline-block"/>Error Codes &amp; Handling</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
                 </ul>
             </div>
              <div className="space-y-2 pt-3 border-t">
@@ -453,8 +453,8 @@ export default function DeveloperPortalPage() {
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
                     <li><Link href="/developer/guides/quick-start" className="hover:underline flex items-center"><Rocket className="mr-1.5 h-4 w-4 inline-block"/>Quick Start Integration Guide</Link></li>
                     <li><Link href="/developer/docs/ebsi-integration" className="hover:underline flex items-center"><Share2 className="mr-1.5 h-4 w-4 inline-block"/>EBSI Integration Overview</Link></li>
-                    <li><Link href="#" className="hover:underline text-muted-foreground line-through flex items-center"><Scale className="mr-1.5 h-4 w-4 inline-block"/>Regulatory Alignment (ESPR, EPREL)</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
-                    <li><Link href="#" className="hover:underline text-muted-foreground line-through flex items-center"><Layers className="mr-1.5 h-4 w-4 inline-block"/>Best Practices for Data Management</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
+                    <li><Link href="/developer/docs/regulatory-alignment" className="hover:underline flex items-center"><Scale className="mr-1.5 h-4 w-4 inline-block"/>Regulatory Alignment (ESPR, EPREL)</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
+                    <li><Link href="/developer/docs/data-management-best-practices" className="hover:underline flex items-center"><LayersIcon className="mr-1.5 h-4 w-4 inline-block"/>Data Management Best Practices</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
                 </ul>
             </div>
             <div className="space-y-2 pt-3 border-t">
@@ -684,4 +684,3 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
-

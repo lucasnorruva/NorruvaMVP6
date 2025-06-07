@@ -6,6 +6,7 @@ import { Server, FileJson, KeyRound, Info, BookText } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { MOCK_DPPS } from "@/types/dpp"; 
+import { cn } from "@/lib/utils";
 
 export default function ApiReferencePage() {
   const exampleDppResponse = JSON.stringify(MOCK_DPPS[0], null, 2); 
@@ -32,6 +33,104 @@ export default function ApiReferencePage() {
   const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }, null, 2);
   const error400_qr = JSON.stringify({ error: { code: 400, message: "Invalid request body. 'qrIdentifier' is required." } }, null, 2);
   const error500 = JSON.stringify({ error: { code: 500, message: "An unexpected error occurred on the server." } }, null, 2);
+
+  const conceptualCreateDppRequestBody = JSON.stringify({
+    productName: "Sustainable Smart Watch Series 5",
+    category: "Wearable Technology",
+    gtin: "09876543210123",
+    manufacturerName: "FutureGadgets Inc.",
+    modelNumber: "SW-S5-ECO",
+    productDetails: {
+      description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case and energy-efficient display.",
+      materials: [
+        { name: "Recycled Aluminum (Case)", percentage: 80, isRecycled: true },
+        { name: "Organic Polymer (Strap)", percentage: 20 }
+      ],
+      energyLabel: "A"
+    }
+  }, null, 2);
+
+  const conceptualCreateDppResponseBody = JSON.stringify({
+    ...MOCK_DPPS[0], // Use a base structure
+    id: "DPP_NEW_12345", // Newly generated ID
+    version: 1,
+    productName: "Sustainable Smart Watch Series 5",
+    category: "Wearable Technology",
+    gtin: "09876543210123",
+    manufacturer: { name: "FutureGadgets Inc." },
+    modelNumber: "SW-S5-ECO",
+    metadata: {
+      created_at: new Date().toISOString(), // Current timestamp
+      last_updated: new Date().toISOString(),
+      status: "draft", // Initial status
+      dppStandardVersion: MOCK_DPPS[0].metadata.dppStandardVersion
+    },
+    productDetails: {
+      description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case and energy-efficient display.",
+      materials: [
+        { name: "Recycled Aluminum (Case)", percentage: 80, isRecycled: true },
+        { name: "Organic Polymer (Strap)", percentage: 20 }
+      ],
+      energyLabel: "A",
+      imageUrl: "https://placehold.co/600x400.png", // Placeholder image
+      imageHint: "smart watch wearable"
+    },
+    compliance: { battery_regulation: { status: "not_applicable" } },
+    ebsiVerification: { status: "pending_verification", lastChecked: new Date().toISOString() },
+    lifecycleEvents: [],
+    certifications: [],
+    supplyChainLinks: []
+  }, null, 2);
+
+  const conceptualUpdateDppRequestBody = JSON.stringify({
+    productDetails: {
+      description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case, energy-efficient display, and enhanced battery life.",
+      sustainabilityClaims: [
+        { claim: "Made with 80% recycled aluminum", verificationDetails: "Verified by GreenCert" }
+      ]
+    },
+    metadata: {
+      status: "pending_review"
+    }
+  }, null, 2);
+  
+  const conceptualUpdateDppResponseBody = JSON.stringify({
+    ...MOCK_DPPS[0], // Assume it's an update to PROD001 for example
+    productDetails: {
+        ...MOCK_DPPS[0].productDetails,
+        description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case, energy-efficient display, and enhanced battery life.",
+        sustainabilityClaims: [
+        { claim: "Made with 80% recycled aluminum", verificationDetails: "Verified by GreenCert" }
+        ]
+    },
+    metadata: {
+        ...MOCK_DPPS[0].metadata,
+        status: "pending_review",
+        last_updated: new Date().toISOString()
+    }
+  }, null, 2);
+
+
+  const error400_create_dpp = JSON.stringify({
+    error: {
+      code: 400,
+      message: "Invalid request body. 'productName' and 'category' are required for creation.",
+      details: [
+        { field: "productName", issue: "cannot be empty" },
+        { field: "category", issue: "cannot be empty" }
+      ]
+    }
+  }, null, 2);
+
+  const error400_update_dpp = JSON.stringify({
+    error: {
+      code: 400,
+      message: "Invalid request body for update. Field 'metadata.status' has an invalid value 'incorrect_status'.",
+      details: [
+         { field: "metadata.status", issue: "value must be one of: draft, published, archived, pending_review, revoked" }
+      ]
+    }
+  }, null, 2);
 
 
   return (
@@ -115,11 +214,11 @@ export default function ApiReferencePage() {
               </ul>
             </section>
             <section>
-              <h4 className="font-semibold mb-1">Example Response (Success 200)</h4>
+              <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
               <p className="text-sm mb-1">Returns a DPP object based on the <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">DigitalProductPassport</code> type definition.</p>
               <details className="border rounded-md">
                 <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
-                  Click to view example JSON response
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Click to view example JSON response
                 </summary>
                 <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
                   <code>
@@ -184,11 +283,11 @@ export default function ApiReferencePage() {
               </ul>
             </section>
             <section>
-              <h4 className="font-semibold mb-1">Example Response (Success 200)</h4>
+              <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
               <p className="text-sm mb-1">Returns a product summary, its public DPP URL, verification status, and key compliance details.</p>
               <details className="border rounded-md">
                 <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
-                  Click to view example JSON response
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Click to view example JSON response
                 </summary>
                 <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
                   <code>
@@ -208,27 +307,130 @@ export default function ApiReferencePage() {
                         </details>
                     </li>
                     <li>
-                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>: API key missing or invalid.
-                        <details className="border rounded-md mt-1">
-                            <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
-                            <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error401}</code></pre>
-                        </details>
+                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.
                     </li>
                     <li>
-                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>: Product with the given identifier does not exist or QR identifier is invalid.
-                        <details className="border rounded-md mt-1">
-                            <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
-                            <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error404}</code></pre>
-                        </details>
+                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>: QR identifier invalid or product not found.
                     </li>
                     <li>
-                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>: Server-side error.
-                        <details className="border rounded-md mt-1">
-                            <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
-                            <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error500}</code></pre>
-                        </details>
+                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.
                     </li>
                 </ul>
+            </section>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-lg mt-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Create a Digital Product Passport</CardTitle>
+            <CardDescription>
+              <span className="inline-flex items-center font-mono text-sm">
+                <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
+                <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/dpp</code>
+              </span>
+              <br/>
+              Creates a new Digital Product Passport with the provided initial data.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <section>
+              <h4 className="font-semibold mb-1">Request Body (JSON)</h4>
+              <p className="text-sm mb-1">Provide initial product information. Required fields typically include <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productName</code> and <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">category</code>.</p>
+              <details className="border rounded-md">
+                <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Request Body
+                </summary>
+                <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+                  <code>{conceptualCreateDppRequestBody}</code>
+                </pre>
+              </details>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1">Example Response (Success 201 Created)</h4>
+              <p className="text-sm mb-1">Returns the newly created DPP object, including its server-generated ID and default metadata.</p>
+              <details className="border rounded-md">
+                <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Response
+                </summary>
+                <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+                  <code>{conceptualCreateDppResponseBody}</code>
+                </pre>
+              </details>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
+              <ul className="list-disc list-inside text-sm space-y-2">
+                <li>
+                  <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Invalid input data (e.g., missing required fields).
+                  <details className="border rounded-md mt-1">
+                    <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                    <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error400_create_dpp}</code></pre>
+                  </details>
+                </li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.</li>
+              </ul>
+            </section>
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-lg mt-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Update a Digital Product Passport</CardTitle>
+            <CardDescription>
+              <span className="inline-flex items-center font-mono text-sm">
+                <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-300 mr-2 font-semibold">PUT</Badge>
+                <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/dpp/{'{productId}'}</code>
+              </span>
+              <br/>
+              Updates an existing Digital Product Passport. You can send partial or full updates.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+             <section>
+              <h4 className="font-semibold mb-1">Path Parameters</h4>
+              <ul className="list-disc list-inside text-sm space-y-1">
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> (string, required): The unique identifier of the DPP to update.</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1">Request Body (JSON)</h4>
+              <p className="text-sm mb-1">Provide the fields you want to update. Unspecified fields will remain unchanged.</p>
+              <details className="border rounded-md">
+                <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Request Body (Partial Update)
+                </summary>
+                <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+                  <code>{conceptualUpdateDppRequestBody}</code>
+                </pre>
+              </details>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
+              <p className="text-sm mb-1">Returns the complete, updated DPP object.</p>
+              <details className="border rounded-md">
+                <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Response
+                </summary>
+                <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+                  <code>{conceptualUpdateDppResponseBody}</code>
+                </pre>
+              </details>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
+              <ul className="list-disc list-inside text-sm space-y-2">
+                <li>
+                  <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Invalid input data (e.g., invalid field values).
+                   <details className="border rounded-md mt-1">
+                    <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                    <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error400_update_dpp}</code></pre>
+                  </details>
+                </li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>: DPP with the given ID does not exist.</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.</li>
+              </ul>
             </section>
           </CardContent>
         </Card>
@@ -238,4 +440,5 @@ export default function ApiReferencePage() {
   );
 }
     
+
 

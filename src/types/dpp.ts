@@ -493,7 +493,7 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     ]
   },
   {
-    id: "USER_PROD123456",
+    id: "USER_PROD123456", // Example User-Added Product
     productName: "Custom Craft Wooden Chair",
     category: "Furniture",
     status: "Draft",

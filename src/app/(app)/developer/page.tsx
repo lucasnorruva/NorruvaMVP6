@@ -45,22 +45,32 @@ const initialMockWebhooks: WebhookEntry[] = [
 ];
 
 const MOCK_API_PRODUCTS: Record<string, any> = {
-  "PROD001": {
-    productId: "PROD001",
-    productName: "EcoFriendly Refrigerator X2000",
+  "DPP001": { // Changed from PROD001 to match API endpoint expectation
+    productId: "DPP001",
+    productName: "EcoSmart Refrigerator X500 (from MOCK_DPPS)",
     category: "Appliances",
     status: "Active",
     manufacturer: "GreenTech Appliances",
-    modelNumber: "X2000-ECO",
+    modelNumber: "X500-ECO",
     gtin: "01234567890123",
-    energyLabel: "A+++",
+    energyLabel: "A++",
     compliance: {
       REACH: { status: "Compliant", lastChecked: "2024-07-01" },
       RoHS: { status: "Compliant", lastChecked: "2024-07-01" }
     },
     lifecycleEvents: [
         { eventId: "EVT001", type: "Manufactured", timestamp: "2024-01-15T08:00:00Z", location: "EcoFactory, Germany" }
-    ]
+    ],
+    metadata: { last_updated: "2024-07-28T10:00:00Z", status: "published", dppStandardVersion: "CIRPASS v0.9 Draft" },
+    productDetails: {
+      description: "An eco friendly fridge from MOCK_DPPS data source.",
+      imageUrl: "https://placehold.co/600x400.png",
+      imageHint: "refrigerator appliance",
+      materials: [{name: "Recycled Steel", percentage: 70, isRecycled: true}]
+    },
+    ebsiVerification: { status: "verified", verificationId: "EBSI_TX_ABC123", lastChecked: "2024-07-29T00:00:00Z"},
+    blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef"},
+    consumerScans: 1250,
   },
   "PROD002": {
     productId: "PROD002",
@@ -81,8 +91,8 @@ const MOCK_API_PRODUCTS: Record<string, any> = {
 };
 
 const MOCK_COMPLIANCE_SUMMARIES: Record<string, any> = {
-    "PROD001": {
-        productId: "PROD001",
+    "DPP001": {
+        productId: "DPP001",
         overallStatus: "Compliant",
         details: [
             { regulation: "REACH", status: "Compliant", lastChecked: "2024-07-01", evidenceLink: "/docs/PROD001/REACH.pdf" },
@@ -173,29 +183,29 @@ export default function DeveloperPortalPage() {
   const [currentEnvironment, setCurrentEnvironment] = useState<string>("sandbox");
   const mockOrganizationName = "Acme Innovations"; 
 
-  const [getProductId, setGetProductId] = useState<string>("PROD001");
+  const [getProductId, setGetProductId] = useState<string>("DPP001");
   const [getProductResponse, setGetProductResponse] = useState<string | null>(null);
   const [isGetProductLoading, setIsGetProductLoading] = useState(false);
 
   const [listProductsResponse, setListProductsResponse] = useState<string | null>(null);
   const [isListProductsLoading, setIsListProductsLoading] = useState(false);
 
-  const [postLifecycleEventProductId, setPostLifecycleEventProductId] = useState<string>("PROD001");
+  const [postLifecycleEventProductId, setPostLifecycleEventProductId] = useState<string>("DPP001");
   const [postLifecycleEventBody, setPostLifecycleEventBody] = useState<string>(
     JSON.stringify({ eventType: "Shipped", location: "Warehouse B", details: "Order #SO12345" }, null, 2)
   );
   const [postLifecycleEventResponse, setPostLifecycleEventResponse] = useState<string | null>(null);
   const [isPostLifecycleEventLoading, setIsPostLifecycleEventLoading] = useState(false);
 
-  const [getComplianceProductId, setGetComplianceProductId] = useState<string>("PROD001");
+  const [getComplianceProductId, setGetComplianceProductId] = useState<string>("DPP001");
   const [getComplianceResponse, setGetComplianceResponse] = useState<string | null>(null);
   const [isGetComplianceLoading, setIsGetComplianceLoading] = useState(false);
 
-  const [postVerifyProductId, setPostVerifyProductId] = useState<string>("PROD001");
+  const [postVerifyProductId, setPostVerifyProductId] = useState<string>("DPP001");
   const [postVerifyResponse, setPostVerifyResponse] = useState<string | null>(null);
   const [isPostVerifyLoading, setIsPostVerifyLoading] = useState(false);
 
-  const [putProductId, setPutProductId] = useState<string>("PROD001");
+  const [putProductId, setPutProductId] = useState<string>("DPP001");
   const [putProductBody, setPutProductBody] = useState<string>(
     JSON.stringify({ productDetails: { description: "Updated description with enhanced features." }, metadata: { status: "pending_review"} }, null, 2)
   );
@@ -211,7 +221,7 @@ export default function DeveloperPortalPage() {
   const [generatedMockDppJson, setGeneratedMockDppJson] = useState<string | null>(null);
   const [isGeneratingMockDpp, setIsGeneratingMockDpp] = useState(false);
 
-  const [getHistoryProductId, setGetHistoryProductId] = useState<string>("PROD001");
+  const [getHistoryProductId, setGetHistoryProductId] = useState<string>("DPP001");
   const [getHistoryResponse, setGetHistoryResponse] = useState<string | null>(null);
   const [isGetHistoryLoading, setIsGetHistoryLoading] = useState(false);
 
@@ -219,10 +229,9 @@ export default function DeveloperPortalPage() {
   const [postImportResponse, setPostImportResponse] = useState<string | null>(null);
   const [isPostImportLoading, setIsPostImportLoading] = useState(false);
 
-  const [getGraphProductId, setGetGraphProductId] = useState<string>("PROD001");
+  const [getGraphProductId, setGetGraphProductId] = useState<string>("DPP001");
   const [getGraphResponse, setGetGraphResponse] = useState<string | null>(null);
   const [isGetGraphLoading, setIsGetGraphLoading] = useState(false);
-
 
   const handleCopyKey = (keyToCopy: string) => {
     const keyEntry = apiKeys.find(k => k.key === keyToCopy);
@@ -737,13 +746,13 @@ export default function DeveloperPortalPage() {
               {/* GET /passport/{id} */}
               <Card>
                   <CardHeader>
-                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /passport/{'{productId}'}</CardTitle>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/{'{productId}'}</CardTitle>
                   <CardDescription>Retrieve details for a specific product by its ID.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                   <div>
                       <Label htmlFor="productIdInput-get">Product ID</Label>
-                      <Input id="productIdInput-get" value={getProductId} onChange={(e) => setGetProductId(e.target.value)} placeholder="e.g., PROD001" />
+                      <Input id="productIdInput-get" value={getProductId} onChange={(e) => setGetProductId(e.target.value)} placeholder="e.g., DPP001" />
                   </div>
                   <div className="flex items-center justify-between">
                     <Button onClick={handleMockGetProductDetails} disabled={isGetProductLoading} variant="secondary">
@@ -767,14 +776,14 @@ export default function DeveloperPortalPage() {
               {/* POST /passport */}
               <Card>
                   <CardHeader>
-                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /passport</CardTitle>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp</CardTitle>
                   <CardDescription>Create a new Digital Product Passport (Conceptual).</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                   {/* Placeholder for POST body input - complex for this mock, linking to /products/new */}
                     <p className="text-sm text-muted-foreground">To create a new DPP with a full form, please use the <Link href="/products/new" className="text-primary hover:underline">Add New Product page</Link>. This playground simulates a basic create action.</p>
                   <div className="flex items-center justify-between">
-                    <Button onClick={() => toast({title: "Mock POST /passport", description: "Simulated DPP creation request sent."})} variant="secondary">
+                    <Button onClick={() => toast({title: "Mock POST /dpp", description: "Simulated DPP creation request sent."})} variant="secondary">
                         <Send className="mr-2 h-4 w-4" /> Send Create Request (Mock)
                     </Button>
                     <Select defaultValue="cURL" disabled>
@@ -788,13 +797,13 @@ export default function DeveloperPortalPage() {
               {/* PUT /passport/{id} */}
               <Card>
                   <CardHeader>
-                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>PUT /passport/{'{productId}'}</CardTitle>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>PUT /api/v1/dpp/{'{productId}'}</CardTitle>
                   <CardDescription>Update an existing Digital Product Passport.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                   <div>
                       <Label htmlFor="productIdInput-put">Product ID</Label>
-                      <Input id="productIdInput-put" value={putProductId} onChange={(e) => setPutProductId(e.target.value)} placeholder="e.g., PROD001"/>
+                      <Input id="productIdInput-put" value={putProductId} onChange={(e) => setPutProductId(e.target.value)} placeholder="e.g., DPP001"/>
                   </div>
                   <div>
                       <Label htmlFor="putProductBody">Request Body (JSON)</Label>
@@ -822,7 +831,7 @@ export default function DeveloperPortalPage() {
               {/* DELETE /passport/{id} */}
               <Card>
                   <CardHeader>
-                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>DELETE /passport/{'{productId}'}</CardTitle>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>DELETE /api/v1/dpp/{'{productId}'}</CardTitle>
                   <CardDescription>Archive a Digital Product Passport.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
@@ -852,13 +861,13 @@ export default function DeveloperPortalPage() {
               {/* POST /passport/verify */}
               <Card>
                   <CardHeader>
-                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /passport/verify</CardTitle>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp/verify</CardTitle>
                   <CardDescription>Perform compliance and authenticity checks on a DPP (mock).</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                   <div>
                       <Label htmlFor="productIdInput-verify">Product ID to Verify</Label>
-                      <Input id="productIdInput-verify" value={postVerifyProductId} onChange={(e) => setPostVerifyProductId(e.target.value)} placeholder="e.g., PROD001"/>
+                      <Input id="productIdInput-verify" value={postVerifyProductId} onChange={(e) => setPostVerifyProductId(e.target.value)} placeholder="e.g., DPP001"/>
                   </div>
                    <div className="flex items-center justify-between">
                     <Button onClick={handleMockPostVerify} disabled={isPostVerifyLoading} variant="secondary">
@@ -882,13 +891,13 @@ export default function DeveloperPortalPage() {
               {/* GET /passport/history/{id} */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center"><History className="mr-2 h-5 w-5 text-info"/>GET /passport/history/{'{productId}'}</CardTitle>
+                  <CardTitle className="text-lg flex items-center"><History className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/history/{'{productId}'}</CardTitle>
                   <CardDescription>Retrieve the audit trail / history for a specific DPP.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <Label htmlFor="historyProductIdInput">Product ID</Label>
-                    <Input id="historyProductIdInput" value={getHistoryProductId} onChange={(e) => setGetHistoryProductId(e.target.value)} placeholder="e.g., PROD001" />
+                    <Input id="historyProductIdInput" value={getHistoryProductId} onChange={(e) => setGetHistoryProductId(e.target.value)} placeholder="e.g., DPP001" />
                   </div>
                   <div className="flex items-center justify-between">
                     <Button onClick={handleMockGetHistory} disabled={isGetHistoryLoading} variant="secondary">
@@ -912,7 +921,7 @@ export default function DeveloperPortalPage() {
               {/* POST /passport/import */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center"><UploadCloud className="mr-2 h-5 w-5 text-info"/>POST /passport/import</CardTitle>
+                  <CardTitle className="text-lg flex items-center"><UploadCloud className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp/import</CardTitle>
                   <CardDescription>Batch import Digital Product Passports (CSV, JSON, etc.).</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -953,13 +962,13 @@ export default function DeveloperPortalPage() {
               {/* GET /passport/graph/{id} */}
               <Card>
                 <CardHeader>
-                  <CardTitle className="text-lg flex items-center"><Share2 className="mr-2 h-5 w-5 text-info"/>GET /passport/graph/{'{productId}'}</CardTitle>
+                  <CardTitle className="text-lg flex items-center"><Share2 className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/graph/{'{productId}'}</CardTitle>
                   <CardDescription>Retrieve data for supply chain visualization.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <Label htmlFor="graphProductIdInput">Product ID</Label>
-                    <Input id="graphProductIdInput" value={getGraphProductId} onChange={(e) => setGetGraphProductId(e.target.value)} placeholder="e.g., PROD001" />
+                    <Input id="graphProductIdInput" value={getGraphProductId} onChange={(e) => setGetGraphProductId(e.target.value)} placeholder="e.g., DPP001" />
                   </div>
                    <div className="flex items-center justify-between">
                     <Button onClick={handleMockGetGraph} disabled={isGetGraphLoading} variant="secondary">
@@ -983,7 +992,7 @@ export default function DeveloperPortalPage() {
 
             <Card>
                 <CardHeader>
-                <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /products</CardTitle>
+                <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/products</CardTitle>
                 <CardDescription>Retrieve a list of products. (Mock returns all available mock products)</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -1014,7 +1023,7 @@ export default function DeveloperPortalPage() {
                 <CardContent className="space-y-4">
                 <div>
                     <Label htmlFor="productIdInput-post-event">Product ID</Label>
-                    <Input id="productIdInput-post-event" value={postLifecycleEventProductId} onChange={(e) => setPostLifecycleEventProductId(e.target.value)} placeholder="e.g., PROD001"/>
+                    <Input id="productIdInput-post-event" value={postLifecycleEventProductId} onChange={(e) => setPostLifecycleEventProductId(e.target.value)} placeholder="e.g., DPP001"/>
                 </div>
                 <div>
                     <Label htmlFor="postLifecycleEventBody">Request Body (JSON)</Label>
@@ -1046,7 +1055,7 @@ export default function DeveloperPortalPage() {
                 <CardContent className="space-y-4">
                 <div>
                     <Label htmlFor="productIdInput-get-compliance">Product ID</Label>
-                    <Input id="productIdInput-get-compliance" value={getComplianceProductId} onChange={(e) => setGetComplianceProductId(e.target.value)} placeholder="e.g., PROD001" />
+                    <Input id="productIdInput-get-compliance" value={getComplianceProductId} onChange={(e) => setGetComplianceProductId(e.target.value)} placeholder="e.g., DPP001" />
                 </div>
                 <div className="flex items-center justify-between">
                     <Button onClick={handleMockGetComplianceSummary} disabled={isGetComplianceLoading} variant="secondary">
@@ -1110,27 +1119,33 @@ export default function DeveloperPortalPage() {
 
             <Card className="shadow-lg lg:col-span-2">
               <CardHeader>
-                  <CardTitle className="font-headline flex items-center"><Wrench className="mr-3 h-6 w-6 text-primary" />Developer Tools (Conceptual)</CardTitle>
+                  <CardTitle className="font-headline flex items-center"><Wrench className="mr-3 h-6 w-6 text-primary" />Developer Tools</CardTitle>
                   <CardDescription>Utilities to help you build and test your integrations.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <Button variant="outline" disabled className="justify-start text-left"><FileJson className="mr-2"/>Download OpenAPI 3.1 Spec</Button>
-                  <Button variant="outline" disabled className="justify-start text-left"><ExternalLinkIcon className="mr-2"/>View Postman Collection</Button>
-                  <Button variant="outline" disabled className="justify-start text-left opacity-70 col-span-2"><ZapIcon className="mr-2"/>CLI Tool <Badge variant="outline" className="ml-auto text-xs">Coming Soon</Badge></Button>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <Button variant="outline" className="justify-start text-left" disabled>
+                    <FileJson className="mr-2"/>Download OpenAPI 3.1 Spec
+                  </Button>
+                  <Button variant="outline" className="justify-start text-left" disabled>
+                    <ExternalLinkIcon className="mr-2"/>View Postman Collection
+                  </Button>
+                  <Button variant="outline" className="justify-start text-left opacity-70 col-span-1 sm:col-span-2" disabled>
+                    <ZapIcon className="mr-2"/>CLI Tool <Badge variant="outline" className="ml-auto text-xs">Coming Soon</Badge>
+                  </Button>
                 </div>
                 <Separator />
                 <div>
-                  <h4 className="text-md font-semibold mb-2 flex items-center"><FileTextIcon className="mr-2 h-5 w-5 text-accent"/>Mock DPP Generator</h4>
+                  <h4 className="text-md font-semibold mb-2 flex items-center"><FileTextIcon className="mr-2 h-5 w-5 text-accent"/>Mock DPP Generator (Simplified)</h4>
                    <div className="space-y-3 p-3 border rounded-md bg-muted/30">
-                    <div className="grid grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
-                        <Label htmlFor="mockDppName" className="text-xs">Product Name (Optional)</Label>
-                        <Input id="mockDppName" value={mockDppGeneratorProductName} onChange={(e) => setMockDppGeneratorProductName(e.target.value)} placeholder="e.g., Test Widget" className="h-8 text-xs"/>
+                        <Label htmlFor="devToolsMockDppName" className="text-xs">Product Name (Optional)</Label>
+                        <Input id="devToolsMockDppName" value={mockDppGeneratorProductName} onChange={(e) => setMockDppGeneratorProductName(e.target.value)} placeholder="e.g., Test Widget" className="h-8 text-xs"/>
                       </div>
                       <div>
-                        <Label htmlFor="mockDppCategory" className="text-xs">Category (Optional)</Label>
-                        <Input id="mockDppCategory" value={mockDppGeneratorCategory} onChange={(e) => setMockDppGeneratorCategory(e.target.value)} placeholder="e.g., Gadgets" className="h-8 text-xs"/>
+                        <Label htmlFor="devToolsMockDppCategory" className="text-xs">Category (Optional)</Label>
+                        <Input id="devToolsMockDppCategory" value={mockDppGeneratorCategory} onChange={(e) => setMockDppGeneratorCategory(e.target.value)} placeholder="e.g., Gadgets" className="h-8 text-xs"/>
                       </div>
                     </div>
                     <Button size="sm" onClick={handleGenerateMockDpp} disabled={isGeneratingMockDpp} variant="secondary">
@@ -1140,7 +1155,7 @@ export default function DeveloperPortalPage() {
                     {generatedMockDppJson && (
                       <div className="mt-3">
                         <Label className="text-xs">Generated Mock DPP:</Label>
-                        <Textarea value={generatedMockDppJson} readOnly rows={8} className="font-mono text-xs bg-background"/>
+                        <Textarea value={generatedMockDppJson} readOnly rows={6} className="font-mono text-xs bg-background"/>
                       </div>
                     )}
                   </div>
@@ -1273,3 +1288,6 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+
+
+    

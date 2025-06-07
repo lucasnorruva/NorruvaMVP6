@@ -162,36 +162,44 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-80 shadow-xl z-50 bg-card" side="bottom" align="center">
-                      <div className="space-y-3">
-                        <h4 className="font-semibold text-md text-primary">{phase.name}</h4>
+                      <div className="space-y-1">
+                        <h4 className="font-semibold text-md text-primary mb-2">{phase.name}</h4>
+
                         {phase.timestamp && (
-                           <div className="flex items-center text-xs text-muted-foreground">
-                             <CalendarDays className="h-3 w-3 mr-1.5"/> {(new Date(phase.timestamp)).toLocaleDateString()}
-                           </div>
+                          <div className="flex items-center text-xs text-muted-foreground">
+                            <CalendarDays className="h-3 w-3 mr-1.5 text-muted-foreground/80"/>
+                            {(new Date(phase.timestamp)).toLocaleDateString()}
+                          </div>
                         )}
-                         {phase.location && (
-                           <div className="flex items-center text-xs text-muted-foreground">
-                             <MapPin className="h-3 w-3 mr-1.5"/> {phase.location}
-                           </div>
+                        {phase.location && (
+                          <div className="flex items-center text-xs text-muted-foreground">
+                            <MapPin className="h-3 w-3 mr-1.5 text-muted-foreground/80"/>
+                            {phase.location}
+                          </div>
                         )}
-                        {phase.details && <p className="text-sm text-foreground">{phase.details}</p>}
+
+                        {phase.details && <p className="text-sm text-foreground mt-1.5">{phase.details}</p>}
 
                         {phase.responsibleParty && (
                           <div className="pt-2 mt-2 border-t border-border/50">
-                            <h5 className="text-sm font-medium mb-1 text-foreground/80 flex items-center"><User className="h-4 w-4 mr-1.5" />Responsible Party:</h5>
-                            <p className="text-xs text-muted-foreground">{phase.responsibleParty}</p>
+                            <h5 className="text-xs font-semibold mb-0.5 text-muted-foreground uppercase tracking-wider flex items-center">
+                              <User className="h-3.5 w-3.5 mr-1.5" />Responsible Party
+                            </h5>
+                            <p className="text-sm text-foreground">{phase.responsibleParty}</p>
                           </div>
                         )}
 
                         {phase.keyDocuments && phase.keyDocuments.length > 0 && (
                           <div className="pt-2 mt-2 border-t border-border/50">
-                            <h5 className="text-sm font-medium mb-1 text-foreground/80 flex items-center"><FileText className="h-4 w-4 mr-1.5" />Key Documents:</h5>
+                            <h5 className="text-xs font-semibold mb-1 text-muted-foreground uppercase tracking-wider flex items-center">
+                              <FileText className="h-3.5 w-3.5 mr-1.5" />Key Documents
+                            </h5>
                             <ul className="space-y-1 text-xs">
                               {phase.keyDocuments.map(doc => (
-                                <li key={doc.name} className="flex items-center justify-between p-1 bg-muted/30 rounded-sm">
-                                  <span className="truncate pr-2">{doc.name} ({doc.type})</span>
+                                <li key={doc.name} className="flex items-center justify-between p-1.5 bg-muted/30 rounded-sm">
+                                  <span className="truncate pr-2 text-foreground/90">{doc.name} ({doc.type})</span>
                                   <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                                    <ExternalLink className="h-3 w-3" />
+                                    <ExternalLink className="h-3.5 w-3.5" />
                                   </a>
                                 </li>
                               ))}
@@ -201,11 +209,13 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
 
                         {phase.subEvents && phase.subEvents.length > 0 && (
                            <div className="pt-2 mt-2 border-t border-border/50">
-                            <h5 className="text-sm font-medium mb-1 text-foreground/80 flex items-center"><ListChecks className="h-4 w-4 mr-1.5" />Sub-Events:</h5>
+                            <h5 className="text-xs font-semibold mb-1 text-muted-foreground uppercase tracking-wider flex items-center">
+                              <ListChecks className="h-3.5 w-3.5 mr-1.5" />Sub-Events
+                            </h5>
                             <ul className="space-y-1 text-xs">
                               {phase.subEvents.map(event => (
-                                <li key={event.name} className="flex items-center justify-between p-1 bg-muted/30 rounded-sm">
-                                  <span>{event.name} <span className="text-muted-foreground/70">({new Date(event.timestamp).toLocaleDateString()})</span></span>
+                                <li key={event.name} className="flex items-center justify-between p-1.5 bg-muted/30 rounded-sm">
+                                  <span className="text-foreground/90">{event.name} <span className="text-muted-foreground/70">({new Date(event.timestamp).toLocaleDateString()})</span></span>
                                   {event.status && <Badge variant={event.status === 'completed' ? 'default' : 'outline'} className={`text-[0.6rem] px-1.5 py-0.5 ${event.status === 'completed' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-700'}`}>{event.status}</Badge>}
                                 </li>
                               ))}
@@ -215,17 +225,17 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
 
                         {phase.complianceMetrics && phase.complianceMetrics.length > 0 && (
                           <div className="pt-2 mt-2 border-t border-border/50">
-                            <h5 className="text-sm font-medium mb-1 text-foreground/80">Compliance Checks:</h5>
+                            <h5 className="text-xs font-semibold mb-1 text-muted-foreground uppercase tracking-wider">Compliance Checks:</h5>
                             <ul className="space-y-1 text-xs">
                               {phase.complianceMetrics.map(metric => (
                                 <li key={metric.name} className="flex items-center justify-between p-1.5 bg-muted/50 rounded-sm">
-                                  <span className="flex items-center">
+                                  <span className="flex items-center text-foreground/90">
                                     <MetricStatusIcon status={metric.status} />
                                     <span className="ml-1.5">{metric.name}</span>
                                   </span>
                                   {metric.reportLink && (
                                     <a href={metric.reportLink} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-                                      <ExternalLink className="h-3 w-3" />
+                                      <ExternalLink className="h-3.5 w-3.5" />
                                     </a>
                                   )}
                                 </li>
@@ -236,11 +246,11 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
 
                         {phase.sustainabilityMetrics && phase.sustainabilityMetrics.length > 0 && (
                           <div className="pt-2 mt-2 border-t border-border/50">
-                            <h5 className="text-sm font-medium mb-1 text-foreground/80">Sustainability Metrics:</h5>
+                            <h5 className="text-xs font-semibold mb-1 text-muted-foreground uppercase tracking-wider">Sustainability Metrics:</h5>
                             <div className="space-y-1 text-xs">
                               {phase.sustainabilityMetrics.map(metric => (
                                 <div key={metric.name} className="py-1 p-1.5 bg-muted/50 rounded-sm">
-                                  <div className="flex justify-between items-center mb-0.5">
+                                  <div className="flex justify-between items-center mb-0.5 text-foreground/90">
                                      <span className="font-medium">{metric.name}:</span>
                                      <span>{metric.value}{metric.unit && ` ${metric.unit}`}
                                       {typeof metric.value === 'number' && metric.targetValue !== undefined && (
@@ -274,3 +284,4 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
 };
 
 export default ProductLifecycleFlowchart;
+

@@ -428,7 +428,7 @@ export default function DeveloperPortalPage() {
                 </ul>
             </div>
              <div className="space-y-2 pt-3 border-t">
-                <h4 className="font-semibold">Integration Guides & Best Practices</h4>
+                <h4 className="font-semibold">Integration Guides &amp; Best Practices</h4>
                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
                     <li><Link href="/developer/guides/quick-start" className="hover:underline flex items-center"><Rocket className="mr-1.5 h-4 w-4 inline-block"/>Quick Start Integration Guide</Link></li>
                     <li><Link href="/developer/docs/ebsi-integration" className="hover:underline flex items-center"><Share2 className="mr-1.5 h-4 w-4 inline-block"/>EBSI Integration Overview</Link></li>
@@ -437,15 +437,15 @@ export default function DeveloperPortalPage() {
                 </ul>
             </div>
             <div className="space-y-2 pt-3 border-t">
-                <h4 className="font-semibold">Testing & Validation</h4>
+                <h4 className="font-semibold">Testing &amp; Validation</h4>
                  <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
-                    <li><Link href="/developer/docs/testing-validation" className="hover:underline flex items-center"><TestTube2 className="mr-1.5 h-4 w-4 inline-block"/>Testing & Validation Guide</Link></li>
+                    <li><Link href="/developer/docs/testing-validation" className="hover:underline flex items-center"><TestTube2 className="mr-1.5 h-4 w-4 inline-block"/>Testing &amp; Validation Guide</Link></li>
                  </ul>
             </div>
              <div className="space-y-2 pt-3 border-t">
                 <h4 className="font-semibold">Operations</h4>
                  <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
-                    <li><Link href="/developer/docs/deployment-monitoring" className="hover:underline flex items-center"><ServerIconShadcn className="mr-1.5 h-4 w-4 inline-block"/>Deployment & Monitoring Guide</Link></li>
+                    <li><Link href="/developer/docs/deployment-monitoring" className="hover:underline text-muted-foreground line-through flex items-center"><ServerIconShadcn className="mr-1.5 h-4 w-4 inline-block"/>Deployment &amp; Monitoring Guide</Link> <span className="text-xs text-muted-foreground">(Coming Soon)</span></li>
                  </ul>
             </div>
             <Button variant="default" className="w-full sm:w-auto mt-3" asChild>
@@ -657,3 +657,6 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+
+
+    

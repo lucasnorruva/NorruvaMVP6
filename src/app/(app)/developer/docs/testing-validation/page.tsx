@@ -75,7 +75,7 @@ export default function TestingValidationPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center">
-            <DatabaseZap className="mr-2 h-5 w-5 text-primary"/>Testing Blockchain Data Retrieval & Verification (Conceptual)
+            <DatabaseZap className="mr-2 h-5 w-5 text-primary"/>Testing Blockchain Data Retrieval &amp; Verification (Conceptual)
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -122,7 +122,7 @@ export default function TestingValidationPage() {
         </CardHeader>
         <CardContent className="space-y-4">
           <section>
-            <h3 className="font-semibold text-lg mb-2">Verifiable Credential (VC) Display & Interpretation</h3>
+            <h3 className="font-semibold text-lg mb-2">Verifiable Credential (VC) Display &amp; Interpretation</h3>
             <ul className="list-disc list-inside text-sm space-y-1">
               <li><strong>Status Display:</strong> Confirm that products marked with an EBSI status (e.g., 'verified', 'pending') on the public DPP viewer (<code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/*</code>) and internal product details page (<code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/products/*</code>) correctly display this status using appropriate badges and icons (e.g., <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">&lt;ShieldCheck /&gt;</code> for verified).</li>
               <li><strong>VC Data Points:</strong> For mock VCs (e.g., `ebsiVerificationId`, lifecycle event `isEbsiVerified` flag), ensure associated data points are displayed correctly. For instance, if a lifecycle event is EBSI verified, the corresponding UI indicator should appear.</li>
@@ -169,7 +169,7 @@ export default function TestingValidationPage() {
             <h3 className="font-semibold text-lg mb-2 mt-4">Key UAT Areas</h3>
             <ul className="list-disc list-inside text-sm space-y-2">
               <li>
-                <strong className="flex items-center"><Info className="mr-1.5 h-4 w-4 text-accent"/>Intuitiveness & Understandability:</strong>
+                <strong className="flex items-center"><Info className="mr-1.5 h-4 w-4 text-accent"/>Intuitiveness &amp; Understandability:</strong>
                 <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
                   <li>Is the information presented clearly and easy for different user personas (consumers, retailers, recyclers, auditors) to understand?</li>
                   <li>Are technical terms (like blockchain hashes, EBSI IDs) explained or contextualized appropriately (e.g., via tooltips)?</li>
@@ -177,7 +177,7 @@ export default function TestingValidationPage() {
                 </ul>
               </li>
               <li>
-                <strong className="flex items-center"><Palette className="mr-1.5 h-4 w-4 text-accent"/>Navigation & Layout:</strong>
+                <strong className="flex items-center"><Palette className="mr-1.5 h-4 w-4 text-accent"/>Navigation &amp; Layout:</strong>
                  <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
                   <li>Is the viewer easy to navigate and scroll through?</li>
                   <li>Is the layout logical and does it prioritize key information effectively?</li>
@@ -185,7 +185,7 @@ export default function TestingValidationPage() {
                 </ul>
               </li>
               <li>
-                <strong className="flex items-center"><SmartphoneDevice className="mr-1.5 h-4 w-4 text-accent"/>Responsiveness & Accessibility:</strong>
+                <strong className="flex items-center"><SmartphoneDevice className="mr-1.5 h-4 w-4 text-accent"/>Responsiveness &amp; Accessibility:</strong>
                  <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
                   <li>Does the viewer adapt well to various screen sizes (desktop, tablet, mobile)?</li>
                   <li>Are there any display issues on common web browsers?</li>
@@ -207,7 +207,7 @@ export default function TestingValidationPage() {
                 </ul>
               </li>
               <li>
-                <strong className="flex items-center"><ShieldCheck className="mr-1.5 h-4 w-4 text-accent"/>Clarity of Compliance & Verification Indicators:</strong>
+                <strong className="flex items-center"><ShieldCheck className="mr-1.5 h-4 w-4 text-accent"/>Clarity of Compliance &amp; Verification Indicators:</strong>
                  <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
                   <li>Are EBSI status, blockchain anchor presence, and certification verification statuses visually clear and easy to understand?</li>
                   <li>Do tooltips or contextual help adequately explain these indicators?</li>
@@ -233,5 +233,7 @@ export default function TestingValidationPage() {
     </div>
   );
 }
+
+    
 
     

@@ -15,7 +15,7 @@ import {
   Code2,
   LineChart,
   ListChecks,
-  BarChartHorizontal, 
+  BarChartHorizontal,
   ClipboardList,
   Globe
 } from "lucide-react";
@@ -37,7 +37,7 @@ const navItems = [
   { href: "/dpp-live-dashboard", label: "Live DPPs", icon: LineChart },
   { href: "/products", label: "Products", icon: Package },
   { href: "/products/new", label: "Add Product", icon: ScanLine },
-  { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList }, 
+  { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList },
   { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
   { href: "/compliance/pathways", label: "Compliance Pathways", icon: ListChecks },
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
@@ -56,31 +56,28 @@ export default function AppSidebarContent() {
   const { state: sidebarState, isMobile } = useSidebar();
 
   const commonButtonClass = (href: string) => {
-    let isActive = false;
-    // General rule: active if current path starts with item's href
-    isActive = pathname.startsWith(href);
+    let isActive: boolean;
 
-    // Specific overrides for more precise matching if needed
-    if (href === "/products" && pathname.startsWith("/products/") && pathname.endsWith("/new")) {
-      isActive = false; // "/products/new" should not make "/products" active
-    } else if (href === "/products" && (pathname === href || (pathname.startsWith(href + "/") && !pathname.endsWith("/new")))) {
-       isActive = true;
-    } else if (href === "/dashboard" && pathname !== href) { // Exact match for dashboard
-      isActive = false;
-    } else if (href === "/sustainability" && pathname === "/sustainability/compare") { // If on compare, main sustainability should not be active
-        isActive = false; 
-    } else if (href === "/sustainability/compare" && pathname === href) { // Compare page is active
-        isActive = true;
-    } else if (href === "/sustainability" && pathname === href) { // Main sustainability page is active
-        isActive = true;
-    } else if (href === "/customs-dashboard" && pathname === href) { // Exact match for customs dashboard
-        isActive = true;
-    } else if (href === "/compliance/pathways" && pathname.startsWith("/compliance/pathways/battery-regulation")) {
-        isActive = true;
-    } else if (href === "/compliance/pathways" && pathname !== href && !pathname.startsWith("/compliance/pathways/")) { 
-        isActive = false;
+    // Handle specific overrides first
+    if (href === "/dashboard") {
+      isActive = (pathname === href);
+    } else if (href === "/products") {
+      // Active if on /products OR /products/* (excluding /products/new)
+      isActive = (pathname === href || (pathname.startsWith(href + "/") && !pathname.endsWith("/new")));
+    } else if (href === "/compliance/pathways") {
+      // Active if on /compliance/pathways OR /compliance/pathways/*
+      isActive = pathname.startsWith(href);
+    } else if (href === "/sustainability") {
+      // Active only if exactly on /sustainability, not its sub-pages like /sustainability/compare
+      isActive = (pathname === href);
+    } else if (href === "/sustainability/compare") {
+      // Exact match for /sustainability/compare
+      isActive = (pathname === href);
+    } else {
+      // General rule for all other links (including /developer, /settings, /products/new etc.)
+      // Parent link is active if current path starts with the parent's href.
+      isActive = pathname.startsWith(href);
     }
-
 
     return cn(
       "w-full text-sm",

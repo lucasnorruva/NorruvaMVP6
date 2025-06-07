@@ -60,8 +60,21 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
     return (currentRole === 'admin' || currentRole === 'manufacturer') && product.id.startsWith("USER_PROD");
   }, [currentRole, product.id]);
 
+  const getDisabledTooltipText = () => {
+    if (!product.id.startsWith("USER_PROD")) {
+      return "Managing links is only enabled for user-created products.";
+    }
+    if (!(currentRole === 'admin' || currentRole === 'manufacturer')) {
+      return "Your current role does not permit managing supplier links.";
+    }
+    return "";
+  };
+
   const handleLinkSupplier = () => {
-    if (!canManageLinks) return;
+    if (!canManageLinks) {
+      toast({ title: "Permission Denied", description: getDisabledTooltipText(), variant: "destructive" });
+      return;
+    }
     if (!selectedSupplierId || !suppliedItem) {
       toast({ title: "Missing Information", description: "Please select a supplier and enter the supplied item.", variant: "destructive" });
       return;
@@ -77,14 +90,20 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
   };
 
   const handleUnlinkSupplier = (supplierIdToUnlink: string, itemSupplied: string) => {
-    if (!canManageLinks) return;
+    if (!canManageLinks) {
+      toast({ title: "Permission Denied", description: getDisabledTooltipText(), variant: "destructive" });
+      return;
+    }
     const updatedLinks = currentLinkedSuppliers.filter(link => !(link.supplierId === supplierIdToUnlink && link.suppliedItem === itemSupplied));
     onSupplyChainLinksChange(updatedLinks);
     toast({ title: "Supplier Link Removed", description: "The link has been removed." });
   };
   
   const handleOpenEditDialog = (link: ProductSupplyChainLink) => {
-    if (!canManageLinks) return;
+    if (!canManageLinks) {
+       toast({ title: "Permission Denied", description: getDisabledTooltipText(), variant: "destructive" });
+      return;
+    }
     setEditingLink(link);
     const supplier = availableSuppliers.find(s => s.id === link.supplierId);
     setEditingSupplierName(supplier?.name || "Unknown Supplier");
@@ -94,7 +113,10 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
   };
 
   const handleUpdateSupplierLink = () => {
-    if (!editingLink || !canManageLinks) return;
+    if (!editingLink || !canManageLinks) {
+      if (!canManageLinks) toast({ title: "Permission Denied", description: getDisabledTooltipText(), variant: "destructive" });
+      return;
+    }
     const updatedLinks = currentLinkedSuppliers.map(link =>
       link.supplierId === editingLink.supplierId && link.suppliedItem === editingLink.suppliedItem 
         ? { ...link, suppliedItem: editSuppliedItem, notes: editLinkNotes }
@@ -110,15 +132,6 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
     return <p className="text-muted-foreground p-4">Loading supply chain information...</p>;
   }
 
-  const getDisabledTooltipText = () => {
-    if (!product.id.startsWith("USER_PROD")) {
-      return "Managing links is only enabled for user-created products.";
-    }
-    if (!(currentRole === 'admin' || currentRole === 'manufacturer')) {
-      return "Your current role does not permit managing supplier links.";
-    }
-    return "";
-  };
 
   return (
     <Card className="shadow-sm">
@@ -157,7 +170,7 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
               <div className="space-y-4 py-4">
                 <div>
                   <Label htmlFor="supplier-select">Supplier</Label>
-                  <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId} disabled={!canManageLinks}>
+                  <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId}>
                     <SelectTrigger id="supplier-select">
                       <SelectValue placeholder="Select a supplier" />
                     </SelectTrigger>
@@ -168,16 +181,16 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
                 </div>
                 <div>
                   <Label htmlFor="supplied-item">Supplied Item/Component</Label>
-                  <Input id="supplied-item" value={suppliedItem} onChange={(e) => setSuppliedItem(e.target.value)} placeholder="e.g., Battery Cells, Organic Cotton" disabled={!canManageLinks}/>
+                  <Input id="supplied-item" value={suppliedItem} onChange={(e) => setSuppliedItem(e.target.value)} placeholder="e.g., Battery Cells, Organic Cotton"/>
                 </div>
                 <div>
                   <Label htmlFor="link-notes">Notes (Optional)</Label>
-                  <Textarea id="link-notes" value={linkNotes} onChange={(e) => setLinkNotes(e.target.value)} placeholder="e.g., Primary source for EU market" disabled={!canManageLinks}/>
+                  <Textarea id="link-notes" value={linkNotes} onChange={(e) => setLinkNotes(e.target.value)} placeholder="e.g., Primary source for EU market"/>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsLinkDialogOpen(false)} disabled={!canManageLinks}>Cancel</Button>
-                <Button onClick={handleLinkSupplier} disabled={!canManageLinks}>Save Link</Button>
+                <Button variant="outline" onClick={() => setIsLinkDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleLinkSupplier}>Save Link</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -260,21 +273,20 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
               <div className="space-y-4 py-4">
                 <div>
                   <Label htmlFor="edit-supplied-item">Supplied Item/Component</Label>
-                  <Input id="edit-supplied-item" value={editSuppliedItem} onChange={(e) => setEditSuppliedItem(e.target.value)} disabled={!canManageLinks}/>
+                  <Input id="edit-supplied-item" value={editSuppliedItem} onChange={(e) => setEditSuppliedItem(e.target.value)}/>
                 </div>
                 <div>
                   <Label htmlFor="edit-link-notes">Notes (Optional)</Label>
-                  <Textarea id="edit-link-notes" value={editLinkNotes} onChange={(e) => setEditLinkNotes(e.target.value)} disabled={!canManageLinks}/>
+                  <Textarea id="edit-link-notes" value={editLinkNotes} onChange={(e) => setEditLinkNotes(e.target.value)}/>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={!canManageLinks}>Cancel</Button>
-                <Button onClick={handleUpdateSupplierLink} disabled={!canManageLinks}>Save Changes</Button>
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
+                <Button onClick={handleUpdateSupplierLink}>Save Changes</Button>
               </DialogFooter>
             </DialogContent>
         </Dialog>
     </Card>
   );
 }
-
     

@@ -1,3 +1,4 @@
+
 // --- File: dpp.ts ---
 // Description: TypeScript type definitions for Digital Product Passports and related entities.
 import type { LucideIcon } from 'lucide-react';
@@ -403,6 +404,8 @@ export interface RichMockProduct {
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
   recycledContentPercentage?: number | null;
+  // Added for consistency with PublicProductInfo and for RoleSpecificCard needs
+  ebsiVerification?: EbsiVerificationDetails;
 }
 
 
@@ -579,4 +582,127 @@ export interface DisplayableProduct {
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
   recycledContentPercentage?: number | null;
+  // Field to hold reference for RoleSpecificCard
+  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A';
 }
+
+
+// --- Types for Public Passport Page ---
+export type IconName = "Leaf" | "Recycle" | "ShieldCheck" | "Cpu" | "Zap" | "Factory" | "Truck" | "ShoppingCart" | "Wrench" | "Cog" | "Search" | "PenTool" | "CalendarCheck" | "UploadCloud" | "ClipboardCheck";
+
+export interface SustainabilityHighlight {
+  iconName: IconName;
+  text: string;
+}
+
+export interface LifecycleHighlight {
+  stage: string;
+  date: string;
+  details?: string;
+  isEbsiVerified?: boolean;
+  iconName?: IconName;
+}
+
+export interface PublicCertification {
+  name: string;
+  authority: string;
+  expiryDate?: string;
+  link?: string;
+  isVerified?: boolean; 
+}
+
+export interface PublicProductInfo {
+  passportId: string;
+  productName: string;
+  tagline: string;
+  imageUrl: string;
+  imageHint: string;
+  productStory: string;
+  sustainabilityHighlights: SustainabilityHighlight[];
+  manufacturerName: string;
+  manufacturerWebsite?: string;
+  brandLogoUrl?: string;
+  learnMoreLink?: string;
+  complianceSummary: string;
+  category: string;
+  modelNumber: string;
+  anchorTransactionHash?: string;
+  blockchainPlatform?: string;
+  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error';
+  ebsiVerificationId?: string;
+  lifecycleHighlights?: LifecycleHighlight[];
+  certifications?: PublicCertification[]; 
+}
+
+export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
+  "PROD001": {
+    passportId: "PROD001",
+    productName: "EcoFriendly Refrigerator X2000",
+    tagline: "Sustainable Cooling, Smart Living.",
+    imageUrl: "https://placehold.co/800x600.png",
+    imageHint: "modern refrigerator kitchen",
+    productStory: "Experience the future of refrigeration with the EcoFriendly Refrigerator X2000. Designed with both the planet and your lifestyle in mind, this appliance combines cutting-edge cooling technology with sustainable materials. Its spacious interior, smart energy management, and sleek design make it a perfect addition to any modern, eco-conscious home. We believe in transparency, and this Digital Product Passport gives you insight into its journey and impact. Built to last and designed for efficiency, the X2000 helps you reduce your environmental footprint without compromising on performance or style. More details include advanced frost-free systems, optimized airflow for even temperature distribution, and compartments designed for specific food types to prolong freshness. The user interface is intuitive, allowing easy control over temperature settings and special modes like vacation mode or quick cool.",
+    sustainabilityHighlights: [
+      { iconName: "Zap", text: "Energy Star Certified A+++" },
+      { iconName: "Recycle", text: "Made with 70% recycled steel" },
+      { iconName: "Recycle", text: "95% recyclable at end-of-life" },
+      { iconName: "Zap", text: "Smart energy consumption features" }
+    ],
+    manufacturerName: "GreenTech Appliances",
+    manufacturerWebsite: "#", 
+    brandLogoUrl: "https://placehold.co/150x50.png?text=GreenTech",
+    learnMoreLink: "#", 
+    complianceSummary: "Fully compliant with EU Ecodesign and Energy Labelling regulations.",
+    category: "Home Appliances",
+    modelNumber: "X2000-ECO",
+    anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef",
+    blockchainPlatform: "MockChain (Ethereum Compatible)",
+    ebsiStatus: 'verified',
+    ebsiVerificationId: "EBSI-VC-ATTR-XYZ-00123",
+    lifecycleHighlights: [
+      { stage: "Manufactured", date: "2024-01-15", details: "Production batch #PB789 at EcoFactory, Germany.", isEbsiVerified: true, iconName: "Factory" },
+      { stage: "Shipped to Distributor", date: "2024-01-20", details: "Container #C0N741N3R.", isEbsiVerified: true, iconName: "Truck" },
+      { stage: "Sold to Consumer", date: "2024-02-10", details: "Retail Store, Paris. Warranty activated.", isEbsiVerified: false, iconName: "ShoppingCart" },
+      { stage: "Scheduled Maintenance", date: "2025-02-15", details: "Filter replacement complete.", isEbsiVerified: false, iconName: "Wrench" },
+    ],
+    certifications: [
+      { name: "EU Energy Label", authority: "European Commission", expiryDate: "N/A", link: "#", isVerified: true },
+      { name: "CE Marking", authority: "Self-Certified (Manufacturer)", expiryDate: "N/A", isVerified: true },
+      { name: "ISO 9001:2015", authority: "TUV SUD", expiryDate: "2026-05-20", link: "#", isVerified: false },
+    ]
+  },
+  "PROD002": {
+    passportId: "PROD002",
+    productName: "Smart LED Bulb (4-Pack)",
+    tagline: "Illuminate Your World, Sustainably.",
+    imageUrl: "https://placehold.co/800x600.png",
+    imageHint: "led bulbs packaging",
+    productStory: "Brighten your home responsibly with our Smart LED Bulb pack. These energy-efficient bulbs offer customizable lighting and connect to smart home systems. Designed for a long lifespan, reducing waste.",
+    sustainabilityHighlights: [
+      { iconName: "Zap", text: "Uses 85% less energy than incandescent bulbs" },
+      { iconName: "Recycle", text: "Recyclable packaging materials" },
+      { iconName: "Leaf", text: "Mercury-free design" },
+    ],
+    manufacturerName: "BrightSpark Electronics",
+    manufacturerWebsite: "#",
+    brandLogoUrl: "https://placehold.co/150x50.png?text=BrightSpark",
+    learnMoreLink: "#",
+    complianceSummary: "Complies with EU energy efficiency and hazardous substance directives.",
+    category: "Electronics",
+    modelNumber: "BS-LED-S04",
+    anchorTransactionHash: "0xdef456ghi789jkl012mno345pqr678stu901vwx234yz567abcdef012345",
+    blockchainPlatform: "MockChain (Polygon Layer 2)",
+    ebsiStatus: 'pending',
+    lifecycleHighlights: [
+      { stage: "Manufactured", date: "2024-03-01", details: "Batch #LEDB456, Shenzhen.", isEbsiVerified: true, iconName: "Factory" },
+      { stage: "Imported to EU", date: "2024-03-15", details: "Rotterdam Port, Netherlands.", isEbsiVerified: false, iconName: "Truck" },
+      { stage: "Firmware Update v1.2", date: "2024-08-01", details: "Improved energy efficiency algorithm.", isEbsiVerified: true, iconName: "UploadCloud" },
+    ],
+    certifications: [
+      { name: "RoHS Compliance", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
+      { name: "CE Marking", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
+    ]
+  }
+};
+
+    

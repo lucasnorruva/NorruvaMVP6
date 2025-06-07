@@ -1,21 +1,23 @@
 
 "use client"; 
 
+// --- File: page.tsx (Public Product Passport Viewer) ---
+// Description: Main page component for displaying the public view of a Digital Product Passport.
+
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Settings, UploadCloud, QrCode, HardHat as ToolIcon, ClipboardCheck, Bot, Factory, Truck, ShoppingCart, Wrench, Cog, Search, PenTool, CalendarCheck } from 'lucide-react';
+import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react'; 
 import { cn } from '@/lib/utils';
 import { useRole } from '@/contexts/RoleContext';
-
-// Define a type for icon mapping
-type IconName = "Leaf" | "Recycle" | "ShieldCheck" | "Cpu" | "Zap" | "Factory" | "Truck" | "ShoppingCart" | "Wrench" | "Cog" | "Search" | "PenTool" | "CalendarCheck" | "UploadCloud" | "ClipboardCheck";
-
+import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification } from '@/types/dpp'; // Moved types
+import { MOCK_PUBLIC_PASSPORTS } from '@/types/dpp'; // Moved mock data
+import RoleSpecificCard from '@/components/passport/RoleSpecificCard'; // Import the new component
 
 const iconMap: Record<IconName, React.ElementType> = {
   Leaf,
@@ -23,7 +25,7 @@ const iconMap: Record<IconName, React.ElementType> = {
   ShieldCheck,
   Cpu,
   Zap,
-  Factory,
+  Factory, // Assuming Factory is a LucideIcon, if not, replace or handle
   Truck,
   ShoppingCart,
   Wrench,
@@ -35,120 +37,6 @@ const iconMap: Record<IconName, React.ElementType> = {
   ClipboardCheck
 };
 
-interface SustainabilityHighlight {
-  iconName: IconName;
-  text: string;
-}
-
-interface LifecycleHighlight {
-  stage: string;
-  date: string;
-  details?: string;
-  isEbsiVerified?: boolean;
-  iconName?: IconName;
-}
-
-interface PublicCertification {
-  name: string;
-  authority: string;
-  expiryDate?: string;
-  link?: string;
-  isVerified?: boolean; 
-}
-
-interface PublicProductInfo {
-  passportId: string;
-  productName: string;
-  tagline: string;
-  imageUrl: string;
-  imageHint: string;
-  productStory: string;
-  sustainabilityHighlights: SustainabilityHighlight[];
-  manufacturerName: string;
-  manufacturerWebsite?: string;
-  brandLogoUrl?: string;
-  learnMoreLink?: string;
-  complianceSummary: string;
-  category: string;
-  modelNumber: string;
-  anchorTransactionHash?: string;
-  blockchainPlatform?: string;
-  ebsiStatus?: 'verified' | 'pending' | 'not_verified';
-  ebsiVerificationId?: string;
-  lifecycleHighlights?: LifecycleHighlight[];
-  certifications?: PublicCertification[]; 
-}
-
-const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
-  "PROD001": {
-    passportId: "PROD001",
-    productName: "EcoFriendly Refrigerator X2000",
-    tagline: "Sustainable Cooling, Smart Living.",
-    imageUrl: "https://placehold.co/800x600.png",
-    imageHint: "modern refrigerator kitchen",
-    productStory: "Experience the future of refrigeration with the EcoFriendly Refrigerator X2000. Designed with both the planet and your lifestyle in mind, this appliance combines cutting-edge cooling technology with sustainable materials. Its spacious interior, smart energy management, and sleek design make it a perfect addition to any modern, eco-conscious home. We believe in transparency, and this Digital Product Passport gives you insight into its journey and impact. Built to last and designed for efficiency, the X2000 helps you reduce your environmental footprint without compromising on performance or style. More details include advanced frost-free systems, optimized airflow for even temperature distribution, and compartments designed for specific food types to prolong freshness. The user interface is intuitive, allowing easy control over temperature settings and special modes like vacation mode or quick cool.",
-    sustainabilityHighlights: [
-      { iconName: "Zap", text: "Energy Star Certified A+++" },
-      { iconName: "Recycle", text: "Made with 70% recycled steel" },
-      { iconName: "Recycle", text: "95% recyclable at end-of-life" },
-      { iconName: "Zap", text: "Smart energy consumption features" }
-    ],
-    manufacturerName: "GreenTech Appliances",
-    manufacturerWebsite: "#", 
-    brandLogoUrl: "https://placehold.co/150x50.png?text=GreenTech",
-    learnMoreLink: "#", 
-    complianceSummary: "Fully compliant with EU Ecodesign and Energy Labelling regulations.",
-    category: "Home Appliances",
-    modelNumber: "X2000-ECO",
-    anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef",
-    blockchainPlatform: "MockChain (Ethereum Compatible)",
-    ebsiStatus: 'verified',
-    ebsiVerificationId: "EBSI-VC-ATTR-XYZ-00123",
-    lifecycleHighlights: [
-      { stage: "Manufactured", date: "2024-01-15", details: "Production batch #PB789 at EcoFactory, Germany.", isEbsiVerified: true, iconName: "Factory" },
-      { stage: "Shipped to Distributor", date: "2024-01-20", details: "Container #C0N741N3R.", isEbsiVerified: true, iconName: "Truck" },
-      { stage: "Sold to Consumer", date: "2024-02-10", details: "Retail Store, Paris. Warranty activated.", isEbsiVerified: false, iconName: "ShoppingCart" },
-      { stage: "Scheduled Maintenance", date: "2025-02-15", details: "Filter replacement complete.", isEbsiVerified: false, iconName: "Wrench" },
-    ],
-    certifications: [
-      { name: "EU Energy Label", authority: "European Commission", expiryDate: "N/A", link: "#", isVerified: true },
-      { name: "CE Marking", authority: "Self-Certified (Manufacturer)", expiryDate: "N/A", isVerified: true },
-      { name: "ISO 9001:2015", authority: "TUV SUD", expiryDate: "2026-05-20", link: "#", isVerified: false },
-    ]
-  },
-  "PROD002": {
-    passportId: "PROD002",
-    productName: "Smart LED Bulb (4-Pack)",
-    tagline: "Illuminate Your World, Sustainably.",
-    imageUrl: "https://placehold.co/800x600.png",
-    imageHint: "led bulbs packaging",
-    productStory: "Brighten your home responsibly with our Smart LED Bulb pack. These energy-efficient bulbs offer customizable lighting and connect to smart home systems. Designed for a long lifespan, reducing waste.",
-    sustainabilityHighlights: [
-      { iconName: "Zap", text: "Uses 85% less energy than incandescent bulbs" },
-      { iconName: "Recycle", text: "Recyclable packaging materials" },
-      { iconName: "Leaf", text: "Mercury-free design" },
-    ],
-    manufacturerName: "BrightSpark Electronics",
-    manufacturerWebsite: "#",
-    brandLogoUrl: "https://placehold.co/150x50.png?text=BrightSpark",
-    learnMoreLink: "#",
-    complianceSummary: "Complies with EU energy efficiency and hazardous substance directives.",
-    category: "Electronics",
-    modelNumber: "BS-LED-S04",
-    anchorTransactionHash: "0xdef456ghi789jkl012mno345pqr678stu901vwx234yz567abcdef012345",
-    blockchainPlatform: "MockChain (Polygon Layer 2)",
-    ebsiStatus: 'pending',
-    lifecycleHighlights: [
-      { stage: "Manufactured", date: "2024-03-01", details: "Batch #LEDB456, Shenzhen.", isEbsiVerified: true, iconName: "Factory" },
-      { stage: "Imported to EU", date: "2024-03-15", details: "Rotterdam Port, Netherlands.", isEbsiVerified: false, iconName: "Truck" },
-      { stage: "Firmware Update v1.2", date: "2024-08-01", details: "Improved energy efficiency algorithm.", isEbsiVerified: true, iconName: "UploadCloud" },
-    ],
-    certifications: [
-      { name: "RoHS Compliance", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
-      { name: "CE Marking", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
-    ]
-  }
-};
 
 type Props = {
   params: { passportId: string }
@@ -163,6 +51,7 @@ export default function PublicPassportPage({ params }: Props) {
   const { currentRole } = useRole(); 
 
   useEffect(() => {
+    // Simulate fetching product data
     const fetchedProduct = MOCK_PUBLIC_PASSPORTS[params.passportId];
     if (fetchedProduct) {
       setProduct(fetchedProduct);
@@ -190,7 +79,7 @@ export default function PublicPassportPage({ params }: Props) {
     ? product.productStory 
     : `${product.productStory.substring(0, STORY_TRUNCATE_LENGTH)}...`;
 
-  const getEbsiStatusBadge = (status?: 'verified' | 'pending' | 'not_verified') => {
+  const getEbsiStatusBadge = (status?: 'verified' | 'pending' | 'not_verified' | 'error') => {
     switch (status) {
       case 'verified':
         return <Badge variant="default" className="bg-green-500/20 text-green-700 border-green-500/30"><ShieldCheck className="mr-1.5 h-3.5 w-3.5" />Verified</Badge>;
@@ -198,66 +87,13 @@ export default function PublicPassportPage({ params }: Props) {
         return <Badge variant="outline" className="bg-yellow-500/20 text-yellow-700 border-yellow-500/30"><InfoIcon className="mr-1.5 h-3.5 w-3.5" />Pending</Badge>;
       case 'not_verified':
         return <Badge variant="destructive"><AlertCircle className="mr-1.5 h-3.5 w-3.5" />Not Verified</Badge>;
+      case 'error':
+        return <Badge variant="destructive" className="bg-red-500/20 text-red-700 border-red-500/30"><AlertCircle className="mr-1.5 h-3.5 w-3.5" />Error</Badge>;
       default:
         return <Badge variant="secondary">Unknown</Badge>;
     }
   };
-
-  const RoleSpecificCard = () => {
-    let title = "Role-Specific Actions & Tips";
-    let IconComponent: React.ElementType = InfoIcon;
-    let content: React.ReactNode = null;
-
-    switch(currentRole) {
-      case 'admin':
-        IconComponent = Settings;
-        content = <p className="text-sm text-muted-foreground">Admin Tip: Oversee data integrity and user access through the main platform settings. <Link href="/settings" className="text-primary hover:underline">Go to Settings</Link>.</p>;
-        break;
-      case 'manufacturer':
-        IconComponent = Building; 
-        content = (
-            <>
-                <p className="text-sm text-muted-foreground">Manufacturer View: Ensure all product data is accurate and up-to-date. Consider initiating a new compliance check if recent changes were made (Mock).</p>
-                {product.ebsiStatus === 'pending' && (
-                    <p className="text-sm text-orange-600 mt-2">Action Required: EBSI verification is pending. Please review and complete necessary steps via your dashboard.</p>
-                )}
-            </>
-        );
-        break;
-      case 'supplier':
-        IconComponent = UploadCloud;
-        content = <p className="text-sm text-muted-foreground">Supplier Action: If you supply components for this product, ensure your material declarations are up-to-date in the system. (Mock)</p>;
-        break;
-      case 'retailer':
-        IconComponent = QrCode;
-        content = <p className="text-sm text-muted-foreground">Retailer Tip: Utilize this DPP QR code on product displays for enhanced customer transparency and engagement. Access marketing assets from the product detail page (Mock).</p>;
-        break;
-      case 'recycler':
-        IconComponent = ToolIcon;
-        content = <p className="text-sm text-muted-foreground">Recycler Info: Detailed disassembly guides and material recovery sheets are typically available in the 'Technical Docs' section or linked from lifecycle events. (Mock)</p>;
-        break;
-      case 'verifier':
-        IconComponent = ClipboardCheck;
-        content = <p className="text-sm text-muted-foreground">Verifier Action: Plan next audit cycle or request further documentation for this product from the verifier dashboard. (Mock)</p>;
-        break;
-      default:
-        return null; 
-    }
-
-    return (
-      <Card className="mt-10 shadow-md">
-        <CardHeader>
-          <CardTitle className="text-xl text-primary flex items-center">
-            <IconComponent className="mr-2 h-6 w-6" /> {title}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {content}
-        </CardContent>
-      </Card>
-    );
-  };
-
+  
   const aiCopilotQuery = encodeURIComponent(`What are the key compliance requirements for a product like '${product.productName}' in the '${product.category}' category? Also, what are specific considerations for its EBSI status of '${product.ebsiStatus || 'N/A'}'?`);
   const aiCopilotLink = `/copilot?contextQuery=${aiCopilotQuery}`;
 
@@ -377,7 +213,7 @@ export default function PublicPassportPage({ params }: Props) {
                     </Link>
                   )}
                   {currentRole === 'manufacturer' && (
-                    <Button variant="link" size="sm" className="p-0 h-auto mt-1 text-primary block">View Internal Details (Mock)</Button>
+                    <Button variant="link" size="sm" className="p-0 h-auto mt-1 text-primary block" onClick={() => alert("Mock: View Internal Details for " + product.passportId)}>View Internal Details (Mock)</Button>
                   )}
                 </CardContent>
               </Card>
@@ -505,7 +341,7 @@ export default function PublicPassportPage({ params }: Props) {
                     <p className="text-sm font-semibold text-info mb-2">Auditor View: Access detailed compliance records and initiate audits via the main dashboard.</p>
                   )}
                    {currentRole === 'manufacturer' && product.ebsiStatus === 'pending' && (
-                    <p className="text-sm text-orange-600 mb-2">Action Required: EBSI verification is pending. Please review and complete necessary steps through your dashboard.</p>
+                    <p className="text-sm text-orange-600 mb-2">Action Required: EBSI verification for this product is pending. Please review and complete necessary steps through your dashboard.</p>
                   )}
                   <p className="text-foreground">{product.complianceSummary}</p>
                   {product.learnMoreLink && (
@@ -519,7 +355,7 @@ export default function PublicPassportPage({ params }: Props) {
             </div>
           </div>
         </div>
-        <RoleSpecificCard /> 
+        <RoleSpecificCard product={product} /> 
       </main>
 
       <footer className="py-8 bg-foreground text-background text-center mt-12">
@@ -532,3 +368,4 @@ export default function PublicPassportPage({ params }: Props) {
   );
 }
 
+    

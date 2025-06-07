@@ -7,11 +7,11 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Settings, UploadCloud, QrCode, HardHat as ToolIcon, ClipboardCheck } from 'lucide-react'; // Added new icons
+import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Settings, UploadCloud, QrCode, HardHat as ToolIcon, ClipboardCheck, Bot } from 'lucide-react'; // Added Bot icon
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react'; 
 import { cn } from '@/lib/utils';
-import { useRole } from '@/contexts/RoleContext'; // Import useRole
+import { useRole } from '@/contexts/RoleContext';
 
 // Define a type for icon mapping
 type IconName = "Leaf" | "Recycle" | "ShieldCheck" | "Cpu" | "Zap";
@@ -148,7 +148,7 @@ export default function PublicPassportPage({ params }: Props) {
   const [product, setProduct] = useState<PublicProductInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
-  const { currentRole } = useRole(); // Get current role
+  const { currentRole } = useRole(); 
 
   useEffect(() => {
     const fetchedProduct = MOCK_PUBLIC_PASSPORTS[params.passportId];
@@ -202,14 +202,15 @@ export default function PublicPassportPage({ params }: Props) {
         content = <p className="text-sm text-muted-foreground">Admin Tip: Oversee data integrity and user access through the main platform settings. <Link href="/settings" className="text-primary hover:underline">Go to Settings</Link>.</p>;
         break;
       case 'manufacturer':
-        IconComponent = Building; // Using Building icon for manufacturer context
-        content = <p className="text-sm text-muted-foreground">Manufacturer View: Ensure all product data is accurate and up-to-date. Consider initiating a new compliance check if recent changes were made (Mock).</p>;
-        if (product.ebsiStatus === 'pending') {
-            content = <>
-                {content}
-                <p className="text-sm text-orange-600 mt-2">Action Required: EBSI verification is pending. Please review and complete necessary steps via your dashboard.</p>
-            </>;
-        }
+        IconComponent = Building; 
+        content = (
+            <>
+                <p className="text-sm text-muted-foreground">Manufacturer View: Ensure all product data is accurate and up-to-date. Consider initiating a new compliance check if recent changes were made (Mock).</p>
+                {product.ebsiStatus === 'pending' && (
+                    <p className="text-sm text-orange-600 mt-2">Action Required: EBSI verification is pending. Please review and complete necessary steps via your dashboard.</p>
+                )}
+            </>
+        );
         break;
       case 'supplier':
         IconComponent = UploadCloud;
@@ -228,7 +229,7 @@ export default function PublicPassportPage({ params }: Props) {
         content = <p className="text-sm text-muted-foreground">Verifier Action: Plan next audit cycle or request further documentation for this product from the verifier dashboard. (Mock)</p>;
         break;
       default:
-        return null; // No specific card for unknown roles
+        return null; 
     }
 
     return (
@@ -245,6 +246,8 @@ export default function PublicPassportPage({ params }: Props) {
     );
   };
 
+  const aiCopilotQuery = encodeURIComponent(`What are the key compliance requirements for a product like '${product.productName}' in the '${product.category}' category? Also, what are specific considerations for its EBSI status of '${product.ebsiStatus || 'N/A'}'?`);
+  const aiCopilotLink = `/copilot?contextQuery=${aiCopilotQuery}`;
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -331,6 +334,15 @@ export default function PublicPassportPage({ params }: Props) {
               </Card>
             </div>
           </div>
+          
+          <div className="mt-8 pt-6 border-t border-border text-center">
+              <Link href={aiCopilotLink} passHref>
+                <Button variant="secondary" size="lg">
+                  <Bot className="mr-2 h-5 w-5" /> Ask AI Co-Pilot about this Product
+                </Button>
+              </Link>
+            </div>
+
 
           <div className="mt-10 pt-8 border-t border-border">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -486,7 +498,7 @@ export default function PublicPassportPage({ params }: Props) {
             </div>
           </div>
         </div>
-        <RoleSpecificCard /> {/* Add the new role-specific card here */}
+        <RoleSpecificCard /> 
       </main>
 
       <footer className="py-8 bg-foreground text-background text-center mt-12">

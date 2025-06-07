@@ -1,12 +1,12 @@
 // --- File: dppDisplayUtils.tsx ---
 // Description: Utility functions for generating display details (text, icons, variants) for DPP compliance, EBSI status, and completeness.
-"use client"; // Added "use client" as it's returning JSX elements which might be used in client components
+"use client"; // Added "use client" as it exports functions returning JSX
 
-import React from "react"; // Keep React import for JSX
+import React from "react"; // Ensure React is imported for JSX
 import type { DigitalProductPassport, EbsiVerificationDetails, DisplayableProduct, ProductComplianceSummary, SimpleLifecycleEvent } from "@/types/dpp";
 import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertCircle, AlertTriangle } from 'lucide-react';
-import { cn } from "@/lib/utils";
-
+// cn utility is not used here, so it's removed to keep imports minimal.
+// import { cn } from "@/lib/utils";
 
 interface ComplianceDetails {
   text: string;
@@ -52,8 +52,8 @@ export const getOverallComplianceDetails = (dpp: DigitalProductPassport): Compli
     const iconElement = <ShieldCheck className="h-5 w-5 text-green-500" />;
     return { text: "Fully Compliant", variant: "default", icon: iconElement, tooltipText: "All tracked regulations compliant." };
   }
-  const iconElement = <ShieldQuestion className="h-5 w-5 text-muted-foreground" />;
-  return { text: "Review Needed", variant: "outline", icon: iconElement, tooltipText: "Compliance status requires review." };
+  const iconElementDefault = <ShieldQuestion className="h-5 w-5 text-muted-foreground" />;
+  return { text: "Review Needed", variant: "outline", icon: iconElementDefault, tooltipText: "Compliance status requires review." };
 };
 
 export const getEbsiStatusDetails = (status?: EbsiVerificationDetails['status']): EbsiStatusDisplayDetails => {
@@ -122,7 +122,7 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
   essentialFieldsConfig.forEach(fieldConfig => {
     if (fieldConfig.categoryScope) {
       const productCategoryLower = currentCategory?.toLowerCase();
-      if (!productCategoryLower || !fieldConfig.categoryScope.some(scope => productCategoryLower.includes(scope.toLowerCase()))) { return; } 
+      if (!productCategoryLower || !fieldConfig.categoryScope.some(scope => productCategoryLower.includes(scope.toLowerCase()))) { return; }
     }
     actualTotalFields++;
 
@@ -140,7 +140,7 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
           break;
         }
       }
-      
+
       if (typeof value === 'object' && value !== null) {
         isFieldFilled = Object.keys(value).length > 0 || (Array.isArray(value) && value.length > 0);
       } else {

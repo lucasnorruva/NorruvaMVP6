@@ -12,7 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MoreHorizontal, Eye, Edit as EditIconLucide, Settings as SettingsIcon, Bot, Trash2 } from "lucide-react"; // Added Trash2
 import type { DigitalProductPassport } from "@/types/dpp";
-import { getOverallComplianceDetails, getEbsiStatusDetails } from "@/utils/dppDisplayUtils.tsx"; // Updated import
+import { getOverallComplianceDetails, getEbsiStatusDetails } from "@/utils/dppDisplayUtils.tsx"; // Updated import to .tsx
 import { cn } from "@/lib/utils";
 
 interface DPPTableRowProps {

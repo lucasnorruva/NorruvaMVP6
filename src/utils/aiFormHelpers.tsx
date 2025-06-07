@@ -10,6 +10,7 @@ import { generateProductName } from "@/ai/flows/generate-product-name-flow";
 import { generateProductDescription } from "@/ai/flows/generate-product-description-flow";
 import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow";
 import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
+import { generateProductSpecifications } from "@/ai/flows/generate-product-specifications-flow";
 import type { ToastInput } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";
 
@@ -32,7 +33,6 @@ export async function handleSuggestNameAI(
       productDescription: productDescription || "",
       productCategory: productCategory || undefined,
     });
-    // Form value setting is done in the calling component (ProductForm.tsx)
     toast({ title: "Product Name Suggested!", description: `AI suggested: "${result.productName}"`, variant: "default" });
     return result.productName;
   } catch (error) {
@@ -68,7 +68,6 @@ export async function handleSuggestDescriptionAI(
       productCategory: productCategory || undefined,
       keyFeatures: materials || undefined,
     });
-    // Form value setting is done in the calling component
     toast({ title: "Product Description Suggested!", description: "AI has generated a product description.", variant: "default" });
     return result.productDescription;
   } catch (error) {
@@ -103,7 +102,6 @@ export async function handleSuggestClaimsAI(
     if (result.claims.length === 0) {
       toast({ title: "No specific claims suggested.", description: "Try adding more product details like category or materials." });
     }
-    // Result (claims array) is handled by the calling component
     return result.claims;
   } catch (error) {
     console.error("Failed to suggest claims:", error);
@@ -137,7 +135,6 @@ export async function handleGenerateImageAI(
       productName: formData.productName,
       productCategory: formData.productCategory,
     });
-    // Image URL is returned to the calling component
     toast({ title: "Image Generated Successfully", description: "The product image has been generated." });
     return result.imageUrl;
   } catch (error) {
@@ -155,3 +152,37 @@ export async function handleGenerateImageAI(
   }
 }
 
+export async function handleSuggestSpecificationsAI(
+  form: UseFormReturn<ProductFormData>,
+  toast: ToastFn,
+  setLoadingState: (loading: boolean) => void
+): Promise<string | null> {
+  setLoadingState(true);
+  const { productName, productDescription, productCategory } = form.getValues();
+  if (!productName && !productDescription && !productCategory) {
+    toast({ title: "Input Required", description: "Please provide product name, description, or category to suggest specifications.", variant: "destructive" });
+    setLoadingState(false);
+    return null;
+  }
+  try {
+    const result = await generateProductSpecifications({
+      productName: productName || "",
+      productDescription: productDescription || undefined,
+      productCategory: productCategory || undefined,
+    });
+    toast({ title: "Specifications Suggested!", description: `AI suggested specifications for "${productName || 'the product'}".`, variant: "default" });
+    return result.specificationsJsonString;
+  } catch (error) {
+    console.error("Failed to suggest specifications:", error);
+    const iconElement = <AlertTriangle className="text-white" />;
+    toast({
+      title: "Error Suggesting Specifications",
+      description: error instanceof Error ? error.message : "An unknown error occurred.",
+      variant: "destructive",
+      action: iconElement,
+    });
+    return null;
+  } finally {
+    setLoadingState(false);
+  }
+}

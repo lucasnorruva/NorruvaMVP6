@@ -33,7 +33,8 @@ import {
   handleSuggestDescriptionAI,
   handleSuggestClaimsAI,
   handleGenerateImageAI,
-} from "@/utils/aiFormHelpers"; // Updated import to .tsx
+  handleSuggestSpecificationsAI,
+} from "@/utils/aiFormHelpers.tsx"; 
 
 const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
@@ -47,7 +48,7 @@ const formSchema = z.object({
   energyLabel: z.string().optional(),
   productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
   imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")),
-  imageHint: z.string().optional(), // Added imageHint to schema
+  imageHint: z.string().optional(), 
   batteryChemistry: z.string().optional(),
   stateOfHealth: z.coerce.number().nullable().optional(),
   carbonFootprintManufacturing: z.coerce.number().nullable().optional(),
@@ -58,7 +59,7 @@ export type ProductFormData = z.infer<typeof formSchema>;
 
 interface ProductFormProps {
   id?: string; 
-  initialData?: Partial<InitialProductFormData>; // Updated to InitialProductFormData
+  initialData?: Partial<InitialProductFormData>; 
   onSubmit: (data: ProductFormData) => Promise<void>;
   isSubmitting?: boolean;
   isStandalonePage?: boolean; 
@@ -112,9 +113,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   const [isSuggestingDescription, setIsSuggestingDescription] = useState(false);
   const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
+  const [isSuggestingSpecs, setIsSuggestingSpecs] = useState(false);
   
-  // currentImageUrl state is managed inside ProductImageFormSection now
-
   React.useEffect(() => {
     if (initialData) {
       form.reset({
@@ -166,8 +166,15 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     const newClaimsValue = currentClaimsValue ? `${currentClaimsValue}\n- ${claim}` : `- ${claim}`;
     form.setValue("sustainabilityClaims", newClaimsValue, { shouldValidate: true });
   };
+
+  const callSuggestSpecificationsAI = async () => {
+    const result = await handleSuggestSpecificationsAI(form, toast, setIsSuggestingSpecs);
+    if (result) {
+        form.setValue("specifications", result, { shouldValidate: true });
+    }
+  };
   
-  const anyAISuggestionInProgress = isSuggestingName || isSuggestingDescription || isSuggestingClaims || isGeneratingImage;
+  const anyAISuggestionInProgress = isSuggestingName || isSuggestingDescription || isSuggestingClaims || isGeneratingImage || isSuggestingSpecs;
 
   const formContent = (
     <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5']} className="w-full">
@@ -229,7 +236,20 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       <AccordionItem value="item-3">
         <AccordionTrigger className="text-lg font-semibold">Technical Specifications</AccordionTrigger>
         <AccordionContent className="pt-4">
-           <FormField control={form.control} name="specifications" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Specifications (JSON) <AiIndicator fieldOrigin={initialData?.specificationsOrigin} fieldName="Specifications" /></FormLabel> <FormControl><Textarea placeholder='e.g., { "color": "blue", "weight": "10kg" }' {...field} rows={5} /></FormControl> <FormDescription>Enter as a JSON object.</FormDescription> <FormMessage /> </FormItem> )}/>
+           <FormField control={form.control} name="specifications" render={({ field }) => ( 
+            <FormItem> 
+              <div className="flex items-center justify-between">
+                <FormLabel className="flex items-center">Specifications (JSON) <AiIndicator fieldOrigin={initialData?.specificationsOrigin} fieldName="Specifications" /></FormLabel>
+                <Button type="button" variant="ghost" size="sm" onClick={callSuggestSpecificationsAI} disabled={anyAISuggestionInProgress || !!isSubmitting}>
+                  {isSuggestingSpecs ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
+                  <span className="ml-2">{isSuggestingSpecs ? "Suggesting..." : "Suggest Specs"}</span>
+                </Button>
+              </div>
+              <FormControl><Textarea placeholder='e.g., { "color": "blue", "weight": "10kg" }' {...field} rows={5} /></FormControl> 
+              <FormDescription>Enter as a JSON object. AI can help suggest a structure.</FormDescription> 
+              <FormMessage /> 
+            </FormItem> 
+            )}/>
         </AccordionContent>
       </AccordionItem>
 

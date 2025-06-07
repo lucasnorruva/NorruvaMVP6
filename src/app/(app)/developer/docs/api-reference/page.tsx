@@ -326,7 +326,7 @@ export default function ApiReferencePage() {
             <CardDescription>
               <span className="inline-flex items-center font-mono text-sm">
                 <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
-                <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/dpp</code>
+                <code className="bg-muted px-1 py-0.5 rounded-sm">/dpp</code>
               </span>
               <br/>
               Creates a new Digital Product Passport with the provided initial data.
@@ -367,8 +367,18 @@ export default function ApiReferencePage() {
                     <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error400_create_dpp}</code></pre>
                   </details>
                 </li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.</li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.
+                  <details className="border rounded-md mt-1">
+                    <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                    <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error401}</code></pre>
+                  </details>
+                </li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.
+                  <details className="border rounded-md mt-1">
+                    <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                    <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error500}</code></pre>
+                  </details>
+                </li>
               </ul>
             </section>
           </CardContent>
@@ -380,7 +390,7 @@ export default function ApiReferencePage() {
             <CardDescription>
               <span className="inline-flex items-center font-mono text-sm">
                 <Badge variant="outline" className="bg-purple-100 text-purple-700 border-purple-300 mr-2 font-semibold">PUT</Badge>
-                <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/dpp/{'{productId}'}</code>
+                <code className="bg-muted px-1 py-0.5 rounded-sm">/dpp/{'{productId}'}</code>
               </span>
               <br/>
               Updates an existing Digital Product Passport. You can send partial or full updates.
@@ -427,9 +437,24 @@ export default function ApiReferencePage() {
                     <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error400_update_dpp}</code></pre>
                   </details>
                 </li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.</li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>: DPP with the given ID does not exist.</li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.
+                  <details className="border rounded-md mt-1">
+                    <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                    <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error401}</code></pre>
+                  </details>
+                </li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>: DPP with the given ID does not exist.
+                  <details className="border rounded-md mt-1">
+                    <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                    <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error404}</code></pre>
+                  </details>
+                </li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.
+                  <details className="border rounded-md mt-1">
+                    <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                    <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error500}</code></pre>
+                  </details>
+                </li>
               </ul>
             </section>
           </CardContent>
@@ -442,3 +467,4 @@ export default function ApiReferencePage() {
     
     
     
+

@@ -26,33 +26,40 @@ import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from "@/types/dpp";
 import ProductManagementFiltersComponent, { type ProductManagementFilterState } from "@/components/products/ProductManagementFiltersComponent";
 import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
 import { ProductListRow } from "@/components/products/ProductListRow";
-import { calculateDppCompletenessForList } from "@/utils/dppDisplayUtils.tsx"; // Updated import to .tsx
+import { calculateDppCompletenessForList } from "@/utils/dppDisplayUtils";
 import { cn } from "@/lib/utils";
 
 const initialMockProductsData: RichMockProduct[] = [
   {
     id: "PROD001", productId: "PROD001", productName: "EcoFriendly Refrigerator X2000", category: "Appliances", status: "Active", compliance: "Compliant", lastUpdated: "2024-07-20",
     gtin: "01234567890123", manufacturer: "GreenTech Appliances", modelNumber: "X2000-ECO", description: "State-of-the-art energy efficient refrigerator.", imageUrl: "https://placehold.co/400x300.png", imageHint: "refrigerator appliance", materials: "Recycled Steel, Bio-polymers", sustainabilityClaims: "Energy Star Certified", energyLabel: "A+++", specifications: { "Capacity": "400L", "Warranty": "5 years" }, lifecycleEvents: [{id:"lc_mfg_001", eventName:"Manufacturing Complete", date: "2024-01-01", status: "Completed"}], complianceSummary: { overallStatus: "Compliant", eprel: {id: "EPREL123", status: "Registered", lastChecked: "2024-07-01"}, ebsi: {status: "Verified", lastChecked: "2024-07-01"} },
+    supplyChainLinks: [
+      { supplierId: "SUP001", suppliedItem: "Compressor Unit XJ-500", notes: "Primary compressor supplier for EU market. Audited for ethical sourcing." },
+      { supplierId: "SUP002", suppliedItem: "Recycled Steel Panels (70%)", notes: "Certified post-consumer recycled content." }
+    ]
   },
   {
     id: "PROD002", productId: "PROD002", productName: "Smart LED Bulb Pack (4-pack)", category: "Electronics", status: "Active", compliance: "Pending", lastUpdated: "2024-07-18",
     gtin: "98765432109876", manufacturer: "BrightSpark Electronics", modelNumber: "BS-LED-S04B", description: "Tunable white and color smart LED bulbs.", imageUrl: "https://placehold.co/400x300.png", imageHint: "led bulbs", materials: "Polycarbonate, Aluminum", sustainabilityClaims: "Uses 85% less energy", energyLabel: "A+", specifications: { "Lumens": "800lm", "Connectivity": "Wi-Fi" }, batteryChemistry: "Li-ion", stateOfHealth: 99, carbonFootprintManufacturing: 5, recycledContentPercentage: 10,
     lifecycleEvents: [{id:"lc_mfg_002", eventName:"Manufacturing Complete", date: "2024-03-01", status: "Completed"}], complianceSummary: { overallStatus: "Pending Review", eprel: {status: "Pending", lastChecked: "2024-07-10"}, ebsi: {status: "Pending", lastChecked: "2024-07-10"} },
+    supplyChainLinks: [
+       { supplierId: "SUP004", suppliedItem: "LED Chips & Drivers", notes: "Specialized electronics supplier from Shanghai." }
+    ]
   },
   {
     id: "PROD003", productId: "PROD003", productName: "Organic Cotton T-Shirt", category: "Apparel", status: "Archived", compliance: "Compliant", lastUpdated: "2024-06-10",
     description: "100% organic cotton t-shirt.", materials: "Organic Cotton", sustainabilityClaims: "GOTS Certified", imageUrl: "https://placehold.co/400x300.png", imageHint: "cotton t-shirt", manufacturer: "EcoThreads",
-    specifications: {"Fit": "Regular", "Origin": "India"}, lifecycleEvents: [], complianceSummary: { overallStatus: "Compliant", eprel: {status: "N/A", lastChecked: "2024-06-01"}, ebsi: {status: "N/A", lastChecked: "2024-06-01"} },
+    specifications: {"Fit": "Regular", "Origin": "India"}, lifecycleEvents: [], complianceSummary: { overallStatus: "Compliant", eprel: {status: "N/A", lastChecked: "2024-06-01"}, ebsi: {status: "N/A", lastChecked: "2024-06-01"} }, supplyChainLinks: []
   },
   {
     id: "PROD004", productId: "PROD004", productName: "Recycled Plastic Water Bottle", category: "Homeware", status: "Active", compliance: "Non-Compliant", lastUpdated: "2024-07-21",
     description: "Made from 100% recycled ocean-bound plastic.", materials: "Recycled PET", sustainabilityClaims: "Reduces ocean plastic", imageUrl: "https://placehold.co/400x300.png", imageHint: "water bottle", manufacturer: "RePurpose Inc.",
-    specifications: {"Volume": "500ml", "BPA-Free": "Yes"}, lifecycleEvents: [], complianceSummary: { overallStatus: "Non-Compliant", eprel: {status: "N/A", lastChecked: "2024-07-01"}, ebsi: {status: "N/A", lastChecked: "2024-07-01"} },
+    specifications: {"Volume": "500ml", "BPA-Free": "Yes"}, lifecycleEvents: [], complianceSummary: { overallStatus: "Non-Compliant", eprel: {status: "N/A", lastChecked: "2024-07-01"}, ebsi: {status: "N/A", lastChecked: "2024-07-01"} }, supplyChainLinks: []
   },
   {
     id: "PROD005", productId: "PROD005", productName: "Solar Powered Garden Light", category: "Outdoor", status: "Draft", compliance: "N/A", lastUpdated: "2024-07-22",
     description: "Solar-powered LED light for gardens.", materials: "Aluminum, Solar Panel", energyLabel: "N/A", imageUrl: "https://placehold.co/400x300.png", imageHint: "garden light", manufacturer: "SunBeam",
-    specifications: {"Brightness": "100 lumens", "Battery life": "8 hours"}, lifecycleEvents: [], complianceSummary: { overallStatus: "N/A", eprel: {status: "N/A", lastChecked: "2024-07-01"}, ebsi: {status: "N/A", lastChecked: "2024-07-01"} },
+    specifications: {"Brightness": "100 lumens", "Battery life": "8 hours"}, lifecycleEvents: [], complianceSummary: { overallStatus: "N/A", eprel: {status: "N/A", lastChecked: "2024-07-01"}, ebsi: {status: "N/A", lastChecked: "2024-07-01"} }, supplyChainLinks: []
   },
 ];
 
@@ -108,6 +115,7 @@ export default function ProductsPage() {
       productId: p.id,
       complianceSummary: p.complianceSummary || { overallStatus: 'N/A', eprel: { status: 'N/A', lastChecked: p.lastUpdated }, ebsi: { status: 'N/A', lastChecked: p.lastUpdated } },
       lifecycleEvents: p.lifecycleEvents || [],
+      supplyChainLinks: p.supplyChainLinks || [],
     }));
 
     const initialDisplayable: DisplayableProduct[] = initialMockProductsData.map(mock => ({
@@ -115,6 +123,7 @@ export default function ProductsPage() {
       productId: mock.productId || mock.id,
       complianceSummary: mock.complianceSummary || { overallStatus: 'N/A', eprel: { status: 'N/A', lastChecked: mock.lastUpdated }, ebsi: { status: 'N/A', lastChecked: mock.lastUpdated } },
       lifecycleEvents: mock.lifecycleEvents || [],
+      supplyChainLinks: mock.supplyChainLinks || [],
     }));
 
     const combined = [
@@ -173,7 +182,7 @@ export default function ProductsPage() {
           valA = a.category || a.productCategory;
           valB = b.category || b.productCategory;
         } else if (sortConfig.key === 'completenessScore') {
-          valA = a.completeness.score;
+          valA = a.completeness.score; // Sort by the score property of the completeness object
           valB = b.completeness.score;
         } else {
           valA = (a as any)[sortConfig.key!];

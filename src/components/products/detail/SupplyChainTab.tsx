@@ -18,7 +18,7 @@ import { Layers, Link2, Trash2, Edit3 as EditIcon, PlusCircle } from "lucide-rea
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/contexts/RoleContext";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import Link from "next/link"; // Import Link for the new message
+import Link from "next/link";
 
 interface SupplyChainTabProps {
   product: SimpleProductDetail;
@@ -47,7 +47,6 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
 
   useEffect(() => {
     setIsClient(true);
-    // Fetch available suppliers from localStorage and merge with mocks
     const storedSuppliersString = localStorage.getItem(USER_SUPPLIERS_LOCAL_STORAGE_KEY);
     const userAddedSuppliers: Supplier[] = storedSuppliersString ? JSON.parse(storedSuppliersString) : [];
     const combinedSuppliers = [
@@ -58,7 +57,7 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
   }, []);
 
   const canManageLinks = useMemo(() => {
-    return (currentRole === 'admin' || currentRole === 'manufacturer') && product.id.startsWith("USER_PROD");
+    return product.id.startsWith("USER_PROD") && (currentRole === 'admin' || currentRole === 'manufacturer');
   }, [currentRole, product.id]);
 
   const getDisabledTooltipText = () => {
@@ -123,7 +122,8 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
       return;
     }
     const updatedLinks = currentLinkedSuppliers.map(link =>
-      link.supplierId === editingLink.supplierId && link.suppliedItem === editingLink.suppliedItem 
+      // Compare based on original supplierId and originally suppliedItem to identify the link
+      link.supplierId === editingLink.supplierId && link.suppliedItem === editingLink.suppliedItem
         ? { ...link, suppliedItem: editSuppliedItem.trim(), notes: editLinkNotes.trim() }
         : link
     );
@@ -275,7 +275,15 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
             <p>No suppliers are currently linked to this product.</p>
             {!canManageLinks && product.id.startsWith("USER_PROD") && <p className="text-sm mt-1">Your role does not permit linking suppliers.</p>}
             {!canManageLinks && !product.id.startsWith("USER_PROD") && <p className="text-sm mt-1">Linking suppliers is only enabled for user-created products.</p>}
-            {canManageLinks && <p className="text-sm mt-1">Click "Link New Supplier" to add one.</p>}
+            {canManageLinks && availableSuppliers.length === 0 && (
+              <p className="text-sm mt-1">
+                No suppliers available to link. Add suppliers in the{" "}
+                <Link href="/suppliers" className="underline text-primary hover:text-primary/80">
+                  Supplier Management
+                </Link> page.
+              </p>
+            )}
+            {canManageLinks && availableSuppliers.length > 0 && <p className="text-sm mt-1">Click "Link New Supplier" to add one.</p>}
           </div>
         )}
       </CardContent>

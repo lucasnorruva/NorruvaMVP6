@@ -40,6 +40,7 @@ const iconMap: Record<IconName, React.ElementType> = {
   UploadCloud,
   ClipboardCheck,
   ListChecks, // Added ListChecks to map for default
+  Award, // Added Award to map
   // Add other icons from lucide-react as needed by IconName type and used in data
   // Example:
   // Package: LucideIcons.Package, (assuming LucideIcons is imported as *)
@@ -287,7 +288,7 @@ export default function PublicPassportPage({ params }: Props) {
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5">Authority: {cert.authority}</p>
-                          {cert.expiryDate && <p className="text-xs text-muted-foreground">Expires: {cert.expiryDate}</p>}
+                          {cert.expiryDate && <p className="text-xs text-muted-foreground">Expires: {new Date(cert.expiryDate).toLocaleDateString()}</p>}
                           {cert.link && (
                             <Link href={cert.link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline inline-flex items-center">
                               View Details <ExternalLink className="ml-1 h-3 w-3" />

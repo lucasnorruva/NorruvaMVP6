@@ -1,12 +1,11 @@
 // --- File: dppDisplayUtils.tsx ---
 // Description: Utility functions for generating display details (text, icons, variants) for DPP compliance, EBSI status, and completeness.
-"use client"; // Added "use client" as it exports functions returning JSX
+"use client"; 
 
-import React from "react"; // Ensure React is imported for JSX
+import React from "react"; 
 import type { DigitalProductPassport, EbsiVerificationDetails, DisplayableProduct, ProductComplianceSummary, SimpleLifecycleEvent } from "@/types/dpp";
-import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertCircle, AlertTriangle } from 'lucide-react';
-// cn utility is not used here, so it's removed to keep imports minimal.
-// import { cn } from "@/lib/utils";
+import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertCircle, AlertTriangle, CheckCircle2 } from 'lucide-react';
+import { cn } from "@/lib/utils";
 
 interface ComplianceDetails {
   text: string;
@@ -157,4 +156,70 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
 
   const score = actualTotalFields > 0 ? Math.round((filledCount / actualTotalFields) * 100) : 0;
   return { score, filledFields: filledCount, totalFields: actualTotalFields, missingFields };
+};
+
+
+// Utility functions for status display (moved from ComplianceTab)
+export const getStatusIcon = (status?: string): JSX.Element => {
+  switch (status?.toLowerCase()) {
+    case 'compliant':
+    case 'registered':
+    case 'verified':
+    case 'synced successfully':
+      return <ShieldCheck className="h-5 w-5 text-green-500" />;
+    case 'non-compliant':
+    case 'error':
+    case 'error during sync':
+      return <AlertTriangle className="h-5 w-5 text-red-500" />;
+    case 'pending':
+    case 'pending review':
+    case 'in progress':
+    case 'data incomplete':
+    case 'data mismatch':
+    case 'product not found in eprel':
+      return <InfoIcon className="h-5 w-5 text-yellow-500" />;
+    case 'not applicable':
+    case 'n/a':
+    case 'not found':
+    case 'not verified':
+    default:
+      return <InfoIcon className="h-5 w-5 text-muted-foreground" />;
+  }
+};
+
+export const getStatusBadgeVariant = (status?: string): "default" | "destructive" | "outline" | "secondary" => {
+  switch (status?.toLowerCase()) {
+    case 'compliant':
+    case 'registered':
+    case 'verified':
+    case 'synced successfully':
+      return "default";
+    case 'non-compliant':
+    case 'error':
+    case 'error during sync':
+      return "destructive";
+    case 'pending':
+    case 'pending review':
+    case 'in progress':
+    case 'data incomplete':
+    case 'data mismatch':
+    case 'product not found in eprel':
+      return "outline";
+    case 'not applicable':
+    case 'n/a':
+    case 'not found':
+    case 'not verified':
+    default:
+      return "secondary";
+  }
+};
+
+export const getStatusBadgeClasses = (status?: string): string => {
+    switch (status?.toLowerCase()) {
+        case 'compliant': case 'registered': case 'verified': case 'synced successfully': return "bg-green-100 text-green-700 border-green-300";
+        case 'non-compliant': case 'error': case 'error during sync': return "bg-red-100 text-red-700 border-red-300";
+        case 'pending': case 'pending review': case 'in progress': case 'data incomplete': case 'data mismatch': case 'product not found in eprel': return "bg-yellow-100 text-yellow-700 border-yellow-300";
+        case 'not applicable': case 'n/a': case 'not found': case 'not verified':
+        default: return "bg-muted text-muted-foreground";
+    }
 };

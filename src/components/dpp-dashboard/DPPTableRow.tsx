@@ -36,7 +36,7 @@ export function DPPTableRow({ dpp, onDeleteProduct, onViewAiSummary }: DPPTableR
   return (
     <TableRow key={dpp.id} className="hover:bg-muted/50 transition-colors">
       <TableCell className="font-medium">
-        <Link href={`/passport/${dpp.id}`} className="text-primary hover:underline">
+        <Link href={`/passport/${dpp.id}`} className="text-primary hover:underline" target="_blank" title="View Public Passport (Opens in new tab)">
           {dpp.id}
         </Link>
       </TableCell>
@@ -114,6 +114,7 @@ export function DPPTableRow({ dpp, onDeleteProduct, onViewAiSummary }: DPPTableR
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem asChild>
+              {/* Changed href to point to internal product detail page */}
               <Link href={`/products/${dpp.id}`}>
                 <Eye className="mr-2 h-4 w-4" /> View Details
               </Link>
@@ -142,3 +143,4 @@ export function DPPTableRow({ dpp, onDeleteProduct, onViewAiSummary }: DPPTableR
     </TableRow>
   );
 }
+

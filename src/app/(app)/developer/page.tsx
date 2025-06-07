@@ -684,6 +684,9 @@ export default function DeveloperPortalPage() {
                     const targetTabTrigger = document.querySelector(`#developer-portal-tabs [data-state="inactive"][value="${action.targetTab}"]`) as HTMLElement | null;
                     if (targetTabTrigger && targetTabTrigger.ariaSelected === "false") {
                         targetTabTrigger.click();
+                    } else if (action.targetTab === 'dashboard') { // If already on dashboard or clicking dashboard
+                        const dashboardTab = document.querySelector(`#developer-portal-tabs [value="dashboard"]`) as HTMLElement | null;
+                        if (dashboardTab) dashboardTab.click();
                     }
                   }}>
                     <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />

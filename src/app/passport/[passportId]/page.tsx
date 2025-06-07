@@ -10,11 +10,11 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import * as LucideIcons from 'lucide-react'; // Import all icons as LucideIcons
 import { 
   Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, 
-  ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot,
-  Factory, Truck, ShoppingCart, Wrench, UploadCloud, ClipboardCheck, Cog, Search, PenTool, CalendarCheck
-} from 'lucide-react';
+  ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot
+} from 'lucide-react'; // Keep specific imports for direct use or if iconMap was very selective
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react'; 
 import { cn } from '@/lib/utils';
@@ -23,48 +23,7 @@ import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertificati
 import { MOCK_PUBLIC_PASSPORTS } from '@/types/dpp'; 
 import RoleSpecificCard from '@/components/passport/RoleSpecificCard';
 
-const iconMap: Record<IconName, React.ElementType> = {
-  Leaf,
-  Recycle,
-  ShieldCheck,
-  Cpu,
-  Zap,
-  Factory, 
-  Truck,
-  ShoppingCart,
-  Wrench,
-  Cog,
-  Search,
-  PenTool,
-  CalendarCheck,
-  UploadCloud,
-  ClipboardCheck,
-  ListChecks, 
-  Award, 
-  AlertTriangle: AlertCircle, 
-  Briefcase: Building, 
-  User: Building, 
-  // Lucide icons that might be used as keys in data.
-  // If an icon is directly used e.g. <Factory />, it doesn't need to be in iconMap explicitly
-  // unless its name is stored as a string in `iconName` property of data.
-  // For instance, if data had `iconName: "Package"`, then `Package: LucideIcons.Package` would be needed.
-  // Since we are importing them directly and using them, this map is primarily for dynamic icon rendering based on string names.
-  History: HistoryIcon,
-  Building: Building,
-  ExternalLink: ExternalLink,
-  Fingerprint: Fingerprint,
-  Server: ServerIcon, // Corrected to ServerIcon from lucide-react
-  Info: InfoIcon,
-  Bot: Bot,
-  Package: Zap, // Example, as Package is not imported directly. Could be any other.
-  Camera: Zap, // Added Camera as it's in lucide-react
-  Circle: Zap, // Added Circle
-  Square: Zap, // Added Square
-  // Ensure all icons referenced by string names in `lifecycleHighlights` or other dynamic data are here.
-  // If an icon (e.g. `Factory`) is used as `<Factory />` it does not need to be in the map.
-  // Only if it's `event.iconName = "Factory"` then `Factory: Factory` is needed here.
-};
-
+// Removed manual iconMap
 
 type Props = {
   params: { passportId: string }
@@ -194,7 +153,7 @@ export default function PublicPassportPage({ params }: Props) {
                 <CardContent>
                   <ul className="space-y-3">
                     {product.sustainabilityHighlights.map((highlight, index) => {
-                      const IconComponent = iconMap[highlight.iconName];
+                      const IconComponent = highlight.iconName && (LucideIcons as any)[highlight.iconName] ? (LucideIcons as any)[highlight.iconName] : Leaf;
                       return (
                         <li key={index} className="flex items-center text-foreground">
                           <IconComponent className="h-5 w-5 mr-3 text-accent flex-shrink-0" />
@@ -256,10 +215,10 @@ export default function PublicPassportPage({ params }: Props) {
                   {product.lifecycleHighlights && product.lifecycleHighlights.length > 0 ? (
                     <ul className="space-y-3">
                       {product.lifecycleHighlights.map((event, index) => {
-                        const IconComponent = event.iconName && iconMap[event.iconName] ? iconMap[event.iconName] : ListChecks;
+                        const Icon = event.iconName && (LucideIcons as any)[event.iconName] ? (LucideIcons as any)[event.iconName] : ListChecks;
                         return (
                           <li key={index} className="text-sm text-foreground border-b border-border/50 pb-2 last:border-b-0 last:pb-0 flex items-start">
-                            <IconComponent className="h-5 w-5 mr-3 mt-0.5 text-primary flex-shrink-0" />
+                            <Icon className="h-5 w-5 mr-3 mt-0.5 text-primary flex-shrink-0" />
                             <div className="flex-grow">
                                 <div className="flex justify-between items-center">
                                     <span className="font-medium">{event.stage}</span>

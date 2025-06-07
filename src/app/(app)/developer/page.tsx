@@ -12,8 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator"; // Ensure this import is present
-import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIcon } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
+import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIcon, History, UploadCloud, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
@@ -202,6 +202,18 @@ export default function DeveloperPortalPage() {
   const [mockDppGeneratorCategory, setMockDppGeneratorCategory] = useState("");
   const [generatedMockDppJson, setGeneratedMockDppJson] = useState<string | null>(null);
   const [isGeneratingMockDpp, setIsGeneratingMockDpp] = useState(false);
+
+  const [getHistoryProductId, setGetHistoryProductId] = useState<string>("PROD001");
+  const [getHistoryResponse, setGetHistoryResponse] = useState<string | null>(null);
+  const [isGetHistoryLoading, setIsGetHistoryLoading] = useState(false);
+
+  const [postImportFileType, setPostImportFileType] = useState<string>("csv");
+  const [postImportResponse, setPostImportResponse] = useState<string | null>(null);
+  const [isPostImportLoading, setIsPostImportLoading] = useState(false);
+
+  const [getGraphProductId, setGetGraphProductId] = useState<string>("PROD001");
+  const [getGraphResponse, setGetGraphResponse] = useState<string | null>(null);
+  const [isGetGraphLoading, setIsGetGraphLoading] = useState(false);
 
 
   const handleCopyKey = (keyToCopy: string) => {
@@ -422,6 +434,66 @@ export default function DeveloperPortalPage() {
     setGeneratedMockDppJson(JSON.stringify(mockDpp, null, 2));
     toast({ title: "Mock DPP Generated", description: "A sample DPP JSON has been displayed." });
     setIsGeneratingMockDpp(false);
+  };
+
+  const handleMockGetHistory = async () => {
+    setIsGetHistoryLoading(true);
+    setGetHistoryResponse(null);
+    await new Promise(resolve => setTimeout(resolve, 400));
+    const product = MOCK_API_PRODUCTS[getHistoryProductId];
+    if (product) {
+        const history = [
+            { event: "DPP Created", timestamp: "2024-01-01T10:00:00Z", user: "system" },
+            { event: "Lifecycle Event Added: Manufactured", timestamp: "2024-01-15T08:00:00Z", user: "manufacturer_user@example.com", details: { location: "EcoFactory, Germany" } },
+            { event: "Compliance Status Updated: REACH to Compliant", timestamp: "2024-07-01T12:00:00Z", user: "verifier_bot" },
+        ];
+        setGetHistoryResponse(JSON.stringify({ productId: getHistoryProductId, auditTrail: history }, null, 2));
+    } else {
+        setGetHistoryResponse(JSON.stringify({ error: "Product not found for history", productId: getHistoryProductId }, null, 2));
+    }
+    setIsGetHistoryLoading(false);
+  };
+
+  const handleMockPostImport = async () => {
+    setIsPostImportLoading(true);
+    setPostImportResponse(null);
+    await new Promise(resolve => setTimeout(resolve, 800));
+    // In a real app, you'd handle file upload here if type is CSV/JSON
+    const mockSuccessCount = Math.floor(Math.random() * 50) + 10; // Random count
+    setPostImportResponse(JSON.stringify({
+        message: `Batch import processed (mock). File type: ${postImportFileType.toUpperCase()}`,
+        importedCount: mockSuccessCount,
+        failedCount: Math.floor(Math.random() * 5),
+        timestamp: new Date().toISOString()
+    }, null, 2));
+    setIsPostImportLoading(false);
+  };
+
+  const handleMockGetGraph = async () => {
+    setIsGetGraphLoading(true);
+    setGetGraphResponse(null);
+    await new Promise(resolve => setTimeout(resolve, 750));
+    const product = MOCK_API_PRODUCTS[getGraphProductId];
+    if (product) {
+        const graphData = {
+            productId: getGraphProductId,
+            graphType: "supply_chain_visualization",
+            nodes: [
+                { id: "SUP001", label: "GreenCompress Ltd.", type: "supplier" },
+                { id: "SUP002", label: "RecycleSteel Corp.", type: "supplier" },
+                { id: getGraphProductId, label: product.productName, type: "product" }
+            ],
+            edges: [
+                { source: "SUP001", target: getGraphProductId, label: "Compressor Unit" },
+                { source: "SUP002", target: getGraphProductId, label: "Recycled Steel Panels" }
+            ],
+            message: "Conceptual supply chain graph data."
+        };
+        setGetGraphResponse(JSON.stringify(graphData, null, 2));
+    } else {
+        setGetGraphResponse(JSON.stringify({ error: "Product not found for graph", productId: getGraphProductId }, null, 2));
+    }
+    setIsGetGraphLoading(false);
   };
 
 
@@ -798,6 +870,108 @@ export default function DeveloperPortalPage() {
                   )}
                   </CardContent>
               </Card>
+             
+              {/* GET /passport/history/{id} */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center"><History className="mr-2 h-5 w-5 text-info"/>GET /passport/history/{'{productId}'}</CardTitle>
+                  <CardDescription>Retrieve the audit trail / history for a specific DPP.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="historyProductIdInput">Product ID</Label>
+                    <Input id="historyProductIdInput" value={getHistoryProductId} onChange={(e) => setGetHistoryProductId(e.target.value)} placeholder="e.g., PROD001" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <Button onClick={handleMockGetHistory} disabled={isGetHistoryLoading} variant="secondary">
+                        {isGetHistoryLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                        {isGetHistoryLoading ? "Fetching History..." : "Send Request"}
+                    </Button>
+                    <Select defaultValue="cURL" disabled>
+                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  {getHistoryResponse && (
+                    <div className="mt-4">
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getHistoryResponse}</code></pre>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* POST /passport/import */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center"><UploadCloud className="mr-2 h-5 w-5 text-info"/>POST /passport/import</CardTitle>
+                  <CardDescription>Batch import Digital Product Passports (CSV, JSON, etc.).</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="importFileType">File Type (Conceptual)</Label>
+                    <Select value={postImportFileType} onValueChange={setPostImportFileType}>
+                      <SelectTrigger id="importFileType">
+                        <SelectValue placeholder="Select file type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="csv">CSV</SelectItem>
+                        <SelectItem value="json">JSON</SelectItem>
+                        <SelectItem value="api">API (Simulate direct data feed)</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  {/* In a real app, a file input or textarea for JSON/API data would go here */}
+                  <p className="text-xs text-muted-foreground">For this mock, just select a type and send. A real implementation would include file upload or data input.</p>
+                  <div className="flex items-center justify-between">
+                    <Button onClick={handleMockPostImport} disabled={isPostImportLoading} variant="secondary">
+                        {isPostImportLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                        {isPostImportLoading ? "Importing..." : "Send Request"}
+                    </Button>
+                    <Select defaultValue="cURL" disabled>
+                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  {postImportResponse && (
+                    <div className="mt-4">
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postImportResponse}</code></pre>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* GET /passport/graph/{id} */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg flex items-center"><Share2 className="mr-2 h-5 w-5 text-info"/>GET /passport/graph/{'{productId}'}</CardTitle>
+                  <CardDescription>Retrieve data for supply chain visualization.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div>
+                    <Label htmlFor="graphProductIdInput">Product ID</Label>
+                    <Input id="graphProductIdInput" value={getGraphProductId} onChange={(e) => setGetGraphProductId(e.target.value)} placeholder="e.g., PROD001" />
+                  </div>
+                   <div className="flex items-center justify-between">
+                    <Button onClick={handleMockGetGraph} disabled={isGetGraphLoading} variant="secondary">
+                        {isGetGraphLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                        {isGetGraphLoading ? "Fetching Graph Data..." : "Send Request"}
+                    </Button>
+                    <Select defaultValue="cURL" disabled>
+                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  {getGraphResponse && (
+                    <div className="mt-4">
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getGraphResponse}</code></pre>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+
 
             <Card>
                 <CardHeader>

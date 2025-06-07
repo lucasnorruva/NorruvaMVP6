@@ -8,8 +8,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductHeader from "./ProductHeader";
 import OverviewTab from "./OverviewTab";
 import SustainabilityTab from './SustainabilityTab';
-import ComplianceTab from './ComplianceTab'; // Import ComplianceTab
-// import LifecycleTab from './LifecycleTab';
+import ComplianceTab from './ComplianceTab';
+import LifecycleTab from './LifecycleTab'; // Import LifecycleTab
 // import SupplyChainTab from './SupplyChainTab';
 
 import { Package, Leaf, ShieldCheck, History, Layers } from 'lucide-react';
@@ -42,7 +42,7 @@ export default function ProductContainer({ product }: ProductContainerProps) {
           <TabsTrigger value="compliance" className="flex items-center gap-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
             <ShieldCheck className="h-4 w-4" /> Compliance
           </TabsTrigger>
-          <TabsTrigger value="lifecycle" disabled className="flex items-center gap-2 py-2">
+          <TabsTrigger value="lifecycle" className="flex items-center gap-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
             <History className="h-4 w-4" /> Lifecycle
           </TabsTrigger>
           <TabsTrigger value="supplyChain" disabled className="flex items-center gap-2 py-2">
@@ -64,8 +64,7 @@ export default function ProductContainer({ product }: ProductContainerProps) {
         </TabsContent>
 
         <TabsContent value="lifecycle" className="mt-6">
-          <p className="text-muted-foreground p-4 text-center">Product lifecycle information coming soon.</p>
-          {/* <LifecycleTab product={product} /> */}
+          <LifecycleTab product={product} />
         </TabsContent>
 
          <TabsContent value="supplyChain" className="mt-6">

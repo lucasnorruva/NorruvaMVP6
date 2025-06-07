@@ -17,7 +17,8 @@ import {
   ListChecks,
   BarChartHorizontal,
   ClipboardList,
-  Globe
+  Globe,
+  Users // Added Users icon
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import {
@@ -37,6 +38,7 @@ const navItems = [
   { href: "/dpp-live-dashboard", label: "Live DPPs", icon: LineChart },
   { href: "/products", label: "Products", icon: Package },
   { href: "/products/new", label: "Add Product", icon: ScanLine },
+  { href: "/suppliers", label: "Suppliers", icon: Users }, // Added Suppliers link
   { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList },
   { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
   { href: "/compliance/pathways", label: "Compliance Pathways", icon: ListChecks },
@@ -49,6 +51,7 @@ const navItems = [
 const secondaryNavItems = [
   { href: "/developer", label: "Developer Portal", icon: Code2 },
   { href: "/settings", label: "Settings", icon: Settings },
+  { href: "/audit-log", label: "Audit Log", icon: ListChecks }, // Added Audit Log link
 ];
 
 export default function AppSidebarContent() {

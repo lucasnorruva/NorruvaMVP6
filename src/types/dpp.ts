@@ -1,6 +1,7 @@
+
 // --- File: dpp.ts ---
 // Description: TypeScript type definitions for Digital Product Passports and related entities.
-import type { LucideIcon } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react'; // Retained for SimpleLifecycleEvent iconName
 
 // Interface for a single lifecycle event
 export interface LifecycleEvent {
@@ -326,10 +327,54 @@ export interface SimpleProductDetail {
   energyLabelRating?: string;
   repairability?: { score: number; scale: number; detailsUrl?: string };
   recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
-  supplyChainLinks?: ProductSupplyChainLink[]; // Verified this field exists
+  supplyChainLinks?: ProductSupplyChainLink[];
   complianceSummary?: ProductComplianceSummary;
   lifecycleEvents?: SimpleLifecycleEvent[];
 }
+
+// This type is used when storing user-created/edited products in localStorage.
+// It's based on ProductFormData, but also includes DPP-specific fields that might be set.
+export interface StoredUserProduct {
+  id: string; // Unique ID for the product (e.g., USER_PRODxxxx)
+  // Fields from ProductFormData (zod schema in AddNewProductPage)
+  productName?: string;
+  gtin?: string;
+  productDescription?: string;
+  manufacturer?: string;
+  modelNumber?: string;
+  materials?: string; // Comma-separated or simple text for now
+  sustainabilityClaims?: string; // Comma-separated or simple text
+  specifications?: string; // JSON string
+  energyLabel?: string;
+  productCategory?: string;
+  imageUrl?: string;
+  batteryChemistry?: string;
+  stateOfHealth?: number | null;
+  carbonFootprintManufacturing?: number | null;
+  recycledContentPercentage?: number | null;
+  // Additional fields for product listing and DPP structure
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending'; // Status of the product/DPP
+  compliance: string; // Simplified overall compliance text for listing for now
+  lastUpdated: string; // ISO date string
+  // Origin tracking for AI-assisted fields
+  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
+  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
+  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
+  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+  batteryChemistryOrigin?: 'AI_EXTRACTED' | 'manual';
+  stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
+  carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
+  recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  // Fields that would be part of SimpleProductDetail for display
+  supplyChainLinks?: ProductSupplyChainLink[];
+  // ... other fields from SimpleProductDetail could be added here if managed by user form
+}
+
 
 export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
   {

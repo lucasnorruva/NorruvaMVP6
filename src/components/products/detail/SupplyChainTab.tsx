@@ -1,3 +1,4 @@
+
 // --- File: SupplyChainTab.tsx ---
 // Description: Displays product supply chain information, including linked suppliers and allows linking new ones.
 "use client";
@@ -16,21 +17,21 @@ import { Label } from "@/components/ui/label";
 import { Layers, Link2, Trash2, Edit3 as EditIcon, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/contexts/RoleContext";
-import { cn } from "@/lib/utils";
+// import { cn } from "@/lib/utils"; // cn is not used here after recent changes
 
 interface SupplyChainTabProps {
   product: SimpleProductDetail;
-  // Callback to inform parent about link changes for proper state/localStorage updates.
-  // This will be implemented and used in a subsequent task to keep this component focused.
-  // onSupplyChainLinksChange: (updatedLinks: ProductSupplyChainLink[]) => void; 
+  onSupplyChainLinksChange: (updatedLinks: ProductSupplyChainLink[]) => void; 
 }
 
-export default function SupplyChainTab({ product }: SupplyChainTabProps) {
+export default function SupplyChainTab({ product, onSupplyChainLinksChange }: SupplyChainTabProps) {
   const { toast } = useToast();
   const { currentRole } = useRole();
   const [isClient, setIsClient] = useState(false);
 
-  const [linkedSuppliers, setLinkedSuppliers] = useState<ProductSupplyChainLink[]>(product.supplyChainLinks || []);
+  // No local linkedSuppliers state anymore, derived from props
+  const currentLinkedSuppliers = useMemo(() => product.supplyChainLinks || [], [product.supplyChainLinks]);
+
   const [availableSuppliers, setAvailableSuppliers] = useState<Supplier[]>([]);
   
   const [isLinkDialogOpen, setIsLinkDialogOpen] = useState(false);
@@ -38,16 +39,14 @@ export default function SupplyChainTab({ product }: SupplyChainTabProps) {
   const [suppliedItem, setSuppliedItem] = useState("");
   const [linkNotes, setLinkNotes] = useState("");
 
-  // State for editing a link
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingLink, setEditingLink] = useState<ProductSupplyChainLink | null>(null);
-  const [editingSupplierName, setEditingSupplierName] = useState<string>(""); // To display in dialog
+  const [editingSupplierName, setEditingSupplierName] = useState<string>("");
   const [editSuppliedItem, setEditSuppliedItem] = useState("");
   const [editLinkNotes, setEditLinkNotes] = useState("");
 
-
   useEffect(() => {
-    setIsClient(true); // Component has mounted
+    setIsClient(true);
     const storedSuppliersString = localStorage.getItem(USER_SUPPLIERS_LOCAL_STORAGE_KEY);
     const userAddedSuppliers: Supplier[] = storedSuppliersString ? JSON.parse(storedSuppliersString) : [];
     const combinedSuppliers = [
@@ -56,11 +55,6 @@ export default function SupplyChainTab({ product }: SupplyChainTabProps) {
     ];
     setAvailableSuppliers(combinedSuppliers);
   }, []);
-
-  useEffect(() => {
-    // Update local state if product prop changes (e.g., due to parent state update)
-    setLinkedSuppliers(product.supplyChainLinks || []);
-  }, [product.supplyChainLinks]);
 
   const canManageLinks = useMemo(() => {
     return (currentRole === 'admin' || currentRole === 'manufacturer') && product.id.startsWith("USER_PROD");
@@ -72,10 +66,9 @@ export default function SupplyChainTab({ product }: SupplyChainTabProps) {
       return;
     }
     const newLink: ProductSupplyChainLink = { supplierId: selectedSupplierId, suppliedItem, notes: linkNotes };
-    const updatedLinks = [...linkedSuppliers, newLink];
-    setLinkedSuppliers(updatedLinks);
-    // onSupplyChainLinksChange(updatedLinks); // This will be enabled later
-    toast({ title: "Supplier Linked (Locally)", description: "Link saved in this view. Main product save needed for persistence." });
+    const updatedLinks = [...currentLinkedSuppliers, newLink];
+    onSupplyChainLinksChange(updatedLinks);
+    toast({ title: "Supplier Link Added", description: "The new link has been added to the product." });
     setIsLinkDialogOpen(false);
     setSelectedSupplierId("");
     setSuppliedItem("");
@@ -83,10 +76,9 @@ export default function SupplyChainTab({ product }: SupplyChainTabProps) {
   };
 
   const handleUnlinkSupplier = (supplierIdToUnlink: string, itemSupplied: string) => {
-    const updatedLinks = linkedSuppliers.filter(link => !(link.supplierId === supplierIdToUnlink && link.suppliedItem === itemSupplied));
-    setLinkedSuppliers(updatedLinks);
-    // onSupplyChainLinksChange(updatedLinks); // This will be enabled later
-    toast({ title: "Supplier Unlinked (Locally)", description: "Link removed in this view. Main product save needed for persistence." });
+    const updatedLinks = currentLinkedSuppliers.filter(link => !(link.supplierId === supplierIdToUnlink && link.suppliedItem === itemSupplied));
+    onSupplyChainLinksChange(updatedLinks);
+    toast({ title: "Supplier Link Removed", description: "The link has been removed from the product." });
   };
   
   const handleOpenEditDialog = (link: ProductSupplyChainLink) => {
@@ -100,21 +92,19 @@ export default function SupplyChainTab({ product }: SupplyChainTabProps) {
 
   const handleUpdateSupplierLink = () => {
     if (!editingLink) return;
-    const updatedLinks = linkedSuppliers.map(link =>
-      link.supplierId === editingLink.supplierId && link.suppliedItem === editingLink.suppliedItem // Simple match for mock
+    const updatedLinks = currentLinkedSuppliers.map(link =>
+      link.supplierId === editingLink.supplierId && link.suppliedItem === editingLink.suppliedItem
         ? { ...link, suppliedItem: editSuppliedItem, notes: editLinkNotes }
         : link
     );
-    setLinkedSuppliers(updatedLinks);
-    // onSupplyChainLinksChange(updatedLinks); // This will be enabled later
-    toast({ title: "Link Updated (Locally)", description: "Link details updated in this view. Main product save needed." });
+    onSupplyChainLinksChange(updatedLinks);
+    toast({ title: "Supplier Link Updated", description: "The link details have been updated." });
     setIsEditDialogOpen(false);
     setEditingLink(null);
   };
 
-
   if (!isClient) {
-    return <p className="text-muted-foreground p-4">Loading supply chain information...</p>; // Or a skeleton loader
+    return <p className="text-muted-foreground p-4">Loading supply chain information...</p>;
   }
 
   return (
@@ -168,7 +158,7 @@ export default function SupplyChainTab({ product }: SupplyChainTabProps) {
         )}
       </CardHeader>
       <CardContent>
-        {linkedSuppliers.length > 0 ? (
+        {currentLinkedSuppliers.length > 0 ? (
           <Table>
             <TableHeader>
               <TableRow>
@@ -179,7 +169,7 @@ export default function SupplyChainTab({ product }: SupplyChainTabProps) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {linkedSuppliers.map((link, index) => {
+              {currentLinkedSuppliers.map((link, index) => {
                 const supplier = availableSuppliers.find(s => s.id === link.supplierId);
                 return (
                   <TableRow key={`${link.supplierId}-${index}`}>
@@ -205,10 +195,10 @@ export default function SupplyChainTab({ product }: SupplyChainTabProps) {
           <div className="text-center text-muted-foreground py-6">
             <Link2 className="mx-auto h-10 w-10 mb-2 opacity-50" />
             <p>No suppliers are currently linked to this product.</p>
+            {canManageLinks && <p className="text-sm mt-1">Click "Link New Supplier" to add one.</p>}
           </div>
         )}
       </CardContent>
-        {/* Edit Link Dialog */}
         <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
             <DialogContent>
               <DialogHeader>

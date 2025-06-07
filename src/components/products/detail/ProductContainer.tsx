@@ -7,8 +7,8 @@ import type { SimpleProductDetail } from "@/types/dpp";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductHeader from "./ProductHeader";
 import OverviewTab from "./OverviewTab";
-import SustainabilityTab from './SustainabilityTab'; // Import SustainabilityTab
-// import ComplianceTab from './ComplianceTab';
+import SustainabilityTab from './SustainabilityTab';
+import ComplianceTab from './ComplianceTab'; // Import ComplianceTab
 // import LifecycleTab from './LifecycleTab';
 // import SupplyChainTab from './SupplyChainTab';
 
@@ -39,7 +39,7 @@ export default function ProductContainer({ product }: ProductContainerProps) {
           <TabsTrigger value="sustainability" className="flex items-center gap-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
             <Leaf className="h-4 w-4" /> Sustainability
           </TabsTrigger>
-          <TabsTrigger value="compliance" disabled className="flex items-center gap-2 py-2">
+          <TabsTrigger value="compliance" className="flex items-center gap-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
             <ShieldCheck className="h-4 w-4" /> Compliance
           </TabsTrigger>
           <TabsTrigger value="lifecycle" disabled className="flex items-center gap-2 py-2">
@@ -54,14 +54,13 @@ export default function ProductContainer({ product }: ProductContainerProps) {
         <TabsContent value="overview" className="mt-6">
           <OverviewTab product={product} />
         </TabsContent>
-        
+
         <TabsContent value="sustainability" className="mt-6">
           <SustainabilityTab product={product} />
         </TabsContent>
-        
+
         <TabsContent value="compliance" className="mt-6">
-          <p className="text-muted-foreground p-4 text-center">Compliance details coming soon.</p>
-          {/* <ComplianceTab product={product} /> */}
+          <ComplianceTab product={product} />
         </TabsContent>
 
         <TabsContent value="lifecycle" className="mt-6">

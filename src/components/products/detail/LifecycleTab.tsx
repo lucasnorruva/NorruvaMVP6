@@ -63,21 +63,22 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
     setIsLoadingComplianceCheck(targetEvent.id);
     
     let currentLifecycleStageName = "Initial Product Phase"; 
-    if (currentIndex > 0) {
-      let previousStageIndex = -1;
-      for (let i = currentIndex - 1; i >= 0; i--) {
-        if (product.lifecycleEvents[i].status === 'Completed' || product.lifecycleEvents[i].status === 'In Progress') {
-          previousStageIndex = i;
-          break;
-        }
-      }
-      if (previousStageIndex !== -1) {
-        currentLifecycleStageName = product.lifecycleEvents[previousStageIndex].eventName;
-      } else if (currentIndex > 0) {
-        currentLifecycleStageName = product.lifecycleEvents[currentIndex -1].eventName;
-      }
-    } else if (product.lifecycleEvents.length > 0 && currentIndex === 0 && product.lifecycleEvents[0].id === targetEvent.id) {
+    if (currentIndex === 0 && product.lifecycleEvents[0].id === targetEvent.id) {
         currentLifecycleStageName = "Pre-Production / Design";
+    } else if (currentIndex > 0) {
+        let foundPreviousStage = false;
+        for (let i = currentIndex - 1; i >= 0; i--) {
+            if (product.lifecycleEvents[i].status === 'Completed' || product.lifecycleEvents[i].status === 'In Progress') {
+                currentLifecycleStageName = product.lifecycleEvents[i].eventName;
+                foundPreviousStage = true;
+                break;
+            }
+        }
+        if (!foundPreviousStage) {
+            // If no completed/in-progress stage found before, use the immediate previous event's name
+            // This covers cases where previous events might all be 'Upcoming' but represents the sequence
+            currentLifecycleStageName = product.lifecycleEvents[currentIndex - 1].eventName;
+        }
     }
 
 
@@ -92,11 +93,11 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
       toast({
         title: `Compliance Check: Advancing to ${targetEvent.eventName}`,
         description: (
-          <div className="text-sm space-y-2"> {/* Increased space-y for better separation */}
+          <div className="text-sm space-y-2">
             <p className="font-semibold">New Simulated Status: <span className="text-primary">{complianceResult.simulatedOverallStatus}</span></p>
             <div>
-              <p className="text-sm font-semibold mb-1">Simulated Report:</p> {/* Made label more prominent */}
-              <p className="text-xs bg-muted p-2 rounded-md whitespace-pre-line max-h-40 overflow-y-auto">{complianceResult.simulatedReport}</p> {/* Added max-h and overflow for long reports */}
+              <p className="text-sm font-semibold mb-1">Simulated Report:</p>
+              <p className="text-xs bg-muted p-2 rounded-md whitespace-pre-line max-h-40 overflow-y-auto">{complianceResult.simulatedReport}</p>
             </div>
             <p className="text-xs text-muted-foreground mt-2">(This is a mock advancement. In a real app, product status would update.)</p>
           </div>

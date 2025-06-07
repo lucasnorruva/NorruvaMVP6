@@ -31,6 +31,22 @@ type Props = {
 
 const STORY_TRUNCATE_LENGTH = 250;
 
+const getAiHintForPublicImage = (product: PublicProductInfo): string => {
+  if (product.imageHint && product.imageHint.trim()) {
+    return product.imageHint.trim().split(" ").slice(0, 2).join(" ");
+  }
+  if (product.productName && product.productName.trim()) {
+    const nameWords = product.productName.trim().split(" ");
+    if (nameWords.length === 1) return nameWords[0].toLowerCase();
+    return nameWords.slice(0, 2).join(" ").toLowerCase();
+  }
+  if (product.category && product.category.trim()) {
+    return product.category.trim().split(" ")[0].toLowerCase();
+  }
+  return "product photo"; // Default fallback
+};
+
+
 export default function PublicPassportPage({ params }: Props) {
   const [product, setProduct] = useState<PublicProductInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -83,6 +99,8 @@ export default function PublicPassportPage({ params }: Props) {
   
   const aiCopilotQuery = encodeURIComponent(`What are the key compliance requirements for a product like '${product.productName}' in the '${product.category}' category? Also, what are specific considerations for its EBSI status of '${product.ebsiStatus || 'N/A'}'?`);
   const aiCopilotLink = `/copilot?contextQuery=${aiCopilotQuery}`;
+  
+  const aiHintForImage = getAiHintForPublicImage(product);
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -115,7 +133,7 @@ export default function PublicPassportPage({ params }: Props) {
                 width={800}
                 height={600}
                 className="rounded-lg object-cover shadow-md aspect-[4/3]"
-                data-ai-hint={product.imageHint}
+                data-ai-hint={aiHintForImage}
                 priority={product.imageUrl ? !product.imageUrl.startsWith("data:") : true}
               />
             </div>

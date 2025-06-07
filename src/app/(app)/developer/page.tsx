@@ -172,7 +172,8 @@ export default function DeveloperPortalPage() {
   };
 
   const handleEditWebhook = (webhookId: string) => {
-    toast({ title: "Mock Action", description: `Edit functionality for webhook ${webhookId} is not implemented.` });
+    // This is a mock. In a real app, you'd open a dialog or form.
+    toast({ title: "Mock Action", description: `Edit functionality for webhook ${webhookId} is not implemented. In a real app, this would open an edit form.` });
   };
 
   const handleDeleteWebhook = (webhookId: string) => {

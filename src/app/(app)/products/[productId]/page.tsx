@@ -46,7 +46,7 @@ export default function ProductDetailPage() {
               modelNumber: userProductToDisplay.modelNumber,
               description: userProductToDisplay.productDescription,
               imageUrl: userProductToDisplay.imageUrl,
-              imageHint: userProductToDisplay.imageHint, // Ensure imageHint is passed
+              imageHint: userProductToDisplay.imageHint,
               keySustainabilityPoints: userProductToDisplay.sustainabilityClaims?.split('\n').map(s => s.trim()).filter(Boolean) || [],
               specifications: userProductToDisplay.specifications ? JSON.parse(userProductToDisplay.specifications) : undefined,
               complianceSummary: complianceSummary, 
@@ -70,7 +70,7 @@ export default function ProductDetailPage() {
     if (!product) return;
 
     const updatedProduct = { ...product, supplyChainLinks: updatedLinks };
-    setProduct(updatedProduct);
+    setProduct(updatedProduct); // Update local state for immediate UI reflection
 
     if (product.id.startsWith("USER_PROD")) {
       try {
@@ -79,10 +79,11 @@ export default function ProductDetailPage() {
         
         const productIndex = userProducts.findIndex(p => p.id === product.id);
         if (productIndex > -1) {
+          // Ensure we're updating the correct product in the array from local storage
           userProducts[productIndex] = {
-            ...userProducts[productIndex], 
-            supplyChainLinks: updatedLinks, 
-            lastUpdated: new Date().toISOString(),
+            ...userProducts[productIndex], // Preserve other properties of StoredUserProduct
+            supplyChainLinks: updatedLinks, // Only update the supply chain links
+            lastUpdated: new Date().toISOString(), // Also update lastUpdated timestamp
           };
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
           toast({

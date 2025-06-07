@@ -3,7 +3,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Layers, Shield, RotateCcw, Users, CheckSquare, Search, DatabaseBackup, Link as LinkIcon, ArrowLeft } from "lucide-react";
+import { Layers, Shield, RotateCcw, Users, CheckSquare, Search, DatabaseBackup, Link as LinkIconPath, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -111,7 +111,7 @@ export default function DataManagementBestPracticesPage() {
           </div>
           
           <div className="flex items-start gap-4">
-            <LinkIcon className="h-6 w-6 text-indigo-600 mt-1 flex-shrink-0" />
+            <LinkIconPath className="h-6 w-6 text-indigo-600 mt-1 flex-shrink-0" />
             <div>
               <h4 className="font-semibold text-lg">Supply Chain Collaboration</h4>
               <p className="text-sm text-muted-foreground">
@@ -135,3 +135,4 @@ export default function DataManagementBestPracticesPage() {
     </div>
   );
 }
+

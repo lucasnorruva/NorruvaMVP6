@@ -1,0 +1,125 @@
+
+"use client";
+
+import type { SimpleProductDetail } from "@/types/dpp";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode } from "lucide-react";
+
+interface OverviewTabProps {
+  product: SimpleProductDetail;
+}
+
+export default function OverviewTab({ product }: OverviewTabProps) {
+  if (!product) {
+    return <p className="text-muted-foreground">Product data not available.</p>;
+  }
+
+  return (
+    <div className="grid md:grid-cols-3 gap-6">
+      <div className="md:col-span-1 space-y-6">
+        {product.imageUrl && (
+          <Card className="overflow-hidden shadow-sm">
+            <CardHeader className="p-0">
+                <Image
+                    src={product.imageUrl}
+                    alt={product.productName}
+                    width={400}
+                    height={300}
+                    className="object-cover w-full aspect-[4/3]"
+                    data-ai-hint={product.imageHint || product.productName.split(" ").slice(0,2).join(" ")}
+                />
+            </CardHeader>
+          </Card>
+        )}
+        {(product.gtin || product.modelNumber) && (
+             <Card className="shadow-sm">
+                <CardHeader>
+                    <CardTitle className="text-lg font-semibold flex items-center"><Barcode className="mr-2 h-5 w-5 text-primary" />Identifiers</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm space-y-1">
+                    {product.gtin && <p><strong className="text-muted-foreground">GTIN:</strong> {product.gtin}</p>}
+                    {product.modelNumber && <p><strong className="text-muted-foreground">Model:</strong> {product.modelNumber}</p>}
+                </CardContent>
+            </Card>
+        )}
+      </div>
+
+      <div className="md:col-span-2 space-y-6">
+        {product.description && (
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold flex items-center"><FileText className="mr-2 h-5 w-5 text-primary" />Description</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <ScrollArea className="h-32 pr-3">
+                <p className="text-sm text-foreground/90 whitespace-pre-line">{product.description}</p>
+              </ScrollArea>
+            </CardContent>
+          </Card>
+        )}
+
+        <div className="grid sm:grid-cols-2 gap-6">
+          {product.keySustainabilityPoints && product.keySustainabilityPoints.length > 0 && (
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold flex items-center"><Leaf className="mr-2 h-5 w-5 text-green-600" />Key Sustainability</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-1.5 text-sm">
+                  {product.keySustainabilityPoints.map((point, index) => (
+                    <li key={index} className="flex items-center">
+                      <CheckCircle className="h-4 w-4 mr-2 text-green-500 flex-shrink-0" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+
+          {product.keyCompliancePoints && product.keyCompliancePoints.length > 0 && (
+            <Card className="shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold flex items-center"><ShieldCheck className="mr-2 h-5 w-5 text-blue-600" />Key Compliance</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-1.5 text-sm">
+                  {product.keyCompliancePoints.map((point, index) => (
+                    <li key={index} className="flex items-center">
+                      <ShieldCheck className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0" />
+                      {point}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+        
+        {product.specifications && Object.keys(product.specifications).length > 0 && (
+             <Card className="shadow-sm">
+                <CardHeader>
+                    <CardTitle className="text-lg font-semibold flex items-center"><Tag className="mr-2 h-5 w-5 text-primary" />Specifications</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
+                        {Object.entries(product.specifications).map(([key, value]) => (
+                            <div key={key} className="flex">
+                                <dt className="font-medium text-muted-foreground w-1/3 truncate">{key}:</dt>
+                                <dd className="text-foreground/90 w-2/3">{value}</dd>
+                            </div>
+                        ))}
+                    </dl>
+                </CardContent>
+            </Card>
+        )}
+
+      </div>
+    </div>
+  );
+}
+
+    

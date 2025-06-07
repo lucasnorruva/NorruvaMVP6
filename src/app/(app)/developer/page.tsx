@@ -212,7 +212,7 @@ export default function DeveloperPortalPage() {
   const [putProductResponse, setPutProductResponse] = useState<string | null>(null);
   const [isPutProductLoading, setIsPutProductLoading] = useState(false);
 
-  const [deleteProductId, setDeleteProductId] = useState<string>("PROD002"); // Changed from PROD003
+  const [deleteProductId, setDeleteProductId] = useState<string>("PROD002"); 
   const [deleteProductResponse, setDeleteProductResponse] = useState<string | null>(null);
   const [isDeleteProductLoading, setIsDeleteProductLoading] = useState(false);
 
@@ -430,7 +430,7 @@ export default function DeveloperPortalPage() {
   const handleGenerateMockDpp = async () => {
     setIsGeneratingMockDpp(true);
     setGeneratedMockDppJson(null);
-    await new Promise(resolve => setTimeout(resolve, 700)); // Simulate generation
+    await new Promise(resolve => setTimeout(resolve, 700)); 
     const mockDpp = {
       id: `MOCK_DPP_${Date.now().toString().slice(-5)}`,
       productName: mockDppGeneratorProductName || "Mock Product Alpha",
@@ -475,8 +475,7 @@ export default function DeveloperPortalPage() {
     setIsPostImportLoading(true);
     setPostImportResponse(null);
     await new Promise(resolve => setTimeout(resolve, 800));
-    // In a real app, you'd handle file upload here if type is CSV/JSON
-    const mockSuccessCount = Math.floor(Math.random() * 50) + 10; // Random count
+    const mockSuccessCount = Math.floor(Math.random() * 50) + 10; 
     setPostImportResponse(JSON.stringify({
         message: `Batch import processed (mock). File type: ${postImportFileType.toUpperCase()}`,
         importedCount: mockSuccessCount,
@@ -1125,9 +1124,11 @@ export default function DeveloperPortalPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Button variant="outline" className="justify-start text-left" disabled>
-                    <FileJson className="mr-2"/>Download OpenAPI 3.1 Spec
-                  </Button>
+                   <Button variant="outline" className="justify-start text-left" asChild>
+                      <a href="/openapi.yaml" target="_blank" rel="noopener noreferrer">
+                        <FileJson className="mr-2"/>Download OpenAPI 3.1 Spec
+                      </a>
+                    </Button>
                   <Button variant="outline" className="justify-start text-left" disabled>
                     <ExternalLinkIcon className="mr-2"/>View Postman Collection
                   </Button>
@@ -1289,6 +1290,9 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+
+
+    
 
 
     

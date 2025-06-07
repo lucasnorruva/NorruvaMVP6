@@ -1,0 +1,359 @@
+
+openapi: 3.1.0
+info:
+  title: Norruva DPP API (Conceptual)
+  version: v1
+  description: Conceptual API for managing Digital Product Passports on the Norruva platform.
+servers:
+  - url: /api/v1 # Relative URL for same-server API calls
+
+paths:
+  /dpp:
+    get:
+      summary: List Digital Product Passports
+      description: Retrieves a list of available DPPs. Supports basic pagination and filtering (conceptual).
+      operationId: listDpps
+      tags:
+        - DPP
+      responses:
+        '200':
+          description: A list of DPPs.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/DPPBase'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Create Digital Product Passport
+      description: Creates a new DPP.
+      operationId: createDpp
+      tags:
+        - DPP
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DPPCreateRequest'
+      responses:
+        '201':
+          description: DPP created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DPPResource'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /dpp/{productId}:
+    get:
+      summary: Retrieve a Digital Product Passport
+      description: Fetches the complete DPP for a specific product by its ID.
+      operationId: getDppById
+      tags:
+        - DPP
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful operation - returns the DPP.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DPPResource' # This would ideally be the full DigitalProductPassport schema
+              examples:
+                DPP001_Example:
+                  value:
+                    id: "DPP001"
+                    productName: "EcoSmart Refrigerator X500"
+                    category: "Appliances"
+                    manufacturer: 
+                      name: "GreenTech Appliances"
+                    modelNumber: "X500-ECO"
+                    metadata: 
+                      last_updated: "2024-07-28T10:00:00Z"
+                      status: "published"
+                    productDetails:
+                      description: "An eco friendly fridge."
+                      energyLabel: "A++"
+                    compliance:
+                      eprel:
+                        status: "Registered"
+                    ebsiVerification:
+                      status: "verified"
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Update a Digital Product Passport
+      description: Updates an existing DPP by its ID.
+      operationId: updateDppById
+      tags:
+        - DPP
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product to update.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DPPUpdateRequest'
+      responses:
+        '200':
+          description: DPP updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DPPResource'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      summary: Delete/Archive a Digital Product Passport
+      description: Deletes or archives a DPP by its ID.
+      operationId: deleteDppById
+      tags:
+        - DPP
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product to delete/archive.
+          schema:
+            type: string
+      responses:
+        '204':
+          description: DPP deleted/archived successfully.
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /qr/validate:
+    post:
+      summary: Validate QR Code & Retrieve DPP Summary
+      description: Validates a unique identifier (typically from a QR code) and retrieves a summary of the product passport.
+      operationId: validateQrCode
+      tags:
+        - QR Code
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/QRValidateRequest'
+      responses:
+        '200':
+          description: QR identifier validated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QRValidateResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  schemas:
+    ErrorBody:
+      type: object
+      properties:
+        code:
+          type: integer
+          format: int32
+          description: HTTP status code or internal error code.
+        message:
+          type: string
+          description: A human-readable description of the error.
+        details:
+          type: array
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              issue:
+                type: string
+          description: Optional array for field-specific errors or additional info.
+        requestId:
+          type: string
+          description: Helps in debugging.
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          $ref: '#/components/schemas/ErrorBody'
+
+    DPPBase:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the DPP.
+          example: "DPP001"
+        productName:
+          type: string
+          description: Name of the product.
+          example: "EcoSmart Refrigerator X500"
+        category:
+          type: string
+          description: Product category.
+          example: "Appliances"
+        status:
+          type: string
+          description: Current status of the DPP (e.g., published, draft).
+          example: "published"
+      required:
+        - id
+        - productName
+        - category
+        - status
+
+    DPPResource:
+      allOf:
+        - $ref: '#/components/schemas/DPPBase'
+        - type: object
+          properties:
+            manufacturer:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "GreenTech Appliances"
+            modelNumber:
+              type: string
+              example: "X500-ECO"
+            description:
+              type: string
+              example: "An eco friendly fridge."
+            # Add more key fields as needed for a resource representation
+            # For full details, a more comprehensive schema would be referenced, 
+            # aligning with src/types/dpp.ts DigitalProductPassport interface.
+            # This is a simplified representation for the API.
+
+    DPPCreateRequest:
+      type: object
+      properties:
+        productName:
+          type: string
+          description: Name of the product.
+        category:
+          type: string
+          description: Category of the product.
+        manufacturerName:
+          type: string
+          description: Name of the manufacturer.
+        modelNumber:
+          type: string
+          description: Model number of the product.
+        description:
+          type: string
+          description: Detailed description of the product.
+        # ... other fields for creation
+      required:
+        - productName
+        - category
+        - manufacturerName
+
+    DPPUpdateRequest:
+      type: object
+      properties:
+        description:
+          type: string
+          description: Updated description of the product.
+        status:
+          type: string
+          description: New status for the DPP.
+          enum: [draft, published, archived, pending_review, revoked]
+        # ... other updatable fields
+
+    QRValidateRequest:
+      type: object
+      properties:
+        qrIdentifier:
+          type: string
+          description: The unique identifier extracted from the QR code.
+          example: "DPP001"
+      required:
+        - qrIdentifier
+
+    QRValidateResponse:
+      type: object
+      properties:
+        productId:
+          type: string
+          description: The product ID associated with the QR identifier.
+        productName:
+          type: string
+          description: Name of the product.
+        category:
+          type: string
+          description: Category of the product.
+        dppUrl:
+          type: string
+          description: URL to the public Digital Product Passport.
+          example: "/passport/DPP001"
+        verificationStatus:
+          type: string
+          description: Status of the DPP validation (e.g., valid_dpp_found, invalid_identifier).
+          example: "valid_dpp_found"
+        # ... other summary details
+
+  responses:
+    NotFound:
+      description: The specified resource was not found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    BadRequest:
+      description: Invalid request payload.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    InternalServerError:
+      description: An unexpected error occurred on the server.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+    Unauthorized:
+      description: API key missing or invalid.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+security:
+  - ApiKeyAuth: [] # Conceptual - actual security schemes would be defined here
+
+securitySchemes:
+  ApiKeyAuth: # Global security scheme
+    type: http
+    scheme: bearer
+    bearerFormat: APIKey # Or JWT, if applicable
+    description: "API Key to authorize requests. Provide as 'Bearer YOUR_API_KEY'."
+
+    

@@ -45,7 +45,7 @@ export default function TestingValidationPage() {
               <li><strong>Valid Scan Simulation:</strong>
                 <ul className="list-disc list-inside ml-4">
                     <li>Using the mock "Scan Product QR" dialog on the DPP Live Dashboard, enter known valid product IDs.</li>
-                    <li>Verify that submitting a valid ID redirects to the correct <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/products/{'{productId}'}</code> page or <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/{'{productId}'}</code> (public viewer).</li>
+                    <li>Verify that submitting a valid ID redirects to the correct <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/{'{productId}'}</code> (public viewer). Note: The internal link to `/products/{productID}` was changed to point to the public passport viewer in the context of QR scanning from the public dashboard.</li>
                 </ul>
               </li>
               <li><strong>Invalid/Malformed Scan Simulation:</strong>
@@ -82,8 +82,8 @@ export default function TestingValidationPage() {
           <section>
             <h3 className="font-semibold text-lg mb-2">Blockchain Data Retrieval</h3>
             <ul className="list-disc list-inside text-sm space-y-1">
-              <li><strong>DPP Anchor Hash Display:</strong> Verify that the <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">dppAnchorTransactionHash</code> (from mock data) is correctly displayed on the public DPP viewer (<code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/*</code>) and the internal product detail page (<code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/products/*</code>) for products that are conceptually "anchored".</li>
-              <li><strong>Lifecycle Event Hashes:</strong> For products with blockchain-anchored lifecycle events, confirm these event-specific transaction hashes are displayed alongside the event details in the UI.</li>
+              <li><strong>DPP Anchor Hash Display:</strong> Verify that the <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">anchorTransactionHash</code> (from mock data in `MOCK_PUBLIC_PASSPORTS` or `MOCK_DPPS`) is correctly displayed on the public DPP viewer (<code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/*</code>) and the internal product detail page (<code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/products/*</code>) for products that are conceptually "anchored".</li>
+              <li><strong>Lifecycle Event Hashes:</strong> For products with blockchain-anchored lifecycle events (e.g., `LifecycleEvent.transactionHash` in `MOCK_DPPS`), confirm these event-specific transaction hashes are displayed alongside the event details in the UI.</li>
               <li><strong>Data Consistency:</strong> Ensure the blockchain platform (e.g., "MockChain") is correctly displayed alongside the hash.</li>
               <li><strong>Non-Anchored Products:</strong> Verify that products not conceptually anchored on the blockchain do not erroneously display anchor hashes or related blockchain information.</li>
             </ul>
@@ -94,7 +94,7 @@ export default function TestingValidationPage() {
               <li><strong>Hash Comparison (Mock):</strong> Although actual cryptographic verification is not implemented, conceptually, testing would involve:
                 <ul className="list-disc list-inside ml-4">
                   <li>Simulating the hashing of the current DPP data (or key sections of it).</li>
-                  <li>Comparing this simulated hash with the mock <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">dppAnchorTransactionHash</code> stored for the product. They should match if the data is meant to be "verified".</li>
+                  <li>Comparing this simulated hash with the mock <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">anchorTransactionHash</code> stored for the product. They should match if the data is meant to be "verified".</li>
                   <li>Testing scenarios where mock data is "tampered" (client-side simulation) to ensure a conceptual mismatch could be detected.</li>
                 </ul>
               </li>
@@ -125,7 +125,7 @@ export default function TestingValidationPage() {
             <h3 className="font-semibold text-lg mb-2">Verifiable Credential (VC) Display &amp; Interpretation</h3>
             <ul className="list-disc list-inside text-sm space-y-1">
               <li><strong>Status Display:</strong> Confirm that products marked with an EBSI status (e.g., 'verified', 'pending') on the public DPP viewer (<code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/*</code>) and internal product details page (<code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/products/*</code>) correctly display this status using appropriate badges and icons (e.g., <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">&lt;ShieldCheck /&gt;</code> for verified).</li>
-              <li><strong>VC Data Points:</strong> For mock VCs (e.g., `ebsiVerificationId`, lifecycle event `isEbsiVerified` flag), ensure associated data points are displayed correctly. For instance, if a lifecycle event is EBSI verified, the corresponding UI indicator should appear.</li>
+              <li><strong>VC Data Points:</strong> For mock VCs (e.g., `ebsiVerification.verificationId` or `lifecycleEvents[].vcId` from `MOCK_DPPS`), ensure associated data points are displayed correctly. For instance, if a lifecycle event is EBSI verified, the corresponding UI indicator should appear.</li>
               <li><strong>Consistency:</strong> Ensure EBSI-related information is consistently represented across different parts of the application (e.g., public viewer vs. internal details).</li>
             </ul>
           </section>
@@ -145,8 +145,8 @@ export default function TestingValidationPage() {
           <section>
             <h3 className="font-semibold text-lg mb-2 mt-4">Error Handling for EBSI Interactions</h3>
              <ul className="list-disc list-inside text-sm space-y-1">
-                <li><strong>Pending Status:</strong> Verify that products with a 'pending' EBSI verification status display this clearly (e.g., yellow badge with an <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">&lt;InfoIcon /&gt;</code>).</li>
-                <li><strong>Not Verified/Error Status:</strong> Test how the UI would represent a 'not_verified' or 'error' status (e.g., red badge with <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">&lt;AlertTriangleIcon /&gt;</code>). Though not fully implemented, ensure the visual distinction is clear.</li>
+                <li><strong>Pending Status:</strong> Verify that products with a 'pending_verification' EBSI status display this clearly (e.g., yellow badge with an <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">&lt;InfoIcon /&gt;</code>).</li>
+                <li><strong>Not Verified/Error Status:</strong> Test how the UI would represent a 'not_verified' or 'error' status (e.g., red badge with <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">&lt;AlertTriangleIcon /&gt;</code>). Ensure the visual distinction is clear.</li>
                 <li><strong>Graceful Degradation:</strong> If (conceptually) an EBSI service were unavailable, how would the UI inform the user without breaking the entire page? (e.g., "EBSI status currently unavailable").</li>
             </ul>
           </section>
@@ -195,7 +195,7 @@ export default function TestingValidationPage() {
               <li>
                 <strong className="flex items-center"><SearchCheck className="mr-1.5 h-4 w-4 text-accent"/>Accuracy of (Mock) Information:</strong>
                  <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
-                  <li>Does the data displayed on the viewer accurately reflect the mock data defined for the product?</li>
+                  <li>Does the data displayed on the viewer accurately reflect the mock data defined for the product (e.g., from `MOCK_PUBLIC_PASSPORTS`)?</li>
                   <li>Are all relevant sections (e.g., certifications, lifecycle events, blockchain details) populated correctly based on the mock product data?</li>
                 </ul>
               </li>
@@ -203,7 +203,7 @@ export default function TestingValidationPage() {
                 <strong className="flex items-center"><QrCode className="mr-1.5 h-4 w-4 text-accent"/>QR Code Path (Conceptual):</strong>
                  <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
                   <li>Does simulating a QR scan (e.g., via the DPP Live Dashboard mock scanner) correctly lead to the corresponding public DPP viewer page?</li>
-                  <li>Does the QR code displayed on the internal product page link to the correct public passport?</li>
+                  <li>Does the QR code (conceptually, if displayed on an internal product page) link to the correct public passport?</li>
                 </ul>
               </li>
               <li>

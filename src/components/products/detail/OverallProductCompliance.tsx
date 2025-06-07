@@ -7,15 +7,15 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, AlertCircle, Info, ShieldQuestion, ShieldCheck, AlertTriangle, ExternalLink, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Button } from '@/components/ui/button'; // Corrected import path
+import { Button } from '@/components/ui/button';
 
 export interface ComplianceStatus {
-  status: string; // Allow any string for status from EPREL sync
+  status: string; 
   lastChecked: string;
-  entryId?: string; // EPREL ID can be stored here
-  verificationId?: string; // EBSI ID
+  entryId?: string; 
+  verificationId?: string; 
   declarationId?: string;
-  url?: string; // For EPREL URL
+  url?: string; 
 }
 
 export interface OverallComplianceData {
@@ -92,16 +92,15 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
       badgeClasses = "bg-purple-500/20 text-purple-700 border-purple-500/30";
       break;
     case 'not_applicable':
-    case 'n/a': // Handle N/A string which might come from initial mock
+    case 'n/a': 
       IconComponent = ShieldQuestion;
       badgeVariant = "secondary";
       badgeClasses = "bg-gray-500/20 text-gray-700 border-gray-500/30";
       detailsText = `Not applicable for this product. Last checked: ${new Date(data.lastChecked).toLocaleDateString()}`; 
       break;
-    default: // For any other unmapped status from EPREL sync
+    default: 
       IconComponent = Info;
       badgeVariant = "outline";
-      // Using a more neutral "info" color for unmapped statuses.
       badgeClasses = "bg-blue-500/20 text-blue-700 border-blue-500/30"; 
       break;
   }
@@ -110,7 +109,7 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
     <div className="flex items-center justify-between p-3 bg-background rounded-md border hover:bg-muted/30 transition-colors">
       <div className="flex items-center">
         <IconComponent className={cn("h-5 w-5 mr-3 flex-shrink-0", 
-          badgeClasses.split(' ')[1] // Use the text color class for the icon
+          badgeClasses.split(' ')[1] 
         )} />
         <div>
           <span className="text-sm font-medium">{titleText}</span>
@@ -134,7 +133,7 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
 
   const hasErrorNotifications = notifications?.some(n => n.type === 'error');
 
-  const eprelSyncButton = (canSyncEprel && onSyncEprel) ? (
+  const eprelSyncButton = (onSyncEprel) ? (
     <TooltipProvider>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
@@ -142,7 +141,7 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
             variant="outline"
             size="icon"
             onClick={onSyncEprel}
-            disabled={isSyncingEprel}
+            disabled={isSyncingEprel || !canSyncEprel}
             className="h-7 w-7"
           >
             {isSyncingEprel ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
@@ -150,7 +149,11 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
           </Button>
         </TooltipTrigger>
         <TooltipContent>
-          <p>Sync with EPREL Database</p>
+          {canSyncEprel ? (
+            <p>Sync with EPREL Database</p>
+          ) : (
+            <p>Model number required to sync with EPREL.</p>
+          )}
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>
@@ -180,3 +183,5 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
 };
 
 export default OverallProductCompliance;
+
+    

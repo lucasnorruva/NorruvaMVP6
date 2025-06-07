@@ -4,7 +4,7 @@
 "use client";
 
 import type { SimpleProductDetail, ComplianceDetailItem, ProductComplianceSummary } from "@/types/dpp";
-import OverallProductCompliance from "@/components/products/detail/OverallProductCompliance"; // Corrected import path
+import OverallProductCompliance from "@/components/products/detail/OverallProductCompliance";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -91,7 +91,6 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     return <p className="text-muted-foreground p-4">Compliance summary not available for this product.</p>;
   }
 
-  // Ensure all parts of complianceData for OverallProductCompliance are well-defined
   const overallComplianceData = {
     gdpr: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('gdpr')) || { status: 'N/A', lastChecked: new Date().toISOString() },
     eprel: summary.eprel || { status: 'N/A', lastChecked: new Date().toISOString() },
@@ -187,3 +186,5 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     </div>
   );
 }
+
+    

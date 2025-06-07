@@ -9,7 +9,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerLucideIcon } from "lucide-react";
+import { KeyRound, BookOpen, Webhook, Lightbulb, DownloadCloud, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -230,7 +230,7 @@ export default function DeveloperPortalPage() {
         const requestBody = JSON.parse(postLifecycleEventBody);
         if (!MOCK_API_PRODUCTS[postLifecycleEventProductId]) {
             setPostLifecycleEventResponse(JSON.stringify({ error: "Product not found", productId: postLifecycleEventProductId }, null, 2));
-            setIsPostLifecycleEventLoading(false); // Ensure loading state is reset
+            setIsPostLifecycleEventLoading(false); 
             return;
         }
         const response = {
@@ -303,7 +303,7 @@ export default function DeveloperPortalPage() {
           {/* Get Product Details Endpoint */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center"><ServerIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products/{'{productId}'}</CardTitle>
+              <CardTitle className="text-lg flex items-center"><ServerIconShadcn className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products/{'{productId}'}</CardTitle>
               <CardDescription>Retrieve details for a specific product by its ID.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -327,7 +327,7 @@ export default function DeveloperPortalPage() {
           {/* List Products Endpoint */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center"><ServerIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products</CardTitle>
+              <CardTitle className="text-lg flex items-center"><ServerIconShadcn className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products</CardTitle>
               <CardDescription>Retrieve a list of products. (Mock returns all available mock products)</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -347,7 +347,7 @@ export default function DeveloperPortalPage() {
           {/* POST Lifecycle Event Endpoint */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center"><ServerIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/products/{'{productId}'}/lifecycle-events</CardTitle>
+              <CardTitle className="text-lg flex items-center"><ServerIconShadcn className="mr-2 h-5 w-5 text-info"/>POST /api/v1/products/{'{productId}'}/lifecycle-events</CardTitle>
               <CardDescription>Add a new lifecycle event to a product.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -375,7 +375,7 @@ export default function DeveloperPortalPage() {
           {/* GET Compliance Summary Endpoint */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg flex items-center"><ServerIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products/{'{productId}'}/compliance-summary</CardTitle>
+              <CardTitle className="text-lg flex items-center"><ServerIconShadcn className="mr-2 h-5 w-5 text-info"/>GET /api/v1/products/{'{productId}'}/compliance-summary</CardTitle>
               <CardDescription>Retrieve a compliance summary for a specific product.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -490,7 +490,7 @@ export default function DeveloperPortalPage() {
              <div className="space-y-2 pt-3 border-t">
                 <h4 className="font-semibold">Operations</h4>
                  <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
-                    <li><Link href="/developer/docs/deployment-monitoring" className="hover:underline flex items-center"><ServerLucideIcon className="mr-1.5 h-4 w-4 inline-block"/>Deployment & Monitoring Guide</Link></li>
+                    <li><Link href="/developer/docs/deployment-monitoring" className="hover:underline flex items-center"><ServerIconShadcn className="mr-1.5 h-4 w-4 inline-block"/>Deployment & Monitoring Guide</Link></li>
                  </ul>
             </div>
             <Button variant="default" className="w-full sm:w-auto mt-3" asChild>
@@ -525,7 +525,9 @@ export default function DeveloperPortalPage() {
                                 <Badge
                                   variant={wh.status === "Active" ? "default" : "outline"}
                                   className={cn(
-                                    wh.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "bg-muted text-muted-foreground border-border"
+                                    wh.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : 
+                                    wh.status === "Disabled" ? "bg-muted text-muted-foreground border-border" : 
+                                    "bg-red-500/20 text-red-700 border-red-500/30" // Error status
                                   )}
                                 >
                                   {wh.status}
@@ -744,27 +746,3 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
-    
-
-    
-
-    
-
-    
-
-    
-
-
-
-    
-
-
-
-    
-
-    
-
-
-
-
-

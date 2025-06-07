@@ -96,7 +96,7 @@ const AdminQuickActions = () => {
     { label: "Platform Configuration", href: "/settings", icon: Settings, description: "Adjust global platform settings and integrations." },
     { label: "Compliance Copilot", href: "/copilot", icon: FileText, description: "Access AI assistant for regulation queries." },
     { label: "System Health", href: "#", icon: ShieldCheck, description: "Monitor platform status and performance." },
-    { label: "Audit Logs", href: "#", icon: ListChecks, description: "Review system and user activity logs (mock)." },
+    { label: "Audit Logs", href: "/audit-log", icon: ListChecks, description: "Review system and user activity logs." },
   ];
   return (
      <Card className="shadow-lg">
@@ -502,7 +502,7 @@ export default function DashboardPage() {
                   </ul>
                 </CardContent>
               </Card>
-              <PlatformHealthStatsCard /> {/* New Card for Platform Health */}
+              <PlatformHealthStatsCard />
             </div>
             <RegulationUpdatesCard /> 
           </div>

@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { KeyRound, PlusCircle, Copy, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// This interface should match the one in developer/page.tsx
+// This interface should match the one in developer/page.tsx for consistency
 export interface ApiKey {
   id: string;
   key: string;
@@ -57,7 +57,7 @@ export default function ApiKeysManager({
           <TableBody>
             {apiKeys.map((apiKey) => (
               <TableRow key={apiKey.id}>
-                <TableCell className="font-mono text-sm">{apiKey.key}</TableCell>
+                <TableCell className="font-mono text-sm">{apiKey.key.startsWith("N/A") ? apiKey.key : `${apiKey.key.substring(0, 12)}...`}</TableCell>
                 <TableCell><Badge variant={apiKey.type === "Sandbox" ? "secondary" : "default"}>{apiKey.type}</Badge></TableCell>
                 <TableCell>{apiKey.created}</TableCell>
                 <TableCell>{apiKey.lastUsed}</TableCell>
@@ -65,23 +65,45 @@ export default function ApiKeysManager({
                   <Badge
                     variant={apiKey.status === "Active" ? "default" : "outline"}
                     className={cn(
-                      apiKey.status === "Active" ? "bg-green-500/20 text-green-700 border-green-500/30" : "",
-                      apiKey.status === "Pending Approval" ? "bg-yellow-500/20 text-yellow-700 border-yellow-500/30" : ""
+                      "capitalize",
+                      apiKey.status === "Active" && "bg-green-100 text-green-700 border-green-300",
+                      apiKey.status === "Pending Approval" && "bg-yellow-100 text-yellow-700 border-yellow-300",
+                      apiKey.status === "Revoked" && "bg-muted text-muted-foreground border-border line-through"
                     )}
                   >
                     {apiKey.status}
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right space-x-2">
-                  <Button variant="ghost" size="icon" onClick={() => onCopyKey(apiKey.key)} title="Copy Key" disabled={apiKey.status === 'Pending Approval' || apiKey.key.startsWith("N/A")}>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    onClick={() => onCopyKey(apiKey.key)} 
+                    title="Copy Key" 
+                    disabled={apiKey.status === 'Pending Approval' || apiKey.key.startsWith("N/A") || apiKey.status === 'Revoked'}
+                  >
                     <Copy className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" title="Delete Key" onClick={() => onDeleteApiKey(apiKey.id)} className="text-destructive hover:text-destructive">
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    title="Delete Key" 
+                    onClick={() => onDeleteApiKey(apiKey.id)} 
+                    className="text-destructive hover:text-destructive"
+                    disabled={apiKey.status === 'Revoked'} // Optionally disable delete for revoked keys
+                  >
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </TableCell>
               </TableRow>
             ))}
+             {apiKeys.length === 0 && (
+                <TableRow>
+                    <TableCell colSpan={6} className="text-center text-muted-foreground py-4">
+                        No API keys found. Generate or request one below.
+                    </TableCell>
+                </TableRow>
+            )}
           </TableBody>
         </Table>
         <div className="flex flex-wrap gap-4">

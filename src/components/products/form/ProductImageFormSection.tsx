@@ -12,6 +12,7 @@ import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { Label } from "@/components/ui/label";
 import { FormDescription, FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Input } from "@/components/ui/input"; // Added Input
 import { Cpu, ImagePlus, ImageIcon, Loader2 } from "lucide-react";
 import type { ToastInput } from "@/hooks/use-toast";
 
@@ -62,13 +63,11 @@ export default function ProductImageFormSection({
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(initialImageUrl || null);
 
   useEffect(() => {
-    // Sync currentImageUrl with form value if it changes externally (e.g., initialData load)
     const subscription = form.watch((value, { name }) => {
       if (name === "imageUrl") {
         setCurrentImageUrl(value.imageUrl || null);
       }
     });
-    // Set initial value from form state if available
     setCurrentImageUrl(form.getValues("imageUrl") || initialImageUrl || null);
     return () => subscription.unsubscribe();
   }, [form, initialImageUrl]);
@@ -78,15 +77,20 @@ export default function ProductImageFormSection({
     const newImageUrl = await aiImageHelper(form, toast, setIsGeneratingImageState);
     if (newImageUrl) {
       form.setValue("imageUrl", newImageUrl, { shouldValidate: true });
-      setCurrentImageUrl(newImageUrl); // Update local state to re-render image
+      setCurrentImageUrl(newImageUrl); 
     }
   };
 
   const productNameForHint = form.getValues("productName") || "product";
   const categoryForHint = form.getValues("productCategory") || "";
-  const imageHint = (currentImageUrl && currentImageUrl.startsWith("data:")) 
-    ? `${productNameForHint} ${categoryForHint}`.trim().split(" ").slice(0,2).join(" ") 
-    : form.getValues("imageHint") || productNameForHint.split(" ").slice(0,2).join(" ");
+  const userProvidedHint = form.getValues("imageHint");
+
+  // Prioritize user-provided hint for data-ai-hint
+  const imageHintForDisplay = userProvidedHint 
+    ? userProvidedHint.trim().split(" ").slice(0,2).join(" ")
+    : (currentImageUrl && currentImageUrl.startsWith("data:"))
+      ? `${productNameForHint} ${categoryForHint}`.trim().split(" ").slice(0,2).join(" ")
+      : productNameForHint.split(" ").slice(0,2).join(" ");
 
 
   return (
@@ -103,7 +107,7 @@ export default function ProductImageFormSection({
               alt="Product image" 
               fill
               className="object-contain" 
-              data-ai-hint={imageHint}
+              data-ai-hint={imageHintForDisplay}
               priority={!currentImageUrl.startsWith("data:")}
             />
           </AspectRatio>
@@ -134,9 +138,19 @@ export default function ProductImageFormSection({
         {isGeneratingImageState ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}
         <span className="ml-2">{isGeneratingImageState ? "Generating..." : "Generate Image with AI"}</span>
       </Button>
-      <FormDescription>AI will attempt to generate an image based on product name and category. You can also paste an image URL directly.</FormDescription>
+      <FormField
+        control={form.control}
+        name="imageHint"
+        render={({ field }) => (
+          <FormItem className="mt-3">
+            <FormLabel className="text-sm">Image Hint (for AI Generation)</FormLabel>
+            <FormControl><Input placeholder="e.g., minimalist, studio shot, on wood table" {...field} /></FormControl>
+            <FormDescription className="text-xs">Optional. Provide keywords to guide AI image generation.</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormDescription className="text-xs">AI will attempt to generate an image based on product name, category, and optional hint. You can also paste an image URL directly.</FormDescription>
     </div>
   );
 }
-
-    

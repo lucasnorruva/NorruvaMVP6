@@ -134,6 +134,7 @@ export async function handleGenerateImageAI(
     const result = await generateProductImage({
       productName: formData.productName,
       productCategory: formData.productCategory,
+      imageHint: formData.imageHint, // Pass the imageHint
     });
     toast({ title: "Image Generated Successfully", description: "The product image has been generated." });
     return result.imageUrl;

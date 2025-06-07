@@ -7,14 +7,15 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Settings, UploadCloud, QrCode, HardHat as ToolIcon, ClipboardCheck, Bot } from 'lucide-react'; // Added Bot icon
+import { Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Settings, UploadCloud, QrCode, HardHat as ToolIcon, ClipboardCheck, Bot, Factory, Truck, ShoppingCart, Wrench, Cog, Search, PenTool, CalendarCheck } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react'; 
 import { cn } from '@/lib/utils';
 import { useRole } from '@/contexts/RoleContext';
 
 // Define a type for icon mapping
-type IconName = "Leaf" | "Recycle" | "ShieldCheck" | "Cpu" | "Zap";
+type IconName = "Leaf" | "Recycle" | "ShieldCheck" | "Cpu" | "Zap" | "Factory" | "Truck" | "ShoppingCart" | "Wrench" | "Cog" | "Search" | "PenTool" | "CalendarCheck" | "UploadCloud" | "ClipboardCheck";
+
 
 const iconMap: Record<IconName, React.ElementType> = {
   Leaf,
@@ -22,6 +23,16 @@ const iconMap: Record<IconName, React.ElementType> = {
   ShieldCheck,
   Cpu,
   Zap,
+  Factory,
+  Truck,
+  ShoppingCart,
+  Wrench,
+  Cog,
+  Search,
+  PenTool,
+  CalendarCheck,
+  UploadCloud,
+  ClipboardCheck
 };
 
 interface SustainabilityHighlight {
@@ -34,6 +45,7 @@ interface LifecycleHighlight {
   date: string;
   details?: string;
   isEbsiVerified?: boolean;
+  iconName?: IconName;
 }
 
 interface PublicCertification {
@@ -93,10 +105,10 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ebsiStatus: 'verified',
     ebsiVerificationId: "EBSI-VC-ATTR-XYZ-00123",
     lifecycleHighlights: [
-      { stage: "Manufactured", date: "2024-01-15", details: "Production batch #PB789 at EcoFactory, Germany.", isEbsiVerified: true },
-      { stage: "Shipped to Distributor", date: "2024-01-20", details: "Container #C0N741N3R.", isEbsiVerified: true },
-      { stage: "Sold to Consumer", date: "2024-02-10", details: "Retail Store, Paris. Warranty activated.", isEbsiVerified: false },
-      { stage: "Scheduled Maintenance", date: "2025-02-15", details: "Filter replacement complete.", isEbsiVerified: false },
+      { stage: "Manufactured", date: "2024-01-15", details: "Production batch #PB789 at EcoFactory, Germany.", isEbsiVerified: true, iconName: "Factory" },
+      { stage: "Shipped to Distributor", date: "2024-01-20", details: "Container #C0N741N3R.", isEbsiVerified: true, iconName: "Truck" },
+      { stage: "Sold to Consumer", date: "2024-02-10", details: "Retail Store, Paris. Warranty activated.", isEbsiVerified: false, iconName: "ShoppingCart" },
+      { stage: "Scheduled Maintenance", date: "2025-02-15", details: "Filter replacement complete.", isEbsiVerified: false, iconName: "Wrench" },
     ],
     certifications: [
       { name: "EU Energy Label", authority: "European Commission", expiryDate: "N/A", link: "#", isVerified: true },
@@ -110,7 +122,7 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     tagline: "Illuminate Your World, Sustainably.",
     imageUrl: "https://placehold.co/800x600.png",
     imageHint: "led bulbs packaging",
-    productStory: "Brighten your home responsibly with our Smart LED Bulb pack. These energy-efficient bulbs offer customizable lighting and connect to smart home systems. Designed for a long lifespan, reducing waste.", // Shortened story
+    productStory: "Brighten your home responsibly with our Smart LED Bulb pack. These energy-efficient bulbs offer customizable lighting and connect to smart home systems. Designed for a long lifespan, reducing waste.",
     sustainabilityHighlights: [
       { iconName: "Zap", text: "Uses 85% less energy than incandescent bulbs" },
       { iconName: "Recycle", text: "Recyclable packaging materials" },
@@ -127,9 +139,9 @@ const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     blockchainPlatform: "MockChain (Polygon Layer 2)",
     ebsiStatus: 'pending',
     lifecycleHighlights: [
-      { stage: "Manufactured", date: "2024-03-01", details: "Batch #LEDB456, Shenzhen.", isEbsiVerified: true },
-      { stage: "Imported to EU", date: "2024-03-15", details: "Rotterdam Port, Netherlands.", isEbsiVerified: false },
-      { stage: "Firmware Update v1.2", date: "2024-08-01", details: "Improved energy efficiency algorithm.", isEbsiVerified: true },
+      { stage: "Manufactured", date: "2024-03-01", details: "Batch #LEDB456, Shenzhen.", isEbsiVerified: true, iconName: "Factory" },
+      { stage: "Imported to EU", date: "2024-03-15", details: "Rotterdam Port, Netherlands.", isEbsiVerified: false, iconName: "Truck" },
+      { stage: "Firmware Update v1.2", date: "2024-08-01", details: "Improved energy efficiency algorithm.", isEbsiVerified: true, iconName: "UploadCloud" },
     ],
     certifications: [
       { name: "RoHS Compliance", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
@@ -335,13 +347,13 @@ export default function PublicPassportPage({ params }: Props) {
             </div>
           </div>
           
-          <div className="mt-8 pt-6 border-t border-border text-center">
+          <div className="mt-10 pt-8 border-t border-border text-center">
               <Link href={aiCopilotLink} passHref>
-                <Button variant="secondary" size="lg">
+                <Button variant="secondary" size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
                   <Bot className="mr-2 h-5 w-5" /> Ask AI Co-Pilot about this Product
                 </Button>
               </Link>
-            </div>
+          </div>
 
 
           <div className="mt-10 pt-8 border-t border-border">
@@ -379,20 +391,26 @@ export default function PublicPassportPage({ params }: Props) {
                 <CardContent className="space-y-3">
                   {product.lifecycleHighlights && product.lifecycleHighlights.length > 0 ? (
                     <ul className="space-y-2">
-                      {product.lifecycleHighlights.map((event, index) => (
-                        <li key={index} className="text-sm text-foreground border-b border-border/50 pb-1.5 last:border-b-0">
-                          <div className="flex justify-between items-center">
-                            <span className="font-medium">{event.stage}</span>
-                            <span className="text-xs text-muted-foreground">{event.date}</span>
-                          </div>
-                          {event.details && <p className="text-xs text-muted-foreground mt-0.5">{event.details}</p>}
-                          {event.isEbsiVerified && (
-                            <Badge variant="default" className="mt-1 text-xs bg-green-100 text-green-700 border-green-300">
-                              <ShieldCheck className="mr-1 h-3 w-3" /> EBSI Verified
-                            </Badge>
-                          )}
-                        </li>
-                      ))}
+                      {product.lifecycleHighlights.map((event, index) => {
+                        const IconComponent = event.iconName ? iconMap[event.iconName] : ListChecks;
+                        return (
+                          <li key={index} className="text-sm text-foreground border-b border-border/50 pb-1.5 last:border-b-0 flex items-start">
+                            <IconComponent className="h-4 w-4 mr-2 mt-0.5 text-primary flex-shrink-0" />
+                            <div>
+                                <div className="flex justify-between items-center">
+                                    <span className="font-medium">{event.stage}</span>
+                                    <span className="text-xs text-muted-foreground">{event.date}</span>
+                                </div>
+                                {event.details && <p className="text-xs text-muted-foreground mt-0.5">{event.details}</p>}
+                                {event.isEbsiVerified && (
+                                    <Badge variant="default" className="mt-1 text-xs bg-green-100 text-green-700 border-green-300">
+                                    <ShieldCheck className="mr-1 h-3 w-3" /> EBSI Verified
+                                    </Badge>
+                                )}
+                            </div>
+                          </li>
+                        );
+                      })}
                     </ul>
                   ) : (
                     <p className="text-sm text-muted-foreground">No key lifecycle events available.</p>
@@ -485,6 +503,9 @@ export default function PublicPassportPage({ params }: Props) {
                 <CardContent className="px-0 pb-0">
                   {currentRole === 'verifier' && (
                     <p className="text-sm font-semibold text-info mb-2">Auditor View: Access detailed compliance records and initiate audits via the main dashboard.</p>
+                  )}
+                   {currentRole === 'manufacturer' && product.ebsiStatus === 'pending' && (
+                    <p className="text-sm text-orange-600 mb-2">Action Required: EBSI verification is pending. Please review and complete necessary steps through your dashboard.</p>
                   )}
                   <p className="text-foreground">{product.complianceSummary}</p>
                   {product.learnMoreLink && (

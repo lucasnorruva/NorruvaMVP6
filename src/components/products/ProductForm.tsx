@@ -18,7 +18,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label"; // Added missing import
+import { Label } from "@/components/ui/label"; 
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -27,6 +27,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info } from "lucide-react";
 import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import BasicInfoFormSection from "./form/BasicInfoFormSection"; // New import
 import ProductImageFormSection from "./form/ProductImageFormSection";
 import BatteryDetailsFormSection from "./form/BatteryDetailsFormSection";
 import {
@@ -110,6 +111,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
   const { toast } = useToast();
   const [suggestedClaims, setSuggestedClaims] = useState<string[]>([]);
+  
+  // AI loading states managed by ProductForm
   const [isSuggestingName, setIsSuggestingName] = useState(false);
   const [isSuggestingDescription, setIsSuggestingDescription] = useState(false);
   const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
@@ -139,6 +142,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     }
   }, [initialData, form]);
 
+  // AI Handler functions remain in ProductForm to pass to sub-components
   const callSuggestNameAI = async () => {
     const result = await handleSuggestNameAI(form, toast, setIsSuggestingName);
     if (result) {
@@ -181,31 +185,19 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5', 'item-custom-attributes']} className="w-full">
       <AccordionItem value="item-1">
         <AccordionTrigger className="text-lg font-semibold">Basic Information</AccordionTrigger>
-        <AccordionContent className="space-y-6 pt-4">
-          <FormField
-            control={form.control}
-            name="productName"
-            render={({ field }) => (
-              <FormItem>
-                <div className="flex items-center justify-between">
-                  <FormLabel className="flex items-center">Product Name <AiIndicator fieldOrigin={initialData?.productNameOrigin} fieldName="Product Name" /></FormLabel>
-                  <Button type="button" variant="ghost" size="sm" onClick={callSuggestNameAI} disabled={anyAISuggestionInProgress || !!isSubmitting}>
-                    {isSuggestingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
-                    <span className="ml-2">{isSuggestingName ? "Suggesting..." : "Suggest Name"}</span>
-                  </Button>
-                </div>
-                <FormControl><Input placeholder="e.g., EcoBoiler X1" {...field} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+        <AccordionContent>
+          <BasicInfoFormSection
+            form={form}
+            initialData={initialData}
+            isSuggestingName={isSuggestingName}
+            setIsSuggestingName={setIsSuggestingName}
+            callSuggestNameAI={callSuggestNameAI}
+            isSuggestingDescription={isSuggestingDescription}
+            setIsSuggestingDescription={setIsSuggestingDescription}
+            callSuggestDescriptionAI={callSuggestDescriptionAI}
+            anyAISuggestionInProgress={anyAISuggestionInProgress}
+            isSubmittingForm={isSubmitting}
           />
-          <FormField control={form.control} name="gtin" render={({ field }) => ( <FormItem> <FormLabel>GTIN</FormLabel> <FormControl><Input placeholder="e.g., 01234567890123" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-          <FormField control={form.control} name="productCategory" render={({ field }) => ( <FormItem> <FormLabel>Product Category</FormLabel> <FormControl><Input placeholder="e.g., Electronics, Apparel" {...field} /></FormControl> <FormDescription>Used to help generate relevant suggestions.</FormDescription> <FormMessage /> </FormItem> )}/>
-          <FormField control={form.control} name="productDescription" render={({ field }) => ( <FormItem> <div className="flex items-center justify-between"> <FormLabel className="flex items-center">Product Description <AiIndicator fieldOrigin={initialData?.productDescriptionOrigin} fieldName="Product Description" /></FormLabel> <Button type="button" variant="ghost" size="sm" onClick={callSuggestDescriptionAI} disabled={anyAISuggestionInProgress || !!isSubmitting}> {isSuggestingDescription ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />} <span className="ml-2">{isSuggestingDescription ? "Suggesting..." : "Suggest Description"}</span> </Button> </div> <FormControl><Textarea placeholder="Detailed description..." {...field} rows={4} /></FormControl> <FormMessage /> </FormItem> )}/>
-          <div className="grid md:grid-cols-2 gap-6">
-            <FormField control={form.control} name="manufacturer" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Manufacturer <AiIndicator fieldOrigin={initialData?.manufacturerOrigin} fieldName="Manufacturer" /></FormLabel> <FormControl><Input placeholder="e.g., GreenTech Inc." {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-            <FormField control={form.control} name="modelNumber" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Model Number <AiIndicator fieldOrigin={initialData?.modelNumberOrigin} fieldName="Model Number" /></FormLabel> <FormControl><Input placeholder="e.g., GTX-EB-001" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-          </div>
         </AccordionContent>
       </AccordionItem>
 
@@ -285,7 +277,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           <TooltipProvider>
             <Tooltip delayDuration={100}>
               <TooltipTrigger asChild>
-                <div className="inline-block"> {/* Tooltip needs a direct child that can take a ref */}
+                <div className="inline-block"> 
                   <Button type="button" variant="outline" disabled>
                     <PlusCircle className="mr-2 h-4 w-4" /> Add Custom Attribute
                   </Button>
@@ -327,5 +319,3 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
-
-    

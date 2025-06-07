@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from '@/components/ui/textarea';
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lightbulb, HelpCircle, CheckCircle, Loader2 } from 'lucide-react';
+import { Lightbulb, HelpCircle, CheckCircle, Loader2, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 // import { queryComplianceCopilot } from '@/ai/flows/compliance-copilot-flow'; // For future integration
 
@@ -21,7 +22,7 @@ interface WizardStep {
 const euBatteryRegulationSteps: WizardStep[] = [
   { id: "step1", title: "General Information", description: "Provide basic details about the battery product." },
   { id: "step2", title: "Manufacturer Details", description: "Specify manufacturer and responsible parties." },
-  { id: "step3", title: "Material Composition", description: "Declare critical raw materials and substances." },
+  { id: "step3", title: "Material Composition", description: "Declare critical raw materials (CRM) and restricted substances." },
   { id: "step4", title: "Carbon Footprint", description: "Provide manufacturing carbon footprint data." },
   { id: "step5", title: "Performance & Durability", description: "Detail battery performance characteristics." },
   { id: "step6", title: "Recycled Content", description: "Declare the percentage of recycled content." },
@@ -39,17 +40,26 @@ export default function BatteryRegulationPathwayPage() {
     step2_manufacturerName: "",
     step2_manufacturerAddress: "",
     step2_manufacturerContact: "",
+    step3_cobaltPercentage: "",
+    step3_lithiumPercentage: "",
+    step3_naturalGraphitePercentage: "",
+    step3_nickelPercentage: "",
+    step3_leadContent: "",
+    step3_mercuryPresent: "no",
+    step3_cadmiumPresent: "no",
+    step3_otherSVHCs: "",
   });
   const [isLoadingCopilot, setIsLoadingCopilot] = useState(false);
   const { toast } = useToast();
 
-  const handleInputChange = (step: string, field: string, value: string) => {
+  const handleInputChange = (step: string, field: string, value: string | number) => {
     setFormData(prev => ({ ...prev, [`${step}_${field}`]: value }));
   };
 
-  // --- Function: handleAskCopilot ---
-  // Description: Simulates asking the AI Co-Pilot for help regarding a specific step in the wizard.
-  // Uses toasts to provide feedback and mock AI responses.
+  const handleRadioChange = (step: string, field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [`${step}_${field}`]: value }));
+  };
+
   const handleAskCopilot = async (stepContext: string) => {
     setIsLoadingCopilot(true);
     toast({
@@ -57,7 +67,6 @@ export default function BatteryRegulationPathwayPage() {
       description: `Getting information related to: ${stepContext}`,
     });
 
-    // Simulate API call delay
     await new Promise(resolve => setTimeout(resolve, 1500)); 
 
     let mockResponseDescription = `For ${stepContext}, ensure all data is accurate and verifiable according to the EU Battery Regulation. Specific guidance can be found in the relevant annexes of the regulation.`;
@@ -66,13 +75,14 @@ export default function BatteryRegulationPathwayPage() {
         mockResponseDescription = `For General Information, ensure you provide accurate battery model identifiers and clearly define all typical intended uses. If a safety data sheet (SDS) is available, linking its URL strengthens your compliance position. Refer to Annex VI of the EU Battery Regulation for specific data elements required under this section.`;
     } else if (stepContext === euBatteryRegulationSteps[1].title) { // Manufacturer Details
         mockResponseDescription = `For Manufacturer Details, clearly identify the legal manufacturer, including their registered trade name and postal address. The contact person (name, email, phone) should be easily reachable for compliance inquiries. Ensure this information precisely matches official business registries.`;
+    } else if (stepContext === euBatteryRegulationSteps[2].title) { // Material Composition
+        mockResponseDescription = `For Material Composition, accurately declare percentages of Cobalt, Lithium, Natural Graphite, and Nickel if present. Specify presence and/or concentration of restricted substances like Lead, Mercury, and Cadmium. List any other SVHCs present above 0.1% w/w. Refer to Annex I of the EU Battery Regulation for detailed requirements and thresholds.`;
     }
-    // For other steps, the generic mockResponseDescription will be used.
 
      toast({
         title: "AI Co-Pilot (Mock Response)",
         description: mockResponseDescription,
-        duration: 10000, // Increased duration for better readability
+        duration: 10000, 
       });
     setIsLoadingCopilot(false);
   };
@@ -105,16 +115,16 @@ export default function BatteryRegulationPathwayPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="batteryModel">Battery Model Name / Identifier</Label>
-                <Input id="batteryModel" value={formData.step1_batteryModel || ""} onChange={(e) => handleInputChange("step1", "batteryModel", e.target.value)} placeholder="e.g., PowerCell Max 5000" />
+                <Label htmlFor="step1_batteryModel">Battery Model Name / Identifier</Label>
+                <Input id="step1_batteryModel" value={formData.step1_batteryModel || ""} onChange={(e) => handleInputChange("step1", "batteryModel", e.target.value)} placeholder="e.g., PowerCell Max 5000" />
               </div>
               <div>
-                <Label htmlFor="intendedApplication">Intended Application(s)</Label>
-                <Textarea id="intendedApplication" value={formData.step1_intendedApplication || ""} onChange={(e) => handleInputChange("step1", "intendedApplication", e.target.value)} placeholder="e.g., Electric vehicles, Portable electronics, Grid storage" />
+                <Label htmlFor="step1_intendedApplication">Intended Application(s)</Label>
+                <Textarea id="step1_intendedApplication" value={formData.step1_intendedApplication || ""} onChange={(e) => handleInputChange("step1", "intendedApplication", e.target.value)} placeholder="e.g., Electric vehicles, Portable electronics, Grid storage" />
               </div>
               <div>
-                <Label htmlFor="safetySheetUrl">Safety Data Sheet URL (Optional)</Label>
-                <Input id="safetySheetUrl" value={formData.step1_safetySheetUrl || ""} onChange={(e) => handleInputChange("step1", "safetySheetUrl", e.target.value)} placeholder="https://example.com/sds/powercell_max_5000.pdf" />
+                <Label htmlFor="step1_safetySheetUrl">Safety Data Sheet URL (Optional)</Label>
+                <Input id="step1_safetySheetUrl" value={formData.step1_safetySheetUrl || ""} onChange={(e) => handleInputChange("step1", "safetySheetUrl", e.target.value)} placeholder="https://example.com/sds/powercell_max_5000.pdf" />
               </div>
               <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[0].title)} disabled={isLoadingCopilot}>
                 {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
@@ -132,16 +142,16 @@ export default function BatteryRegulationPathwayPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="manufacturerName">Manufacturer Name</Label>
-                <Input id="manufacturerName" value={formData.step2_manufacturerName || ""} onChange={(e) => handleInputChange("step2", "manufacturerName", e.target.value)} placeholder="e.g., ACME Batteries Corp." />
+                <Label htmlFor="step2_manufacturerName">Manufacturer Name</Label>
+                <Input id="step2_manufacturerName" value={formData.step2_manufacturerName || ""} onChange={(e) => handleInputChange("step2", "manufacturerName", e.target.value)} placeholder="e.g., ACME Batteries Corp." />
               </div>
               <div>
-                <Label htmlFor="manufacturerAddress">Manufacturer Registered Address</Label>
-                <Textarea id="manufacturerAddress" value={formData.step2_manufacturerAddress || ""} onChange={(e) => handleInputChange("step2", "manufacturerAddress", e.target.value)} placeholder="e.g., 123 Battery Lane, Tech City, TC 54321, Country" />
+                <Label htmlFor="step2_manufacturerAddress">Manufacturer Registered Address</Label>
+                <Textarea id="step2_manufacturerAddress" value={formData.step2_manufacturerAddress || ""} onChange={(e) => handleInputChange("step2", "manufacturerAddress", e.target.value)} placeholder="e.g., 123 Battery Lane, Tech City, TC 54321, Country" />
               </div>
               <div>
-                <Label htmlFor="manufacturerContact">Responsible Contact Person (Name / Email)</Label>
-                <Input id="manufacturerContact" value={formData.step2_manufacturerContact || ""} onChange={(e) => handleInputChange("step2", "manufacturerContact", e.target.value)} placeholder="e.g., Jane Doe / compliance@acmebatteries.com" />
+                <Label htmlFor="step2_manufacturerContact">Responsible Contact Person (Name / Email)</Label>
+                <Input id="step2_manufacturerContact" value={formData.step2_manufacturerContact || ""} onChange={(e) => handleInputChange("step2", "manufacturerContact", e.target.value)} placeholder="e.g., Jane Doe / compliance@acmebatteries.com" />
               </div>
               <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[1].title)} disabled={isLoadingCopilot}>
                 {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
@@ -150,7 +160,74 @@ export default function BatteryRegulationPathwayPage() {
             </CardContent>
           </Card>
         );
-      // Add cases for other steps here as they are developed
+      case "step3":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>{euBatteryRegulationSteps[2].title}</CardTitle>
+              <CardDescription>{euBatteryRegulationSteps[2].description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="space-y-4 p-4 border rounded-md bg-muted/30">
+                <h4 className="font-medium text-md text-primary">Critical Raw Materials (CRM) Content (%)</h4>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="step3_cobaltPercentage">Cobalt (Co)</Label>
+                    <Input id="step3_cobaltPercentage" type="number" value={formData.step3_cobaltPercentage || ""} onChange={(e) => handleInputChange("step3", "cobaltPercentage", e.target.valueAsNumber)} placeholder="e.g., 15" />
+                  </div>
+                  <div>
+                    <Label htmlFor="step3_lithiumPercentage">Lithium (Li)</Label>
+                    <Input id="step3_lithiumPercentage" type="number" value={formData.step3_lithiumPercentage || ""} onChange={(e) => handleInputChange("step3", "lithiumPercentage", e.target.valueAsNumber)} placeholder="e.g., 5" />
+                  </div>
+                  <div>
+                    <Label htmlFor="step3_naturalGraphitePercentage">Natural Graphite</Label>
+                    <Input id="step3_naturalGraphitePercentage" type="number" value={formData.step3_naturalGraphitePercentage || ""} onChange={(e) => handleInputChange("step3", "naturalGraphitePercentage", e.target.valueAsNumber)} placeholder="e.g., 10" />
+                  </div>
+                  <div>
+                    <Label htmlFor="step3_nickelPercentage">Nickel (Ni)</Label>
+                    <Input id="step3_nickelPercentage" type="number" value={formData.step3_nickelPercentage || ""} onChange={(e) => handleInputChange("step3", "nickelPercentage", e.target.valueAsNumber)} placeholder="e.g., 20" />
+                  </div>
+                </div>
+                <p className="text-xs text-muted-foreground">Declare the percentage by weight of these CRMs if present in the battery.</p>
+              </div>
+
+              <div className="space-y-4 p-4 border rounded-md bg-muted/30">
+                <h4 className="font-medium text-md text-primary">Restricted Substances</h4>
+                <div>
+                  <Label htmlFor="step3_leadContent">Lead (Pb) Content (%)</Label>
+                  <Input id="step3_leadContent" type="number" value={formData.step3_leadContent || ""} onChange={(e) => handleInputChange("step3", "leadContent", e.target.valueAsNumber)} placeholder="e.g., 0.005 (Max 0.01%)" />
+                </div>
+                <div className="grid md:grid-cols-2 gap-x-8 gap-y-4">
+                  <div>
+                    <Label className="mb-1 block">Mercury (Hg) Present?</Label>
+                    <RadioGroup value={formData.step3_mercuryPresent || "no"} onValueChange={(value) => handleRadioChange("step3", "mercuryPresent", value)} className="flex gap-4">
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="hg_yes" /><Label htmlFor="hg_yes" className="font-normal">Yes</Label></div>
+                      <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="hg_no" /><Label htmlFor="hg_no" className="font-normal">No</Label></div>
+                    </RadioGroup>
+                  </div>
+                  <div>
+                    <Label className="mb-1 block">Cadmium (Cd) Present?</Label>
+                    <RadioGroup value={formData.step3_cadmiumPresent || "no"} onValueChange={(value) => handleRadioChange("step3", "cadmiumPresent", value)} className="flex gap-4">
+                       <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="cd_yes" /><Label htmlFor="cd_yes" className="font-normal">Yes</Label></div>
+                       <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="cd_no" /><Label htmlFor="cd_no" className="font-normal">No</Label></div>
+                    </RadioGroup>
+                  </div>
+                </div>
+                 <p className="text-xs text-muted-foreground">Batteries shall not contain mercury >0.0005% or cadmium >0.002% by weight.</p>
+              </div>
+              
+              <div>
+                <Label htmlFor="step3_otherSVHCs">Other SVHCs (Substances of Very High Concern)</Label>
+                <Textarea id="step3_otherSVHCs" value={formData.step3_otherSVHCs || ""} onChange={(e) => handleInputChange("step3", "otherSVHCs", e.target.value)} placeholder="List any other SVHCs present above 0.1% w/w, their CAS numbers, and concentrations. E.g., Substance X (CAS: 123-45-6) - 0.15%" />
+              </div>
+
+              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[2].title)} disabled={isLoadingCopilot}>
+                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+                Ask Co-Pilot about this step
+              </Button>
+            </CardContent>
+          </Card>
+        );
       default:
         return (
             <Card>
@@ -169,7 +246,6 @@ export default function BatteryRegulationPathwayPage() {
         );
     }
   };
-
 
   return (
     <div className="space-y-8">
@@ -216,3 +292,6 @@ export default function BatteryRegulationPathwayPage() {
     </div>
   );
 }
+
+
+    

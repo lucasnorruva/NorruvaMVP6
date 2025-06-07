@@ -11,13 +11,14 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge"; // Ensure Badge is imported
-import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe } from "lucide-react";
+import { Badge } from "@/components/ui/badge"; 
+import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, Zap as ZapIcon, ServerCrash } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
 import ApiKeysManager, { type ApiKey } from '@/components/developer/ApiKeysManager';
 import WebhooksManager, { type WebhookEntry } from '@/components/developer/WebhooksManager';
+import { cn } from '@/lib/utils';
 
 
 const initialMockApiKeys: ApiKey[] = [
@@ -139,6 +140,12 @@ const mockTutorials = [
     linkText: "Read Tutorial (Mock)",
     icon: BookText
   },
+];
+
+const platformAnnouncements = [
+  { id: "ann1", date: "Aug 1, 2024", title: "New API Version v1.1 Released", summary: "Version 1.1 of the DPP API is now live, featuring enhanced query parameters for lifecycle events and new endpoints for supplier data management. Check the API Reference for details.", link: "/developer/docs/api-reference" },
+  { id: "ann2", date: "Jul 25, 2024", title: "Webinar: Navigating EU Battery Regulation", summary: "Join us next week for a deep dive into using the Norruva platform to comply with the new EU Battery Regulation requirements. Registration is open.", link: "#" },
+  { id: "ann3", date: "Jul 15, 2024", title: "Sandbox Environment Maintenance", summary: "Scheduled maintenance for the Sandbox environment will occur on July 20th, 02:00-04:00 UTC. Production environment will not be affected.", link: "#" },
 ];
 
 
@@ -307,6 +314,13 @@ export default function DeveloperPortalPage() {
     setIsGetComplianceLoading(false);
   }
 
+  const dashboardQuickActions = [
+    { label: "View My API Keys", href: "#", targetTab: "api_keys", icon: KeyRound },
+    { label: "Explore API Reference", href: "/developer/docs/api-reference", icon: BookText },
+    { label: "Manage Webhooks", href: "#", targetTab: "webhooks", icon: Webhook },
+    { label: "Check Service Status", href: "#", icon: ServerCrash, disabled: true, tooltip: "Service status page (mock) - Coming Soon" },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -342,7 +356,7 @@ export default function DeveloperPortalPage() {
         </div>
       </div>
 
-      <Tabs defaultValue="dashboard" className="w-full">
+      <Tabs defaultValue="dashboard" className="w-full" id="developer-portal-tabs">
         <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-7">
           <TabsTrigger value="dashboard"><LayoutGrid className="mr-1.5 h-4 w-4 sm:hidden md:inline-block" />Dashboard</TabsTrigger>
           <TabsTrigger value="api_keys"><KeyRound className="mr-1.5 h-4 w-4 sm:hidden md:inline-block" />API Keys</TabsTrigger>
@@ -371,7 +385,85 @@ export default function DeveloperPortalPage() {
               </p>
             </CardContent>
           </Card>
-          {/* You can add more overview cards or quick links here */}
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <Card className="shadow-md lg:col-span-1">
+              <CardHeader>
+                <CardTitle className="font-headline text-lg flex items-center"><BarChartBig className="mr-2 h-5 w-5 text-primary" /> API Usage Overview (<span className="capitalize">{currentEnvironment}</span>)</CardTitle>
+                <CardDescription>Mock conceptual API metrics for the current environment.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm">
+                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>API Calls (Last 24h):</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '1,234' : '105,678'}</span></div>
+                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Error Rate (Last 24h):</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '0.2%' : '0.05%'}</span></div>
+                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Avg. Latency:</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '120ms' : '85ms'}</span></div>
+                <Button variant="link" size="sm" className="p-0 h-auto text-primary mt-2" onClick={() => document.querySelector('#developer-portal-tabs [data-state="inactive"][value="settings_usage"]')?.ariaSelected === "false" ? (document.querySelector('#developer-portal-tabs [data-state="inactive"][value="settings_usage"]') as HTMLElement)?.click() : null}>View Full Usage Report</Button>
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-md lg:col-span-2">
+              <CardHeader>
+                <CardTitle className="font-headline text-lg flex items-center"><Megaphone className="mr-2 h-5 w-5 text-primary" /> Platform News & Announcements</CardTitle>
+                <CardDescription>Stay updated with the latest from Norruva.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3 text-sm max-h-60 overflow-y-auto">
+                {platformAnnouncements.map(ann => (
+                  <div key={ann.id} className="p-2.5 border-b last:border-b-0">
+                    <h4 className="font-semibold text-foreground">{ann.title} <span className="text-xs text-muted-foreground font-normal">- {ann.date}</span></h4>
+                    <p className="text-xs text-muted-foreground mt-0.5">{ann.summary}</p>
+                    {ann.link !== "#" ? (
+                      <Link href={ann.link} passHref><Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs mt-1">Learn More <ExternalLinkIcon className="ml-1 h-3 w-3"/></Button></Link>
+                    ) : (
+                       <Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs mt-1" disabled>Learn More</Button>
+                    )}
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+
+          <Card className="shadow-md">
+            <CardHeader>
+              <CardTitle className="font-headline text-lg flex items-center"><ZapIcon className="mr-2 h-5 w-5 text-primary" /> Quick Actions</CardTitle>
+              <CardDescription>Access common developer tasks and resources directly.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              {dashboardQuickActions.map(action => (
+                action.disabled ? (
+                  <Button key={action.label} variant="outline" className="w-full justify-start text-left h-auto py-3 group" disabled>
+                     <action.icon className="mr-3 h-5 w-5 text-muted-foreground" />
+                      <div>
+                        <p className="font-medium text-muted-foreground">{action.label}</p>
+                      </div>
+                  </Button>
+                ) : action.targetTab ? (
+                  <Button key={action.label} variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10" onClick={() => {
+                    const targetTabTrigger = document.querySelector(`#developer-portal-tabs [data-state="inactive"][value="${action.targetTab}"]`) as HTMLElement | null;
+                    if (targetTabTrigger && targetTabTrigger.ariaSelected === "false") { // Check if already active to avoid unnecessary click
+                        targetTabTrigger.click();
+                    } else if (targetTabTrigger?.ariaSelected === "true") {
+                        // If already active, maybe scroll to section or do nothing.
+                    }
+                  }}>
+                    <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
+                    <div>
+                      <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
+                    </div>
+                  </Button>
+                ) : (
+                  <Link key={action.label} href={action.href} passHref legacyBehavior>
+                    <a className="block">
+                      <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
+                        <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
+                        <div>
+                          <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
+                        </div>
+                      </Button>
+                    </a>
+                  </Link>
+                )
+              ))}
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="api_keys" className="mt-6">

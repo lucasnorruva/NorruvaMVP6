@@ -53,11 +53,11 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
             <AccordionTrigger className="px-4 py-3 hover:no-underline hover:bg-muted/50 rounded-t-lg [&[data-state=open]]:rounded-b-none [&[data-state=open]]:border-b">
               <div className="flex items-center text-md font-medium">
                 <SlidersHorizontal className="h-5 w-5 mr-2 text-primary" />
-                Filter Options
+                Filter & Search DPPs
                 {activeFilterCount > 0 && (
                   <span className={cn(
                     "ml-2 px-2 py-0.5 text-xs font-semibold rounded-full",
-                    activeFilterCount > 0 ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                    "bg-primary/20 text-primary" 
                   )}>
                     {activeFilterCount} active
                   </span>
@@ -68,7 +68,7 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end p-4 border-t">
                 <div>
                   <Label htmlFor="search-query" className="text-sm font-medium mb-1 flex items-center">
-                    <Search className="h-4 w-4 mr-2 text-primary" />
+                    <Search className="h-4 w-4 mr-1.5 text-primary" />
                     Search by Product Name
                   </Label>
                   <Input
@@ -82,7 +82,7 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
                 </div>
                 <div>
                   <Label htmlFor="status-filter" className="text-sm font-medium mb-1 flex items-center">
-                    <Filter className="h-4 w-4 mr-2 text-primary" />
+                    <Filter className="h-4 w-4 mr-1.5 text-primary" />
                     Filter by Status
                   </Label>
                   <Select
@@ -103,8 +103,8 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
                 </div>
                 <div>
                   <Label htmlFor="regulation-filter" className="text-sm font-medium mb-1 flex items-center">
-                    <Filter className="h-4 w-4 mr-2 text-primary" />
-                    Filter by Regulation (Compliant)
+                    <Filter className="h-4 w-4 mr-1.5 text-primary" />
+                    Regulation (Compliant)
                   </Label>
                   <Select
                     value={filters.regulation}
@@ -124,7 +124,7 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
                 </div>
                 <div>
                   <Label htmlFor="category-filter" className="text-sm font-medium mb-1 flex items-center">
-                    <ListFilter className="h-4 w-4 mr-2 text-primary" />
+                    <ListFilter className="h-4 w-4 mr-1.5 text-primary" />
                     Filter by Category
                   </Label>
                   <Select
@@ -146,7 +146,7 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
                 </div>
                 <div>
                   <Label htmlFor="anchoring-filter" className="text-sm font-medium mb-1 flex items-center">
-                    <LinkIcon className="h-4 w-4 mr-2 text-primary" />
+                    <LinkIcon className="h-4 w-4 mr-1.5 text-primary" />
                     Blockchain Anchoring
                   </Label>
                   <Select

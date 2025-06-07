@@ -55,6 +55,13 @@ export default function BatteryRegulationPathwayPage() {
     step4_recycledContentCFReduction: "",
     step4_transportCF: "",
     step4_eolCF: "",
+    step5_ratedCapacity: "",
+    step5_nominalVoltage: "",
+    step5_expectedLifetimeCycles: "",
+    step5_operatingTemperatureRange: "",
+    step5_internalResistance: "",
+    step5_powerCapability: "",
+    step5_safetyTestCompliance: "",
   });
   const [isLoadingCopilot, setIsLoadingCopilot] = useState(false);
   const { toast } = useToast();
@@ -91,6 +98,8 @@ export default function BatteryRegulationPathwayPage() {
         mockResponseDescription = `For Material Composition, accurately declare percentages of Cobalt, Lithium, Natural Graphite, and Nickel if present. Specify presence and/or concentration of restricted substances like Lead, Mercury, and Cadmium. List any other SVHCs present above 0.1% w/w. Refer to Annex I of the EU Battery Regulation for detailed requirements and thresholds.`;
     } else if (stepContext === euBatteryRegulationSteps[3].title) { // Carbon Footprint
         mockResponseDescription = `For Carbon Footprint, provide the total cradle-to-gate carbon footprint for the battery's manufacturing. Specify the unit (e.g., kg CO₂e/kWh of total energy over service life) and data source (e.g., PEFCR for Batteries, internal LCA study). Optionally, detail reductions from recycled content, or specific footprints for transport and end-of-life. Refer to Annex II of the EU Battery Regulation for detailed requirements.`;
+    } else if (stepContext === euBatteryRegulationSteps[4].title) { // Performance & Durability
+        mockResponseDescription = `For Performance & Durability, provide rated capacity (e.g., '100 Ah'), nominal voltage (e.g., '48V'), expected lifetime (e.g., '2000 cycles at 80% DoD'), operating temperature range (e.g., '-20°C to 60°C'), internal resistance (e.g., '<50 mOhms'), and power capability (e.g., '5 kW continuous'). State compliance with key safety tests like IEC 62133, UN 38.3, or IEC 62619. Refer to Annex IV of the EU Battery Regulation.`;
     }
 
 
@@ -294,9 +303,54 @@ export default function BatteryRegulationPathwayPage() {
                 <Input id="step4_eolCF" type="number" value={formData.step4_eolCF || ""} onChange={(e) => handleInputChange("step4", "eolCF", e.target.valueAsNumber)} placeholder="e.g., -10 (kg CO₂e/kWh for credit)" />
                 <p className="text-xs text-muted-foreground mt-1">Estimated CF or credit associated with the battery's end-of-life phase.</p>
               </div>
-
-
               <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[3].title)} disabled={isLoadingCopilot}>
+                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+                Ask Co-Pilot about this step
+              </Button>
+            </CardContent>
+          </Card>
+        );
+      case "step5":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle>{euBatteryRegulationSteps[4].title}</CardTitle>
+              <CardDescription>{euBatteryRegulationSteps[4].description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="step5_ratedCapacity">Rated Capacity</Label>
+                  <Input id="step5_ratedCapacity" value={formData.step5_ratedCapacity || ""} onChange={(e) => handleInputChange("step5", "ratedCapacity", e.target.value)} placeholder="e.g., 100 Ah or 5 kWh" />
+                </div>
+                <div>
+                  <Label htmlFor="step5_nominalVoltage">Nominal Voltage</Label>
+                  <Input id="step5_nominalVoltage" value={formData.step5_nominalVoltage || ""} onChange={(e) => handleInputChange("step5", "nominalVoltage", e.target.value)} placeholder="e.g., 48V" />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="step5_expectedLifetimeCycles">Expected Lifetime / Cycle Life</Label>
+                <Input id="step5_expectedLifetimeCycles" value={formData.step5_expectedLifetimeCycles || ""} onChange={(e) => handleInputChange("step5", "expectedLifetimeCycles", e.target.value)} placeholder="e.g., 2000 cycles @ 80% DoD" />
+              </div>
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="step5_operatingTemperatureRange">Operating Temperature Range</Label>
+                  <Input id="step5_operatingTemperatureRange" value={formData.step5_operatingTemperatureRange || ""} onChange={(e) => handleInputChange("step5", "operatingTemperatureRange", e.target.value)} placeholder="e.g., -20°C to 60°C" />
+                </div>
+                <div>
+                  <Label htmlFor="step5_internalResistance">Internal Resistance</Label>
+                  <Input id="step5_internalResistance" value={formData.step5_internalResistance || ""} onChange={(e) => handleInputChange("step5", "internalResistance", e.target.value)} placeholder="e.g., <50 mOhms at 25°C" />
+                </div>
+              </div>
+              <div>
+                <Label htmlFor="step5_powerCapability">Power Capability</Label>
+                <Input id="step5_powerCapability" value={formData.step5_powerCapability || ""} onChange={(e) => handleInputChange("step5", "powerCapability", e.target.value)} placeholder="e.g., 5 kW continuous, 10 kW peak (10s)" />
+              </div>
+              <div>
+                <Label htmlFor="step5_safetyTestCompliance">Safety Test Compliance</Label>
+                <Textarea id="step5_safetyTestCompliance" value={formData.step5_safetyTestCompliance || ""} onChange={(e) => handleInputChange("step5", "safetyTestCompliance", e.target.value)} placeholder="List key safety standards complied with, e.g., IEC 62133, UN 38.3, IEC 62619." />
+              </div>
+              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[4].title)} disabled={isLoadingCopilot}>
                 {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
                 Ask Co-Pilot about this step
               </Button>
@@ -354,7 +408,7 @@ export default function BatteryRegulationPathwayPage() {
                 {currentStepIndex === euBatteryRegulationSteps.length -1 ? (
                     <Button onClick={() => alert("Mock: Final Review & Submission")} className="bg-accent text-accent-foreground hover:bg-accent/90">
                         <CheckCircle className="mr-2 h-4 w-4"/>
-                        Final Review & Submit
+                        Final Review & Submission
                     </Button>
                 ) : (
                     <Button onClick={goToNextStep} disabled={!canGoNext}>

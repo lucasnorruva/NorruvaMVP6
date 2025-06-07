@@ -1,6 +1,6 @@
 // --- File: dpp.ts ---
 // Description: TypeScript type definitions for Digital Product Passports and related entities.
-import type { LucideIcon } from 'lucide-react'; // Added for iconName type
+import type { LucideIcon } from 'lucide-react';
 
 // Interface for a single lifecycle event
 export interface LifecycleEvent {
@@ -58,7 +58,7 @@ export interface EbsiVerificationDetails {
 
 export interface ProductSupplyChainLink {
   supplierId: string;
-  suppliedItem: string; // e.g., "Battery Cells", "Recycled Aluminum Casing"
+  suppliedItem: string;
   notes?: string;
 }
 
@@ -304,7 +304,7 @@ export interface SimpleLifecycleEvent {
   location?: string;
   notes?: string;
   status: 'Completed' | 'In Progress' | 'Upcoming' | 'Delayed' | 'Cancelled';
-  iconName?: keyof typeof import('lucide-react'); // Allows suggesting specific Lucide icons
+  iconName?: keyof typeof import('lucide-react');
 }
 
 
@@ -320,16 +320,15 @@ export interface SimpleProductDetail {
   imageUrl?: string;
   imageHint?: string;
   keySustainabilityPoints?: string[];
-  // keyCompliancePoints kept for overview, detailed in complianceSummary
   keyCompliancePoints?: string[];
   specifications?: Record<string, string>;
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
   repairability?: { score: number; scale: number; detailsUrl?: string };
   recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
-  supplyChainLinks?: ProductSupplyChainLink[];
+  supplyChainLinks?: ProductSupplyChainLink[]; // Verified this field exists
   complianceSummary?: ProductComplianceSummary;
-  lifecycleEvents?: SimpleLifecycleEvent[]; // Added lifecycle events
+  lifecycleEvents?: SimpleLifecycleEvent[];
 }
 
 export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
@@ -400,7 +399,7 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     repairability: { score: 6.0, scale: 10, detailsUrl: "#repair-details-PROD002" },
     recyclabilityInfo: { percentage: 75, instructionsUrl: "#recycling-PROD002" },
     supplyChainLinks: [
-       { supplierId: "SUP004", suppliedItem: "LED Chips & Drivers", notes: "Specialized electronics supplier." }
+      { supplierId: "SUP004", suppliedItem: "LED Chips & Drivers", notes: "Specialized electronics supplier." }
     ],
     complianceSummary: {
       overallStatus: "Pending Review",
@@ -462,7 +461,7 @@ export interface Supplier {
   contactPerson?: string;
   email?: string;
   location?: string;
-  materialsSupplied: string; // Comma-separated list or general description for now
+  materialsSupplied: string;
   status: 'Active' | 'Inactive' | 'Pending Review';
   lastUpdated: string;
 }

@@ -445,48 +445,54 @@ export default function DeveloperPortalPage() {
             <CardTitle className="font-headline flex items-center"><BookOpen className="mr-3 h-6 w-6 text-primary" /> API Documentation &amp; Guides</CardTitle>
             <CardDescription>Explore detailed documentation, integration guides, and best practices for building with Norruva DPP APIs.</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-             <div className="space-y-2">
-                <h4 className="font-semibold">Core Documentation</h4>
-                <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
-                    <li><Link href="/developer/docs/api-reference" className="hover:underline flex items-center"><BookText className="mr-1.5 h-4 w-4 inline-block"/>API Reference</Link> <span className="text-xs text-muted-foreground">(Endpoints, Schemas)</span></li>
-                    <li><Link href="/developer/docs/authentication" className="hover:underline flex items-center"><KeyRound className="mr-1.5 h-4 w-4 inline-block"/>Authentication</Link> <span className="text-xs text-muted-foreground">(API Keys)</span></li>
-                    <li><Link href="/developer/docs/webhooks-guide" className="hover:underline flex items-center"><Webhook className="mr-1.5 h-4 w-4 inline-block"/>Webhooks Guide</Link> <span className="text-xs text-muted-foreground">(Event Notifications)</span></li>
-                    <li><Link href="/developer/docs/rate-limiting" className="hover:underline flex items-center"><Clock className="mr-1.5 h-4 w-4 inline-block"/>Rate Limiting &amp; Usage</Link></li>
-                    <li><Link href="/developer/docs/error-codes" className="hover:underline flex items-center"><ErrorIcon className="mr-1.5 h-4 w-4 inline-block"/>Error Codes &amp; Handling</Link></li>
-                </ul>
+          <CardContent className="space-y-5">
+            
+            <div>
+              <h4 className="font-semibold text-md mb-2">Core Documentation</h4>
+              <ul className="list-none space-y-2.5 text-sm pl-0">
+                <li><Link href="/developer/docs/api-reference" className="text-primary hover:underline flex items-center"><BookText className="mr-2 h-4 w-4"/>API Reference <span className="text-xs text-muted-foreground ml-1.5"> (Endpoints, Schemas)</span></Link></li>
+                <li><Link href="/developer/docs/authentication" className="text-primary hover:underline flex items-center"><KeyRound className="mr-2 h-4 w-4"/>Authentication <span className="text-xs text-muted-foreground ml-1.5"> (API Keys)</span></Link></li>
+                <li><Link href="/developer/docs/webhooks-guide" className="text-primary hover:underline flex items-center"><Webhook className="mr-2 h-4 w-4"/>Webhooks Guide <span className="text-xs text-muted-foreground ml-1.5"> (Event Notifications)</span></Link></li>
+                <li><Link href="/developer/docs/rate-limiting" className="text-primary hover:underline flex items-center"><Clock className="mr-2 h-4 w-4"/>Rate Limiting &amp; Usage</Link></li>
+                <li><Link href="/developer/docs/error-codes" className="text-primary hover:underline flex items-center"><ErrorIcon className="mr-2 h-4 w-4"/>Error Codes &amp; Handling</Link></li>
+              </ul>
             </div>
-             <div className="space-y-2 pt-3 border-t">
-                <h4 className="font-semibold">Integration Guides &amp; Best Practices</h4>
-                <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
-                    <li><Link href="/developer/guides/quick-start" className="hover:underline flex items-center"><Rocket className="mr-1.5 h-4 w-4 inline-block"/>Quick Start Integration Guide</Link></li>
-                    <li><Link href="/developer/docs/ebsi-integration" className="hover:underline flex items-center"><Share2 className="mr-1.5 h-4 w-4 inline-block"/>EBSI Integration Overview</Link></li>
-                    <li><Link href="/developer/docs/regulatory-alignment" className="hover:underline flex items-center"><Scale className="mr-1.5 h-4 w-4 inline-block"/>Regulatory Alignment (ESPR, EPREL)</Link></li>
-                    <li><Link href="/developer/docs/data-management-best-practices" className="hover:underline flex items-center"><LayersIcon className="mr-1.5 h-4 w-4 inline-block"/>Data Management Best Practices</Link></li>
-                </ul>
+            
+            <div className="pt-4 border-t border-border/70">
+              <h4 className="font-semibold text-md mb-2">Integration Guides & Best Practices</h4>
+              <ul className="list-none space-y-2.5 text-sm pl-0">
+                <li><Link href="/developer/guides/quick-start" className="text-primary hover:underline flex items-center"><Rocket className="mr-2 h-4 w-4"/>Quick Start Integration Guide</Link></li>
+                <li><Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline flex items-center"><Share2 className="mr-2 h-4 w-4"/>EBSI Integration Overview</Link></li>
+                <li><Link href="/developer/docs/regulatory-alignment" className="text-primary hover:underline flex items-center"><Scale className="mr-2 h-4 w-4"/>Regulatory Alignment (ESPR, EPREL)</Link></li>
+                <li><Link href="/developer/docs/data-management-best-practices" className="text-primary hover:underline flex items-center"><LayersIcon className="mr-2 h-4 w-4"/>Data Management Best Practices</Link></li>
+              </ul>
             </div>
-            <div className="space-y-2 pt-3 border-t">
-                <h4 className="font-semibold">Testing &amp; Validation</h4>
-                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
-                    <li><Link href="/developer/docs/testing-validation" className="hover:underline flex items-center"><TestTube2 className="mr-1.5 h-4 w-4 inline-block"/>Testing &amp; Validation Guide</Link></li>
-                 </ul>
+            
+            <div className="pt-4 border-t border-border/70">
+              <h4 className="font-semibold text-md mb-2">Testing & Validation</h4>
+              <ul className="list-none space-y-2.5 text-sm pl-0">
+                <li><Link href="/developer/docs/testing-validation" className="text-primary hover:underline flex items-center"><TestTube2 className="mr-2 h-4 w-4"/>Testing &amp; Validation Guide</Link></li>
+              </ul>
             </div>
-             <div className="space-y-2 pt-3 border-t">
-                <h4 className="font-semibold">Operations</h4>
-                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
-                    <li><Link href="/developer/docs/deployment-monitoring" className="hover:underline flex items-center"><ServerIconShadcn className="mr-1.5 h-4 w-4 inline-block"/>Deployment &amp; Monitoring Guide</Link></li>
-                 </ul>
+            
+            <div className="pt-4 border-t border-border/70">
+              <h4 className="font-semibold text-md mb-2">Operations</h4>
+              <ul className="list-none space-y-2.5 text-sm pl-0">
+                <li><Link href="/developer/docs/deployment-monitoring" className="text-primary hover:underline flex items-center"><ServerIconShadcn className="mr-2 h-4 w-4"/>Deployment &amp; Monitoring Guide</Link></li>
+              </ul>
             </div>
-             <div className="space-y-2 pt-3 border-t">
-                <h4 className="font-semibold">Security &amp; Privacy</h4>
-                 <ul className="list-disc list-inside text-sm text-primary space-y-1 pl-2">
-                    <li><Link href="/developer/docs/data-privacy" className="hover:underline flex items-center"><VenetianMask className="mr-1.5 h-4 w-4 inline-block"/>Data Privacy &amp; GDPR Guide</Link></li>
-                 </ul>
+            
+            <div className="pt-4 border-t border-border/70">
+              <h4 className="font-semibold text-md mb-2">Security & Privacy</h4>
+              <ul className="list-none space-y-2.5 text-sm pl-0">
+                <li><Link href="/developer/docs/data-privacy" className="text-primary hover:underline flex items-center"><VenetianMask className="mr-2 h-4 w-4"/>Data Privacy &amp; GDPR Guide</Link></li>
+              </ul>
             </div>
-            <Button variant="default" className="w-full sm:w-auto mt-3" asChild>
-                <Link href="/developer/docs/api-reference">
-                    <FileJson className="mr-2 h-5 w-5" /> View Full API Reference
-                </Link>
+            
+            <Button variant="default" className="w-full sm:w-auto mt-4" asChild>
+              <Link href="/developer/docs/api-reference">
+                <FileJson className="mr-2 h-5 w-5" /> View Full API Reference
+              </Link>
             </Button>
           </CardContent>
         </Card>
@@ -694,4 +700,5 @@ export default function DeveloperPortalPage() {
 }
 
     
+
 

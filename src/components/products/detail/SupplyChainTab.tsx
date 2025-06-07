@@ -17,6 +17,7 @@ import { Label } from "@/components/ui/label";
 import { Layers, Link2, Trash2, Edit3 as EditIcon, PlusCircle } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/contexts/RoleContext";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SupplyChainTabProps {
   product: SimpleProductDetail;
@@ -60,6 +61,7 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
   }, [currentRole, product.id]);
 
   const handleLinkSupplier = () => {
+    if (!canManageLinks) return;
     if (!selectedSupplierId || !suppliedItem) {
       toast({ title: "Missing Information", description: "Please select a supplier and enter the supplied item.", variant: "destructive" });
       return;
@@ -75,12 +77,14 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
   };
 
   const handleUnlinkSupplier = (supplierIdToUnlink: string, itemSupplied: string) => {
+    if (!canManageLinks) return;
     const updatedLinks = currentLinkedSuppliers.filter(link => !(link.supplierId === supplierIdToUnlink && link.suppliedItem === itemSupplied));
     onSupplyChainLinksChange(updatedLinks);
     toast({ title: "Supplier Link Removed", description: "The link has been removed." });
   };
   
   const handleOpenEditDialog = (link: ProductSupplyChainLink) => {
+    if (!canManageLinks) return;
     setEditingLink(link);
     const supplier = availableSuppliers.find(s => s.id === link.supplierId);
     setEditingSupplierName(supplier?.name || "Unknown Supplier");
@@ -90,9 +94,9 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
   };
 
   const handleUpdateSupplierLink = () => {
-    if (!editingLink) return;
+    if (!editingLink || !canManageLinks) return;
     const updatedLinks = currentLinkedSuppliers.map(link =>
-      link.supplierId === editingLink.supplierId && link.suppliedItem === editingLink.suppliedItem // Assuming item is part of key for uniqueness
+      link.supplierId === editingLink.supplierId && link.suppliedItem === editingLink.suppliedItem 
         ? { ...link, suppliedItem: editSuppliedItem, notes: editLinkNotes }
         : link
     );
@@ -106,6 +110,16 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
     return <p className="text-muted-foreground p-4">Loading supply chain information...</p>;
   }
 
+  const getDisabledTooltipText = () => {
+    if (!product.id.startsWith("USER_PROD")) {
+      return "Managing links is only enabled for user-created products.";
+    }
+    if (!(currentRole === 'admin' || currentRole === 'manufacturer')) {
+      return "Your current role does not permit managing supplier links.";
+    }
+    return "";
+  };
+
   return (
     <Card className="shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -115,13 +129,26 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
           </CardTitle>
           <CardDescription>Overview of suppliers and components linked to this product.</CardDescription>
         </div>
-        {canManageLinks && (
-          <Dialog open={isLinkDialogOpen} onOpenChange={setIsLinkDialogOpen}>
-            <DialogTrigger asChild>
-              <Button variant="secondary" size="sm">
-                <PlusCircle className="mr-2 h-4 w-4" /> Link New Supplier
-              </Button>
-            </DialogTrigger>
+        
+        <Dialog open={isLinkDialogOpen} onOpenChange={setIsLinkDialogOpen}>
+            <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <div className="inline-block" tabIndex={!canManageLinks ? 0 : undefined}>
+                            <DialogTrigger asChild>
+                                <Button variant="secondary" size="sm" disabled={!canManageLinks}>
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Link New Supplier
+                                </Button>
+                            </DialogTrigger>
+                        </div>
+                    </TooltipTrigger>
+                    {!canManageLinks && (
+                        <TooltipContent>
+                            <p>{getDisabledTooltipText()}</p>
+                        </TooltipContent>
+                    )}
+                </Tooltip>
+            </TooltipProvider>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Link New Supplier</DialogTitle>
@@ -130,7 +157,7 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
               <div className="space-y-4 py-4">
                 <div>
                   <Label htmlFor="supplier-select">Supplier</Label>
-                  <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId}>
+                  <Select value={selectedSupplierId} onValueChange={setSelectedSupplierId} disabled={!canManageLinks}>
                     <SelectTrigger id="supplier-select">
                       <SelectValue placeholder="Select a supplier" />
                     </SelectTrigger>
@@ -141,20 +168,20 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
                 </div>
                 <div>
                   <Label htmlFor="supplied-item">Supplied Item/Component</Label>
-                  <Input id="supplied-item" value={suppliedItem} onChange={(e) => setSuppliedItem(e.target.value)} placeholder="e.g., Battery Cells, Organic Cotton" />
+                  <Input id="supplied-item" value={suppliedItem} onChange={(e) => setSuppliedItem(e.target.value)} placeholder="e.g., Battery Cells, Organic Cotton" disabled={!canManageLinks}/>
                 </div>
                 <div>
                   <Label htmlFor="link-notes">Notes (Optional)</Label>
-                  <Textarea id="link-notes" value={linkNotes} onChange={(e) => setLinkNotes(e.target.value)} placeholder="e.g., Primary source for EU market" />
+                  <Textarea id="link-notes" value={linkNotes} onChange={(e) => setLinkNotes(e.target.value)} placeholder="e.g., Primary source for EU market" disabled={!canManageLinks}/>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsLinkDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleLinkSupplier}>Save Link</Button>
+                <Button variant="outline" onClick={() => setIsLinkDialogOpen(false)} disabled={!canManageLinks}>Cancel</Button>
+                <Button onClick={handleLinkSupplier} disabled={!canManageLinks}>Save Link</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
-        )}
+
       </CardHeader>
       <CardContent>
         {currentLinkedSuppliers.length > 0 ? (
@@ -164,7 +191,7 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
                 <TableHead>Supplier Name</TableHead>
                 <TableHead>Supplied Item/Component</TableHead>
                 <TableHead>Notes</TableHead>
-                {canManageLinks && <TableHead className="text-right">Actions</TableHead>}
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -175,16 +202,40 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
                     <TableCell>{supplier?.name || link.supplierId}</TableCell>
                     <TableCell>{link.suppliedItem}</TableCell>
                     <TableCell className="text-xs text-muted-foreground max-w-xs truncate">{link.notes || '-'}</TableCell>
-                    {canManageLinks && (
-                      <TableCell className="text-right space-x-1">
-                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenEditDialog(link)} title="Edit Link">
-                           <EditIcon className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleUnlinkSupplier(link.supplierId, link.suppliedItem)} title="Unlink Supplier">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </TableCell>
-                    )}
+                    <TableCell className="text-right space-x-1">
+                        <TooltipProvider delayDuration={100}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                    <div className="inline-block" tabIndex={!canManageLinks ? 0 : undefined}>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenEditDialog(link)} title="Edit Link" disabled={!canManageLinks}>
+                                           <EditIcon className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </TooltipTrigger>
+                                {!canManageLinks && (
+                                    <TooltipContent>
+                                       <p>{getDisabledTooltipText()}</p>
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
+                        </TooltipProvider>
+                        <TooltipProvider delayDuration={100}>
+                            <Tooltip>
+                                <TooltipTrigger asChild>
+                                     <div className="inline-block" tabIndex={!canManageLinks ? 0 : undefined}>
+                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleUnlinkSupplier(link.supplierId, link.suppliedItem)} title="Unlink Supplier" disabled={!canManageLinks}>
+                                          <Trash2 className="h-4 w-4" />
+                                        </Button>
+                                    </div>
+                                </TooltipTrigger>
+                                {!canManageLinks && (
+                                    <TooltipContent>
+                                        <p>{getDisabledTooltipText()}</p>
+                                    </TooltipContent>
+                                )}
+                            </Tooltip>
+                        </TooltipProvider>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -194,6 +245,8 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
           <div className="text-center text-muted-foreground py-6">
             <Link2 className="mx-auto h-10 w-10 mb-2 opacity-50" />
             <p>No suppliers are currently linked to this product.</p>
+            {!canManageLinks && product.id.startsWith("USER_PROD") && <p className="text-sm mt-1">Your role does not permit linking suppliers.</p>}
+            {!canManageLinks && !product.id.startsWith("USER_PROD") && <p className="text-sm mt-1">Linking suppliers is only enabled for user-created products.</p>}
             {canManageLinks && <p className="text-sm mt-1">Click "Link New Supplier" to add one.</p>}
           </div>
         )}
@@ -207,16 +260,16 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
               <div className="space-y-4 py-4">
                 <div>
                   <Label htmlFor="edit-supplied-item">Supplied Item/Component</Label>
-                  <Input id="edit-supplied-item" value={editSuppliedItem} onChange={(e) => setEditSuppliedItem(e.target.value)} />
+                  <Input id="edit-supplied-item" value={editSuppliedItem} onChange={(e) => setEditSuppliedItem(e.target.value)} disabled={!canManageLinks}/>
                 </div>
                 <div>
                   <Label htmlFor="edit-link-notes">Notes (Optional)</Label>
-                  <Textarea id="edit-link-notes" value={editLinkNotes} onChange={(e) => setEditLinkNotes(e.target.value)} />
+                  <Textarea id="edit-link-notes" value={editLinkNotes} onChange={(e) => setEditLinkNotes(e.target.value)} disabled={!canManageLinks}/>
                 </div>
               </div>
               <DialogFooter>
-                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
-                <Button onClick={handleUpdateSupplierLink}>Save Changes</Button>
+                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={!canManageLinks}>Cancel</Button>
+                <Button onClick={handleUpdateSupplierLink} disabled={!canManageLinks}>Save Changes</Button>
               </DialogFooter>
             </DialogContent>
         </Dialog>

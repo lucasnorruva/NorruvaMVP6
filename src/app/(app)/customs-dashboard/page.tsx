@@ -6,7 +6,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, AlertTriangle, ShieldCheck, Package, CheckCircle, Clock, Truck, Ship, Plane, ScanLine, FileText, CalendarDays, Anchor, Warehouse } from "lucide-react";
+import { BarChart3, AlertTriangle, ShieldCheck, Package, CheckCircle, Clock, Truck, Ship, Plane, ScanLine, FileText, CalendarDays, Anchor, Warehouse, ArrowUp, ArrowDown, MinusCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
@@ -17,6 +17,10 @@ const mockTransitProducts = [
   { id: "PROD101", name: "Luxury Handbags Batch B", stage: "Flagged for Inspection (CDG Airport)", eta: "2024-08-03", dppStatus: "Issue - Discrepancy", transport: "Plane", origin: "Milan, IT", destination: "New York, US (Transit EU)"},
   { id: "PROD222", name: "Pharmaceutical Batch Z", stage: "Awaiting Final Clearance (FRA Airport)", eta: "2024-08-06", dppStatus: "Compliant", transport: "Plane", origin: "Zurich, CH", destination: "London, UK"},
   { id: "PROD333", name: "Industrial Machinery Parts", stage: "Customs Declaration Submitted", eta: "2024-08-12", dppStatus: "Pending Review", transport: "Truck", origin: "Prague, CZ", destination: "Madrid, ES"},
+  // Example of an overdue ETA for testing
+  { id: "PROD800", name: "Vintage Electronics Lot", stage: "Delayed at Customs (Antwerp)", eta: "2024-07-25", dppStatus: "Issue - Valuation Query", transport: "Ship", origin: "Hong Kong, HK", destination: "Brussels, BE" },
+  // Example of an ETA for today for testing
+  { id: "PROD801", name: "Fresh Flowers Batch", stage: "Arrived at Airport (AMS)", eta: new Date().toISOString().split('T')[0], dppStatus: "Pending Inspection", transport: "Plane", origin: "Nairobi, KE", destination: "Amsterdam, NL" },
 ];
 
 const mockCustomsAlerts = [
@@ -37,14 +41,14 @@ const mockInspectionTimeline = [
 ];
 
 const MetricCardWidget: React.FC<{title: string, value: string | number, icon: React.ElementType, description?: string, trend?: string, trendDirection?: 'up' | 'down' | 'neutral'}> = ({ title, value, icon: Icon, description, trend, trendDirection }) => {
-  let TrendIcon = Clock; // Default to Clock or a neutral icon if none specified
+  let TrendIconComponent = MinusCircle;
   let trendColor = "text-muted-foreground";
 
   if (trendDirection === "up") {
-    TrendIcon = CheckCircle; // Example, could be ArrowUp
+    TrendIconComponent = ArrowUp;
     trendColor = "text-green-500";
   } else if (trendDirection === "down") {
-    TrendIcon = AlertTriangle; // Example, could be ArrowDown
+    TrendIconComponent = ArrowDown;
     trendColor = "text-red-500";
   }
 
@@ -59,7 +63,7 @@ const MetricCardWidget: React.FC<{title: string, value: string | number, icon: R
             {description && <p className="text-xs text-muted-foreground">{description}</p>}
             {trend && (
               <p className={cn("text-xs mt-1 flex items-center", trendColor)}>
-                <TrendIcon className="h-3.5 w-3.5 mr-1" />
+                <TrendIconComponent className="h-3.5 w-3.5 mr-1" />
                 {trend}
               </p>
             )}
@@ -94,44 +98,68 @@ export default function CustomsDashboardPage() {
                 <TableHead>Current Stage</TableHead>
                 <TableHead>Transport</TableHead>
                 <TableHead>Origin &rarr; Dest.</TableHead>
+                <TableHead>ETA</TableHead>
                 <TableHead>DPP Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockTransitProducts.map((product) => (
-                <TableRow key={product.id} className="hover:bg-muted/30 transition-colors">
-                  <TableCell className="font-medium">{product.id}</TableCell>
-                  <TableCell>{product.name}</TableCell>
-                  <TableCell>{product.stage}</TableCell>
-                  <TableCell className="capitalize flex items-center">
-                    {product.transport === "Ship" && <Ship className="h-4 w-4 mr-1.5 text-blue-500" />}
-                    {product.transport === "Truck" && <Truck className="h-4 w-4 mr-1.5 text-orange-500" />}
-                    {product.transport === "Plane" && <Plane className="h-4 w-4 mr-1.5 text-purple-500" />}
-                    {product.transport}
-                  </TableCell>
-                   <TableCell className="text-xs text-muted-foreground">{product.origin} &rarr; {product.destination}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={
-                        product.dppStatus === "Compliant" ? "default" :
-                        product.dppStatus === "Pending Documentation" || product.dppStatus === "Pending Review" ? "outline" :
-                        "destructive"
-                      }
-                      className={cn(
-                        "text-xs",
-                        product.dppStatus === "Compliant" ? "bg-green-100 text-green-700 border-green-300" :
-                        product.dppStatus === "Pending Documentation" || product.dppStatus === "Pending Review" ? "bg-yellow-100 text-yellow-700 border-yellow-300" :
-                        "bg-red-100 text-red-700 border-red-300" // Issue - Discrepancy
+              {mockTransitProducts.map((product) => {
+                const etaDate = new Date(product.eta);
+                const today = new Date();
+                today.setHours(0, 0, 0, 0); 
+                const isEtaPast = etaDate < today;
+                const isEtaToday = etaDate.toDateString() === today.toDateString();
+
+                return (
+                  <TableRow key={product.id} className="hover:bg-muted/30 transition-colors">
+                    <TableCell className="font-medium">{product.id}</TableCell>
+                    <TableCell>{product.name}</TableCell>
+                    <TableCell>{product.stage}</TableCell>
+                    <TableCell className="capitalize flex items-center">
+                      {product.transport === "Ship" && <Ship className="h-4 w-4 mr-1.5 text-blue-500" />}
+                      {product.transport === "Truck" && <Truck className="h-4 w-4 mr-1.5 text-orange-500" />}
+                      {product.transport === "Plane" && <Plane className="h-4 w-4 mr-1.5 text-purple-500" />}
+                      {product.transport}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">{product.origin} &rarr; {product.destination}</TableCell>
+                    <TableCell>
+                      {isEtaPast ? (
+                        <Badge variant="destructive" className="text-xs">
+                          <AlertTriangle className="mr-1 h-3 w-3" />
+                          Overdue: {etaDate.toLocaleDateString()}
+                        </Badge>
+                      ) : isEtaToday ? (
+                        <Badge variant="outline" className="text-xs bg-yellow-100 text-yellow-700 border-yellow-300">
+                          <Clock className="mr-1 h-3 w-3" />
+                          Due Today: {etaDate.toLocaleDateString()}
+                        </Badge>
+                      ) : (
+                        etaDate.toLocaleDateString()
                       )}
-                    >
-                      {product.dppStatus === "Compliant" && <CheckCircle className="mr-1 h-3 w-3" />}
-                      {(product.dppStatus === "Pending Documentation" || product.dppStatus === "Pending Review") && <Clock className="mr-1 h-3 w-3" />}
-                      {product.dppStatus.startsWith("Issue") && <AlertTriangle className="mr-1 h-3 w-3" />}
-                      {product.dppStatus}
-                    </Badge>
-                  </TableCell>
-                </TableRow>
-              ))}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          product.dppStatus === "Compliant" ? "default" :
+                          product.dppStatus === "Pending Documentation" || product.dppStatus === "Pending Review" ? "outline" :
+                          "destructive"
+                        }
+                        className={cn(
+                          "text-xs",
+                          product.dppStatus === "Compliant" ? "bg-green-100 text-green-700 border-green-300" :
+                          product.dppStatus === "Pending Documentation" || product.dppStatus === "Pending Review" ? "bg-yellow-100 text-yellow-700 border-yellow-300" :
+                          "bg-red-100 text-red-700 border-red-300" 
+                        )}
+                      >
+                        {product.dppStatus === "Compliant" && <CheckCircle className="mr-1 h-3 w-3" />}
+                        {(product.dppStatus === "Pending Documentation" || product.dppStatus === "Pending Review") && <Clock className="mr-1 h-3 w-3" />}
+                        {product.dppStatus.startsWith("Issue") && <AlertTriangle className="mr-1 h-3 w-3" />}
+                        {product.dppStatus}
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent>
@@ -210,7 +238,15 @@ export default function CustomsDashboardPage() {
 
             <Card className="shadow-lg">
             <CardHeader>
-                <CardTitle className="font-headline flex items-center"><AlertTriangle className="mr-2 h-5 w-5 text-destructive"/>Customs Inspection Alerts</CardTitle>
+                <CardTitle className="font-headline flex items-center">
+                    <AlertTriangle className="mr-2 h-5 w-5 text-destructive"/>
+                    Customs Inspection Alerts
+                    {mockCustomsAlerts.length > 0 && (
+                        <Badge variant="destructive" className="ml-2">
+                            {mockCustomsAlerts.length}
+                        </Badge>
+                    )}
+                </CardTitle>
                 <CardDescription>Products currently flagged or requiring attention at customs.</CardDescription>
             </CardHeader>
             <CardContent>

@@ -18,14 +18,6 @@ export default function AuthenticationPage() {
         </Button>
       </div>
 
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Work in Progress</AlertTitle>
-        <AlertDescription>
-          This documentation is currently a placeholder. Detailed information will be added soon.
-        </AlertDescription>
-      </Alert>
-
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Overview</CardTitle>

@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge"; 
-import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook } from "lucide-react";
+import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
@@ -308,6 +308,15 @@ export default function DeveloperPortalPage() {
                   <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getProductResponse}</code></pre>
                 </div>
               )}
+              <div className="mt-4">
+                <Label className="flex items-center font-medium"><Info className="mr-2 h-4 w-4 text-muted-foreground"/>Example cURL Request (Conceptual):</Label>
+                <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto">
+                  <code>
+{`curl -X GET "https://your-norruva-instance.com/api/v1/products/${getProductId || '{productId}'}" \\
+  -H "Authorization: Bearer YOUR_API_KEY"`}
+                  </code>
+                </pre>
+              </div>
             </CardContent>
           </Card>
 
@@ -328,6 +337,15 @@ export default function DeveloperPortalPage() {
                   <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{listProductsResponse}</code></pre>
                 </div>
               )}
+              <div className="mt-4">
+                <Label className="flex items-center font-medium"><Info className="mr-2 h-4 w-4 text-muted-foreground"/>Example cURL Request (Conceptual):</Label>
+                <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto">
+                  <code>
+{`curl -X GET "https://your-norruva-instance.com/api/v1/products?category=Electronics&status=Active" \\
+  -H "Authorization: Bearer YOUR_API_KEY"`}
+                  </code>
+                </pre>
+              </div>
             </CardContent>
           </Card>
 
@@ -356,6 +374,17 @@ export default function DeveloperPortalPage() {
                   <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postLifecycleEventResponse}</code></pre>
                 </div>
               )}
+              <div className="mt-4">
+                <Label className="flex items-center font-medium"><Info className="mr-2 h-4 w-4 text-muted-foreground"/>Example cURL Request (Conceptual):</Label>
+                <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto">
+                  <code>
+{`curl -X POST "https://your-norruva-instance.com/api/v1/products/${postLifecycleEventProductId || '{productId}'}/lifecycle-events" \\
+  -H "Authorization: Bearer YOUR_API_KEY" \\
+  -H "Content-Type: application/json" \\
+  -d '${postLifecycleEventBody}'`}
+                  </code>
+                </pre>
+              </div>
             </CardContent>
           </Card>
 
@@ -380,6 +409,15 @@ export default function DeveloperPortalPage() {
                   <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getComplianceResponse}</code></pre>
                 </div>
               )}
+              <div className="mt-4">
+                <Label className="flex items-center font-medium"><Info className="mr-2 h-4 w-4 text-muted-foreground"/>Example cURL Request (Conceptual):</Label>
+                <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto">
+                  <code>
+{`curl -X GET "https://your-norruva-instance.com/api/v1/products/${getComplianceProductId || '{productId}'}/compliance-summary" \\
+  -H "Authorization: Bearer YOUR_API_KEY"`}
+                  </code>
+                </pre>
+              </div>
             </CardContent>
           </Card>
         </CardContent>

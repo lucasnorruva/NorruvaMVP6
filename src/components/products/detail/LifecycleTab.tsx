@@ -1,10 +1,11 @@
+
 // --- File: LifecycleTab.tsx ---
 // Description: Displays product lifecycle events in a vertical timeline format.
 "use client";
 
 import type { SimpleProductDetail, SimpleLifecycleEvent } from "@/types/dpp";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import * as LucideIcons from "lucide-react"; // Import all icons
@@ -63,7 +64,6 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
     
     let currentLifecycleStageName = "Initial Product Phase"; 
     if (currentIndex > 0) {
-      // Find the last non-upcoming/non-cancelled/non-delayed stage before the target one.
       let previousStageIndex = -1;
       for (let i = currentIndex - 1; i >= 0; i--) {
         if (product.lifecycleEvents[i].status === 'Completed' || product.lifecycleEvents[i].status === 'In Progress') {
@@ -74,7 +74,6 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
       if (previousStageIndex !== -1) {
         currentLifecycleStageName = product.lifecycleEvents[previousStageIndex].eventName;
       } else if (currentIndex > 0) {
-        // Fallback to immediate previous if no better candidate
         currentLifecycleStageName = product.lifecycleEvents[currentIndex -1].eventName;
       }
     } else if (product.lifecycleEvents.length > 0 && currentIndex === 0 && product.lifecycleEvents[0].id === targetEvent.id) {
@@ -93,10 +92,12 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
       toast({
         title: `Compliance Check: Advancing to ${targetEvent.eventName}`,
         description: (
-          <div className="text-sm space-y-1">
+          <div className="text-sm space-y-2"> {/* Increased space-y for better separation */}
             <p className="font-semibold">New Simulated Status: <span className="text-primary">{complianceResult.simulatedOverallStatus}</span></p>
-            <p className="text-xs font-medium mt-1.5">Simulated Report:</p>
-            <p className="text-xs bg-muted p-2 rounded-md whitespace-pre-line">{complianceResult.simulatedReport}</p>
+            <div>
+              <p className="text-sm font-semibold mb-1">Simulated Report:</p> {/* Made label more prominent */}
+              <p className="text-xs bg-muted p-2 rounded-md whitespace-pre-line max-h-40 overflow-y-auto">{complianceResult.simulatedReport}</p> {/* Added max-h and overflow for long reports */}
+            </div>
             <p className="text-xs text-muted-foreground mt-2">(This is a mock advancement. In a real app, product status would update.)</p>
           </div>
         ),
@@ -190,3 +191,4 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
     </Card>
   );
 }
+

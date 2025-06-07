@@ -19,9 +19,18 @@ import { Package, Leaf, ShieldCheck, History, Layers } from 'lucide-react';
 interface ProductContainerProps {
   product: SimpleProductDetail;
   onSupplyChainUpdate: (updatedLinks: ProductSupplyChainLink[]) => void;
+  onSyncEprel: () => Promise<void>;
+  isSyncingEprel: boolean;
+  canSyncEprel: boolean;
 }
 
-export default function ProductContainer({ product, onSupplyChainUpdate }: ProductContainerProps) {
+export default function ProductContainer({ 
+  product, 
+  onSupplyChainUpdate,
+  onSyncEprel,
+  isSyncingEprel,
+  canSyncEprel 
+}: ProductContainerProps) {
   const [activeTab, setActiveTab] = useState("overview");
 
   if (!product) {
@@ -60,7 +69,12 @@ export default function ProductContainer({ product, onSupplyChainUpdate }: Produ
         </TabsContent>
 
         <TabsContent value="compliance" className="mt-6">
-          <ComplianceTab product={product} />
+          <ComplianceTab 
+            product={product} 
+            onSyncEprel={onSyncEprel}
+            isSyncingEprel={isSyncingEprel}
+            canSyncEprel={canSyncEprel}
+          />
         </TabsContent>
 
         <TabsContent value="lifecycle" className="mt-6">
@@ -74,3 +88,4 @@ export default function ProductContainer({ product, onSupplyChainUpdate }: Produ
     </div>
   );
 }
+

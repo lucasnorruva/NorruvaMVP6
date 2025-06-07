@@ -4,6 +4,7 @@
 "use client";
 
 import type { SimpleProductDetail, ComplianceDetailItem, ProductComplianceSummary } from "@/types/dpp";
+import OverallProductCompliance from "@/components/products/OverallProductCompliance"; // Import the sub-component
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -13,66 +14,77 @@ import Link from "next/link";
 
 interface ComplianceTabProps {
   product: SimpleProductDetail;
+  onSyncEprel: () => Promise<void>;
+  isSyncingEprel: boolean;
+  canSyncEprel: boolean;
 }
 
 const getStatusIcon = (status: ComplianceDetailItem['status'] | ProductComplianceSummary['overallStatus'] | ProductComplianceSummary['eprel']['status'] | ProductComplianceSummary['ebsi']['status']) => {
-  switch (status) {
-    case 'Compliant':
-    case 'Registered':
-    case 'Verified':
+  switch (status?.toLowerCase()) {
+    case 'compliant':
+    case 'registered':
+    case 'verified':
+    case 'synced successfully':
       return <ShieldCheck className="h-5 w-5 text-green-500" />;
-    case 'Non-Compliant':
-    case 'Error':
+    case 'non-compliant':
+    case 'error':
+    case 'error during sync':
       return <AlertTriangle className="h-5 w-5 text-red-500" />;
-    case 'Pending':
-    case 'Pending Review':
-    case 'In Progress':
-    case 'Data Incomplete':
+    case 'pending':
+    case 'pending review':
+    case 'in progress':
+    case 'data incomplete':
+    case 'data mismatch':
+    case 'product not found in eprel':
       return <Info className="h-5 w-5 text-yellow-500" />;
-    case 'Not Applicable':
-    case 'N/A':
-    case 'Not Found':
-    case 'Not Verified':
+    case 'not applicable':
+    case 'n/a':
+    case 'not found':
+    case 'not verified':
     default:
       return <Info className="h-5 w-5 text-muted-foreground" />;
   }
 };
 
-const getStatusBadgeVariant = (status: ComplianceDetailItem['status'] | ProductComplianceSummary['overallStatus'] | ProductComplianceSummary['eprel']['status'] | ProductComplianceSummary['ebsi']['status']): "default" | "destructive" | "outline" | "secondary" => {
-  switch (status) {
-    case 'Compliant':
-    case 'Registered':
-    case 'Verified':
+const getStatusBadgeVariant = (status: ComplianceDetailItem['status'] | ProductComplianceSummary['overallStatus'] | ProductComplianceSummary['eprel']['status'] | ProductComplianceSummary['ebsi']['status'] | string): "default" | "destructive" | "outline" | "secondary" => {
+  switch (status?.toLowerCase()) {
+    case 'compliant':
+    case 'registered':
+    case 'verified':
+    case 'synced successfully':
       return "default";
-    case 'Non-Compliant':
-    case 'Error':
+    case 'non-compliant':
+    case 'error':
+    case 'error during sync':
       return "destructive";
-    case 'Pending':
-    case 'Pending Review':
-    case 'In Progress':
-    case 'Data Incomplete':
+    case 'pending':
+    case 'pending review':
+    case 'in progress':
+    case 'data incomplete':
+    case 'data mismatch':
+    case 'product not found in eprel':
       return "outline";
-    case 'Not Applicable':
-    case 'N/A':
-    case 'Not Found':
-    case 'Not Verified':
+    case 'not applicable':
+    case 'n/a':
+    case 'not found':
+    case 'not verified':
     default:
       return "secondary";
   }
 };
 
-const getStatusBadgeClasses = (status: ComplianceDetailItem['status'] | ProductComplianceSummary['overallStatus'] | ProductComplianceSummary['eprel']['status'] | ProductComplianceSummary['ebsi']['status']) => {
-    switch (status) {
-        case 'Compliant': case 'Registered': case 'Verified': return "bg-green-100 text-green-700 border-green-300";
-        case 'Non-Compliant': case 'Error': return "bg-red-100 text-red-700 border-red-300";
-        case 'Pending': case 'Pending Review': case 'In Progress': case 'Data Incomplete': return "bg-yellow-100 text-yellow-700 border-yellow-300";
-        case 'Not Applicable': case 'N/A': case 'Not Found': case 'Not Verified':
+const getStatusBadgeClasses = (status: ComplianceDetailItem['status'] | ProductComplianceSummary['overallStatus'] | ProductComplianceSummary['eprel']['status'] | ProductComplianceSummary['ebsi']['status'] | string) => {
+    switch (status?.toLowerCase()) {
+        case 'compliant': case 'registered': case 'verified': case 'synced successfully': return "bg-green-100 text-green-700 border-green-300";
+        case 'non-compliant': case 'error': case 'error during sync': return "bg-red-100 text-red-700 border-red-300";
+        case 'pending': case 'pending review': case 'in progress': case 'data incomplete': case 'data mismatch': case 'product not found in eprel': return "bg-yellow-100 text-yellow-700 border-yellow-300";
+        case 'not applicable': case 'n/a': case 'not found': case 'not verified':
         default: return "bg-muted text-muted-foreground";
     }
 };
 
 
-export default function ComplianceTab({ product }: ComplianceTabProps) {
+export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, canSyncEprel }: ComplianceTabProps) {
   const summary = product.complianceSummary;
 
   if (!summary) {
@@ -81,29 +93,18 @@ export default function ComplianceTab({ product }: ComplianceTabProps) {
 
   return (
     <div className="space-y-6">
-      <Card className="shadow-sm">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold flex items-center">
-            {getStatusIcon(summary.overallStatus)}
-            <span className="ml-2">Overall Compliance Status</span>
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Badge variant={getStatusBadgeVariant(summary.overallStatus)} className={cn("text-sm", getStatusBadgeClasses(summary.overallStatus))}>
-            {summary.overallStatus}
-          </Badge>
-          {product.keyCompliancePoints && product.keyCompliancePoints.length > 0 && (
-            <ul className="mt-3 text-sm space-y-1 text-muted-foreground">
-              {product.keyCompliancePoints.map((point, idx) => (
-                <li key={idx} className="flex items-center">
-                  <ShieldCheck className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0" />
-                  {point}
-                </li>
-              ))}
-            </ul>
-          )}
-        </CardContent>
-      </Card>
+      <OverallProductCompliance 
+        complianceData={{ // Map SimpleProductDetail compliance to OverallComplianceData
+            gdpr: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('gdpr')) || { status: 'N/A', lastChecked: new Date().toISOString() },
+            eprel: summary.eprel || { status: 'N/A', lastChecked: new Date().toISOString() },
+            ebsiVerified: summary.ebsi || { status: 'N/A', lastChecked: new Date().toISOString() },
+            scip: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('scip')) || { status: 'N/A', lastChecked: new Date().toISOString() },
+            csrd: summary.specificRegulations?.find(r => r.regulationName.toLowerCase().includes('csrd')) || { status: 'N/A', lastChecked: new Date().toISOString() },
+        }}
+        onSyncEprel={onSyncEprel}
+        isSyncingEprel={isSyncingEprel}
+        canSyncEprel={canSyncEprel}
+      />
 
       <div className="grid md:grid-cols-2 gap-6">
         {summary.eprel && (
@@ -182,3 +183,4 @@ export default function ComplianceTab({ product }: ComplianceTabProps) {
     </div>
   );
 }
+

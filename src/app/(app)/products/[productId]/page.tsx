@@ -10,11 +10,13 @@ import { SIMPLE_MOCK_PRODUCTS, USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/d
 import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct } from '@/types/dpp';
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
+import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow';
 
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.productId as string;
   const [product, setProduct] = useState<SimpleProductDetail | null | undefined>(undefined); // undefined for loading state
+  const [isSyncingEprel, setIsSyncingEprel] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -43,11 +45,9 @@ export default function ProductDetailPage() {
               specifications: userProductToDisplay.specifications ? JSON.parse(userProductToDisplay.specifications) : undefined,
               complianceSummary: userProductToDisplay.complianceSummary, 
               lifecycleEvents: userProductToDisplay.lifecycleEvents,
-              // Ensure all fields from SimpleProductDetail are mapped
-              keyCompliancePoints: [], // Add mock or derive if possible
+              keyCompliancePoints: [], 
               materialsUsed: userProductToDisplay.materials ? userProductToDisplay.materials.split(',').map(m => ({name: m.trim()})) : [],
               energyLabelRating: userProductToDisplay.energyLabel,
-              // Add other SimpleProductDetail fields here if they exist in StoredUserProduct
             };
           }
         }
@@ -72,10 +72,9 @@ export default function ProductDetailPage() {
         
         const productIndex = userProducts.findIndex(p => p.id === product.id);
         if (productIndex > -1) {
-          // Merge existing StoredUserProduct with updated supplyChainLinks and lastUpdated
           userProducts[productIndex] = {
-            ...userProducts[productIndex], // Keep existing StoredUserProduct fields
-            supplyChainLinks: updatedLinks, // Update only this part
+            ...userProducts[productIndex], 
+            supplyChainLinks: updatedLinks, 
             lastUpdated: new Date().toISOString(),
           };
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
@@ -96,6 +95,59 @@ export default function ProductDetailPage() {
     }
   };
 
+  const handleSyncEprel = async () => {
+    if (!product || !product.modelNumber) {
+      toast({ title: "Missing Information", description: "Product model number is required to sync with EPREL.", variant: "destructive" });
+      return;
+    }
+    setIsSyncingEprel(true);
+    try {
+      const result = await syncEprelData({
+        productId: product.id,
+        productName: product.productName,
+        modelNumber: product.modelNumber,
+      });
+
+      const updatedProduct = {
+        ...product,
+        complianceSummary: {
+          ...product.complianceSummary,
+          eprel: {
+            ...product.complianceSummary?.eprel,
+            status: result.syncStatus,
+            id: result.eprelId || product.complianceSummary?.eprel?.id,
+            lastChecked: result.lastChecked,
+          },
+           // Ensure overallStatus and ebsi are preserved if they exist
+          overallStatus: product.complianceSummary?.overallStatus || "N/A",
+          ebsi: product.complianceSummary?.ebsi,
+          specificRegulations: product.complianceSummary?.specificRegulations,
+        },
+      };
+      setProduct(updatedProduct as SimpleProductDetail); // Cast needed because complianceSummary is partial earlier
+
+      if (product.id.startsWith("USER_PROD")) {
+        const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+        let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+        const productIndex = userProducts.findIndex(p => p.id === product.id);
+        if (productIndex > -1) {
+          userProducts[productIndex].complianceSummary = updatedProduct.complianceSummary;
+          userProducts[productIndex].lastUpdated = result.lastChecked;
+          localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
+        }
+      }
+      toast({ title: "EPREL Sync", description: result.message, variant: result.syncStatus.toLowerCase().includes('error') || result.syncStatus.toLowerCase().includes('mismatch') ? "destructive" : "default" });
+
+    } catch (error) {
+      toast({ title: "EPREL Sync Error", description: "An unexpected error occurred during EPREL sync.", variant: "destructive" });
+      console.error("EPREL Sync Error:", error);
+    } finally {
+      setIsSyncingEprel(false);
+    }
+  };
+  
+  const canSyncEprel = !!product?.modelNumber;
+
 
   if (product === undefined) { 
     return (
@@ -110,5 +162,14 @@ export default function ProductDetailPage() {
     notFound();
   }
 
-  return <ProductContainer product={product} onSupplyChainUpdate={handleSupplyChainUpdate} />;
+  return (
+    <ProductContainer 
+      product={product} 
+      onSupplyChainUpdate={handleSupplyChainUpdate}
+      onSyncEprel={handleSyncEprel}
+      isSyncingEprel={isSyncingEprel}
+      canSyncEprel={canSyncEprel}
+    />
+  );
 }
+

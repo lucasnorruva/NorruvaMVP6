@@ -1,3 +1,4 @@
+
 // --- File: ComplianceTab.tsx ---
 // Description: Displays compliance-related information for a product.
 "use client";
@@ -32,7 +33,6 @@ const getStatusIcon = (status: ComplianceDetailItem['status'] | ProductComplianc
     case 'N/A':
     case 'Not Found':
     case 'Not Verified':
-      return <Info className="h-5 w-5 text-muted-foreground" />; // Using Info for N/A states too for neutrality
     default:
       return <Info className="h-5 w-5 text-muted-foreground" />;
   }
@@ -94,7 +94,12 @@ export default function ComplianceTab({ product }: ComplianceTabProps) {
           </Badge>
           {product.keyCompliancePoints && product.keyCompliancePoints.length > 0 && (
             <ul className="mt-3 text-sm space-y-1 text-muted-foreground">
-              {product.keyCompliancePoints.map((point, idx) => <li key={idx}>• {point}</li>)}
+              {product.keyCompliancePoints.map((point, idx) => (
+                <li key={idx} className="flex items-center">
+                  <ShieldCheck className="h-4 w-4 mr-2 text-blue-500 flex-shrink-0" />
+                  {point}
+                </li>
+              ))}
             </ul>
           )}
         </CardContent>
@@ -109,7 +114,7 @@ export default function ComplianceTab({ product }: ComplianceTabProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <p>Status: <Badge variant={getStatusBadgeVariant(summary.eprel.status)} className={getStatusBadgeClasses(summary.eprel.status)}>{summary.eprel.status}</Badge></p>
+              <p className="flex items-center">Status: <Badge variant={getStatusBadgeVariant(summary.eprel.status)} className={cn("ml-2", getStatusBadgeClasses(summary.eprel.status))}>{summary.eprel.status}</Badge></p>
               {summary.eprel.id && <p>ID: <span className="font-medium">{summary.eprel.id}</span></p>}
               <p>Last Checked: <span className="font-medium">{new Date(summary.eprel.lastChecked).toLocaleDateString()}</span></p>
               {summary.eprel.url && (
@@ -131,7 +136,7 @@ export default function ComplianceTab({ product }: ComplianceTabProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
-              <p>Status: <Badge variant={getStatusBadgeVariant(summary.ebsi.status)} className={getStatusBadgeClasses(summary.ebsi.status)}>{summary.ebsi.status}</Badge></p>
+              <p className="flex items-center">Status: <Badge variant={getStatusBadgeVariant(summary.ebsi.status)} className={cn("ml-2", getStatusBadgeClasses(summary.ebsi.status))}>{summary.ebsi.status}</Badge></p>
               {summary.ebsi.verificationId && <p className="truncate">Verification ID: <span className="font-medium font-mono text-xs" title={summary.ebsi.verificationId}>{summary.ebsi.verificationId}</span></p>}
                <p>Last Checked: <span className="font-medium">{new Date(summary.ebsi.lastChecked).toLocaleDateString()}</span></p>
               {summary.ebsi.transactionUrl && (

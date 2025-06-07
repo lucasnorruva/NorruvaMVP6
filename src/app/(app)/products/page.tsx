@@ -1,3 +1,4 @@
+
 // --- File: page.tsx (Product Management List) ---
 // Description: Main page for listing and managing all products.
 
@@ -8,7 +9,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, AlertTriangle as AlertTriangleIcon, ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react";
+import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react"; // Removed AlertTriangleIcon as it was unused
 import {
   AlertDialog,
   AlertDialogAction,
@@ -89,6 +90,10 @@ const SortableTableHead: React.FC<{
   );
 };
 
+interface ProductWithCompleteness extends DisplayableProduct {
+  completeness: { score: number; filledFields: number; totalFields: number; missingFields: string[] };
+}
+
 
 export default function ProductsPage() {
   const { currentRole } = useRole();
@@ -141,7 +146,7 @@ export default function ProductsPage() {
     setSortConfig({ key, direction });
   };
 
-  const productsWithCompleteness = useMemo(() => {
+  const productsWithCompleteness: ProductWithCompleteness[] = useMemo(() => {
     return allProducts.map(p => ({
       ...p,
       completeness: calculateDppCompletenessForList(p)
@@ -182,7 +187,7 @@ export default function ProductsPage() {
           valA = a.category || a.productCategory;
           valB = b.category || b.productCategory;
         } else if (sortConfig.key === 'completenessScore') {
-          valA = a.completeness.score; // Sort by the score property of the completeness object
+          valA = a.completeness.score;
           valB = b.completeness.score;
         } else {
           valA = (a as any)[sortConfig.key!];
@@ -339,3 +344,5 @@ export default function ProductsPage() {
     </div>
   );
 }
+
+    

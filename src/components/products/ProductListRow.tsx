@@ -1,3 +1,4 @@
+
 // --- File: ProductListRow.tsx ---
 // Description: Component to render a single row in the Product Management table.
 
@@ -155,3 +156,5 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
     </TableRow>
   );
 }
+
+    

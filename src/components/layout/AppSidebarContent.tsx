@@ -17,7 +17,7 @@ import {
   ListChecks,
   BarChartHorizontal, 
   ClipboardList,
-  // Globe icon removed
+  Globe // Added Globe icon
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import {
@@ -43,7 +43,7 @@ const navItems = [
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
   { href: "/sustainability", label: "Sustainability Reporting", icon: FileText },
   { href: "/sustainability/compare", label: "Compare Sustainability", icon: BarChartHorizontal },
-  // { href: "/dpp-global-tracker", label: "DPP Global Tracker", icon: Globe }, // Item removed
+  { href: "/dpp-global-tracker", label: "DPP Global Tracker", icon: Globe }, // Item re-added
 ];
 
 const secondaryNavItems = [
@@ -146,3 +146,4 @@ export default function AppSidebarContent() {
     </>
   );
 }
+

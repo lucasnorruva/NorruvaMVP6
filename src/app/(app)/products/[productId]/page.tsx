@@ -34,7 +34,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             status: dpp.compliance.eu_espr.status,
             detailsUrl: dpp.compliance.eu_espr.reportUrl,
             verificationId: dpp.compliance.eu_espr.vcId,
-            lastChecked: dpp.metadata.last_updated, // Or a more specific date if available
+            lastChecked: dpp.metadata.last_updated, 
         });
     }
     if (dpp.compliance.esprConformity) {
@@ -59,12 +59,37 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             regulationName: "EU Battery Regulation",
             status: dpp.compliance.battery_regulation.status,
             verificationId: dpp.compliance.battery_regulation.batteryPassportId || dpp.compliance.battery_regulation.vcId,
-            lastChecked: dpp.metadata.last_updated, // Or a specific check date
+            lastChecked: dpp.metadata.last_updated, 
             notes: `Carbon Footprint: ${dpp.compliance.battery_regulation.carbonFootprint?.value || 'N/A'} ${dpp.compliance.battery_regulation.carbonFootprint?.unit || ''}`
         });
     }
     
     const complianceOverallStatus = getOverallComplianceDetails(dpp);
+
+    const keyCompliancePointsPopulated: string[] = [];
+    if (complianceOverallStatus.text && complianceOverallStatus.text.toLowerCase() !== 'n/a' && complianceOverallStatus.text.toLowerCase() !== 'no data') {
+        keyCompliancePointsPopulated.push(`Overall Status: ${complianceOverallStatus.text}`);
+    }
+    if (dpp.ebsiVerification?.status && dpp.ebsiVerification.status.toLowerCase() !== 'n/a') {
+        const ebsiStatusText = dpp.ebsiVerification.status.replace(/_/g, ' ');
+        const capitalizedEbsiStatus = ebsiStatusText.charAt(0).toUpperCase() + ebsiStatusText.slice(1);
+        keyCompliancePointsPopulated.push(`EBSI Status: ${capitalizedEbsiStatus}`);
+    }
+    
+    let specificRegCount = 0;
+    specificRegulations.forEach(reg => {
+        if (specificRegCount < 2 && (reg.status.toLowerCase() === 'compliant' || reg.status.toLowerCase() === 'pending' || reg.status.toLowerCase() === 'pending_review' || reg.status.toLowerCase() === 'registered' || reg.status.toLowerCase() === 'conformant')) {
+            const regStatusText = reg.status.replace(/_/g, ' ');
+            const capitalizedRegStatus = regStatusText.charAt(0).toUpperCase() + regStatusText.slice(1);
+            keyCompliancePointsPopulated.push(`${reg.regulationName}: ${capitalizedRegStatus}`);
+            specificRegCount++;
+        }
+    });
+
+    if (keyCompliancePointsPopulated.length === 0 && specificRegulations.length > 0) {
+        keyCompliancePointsPopulated.push("Review Compliance tab for regulation details.");
+    }
+
 
     return {
         id: dpp.id,
@@ -78,9 +103,10 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         imageUrl: dpp.productDetails?.imageUrl,
         imageHint: dpp.productDetails?.imageHint,
         keySustainabilityPoints: dpp.productDetails?.sustainabilityClaims?.map(c => c.claim).filter(Boolean),
+        keyCompliancePoints: keyCompliancePointsPopulated,
         specifications: dpp.productDetails?.materials ? 
             Object.fromEntries(dpp.productDetails.materials.map((m, i) => [`material_${i+1}`, `${m.name} (${m.percentage || 'N/A'}%)`]))
-            : undefined, // Basic spec mapping, can be expanded
+            : undefined, 
         complianceSummary: {
             overallStatus: complianceOverallStatus.text as ProductComplianceSummary['overallStatus'],
             eprel: dpp.compliance.eprel ? {
@@ -102,7 +128,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             date: event.timestamp,
             location: event.location,
             notes: event.data ? `Data: ${JSON.stringify(event.data)}` : (event.responsibleParty ? `Responsible: ${event.responsibleParty}` : undefined),
-            status: event.transactionHash ? 'Completed' : 'In Progress', // Example mapping
+            status: event.transactionHash ? 'Completed' : 'In Progress', 
             iconName: event.type.toLowerCase().includes('manufactur') ? 'Factory' : 
                       event.type.toLowerCase().includes('ship') ? 'Truck' : 
                       event.type.toLowerCase().includes('quality') || event.type.toLowerCase().includes('certif') ? 'ShieldCheck' : 
@@ -129,50 +155,62 @@ export default function ProductDetailPage() {
     if (productId) {
       let foundProduct: SimpleProductDetail | undefined;
       
-      // 1. Check localStorage for user-created products
       if (productId.startsWith("USER_PROD")) {
         const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
         if (storedProductsString) {
           const userProducts: StoredUserProduct[] = JSON.parse(storedProductsString);
           const userProductToDisplay = userProducts.find(p => p.id === productId);
           if (userProductToDisplay) {
-            // This mapping can be further refined if StoredUserProduct and DigitalProductPassport diverge significantly
-            const complianceSummary: ProductComplianceSummary = userProductToDisplay.complianceSummary || {
-              overallStatus: "N/A",
-              eprel: { status: "N/A", lastChecked: new Date().toISOString() },
-              ebsi: { status: "N/A", lastChecked: new Date().toISOString() },
-              specificRegulations: [],
-            };
-
-            foundProduct = {
+            
+            // Convert StoredUserProduct to a structure that can be mapped by mapDppToSimpleProductDetail
+            // This involves creating a temporary DigitalProductPassport-like object
+            const tempDppForMapping: Partial<DigitalProductPassport> = {
               id: userProductToDisplay.id,
               productName: userProductToDisplay.productName || "N/A",
               category: userProductToDisplay.productCategory || "N/A",
-              status: (userProductToDisplay.status as SimpleProductDetail['status']) || "Draft",
-              manufacturer: userProductToDisplay.manufacturer,
-              gtin: userProductToDisplay.gtin,
+              manufacturer: { name: userProductToDisplay.manufacturer || "N/A" },
               modelNumber: userProductToDisplay.modelNumber,
-              description: userProductToDisplay.productDescription,
-              imageUrl: userProductToDisplay.imageUrl,
-              imageHint: userProductToDisplay.imageHint,
-              keySustainabilityPoints: userProductToDisplay.sustainabilityClaims?.split('\n').map(s => s.trim()).filter(Boolean) || [],
-              specifications: userProductToDisplay.specifications ? JSON.parse(userProductToDisplay.specifications) : undefined,
-              complianceSummary: complianceSummary, 
-              lifecycleEvents: userProductToDisplay.lifecycleEvents,
-              keyCompliancePoints: [], 
-              materialsUsed: userProductToDisplay.materials ? userProductToDisplay.materials.split(',').map(m => ({name: m.trim()})) : [],
-              energyLabelRating: userProductToDisplay.energyLabel,
+              gtin: userProductToDisplay.gtin,
+              metadata: {
+                status: (userProductToDisplay.status?.toLowerCase() as DigitalProductPassport['metadata']['status']) || 'draft',
+                last_updated: userProductToDisplay.lastUpdated || new Date().toISOString(),
+              },
+              productDetails: {
+                description: userProductToDisplay.productDescription,
+                imageUrl: userProductToDisplay.imageUrl,
+                imageHint: userProductToDisplay.imageHint,
+                sustainabilityClaims: userProductToDisplay.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
+                materials: userProductToDisplay.materials?.split(',').map(m => ({ name: m.trim() })) || [], // Basic mapping
+                energyLabel: userProductToDisplay.energyLabel,
+              },
+              // Basic compliance mapping, expand if StoredUserProduct has richer compliance
+              compliance: {
+                eprel: userProductToDisplay.complianceSummary?.eprel,
+                // Add other specific regulations here if StoredUserProduct has them
+              },
+              ebsiVerification: userProductToDisplay.complianceSummary?.ebsi ? {
+                status: userProductToDisplay.complianceSummary.ebsi.status as EbsiVerificationDetails['status'], // Cast might be needed
+                verificationId: userProductToDisplay.complianceSummary.ebsi.verificationId,
+                lastChecked: userProductToDisplay.complianceSummary.ebsi.lastChecked,
+              } : undefined,
+              lifecycleEvents: userProductToDisplay.lifecycleEvents?.map(e => ({
+                  id: e.id,
+                  type: e.eventName,
+                  timestamp: e.date,
+                  location: e.location,
+                  data: e.notes ? { notes: e.notes } : undefined,
+                  // transactionHash mapping if available
+              })),
               supplyChainLinks: userProductToDisplay.supplyChainLinks || [],
             };
+            foundProduct = mapDppToSimpleProductDetail(tempDppForMapping as DigitalProductPassport);
           }
         }
       } else {
-        // 2. Check MOCK_DPPS (used by Live Dashboard) and map it
         const dppFromMocks = MOCK_DPPS.find(dpp => dpp.id === productId);
         if (dppFromMocks) {
             foundProduct = mapDppToSimpleProductDetail(dppFromMocks);
         } else {
-            // 3. Fallback to SIMPLE_MOCK_PRODUCTS (original source for this page)
             foundProduct = SIMPLE_MOCK_PRODUCTS.find(p => p.id === productId);
         }
       }
@@ -215,8 +253,6 @@ export default function ProductDetailPage() {
         console.error("Error saving supply chain to localStorage:", error);
       }
     } else {
-        // For MOCK_DPPS or SIMPLE_MOCK_PRODUCTS, changes are session-only
-        // Optionally update MOCK_DPPS in memory if needed for consistent session behavior, though not persisted
         const mockDppIndex = MOCK_DPPS.findIndex(dpp => dpp.id === product.id);
         if (mockDppIndex > -1) {
             MOCK_DPPS[mockDppIndex].supplyChainLinks = updatedLinks;
@@ -267,7 +303,6 @@ export default function ProductDetailPage() {
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
         }
       } else {
-        // Update in-memory MOCK_DPPS for session consistency
         const mockDppIndex = MOCK_DPPS.findIndex(dpp => dpp.id === product.id);
         if (mockDppIndex > -1 && MOCK_DPPS[mockDppIndex].compliance) {
             MOCK_DPPS[mockDppIndex].compliance.eprel = updatedProductData.complianceSummary?.eprel;
@@ -312,3 +347,4 @@ export default function ProductDetailPage() {
 }
 
     
+

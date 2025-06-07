@@ -187,4 +187,3 @@ export async function handleSuggestSpecificationsAI(
     setLoadingState(false);
   }
 }
-

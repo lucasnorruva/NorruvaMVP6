@@ -33,7 +33,7 @@ import {
   handleSuggestDescriptionAI,
   handleSuggestClaimsAI,
   handleGenerateImageAI,
-} from "@/utils/aiFormHelpers.tsx";
+} from "@/utils/aiFormHelpers"; // Updated import to .tsx
 
 const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
@@ -47,6 +47,7 @@ const formSchema = z.object({
   energyLabel: z.string().optional(),
   productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
   imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")),
+  imageHint: z.string().optional(), // Added imageHint to schema
   batteryChemistry: z.string().optional(),
   stateOfHealth: z.coerce.number().nullable().optional(),
   carbonFootprintManufacturing: z.coerce.number().nullable().optional(),
@@ -56,11 +57,11 @@ const formSchema = z.object({
 export type ProductFormData = z.infer<typeof formSchema>;
 
 interface ProductFormProps {
-  id?: string; // For form ID if not standalone
-  initialData?: Partial<InitialProductFormData & { productCategory?: string; imageUrl?: string }>;
+  id?: string; 
+  initialData?: Partial<InitialProductFormData>; // Updated to InitialProductFormData
   onSubmit: (data: ProductFormData) => Promise<void>;
   isSubmitting?: boolean;
-  isStandalonePage?: boolean; // True if this form is the main content of a page
+  isStandalonePage?: boolean; 
 }
 
 const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' | 'manual', fieldName: string }) => {
@@ -72,7 +73,7 @@ const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' 
             <Cpu className="h-4 w-4 text-info" />
           </TooltipTrigger>
           <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
+            <p>This {fieldName.toLowerCase()} was suggested by AI document extraction.</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -97,6 +98,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       energyLabel: initialData?.energyLabel || "",
       productCategory: initialData?.productCategory || "",
       imageUrl: initialData?.imageUrl || "",
+      imageHint: initialData?.imageHint || "",
       batteryChemistry: initialData?.batteryChemistry || "",
       stateOfHealth: initialData?.stateOfHealth ?? undefined,
       carbonFootprintManufacturing: initialData?.carbonFootprintManufacturing ?? undefined,
@@ -110,7 +112,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   const [isSuggestingDescription, setIsSuggestingDescription] = useState(false);
   const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(initialData?.imageUrl || null);
+  
+  // currentImageUrl state is managed inside ProductImageFormSection now
 
   React.useEffect(() => {
     if (initialData) {
@@ -126,12 +129,12 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         energyLabel: initialData.energyLabel || "",
         productCategory: initialData.productCategory || "",
         imageUrl: initialData.imageUrl || "",
+        imageHint: initialData.imageHint || "",
         batteryChemistry: initialData.batteryChemistry || "",
         stateOfHealth: initialData.stateOfHealth ?? undefined,
         carbonFootprintManufacturing: initialData.carbonFootprintManufacturing ?? undefined,
         recycledContentPercentage: initialData.recycledContentPercentage ?? undefined,
       });
-      setCurrentImageUrl(initialData.imageUrl || null);
     }
   }, [initialData, form]);
 
@@ -139,7 +142,6 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     const result = await handleSuggestNameAI(form, toast, setIsSuggestingName);
     if (result) {
         form.setValue("productName", result, { shouldValidate: true });
-        if (initialData) (initialData as InitialProductFormData).productNameOrigin = 'AI_EXTRACTED';
     }
   };
 
@@ -147,7 +149,6 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     const result = await handleSuggestDescriptionAI(form, toast, setIsSuggestingDescription);
      if (result) {
         form.setValue("productDescription", result, { shouldValidate: true });
-        if (initialData) (initialData as InitialProductFormData).productDescriptionOrigin = 'AI_EXTRACTED';
     }
   };
   
@@ -160,17 +161,10 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     }
   };
 
-  const handleImageGenerated = (newImageUrl: string) => {
-    form.setValue("imageUrl", newImageUrl, { shouldValidate: true });
-    setCurrentImageUrl(newImageUrl);
-    if (initialData) (initialData as InitialProductFormData).imageUrlOrigin = 'AI_EXTRACTED';
-  };
-
   const handleClaimClick = (claim: string) => {
     const currentClaimsValue = form.getValues("sustainabilityClaims") || "";
     const newClaimsValue = currentClaimsValue ? `${currentClaimsValue}\n- ${claim}` : `- ${claim}`;
     form.setValue("sustainabilityClaims", newClaimsValue, { shouldValidate: true });
-    if (initialData) (initialData as InitialProductFormData).sustainabilityClaimsOrigin = 'AI_EXTRACTED';
   };
   
   const anyAISuggestionInProgress = isSuggestingName || isSuggestingDescription || isSuggestingClaims || isGeneratingImage;
@@ -211,14 +205,13 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         <AccordionTrigger className="text-lg font-semibold">Product Image</AccordionTrigger>
         <AccordionContent className="pt-4">
           <ProductImageFormSection
-            currentImageUrl={currentImageUrl}
             form={form}
-            onImageGenerated={handleImageGenerated}
-            isGenerating={isGeneratingImage}
-            setIsGenerating={setIsGeneratingImage}
             aiImageHelper={handleGenerateImageAI} 
             initialImageUrlOrigin={initialData?.imageUrlOrigin}
             toast={toast}
+            isGeneratingImageState={isGeneratingImage}
+            setIsGeneratingImageState={setIsGeneratingImage}
+            initialImageUrl={initialData?.imageUrl}
           />
         </AccordionContent>
       </AccordionItem>
@@ -256,7 +249,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="font-headline">Product Information</CardTitle>
-              <CardDescription>Fill in the details. AI suggestions are marked with a <Cpu className="inline h-4 w-4 text-info align-middle" /> icon.</CardDescription>
+              <CardDescription>Fill in the details. AI suggestions from document extraction are marked with a <Cpu className="inline h-4 w-4 text-info align-middle" /> icon.</CardDescription>
             </CardHeader>
             <CardContent>{formContent}</CardContent>
           </Card>
@@ -269,7 +262,6 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     );
   }
 
-  // This case is for when the form is embedded, e.g. in a dialog
   return (
      <Form {...form}>
         <form id={id} onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">{formContent}</form>

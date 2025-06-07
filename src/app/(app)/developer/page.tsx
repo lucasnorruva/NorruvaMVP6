@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge"; 
-import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon } from "lucide-react";
+import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
@@ -90,6 +90,55 @@ const MOCK_COMPLIANCE_SUMMARIES: Record<string, any> = {
         nextReviewDate: "2024-08-15"
     }
 }
+
+const mockCodeSamples = [
+  { 
+    id: "sample1", 
+    title: "Fetching a Product Passport (Python)", 
+    description: "A Python script demonstrating how to authenticate and retrieve a DPP using its ID.", 
+    linkText: "View on GitHub (Mock)", 
+    icon: FileCode 
+  },
+  { 
+    id: "sample2", 
+    title: "Creating a New DPP with Battery Data (Node.js)", 
+    description: "Node.js example for creating a new product passport, including specific fields for EU Battery Regulation.", 
+    linkText: "View Snippet (Mock)", 
+    icon: FileCode 
+  },
+  { 
+    id: "sample3", 
+    title: "Validating a QR Identifier (Java)", 
+    description: "Java code snippet for using the QR validation endpoint to get product summary information.", 
+    linkText: "View on GitHub (Mock)", 
+    icon: FileCode 
+  },
+];
+
+const mockTutorials = [
+  { 
+    id: "tut1", 
+    title: "Step-by-Step: Integrating DPP QR Scanning into a Retail App", 
+    description: "Learn how to use the Norruva API to allow consumers to scan QR codes and view product passports directly in your application.", 
+    linkText: "Read Tutorial (Mock)", 
+    icon: BookText 
+  },
+  { 
+    id: "tut2", 
+    title: "Automating Compliance Updates with Webhooks", 
+    description: "A guide on setting up webhooks to receive real-time notifications for DPP status changes or new compliance requirements.", 
+    linkText: "Read Tutorial (Mock)", 
+    icon: BookText 
+  },
+  { 
+    id: "tut3", 
+    title: "Best Practices for Managing DPP Data via API", 
+    description: "Explore strategies for efficiently managing large volumes of product data, versioning DPPs, and ensuring data accuracy through API integrations.", 
+    linkText: "Read Tutorial (Mock)", 
+    icon: BookText 
+  },
+];
+
 
 export default function DeveloperPortalPage() {
   const { toast } = useToast();
@@ -554,23 +603,37 @@ export default function DeveloperPortalPage() {
               </ul>
               <p className="text-xs text-muted-foreground mt-2">Official SDKs are under development. Check back soon for updates.</p>
             </div>
-            <div className="space-y-3">
-              <div id="code-samples">
-                  <h4 className="font-semibold mb-1">Code Samples &amp; Templates</h4>
-                  <p className="text-sm text-muted-foreground">Access a library of code snippets and project templates for common integration scenarios like DPP creation, event logging, and compliance checks.</p>
-                  <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
-                    <Link href="#code-samples">Browse Code Samples (Mock)</Link>
-                  </Button>
+            <div className="space-y-5">
+              <div id="code-samples" className="space-y-3">
+                <h4 className="font-semibold text-md flex items-center"><FileCode className="mr-2 h-5 w-5 text-accent"/>Code Samples & Templates</h4>
+                <p className="text-sm text-muted-foreground -mt-2">
+                  Access a library of code snippets and project templates for common integration scenarios.
+                </p>
+                {mockCodeSamples.map(sample => (
+                  <div key={sample.id} className="p-3 border rounded-md bg-muted/30">
+                    <h5 className="text-sm font-medium text-foreground mb-0.5 flex items-center"><sample.icon className="mr-2 h-4 w-4 text-primary/80"/>{sample.title}</h5>
+                    <p className="text-xs text-muted-foreground mb-1.5">{sample.description}</p>
+                    <Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs" disabled>{sample.linkText}</Button>
+                  </div>
+                ))}
               </div>
-              <div id="tutorials">
-                  <h4 className="font-semibold mb-1">Tutorials</h4>
-                  <p className="text-sm text-muted-foreground">Follow step-by-step guides to implement specific DPP functionalities and use cases, such as blockchain anchoring or battery passport data submission.</p>
-                  <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
-                    <Link href="#tutorials">View Tutorials (Mock)</Link>
-                  </Button>
+              
+              <div id="tutorials" className="space-y-3 pt-4 border-t">
+                 <h4 className="font-semibold text-md flex items-center"><BookText className="mr-2 h-5 w-5 text-accent"/>Tutorials</h4>
+                 <p className="text-sm text-muted-foreground -mt-2">
+                  Follow step-by-step guides to implement specific DPP functionalities and use cases.
+                </p>
+                {mockTutorials.map(tutorial => (
+                  <div key={tutorial.id} className="p-3 border rounded-md bg-muted/30">
+                    <h5 className="text-sm font-medium text-foreground mb-0.5 flex items-center"><tutorial.icon className="mr-2 h-4 w-4 text-primary/80"/>{tutorial.title}</h5>
+                    <p className="text-xs text-muted-foreground mb-1.5">{tutorial.description}</p>
+                    <Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs" disabled>{tutorial.linkText}</Button>
+                  </div>
+                ))}
               </div>
-              <div>
-                  <h4 className="font-semibold mb-1">GitHub Integration</h4>
+              
+              <div className="pt-4 border-t">
+                  <h4 className="font-semibold text-md mb-1">GitHub Integration</h4>
                   <p className="text-sm text-muted-foreground">Explore our open-source repositories, contribute to the ecosystem, find community projects, and raise issues related to our SDKs or platform.</p>
                   <Button variant="link" className="p-0 h-auto text-primary hover:underline" asChild>
                     <Link href="#" target="_blank" rel="noopener noreferrer">Norruva on GitHub (Mock) <ExternalLinkIcon className="inline h-3 w-3 ml-1" /></Link>
@@ -700,3 +763,4 @@ export default function DeveloperPortalPage() {
 }
 
     
+

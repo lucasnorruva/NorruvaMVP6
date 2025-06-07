@@ -6,16 +6,16 @@
 import { useEffect, useState } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import ProductContainer from '@/components/products/detail/ProductContainer';
-import { SIMPLE_MOCK_PRODUCTS, USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
-import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct } from '@/types/dpp'; // Added StoredUserProduct
+import { SIMPLE_MOCK_PRODUCTS, USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp'; // Corrected import
+import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct } from '@/types/dpp';
 import { Loader2 } from 'lucide-react';
-import { useToast } from "@/hooks/use-toast"; // Added useToast
+import { useToast } from "@/hooks/use-toast";
 
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.productId as string;
   const [product, setProduct] = useState<SimpleProductDetail | null | undefined>(undefined); // undefined for loading state
-  const { toast } = useToast(); // Added toast
+  const { toast } = useToast();
 
   useEffect(() => {
     if (productId) {
@@ -28,26 +28,21 @@ export default function ProductDetailPage() {
           const userProductToDisplay = userProducts.find(p => p.id === productId);
           if (userProductToDisplay) {
             // Map StoredUserProduct to SimpleProductDetail for display
-            // This mapping might need to be more comprehensive based on actual StoredUserProduct structure
             foundProduct = {
               id: userProductToDisplay.id,
               productName: userProductToDisplay.productName || "N/A",
-              category: userProductToDisplay.productCategory || "N/A", // Assuming productCategory maps to category
+              category: userProductToDisplay.productCategory || "N/A",
               status: userProductToDisplay.status as SimpleProductDetail['status'] || "Draft",
               manufacturer: userProductToDisplay.manufacturer,
               gtin: userProductToDisplay.gtin,
               modelNumber: userProductToDisplay.modelNumber,
-              description: userProductToDisplay.productDescription, // Assuming productDescription maps to description
+              description: userProductToDisplay.productDescription,
               imageUrl: userProductToDisplay.imageUrl,
-              // imageHint: userProductToDisplay.imageHint, // Add if StoredUserProduct has it
-              // keySustainabilityPoints: userProductToDisplay.sustainabilityClaims?.split('\n').filter(s => s.trim() !== ''), // Example mapping
-              // keyCompliancePoints: [], // Example mapping
-              // specifications: userProductToDisplay.specifications ? JSON.parse(userProductToDisplay.specifications) : {}, // Example mapping
-              materialsUsed: userProductToDisplay.materials ? [{ name: userProductToDisplay.materials }] : [], // Simplified mapping
-              energyLabelRating: userProductToDisplay.energyLabel,
-              supplyChainLinks: userProductToDisplay.supplyChainLinks || [], // Ensure this exists on StoredUserProduct or SimpleProductDetail
-              // Add other fields from StoredUserProduct to SimpleProductDetail as needed
-              // For now, focusing on supplyChainLinks
+              // Map other relevant fields from StoredUserProduct to SimpleProductDetail
+              // For now, focusing on fields needed for already implemented tabs and supply chain
+              supplyChainLinks: userProductToDisplay.supplyChainLinks || [],
+              // You might need to construct complianceSummary and lifecycleEvents from StoredUserProduct
+              // if they are managed there. For now, they might be undefined for USER_PROD if not explicitly mapped.
             };
           }
         }
@@ -55,7 +50,7 @@ export default function ProductDetailPage() {
       
       setTimeout(() => {
         setProduct(foundProduct || null);
-      }, 300);
+      }, 300); // Simulate fetch delay
     }
   }, [productId]);
 
@@ -74,7 +69,7 @@ export default function ProductDetailPage() {
           userProducts[productIndex] = {
             ...userProducts[productIndex],
             supplyChainLinks: updatedLinks,
-            lastUpdated: new Date().toISOString(), // Update lastUpdated timestamp
+            lastUpdated: new Date().toISOString(),
           };
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
           toast({
@@ -83,12 +78,14 @@ export default function ProductDetailPage() {
             variant: "default",
           });
         } else {
-           toast({ title: "Error", description: "Could not find product in local storage to update.", variant: "destructive" });
+           toast({ title: "Error Updating Storage", description: "Could not find product in local storage to update supply chain.", variant: "destructive" });
         }
       } catch (error) {
         toast({ title: "Storage Error", description: "Failed to save supply chain updates to local storage.", variant: "destructive" });
-        console.error("Error saving to localStorage:", error);
+        console.error("Error saving supply chain to localStorage:", error);
       }
+    } else {
+        toast({ title: "Supply Chain Updated (Session Only)", description: "Supply chain links updated for this session (mock product).", variant: "default" });
     }
   };
 
@@ -108,3 +105,5 @@ export default function ProductDetailPage() {
 
   return <ProductContainer product={product} onSupplyChainUpdate={handleSupplyChainUpdate} />;
 }
+
+    

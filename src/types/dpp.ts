@@ -3,6 +3,11 @@
 // Description: TypeScript type definitions for Digital Product Passports and related entities.
 import type { LucideIcon } from 'lucide-react'; // Retained for SimpleLifecycleEvent iconName
 
+// Local storage keys
+export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
+export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
+
+
 // Interface for a single lifecycle event
 export interface LifecycleEvent {
   id: string;
@@ -255,7 +260,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         status: "pending",
         carbonFootprint: { value: 120, unit: "kg CO2e/kWh" },
         recycledContent: [{ material: "Cobalt", percentage: 15 }],
-        stateOfHealth: {value: 98, unit: "%", measurementDate: "2024-07-28"}
+        stateOfHealth: {value: number; unit: '%'; measurementDate: string; vcId?: string};
+        vcId?: string;
       },
       eu_espr: { status: "pending" },
     },
@@ -511,10 +517,43 @@ export interface Supplier {
   lastUpdated: string;
 }
 
-export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
+// This was already defined in useDPPLiveData.ts, ensure it's here or imported if needed globally.
+// export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
+
 export const MOCK_SUPPLIERS: Supplier[] = [
   { id: "SUP001", name: "GreenCompress Ltd.", contactPerson: "Sarah Miller", email: "sarah.miller@greencompress.com", location: "Stuttgart, Germany", materialsSupplied: "Eco-friendly compressors, Cooling units", status: "Active", lastUpdated: "2024-07-15T10:00:00Z" },
   { id: "SUP002", name: "RecycleSteel Corp.", contactPerson: "John Davis", email: "jdavis@recyclesteel.com", location: "Rotterdam, Netherlands", materialsSupplied: "Recycled steel panels, Stainless steel components", status: "Active", lastUpdated: "2024-06-20T14:30:00Z" },
   { id: "SUP003", name: "Organic Textiles Co.", contactPerson: "Aisha Khan", email: "akhan@organictextiles.com", location: "Coimbatore, India", materialsSupplied: "GOTS certified organic cotton yarn, Natural dyes", status: "Active", lastUpdated: "2024-07-01T09:00:00Z" },
   { id: "SUP004", name: "PolySolutions Inc.", contactPerson: "Mike Chen", email: "chen.m@polysolutions.com", location: "Shanghai, China", materialsSupplied: "Recycled PET pellets, Bio-polymers, LED Chips & Drivers", status: "Pending Review", lastUpdated: "2024-05-10T11:00:00Z" },
 ];
+
+// DisplayableProduct type for Product Listing page, ensure it's compatible with calculateDppCompleteness
+// This might need to be reconciled with StoredUserProduct if they diverge too much or consolidated.
+export interface DisplayableProduct {
+  id: string;
+  productId?: string; // From mock, same as id
+  productName?: string;
+  category?: string; // From mock
+  productCategory?: string; // From StoredUserProduct/ProductFormDataType
+  status: string;
+  compliance: string;
+  lastUpdated: string;
+  gtin?: string;
+  manufacturer?: string;
+  modelNumber?: string;
+  description?: string; // From mock
+  productDescription?: string; // From StoredUserProduct/ProductFormDataType
+  imageUrl?: string;
+  materials?: string; // From StoredUserProduct/ProductFormDataType (simple text for now)
+  sustainabilityClaims?: string; // From StoredUserProduct/ProductFormDataType (simple text for now)
+  energyLabel?: string; // Could be from mock or StoredUserProduct
+  specifications?: Record<string, string> | string; // mock is Record, Stored is string (JSON)
+  lifecycleEvents?: Array<any>; // From mock
+  complianceData?: Record<string, any>; // From mock
+  batteryChemistry?: string; // From StoredUserProduct or mock productDetails
+  stateOfHealth?: number | null;
+  carbonFootprintManufacturing?: number | null;
+  recycledContentPercentage?: number | null;
+}
+
+    

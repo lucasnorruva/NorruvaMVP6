@@ -316,7 +316,7 @@ export default function PublicPassportPage({ params }: Props) {
             )}
 
             <div className="mt-8 pt-6 border-t border-border">
-                 <Card className="md:col-span-2 lg:col-span-1 border-0 shadow-none">
+                 <Card className="border-0 shadow-none"> {/* Removed md:col-span-2 lg:col-span-1 for full width */}
                     <CardHeader className="px-0 pt-0 pb-4">
                     <CardTitle className="text-xl text-primary flex items-center">
                         <Fingerprint className="mr-2 h-6 w-6" /> Blockchain &amp; EBSI Verification
@@ -324,33 +324,31 @@ export default function PublicPassportPage({ params }: Props) {
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm px-0 pb-0">
                     {product.anchorTransactionHash && (
-                        <div className="flex flex-col">
-                        <span className="text-muted-foreground">Product Record Hash:</span>
-                        
-                        <span className="font-mono text-xs break-all text-foreground truncate" title={product.anchorTransactionHash}>
-                          {product.anchorTransactionHash}
-                        </span>
-                        
+                        <div className="flex flex-col mb-2">
+                            <span className="text-xs text-muted-foreground">Product Record Hash:</span>
+                            <span className="font-mono text-xs break-all text-foreground/90" title={product.anchorTransactionHash}>
+                            {product.anchorTransactionHash}
+                            </span>
                         </div>
                     )}
                     {product.blockchainPlatform && (
-                        <div className="flex flex-col">
-                        <span className="text-muted-foreground">Platform:</span>
-                        <span className="text-foreground">{product.blockchainPlatform}</span>
+                        <div className="flex flex-col mb-2">
+                            <span className="text-xs text-muted-foreground">Platform:</span>
+                            <span className="text-foreground/90">{product.blockchainPlatform}</span>
                         </div>
                     )}
                     {product.ebsiStatus && (
-                        <div className="flex flex-col">
-                            <span className="text-muted-foreground">EBSI Verification Status:</span>
-                            <div className="flex items-center">
+                        <div className="flex flex-col mb-2">
+                            <span className="text-xs text-muted-foreground">EBSI Verification Status:</span>
+                            <div className="flex items-center mt-0.5">
                                 {getEbsiStatusBadge(product.ebsiStatus)}
                             </div>
                         </div>
                     )}
                     {product.ebsiStatus === 'verified' && product.ebsiVerificationId && (
                         <div className="flex flex-col">
-                            <span className="text-muted-foreground">EBSI Verification ID:</span>
-                            <span className="font-mono text-xs text-foreground break-all">{product.ebsiVerificationId}</span>
+                            <span className="text-xs text-muted-foreground">EBSI Verification ID:</span>
+                            <span className="font-mono text-xs text-foreground/90 break-all">{product.ebsiVerificationId}</span>
                         </div>
                     )}
                     {(!product.anchorTransactionHash && !product.ebsiStatus) && (
@@ -368,7 +366,9 @@ export default function PublicPassportPage({ params }: Props) {
                     <p className="text-sm font-semibold text-info mb-2">Auditor View: Access detailed compliance records and initiate audits via the main dashboard.</p>
                   )}
                    {currentRole === 'manufacturer' && product.ebsiStatus === 'pending' && (
-                    <p className="text-sm text-orange-600 mb-2">Action Required: EBSI verification for this product is pending. Please review and complete necessary steps through your dashboard.</p>
+                    <p className="text-sm text-orange-600 mb-2">
+                      <strong>Action Required:</strong> EBSI verification for this product is pending. Please review and complete necessary steps through your dashboard.
+                    </p>
                   )}
                   <p className="text-foreground">{product.complianceSummary}</p>
                   {product.learnMoreLink && (

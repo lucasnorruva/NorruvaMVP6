@@ -5,7 +5,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Globe, { type GlobeMethods } from 'react-globe.gl';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { X, Zap, MapPin, Anchor, Store, Factory, Ship, Plane, Truck, Info, Loader2, CheckCircle as CheckCircleIcon, Clock as ClockIcon } from 'lucide-react'; // Renamed CheckCircle and Clock to avoid conflict
+import { Badge } from '@/components/ui/badge'; // Added Badge import
+import { X, Zap, MapPin, Anchor, Store, Factory, Ship, Plane, Truck, Info, Loader2, CheckCircle as CheckCircleIcon, Clock as ClockIcon } from 'lucide-react';
 import { feature } from 'topojson-client';
 import type { Objects, Topology } from 'topojson-specification';
 import type { FeatureCollection, Geometry } from 'geojson';
@@ -42,10 +43,10 @@ interface SelectedInfo {
 }
 
 const mockPoints: PointData[] = [
-  { id: 'pt1', lat: 34.0522, lng: -118.2437, size: 0.1, color: 'rgba(60, 120, 216, 0.85)', name: 'Los Angeles Port', type: 'port', details: 'Major US West Coast port, key entry for Asian goods.', country: 'USA' }, // Blue for port
-  { id: 'pt2', lat: 51.5074, lng: -0.1278, size: 0.15, color: 'rgba(34, 139, 34, 0.85)', name: 'London Market Hub', type: 'market', details: 'Central European distribution center for consumer electronics.', country: 'UK' }, // Green for market
-  { id: 'pt3', lat: 31.2304, lng: 121.4737, size: 0.12, color: 'rgba(255, 140, 0, 0.85)', name: 'Shanghai Factory Complex', type: 'factory', details: 'Large-scale manufacturing of electronics and textiles.', country: 'China' }, // Orange for factory
-  { id: 'pt4', lat: 40.7128, lng: -74.0060, size: 0.08, color: 'rgba(128, 0, 128, 0.85)', name: 'New York DPP Registrations', type: 'dpp_registration', details: 'High volume of DPPs registered for fashion & apparel.', country: 'USA' }, // Purple for DPP
+  { id: 'pt1', lat: 34.0522, lng: -118.2437, size: 0.1, color: 'rgba(60, 120, 216, 0.85)', name: 'Los Angeles Port', type: 'port', details: 'Major US West Coast port, key entry for Asian goods.', country: 'USA' },
+  { id: 'pt2', lat: 51.5074, lng: -0.1278, size: 0.15, color: 'rgba(34, 139, 34, 0.85)', name: 'London Market Hub', type: 'market', details: 'Central European distribution center for consumer electronics.', country: 'UK' },
+  { id: 'pt3', lat: 31.2304, lng: 121.4737, size: 0.12, color: 'rgba(255, 140, 0, 0.85)', name: 'Shanghai Factory Complex', type: 'factory', details: 'Large-scale manufacturing of electronics and textiles.', country: 'China' },
+  { id: 'pt4', lat: 40.7128, lng: -74.0060, size: 0.08, color: 'rgba(128, 0, 128, 0.85)', name: 'New York DPP Registrations', type: 'dpp_registration', details: 'High volume of DPPs registered for fashion & apparel.', country: 'USA' },
   { id: 'pt5', lat: 52.3676, lng: 4.9041, size: 0.1, color: 'rgba(60, 120, 216, 0.85)', name: 'Amsterdam Port (AMS)', type: 'port', details: 'Key EU entry point for various goods, strong agri-food presence.', country: 'Netherlands' },
   { id: 'pt6', lat: -33.8688, lng: 151.2093, size: 0.09, color: 'rgba(34, 139, 34, 0.85)', name: 'Sydney Market', type: 'market', details: 'Primary market hub for Oceania region, diverse product categories.', country: 'Australia' },
   { id: 'pt7', lat: 48.8566, lng: 2.3522, size: 0.13, color: 'rgba(128, 0, 128, 0.85)', name: 'Paris Fashion Hub', type: 'dpp_registration', details: 'Significant DPP activity for luxury goods and apparel.', country: 'France' },
@@ -55,7 +56,7 @@ const mockArcs: ArcData[] = [
   { id: 'arc1', startLat: 31.2304, startLng: 121.4737, endLat: 34.0522, endLng: -118.2437, color: 'rgba(255,165,0,0.7)', stroke: 0.3, name: 'SHG-LAX-001', product: 'EcoSmart Refrigerator Batch #5', status: 'in_transit' },
   { id: 'arc2', startLat: 34.0522, startLng: -118.2437, endLat: 51.5074, endLng: -0.1278, color: 'rgba(128,0,128,0.7)', stroke: 0.3, name: 'LAX-LHR-002', product: 'Smart LED Bulbs Shipment', status: 'delivered' },
   { id: 'arc3', startLat: 52.3676, startLng: 4.9041, endLat: 40.7128, endLng: -74.0060, color: 'rgba(0,128,0,0.7)', stroke: 0.3, name: 'AMS-NYC-DPPFlow', product: 'Digital Product Passport Data Flow', status: 'in_transit' },
-  { id: 'arc4', startLat: 31.2304, startLng: 121.4737, endLat: -33.8688, endLng: 151.2093, color: 'rgba(255,105,180,0.7)', stroke: 0.3, name: 'SHG-SYD-007', product: 'Organic Cotton T-Shirt Batch C', status: 'delayed' }, // Hot pink
+  { id: 'arc4', startLat: 31.2304, startLng: 121.4737, endLat: -33.8688, endLng: 151.2093, color: 'rgba(255,105,180,0.7)', stroke: 0.3, name: 'SHG-SYD-007', product: 'Organic Cotton T-Shirt Batch C', status: 'delayed' },
   { id: 'arc5', startLat: 48.8566, startLng: 2.3522, endLat: 51.5074, endLng: -0.1278, color: 'rgba(75,0,130,0.7)', stroke: 0.3, name: 'PAR-LON-LUX01', product: 'Luxury Handbags - DPP Transfer', status: 'in_transit'}
 ];
 
@@ -102,8 +103,8 @@ export default function DppGlobalTrackerPage() {
   useEffect(() => {
     if (globeEl.current && globeReady) {
       globeEl.current.controls().autoRotate = true;
-      globeEl.current.controls().autoRotateSpeed = 0.2; // Slightly slower rotation
-      globeEl.current.pointOfView({ lat: 20, lng: 0, altitude: 3.0 }, 1500); // Adjusted altitude, longer duration
+      globeEl.current.controls().autoRotateSpeed = 0.2;
+      globeEl.current.pointOfView({ lat: 20, lng: 0, altitude: 3.0 }, 1500);
     }
   }, [globeReady]);
 
@@ -167,18 +168,18 @@ export default function DppGlobalTrackerPage() {
         arcStroke="stroke"
         arcDashLength={0.4}
         arcDashGap={0.2}
-        arcDashAnimateTime={1800} // Slightly faster animation
+        arcDashAnimateTime={1800}
         onArcClick={handleArcClick}
         arcLabel={a => `<b>${(a as ArcData).name}</b><br/><i>${(a as ArcData).product || 'Data Flow'}</i><br/>Status: ${(a as ArcData).status || 'N/A'}. Click for details.`}
 
         polygonsData={countryPolygons.features}
-        polygonCapColor={() => 'rgba(100, 100, 200, 0.1)'} // More subtle
+        polygonCapColor={() => 'rgba(100, 100, 200, 0.1)'}
         polygonSideColor={() => 'rgba(0, 0, 0, 0.02)'}
         polygonStrokeColor={() => 'rgba(120,120,120,0.2)'}
         
         onGlobeReady={() => setTimeout(() => setGlobeReady(true), 200)} 
         width={typeof window !== 'undefined' ? window.innerWidth : 600}
-        height={typeof window !== 'undefined' ? window.innerHeight - 64 : 400} // Assuming header height is 64px (4rem)
+        height={typeof window !== 'undefined' ? window.innerHeight - 64 : 400}
       />
 
       {selectedInfo.data && (
@@ -201,10 +202,15 @@ export default function DppGlobalTrackerPage() {
               <span className="sr-only">Close details</span>
             </Button>
           </CardHeader>
-          <CardContent className="text-sm space-y-1.5 px-4 pb-3">
+          <CardContent className="text-sm space-y-2 px-4 pb-3"> {/* Changed space-y-1.5 to space-y-2 */}
             {selectedInfo.type === 'point' && (
               <>
-                <p className="capitalize"><strong className="text-muted-foreground text-xs">Type:</strong> {(selectedInfo.data as PointData).type.replace('_', ' ')}</p>
+                <div className="flex items-center gap-2 mb-1">
+                  <strong className="text-muted-foreground text-xs">Type:</strong>
+                  <Badge variant="secondary" className="capitalize text-xs py-0.5 px-1.5">
+                    {(selectedInfo.data as PointData).type.replace('_', ' ')}
+                  </Badge>
+                </div>
                 <p><strong className="text-muted-foreground text-xs">Location:</strong> Lat: {(selectedInfo.data as PointData).lat.toFixed(2)}, Lng: {(selectedInfo.data as PointData).lng.toFixed(2)}</p>
                 {(selectedInfo.data as PointData).country && <p><strong className="text-muted-foreground text-xs">Country:</strong> {(selectedInfo.data as PointData).country}</p>}
                 <p className="mt-1 text-xs"><strong className="text-muted-foreground text-xs">Details:</strong> {(selectedInfo.data as PointData).details}</p>
@@ -238,3 +244,5 @@ export default function DppGlobalTrackerPage() {
   );
 }
 
+
+    

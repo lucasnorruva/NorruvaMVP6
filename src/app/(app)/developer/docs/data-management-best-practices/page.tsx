@@ -3,8 +3,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Layers } from "lucide-react";
+import { Layers, Shield, RotateCcw, Users, CheckSquare, Search } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -21,53 +20,46 @@ export default function DataManagementBestPracticesPage() {
         </Button>
       </div>
 
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Content Coming Soon</AlertTitle>
-        <AlertDescription>
-          This page will offer best practices for managing your product data effectively and securely within the Norruva DPP platform.
-        </AlertDescription>
-      </Alert>
-
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Ensuring Data Quality and Integrity</CardTitle>
           <CardDescription>
-            Maintaining accurate, up-to-date, and comprehensive product data is crucial for effective DPPs.
+            Maintaining accurate, up-to-date, and comprehensive product data is crucial for effective Digital Product Passports (DPPs) and regulatory compliance.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p>
-            Key best practices include:
+            Adhering to best practices in data management will help you maximize the value of your DPPs and minimize compliance risks.
           </p>
-          <ul className="list-disc list-inside space-y-2 text-sm">
+          <ul className="list-disc list-inside space-y-3 text-sm">
             <li>
-              <strong>Data Accuracy & Validation:</strong> Implement processes to verify the accuracy of data before submission. Utilize platform validation features where available.
+              <strong className="flex items-center"><CheckSquare className="mr-2 h-4 w-4 text-green-600" />Data Accuracy & Validation:</strong> Implement robust processes to verify the accuracy of all data before submission to the DPP platform. Utilize platform validation features and consider internal checks to catch errors early.
             </li>
             <li>
-              <strong>Data Completeness:</strong> Strive to provide all relevant data points required by regulations and expected by consumers and other stakeholders.
+              <strong className="flex items-center"><CheckSquare className="mr-2 h-4 w-4 text-green-600" />Data Completeness:</strong> Strive to provide all relevant data points required by applicable regulations (e.g., ESPR, Battery Regulation) and those expected by consumers and other stakeholders in your value chain.
             </li>
             <li>
-              <strong>Version Control:</strong> Understand how the platform handles DPP versioning and ensure you are updating information correctly.
+              <strong className="flex items-center"><RotateCcw className="mr-2 h-4 w-4 text-blue-600" />Version Control & Updates:</strong> Understand how the Norruva platform handles DPP versioning. Establish clear procedures for updating DPPs when product specifications, compliance status, or lifecycle events change.
             </li>
             <li>
-              <strong>Secure Credential Management:</strong> Securely manage API keys and any other credentials used to interact with the platform. Refer to our <Link href="/developer/docs/authentication" className="text-primary hover:underline">Authentication Guide</Link>.
+              <strong className="flex items-center"><Shield className="mr-2 h-4 w-4 text-red-600" />Secure Credential Management:</strong> Securely manage API keys and any other credentials used to interact with the platform. Do not hardcode keys in client applications. Refer to our <Link href="/developer/docs/authentication" className="text-primary hover:underline">Authentication Guide</Link>.
             </li>
             <li>
-              <strong>Data Governance:</strong> Establish clear internal responsibilities for DPP data management, updates, and compliance.
+              <strong className="flex items-center"><Users className="mr-2 h-4 w-4 text-purple-600" />Data Governance & Responsibility:</strong> Establish clear internal responsibilities for DPP data ownership, management, updates, and compliance oversight within your organization.
             </li>
              <li>
-              <strong>Regular Audits:</strong> Periodically review your DPP data for accuracy and relevance, especially when product specifications or regulations change.
+              <strong className="flex items-center"><Search className="mr-2 h-4 w-4 text-orange-600" />Regular Audits & Reviews:</strong> Periodically review your DPP data for accuracy, completeness, and relevance. This is especially important when product specifications change or new regulatory requirements are introduced.
             </li>
             <li>
-              <strong>Supply Chain Collaboration:</strong> Work closely with your suppliers to ensure the data they provide is accurate and timely.
+              <strong className="flex items-center"><Layers className="mr-2 h-4 w-4 text-teal-600" />Supply Chain Collaboration:</strong> Work closely with your suppliers to ensure the data they provide for components and materials is accurate, timely, and in the required format. Establish clear data exchange protocols.
             </li>
           </ul>
-          <p className="text-sm text-muted-foreground">
-            This section will be expanded with more detailed guidance, examples, and platform-specific tips.
+          <p className="text-sm text-muted-foreground mt-4">
+            This section will be expanded with more detailed guidance, platform-specific tips, and examples related to data schemas and interoperability standards.
           </p>
         </CardContent>
       </Card>
     </div>
   );
 }
+

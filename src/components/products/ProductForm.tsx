@@ -23,7 +23,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu, BatteryCharging, Loader2, Sparkles } from "lucide-react";
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info } from "lucide-react";
 import React, { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import ProductImageFormSection from "./form/ProductImageFormSection";
@@ -177,7 +177,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   const anyAISuggestionInProgress = isSuggestingName || isSuggestingDescription || isSuggestingClaims || isGeneratingImage || isSuggestingSpecs;
 
   const formContent = (
-    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5']} className="w-full">
+    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5', 'item-custom-attributes']} className="w-full">
       <AccordionItem value="item-1">
         <AccordionTrigger className="text-lg font-semibold">Basic Information</AccordionTrigger>
         <AccordionContent className="space-y-6 pt-4">
@@ -246,7 +246,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
                 </Button>
               </div>
               <FormControl><Textarea placeholder='e.g., { "color": "blue", "weight": "10kg" }' {...field} rows={5} /></FormControl> 
-              <FormDescription>Enter as a JSON object. AI can help suggest a structure.</FormDescription> 
+              <FormDescription>Enter as a JSON object. AI can help suggest a structure. You can pretty-format JSON using online tools before pasting.</FormDescription> 
               <FormMessage /> 
             </FormItem> 
             )}/>
@@ -254,9 +254,47 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       </AccordionItem>
 
       <AccordionItem value="item-4">
-        <AccordionTrigger className="text-lg font-semibold flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-primary" /> Battery Details</AccordionTrigger>
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-primary" /> Battery Details (if applicable)</AccordionTrigger>
         <AccordionContent className="pt-4">
           <BatteryDetailsFormSection form={form} initialData={initialData} />
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="item-custom-attributes">
+        <AccordionTrigger className="text-lg font-semibold">Custom Attributes</AccordionTrigger>
+        <AccordionContent className="space-y-4 pt-4">
+          <p className="text-sm text-muted-foreground">
+            Define additional key-value pairs specific to this product category or your internal tracking needs.
+            This feature allows for extending the standard DPP schema.
+          </p>
+          <Card className="bg-muted/50">
+            <CardContent className="p-4 space-y-3">
+              <div className="text-sm">
+                <Label className="font-semibold text-foreground/80">Example Attribute 1:</Label>
+                <p><span className="text-muted-foreground">Name:</span> EcoRating</p>
+                <p><span className="text-muted-foreground">Value:</span> Gold</p>
+              </div>
+              <div className="text-sm border-t pt-3">
+                <Label className="font-semibold text-foreground/80">Example Attribute 2:</Label>
+                <p><span className="text-muted-foreground">Name:</span> SpecialFeature</p>
+                <p><span className="text-muted-foreground">Value:</span> Waterproof IP68</p>
+              </div>
+            </CardContent>
+          </Card>
+          <TooltipProvider>
+            <Tooltip delayDuration={100}>
+              <TooltipTrigger asChild>
+                <div className="inline-block"> {/* Tooltip needs a direct child that can take a ref */}
+                  <Button type="button" variant="outline" disabled>
+                    <PlusCircle className="mr-2 h-4 w-4" /> Add Custom Attribute
+                  </Button>
+                </div>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p className="flex items-center"><Info className="h-4 w-4 mr-2 text-info" /> Feature coming soon. For demonstration purposes.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </AccordionContent>
       </AccordionItem>
     </Accordion>

@@ -133,6 +133,7 @@ export default function AddNewProductPage() {
           stateOfHealth: productToEdit.stateOfHealth ?? undefined,
           carbonFootprintManufacturing: productToEdit.carbonFootprintManufacturing ?? undefined,
           recycledContentPercentage: productToEdit.recycledContentPercentage ?? undefined,
+          specificationsOrigin: productToEdit.specificationsOrigin, // Ensure this is loaded
           // imageUrlOrigin is already part of productToEdit due to StoredUserProduct extending ProductFormData
         };
         setCurrentProductDataForForm(editData);
@@ -186,7 +187,7 @@ export default function AddNewProductPage() {
         aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED'; 
       } else { 
         aiInitialFormData.specifications = ""; 
-        if (result.specifications) aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED';
+        if (result.specifications) aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED'; // Mark origin even if empty obj from AI
       }
 
       if (result.energyLabel) { aiInitialFormData.energyLabel = result.energyLabel; aiInitialFormData.energyLabelOrigin = 'AI_EXTRACTED'; }

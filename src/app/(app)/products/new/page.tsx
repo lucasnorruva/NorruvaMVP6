@@ -37,11 +37,10 @@ export interface InitialProductFormData extends ProductFormData {
   stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
   carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  // imageHint is already part of ProductFormData via formSchema
+  // imageUrlOrigin is now part of ProductFormData
 }
 
-interface StoredUserProduct extends ProductFormData {
+interface StoredUserProduct extends ProductFormData { // Now includes imageUrlOrigin from ProductFormData
   id: string;
   status: string;
   compliance: string;
@@ -58,10 +57,8 @@ interface StoredUserProduct extends ProductFormData {
   stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
   carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  // imageHint is already part of ProductFormData
   productCategory?: string;
-  imageUrl?: string;
+  // imageUrl and imageHint are part of ProductFormData
   keySustainabilityPoints?: string[];
   keyCompliancePoints?: string[];
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
@@ -78,17 +75,21 @@ const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 const determineOrigin = (
   currentValue: any,
   previousValue: any,
-  previousOrigin: 'AI_EXTRACTED' | 'manual' | undefined
+  previousOrigin: 'AI_EXTRACTED' | 'manual' | undefined,
+  currentFormOrigin?: 'AI_EXTRACTED' | 'manual' // Added to check if AI set it in current session
 ): 'AI_EXTRACTED' | 'manual' | undefined => {
+  if (currentFormOrigin === 'AI_EXTRACTED' && currentValue === previousValue) {
+    return 'AI_EXTRACTED'; // AI generated it in this session, and it wasn't changed from initial
+  }
   if (currentValue !== previousValue) {
     if ( (previousValue !== undefined && previousValue !== null && previousValue !== "") && (currentValue === "" || currentValue === null || currentValue === undefined) ) {
-        return 'manual'; 
+        return 'manual'; // User cleared a pre-existing value
     }
     if (currentValue !== "" && currentValue !== null && currentValue !== undefined) {
-        return 'manual'; 
+        return 'manual'; // User typed something new or changed an AI value
     }
   }
-  return previousOrigin; 
+  return previousOrigin; // No change, or changed from AI but not back to original AI value
 };
 
 
@@ -107,12 +108,19 @@ export default function AddNewProductPage() {
   const [activeTab, setActiveTab] = useState(isEditMode ? "manual" : "ai-extraction");
   const [aiExtractionAppliedSuccessfully, setAiExtractionAppliedSuccessfully] = useState(false);
   
-  const [currentProductDataForForm, setCurrentProductDataForForm] = useState<Partial<InitialProductFormData>>({
-    gtin: "", productName: "", productDescription: "", manufacturer: "", modelNumber: "",
+  const defaultFormState: Partial<InitialProductFormData> = {
+    productName: "", gtin: "", productDescription: "", manufacturer: "", modelNumber: "",
     materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
-    imageUrl: "", imageHint: "",
-    batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined
-  });
+    imageUrl: "", imageHint: "", imageUrlOrigin: undefined,
+    batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined,
+    productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined,
+    modelNumberOrigin: undefined, materialsOrigin: undefined, sustainabilityClaimsOrigin: undefined,
+    energyLabelOrigin: undefined, specificationsOrigin: undefined, batteryChemistryOrigin: undefined,
+    stateOfHealthOrigin: undefined, carbonFootprintManufacturingOrigin: undefined,
+    recycledContentPercentageOrigin: undefined,
+  };
+
+  const [currentProductDataForForm, setCurrentProductDataForForm] = useState<Partial<InitialProductFormData>>(defaultFormState);
 
   useEffect(() => {
     if (isEditMode && editProductId) {
@@ -121,10 +129,11 @@ export default function AddNewProductPage() {
       const productToEdit = userProducts.find(p => p.id === editProductId);
       if (productToEdit) {
         const editData: Partial<InitialProductFormData> = {
-          ...productToEdit, // This includes imageHint if it was stored
+          ...productToEdit, 
           stateOfHealth: productToEdit.stateOfHealth ?? undefined,
           carbonFootprintManufacturing: productToEdit.carbonFootprintManufacturing ?? undefined,
           recycledContentPercentage: productToEdit.recycledContentPercentage ?? undefined,
+          // imageUrlOrigin is already part of productToEdit due to StoredUserProduct extending ProductFormData
         };
         setCurrentProductDataForForm(editData);
         setActiveTab("manual");
@@ -135,12 +144,7 @@ export default function AddNewProductPage() {
       }
     } else {
       setAiExtractionAppliedSuccessfully(false);
-      setCurrentProductDataForForm({
-        gtin: "", productName: "", productDescription: "", manufacturer: "", modelNumber: "",
-        materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
-        imageUrl: "", imageHint: "",
-        batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined
-      });
+      setCurrentProductDataForForm(defaultFormState);
     }
   }, [isEditMode, editProductId, router, toast]);
 
@@ -149,16 +153,9 @@ export default function AddNewProductPage() {
     if (event.target.files && event.target.files[0]) {
       setFile(event.target.files[0]);
       setCurrentProductDataForForm(prev => ({ 
+        ...defaultFormState, // Reset all fields except gtin and category if they were manually entered before file selection
         gtin: prev.gtin, 
         productCategory: prev.productCategory, 
-        productName: "", productDescription: "", manufacturer: "", modelNumber: "",
-        materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", 
-        batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined,
-        imageUrl: "", imageHint: "", // Reset image hint on new file
-        productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined, modelNumberOrigin: undefined,
-        materialsOrigin: undefined, sustainabilityClaimsOrigin: undefined, specificationsOrigin: undefined, energyLabelOrigin: undefined,
-        batteryChemistryOrigin: undefined, stateOfHealthOrigin: undefined, carbonFootprintManufacturingOrigin: undefined, recycledContentPercentageOrigin: undefined,
-        imageUrlOrigin: undefined,
       }));
       setError(null);
       setAiExtractionAppliedSuccessfully(false);
@@ -199,6 +196,12 @@ export default function AddNewProductPage() {
       if (result.carbonFootprintManufacturing !== undefined && result.carbonFootprintManufacturing !== null) { aiInitialFormData.carbonFootprintManufacturing = result.carbonFootprintManufacturing; aiInitialFormData.carbonFootprintManufacturingOrigin = 'AI_EXTRACTED'; }
       if (result.recycledContentPercentage !== undefined && result.recycledContentPercentage !== null) { aiInitialFormData.recycledContentPercentage = result.recycledContentPercentage; aiInitialFormData.recycledContentPercentageOrigin = 'AI_EXTRACTED'; }
       
+      // Note: AI Document Extraction does not currently provide imageUrl or imageHint.
+      // imageUrlOrigin will be handled if/when AI image generation is used from the form.
+      aiInitialFormData.imageUrl = ""; // Ensure it's reset if AI doesn't provide it
+      aiInitialFormData.imageHint = "";
+      aiInitialFormData.imageUrlOrigin = undefined;
+
       setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData}));
       setAiExtractionAppliedSuccessfully(true);
       
@@ -241,7 +244,8 @@ export default function AddNewProductPage() {
         energyLabel: formDataFromForm.energyLabel || dataPriorToThisEdit.energyLabel,
         productCategory: formDataFromForm.productCategory || dataPriorToThisEdit.productCategory,
         imageUrl: formDataFromForm.imageUrl || dataPriorToThisEdit.imageUrl,
-        imageHint: formDataFromForm.imageHint || dataPriorToThisEdit.imageHint, // Save imageHint
+        imageHint: formDataFromForm.imageHint || dataPriorToThisEdit.imageHint,
+        imageUrlOrigin: determineOrigin(formDataFromForm.imageUrl, dataPriorToThisEdit.imageUrl, dataPriorToThisEdit.imageUrlOrigin, formDataFromForm.imageUrlOrigin),
         batteryChemistry: formDataFromForm.batteryChemistry || dataPriorToThisEdit.batteryChemistry,
         stateOfHealth: formDataFromForm.stateOfHealth !== undefined && formDataFromForm.stateOfHealth !== null ? formDataFromForm.stateOfHealth : dataPriorToThisEdit.stateOfHealth,
         carbonFootprintManufacturing: formDataFromForm.carbonFootprintManufacturing !== undefined && formDataFromForm.carbonFootprintManufacturing !== null ? formDataFromForm.carbonFootprintManufacturing : dataPriorToThisEdit.carbonFootprintManufacturing,
@@ -255,8 +259,6 @@ export default function AddNewProductPage() {
         sustainabilityClaimsOrigin: determineOrigin(formDataFromForm.sustainabilityClaims, dataPriorToThisEdit.sustainabilityClaims, dataPriorToThisEdit.sustainabilityClaimsOrigin),
         energyLabelOrigin: determineOrigin(formDataFromForm.energyLabel, dataPriorToThisEdit.energyLabel, dataPriorToThisEdit.energyLabelOrigin),
         specificationsOrigin: determineOrigin(formDataFromForm.specifications, dataPriorToThisEdit.specifications, dataPriorToThisEdit.specificationsOrigin),
-        imageUrlOrigin: determineOrigin(formDataFromForm.imageUrl, dataPriorToThisEdit.imageUrl, dataPriorToThisEdit.imageUrlOrigin),
-        // Note: imageHintOrigin is not explicitly tracked, assumed manual if user edits the hint field.
         batteryChemistryOrigin: determineOrigin(formDataFromForm.batteryChemistry, dataPriorToThisEdit.batteryChemistry, dataPriorToThisEdit.batteryChemistryOrigin),
         stateOfHealthOrigin: determineOrigin(formDataFromForm.stateOfHealth, dataPriorToThisEdit.stateOfHealth, dataPriorToThisEdit.stateOfHealthOrigin),
         carbonFootprintManufacturingOrigin: determineOrigin(formDataFromForm.carbonFootprintManufacturing, dataPriorToThisEdit.carbonFootprintManufacturing, dataPriorToThisEdit.carbonFootprintManufacturingOrigin),
@@ -288,12 +290,7 @@ export default function AddNewProductPage() {
         router.push('/products');
       }
       
-      setCurrentProductDataForForm({ 
-        gtin: "", productName: "", productDescription: "", manufacturer: "", modelNumber: "",
-        materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
-        imageUrl: "", imageHint: "",
-        batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined
-       }); 
+      setCurrentProductDataForForm(defaultFormState); 
       setAiExtractionAppliedSuccessfully(false);
       if (!isEditMode) setActiveTab("ai-extraction");
       
@@ -340,9 +337,9 @@ export default function AddNewProductPage() {
               </AlertTitle>
               <AlertDescription>
                 {isEditMode 
-                  ? "You are editing an existing product. Fields suggested by AI document extraction are marked."
+                  ? "You are editing an existing product. Fields suggested by AI document extraction or generation are marked."
                   : "Some fields below have been pre-filled based on the AI data extraction. Please review all fields carefully and complete any missing information."}
-                Fields suggested by AI document extraction are marked with a <Cpu className="inline h-4 w-4 align-middle" /> icon. Modifying these fields will change their origin to 'manual'.
+                Fields suggested by AI are marked with a <Cpu className="inline h-4 w-4 align-middle" /> icon. Modifying these fields will change their origin to 'manual'.
               </AlertDescription>
             </Alert>
           )}
@@ -413,5 +410,3 @@ export default function AddNewProductPage() {
     </div>
   );
 }
-
-    

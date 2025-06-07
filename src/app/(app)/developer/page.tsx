@@ -12,13 +12,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building } from "lucide-react";
+import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIcon } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
 
 import ApiKeysManager, { type ApiKey } from '@/components/developer/ApiKeysManager';
 import WebhooksManager, { type WebhookEntry } from '@/components/developer/WebhooksManager';
 import { cn } from '@/lib/utils';
+import { Separator } from '@/components/ui/separator';
 
 
 const initialMockApiKeys: ApiKey[] = [
@@ -162,7 +163,7 @@ export default function DeveloperPortalPage() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>(initialMockApiKeys);
   const [webhooks, setWebhooks] = useState<WebhookEntry[]>(initialMockWebhooks);
   const [currentEnvironment, setCurrentEnvironment] = useState<string>("sandbox");
-  const mockOrganizationName = "Acme Innovations"; // Mock organization name
+  const mockOrganizationName = "Acme Innovations"; 
 
   const [getProductId, setGetProductId] = useState<string>("PROD001");
   const [getProductResponse, setGetProductResponse] = useState<string | null>(null);
@@ -196,6 +197,11 @@ export default function DeveloperPortalPage() {
   const [deleteProductId, setDeleteProductId] = useState<string>("PROD003");
   const [deleteProductResponse, setDeleteProductResponse] = useState<string | null>(null);
   const [isDeleteProductLoading, setIsDeleteProductLoading] = useState(false);
+
+  const [mockDppGeneratorProductName, setMockDppGeneratorProductName] = useState("");
+  const [mockDppGeneratorCategory, setMockDppGeneratorCategory] = useState("");
+  const [generatedMockDppJson, setGeneratedMockDppJson] = useState<string | null>(null);
+  const [isGeneratingMockDpp, setIsGeneratingMockDpp] = useState(false);
 
 
   const handleCopyKey = (keyToCopy: string) => {
@@ -392,6 +398,31 @@ export default function DeveloperPortalPage() {
     setIsDeleteProductLoading(false);
   };
 
+  const handleGenerateMockDpp = async () => {
+    setIsGeneratingMockDpp(true);
+    setGeneratedMockDppJson(null);
+    await new Promise(resolve => setTimeout(resolve, 700)); // Simulate generation
+    const mockDpp = {
+      id: `MOCK_DPP_${Date.now().toString().slice(-5)}`,
+      productName: mockDppGeneratorProductName || "Mock Product Alpha",
+      category: mockDppGeneratorCategory || "Electronics",
+      manufacturer: { name: "MockGen Inc." },
+      metadata: {
+        status: "draft",
+        last_updated: new Date().toISOString(),
+      },
+      productDetails: {
+        description: "This is a mock Digital Product Passport generated for testing and demonstration purposes.",
+        materials: [{ name: "Mock Material", percentage: 100, isRecycled: false }],
+      },
+      compliance: {
+        eprel: { status: "N/A", lastChecked: new Date().toISOString() }
+      },
+    };
+    setGeneratedMockDppJson(JSON.stringify(mockDpp, null, 2));
+    toast({ title: "Mock DPP Generated", description: "A sample DPP JSON has been displayed." });
+    setIsGeneratingMockDpp(false);
+  };
 
 
   const dashboardQuickActions = [
@@ -552,20 +583,11 @@ export default function DeveloperPortalPage() {
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {dashboardQuickActions.map(action => (
-                action.disabled ? (
-                  <Button key={action.label} variant="outline" className="w-full justify-start text-left h-auto py-3 group" disabled>
-                     <action.icon className="mr-3 h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <p className="font-medium text-muted-foreground">{action.label}</p>
-                      </div>
-                  </Button>
-                ) : action.targetTab ? (
+                action.targetTab ? (
                   <Button key={action.label} variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10" onClick={() => {
                     const targetTabTrigger = document.querySelector(`#developer-portal-tabs [data-state="inactive"][value="${action.targetTab}"]`) as HTMLElement | null;
                     if (targetTabTrigger && targetTabTrigger.ariaSelected === "false") {
                         targetTabTrigger.click();
-                    } else if (targetTabTrigger?.ariaSelected === "true") {
-                        // If already active, maybe scroll to section or do nothing.
                     }
                   }}>
                     <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
@@ -600,7 +622,7 @@ export default function DeveloperPortalPage() {
             />
             <Card className="mt-6 shadow-md">
               <CardHeader><CardTitle className="text-sm font-medium">Note on API Key Management</CardTitle></CardHeader>
-              <CardContent><p className="text-xs text-muted-foreground">Best practices include rotating keys regularly, restricting key permissions (future feature), and revoking compromised keys immediately.</p></CardContent>
+              <CardContent><p className="text-xs text-muted-foreground">Best practices include rotating keys regularly, restricting key permissions (future feature), and revoking compromised keys immediately. Refer to the <Link href="/developer/docs/authentication" className="text-primary hover:underline">Authentication Guide</Link>.</p></CardContent>
             </Card>
         </TabsContent>
 
@@ -613,7 +635,7 @@ export default function DeveloperPortalPage() {
             />
             <Card className="mt-6 shadow-md">
               <CardHeader><CardTitle className="text-sm font-medium">Future Enhancements</CardTitle></CardHeader>
-              <CardContent><p className="text-xs text-muted-foreground">A Webhook Test Suite with event replay, detailed logs, and signature verification debugging tools is planned.</p></CardContent>
+              <CardContent><p className="text-xs text-muted-foreground">A Webhook Test Suite with event replay, detailed logs, and signature verification debugging tools is planned. See the <Link href="/developer/docs/webhooks-guide" className="text-primary hover:underline">Webhooks Guide</Link>.</p></CardContent>
             </Card>
         </TabsContent>
 
@@ -651,6 +673,27 @@ export default function DeveloperPortalPage() {
                       <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getProductResponse}</code></pre>
                       </div>
                   )}
+                  </CardContent>
+              </Card>
+
+              {/* POST /passport */}
+              <Card>
+                  <CardHeader>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /passport</CardTitle>
+                  <CardDescription>Create a new Digital Product Passport (Conceptual).</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                  {/* Placeholder for POST body input - complex for this mock, linking to /products/new */}
+                    <p className="text-sm text-muted-foreground">To create a new DPP with a full form, please use the <Link href="/products/new" className="text-primary hover:underline">Add New Product page</Link>. This playground simulates a basic create action.</p>
+                  <div className="flex items-center justify-between">
+                    <Button onClick={() => toast({title: "Mock POST /passport", description: "Simulated DPP creation request sent."})} variant="secondary">
+                        <Send className="mr-2 h-4 w-4" /> Send Create Request (Mock)
+                    </Button>
+                    <Select defaultValue="cURL" disabled>
+                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
                   </CardContent>
               </Card>
 
@@ -729,7 +772,6 @@ export default function DeveloperPortalPage() {
                       <Label htmlFor="productIdInput-verify">Product ID to Verify</Label>
                       <Input id="productIdInput-verify" value={postVerifyProductId} onChange={(e) => setPostVerifyProductId(e.target.value)} placeholder="e.g., PROD001"/>
                   </div>
-                  {/* Conceptual: Add fields for verification parameters if needed */}
                    <div className="flex items-center justify-between">
                     <Button onClick={handleMockPostVerify} disabled={isPostVerifyLoading} variant="secondary">
                         {isPostVerifyLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
@@ -749,8 +791,6 @@ export default function DeveloperPortalPage() {
                   </CardContent>
               </Card>
 
-
-            {/* GET /products (already exists) */}
             <Card>
                 <CardHeader>
                 <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /products</CardTitle>
@@ -776,7 +816,6 @@ export default function DeveloperPortalPage() {
                 </CardContent>
             </Card>
             
-            {/* POST /products/{id}/lifecycle-events (already exists) */}
             <Card>
                 <CardHeader>
                 <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /products/{'{productId}'}/lifecycle-events</CardTitle>
@@ -809,7 +848,6 @@ export default function DeveloperPortalPage() {
                 )}
                 </CardContent>
             </Card>
-             {/* GET /products/{id}/compliance-summary (already exists) */}
             <Card>
                 <CardHeader>
                 <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /products/{'{productId}'}/compliance-summary</CardTitle>
@@ -848,7 +886,7 @@ export default function DeveloperPortalPage() {
                 <CardTitle className="font-headline flex items-center"><BookOpen className="mr-3 h-6 w-6 text-primary" /> API Documentation &amp; Guides</CardTitle>
                 <CardDescription>Explore detailed documentation, integration guides, and best practices for building with Norruva DPP APIs.</CardDescription>
             </CardHeader>
-            <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">
                 <div className="space-y-3">
                     <h4 className="font-semibold text-md mb-1 flex items-center"><BookText className="mr-2 h-5 w-5 text-accent" />Core Documentation</h4>
                     <ul className="list-none space-y-1.5 text-sm">
@@ -871,7 +909,7 @@ export default function DeveloperPortalPage() {
                         <li><Link href="#" className="text-primary hover:underline flex items-center opacity-50 cursor-not-allowed"><ShieldCheck className="mr-2 h-4 w-4"/>Auditor Integration <Badge variant="outline" className="ml-2 text-xs">Coming Soon</Badge></Link></li>
                     </ul>
                 </div>
-                 <div className="space-y-6">
+                 <div className="space-y-6"> {/* This column will stack its internal groups */}
                     <div className="space-y-3">
                         <h4 className="font-semibold text-md mb-1 flex items-center"><TestTube2 className="mr-2 h-5 w-5 text-accent" />Testing &amp; Validation</h4>
                         <ul className="list-none space-y-1.5 text-sm">
@@ -899,30 +937,59 @@ export default function DeveloperPortalPage() {
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             <Card className="shadow-lg lg:col-span-1">
               <CardHeader>
-                  <CardTitle className="font-headline flex items-center"><Wrench className="mr-3 h-6 w-6 text-primary" /> Developer Resources</CardTitle>
-                  <CardDescription>SDKs, tools, and samples to accelerate integration.</CardDescription>
+                  <CardTitle className="font-headline flex items-center"><FileCog className="mr-3 h-6 w-6 text-primary" /> SDKs (Conceptual)</CardTitle>
+                  <CardDescription>Language-specific libraries to accelerate integration.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                  <div>
-                      <h4 className="font-semibold mb-1 text-md flex items-center"><FileCog className="mr-2 h-5 w-5 text-accent"/>SDKs (Conceptual)</h4>
-                      <ul className="space-y-1.5 text-sm">
-                          <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>JavaScript SDK <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
-                          <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>Python SDK <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
-                          <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>Java SDK <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
-                      </ul>
-                  </div>
-                  <div className="pt-3 border-t">
-                      <h4 className="font-semibold mb-1 text-md flex items-center"><Laptop className="mr-2 h-5 w-5 text-accent"/>Developer Tools (Conceptual)</h4>
-                      <ul className="space-y-1.5 text-sm">
-                          <li><Button variant="link" className="p-0 h-auto text-primary" disabled>Download OpenAPI 3.1 Spec</Button></li>
-                          <li><Button variant="link" className="p-0 h-auto text-primary" disabled>View Postman Collection</Button></li>
-                          <li><Button variant="link" className="p-0 h-auto text-primary" disabled>Mock DPP Generator</Button></li>
-                          <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>CLI Tool <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
-                      </ul>
-                  </div>
+                  <ul className="space-y-1.5 text-sm">
+                      <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>JavaScript SDK <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
+                      <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>Python SDK <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
+                      <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>Java SDK <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
+                  </ul>
               </CardContent>
             </Card>
+
             <Card className="shadow-lg lg:col-span-2">
+              <CardHeader>
+                  <CardTitle className="font-headline flex items-center"><Wrench className="mr-3 h-6 w-6 text-primary" />Developer Tools (Conceptual)</CardTitle>
+                  <CardDescription>Utilities to help you build and test your integrations.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                  <Button variant="outline" disabled className="justify-start text-left"><FileJson className="mr-2"/>Download OpenAPI 3.1 Spec</Button>
+                  <Button variant="outline" disabled className="justify-start text-left"><ExternalLinkIcon className="mr-2"/>View Postman Collection</Button>
+                  <Button variant="outline" disabled className="justify-start text-left opacity-70 col-span-2"><ZapIcon className="mr-2"/>CLI Tool <Badge variant="outline" className="ml-auto text-xs">Coming Soon</Badge></Button>
+                </div>
+                <Separator />
+                <div>
+                  <h4 className="text-md font-semibold mb-2 flex items-center"><FileTextIcon className="mr-2 h-5 w-5 text-accent"/>Mock DPP Generator</h4>
+                   <div className="space-y-3 p-3 border rounded-md bg-muted/30">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <Label htmlFor="mockDppName" className="text-xs">Product Name (Optional)</Label>
+                        <Input id="mockDppName" value={mockDppGeneratorProductName} onChange={(e) => setMockDppGeneratorProductName(e.target.value)} placeholder="e.g., Test Widget" className="h-8 text-xs"/>
+                      </div>
+                      <div>
+                        <Label htmlFor="mockDppCategory" className="text-xs">Category (Optional)</Label>
+                        <Input id="mockDppCategory" value={mockDppGeneratorCategory} onChange={(e) => setMockDppGeneratorCategory(e.target.value)} placeholder="e.g., Gadgets" className="h-8 text-xs"/>
+                      </div>
+                    </div>
+                    <Button size="sm" onClick={handleGenerateMockDpp} disabled={isGeneratingMockDpp} variant="secondary">
+                      {isGeneratingMockDpp ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <ZapIcon className="mr-2 h-4 w-4" />}
+                      {isGeneratingMockDpp ? "Generating..." : "Generate Mock DPP JSON"}
+                    </Button>
+                    {generatedMockDppJson && (
+                      <div className="mt-3">
+                        <Label className="text-xs">Generated Mock DPP:</Label>
+                        <Textarea value={generatedMockDppJson} readOnly rows={8} className="font-mono text-xs bg-background"/>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            
+            <Card className="shadow-lg lg:col-span-3">
               <CardHeader>
                   <CardTitle className="font-headline flex items-center"><FileCode className="mr-3 h-6 w-6 text-primary" /> Code Samples & Tutorials</CardTitle>
                   <CardDescription>Practical examples and step-by-step guides.</CardDescription>
@@ -952,7 +1019,7 @@ export default function DeveloperPortalPage() {
             </Card>
             <Card className="shadow-lg lg:col-span-3">
                 <CardHeader>
-                    <CardTitle className="font-headline flex items-center"><Bot className="mr-3 h-6 w-6 text-primary" /> AI & Smart Assist Features (Conceptual)</CardTitle>
+                    <CardTitle className="font-headline flex items-center"><Lightbulb className="mr-3 h-6 w-6 text-primary" /> AI & Smart Assist Features (Conceptual)</CardTitle>
                     <CardDescription>Leverage AI to streamline your development and integration process.</CardDescription>
                 </CardHeader>
                 <CardContent className="grid md:grid-cols-2 gap-6">

@@ -89,7 +89,7 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
     case 'product not found in eprel':
       IconComponent = ShieldQuestion;
       badgeVariant = "outline";
-      badgeClasses = "bg-purple-500/20 text-purple-700 border-purple-500/30";
+      badgeClasses = "bg-purple-500/20 text-purple-700 border-purple-500/30"; // Changed to purple for distinction
       break;
     case 'not_applicable':
     case 'n/a': 
@@ -99,9 +99,9 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
       detailsText = `Not applicable for this product. Last checked: ${new Date(data.lastChecked).toLocaleDateString()}`; 
       break;
     default: 
-      IconComponent = Info;
-      badgeVariant = "outline";
-      badgeClasses = "bg-blue-500/20 text-blue-700 border-blue-500/30"; 
+      IconComponent = Info; // Default for any other unhandled status
+      badgeVariant = "outline"; // A neutral outline
+      badgeClasses = "bg-blue-500/20 text-blue-700 border-blue-500/30"; // Default to info-like blue
       break;
   }
 
@@ -109,7 +109,7 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
     <div className="flex items-center justify-between p-3 bg-background rounded-md border hover:bg-muted/30 transition-colors">
       <div className="flex items-center">
         <IconComponent className={cn("h-5 w-5 mr-3 flex-shrink-0", 
-          badgeClasses.split(' ')[1] 
+          badgeClasses.split(' ')[1] // Use the text color from badgeClasses for the icon
         )} />
         <div>
           <span className="text-sm font-medium">{titleText}</span>
@@ -133,7 +133,7 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
 
   const hasErrorNotifications = notifications?.some(n => n.type === 'error');
 
-  const eprelSyncButton = (onSyncEprel) ? (
+  const eprelSyncButton = (onSyncEprel) ? ( // Always render button structure, disable based on canSyncEprel
     <TooltipProvider>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
@@ -141,7 +141,7 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
             variant="outline"
             size="icon"
             onClick={onSyncEprel}
-            disabled={isSyncingEprel || !canSyncEprel}
+            disabled={isSyncingEprel || !canSyncEprel} // Disable if syncing OR cannot sync
             className="h-7 w-7"
           >
             {isSyncingEprel ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}

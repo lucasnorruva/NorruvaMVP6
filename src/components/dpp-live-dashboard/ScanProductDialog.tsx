@@ -29,7 +29,7 @@ export function ScanProductDialog({ allDpps }: ScanProductDialogProps) {
       if (productExists) {
         router.push(`/passport/${manualProductId.trim()}`);
         setIsScanDialogOpen(false);
-        setManualProductId("");
+        setManualProductId(""); // Reset for next time
       } else {
         toast({
           variant: "destructive",
@@ -77,12 +77,17 @@ export function ScanProductDialog({ allDpps }: ScanProductDialogProps) {
               onChange={(e) => setManualProductId(e.target.value)}
               placeholder="e.g., DPP001"
               className="col-span-3"
+              onKeyPress={(e) => {
+                if (e.key === 'Enter') {
+                  handleFindProductFromScan();
+                }
+              }}
             />
           </div>
         </div>
         <DialogFooter>
           <DialogClose asChild>
-            <Button type="button" variant="outline">Cancel</Button>
+            <Button type="button" variant="outline" onClick={() => setManualProductId("")}>Cancel</Button>
           </DialogClose>
           <Button type="button" onClick={handleFindProductFromScan}>Find Product</Button>
         </DialogFooter>

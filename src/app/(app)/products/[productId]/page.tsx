@@ -118,13 +118,12 @@ export default function ProductDetailPage() {
             id: result.eprelId || product.complianceSummary?.eprel?.id,
             lastChecked: result.lastChecked,
           },
-           // Ensure overallStatus and ebsi are preserved if they exist
           overallStatus: product.complianceSummary?.overallStatus || "N/A",
           ebsi: product.complianceSummary?.ebsi,
           specificRegulations: product.complianceSummary?.specificRegulations,
         },
       };
-      setProduct(updatedProduct as SimpleProductDetail); // Cast needed because complianceSummary is partial earlier
+      setProduct(updatedProduct as SimpleProductDetail); 
 
       if (product.id.startsWith("USER_PROD")) {
         const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
@@ -151,9 +150,10 @@ export default function ProductDetailPage() {
 
   if (product === undefined) { 
     return (
-      <div className="flex items-center justify-center min-h-[calc(100vh-10rem)]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="ml-3 text-muted-foreground">Loading product details...</p>
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] text-center p-4">
+        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+        <p className="text-xl font-medium text-muted-foreground">Loading product details...</p>
+        <p className="text-sm text-muted-foreground/80 mt-1">Please wait a moment.</p>
       </div>
     );
   }

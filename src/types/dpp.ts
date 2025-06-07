@@ -447,7 +447,18 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     },
     lifecycleEvents: [
       { id: "lc001", eventName: "Manufacturing Complete", date: "2024-01-15T00:00:00Z", location: "EcoFactory, Germany", status: "Completed", iconName: "Factory" },
-      { id: "lc002", eventName: "Quality Assurance Passed", date: "2024-01-16T00:00:00Z", location: "EcoFactory, Germany", status: "Completed", iconName: "ShieldCheck" },
+      { 
+        id: "lc002", 
+        eventName: "Quality Assurance Passed", 
+        date: "2024-01-16T00:00:00Z", 
+        location: "EcoFactory, Germany", 
+        status: "Completed", 
+        iconName: "ShieldCheck",
+        keyDocuments: [
+          { name: "QA Report Q1-2024", type: "PDF", url: "#qa-report-q1-2024.pdf" },
+          { name: "Compliance Checklist (Internal)", type: "Link", url: "#compliance-checklist-internal" }
+        ]
+      },
       { id: "lc003", eventName: "Shipped to Distributor", date: "2024-01-20T00:00:00Z", location: "Logistics Hub, Hamburg", status: "Completed", iconName: "Truck" },
       { id: "lc004", eventName: "First Retail Sale", date: "2024-02-10T00:00:00Z", location: "Paris, France", status: "Completed", iconName: "ShoppingCart" },
       { id: "lc005", eventName: "Scheduled Maintenance", date: "2025-02-15T00:00:00Z", notes: "Filter replacement due.", status: "Upcoming", iconName: "Wrench" },
@@ -704,3 +715,4 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ]
   }
 };
+

@@ -311,6 +311,7 @@ export interface SimpleLifecycleEvent {
   notes?: string;
   status: 'Completed' | 'In Progress' | 'Upcoming' | 'Delayed' | 'Cancelled';
   iconName?: keyof typeof import('lucide-react');
+  keyDocuments?: { name: string; type: 'PDF' | 'Link'; url: string }[];
 }
 
 
@@ -655,11 +656,11 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ebsiStatus: 'verified',
     ebsiVerificationId: "EBSI-VC-ATTR-XYZ-00123",
     lifecycleHighlights: [
-      { stage: "Manufactured", date: "2024-01-15", details: "Production batch #PB789 at EcoFactory, Germany.", isEbsiVerified: true, iconName: "Factory" },
-      { stage: "Quality Assurance", date: "2024-01-16", details: "Passed all quality checks.", isEbsiVerified: true, iconName: "ShieldCheck" },
-      { stage: "Shipped to Distributor", date: "2024-01-20", details: "Container #C0N741N3R.", isEbsiVerified: true, iconName: "Truck" },
-      { stage: "Sold to Consumer", date: "2024-02-10", details: "Retail Store, Paris. Warranty activated.", isEbsiVerified: false, iconName: "ShoppingCart" },
-      { stage: "Scheduled Maintenance", date: "2025-02-15", details: "Filter replacement due.", isEbsiVerified: false, iconName: "Wrench" },
+      { stage: "Manufactured", date: "2024-01-15", details: "Initial production run batch #PB789 completed at EcoFactory, Germany.", isEbsiVerified: true, iconName: "Factory" },
+      { stage: "Quality Assurance", date: "2024-01-16", details: "All quality control checks passed. Product meets ISO 9001 standards.", isEbsiVerified: true, iconName: "ShieldCheck" },
+      { stage: "Shipped to Distributor", date: "2024-01-20", details: "Outbound shipment via GreenLogistics. Container #C0N741N3R.", isEbsiVerified: true, iconName: "Truck" },
+      { stage: "Sold to Consumer", date: "2024-02-10", details: "First retail sale recorded. Warranty activated for customer.", isEbsiVerified: false, iconName: "ShoppingCart" },
+      { stage: "Scheduled Maintenance", date: "2025-02-15", details: "Preventative maintenance, including filter replacement, due. Customer notified.", isEbsiVerified: false, iconName: "Wrench" },
     ],
     certifications: [
       { name: "EU Energy Label A+++", authority: "European Commission", expiryDate: "N/A", link: "#", isVerified: true },
@@ -691,10 +692,10 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     blockchainPlatform: "MockChain (Polygon Layer 2)",
     ebsiStatus: 'pending',
     lifecycleHighlights: [
-      { stage: "Manufactured", date: "2024-03-01", details: "Batch #LEDB456, Shenzhen.", isEbsiVerified: true, iconName: "Factory" },
-      { stage: "Imported to EU", date: "2024-03-15", details: "Rotterdam Port, Netherlands.", isEbsiVerified: false, iconName: "Truck" },
-      { stage: "Firmware Update v1.2", date: "2024-08-01", details: "Improved energy efficiency algorithm.", isEbsiVerified: true, iconName: "UploadCloud" },
-      { stage: "Product Registration", date: "2024-03-20", details: "Registered in EPREL (pending full data).", isEbsiVerified: false, iconName: "ClipboardCheck" },
+      { stage: "Manufactured", date: "2024-03-01", details: "Batch #LEDB456 produced in Shenzhen SmartPlant facility.", isEbsiVerified: true, iconName: "Factory" },
+      { stage: "Imported to EU", date: "2024-03-15", details: "Cleared customs at Rotterdam Port, Netherlands. Ready for EU distribution.", isEbsiVerified: false, iconName: "Anchor" },
+      { stage: "Firmware Update v1.2", date: "2024-08-01", details: "Over-the-air firmware update v1.2 deployed, improving energy efficiency algorithm and security patches.", isEbsiVerified: true, iconName: "UploadCloud" },
+      { stage: "Product Registration", date: "2024-03-20", details: "Registered in EPREL database (ID: EPREL_PENDING_002), awaiting final data submission.", isEbsiVerified: false, iconName: "ClipboardCheck" },
     ],
     certifications: [
       { name: "RoHS Compliance", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
@@ -703,5 +704,3 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ]
   }
 };
-
-    

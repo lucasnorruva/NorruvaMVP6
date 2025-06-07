@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ShieldAlert, UserCheck, Info, VenetianMask, FileText, Trash2, DownloadCloud, ArrowLeft } from "lucide-react";
+import { ShieldAlert, UserCheck, Info, VenetianMask, FileText, Trash2, DownloadCloud, ArrowLeft, KeyRound, Globe, Activity, ShieldCheck as ShieldCheckIcon } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -13,7 +13,7 @@ export default function DataPrivacyPage() {
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-headline font-semibold flex items-center">
           <VenetianMask className="mr-3 h-7 w-7 text-primary" />
-          Data Privacy & GDPR Compliance
+          Data Privacy, Security & Compliance
         </h1>
         <Button variant="outline" asChild>
             <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
@@ -24,7 +24,7 @@ export default function DataPrivacyPage() {
         <Info className="h-4 w-4" />
         <AlertTitle>Conceptual Documentation</AlertTitle>
         <AlertDescription>
-          This document outlines conceptual approaches to data privacy and GDPR compliance within the Norruva DPP platform. Actual implementation details would require legal and technical review.
+          This document outlines conceptual approaches to data privacy, security, and broader compliance within the Norruva DPP platform. Actual implementation details would require legal and technical review.
         </AlertDescription>
       </Alert>
 
@@ -32,12 +32,12 @@ export default function DataPrivacyPage() {
         <CardHeader>
           <CardTitle>Introduction</CardTitle>
           <CardDescription>
-            The Norruva Digital Product Passport (DPP) platform is designed with data privacy and compliance with regulations like GDPR as fundamental considerations. This guide outlines our conceptual approach to handling personal data and ensuring data subject rights, providing important context for developers building on or integrating with our platform.
+            The Norruva Digital Product Passport (DPP) platform is designed with data privacy, security, and compliance with regulations like GDPR as fundamental considerations. This guide outlines our conceptual approach to handling personal data, ensuring data subject rights, and maintaining a robust security posture.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <p>
-            While DPPs primarily focus on product-specific data, they can intersect with personal data related to manufacturers, suppliers, consumers (e.g., through warranty registration or repair history), or platform users. Ensuring the robust protection of any such personal data is paramount.
+            While DPPs primarily focus on product-specific data, they can intersect with personal data related to manufacturers, suppliers, consumers, or platform users. Ensuring the robust protection of any such personal data, alongside the integrity and verifiability of product data, is paramount.
           </p>
         </CardContent>
       </Card>
@@ -92,6 +92,34 @@ export default function DataPrivacyPage() {
           </div>
         </CardContent>
       </Card>
+      
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center"><ShieldCheckIcon className="mr-2 h-5 w-5 text-primary"/>Broader Compliance & Security Posture (Conceptual)</CardTitle>
+          <CardDescription>Our platform is designed with a comprehensive approach to security and regulatory alignment.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <section>
+            <h3 className="font-semibold text-md mb-1 flex items-center"><Globe className="mr-2 h-4 w-4 text-accent"/>EBSI Integration for Verifiable Credentials</h3>
+            <p className="text-sm text-muted-foreground">
+              The Norruva platform's conceptual integration with EBSI (European Blockchain Services Infrastructure) aims to support Verifiable Credentials (VCs). This enhances data integrity, trust, and interoperability for DPPs, allowing for secure and tamper-proof sharing of product claims and attestations.
+              More details can be found in our <Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline">EBSI Integration Overview</Link>.
+            </p>
+          </section>
+          <section>
+            <h3 className="font-semibold text-md mb-1 flex items-center"><Activity className="mr-2 h-4 w-4 text-accent"/>CSRD & EU Taxonomy Alignment</h3>
+            <p className="text-sm text-muted-foreground">
+              We aim to structure DPP data and provide API capabilities to help businesses align with the Corporate Sustainability Reporting Directive (CSRD) and the EU Taxonomy. This includes tracking relevant environmental, social, and governance (ESG) metadata associated with products. Future API endpoints may facilitate audit reporting for these regulations. (Conceptual)
+            </p>
+          </section>
+           <section>
+            <h3 className="font-semibold text-md mb-1 flex items-center"><KeyRound className="mr-2 h-4 w-4 text-accent"/>Secure API Design & Data Handling</h3>
+            <p className="text-sm text-muted-foreground">
+              All Norruva APIs are conceptually designed with security and GDPR principles at their core, including data minimization and purpose limitation. We envision using encrypted payloads for sensitive data in transit and architecting our backend with SOC2-readiness as a goal to ensure robust data protection.
+            </p>
+          </section>
+        </CardContent>
+      </Card>
 
       <Card className="shadow-lg">
         <CardHeader>
@@ -99,7 +127,7 @@ export default function DataPrivacyPage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm">
-            QR codes generated by or for the Norruva platform are designed to link to secure endpoints (HTTPS). They <strong>do not</strong> embed sensitive personal data directly. Access to detailed or private information through these links requires appropriate authentication and authorization, ensuring that only permitted data is visible.
+            QR codes generated by or for the Norruva platform are designed to link to secure endpoints (HTTPS). They <strong>do not</strong> embed sensitive personal data directly. Access to detailed or private information through these links requires appropriate authentication and authorization, ensuring that only permitted data is visible based on the user's role and permissions. This aligns with privacy-by-design principles.
           </p>
         </CardContent>
       </Card>
@@ -118,6 +146,7 @@ export default function DataPrivacyPage() {
             <li>Ensuring any personal data processed or stored within your own systems is handled securely, in line with data minimization principles, and only for legitimate purposes.</li>
             <li>Respecting data subject rights for data under your control, providing mechanisms for users to exercise their rights.</li>
             <li>Clearly communicating your application's data privacy practices to your users through a comprehensive privacy policy.</li>
+            <li>Understanding and adhering to the data access and usage policies defined by the Norruva platform, especially when handling sensitive product or compliance information retrieved via the API.</li>
           </ul>
         </CardContent>
       </Card>

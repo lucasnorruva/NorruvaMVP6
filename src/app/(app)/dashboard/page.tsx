@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, BadgeCheck, Building, FileWarning, Eye, Database, SearchCheck, BarChart2, AlertTriangle, MessageSquare, Inbox, History, Settings, ListChecks, Info, SlidersHorizontal, Activity, UploadCloud, FileSearch, DownloadCloud, Leaf, ClipboardCheck } from "lucide-react";
+import { Package, ScanLine, ShieldCheck, FileText, PlusCircle, Users, Layers, ShoppingBag, Recycle as RecycleIcon, BadgeCheck, Building, FileWarning, Eye, Database, SearchCheck, BarChart2, AlertTriangle, MessageSquare, Inbox, History, Settings, ListChecks, Info, SlidersHorizontal, Activity, UploadCloud, FileSearch, DownloadCloud, Leaf, ClipboardCheck, Cpu, HardDrive, FileClock } from "lucide-react";
 import Link from "next/link";
 import { useRole } from "@/contexts/RoleContext";
 
@@ -44,10 +44,12 @@ const RegulationUpdatesCard = () => (
               </p>
               <p className="text-sm text-foreground/90 mt-1.5">{update.summary}</p>
               {update.link && (
-                <Link href={update.link} passHref target="_blank">
-                  <Button variant="link" size="sm" className="p-0 h-auto mt-1 text-primary">
-                    Learn More
-                  </Button>
+                <Link href={update.link} passHref legacyBehavior>
+                  <a target="_blank" rel="noopener noreferrer">
+                    <Button variant="link" size="sm" className="p-0 h-auto mt-1 text-primary">
+                      Learn More
+                    </Button>
+                  </a>
                 </Link>
               )}
             </li>
@@ -107,14 +109,16 @@ const AdminQuickActions = () => {
         </CardHeader>
         <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {quickActions.map((action) => (
-            <Link key={action.label} href={action.href} passHref>
-              <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
-                <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
-                <div>
-                  <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
-                  <p className="text-xs text-muted-foreground">{action.description}</p>
-                </div>
-              </Button>
+            <Link key={action.label} href={action.href} passHref legacyBehavior>
+              <a className="block">
+                <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
+                  <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
+                  <div>
+                    <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
+                    <p className="text-xs text-muted-foreground">{action.description}</p>
+                  </div>
+                </Button>
+              </a>
             </Link>
           ))}
         </CardContent>
@@ -122,11 +126,53 @@ const AdminQuickActions = () => {
   )
 }
 
+const PlatformHealthStatsCard = () => {
+  const healthStats = [
+    { title: "API Call Volume (24h)", value: "1.2M", icon: Activity, trend: "+5%", trendDirection: "up" as const },
+    { title: "Active User Sessions", value: "345", icon: Users, trend: "-2%", trendDirection: "down" as const },
+    { title: "DPP Verification Queue", value: "17", icon: FileClock, trend: "+3", trendDirection: "up" as const },
+    { title: "Database Performance", value: "Optimal", icon: Database, statusColor: "text-green-500" },
+    { title: "AI Model Requests (24h)", value: "5,670", icon: Cpu, trend: "+10%", trendDirection: "up" as const },
+    { title: "Storage Utilization", value: "65%", icon: HardDrive, trend: "+1%", trendDirection: "up" as const },
+  ];
+
+  return (
+    <Card className="shadow-lg">
+      <CardHeader>
+        <CardTitle className="font-headline flex items-center">
+          <ShieldCheck className="mr-2 h-5 w-5 text-primary" />
+          Platform Health & Stats
+        </CardTitle>
+        <CardDescription>Overview of key operational metrics for the platform.</CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        {healthStats.map((stat, index) => (
+          <div key={index} className="flex items-center justify-between p-2 border-b last:border-b-0">
+            <div className="flex items-center">
+              <stat.icon className={`h-5 w-5 mr-3 ${stat.statusColor || 'text-muted-foreground'}`} />
+              <span className="text-sm font-medium">{stat.title}</span>
+            </div>
+            <div className="flex items-center">
+              <span className={`text-sm font-semibold ${stat.statusColor || ''}`}>{stat.value}</span>
+              {stat.trend && (
+                <span className={`ml-2 text-xs ${stat.trendDirection === 'up' ? 'text-green-500' : 'text-red-500'}`}>
+                  ({stat.trend})
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </CardContent>
+    </Card>
+  );
+};
+
+
 const ManufacturerQuickActionsCard = () => {
   const actions = [
     { label: "Add New Product", href: "/products/new", icon: PlusCircle, description: "Create a new DPP for your product." },
     { label: "View My Products", href: "/products", icon: Eye, description: "See all your managed products." },
-    { label: "Manage Supply Chain Data", href: "#", icon: Layers, description: "Input or update supplier information (mock)." },
+    { label: "Manage Supply Chain Data", href: "/suppliers", icon: Layers, description: "Input or update supplier information." },
     { label: "Sustainability Insights", href: "/sustainability", icon: Leaf, description: "View your sustainability reports." },
   ];
   return (
@@ -137,7 +183,8 @@ const ManufacturerQuickActionsCard = () => {
       </CardHeader>
       <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {actions.map((action) => (
-          <Link key={action.label} href={action.href} passHref>
+          <Link key={action.label} href={action.href} passHref legacyBehavior>
+            <a className="block">
             <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
               <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
               <div>
@@ -145,6 +192,7 @@ const ManufacturerQuickActionsCard = () => {
                 <p className="text-xs text-muted-foreground">{action.description}</p>
               </div>
             </Button>
+            </a>
           </Link>
         ))}
       </CardContent>
@@ -167,7 +215,8 @@ const SupplierQuickActionsCard = () => {
       </CardHeader>
       <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {actions.map((action) => (
-          <Link key={action.label} href={action.href} passHref>
+          <Link key={action.label} href={action.href} passHref legacyBehavior>
+            <a className="block">
             <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
               <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
               <div>
@@ -175,6 +224,7 @@ const SupplierQuickActionsCard = () => {
                 <p className="text-xs text-muted-foreground">{action.description}</p>
               </div>
             </Button>
+            </a>
           </Link>
         ))}
       </CardContent>
@@ -197,7 +247,8 @@ const RetailerQuickActionsCard = () => {
       </CardHeader>
       <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {actions.map((action) => (
-          <Link key={action.label} href={action.href} passHref>
+          <Link key={action.label} href={action.href} passHref legacyBehavior>
+            <a className="block">
             <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
               <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
               <div>
@@ -205,6 +256,7 @@ const RetailerQuickActionsCard = () => {
                 <p className="text-xs text-muted-foreground">{action.description}</p>
               </div>
             </Button>
+            </a>
           </Link>
         ))}
       </CardContent>
@@ -227,7 +279,8 @@ const RecyclerQuickActionsCard = () => {
       </CardHeader>
       <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {actions.map((action) => (
-          <Link key={action.label} href={action.href} passHref>
+          <Link key={action.label} href={action.href} passHref legacyBehavior>
+            <a className="block">
             <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
               <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
               <div>
@@ -235,6 +288,7 @@ const RecyclerQuickActionsCard = () => {
                 <p className="text-xs text-muted-foreground">{action.description}</p>
               </div>
             </Button>
+            </a>
           </Link>
         ))}
       </CardContent>
@@ -257,7 +311,8 @@ const VerifierQuickActionsCard = () => {
       </CardHeader>
       <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {actions.map((action) => (
-          <Link key={action.label} href={action.href} passHref>
+          <Link key={action.label} href={action.href} passHref legacyBehavior>
+             <a className="block">
             <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
               <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
               <div>
@@ -265,6 +320,7 @@ const VerifierQuickActionsCard = () => {
                 <p className="text-xs text-muted-foreground">{action.description}</p>
               </div>
             </Button>
+            </a>
           </Link>
         ))}
       </CardContent>
@@ -422,9 +478,9 @@ export default function DashboardPage() {
         return (
           <div className="space-y-8">
             <AdminDashboardOverview />
-            <div className="grid gap-6 md:grid-cols-2">
-              <AdminQuickActions/>
-              <Card className="shadow-lg">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+              <AdminQuickActions />
+              <Card className="shadow-lg lg:col-span-1">
                 <CardHeader>
                   <CardTitle className="font-headline">Recent Platform Activity</CardTitle>
                   <CardDescription>Overview of system-wide updates.</CardDescription>
@@ -446,6 +502,7 @@ export default function DashboardPage() {
                   </ul>
                 </CardContent>
               </Card>
+              <PlatformHealthStatsCard /> {/* New Card for Platform Health */}
             </div>
             <RegulationUpdatesCard /> 
           </div>
@@ -472,19 +529,23 @@ export default function DashboardPage() {
           {currentRole.charAt(0).toUpperCase() + currentRole.slice(1)} Dashboard
         </h1>
         {currentRole === 'manufacturer' && (
-           <Link href="/products/new" passHref>
+           <Link href="/products/new" passHref legacyBehavior>
+            <a>
              <Button variant="secondary">
                <PlusCircle className="mr-2 h-5 w-5" />
                Add New Product
              </Button>
+            </a>
            </Link>
         )}
          {currentRole === 'admin' && (
-           <Link href="/products/new" passHref>
+           <Link href="/products/new" passHref legacyBehavior>
+             <a>
              <Button variant="default">
                <PlusCircle className="mr-2 h-5 w-5" />
                Platform Product Setup
              </Button>
+            </a>
            </Link>
         )}
       </div>

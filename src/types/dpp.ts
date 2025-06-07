@@ -112,7 +112,12 @@ export interface DigitalProductPassport {
   traceability?: TraceabilityInfo;
 
   compliance: {
-    eprelId?: string;
+    eprel?: { // Changed from eprelId: string to an object
+      id?: string;
+      status: string; // e.g., 'Registered', 'Pending', 'Not Found', 'Synced Successfully', 'Data Mismatch'
+      url?: string;
+      lastChecked: string; // ISO Date string
+    };
     esprConformity?: {
       assessmentId?: string;
       status: 'conformant' | 'non_conformant' | 'pending_assessment';
@@ -162,6 +167,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     productName: "EcoSmart Refrigerator X500",
     category: "Appliances",
     manufacturer: { name: "GreenTech Appliances"},
+    modelNumber: "X500-ECO", // Added model number for EPREL sync
     metadata: { last_updated: "2024-07-28T10:00:00Z", status: "published", dppStandardVersion: "CIRPASS v0.9 Draft" },
     productDetails: {
       description: "An eco friendly fridge.",
@@ -171,7 +177,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       materials: [{name: "Recycled Steel", percentage: 70, isRecycled: true}]
     },
     compliance: {
-      eprelId: "EPREL_REG_12345",
+      eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-07-01T00:00:00Z" },
       esprConformity: { status: "conformant", assessmentId: "ESPR_ASSESS_001", assessmentDate: "2024-07-01" },
       battery_regulation: { status: "not_applicable" },
     },
@@ -194,6 +200,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     productName: "Sustainable Cotton T-Shirt",
     category: "Apparel",
     manufacturer: { name: "EcoThreads"},
+    modelNumber: "ET-TS-ORG-M",
     metadata: { last_updated: "2024-07-25T14:30:00Z", status: "draft" },
     productDetails: {
       description: "A sustainable t-shirt made from organic cotton.",
@@ -202,6 +209,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       materials: [{name: "Organic Cotton", percentage: 100}]
     },
     compliance: {
+      eprel: { status: "Not Applicable", lastChecked: "2024-07-25T00:00:00Z" },
       eu_espr: { status: "pending" },
       battery_regulation: { status: "not_applicable" },
     },
@@ -217,8 +225,10 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     productName: "Recycled Polymer Phone Case",
     category: "Accessories",
     manufacturer: { name: "ReCase It"},
+    modelNumber: "RC-POLY-IP15",
     metadata: { last_updated: "2024-07-22T09:15:00Z", status: "published" },
     compliance: {
+      eprel: { status: "Not Applicable", lastChecked: "2024-07-22T00:00:00Z" },
       eu_espr: { status: "compliant" },
       us_scope3: { status: "compliant" },
       battery_regulation: { status: "not_applicable" },
@@ -234,8 +244,10 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     productName: "Modular Sofa System",
     category: "Furniture",
     manufacturer: { name: "Comfy Living"},
+    modelNumber: "CL-MODSOFA-01",
     metadata: { last_updated: "2024-07-20T11:00:00Z", status: "archived" },
     compliance: {
+      eprel: { status: "Not Applicable", lastChecked: "2024-07-20T00:00:00Z" },
       eu_espr: { status: "compliant" },
       battery_regulation: { status: "not_applicable" },
     },
@@ -249,6 +261,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     productName: "High-Performance EV Battery",
     category: "Automotive Parts",
     manufacturer: { name: "PowerVolt"},
+    modelNumber: "PV-EVB-75KWH",
     metadata: { last_updated: "2024-07-29T08:00:00Z", status: "pending_review" },
     productDetails: {
       description: "A high-performance EV battery module.",
@@ -256,6 +269,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       imageHint: "ev battery module",
     },
     compliance: {
+      eprel: { status: "Data Mismatch", lastChecked: "2024-07-28T00:00:00Z", id: "EPREL_OLD_ID" },
       battery_regulation: {
         status: "pending",
         carbonFootprint: { value: 120, unit: "kg CO2e/kWh" },
@@ -277,7 +291,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
 // Type for individual compliance regulation details
 export interface ComplianceDetailItem {
   regulationName: string;
-  status: 'Compliant' | 'Non-Compliant' | 'Pending' | 'Not Applicable' | 'In Progress' | 'Data Incomplete';
+  status: 'Compliant' | 'Non-Compliant' | 'Pending' | 'Not Applicable' | 'In Progress' | 'Data Incomplete' | string; // string for flexibility
   detailsUrl?: string;
   verificationId?: string;
   lastChecked: string; // ISO Date string
@@ -286,15 +300,15 @@ export interface ComplianceDetailItem {
 
 // Updated structure for compliance summary within SimpleProductDetail
 export interface ProductComplianceSummary {
-  overallStatus: 'Compliant' | 'Non-Compliant' | 'Pending Review' | 'N/A' | 'Data Incomplete';
+  overallStatus: 'Compliant' | 'Non-Compliant' | 'Pending Review' | 'N/A' | 'Data Incomplete' | string;
   eprel?: {
     id?: string; 
-    status: string; // Changed to string to accommodate diverse EPREL sync statuses
+    status: string; 
     url?: string;
     lastChecked: string;
   };
   ebsi?: {
-    status: 'Verified' | 'Pending' | 'Not Verified' | 'Error' | 'N/A';
+    status: 'Verified' | 'Pending' | 'Not Verified' | 'Error' | 'N/A' | string;
     verificationId?: string;
     transactionUrl?: string;
     lastChecked: string;
@@ -421,7 +435,7 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     imageUrl: "https://placehold.co/600x400.png",
     imageHint: "modern refrigerator kitchen",
     keySustainabilityPoints: ["Energy Star Certified", "Made with 70% recycled steel", "95% recyclable at end-of-life", "Low Global Warming Potential (GWP) refrigerant"],
-    keyCompliancePoints: ["EU Ecodesign Compliant", "EU Energy Labelling Compliant", "EPREL Registered: EPREL_REG_12345"],
+    keyCompliancePoints: ["EU Ecodesign Compliant", "EU Energy Labelling Compliant", "EPREL Registered"],
     specifications: { "Capacity": "400L", "Warranty": "5 years", "Dimensions": "180x70x65 cm", "Color": "Stainless Steel", "Noise Level": "38 dB"},
     materialsUsed: [
       { name: "Recycled Steel", percentage: 70, source: "Certified Recycler A", isRecycled: true },
@@ -437,12 +451,12 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     ],
     complianceSummary: {
       overallStatus: "Compliant",
-      eprel: { id: "EPREL12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-07-01" },
-      ebsi: { status: "Verified", verificationId: "EBSI-VC-XYZ-001", transactionUrl: "#ebsi-tx-001", lastChecked: "2024-07-05" },
+      eprel: { id: "EPREL12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-07-01T00:00:00Z" },
+      ebsi: { status: "Verified", verificationId: "EBSI-VC-XYZ-001", transactionUrl: "#ebsi-tx-001", lastChecked: "2024-07-05T00:00:00Z" },
       specificRegulations: [
-        { regulationName: "EU Ecodesign 2019/2019", status: "Compliant", verificationId: "ECOD001", lastChecked: "2024-06-15", detailsUrl: "#ecodesign-report" },
-        { regulationName: "RoHS Directive 2011/65/EU", status: "Compliant", lastChecked: "2024-06-10" },
-        { regulationName: "WEEE Directive 2012/19/EU", status: "Compliant", lastChecked: "2024-06-10" },
+        { regulationName: "EU Ecodesign 2019/2019", status: "Compliant", verificationId: "ECOD001", lastChecked: "2024-06-15T00:00:00Z", detailsUrl: "#ecodesign-report" },
+        { regulationName: "RoHS Directive 2011/65/EU", status: "Compliant", lastChecked: "2024-06-10T00:00:00Z" },
+        { regulationName: "WEEE Directive 2012/19/EU", status: "Compliant", lastChecked: "2024-06-10T00:00:00Z" },
       ]
     },
     lifecycleEvents: [
@@ -491,17 +505,17 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     ],
     complianceSummary: {
       overallStatus: "Pending Review",
-      eprel: { status: "Pending", lastChecked: "2024-07-10" },
-      ebsi: { status: "Pending", lastChecked: "2024-07-15" },
+      eprel: { status: "Data Mismatch", lastChecked: "2024-07-10T00:00:00Z", id: "EPREL_EXISTING_BS-LED-S04B" },
+      ebsi: { status: "Pending", lastChecked: "2024-07-15T00:00:00Z" },
       specificRegulations: [
-        { regulationName: "RoHS Directive 2011/65/EU", status: "Compliant", lastChecked: "2024-07-01" },
-        { regulationName: "EMC Directive 2014/30/EU", status: "Pending", lastChecked: "2024-07-01", notes: "Awaiting test report" },
-        { regulationName: "EU Battery Regulation (if applicable)", status: "Data Incomplete", lastChecked: "2024-07-20", notes: "Internal battery component data needed."},
+        { regulationName: "RoHS Directive 2011/65/EU", status: "Compliant", lastChecked: "2024-07-01T00:00:00Z" },
+        { regulationName: "EMC Directive 2014/30/EU", status: "Pending", lastChecked: "2024-07-01T00:00:00Z", notes: "Awaiting test report" },
+        { regulationName: "EU Battery Regulation (if applicable)", status: "Data Incomplete", lastChecked: "2024-07-20T00:00:00Z", notes: "Internal battery component data needed."},
       ]
     },
     lifecycleEvents: [
       { id: "lc006", eventName: "Production Started", date: "2024-03-01T00:00:00Z", location: "Shenzhen, China", status: "In Progress", iconName: "Cog" },
-      { id: "lc007", eventName: "Firmware Update v1.2 Deployment", date: "2024-08-01T00:00:00Z", notes: "Improved energy efficiency algorithm.", status: "Upcoming", iconName: "UploadCloud" },
+      { id: "lc007", eventName: "Firmware Update v1.2 Deployment", date: "2024-08-01T00:00:00Z", notes: "Improved energy efficiency algorithm and security patches.", status: "Upcoming", iconName: "UploadCloud" },
       { id: "lc008", eventName: "Batch Testing", date: "2024-03-10T00:00:00Z", status: "Completed", iconName: "ClipboardCheck"},
     ]
   },
@@ -529,10 +543,10 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     supplyChainLinks: [],
     complianceSummary: {
       overallStatus: "N/A",
-      eprel: { status: "N/A", lastChecked: "2024-07-20" },
-      ebsi: { status: "N/A", lastChecked: "2024-07-20" },
+      eprel: { status: "Product Not Found in EPREL", lastChecked: "2024-07-20T00:00:00Z" },
+      ebsi: { status: "N/A", lastChecked: "2024-07-20T00:00:00Z" },
       specificRegulations: [
-        { regulationName: "TSCA Title VI", status: "Pending", lastChecked: "2024-07-18", notes: "Awaiting supplier declaration for finish."}
+        { regulationName: "TSCA Title VI", status: "Pending", lastChecked: "2024-07-18T00:00:00Z", notes: "Awaiting supplier declaration for finish."}
       ]
     },
     lifecycleEvents: [
@@ -715,4 +729,5 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ]
   }
 };
+
 

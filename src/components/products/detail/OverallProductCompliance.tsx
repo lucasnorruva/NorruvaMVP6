@@ -4,18 +4,18 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertCircle, Info, ShieldQuestion, ShieldCheck, AlertTriangle, ExternalLink, RefreshCw, Loader2 } from 'lucide-react';
+import { CheckCircle, AlertCircle, Info as InfoIcon, ShieldQuestion, ShieldCheck, AlertTriangle, ExternalLink, RefreshCw, Loader2 } from 'lucide-react'; // Added InfoIcon
 import { cn } from '@/lib/utils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from '@/components/ui/button';
 
 export interface ComplianceStatus {
-  status: string; 
+  status: string;
   lastChecked: string;
-  entryId?: string; 
-  verificationId?: string; 
+  entryId?: string;
+  verificationId?: string;
   declarationId?: string;
-  url?: string; 
+  url?: string;
 }
 
 export interface OverallComplianceData {
@@ -37,13 +37,13 @@ export interface ProductNotification {
 interface OverallProductComplianceProps {
   complianceData: OverallComplianceData;
   notifications?: ProductNotification[];
-  onSyncEprel?: () => Promise<void>; 
-  isSyncingEprel?: boolean; 
+  onSyncEprel?: () => Promise<void>;
+  isSyncingEprel?: boolean;
   canSyncEprel?: boolean;
 }
 
 const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionButton?: React.ReactNode }> = ({ title, data, actionButton }) => {
-  let IconComponent = Info;
+  let IconComponent = InfoIcon;
   let badgeVariant: "default" | "secondary" | "destructive" | "outline" = "outline";
   let badgeClasses = "bg-muted text-muted-foreground";
   let titleText = title;
@@ -74,7 +74,7 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
     case 'pending_review':
     case 'pending':
     case 'data mismatch':
-      IconComponent = Info;
+      IconComponent = InfoIcon;
       badgeVariant = "outline";
       badgeClasses = "bg-yellow-500/20 text-yellow-700 border-yellow-500/30";
        if (title.includes("EBSI") && data.verificationId === "PENDING_EBSI_CHECK") {
@@ -82,7 +82,7 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
       }
       break;
     case 'in_progress':
-      IconComponent = Info;
+      IconComponent = InfoIcon;
       badgeVariant = "outline";
       badgeClasses = "bg-blue-500/20 text-blue-700 border-blue-500/30";
       break;
@@ -92,14 +92,14 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
       badgeClasses = "bg-purple-500/20 text-purple-700 border-purple-500/30"; // Changed to purple for distinction
       break;
     case 'not_applicable':
-    case 'n/a': 
+    case 'n/a':
       IconComponent = ShieldQuestion;
       badgeVariant = "secondary";
       badgeClasses = "bg-gray-500/20 text-gray-700 border-gray-500/30";
-      detailsText = `Not applicable for this product. Last checked: ${new Date(data.lastChecked).toLocaleDateString()}`; 
+      detailsText = `Not applicable for this product. Last checked: ${new Date(data.lastChecked).toLocaleDateString()}`;
       break;
-    default: 
-      IconComponent = Info; // Default for any other unhandled status
+    default:
+      IconComponent = InfoIcon; // Default for any other unhandled status
       badgeVariant = "outline"; // A neutral outline
       badgeClasses = "bg-blue-500/20 text-blue-700 border-blue-500/30"; // Default to info-like blue
       break;
@@ -108,7 +108,7 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
   return (
     <div className="flex items-center justify-between p-3 bg-background rounded-md border hover:bg-muted/30 transition-colors">
       <div className="flex items-center">
-        <IconComponent className={cn("h-5 w-5 mr-3 flex-shrink-0", 
+        <IconComponent className={cn("h-5 w-5 mr-3 flex-shrink-0",
           badgeClasses.split(' ')[1] // Use the text color from badgeClasses for the icon
         )} />
         <div>
@@ -133,7 +133,7 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
 
   const hasErrorNotifications = notifications?.some(n => n.type === 'error');
 
-  const eprelSyncButton = (onSyncEprel) ? ( // Always render button structure, disable based on canSyncEprel
+  const eprelSyncButton = (onSyncEprel) ? (
     <TooltipProvider>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
@@ -141,7 +141,7 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
             variant="outline"
             size="icon"
             onClick={onSyncEprel}
-            disabled={isSyncingEprel || !canSyncEprel} // Disable if syncing OR cannot sync
+            disabled={isSyncingEprel || !canSyncEprel}
             className="h-7 w-7"
           >
             {isSyncingEprel ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
@@ -152,7 +152,10 @@ const OverallProductCompliance: React.FC<OverallProductComplianceProps> = ({ com
           {canSyncEprel ? (
             <p>Sync with EPREL Database</p>
           ) : (
-            <p>Model number required to sync with EPREL.</p>
+            <p className="flex items-center">
+              <InfoIcon className="h-4 w-4 mr-2 text-info" />
+              Model number required to sync.
+            </p>
           )}
         </TooltipContent>
       </Tooltip>

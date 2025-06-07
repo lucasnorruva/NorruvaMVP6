@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 import { KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Scale, Rocket, Settings2, PackageSearch, Layers, Lock, MessageSquare, Share2, BookText, VenetianMask, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, AlertTriangle as ErrorIcon, Layers as LayersIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIcon } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +20,6 @@ import { useToast } from "@/hooks/use-toast";
 import ApiKeysManager, { type ApiKey } from '@/components/developer/ApiKeysManager';
 import WebhooksManager, { type WebhookEntry } from '@/components/developer/WebhooksManager';
 import { cn } from '@/lib/utils';
-import { Separator } from '@/components/ui/separator';
 
 
 const initialMockApiKeys: ApiKey[] = [
@@ -433,6 +433,14 @@ export default function DeveloperPortalPage() {
   ];
 
   const codeSampleLanguages = ["cURL", "JavaScript", "Python", "Java", "Go"];
+  const conceptualSdks = [
+      { name: "JavaScript SDK", link: "#", soon: true, icon: FileCode },
+      { name: "Python SDK", link: "#", soon: true, icon: FileCode },
+      { name: "Java SDK", link: "#", soon: true, icon: FileCode },
+      { name: "Go SDK", link: "#", soon: true, icon: FileCode },
+      { name: "C# SDK", link: "#", soon: true, icon: FileCode },
+  ];
+
 
   return (
     <div className="space-y-6">
@@ -935,18 +943,23 @@ export default function DeveloperPortalPage() {
 
         <TabsContent value="resources" className="mt-6">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="shadow-lg lg:col-span-1">
-              <CardHeader>
-                  <CardTitle className="font-headline flex items-center"><FileCog className="mr-3 h-6 w-6 text-primary" /> SDKs (Conceptual)</CardTitle>
-                  <CardDescription>Language-specific libraries to accelerate integration.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                  <ul className="space-y-1.5 text-sm">
-                      <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>JavaScript SDK <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
-                      <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>Python SDK <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
-                      <li><Button variant="link" className="p-0 h-auto text-primary opacity-70" disabled>Java SDK <Badge variant="outline" className="ml-1 text-xs">Soon</Badge></Button></li>
-                  </ul>
-              </CardContent>
+             <Card className="shadow-lg lg:col-span-1">
+                <CardHeader>
+                    <CardTitle className="font-headline flex items-center"><FileCode className="mr-3 h-6 w-6 text-primary" /> SDKs (Conceptual)</CardTitle>
+                    <CardDescription>Language-specific Software Development Kits to accelerate your integration with the Norruva DPP API.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    {conceptualSdks.map(sdk => (
+                        <Button key={sdk.name} variant="outline" className="w-full justify-start text-left group hover:bg-accent/10" asChild>
+                            <a href={sdk.link} target="_blank" rel="noopener noreferrer" className={cn(sdk.soon && "opacity-60 cursor-not-allowed")}>
+                                <sdk.icon className="mr-2 h-4 w-4 text-primary group-hover:text-accent transition-colors" />
+                                <span className="flex-grow group-hover:text-accent transition-colors">{sdk.name}</span>
+                                {sdk.soon && <Badge variant="outline" className="ml-auto text-xs">Soon</Badge>}
+                                {!sdk.soon && <ExternalLinkIcon className="ml-auto h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors" />}
+                            </a>
+                        </Button>
+                    ))}
+                </CardContent>
             </Card>
 
             <Card className="shadow-lg lg:col-span-2">

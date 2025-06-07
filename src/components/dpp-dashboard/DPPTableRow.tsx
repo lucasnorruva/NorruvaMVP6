@@ -1,3 +1,4 @@
+
 // --- File: DPPTableRow.tsx ---
 // Description: Component to render a single row in the DPPTable for the Live Dashboard.
 "use client";
@@ -10,9 +11,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from "@/components/ui/dropdown-menu";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { MoreHorizontal, Eye, Edit as EditIconLucide, Settings as SettingsIcon, Bot, Trash2 } from "lucide-react"; // Added Trash2
+import { MoreHorizontal, Eye, Edit as EditIconLucide, Settings as SettingsIcon, Bot, Trash2 } from "lucide-react";
 import type { DigitalProductPassport } from "@/types/dpp";
-import { getOverallComplianceDetails, getEbsiStatusDetails } from "@/utils/dppDisplayUtils.tsx"; // Updated import to .tsx
+import { getOverallComplianceDetails, getEbsiStatusDetails } from "@/utils/dppDisplayUtils.tsx";
 import { cn } from "@/lib/utils";
 
 interface DPPTableRowProps {
@@ -27,6 +28,8 @@ export function DPPTableRow({ dpp, onDeleteProduct, onViewAiSummary }: DPPTableR
   const ebsiStatusDetails = getEbsiStatusDetails(dpp.ebsiVerification?.status);
 
   const handleDPPSettings = (dppId: string) => {
+    // This is a mock function. In a real application, this would likely navigate
+    // to a settings page for the DPP or open a settings dialog.
     alert(`Mock: Opening settings for DPP ${dppId}.`);
   };
 

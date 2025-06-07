@@ -5,7 +5,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Globe, { type GlobeMethods } from 'react-globe.gl';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge'; // Added Badge import
+import { Badge } from '@/components/ui/badge';
 import { X, Zap, MapPin, Anchor, Store, Factory, Ship, Plane, Truck, Info, Loader2, CheckCircle as CheckCircleIcon, Clock as ClockIcon } from 'lucide-react';
 import { feature } from 'topojson-client';
 import type { Objects, Topology } from 'topojson-specification';
@@ -75,7 +75,7 @@ const ArcIcon = ({ status }: { status?: ArcData['status'] }) => {
     if (status === 'in_transit') return <Truck className="h-4 w-4 mr-2 text-blue-500" />;
     if (status === 'delivered') return <CheckCircleIcon className="h-4 w-4 mr-2 text-green-500" />;
     if (status === 'delayed') return <ClockIcon className="h-4 w-4 mr-2 text-orange-500" />;
-    return <Plane className="h-4 w-4 mr-2 text-gray-500" />; 
+    return <Plane className="h-4 w-4 mr-2 text-gray-500" />;
 };
 
 
@@ -92,7 +92,7 @@ export default function DppGlobalTrackerPage() {
       .then(res => res.json())
       .then((atlas: Topology) => {
         setCountries(atlas);
-        setInitialLoadComplete(true); 
+        setInitialLoadComplete(true);
       })
       .catch(err => {
         console.error("Error fetching country polygons:", err);
@@ -127,7 +127,7 @@ export default function DppGlobalTrackerPage() {
       globeEl.current.controls().autoRotate = false;
     }
   }, []);
-  
+
   const countryPolygons = countries.objects.countries
     ? (feature(countries, countries.objects.countries) as unknown as FeatureCollection<Geometry>)
     : { type: 'FeatureCollection', features: [] };
@@ -177,7 +177,7 @@ export default function DppGlobalTrackerPage() {
         polygonSideColor={() => 'rgba(0, 0, 0, 0.02)'}
         polygonStrokeColor={() => 'rgba(120,120,120,0.2)'}
         
-        onGlobeReady={() => setTimeout(() => setGlobeReady(true), 200)} 
+        onGlobeReady={() => setTimeout(() => setGlobeReady(true), 200)}
         width={typeof window !== 'undefined' ? window.innerWidth : 600}
         height={typeof window !== 'undefined' ? window.innerHeight - 64 : 400}
       />
@@ -186,7 +186,7 @@ export default function DppGlobalTrackerPage() {
         <Card className="absolute top-4 right-4 w-80 max-w-sm z-10 shadow-2xl bg-card/80 backdrop-blur-lg rounded-lg">
           <CardHeader className="flex flex-row items-start justify-between pb-2 pt-3 px-4">
             <div className="flex items-center">
-              {selectedInfo.type === 'point' ? 
+              {selectedInfo.type === 'point' ?
                   <PointIcon type={(selectedInfo.data as PointData).type} /> :
                   <ArcIcon status={(selectedInfo.data as ArcData).status} />
               }
@@ -202,7 +202,7 @@ export default function DppGlobalTrackerPage() {
               <span className="sr-only">Close details</span>
             </Button>
           </CardHeader>
-          <CardContent className="text-sm space-y-2 px-4 pb-3"> {/* Changed space-y-1.5 to space-y-2 */}
+          <CardContent className="text-sm space-y-2 px-4 pb-3">
             {selectedInfo.type === 'point' && (
               <>
                 <div className="flex items-center gap-2 mb-1">
@@ -231,7 +231,7 @@ export default function DppGlobalTrackerPage() {
         </Card>
       )}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 p-3 bg-background/70 text-foreground dark:bg-foreground/10 dark:text-background rounded-lg backdrop-blur-md shadow-lg max-w-lg text-center">
-        <Info className="inline h-4 w-4 mr-1.5 align-middle text-primary" /> 
+        <Info className="inline h-4 w-4 mr-1.5 align-middle text-primary" />
         Conceptual DPP Global Tracker. Click points or arcs for details.
         <div className="mt-2 opacity-90 text-xs leading-tight flex justify-center items-center gap-x-3 gap-y-1 flex-wrap">
             <span className="inline-flex items-center"><Anchor className="h-3 w-3 mr-1 text-blue-500"/>Ports</span>
@@ -243,6 +243,3 @@ export default function DppGlobalTrackerPage() {
     </div>
   );
 }
-
-
-    

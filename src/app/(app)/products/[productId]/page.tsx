@@ -55,15 +55,16 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         });
     }
     if (dpp.compliance.battery_regulation) {
-        const cfValue = dpp.compliance.battery_regulation.carbonFootprint?.value || 'N/A';
-        const cfUnit = dpp.compliance.battery_regulation.carbonFootprint?.unit || '';
+        const batteryReg = dpp.compliance.battery_regulation;
+        const cfValue = batteryReg.carbonFootprint?.value ?? 'N/A';
+        const cfUnit = batteryReg.carbonFootprint?.unit ?? '';
         const notesValue = `CF: ${cfValue} ${cfUnit}`.trim();
 
         specificRegulations.push({
             regulationName: "EU Battery Regulation",
-            status: dpp.compliance.battery_regulation.status as ComplianceDetailItem['status'],
-            verificationId: dpp.compliance.battery_regulation.batteryPassportId || dpp.compliance.battery_regulation.vcId,
-            lastChecked: dpp.metadata.last_updated, // Comma is definitely here
+            status: batteryReg.status as ComplianceDetailItem['status'],
+            verificationId: batteryReg.batteryPassportId || batteryReg.vcId,
+            lastChecked: dpp.metadata.last_updated, // Comma is critical here
             notes: notesValue
         });
     }
@@ -191,7 +192,7 @@ export default function ProductDetailPage() {
                       console.error("Failed to parse customAttributesJsonString from localStorage for USER_PROD:", e);
                   }
               }
-             const certificationsForUserProd: Certification[] = userProductData.certifications?.map(sc => ({
+             const certificationsForUserProd = userProductData.certifications?.map(sc => ({
                 id: `cert_user_${sc.name.replace(/\s+/g, '_')}`, // mock an ID
                 name: sc.name,
                 issuer: sc.authority,
@@ -228,12 +229,6 @@ export default function ProductDetailPage() {
               },
               compliance: { // Basic compliance from StoredUserProduct
                 eprel: userProductData.complianceSummary?.eprel,
-                battery_regulation: userProductData.complianceSummary?.specificRegulations?.find(
-                  (reg: any) => reg.regulationName === "EU Battery Regulation" // Using 'any' for flexibility from string status
-                ) ? {
-                    status: userProductData.complianceSummary.specificRegulations.find((reg: any) => reg.regulationName === "EU Battery Regulation")!.status as DigitalProductPassport['compliance']['battery_regulation']['status'],
-                    // Map other battery fields if available in stored complianceSummary
-                } : { status: 'not_applicable' } // Default if not found
               },
               ebsiVerification: userProductData.complianceSummary?.ebsi ? {
                 status: userProductData.complianceSummary.ebsi.status as EbsiVerificationDetails['status'],
@@ -401,3 +396,5 @@ export default function ProductDetailPage() {
     />
   );
 }
+
+    

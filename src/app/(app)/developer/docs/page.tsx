@@ -75,7 +75,7 @@ export default function DeveloperDocumentationHubPage() {
               <li><Link href="/developer/guides/manufacturer-onboarding" className="text-primary hover:underline flex items-center"><Users className="mr-2 h-4 w-4" />Manufacturer Onboarding</Link></li>
               <li><Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline flex items-center"><Share2 className="mr-2 h-4 w-4" />EBSI Integration Overview</Link></li>
               <li><Link href="/developer/docs/regulatory-alignment" className="text-primary hover:underline flex items-center"><Scale className="mr-2 h-4 w-4" />Regulatory Alignment (ESPR, EPREL)</Link></li>
-              <li><Link href="/developer/docs/data-management-best-practices" className="text-primary hover:underline flex items-center"><LayersIcon className="mr-2 h-4 w-4" />Data Management Best Practices</Link></li>
+              <li><Link href="/developer/docs/data-management-best-practices" className="text-primary hover:underline flex items-center"><LayersIcon className="mr-2 h-4 w-4" />Data Management Best Practices <Badge variant="outline" className="ml-2 text-xs">Soon</Badge></Link></li>
               <li><Link href="/developer/guides/auditor-integration" className="text-primary hover:underline flex items-center"><ShieldCheck className="mr-2 h-4 w-4" />Auditor Integration</Link></li>
             </ul>
           </div>

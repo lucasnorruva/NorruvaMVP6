@@ -14,19 +14,22 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIcon } from "lucide-react"; // Added XCircle
-import React, { useState, useEffect } from "react"; // Added useEffect
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIcon } from "lucide-react";
+import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import BasicInfoFormSection from "./form/BasicInfoFormSection";
 import ProductImageFormSection from "./form/ProductImageFormSection";
 import BatteryDetailsFormSection from "./form/BatteryDetailsFormSection";
+import SustainabilityComplianceFormSection from "./form/SustainabilityComplianceFormSection"; // New import
+import TechnicalSpecificationsFormSection from "./form/TechnicalSpecificationsFormSection"; // New import
+import CustomAttributesFormSection from "./form/CustomAttributesFormSection"; // New import
 import {
   handleSuggestNameAI,
   handleSuggestDescriptionAI,
   handleSuggestClaimsAI,
   handleGenerateImageAI,
   handleSuggestSpecificationsAI,
-} from "@/utils/aiFormHelpers"; // Changed from .tsx
+} from "@/utils/aiFormHelpers";
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -52,7 +55,7 @@ const formSchema = z.object({
   stateOfHealth: z.coerce.number().nullable().optional(),
   carbonFootprintManufacturing: z.coerce.number().nullable().optional(),
   recycledContentPercentage: z.coerce.number().nullable().optional(),
-  customAttributesJsonString: z.string().optional(), // Added for custom attributes
+  customAttributesJsonString: z.string().optional(),
 });
 
 export type ProductFormData = z.infer<typeof formSchema>;
@@ -110,7 +113,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       stateOfHealth: initialData?.stateOfHealth ?? undefined,
       carbonFootprintManufacturing: initialData?.carbonFootprintManufacturing ?? undefined,
       recycledContentPercentage: initialData?.recycledContentPercentage ?? undefined,
-      customAttributesJsonString: initialData?.customAttributesJsonString || "", // Initialize custom attributes
+      customAttributesJsonString: initialData?.customAttributesJsonString || "",
     },
   });
 
@@ -167,6 +170,12 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       });
     }
   }, [initialData, form]);
+  
+  // Effect to update the hidden form field when customAttributes local state changes
+  useEffect(() => {
+    form.setValue("customAttributesJsonString", JSON.stringify(customAttributes), { shouldValidate: true });
+  }, [customAttributes, form]);
+
 
   const handleFormSubmit = (data: ProductFormData) => {
     const dataToSubmit = {
@@ -181,6 +190,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     const result = await handleSuggestNameAI(form, toast, setIsSuggestingName);
     if (result) {
         form.setValue("productName", result, { shouldValidate: true });
+        form.setValue("productNameOrigin" as any, 'AI_EXTRACTED'); // Track origin if using InitialProductFormData
     }
   };
 
@@ -188,6 +198,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     const result = await handleSuggestDescriptionAI(form, toast, setIsSuggestingDescription);
      if (result) {
         form.setValue("productDescription", result, { shouldValidate: true });
+        form.setValue("productDescriptionOrigin" as any, 'AI_EXTRACTED');
     }
   };
 
@@ -204,6 +215,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     const result = await handleSuggestSpecificationsAI(form, toast, setIsSuggestingSpecs);
     if (result) {
         form.setValue("specifications", result, { shouldValidate: true });
+        form.setValue("specificationsOrigin" as any, 'AI_EXTRACTED');
     }
   };
 
@@ -213,6 +225,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     const currentClaimsValue = form.getValues("sustainabilityClaims") || "";
     const newClaimsValue = currentClaimsValue ? `${currentClaimsValue}\n- ${claim}` : `- ${claim}`;
     form.setValue("sustainabilityClaims", newClaimsValue, { shouldValidate: true });
+    form.setValue("sustainabilityClaimsOrigin" as any, 'manual'); // User selected it
   };
 
   const handleAddCustomAttribute = () => {
@@ -279,31 +292,31 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
       <AccordionItem value="item-2">
         <AccordionTrigger className="text-lg font-semibold">Sustainability & Compliance</AccordionTrigger>
-        <AccordionContent className="space-y-6 pt-4">
-           <FormField control={form.control} name="materials" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Key Materials <AiIndicator fieldOrigin={initialData?.materialsOrigin} fieldName="Key Materials" /></FormLabel> <FormControl><Textarea placeholder="e.g., Organic Cotton, Recycled PET" {...field} rows={3}/></FormControl> <FormDescription>Primary materials used.</FormDescription> <FormMessage /> </FormItem> )}/>
-          <FormField control={form.control} name="sustainabilityClaims" render={({ field }) => ( <FormItem> <div className="flex items-center justify-between"> <FormLabel className="flex items-center">Sustainability Claims <AiIndicator fieldOrigin={initialData?.sustainabilityClaimsOrigin} fieldName="Sustainability Claims" /></FormLabel> <Button type="button" variant="ghost" size="sm" onClick={callSuggestClaimsAI} disabled={anyAISuggestionInProgress || !!isSubmitting}> {isSuggestingClaims ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />} <span className="ml-2">{isSuggestingClaims ? "Suggesting..." : "Suggest Claims"}</span> </Button> </div> <FormControl><Textarea placeholder="e.g., - Made with 70% recycled materials" {...field} rows={3}/></FormControl> <FormDescription>Highlight key sustainability features. Each claim on a new line, optionally start with '- '. AI suggestions will follow this format.</FormDescription> <FormMessage /> </FormItem> )}/>
-          {suggestedClaims.length > 0 && ( <div className="space-y-2 pt-2"> <p className="text-sm font-medium text-muted-foreground">Click to add suggested claim:</p> <div className="flex flex-wrap gap-2">{suggestedClaims.map((claim, index) => ( <Button key={index} type="button" variant="outline" size="sm" onClick={() => handleClaimClick(claim)}>{claim}</Button>))}</div> </div> )}
-          <FormField control={form.control} name="energyLabel" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Energy Label <AiIndicator fieldOrigin={initialData?.energyLabelOrigin} fieldName="Energy Label" /></FormLabel> <FormControl><Input placeholder="e.g., A++" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+        <AccordionContent>
+          <SustainabilityComplianceFormSection
+            form={form}
+            initialData={initialData}
+            isSuggestingClaims={isSuggestingClaims}
+            callSuggestClaimsAI={callSuggestClaimsAI}
+            suggestedClaims={suggestedClaims}
+            handleClaimClick={handleClaimClick}
+            anyAISuggestionInProgress={anyAISuggestionInProgress}
+            isSubmittingForm={isSubmitting}
+          />
         </AccordionContent>
       </AccordionItem>
 
       <AccordionItem value="item-3">
         <AccordionTrigger className="text-lg font-semibold">Technical Specifications</AccordionTrigger>
-        <AccordionContent className="pt-4">
-           <FormField control={form.control} name="specifications" render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center justify-between">
-                <FormLabel className="flex items-center">Specifications (JSON) <AiIndicator fieldOrigin={initialData?.specificationsOrigin} fieldName="Specifications" /></FormLabel>
-                <Button type="button" variant="ghost" size="sm" onClick={callSuggestSpecificationsAI} disabled={anyAISuggestionInProgress || !!isSubmitting}>
-                  {isSuggestingSpecs ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
-                  <span className="ml-2">{isSuggestingSpecs ? "Suggesting..." : "Suggest Specs"}</span>
-                </Button>
-              </div>
-              <FormControl><Textarea placeholder='e.g., { "color": "blue", "weight": "10kg" }' {...field} rows={5} /></FormControl>
-              <FormDescription>Enter as a JSON object. AI can help suggest a structure. You can pretty-format JSON using online tools before pasting.</FormDescription>
-              <FormMessage />
-            </FormItem>
-            )}/>
+        <AccordionContent>
+          <TechnicalSpecificationsFormSection
+            form={form}
+            initialData={initialData}
+            isSuggestingSpecs={isSuggestingSpecs}
+            callSuggestSpecificationsAI={callSuggestSpecificationsAI}
+            anyAISuggestionInProgress={anyAISuggestionInProgress}
+            isSubmittingForm={isSubmitting}
+          />
         </AccordionContent>
       </AccordionItem>
 
@@ -316,63 +329,17 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
       <AccordionItem value="item-custom-attributes">
         <AccordionTrigger className="text-lg font-semibold">Custom Attributes</AccordionTrigger>
-        <AccordionContent className="space-y-4 pt-4">
-          <p className="text-sm text-muted-foreground">
-            Define additional key-value pairs specific to this product.
-          </p>
-          {customAttributes.length > 0 && (
-            <div className="space-y-2 rounded-md border p-3 bg-muted/30">
-              <FormLabel className="text-xs text-muted-foreground">Current Custom Attributes:</FormLabel>
-              {customAttributes.map((attr, index) => (
-                <div key={index} className="flex items-center justify-between text-sm p-1.5 bg-background rounded shadow-sm">
-                  <div>
-                    <span className="font-medium">{attr.key}:</span>
-                    <span className="text-muted-foreground ml-1">{attr.value}</span>
-                  </div>
-                  <Button type="button" variant="ghost" size="icon" onClick={() => handleRemoveCustomAttribute(attr.key)} className="h-6 w-6 text-destructive hover:text-destructive">
-                    <XCircle className="h-4 w-4" />
-                  </Button>
-                </div>
-              ))}
-            </div>
-          )}
-          <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
-            <FormItem>
-              <FormLabel htmlFor="customAttrKey" className="text-xs">Attribute Key</FormLabel>
-              <FormControl>
-                <Input
-                  id="customAttrKey"
-                  value={currentCustomKey}
-                  onChange={(e) => setCurrentCustomKey(e.target.value)}
-                  placeholder="e.g., Color Code"
-                  className="h-9"
-                />
-              </FormControl>
-            </FormItem>
-            <FormItem>
-              <FormLabel htmlFor="customAttrValue" className="text-xs">Attribute Value</FormLabel>
-              <FormControl>
-                <Input
-                  id="customAttrValue"
-                  value={currentCustomValue}
-                  onChange={(e) => setCurrentCustomValue(e.target.value)}
-                  placeholder="e.g., #FF0000"
-                  className="h-9"
-                />
-              </FormControl>
-            </FormItem>
-            <Button type="button" variant="outline" onClick={handleAddCustomAttribute} className="h-9 mt-auto sm:mt-0">
-              <PlusCircle className="mr-2 h-4 w-4" /> Add
-            </Button>
-          </div>
-           <FormField
-            control={form.control}
-            name="customAttributesJsonString"
-            render={({ field }) => (
-              <FormItem className="hidden"> {/* Hidden field to store JSON string for form submission */}
-                <FormControl><Input type="hidden" {...field} value={JSON.stringify(customAttributes)} /></FormControl>
-              </FormItem>
-            )}
+        <AccordionContent>
+          <CustomAttributesFormSection
+            customAttributes={customAttributes}
+            setCustomAttributes={setCustomAttributes}
+            currentCustomKey={currentCustomKey}
+            setCurrentCustomKey={setCurrentCustomKey}
+            currentCustomValue={currentCustomValue}
+            setCurrentCustomValue={setCurrentCustomValue}
+            handleAddCustomAttribute={handleAddCustomAttribute}
+            handleRemoveCustomAttribute={handleRemoveCustomAttribute}
+            form={form}
           />
         </AccordionContent>
       </AccordionItem>
@@ -405,3 +372,4 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
+

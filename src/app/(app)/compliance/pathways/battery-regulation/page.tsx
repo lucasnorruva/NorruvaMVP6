@@ -2,17 +2,17 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Added Select
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Lightbulb, HelpCircle, CheckCircle, Loader2, Info, Recycle, Handshake, PackageCheck, AlertTriangle, SearchCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-// import { queryComplianceCopilot } from '@/ai/flows/compliance-copilot-flow'; // For future integration
 
 interface WizardStep {
   id: string;
@@ -34,6 +34,7 @@ const euBatteryRegulationSteps: WizardStep[] = [
 ];
 
 export default function BatteryRegulationPathwayPage() {
+  const router = useRouter(); // Initialize router
   const [activeStep, setActiveStep] = useState<string>(euBatteryRegulationSteps[0].id);
   const [formData, setFormData] = useState<Record<string, any>>({
     step1_batteryModel: "",
@@ -78,7 +79,7 @@ export default function BatteryRegulationPathwayPage() {
     step8_recyclingEfficiencyTargetMet: "not_yet_assessed",
     step8_materialRecoveryTargetsMet: "not_yet_assessed",
   });
-  const [isLoadingCopilot, setIsLoadingCopilot] = useState(false);
+  // isLoadingCopilot state removed as navigation handles loading indication
   const { toast } = useToast();
 
   const handleInputChange = (step: string, field: string, value: string | number) => {
@@ -95,43 +96,10 @@ export default function BatteryRegulationPathwayPage() {
 
 
   const handleAskCopilot = async (stepContext: string) => {
-    setIsLoadingCopilot(true);
-    toast({
-      title: "Asking AI Co-Pilot...",
-      description: `Getting information related to: ${stepContext}`,
-    });
-
-    await new Promise(resolve => setTimeout(resolve, 1500)); 
-
-    let mockResponseDescription = `For ${stepContext}, ensure all data is accurate and verifiable according to the EU Battery Regulation. Specific guidance can be found in the relevant annexes of the regulation.`;
-
-    if (stepContext === euBatteryRegulationSteps[0].title) { // General Information
-        mockResponseDescription = `For General Information, ensure you provide accurate battery model identifiers and clearly define all typical intended uses. If a safety data sheet (SDS) is available, linking its URL strengthens your compliance position. Refer to Annex VI of the EU Battery Regulation for specific data elements required under this section.`;
-    } else if (stepContext === euBatteryRegulationSteps[1].title) { // Manufacturer Details
-        mockResponseDescription = `For Manufacturer Details, clearly identify the legal manufacturer, including their registered trade name and postal address. The contact person (name, email, phone) should be easily reachable for compliance inquiries. Ensure this information precisely matches official business registries.`;
-    } else if (stepContext === euBatteryRegulationSteps[2].title) { // Material Composition
-        mockResponseDescription = `For Material Composition, accurately declare percentages of Cobalt, Lithium, Natural Graphite, and Nickel if present. Specify presence and/or concentration of restricted substances like Lead, Mercury, and Cadmium. List any other SVHCs present above 0.1% w/w. Refer to Annex I of the EU Battery Regulation for detailed requirements and thresholds.`;
-    } else if (stepContext === euBatteryRegulationSteps[3].title) { // Carbon Footprint
-        mockResponseDescription = `For Carbon Footprint, provide the total cradle-to-gate carbon footprint for the battery's manufacturing. Specify the unit (e.g., kg CO₂e/kWh of total energy over service life) and data source (e.g., PEFCR for Batteries, internal LCA study). Optionally, detail reductions from recycled content, or specific footprints for transport and end-of-life. Refer to Annex II of the EU Battery Regulation for detailed requirements.`;
-    } else if (stepContext === euBatteryRegulationSteps[4].title) { // Performance & Durability
-        mockResponseDescription = `For Performance & Durability, provide rated capacity (e.g., '100 Ah'), nominal voltage (e.g., '48V'), expected lifetime (e.g., '2000 cycles at 80% DoD'), operating temperature range (e.g., '-20°C to 60°C'), internal resistance (e.g., '<50 mOhms'), and power capability (e.g., '5 kW continuous'). State compliance with key safety tests like IEC 62133, UN 38.3, or IEC 62619. Refer to Annex IV of the EU Battery Regulation.`;
-    } else if (stepContext === euBatteryRegulationSteps[5].title) { // Recycled Content
-        mockResponseDescription = `For Recycled Content, accurately declare the percentage by weight of recovered cobalt, lead, lithium, and nickel used in active materials of the battery. This information is crucial for demonstrating circularity. Specify the data source and methodology for these declarations. Refer to Annex VII of the EU Battery Regulation for minimum thresholds and calculation methodologies. Providing a URL to verification documents is recommended.`;
-    } else if (stepContext === euBatteryRegulationSteps[6].title) { // Supply Chain Due Diligence
-        mockResponseDescription = `For Supply Chain Due Diligence, describe your policies for responsible sourcing of raw materials, especially Cobalt, Lithium, Natural Graphite, and Nickel. Align with OECD Due Diligence Guidance. If you have a public report on your due diligence activities, provide a link. This is crucial for demonstrating ethical and sustainable sourcing practices as required by Annex X of the EU Battery Regulation.`;
-    } else if (stepContext === euBatteryRegulationSteps[7].title) { // Collection & Recycling
-        mockResponseDescription = `For Collection & Recycling, detail how producer responsibility obligations are met. Provide a URL to information on collection and recycling schemes. Describe take-back systems and report on achievement of recycling efficiency and material recovery targets as per Annex XII of the EU Battery Regulation. This includes targets for Cobalt, Copper, Lead, Lithium, and Nickel recovery.`;
-    } else if (stepContext === euBatteryRegulationSteps[8].title) { // Review & Submit
-        mockResponseDescription = `For Review & Submit, carefully cross-check all provided information against the EU Battery Regulation requirements (Annexes I-XIII). Ensure data accuracy, completeness, and verifiability. Pay special attention to units, thresholds, and specific data elements required for each section. Confirm all linked documents are accessible and up-to-date. This is your final check before formal submission.`;
-    }
-
-
-     toast({
-        title: "AI Co-Pilot (Mock Response)",
-        description: mockResponseDescription,
-        duration: 10000, 
-      });
-    setIsLoadingCopilot(false);
+    // Construct the query
+    const query = `What are the key considerations for the '${stepContext}' step of the EU Battery Regulation?`;
+    // Navigate to the co-pilot page with the query
+    router.push(`/copilot?contextQuery=${encodeURIComponent(query)}`);
   };
 
   const currentStepIndex = euBatteryRegulationSteps.findIndex(s => s.id === activeStep);
@@ -176,8 +144,8 @@ export default function BatteryRegulationPathwayPage() {
                 <Label htmlFor="step1_safetySheetUrl">Safety Data Sheet URL (Optional)</Label>
                 <Input id="step1_safetySheetUrl" value={formData.step1_safetySheetUrl || ""} onChange={(e) => handleInputChange("step1", "safetySheetUrl", e.target.value)} placeholder="https://example.com/sds/powercell_max_5000.pdf" />
               </div>
-              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[0].title)} disabled={isLoadingCopilot}>
-                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[0].title)}>
+                <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />
                 Ask Co-Pilot about this step
               </Button>
             </CardContent>
@@ -203,8 +171,8 @@ export default function BatteryRegulationPathwayPage() {
                 <Label htmlFor="step2_manufacturerContact">Responsible Contact Person (Name / Email)</Label>
                 <Input id="step2_manufacturerContact" value={formData.step2_manufacturerContact || ""} onChange={(e) => handleInputChange("step2", "manufacturerContact", e.target.value)} placeholder="e.g., Jane Doe / compliance@acmebatteries.com" />
               </div>
-              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[1].title)} disabled={isLoadingCopilot}>
-                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[1].title)}>
+                <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />
                 Ask Co-Pilot about this step
               </Button>
             </CardContent>
@@ -272,8 +240,8 @@ export default function BatteryRegulationPathwayPage() {
                 <p className="text-xs text-muted-foreground mt-1">Refer to the ECHA Candidate List for SVHCs.</p>
               </div>
 
-              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[2].title)} disabled={isLoadingCopilot}>
-                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[2].title)}>
+                <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />
                 Ask Co-Pilot about this step
               </Button>
             </CardContent>
@@ -329,8 +297,8 @@ export default function BatteryRegulationPathwayPage() {
                 <Input id="step4_eolCF" type="number" value={formData.step4_eolCF || ""} onChange={(e) => handleInputChange("step4", "eolCF", e.target.valueAsNumber)} placeholder="e.g., -10 (kg CO₂e/kWh for credit)" />
                 <p className="text-xs text-muted-foreground mt-1">Estimated CF or credit associated with the battery's end-of-life phase.</p>
               </div>
-              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[3].title)} disabled={isLoadingCopilot}>
-                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[3].title)}>
+                <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />
                 Ask Co-Pilot about this step
               </Button>
             </CardContent>
@@ -376,8 +344,8 @@ export default function BatteryRegulationPathwayPage() {
                 <Label htmlFor="step5_safetyTestCompliance">Safety Test Compliance</Label>
                 <Textarea id="step5_safetyTestCompliance" value={formData.step5_safetyTestCompliance || ""} onChange={(e) => handleInputChange("step5", "safetyTestCompliance", e.target.value)} placeholder="List key safety standards complied with, e.g., IEC 62133, UN 38.3, IEC 62619." />
               </div>
-              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[4].title)} disabled={isLoadingCopilot}>
-                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[4].title)}>
+                <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />
                 Ask Co-Pilot about this step
               </Button>
             </CardContent>
@@ -419,8 +387,8 @@ export default function BatteryRegulationPathwayPage() {
                 <Label htmlFor="step6_recycledContentVerificationUrl">Verification Document URL (Optional)</Label>
                 <Input id="step6_recycledContentVerificationUrl" value={formData.step6_recycledContentVerificationUrl || ""} onChange={(e) => handleInputChange("step6", "recycledContentVerificationUrl", e.target.value)} placeholder="https://example.com/docs/recycled_content_verification.pdf" />
               </div>
-              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[5].title)} disabled={isLoadingCopilot}>
-                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[5].title)}>
+                <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />
                 Ask Co-Pilot about this step
               </Button>
             </CardContent>
@@ -452,8 +420,8 @@ export default function BatteryRegulationPathwayPage() {
                     <Input id="step7_publicReportUrl" value={formData.step7_publicReportUrl || ""} onChange={(e) => handleInputChange("step7", "publicReportUrl", e.target.value)} placeholder="https://example.com/sustainability/due_diligence_report_2023.pdf" />
                 </div>
               )}
-               <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[6].title)} disabled={isLoadingCopilot}>
-                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+               <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[6].title)}>
+                <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />
                 Ask Co-Pilot about this step
               </Button>
             </CardContent>
@@ -505,8 +473,8 @@ export default function BatteryRegulationPathwayPage() {
                         <p className="text-xs text-muted-foreground mt-1">For Cobalt, Copper, Lead, Lithium, Nickel (Annex XII, Part B).</p>
                     </div>
                 </div>
-                <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[7].title)} disabled={isLoadingCopilot}>
-                    {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+                <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[7].title)}>
+                    <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />
                     Ask Co-Pilot about this step
                 </Button>
             </CardContent>
@@ -539,8 +507,8 @@ export default function BatteryRegulationPathwayPage() {
               <p className="text-xs text-muted-foreground">
                 Once you are satisfied, you can proceed to mock submit this pathway. In a real scenario, this would trigger formal data submission processes.
               </p>
-              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(currentStepInfo.title)} disabled={isLoadingCopilot}>
-                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(currentStepInfo.title)}>
+                <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />
                 Ask Co-Pilot about Final Review
               </Button>
             </CardContent>
@@ -555,8 +523,8 @@ export default function BatteryRegulationPathwayPage() {
                 </CardHeader>
                 <CardContent>
                     <p className="text-muted-foreground">Content for {currentStepDetails?.title || "this step"} will be available soon.</p>
-                     <Button className="mt-4" variant="outline" size="sm" onClick={() => handleAskCopilot(currentStepDetails?.title || "this step context")} disabled={isLoadingCopilot}>
-                        {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+                     <Button className="mt-4" variant="outline" size="sm" onClick={() => handleAskCopilot(currentStepDetails?.title || "this step context")}>
+                        <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />
                         Ask Co-Pilot about this step
                     </Button>
                 </CardContent>

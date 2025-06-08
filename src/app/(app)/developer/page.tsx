@@ -481,7 +481,7 @@ export default function DeveloperPortalPage() {
   }
   const handleMockGetHistory = () => {
     updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet);
-    makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetDppHistoryResponse);
+    makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetHistoryResponse);
   }
   const handleMockPostImport = () => {
     const body = { fileType: postImportFileType, data: "mock_file_content_base64_encoded" };
@@ -1193,18 +1193,20 @@ export default function DeveloperPortalPage() {
             </CardHeader>
             <CardContent className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               {conceptualSdks.map(sdk => (
-                <Card key={sdk.name} className="shadow-sm hover:shadow-md transition-shadow">
+                <Card key={sdk.name} className="shadow-sm hover:shadow-md transition-shadow flex flex-col">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-md font-medium flex items-center"><sdk.icon className="mr-2 h-5 w-5 text-accent"/>{sdk.name}</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-xs text-muted-foreground h-10">{sdk.description}</p>
+                  <CardContent className="space-y-2 flex-grow">
+                    <p className="text-xs text-muted-foreground flex-grow min-h-[40px]">{sdk.description}</p>
+                  </CardContent>
+                  <div className="p-4 pt-0">
                     <Button variant="outline" size="sm" className="w-full group" asChild>
                       <Link href={sdk.href} passHref className={cn(sdk.soon && "opacity-60 cursor-not-allowed")}>
                         {sdk.soon ? "Coming Soon" : <>View Details <ExternalLinkIcon className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" /></>}
                       </Link>
                     </Button>
-                  </CardContent>
+                  </div>
                 </Card>
               ))}
             </CardContent>
@@ -1217,16 +1219,48 @@ export default function DeveloperPortalPage() {
             </CardHeader>
             <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {mockCodeSamples.map(sample => (
-                 <Card key={sample.id} className="shadow-sm hover:shadow-md transition-shadow">
+                 <Card key={sample.id} className="shadow-sm hover:shadow-md transition-shadow flex flex-col">
                   <CardHeader className="pb-3">
                     <CardTitle className="text-md font-medium flex items-center"><sample.icon className="mr-2 h-5 w-5 text-accent"/>{sample.title}</CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-xs text-muted-foreground h-12">{sample.description}</p>
+                  <CardContent className="space-y-2 flex-grow">
+                    <p className="text-xs text-muted-foreground flex-grow min-h-[48px]">{sample.description}</p>
+                  </CardContent>
+                   <div className="p-4 pt-0">
                     <Button variant="link" size="sm" className="p-0 h-auto text-primary group" disabled>
                       {sample.linkText} <ExternalLinkIcon className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
                     </Button>
+                  </div>
+                </Card>
+              ))}
+            </CardContent>
+          </Card>
+          
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="font-headline flex items-center"><BookText className="mr-3 h-6 w-6 text-primary" /> Tutorials</CardTitle>
+              <CardDescription>Step-by-step guides for common integration scenarios and use cases.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {mockTutorials.map(tutorial => (
+                 <Card key={tutorial.id} className="shadow-sm hover:shadow-md transition-shadow flex flex-col">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-md font-medium flex items-center"><tutorial.icon className="mr-2 h-5 w-5 text-accent"/>{tutorial.title}</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 flex-grow">
+                    <p className="text-xs text-muted-foreground flex-grow min-h-[48px]">{tutorial.description}</p>
                   </CardContent>
+                  <div className="p-4 pt-0">
+                    <Button variant="link" size="sm" className="p-0 h-auto text-primary group" asChild={tutorial.href !== "#"}>
+                        {tutorial.href === "#" ? (
+                            <span className="opacity-60 cursor-not-allowed flex items-center">{tutorial.linkText} <ExternalLinkIcon className="ml-1 h-3 w-3" /></span>
+                        ) : (
+                            <Link href={tutorial.href}>
+                                {tutorial.linkText} <ExternalLinkIcon className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                            </Link>
+                        )}
+                    </Button>
+                  </div>
                 </Card>
               ))}
             </CardContent>
@@ -1292,33 +1326,6 @@ export default function DeveloperPortalPage() {
             </CardContent>
           </Card>
 
-          <Card className="shadow-lg">
-            <CardHeader>
-              <CardTitle className="font-headline flex items-center"><BookText className="mr-3 h-6 w-6 text-primary" /> Tutorials</CardTitle>
-              <CardDescription>Step-by-step guides for common integration scenarios and use cases.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {mockTutorials.map(tutorial => (
-                 <Card key={tutorial.id} className="shadow-sm hover:shadow-md transition-shadow">
-                  <CardHeader className="pb-3">
-                    <CardTitle className="text-md font-medium flex items-center"><tutorial.icon className="mr-2 h-5 w-5 text-accent"/>{tutorial.title}</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-xs text-muted-foreground h-12">{tutorial.description}</p>
-                    <Button variant="link" size="sm" className="p-0 h-auto text-primary group" asChild={tutorial.href !== "#"}>
-                        {tutorial.href === "#" ? (
-                            <span className="opacity-60 cursor-not-allowed flex items-center">{tutorial.linkText} <ExternalLinkIcon className="ml-1 h-3 w-3" /></span>
-                        ) : (
-                            <Link href={tutorial.href}>
-                                {tutorial.linkText} <ExternalLinkIcon className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
-                            </Link>
-                        )}
-                    </Button>
-                  </CardContent>
-                </Card>
-              ))}
-            </CardContent>
-          </Card>
         </TabsContent>
 
 

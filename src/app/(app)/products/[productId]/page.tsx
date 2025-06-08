@@ -11,7 +11,7 @@ import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct, Pr
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow';
-import { getOverallComplianceDetails } from '@/utils/dppDisplayUtils'; // For compliance summary mapping
+import { getOverallComplianceDetails } from '@/utils/dppDisplayUtils';
 
 
 // Helper function to map DigitalProductPassport to SimpleProductDetail
@@ -22,7 +22,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             case 'archived': return 'Archived';
             case 'pending_review': return 'Pending';
             case 'draft': return 'Draft';
-            case 'revoked': return 'Archived'; // Or a new status like 'Revoked' if SimpleProductDetail supports it
+            case 'revoked': return 'Archived';
             default: return 'Draft';
         }
     };
@@ -34,7 +34,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             status: dpp.compliance.eu_espr.status,
             detailsUrl: dpp.compliance.eu_espr.reportUrl,
             verificationId: dpp.compliance.eu_espr.vcId,
-            lastChecked: dpp.metadata.last_updated, 
+            lastChecked: dpp.metadata.last_updated,
         });
     }
     if (dpp.compliance.esprConformity) {
@@ -59,11 +59,11 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             regulationName: "EU Battery Regulation",
             status: dpp.compliance.battery_regulation.status,
             verificationId: dpp.compliance.battery_regulation.batteryPassportId || dpp.compliance.battery_regulation.vcId,
-            lastChecked: dpp.metadata.last_updated, 
+            lastChecked: dpp.metadata.last_updated,
             notes: `Carbon Footprint: ${dpp.compliance.battery_regulation.carbonFootprint?.value || 'N/A'} ${dpp.compliance.battery_regulation.carbonFootprint?.unit || ''}`
         });
     }
-    
+
     const complianceOverallStatus = getOverallComplianceDetails(dpp);
 
     const keyCompliancePointsPopulated: string[] = [];
@@ -75,7 +75,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         const capitalizedEbsiStatus = ebsiStatusText.charAt(0).toUpperCase() + ebsiStatusText.slice(1);
         keyCompliancePointsPopulated.push(`EBSI Status: ${capitalizedEbsiStatus}`);
     }
-    
+
     let specificRegCount = 0;
     specificRegulations.forEach(reg => {
         if (specificRegCount < 2 && (reg.status.toLowerCase() === 'compliant' || reg.status.toLowerCase() === 'pending' || reg.status.toLowerCase() === 'pending_review' || reg.status.toLowerCase() === 'registered' || reg.status.toLowerCase() === 'conformant')) {
@@ -104,9 +104,9 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         imageHint: dpp.productDetails?.imageHint,
         keySustainabilityPoints: dpp.productDetails?.sustainabilityClaims?.map(c => c.claim).filter(Boolean),
         keyCompliancePoints: keyCompliancePointsPopulated,
-        specifications: dpp.productDetails?.materials ? 
+        specifications: dpp.productDetails?.materials ?
             Object.fromEntries(dpp.productDetails.materials.map((m, i) => [`material_${i+1}`, `${m.name} (${m.percentage || 'N/A'}%)`]))
-            : undefined, 
+            : undefined,
         complianceSummary: {
             overallStatus: complianceOverallStatus.text as ProductComplianceSummary['overallStatus'],
             eprel: dpp.compliance.eprel ? {
@@ -128,11 +128,11 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             date: event.timestamp,
             location: event.location,
             notes: event.data ? `Data: ${JSON.stringify(event.data)}` : (event.responsibleParty ? `Responsible: ${event.responsibleParty}` : undefined),
-            status: event.transactionHash ? 'Completed' : 'In Progress', 
-            iconName: event.type.toLowerCase().includes('manufactur') ? 'Factory' : 
-                      event.type.toLowerCase().includes('ship') ? 'Truck' : 
-                      event.type.toLowerCase().includes('quality') || event.type.toLowerCase().includes('certif') ? 'ShieldCheck' : 
-                      event.type.toLowerCase().includes('sale') || event.type.toLowerCase().includes('sold') ? 'ShoppingCart' : 
+            status: event.transactionHash ? 'Completed' : 'In Progress',
+            iconName: event.type.toLowerCase().includes('manufactur') ? 'Factory' :
+                      event.type.toLowerCase().includes('ship') ? 'Truck' :
+                      event.type.toLowerCase().includes('quality') || event.type.toLowerCase().includes('certif') ? 'ShieldCheck' :
+                      event.type.toLowerCase().includes('sale') || event.type.toLowerCase().includes('sold') ? 'ShoppingCart' :
                       'Info',
         })) || [],
         materialsUsed: dpp.productDetails?.materials?.map(m => ({ name: m.name, percentage: m.percentage, source: m.origin, isRecycled: m.isRecycled })),
@@ -140,7 +140,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         repairability: dpp.productDetails?.repairabilityScore ? { score: dpp.productDetails.repairabilityScore.value, scale: dpp.productDetails.repairabilityScore.scale, detailsUrl: dpp.productDetails.repairabilityScore.reportUrl } : undefined,
         recyclabilityInfo: dpp.productDetails?.recyclabilityInformation ? { percentage: dpp.productDetails.recyclabilityInformation.recycledContentPercentage, instructionsUrl: dpp.productDetails.recyclabilityInformation.instructionsUrl } : undefined,
         supplyChainLinks: dpp.supplyChainLinks || [],
-        customAttributes: dpp.productDetails?.customAttributes || [], // Map custom attributes
+        customAttributes: dpp.productDetails?.customAttributes || [],
     };
 }
 
@@ -155,14 +155,14 @@ export default function ProductDetailPage() {
   useEffect(() => {
     if (productId) {
       let foundProduct: SimpleProductDetail | undefined;
-      
+
       if (productId.startsWith("USER_PROD")) {
         const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
         if (storedProductsString) {
           const userProducts: StoredUserProduct[] = JSON.parse(storedProductsString);
           const userProductToDisplay = userProducts.find(p => p.id === productId);
           if (userProductToDisplay) {
-            
+
             let parsedCustomAttributes: CustomAttribute[] = [];
             if (userProductToDisplay.customAttributesJsonString) {
                 try {
@@ -188,15 +188,15 @@ export default function ProductDetailPage() {
                 imageUrl: userProductToDisplay.imageUrl,
                 imageHint: userProductToDisplay.imageHint,
                 sustainabilityClaims: userProductToDisplay.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
-                materials: userProductToDisplay.materials?.split(',').map(m => ({ name: m.trim() })) || [], // Basic mapping
+                materials: userProductToDisplay.materials?.split(',').map(m => ({ name: m.trim() })) || [],
                 energyLabel: userProductToDisplay.energyLabel,
-                customAttributes: parsedCustomAttributes, // Use parsed attributes
+                customAttributes: parsedCustomAttributes,
               },
               compliance: {
                 eprel: userProductToDisplay.complianceSummary?.eprel,
               },
               ebsiVerification: userProductToDisplay.complianceSummary?.ebsi ? {
-                status: userProductToDisplay.complianceSummary.ebsi.status as EbsiVerificationDetails['status'], // Cast might be needed
+                status: userProductToDisplay.complianceSummary.ebsi.status as EbsiVerificationDetails['status'],
                 verificationId: userProductToDisplay.complianceSummary.ebsi.verificationId,
                 lastChecked: userProductToDisplay.complianceSummary.ebsi.lastChecked,
               } : undefined,
@@ -217,25 +217,16 @@ export default function ProductDetailPage() {
         if (dppFromMocks) {
             foundProduct = mapDppToSimpleProductDetail(dppFromMocks);
         } else {
-            // Fallback to SIMPLE_MOCK_PRODUCTS if not found in MOCK_DPPS
-            // This path might need adjustment if SIMPLE_MOCK_PRODUCTS doesn't contain customAttributes
             const simpleMockProduct = SIMPLE_MOCK_PRODUCTS.find(p => p.id === productId);
             if(simpleMockProduct) {
-                 // If SIMPLE_MOCK_PRODUCTS are to be displayed and might have customAttributes,
-                 // they should be mapped similarly or ensure SimpleProductDetail includes them
-                 // For now, assuming they are already correctly structured or don't have them.
                 foundProduct = simpleMockProduct;
-                if (simpleMockProduct && !simpleMockProduct.customAttributes) {
-                  // If customAttributes might come from a JSON string on SIMPLE_MOCK_PRODUCTS (unlikely based on current structure)
-                  // you'd parse it here. Otherwise, it will be undefined.
-                }
             }
         }
       }
-      
-      setTimeout(() => { 
+
+      setTimeout(() => {
         setProduct(foundProduct || null);
-      }, 300); 
+      }, 300);
     }
   }, [productId]);
 
@@ -243,19 +234,19 @@ export default function ProductDetailPage() {
     if (!product) return;
 
     const updatedProduct = { ...product, supplyChainLinks: updatedLinks };
-    setProduct(updatedProduct); 
+    setProduct(updatedProduct);
 
     if (product.id.startsWith("USER_PROD")) {
       try {
         const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
         let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
-        
+
         const productIndex = userProducts.findIndex(p => p.id === product.id);
         if (productIndex > -1) {
           userProducts[productIndex] = {
-            ...userProducts[productIndex], 
-            supplyChainLinks: updatedLinks, 
-            lastUpdated: new Date().toISOString(), 
+            ...userProducts[productIndex],
+            supplyChainLinks: updatedLinks,
+            lastUpdated: new Date().toISOString(),
           };
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
           toast({
@@ -297,16 +288,16 @@ export default function ProductDetailPage() {
         ...product,
         complianceSummary: {
           ...currentComplianceSummary,
-          overallStatus: currentComplianceSummary.overallStatus, 
+          overallStatus: currentComplianceSummary.overallStatus,
           eprel: {
-            id: result.eprelId || currentComplianceSummary.eprel?.id, 
+            id: result.eprelId || currentComplianceSummary.eprel?.id,
             status: result.syncStatus,
             lastChecked: result.lastChecked,
-            url: currentComplianceSummary.eprel?.url, 
+            url: currentComplianceSummary.eprel?.url,
           },
         },
       };
-      setProduct(updatedProductData); 
+      setProduct(updatedProductData);
 
       if (product.id.startsWith("USER_PROD")) {
         const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
@@ -335,11 +326,11 @@ export default function ProductDetailPage() {
       setIsSyncingEprel(false);
     }
   };
-  
+
   const canSyncEprel = !!product?.modelNumber;
 
 
-  if (product === undefined) { 
+  if (product === undefined) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] text-center p-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -354,8 +345,8 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <ProductContainer 
-      product={product} 
+    <ProductContainer
+      product={product}
       onSupplyChainUpdate={handleSupplyChainUpdate}
       onSyncEprel={handleSyncEprel}
       isSyncingEprel={isSyncingEprel}
@@ -365,4 +356,3 @@ export default function ProductDetailPage() {
 }
 
     
-

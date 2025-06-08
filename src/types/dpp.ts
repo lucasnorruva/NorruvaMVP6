@@ -118,11 +118,11 @@ export interface DigitalProductPassport {
   traceability?: TraceabilityInfo;
 
   compliance: {
-    eprel?: { 
+    eprel?: {
       id?: string;
-      status: string; 
+      status: string;
       url?: string;
-      lastChecked: string; 
+      lastChecked: string;
     };
     esprConformity?: {
       assessmentId?: string;
@@ -173,7 +173,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     productName: "EcoSmart Refrigerator X500",
     category: "Appliances",
     manufacturer: { name: "GreenTech Appliances"},
-    modelNumber: "X500-ECO", 
+    modelNumber: "X500-ECO",
     metadata: { last_updated: "2024-07-28T10:00:00Z", status: "published", dppStandardVersion: "CIRPASS v0.9 Draft" },
     productDetails: {
       description: "An eco friendly fridge.",
@@ -181,7 +181,12 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       imageUrl: "https://placehold.co/600x400.png",
       imageHint: "refrigerator appliance",
       materials: [{name: "Recycled Steel", percentage: 70, isRecycled: true}],
-      customAttributes: [{key: "EcoRating", value: "Gold"}, {key: "SpecialFeature", value: "AI Defrost"}],
+      customAttributes: [
+        {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
+        {key: "Special Feature", value: "AI Defrost Technology"},
+        {key: "Warranty Period", value: "5 Years"},
+        {key: "Country of Origin", value: "Germany"}
+      ],
     },
     compliance: {
       eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-07-01T00:00:00Z" },
@@ -213,7 +218,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       description: "A sustainable t-shirt made from organic cotton.",
       imageUrl: "https://placehold.co/600x400.png",
       imageHint: "cotton t-shirt apparel",
-      materials: [{name: "Organic Cotton", percentage: 100}]
+      materials: [{name: "Organic Cotton", percentage: 100}],
+      customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}]
     },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-25T00:00:00Z" },
@@ -274,6 +280,10 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       description: "A high-performance EV battery module.",
       imageUrl: "https://placehold.co/600x400.png",
       imageHint: "ev battery module",
+      customAttributes: [
+        {key: "Cycle Life", value: "3000 cycles @ 80% DoD"},
+        {key: "Charging Time (0-80%)", value: "45 minutes (DC Fast Charge)"}
+      ]
     },
     compliance: {
       eprel: { status: "Data Mismatch", lastChecked: "2024-07-28T00:00:00Z", id: "EPREL_OLD_ID" },
@@ -309,8 +319,8 @@ export interface ComplianceDetailItem {
 export interface ProductComplianceSummary {
   overallStatus: 'Compliant' | 'Non-Compliant' | 'Pending Review' | 'N/A' | 'Data Incomplete' | string;
   eprel?: {
-    id?: string; 
-    status: string; 
+    id?: string;
+    status: string;
     url?: string;
     lastChecked: string;
   };
@@ -374,14 +384,14 @@ export interface StoredUserProduct {
   energyLabel?: string;
   productCategory?: string;
   imageUrl?: string;
-  imageHint?: string; 
+  imageHint?: string;
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
   batteryChemistry?: string;
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
   recycledContentPercentage?: number | null;
   status: 'Active' | 'Draft' | 'Archived' | 'Pending' | string; // Allow string for flexibility
-  compliance: string; 
+  compliance: string;
   lastUpdated: string;
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -396,32 +406,32 @@ export interface StoredUserProduct {
   carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
   supplyChainLinks?: ProductSupplyChainLink[];
-  lifecycleEvents?: SimpleLifecycleEvent[]; 
+  lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
   customAttributesJsonString?: string;
 }
 
 // Initial mock product data for /products page (more detailed than SimpleProductDetail)
 export interface RichMockProduct {
-  id: string; 
+  id: string;
   productId: string;
   productName: string;
   category?: string;
   status: 'Active' | 'Draft' | 'Archived' | 'Pending';
-  compliance: string; 
-  lastUpdated: string; 
+  compliance: string;
+  lastUpdated: string;
   gtin?: string;
   manufacturer?: string;
   modelNumber?: string;
   description?: string;
   imageUrl?: string;
   imageHint?: string;
-  materials?: string; 
-  sustainabilityClaims?: string; 
+  materials?: string;
+  sustainabilityClaims?: string;
   energyLabel?: string;
-  specifications?: Record<string, string> | string; 
-  lifecycleEvents?: SimpleLifecycleEvent[]; 
-  complianceSummary?: ProductComplianceSummary; 
+  specifications?: Record<string, string> | string;
+  lifecycleEvents?: SimpleLifecycleEvent[];
+  complianceSummary?: ProductComplianceSummary;
   batteryChemistry?: string;
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
@@ -471,12 +481,12 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     },
     lifecycleEvents: [
       { id: "lc001", eventName: "Manufacturing Complete", date: "2024-01-15T00:00:00Z", location: "EcoFactory, Germany", status: "Completed", iconName: "Factory" },
-      { 
-        id: "lc002", 
-        eventName: "Quality Assurance Passed", 
-        date: "2024-01-16T00:00:00Z", 
-        location: "EcoFactory, Germany", 
-        status: "Completed", 
+      {
+        id: "lc002",
+        eventName: "Quality Assurance Passed",
+        date: "2024-01-16T00:00:00Z",
+        location: "EcoFactory, Germany",
+        status: "Completed",
         iconName: "ShieldCheck",
         keyDocuments: [
           { name: "QA Report Q1-2024", type: "PDF", url: "#qa-report-q1-2024.pdf" },
@@ -487,7 +497,12 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
       { id: "lc004", eventName: "First Retail Sale", date: "2024-02-10T00:00:00Z", location: "Paris, France", status: "Completed", iconName: "ShoppingCart" },
       { id: "lc005", eventName: "Scheduled Maintenance", date: "2025-02-15T00:00:00Z", notes: "Filter replacement due.", status: "Upcoming", iconName: "Wrench" },
     ],
-    customAttributes: [{key: "EcoRating", value: "Gold"}, {key: "SpecialFeature", value: "AI Defrost"}]
+    customAttributes: [
+      {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
+      {key: "Special Feature", value: "AI Defrost Technology"},
+      {key: "Warranty Period", value: "5 Years"},
+      {key: "Country of Origin", value: "Germany"}
+    ]
   },
   {
     id: "PROD002",
@@ -528,6 +543,10 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
       { id: "lc006", eventName: "Production Started", date: "2024-03-01T00:00:00Z", location: "Shenzhen, China", status: "In Progress", iconName: "Cog" },
       { id: "lc007", eventName: "Firmware Update v1.2 Deployment", date: "2024-08-01T00:00:00Z", notes: "Improved energy efficiency algorithm and security patches.", status: "Upcoming", iconName: "UploadCloud" },
       { id: "lc008", eventName: "Batch Testing", date: "2024-03-10T00:00:00Z", status: "Completed", iconName: "ClipboardCheck"},
+    ],
+    customAttributes: [
+        {key: "Smart Home Compatibility", value: "Google Home, Amazon Alexa, Apple HomeKit"},
+        {key: "Light Color Options", value: "RGBW (16 million colors + Tunable White)"}
     ]
   },
   {
@@ -564,6 +583,10 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
         { id: "lc_user_001", eventName: "Design Finalized", date: "2024-06-01T00:00:00Z", status: "Completed", iconName: "PenTool"},
         { id: "lc_user_002", eventName: "Material Sourcing", date: "2024-06-05T00:00:00Z", status: "In Progress", iconName: "Search"},
         { id: "lc_user_003", eventName: "Assembly Scheduled", date: "2024-08-15T00:00:00Z", status: "Upcoming", iconName: "CalendarCheck"},
+    ],
+    customAttributes: [
+        {key: "Wood Type", value: "Oak"},
+        {key: "Finish", value: "Natural Oil"}
     ]
   }
 ];
@@ -591,26 +614,26 @@ export const MOCK_SUPPLIERS: Supplier[] = [
 // Unified type for products displayed in the product list page
 export interface DisplayableProduct {
   id: string;
-  productId?: string; 
+  productId?: string;
   productName?: string;
-  category?: string; 
-  productCategory?: string; 
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | string; 
-  compliance: string; 
-  lastUpdated: string; 
+  category?: string;
+  productCategory?: string;
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | string;
+  compliance: string;
+  lastUpdated: string;
   gtin?: string;
   manufacturer?: string;
   modelNumber?: string;
-  description?: string; 
-  productDescription?: string; 
+  description?: string;
+  productDescription?: string;
   imageUrl?: string;
   imageHint?: string;
-  materials?: string; 
-  sustainabilityClaims?: string; 
+  materials?: string;
+  sustainabilityClaims?: string;
   energyLabel?: string;
-  specifications?: Record<string, string> | string; 
+  specifications?: Record<string, string> | string;
   lifecycleEvents?: SimpleLifecycleEvent[];
-  complianceSummary?: ProductComplianceSummary; 
+  complianceSummary?: ProductComplianceSummary;
   batteryChemistry?: string;
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
@@ -707,9 +730,10 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { name: "Green Product Award 2024", authority: "EcoChoice Org", expiryDate: "N/A", link: "#", isVerified: true },
     ],
     customAttributes: [
-      { key: "Eco Rating", value: "Gold Star" },
-      { key: "Special Feature", value: "AI-Optimized Cooling" },
-      { key: "Recycler Note", value: "Compressor contains R600a refrigerant. Handle with care." }
+      {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
+      {key: "Special Feature", value: "AI Defrost Technology"},
+      {key: "Warranty Period", value: "5 Years"},
+      {key: "Country of Origin", value: "Germany"}
     ]
   },
   "PROD002": {
@@ -744,9 +768,37 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { name: "RoHS Compliance", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
       { name: "CE Marking", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
       { name: "Bluetooth SIG Qualification", authority: "Bluetooth SIG", expiryDate: "2028-01-01", link:"#", isVerified: true },
+    ],
+    customAttributes: [
+        {key: "Smart Home Compatibility", value: "Google Home, Amazon Alexa, Apple HomeKit"},
+        {key: "Light Color Options", value: "RGBW (16 million colors + Tunable White)"}
     ]
-    // No custom attributes for PROD002 in this example
+  },
+  "USER_PROD123456": {
+    passportId: "USER_PROD123456",
+    productName: "Custom Craft Wooden Chair",
+    tagline: "Artisan Quality, Sustainable Design.",
+    imageUrl: "https://placehold.co/800x600.png",
+    imageHint: "wooden chair artisan",
+    productStory: "This chair is handcrafted by local artisans using sustainably sourced oak. Its timeless design and durable construction ensure it will be a cherished piece for generations. The natural oil finish is eco-friendly and enhances the wood's natural beauty.",
+    sustainabilityHighlights: [
+      { iconName: "Leaf", text: "Sustainably Sourced Oak (FSC Certified)" },
+      { iconName: "Users", text: "Handcrafted Locally" },
+      { iconName: "ShieldCheck", text: "Durable Design for Longevity" },
+      { iconName: "Paintbrush", text: "Low VOC Natural Oil Finish" }
+    ],
+    manufacturerName: "Artisan Woodworks",
+    complianceSummary: "TSCA Title VI Compliant (Formaldehyde). Currently undergoing additional certifications.",
+    category: "Furniture",
+    modelNumber: "CWC-001",
+    ebsiStatus: 'not_verified',
+    customAttributes: [
+        {key: "Wood Type", value: "Oak"},
+        {key: "Finish", value: "Natural Oil"},
+        {key: "Artisan Name", value: "John Craft"},
+        {key: "Lead Time", value: "4-6 Weeks"}
+    ]
   }
 };
 
-
+    

@@ -5,7 +5,9 @@ import type { SimpleProductDetail } from "@/types/dpp";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Package, Tag, Building, CheckCircle, AlertTriangle, Info } from "lucide-react";
+import { Package, Tag, Building, CheckCircle, AlertTriangle, Info, ShieldCheck, ShieldAlert, ShieldQuestion } from "lucide-react";
+import { getStatusIcon as getComplianceStatusIcon, getStatusBadgeVariant as getComplianceBadgeVariant, getStatusBadgeClasses as getComplianceBadgeClasses } from "@/utils/dppDisplayUtils";
+import React from "react";
 
 interface ProductHeaderProps {
   product: SimpleProductDetail;
@@ -16,22 +18,22 @@ export default function ProductHeader({ product }: ProductHeaderProps) {
     return null;
   }
 
-  const getStatusBadgeVariant = (status: SimpleProductDetail['status']) => {
+  const getProductStatusBadgeVariant = (status: SimpleProductDetail['status']) => {
     switch (status) {
       case "Active":
-        return "default"; // Green
+        return "default"; 
       case "Pending":
-        return "outline"; // Yellow/Orange
+        return "outline"; 
       case "Draft":
-        return "secondary"; // Grey
+        return "secondary"; 
       case "Archived":
-        return "secondary"; // Grey
+        return "secondary"; 
       default:
         return "secondary";
     }
   };
 
-  const getStatusBadgeClass = (status: SimpleProductDetail['status']) => {
+  const getProductStatusBadgeClass = (status: SimpleProductDetail['status']) => {
     switch (status) {
         case "Active": return "bg-green-100 text-green-700 border-green-300";
         case "Pending": return "bg-yellow-100 text-yellow-700 border-yellow-300";
@@ -41,7 +43,15 @@ export default function ProductHeader({ product }: ProductHeaderProps) {
     }
   }
 
-  const StatusIcon = product.status === "Active" ? CheckCircle : product.status === "Pending" ? Info : AlertTriangle;
+  const ProductStatusIcon = product.status === "Active" ? CheckCircle : product.status === "Pending" ? Info : AlertTriangle;
+
+  const overallComplianceStatus = product.complianceSummary?.overallStatus || "N/A";
+  const ComplianceStatusIconComponent = getComplianceStatusIcon(overallComplianceStatus);
+  const complianceBadgeVariant = getComplianceBadgeVariant(overallComplianceStatus);
+  const complianceBadgeClasses = getComplianceBadgeClasses(overallComplianceStatus);
+  const formattedOverallComplianceText = overallComplianceStatus
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, char => char.toUpperCase());
 
 
   return (
@@ -57,13 +67,22 @@ export default function ProductHeader({ product }: ProductHeaderProps) {
                     Product ID: {product.id}
                 </CardDescription>
             </div>
-             <Badge 
-                variant={getStatusBadgeVariant(product.status)} 
-                className={cn("text-sm px-3 py-1 mt-2 sm:mt-0", getStatusBadgeClass(product.status))}
-            >
-                <StatusIcon className="mr-1.5 h-4 w-4" />
-                {product.status}
-            </Badge>
+            <div className="flex flex-col items-start sm:items-end gap-2 mt-2 sm:mt-0 shrink-0">
+                <Badge
+                    variant={getProductStatusBadgeVariant(product.status)}
+                    className={cn("text-sm px-3 py-1", getProductStatusBadgeClass(product.status))}
+                >
+                    <ProductStatusIcon className="mr-1.5 h-4 w-4" />
+                    Product Status: {product.status}
+                </Badge>
+                <Badge
+                    variant={complianceBadgeVariant}
+                    className={cn("text-sm px-3 py-1", complianceBadgeClasses)}
+                >
+                   {React.cloneElement(ComplianceStatusIconComponent, { className: "mr-1.5 h-4 w-4" })}
+                   Compliance: {formattedOverallComplianceText}
+                </Badge>
+            </div>
         </div>
         <div className="mt-4 flex flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground border-t pt-4">
             {product.category && (

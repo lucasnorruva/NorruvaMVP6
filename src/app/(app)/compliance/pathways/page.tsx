@@ -4,7 +4,7 @@
 import Link from 'next/link';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, BookOpen, BatteryCharging, Recycle, ShieldAlert, Construction } from 'lucide-react';
+import { ArrowRight, BookOpen, BatteryCharging, Recycle, ShieldAlert, Construction, Database } from 'lucide-react'; // Added Database icon
 
 interface Pathway {
   id: string;
@@ -37,16 +37,16 @@ const pathways: Pathway[] = [
     title: 'CSRD Alignment Guide',
     description: 'Understand how DPP data can support your Corporate Sustainability Reporting Directive obligations, particularly for product-related environmental and social impacts.',
     icon: BookOpen,
-    href: '/compliance/pathways/csrd', // Updated href
-    status: 'active', // Updated status
+    href: '/compliance/pathways/csrd',
+    status: 'active',
   },
   {
     id: 'scip',
     title: 'SCIP Database Notification Helper',
     description: 'Streamline the process of notifying the ECHA SCIP database for products containing Substances of Very High Concern (SVHCs) on the Candidate List.',
-    icon: ShieldAlert,
-    href: '#',
-    status: 'coming_soon',
+    icon: Database, // Updated icon to Database
+    href: '/compliance/pathways/scip', // Updated href
+    status: 'active', // Updated status
   },
 ];
 
@@ -129,3 +129,4 @@ export default function CompliancePathwaysPage() {
     </div>
   );
 }
+

@@ -112,3 +112,30 @@ export async function PUT(
 
   return NextResponse.json(updatedProduct);
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: { productId: string } }
+) {
+  const productId = params.productId;
+
+  // Conceptual API key authentication
+  // const authHeader = request.headers.get('Authorization');
+  // if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  //   return NextResponse.json({ error: { code: 401, message: 'API key missing or invalid.' } }, { status: 401 });
+  // }
+
+  const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
+
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 150));
+
+  if (productIndex === -1) {
+    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found for deletion.` } }, { status: 404 });
+  }
+
+  MOCK_DPPS[productIndex].metadata.status = 'archived';
+  MOCK_DPPS[productIndex].metadata.last_updated = new Date().toISOString();
+
+  return NextResponse.json({ message: `Product with ID ${productId} has been archived successfully.`, status: "Archived" });
+}

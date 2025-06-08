@@ -107,13 +107,13 @@ export default function DataPrivacyPage() {
             </p>
           </section>
           <section>
-            <h3 className="font-semibold text-md mb-1 flex items-center"><Activity className="mr-2 h-4 w-4 text-accent"/>CSRD & EU Taxonomy Alignment</h3>
+            <h3 className="font-semibold text-md mb-1 flex items-center"><Activity className="mr-2 h-4 w-4 text-accent"/>CSRD &amp; EU Taxonomy Alignment</h3>
             <p className="text-sm text-muted-foreground">
               We aim to structure DPP data and provide API capabilities to help businesses align with the Corporate Sustainability Reporting Directive (CSRD) and the EU Taxonomy. This includes tracking relevant environmental, social, and governance (ESG) metadata associated with products. Future API endpoints may facilitate audit reporting for these regulations. (Conceptual)
             </p>
           </section>
            <section>
-            <h3 className="font-semibold text-md mb-1 flex items-center"><KeyRound className="mr-2 h-4 w-4 text-accent"/>Secure API Design & Data Handling</h3>
+            <h3 className="font-semibold text-md mb-1 flex items-center"><KeyRound className="mr-2 h-4 w-4 text-accent"/>Secure API Design &amp; Data Handling</h3>
             <p className="text-sm text-muted-foreground">
               All Norruva APIs are conceptually designed with security and GDPR principles at their core, including data minimization and purpose limitation. We envision using encrypted payloads for sensitive data in transit and architecting our backend with SOC2-readiness as a goal to ensure robust data protection.
             </p>
@@ -123,7 +123,7 @@ export default function DataPrivacyPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center"><ShieldAlert className="mr-2 h-5 w-5 text-primary"/>QR Codes & Data Privacy</CardTitle>
+          <CardTitle className="flex items-center"><ShieldAlert className="mr-2 h-5 w-5 text-primary"/>QR Codes &amp; Data Privacy</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm">

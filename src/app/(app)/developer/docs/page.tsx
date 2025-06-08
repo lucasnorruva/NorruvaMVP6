@@ -23,7 +23,8 @@ import {
     ShieldCheck, 
     TestTube2, 
     Server as ServerIconShadcn, 
-    VenetianMask 
+    VenetianMask,
+    History // Added History for Changelog
 } from "lucide-react";
 
 export default function DeveloperDocumentationHubPage() {
@@ -62,7 +63,7 @@ export default function DeveloperDocumentationHubPage() {
               <li><Link href="/developer/docs/webhooks-guide" className="text-primary hover:underline flex items-center"><Webhook className="mr-2 h-4 w-4" />Webhooks Guide <span className="text-xs text-muted-foreground ml-1"> (Event Notifications)</span></Link></li>
               <li><Link href="/developer/docs/rate-limiting" className="text-primary hover:underline flex items-center"><Clock className="mr-2 h-4 w-4" />Rate Limiting &amp; Usage</Link></li>
               <li><Link href="/developer/docs/error-codes" className="text-primary hover:underline flex items-center"><ErrorIcon className="mr-2 h-4 w-4" />Error Codes &amp; Handling</Link></li>
-              <li><Link href="#" className="text-primary hover:underline flex items-center opacity-50 cursor-not-allowed"><FileJson className="mr-2 h-4 w-4" />API Changelog <Badge variant="outline" className="ml-2 text-xs">Coming Soon</Badge></Link></li>
+              <li><Link href="/developer/docs/api-changelog" className="text-primary hover:underline flex items-center"><History className="mr-2 h-4 w-4" />API Changelog</Link></li>
             </ul>
           </div>
           <div className="space-y-3">

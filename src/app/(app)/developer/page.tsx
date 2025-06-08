@@ -365,6 +365,14 @@ export default function DeveloperPortalPage() {
       { name: "C# SDK", link: "#", soon: true, icon: FileCode, description: "SDK for .NET applications." },
   ];
 
+  const getUsageMetric = (metricType: 'calls' | 'errorRate') => {
+    if (currentEnvironment === 'sandbox') {
+        return metricType === 'calls' ? '1,234' : '0.2%';
+    }
+    // Production mock values
+    return metricType === 'calls' ? '105,678' : '0.05%';
+  };
+
 
   return (
     <div className="space-y-6">
@@ -1152,7 +1160,7 @@ export default function DeveloperPortalPage() {
                                 <CardTitle className="text-md font-medium flex items-center"><FileClock className="mr-2 h-4 w-4 text-info"/>Recent API Calls</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-2xl font-bold">1,234</p>
+                                <p className="text-2xl font-bold">{getUsageMetric('calls')}</p>
                                 <p className="text-xs text-muted-foreground">in the last 24 hours</p>
                             </CardContent>
                         </Card>
@@ -1161,16 +1169,20 @@ export default function DeveloperPortalPage() {
                                 <CardTitle className="text-md font-medium flex items-center"><ShieldAlert className="mr-2 h-4 w-4 text-destructive"/>Error Rate</CardTitle>
                             </CardHeader>
                             <CardContent>
-                                <p className="text-2xl font-bold">0.15%</p>
+                                <p className="text-2xl font-bold">{getUsageMetric('errorRate')}</p>
                                 <p className="text-xs text-muted-foreground">Average over the last 7 days</p>
                             </CardContent>
                         </Card>
                     </div>
                     <ul className="list-disc list-inside text-sm space-y-1">
-                        <li><Link href="#" className="text-primary hover:underline">View detailed API call logs (Mock)</Link></li>
-                        <li><Link href="#" className="text-primary hover:underline">Webhook delivery success rates and retry attempts (Mock)</Link></li>
+                        <li><Link href="/developer/docs/rate-limiting" className="text-primary hover:underline">Understanding Rate Limits</Link></li>
+                        <li><Link href="/developer/docs/error-codes" className="text-primary hover:underline">API Error Codes</Link></li>
                     </ul>
-                    <Button variant="outline" disabled>Access Full Reporting Dashboard (Coming Soon)</Button>
+                    <Button asChild>
+                       <Link href="/developer/reports/api-usage">
+                        <BarChartBig className="mr-2 h-4 w-4"/> View API Usage Dashboard
+                       </Link>
+                    </Button>
                     <p className="text-xs text-muted-foreground mt-2">Note: Usage metrics are specific to '{mockOrganizationName}'. In a multi-tenant setup, admins would see aggregated views or switch tenant reports.</p>
                 </CardContent>
             </Card>

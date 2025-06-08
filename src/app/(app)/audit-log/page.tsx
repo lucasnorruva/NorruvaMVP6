@@ -82,20 +82,21 @@ export default function AuditLogPage() {
       const logDate = new Date(log.timestamp);
       if (filters.dateFrom) {
         const dateFromParts = filters.dateFrom.split('-').map(Number);
-        let filterDateFrom = new Date(dateFromParts[0], (dateFromParts[1] || 1) -1, dateFromParts[2] || 1);
-        filterDateFrom.setHours(0,0,0,0);
+        // Create date in UTC to avoid timezone issues with comparison
+        let filterDateFrom = new Date(Date.UTC(dateFromParts[0], (dateFromParts[1] || 1) -1, dateFromParts[2] || 1));
         if (logDate < filterDateFrom) return false;
       }
       if (filters.dateTo) {
         const dateToParts = filters.dateTo.split('-').map(Number);
-        let filterDateTo = new Date(dateToParts[0], (dateToParts[1] || 12) -1, dateToParts[2] || 31);
-        filterDateTo.setHours(23,59,59,999);
-        if (dateToParts.length === 2) { 
-            filterDateTo = new Date(dateToParts[0], dateToParts[1], 0); 
-            filterDateTo.setHours(23,59,59,999);
-        } else if (dateToParts.length === 1) { 
-            filterDateTo = new Date(dateToParts[0], 11, 31); 
-            filterDateTo.setHours(23,59,59,999);
+        let filterDateTo: Date;
+        if (dateToParts.length === 3) { // YYYY-MM-DD
+            filterDateTo = new Date(Date.UTC(dateToParts[0], dateToParts[1] -1, dateToParts[2], 23, 59, 59, 999));
+        } else if (dateToParts.length === 2) { // YYYY-MM
+            // End of the specified month
+            filterDateTo = new Date(Date.UTC(dateToParts[0], dateToParts[1], 0, 23, 59, 59, 999)); 
+        } else { // YYYY
+            // End of the specified year
+            filterDateTo = new Date(Date.UTC(dateToParts[0], 11, 31, 23, 59, 59, 999));
         }
         if (logDate > filterDateTo) return false;
       }
@@ -128,13 +129,13 @@ export default function AuditLogPage() {
       case 'Pending':
         variant = "outline";
         className = "bg-yellow-100 text-yellow-700 border-yellow-300";
-        IconCmpt = Info;
+        IconCmpt = Info; // Using Info for Pending for now
         break;
       case 'Info':
-      default:
+      default: // Catches 'Info' and any other unexpected status
         variant = "outline";
         className = "bg-blue-100 text-blue-700 border-blue-300";
-        IconCmpt = UserCircle; 
+        IconCmpt = UserCircle; // Changed icon for 'Info' to UserCircle as ListChecks is for Success
         break;
     }
     return <Badge variant={variant} className={cn("capitalize text-xs", className)}><IconCmpt className="mr-1 h-3 w-3"/>{status}</Badge>;
@@ -220,7 +221,7 @@ export default function AuditLogPage() {
         </CardContent>
         <CardFooter className="flex flex-col sm:flex-row items-center justify-between gap-4 py-4">
           <div className="text-xs text-muted-foreground">
-            Showing {startIndex + 1} to {Math.min(endIndex, filteredLogs.length)} of {filteredLogs.length} logs.
+            Showing {filteredLogs.length > 0 ? startIndex + 1 : 0} to {Math.min(endIndex, filteredLogs.length)} of {filteredLogs.length} logs.
           </div>
           <div className="flex items-center gap-2">
             <span className="text-xs text-muted-foreground">Rows per page:</span>
@@ -247,3 +248,6 @@ export default function AuditLogPage() {
     </div>
   );
 }
+
+
+    

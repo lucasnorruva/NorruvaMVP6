@@ -1101,37 +1101,37 @@ export default function DeveloperPortalPage() {
 
         <TabsContent value="resources" className="mt-6">
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-             <Card className="shadow-lg lg:col-span-1">
-                <CardHeader>
-                    <CardTitle className="font-headline flex items-center"><FileCode className="mr-3 h-6 w-6 text-primary" /> SDKs (Conceptual)</CardTitle>
-                    <CardDescription>Language-specific Software Development Kits to accelerate your integration with the Norruva DPP API.</CardDescription>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                    {conceptualSdks.map(sdk => (
-                        <Button key={sdk.name} variant="outline" className="w-full justify-start text-left group hover:bg-accent/10" asChild>
-                            <a href={sdk.link} target="_blank" rel="noopener noreferrer" className={cn(sdk.soon && "opacity-60 cursor-not-allowed")}>
-                                <sdk.icon className="mr-2 h-4 w-4 text-primary group-hover:text-accent transition-colors" />
-                                <span className="flex-grow group-hover:text-accent transition-colors">{sdk.name}</span>
-                                {sdk.soon && <Badge variant="outline" className="ml-auto text-xs">Soon</Badge>}
-                                {!sdk.soon && <ExternalLinkIcon className="ml-auto h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors" />}
-                            </a>
-                        </Button>
-                    ))}
-                </CardContent>
+            <Card className="shadow-lg lg:col-span-1">
+              <CardHeader>
+                <CardTitle className="font-headline flex items-center"><FileCode className="mr-3 h-6 w-6 text-primary" /> SDKs (Conceptual)</CardTitle>
+                <CardDescription>Language-specific Software Development Kits to accelerate your integration.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {conceptualSdks.map(sdk => (
+                  <Button key={sdk.name} variant="outline" className="w-full justify-start text-left group hover:bg-accent/10" asChild>
+                    <a href={sdk.link} target="_blank" rel="noopener noreferrer" className={cn(sdk.soon && "opacity-60 cursor-not-allowed")}>
+                      <sdk.icon className="mr-2 h-4 w-4 text-primary group-hover:text-accent transition-colors" />
+                      <span className="flex-grow group-hover:text-accent transition-colors">{sdk.name}</span>
+                      {sdk.soon && <Badge variant="outline" className="ml-auto text-xs">Soon</Badge>}
+                      {!sdk.soon && <ExternalLinkIcon className="ml-auto h-4 w-4 text-muted-foreground group-hover:text-accent transition-colors" />}
+                    </a>
+                  </Button>
+                ))}
+              </CardContent>
             </Card>
 
             <Card className="shadow-lg lg:col-span-2">
               <CardHeader>
-                  <CardTitle className="font-headline flex items-center"><Wrench className="mr-3 h-6 w-6 text-primary" />Developer Tools</CardTitle>
-                  <CardDescription>Utilities to help you build and test your integrations.</CardDescription>
+                <CardTitle className="font-headline flex items-center"><Wrench className="mr-3 h-6 w-6 text-primary" />Developer Tools</CardTitle>
+                <CardDescription>Utilities to help you build and test your integrations.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                   <Button variant="outline" className="justify-start text-left" asChild>
-                      <a href="/openapi.yaml" target="_blank" rel="noopener noreferrer">
-                        <FileJson className="mr-2"/>Download OpenAPI 3.1 Spec
-                      </a>
-                    </Button>
+                  <Button variant="outline" className="justify-start text-left" asChild>
+                    <a href="/openapi.yaml" target="_blank" rel="noopener noreferrer">
+                      <FileJson className="mr-2"/>Download OpenAPI 3.1 Spec
+                    </a>
+                  </Button>
                   <Button variant="outline" className="justify-start text-left" disabled>
                     <ExternalLinkIcon className="mr-2"/>View Postman Collection
                   </Button>
@@ -1142,7 +1142,7 @@ export default function DeveloperPortalPage() {
                 <Separator />
                 <div>
                   <h4 className="text-md font-semibold mb-2 flex items-center"><FileTextIcon className="mr-2 h-5 w-5 text-accent"/>Mock DPP Generator (Simplified)</h4>
-                   <div className="space-y-3 p-3 border rounded-md bg-muted/30">
+                  <div className="space-y-3 p-3 border rounded-md bg-muted/30">
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                       <div>
                         <Label htmlFor="devToolsMockDppName" className="text-xs">Product Name (Optional)</Label>
@@ -1170,32 +1170,39 @@ export default function DeveloperPortalPage() {
             
             <Card className="shadow-lg lg:col-span-3">
               <CardHeader>
-                  <CardTitle className="font-headline flex items-center"><FileCode className="mr-3 h-6 w-6 text-primary" /> Code Samples &amp; Tutorials</CardTitle>
-                  <CardDescription>Practical examples and step-by-step guides.</CardDescription>
+                <CardTitle className="font-headline flex items-center"><BookText className="mr-3 h-6 w-6 text-primary" /> Code Samples &amp; Tutorials</CardTitle>
+                <CardDescription>Practical examples and step-by-step guides.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                  <div className="space-y-3">
-                      <h4 className="font-semibold text-md mb-1 text-muted-foreground">Code Samples</h4>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h4 className="font-semibold text-md mb-2 text-muted-foreground">Code Samples</h4>
+                    <div className="space-y-3">
                       {mockCodeSamples.map(sample => (
-                      <div key={sample.id} className="p-3 border rounded-md bg-muted/30">
+                        <div key={sample.id} className="p-3 border rounded-md bg-muted/30">
                           <h5 className="text-sm font-medium text-foreground mb-0.5 flex items-center"><sample.icon className="mr-2 h-4 w-4 text-primary/80"/>{sample.title}</h5>
                           <p className="text-xs text-muted-foreground mb-1.5">{sample.description}</p>
                           <Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs" disabled>{sample.linkText}</Button>
-                      </div>
+                        </div>
                       ))}
+                    </div>
                   </div>
-                  <div className="space-y-3 pt-4 border-t">
-                      <h4 className="font-semibold text-md mb-1 text-muted-foreground">Tutorials</h4>
+                  <div>
+                    <h4 className="font-semibold text-md mb-2 text-muted-foreground">Tutorials</h4>
+                    <div className="space-y-3">
                       {mockTutorials.map(tutorial => (
-                      <div key={tutorial.id} className="p-3 border rounded-md bg-muted/30">
+                        <div key={tutorial.id} className="p-3 border rounded-md bg-muted/30">
                           <h5 className="text-sm font-medium text-foreground mb-0.5 flex items-center"><tutorial.icon className="mr-2 h-4 w-4 text-primary/80"/>{tutorial.title}</h5>
                           <p className="text-xs text-muted-foreground mb-1.5">{tutorial.description}</p>
                           <Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs" disabled>{tutorial.linkText}</Button>
-                      </div>
+                        </div>
                       ))}
+                    </div>
                   </div>
+                </div>
               </CardContent>
             </Card>
+
             <Card className="shadow-lg lg:col-span-3">
                 <CardHeader>
                     <CardTitle className="font-headline flex items-center"><Lightbulb className="mr-3 h-6 w-6 text-primary" /> AI &amp; Smart Assist Features (Conceptual)</CardTitle>
@@ -1259,7 +1266,7 @@ export default function DeveloperPortalPage() {
                 <Card className="shadow-lg">
                     <CardHeader>
                     <CardTitle className="font-headline flex items-center"><Settings2 className="mr-3 h-6 w-6 text-primary" /> Advanced Organization Settings</CardTitle>
-                    <CardDescription>Explore advanced capabilities and configurations for the <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge> environment for <Badge variant="outline">{mockOrganizationName}</Badge>.</CardDescription>
+                    <CardDescription>Explore advanced capabilities and configurations for the <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge> environment for <Badge variant="outline">{mockOrganizationName}</Badge>).</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-4">
                     <div>
@@ -1293,11 +1300,3 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
-
-
-    
-
-
-    
-
-

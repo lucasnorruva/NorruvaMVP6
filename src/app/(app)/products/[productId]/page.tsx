@@ -54,20 +54,25 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             lastChecked: dpp.metadata.last_updated,
         });
     }
+
     if (dpp.compliance.battery_regulation) {
-        const batteryReg = dpp.compliance.battery_regulation;
-        const cfValue = batteryReg.carbonFootprint?.value ?? 'N/A';
-        const cfUnit = batteryReg.carbonFootprint?.unit ?? '';
-        const notesValue = `CF: ${cfValue} ${cfUnit}`.trim();
+        const br = dpp.compliance.battery_regulation;
+        let notesValue = "CF: N/A";
+        if (br.carbonFootprint) {
+            const cfValue = br.carbonFootprint.value !== undefined ? br.carbonFootprint.value : 'N/A';
+            const cfUnit = br.carbonFootprint.unit || '';
+            notesValue = `CF: ${cfValue} ${cfUnit}`.trim();
+        }
 
         specificRegulations.push({
             regulationName: "EU Battery Regulation",
-            status: batteryReg.status as ComplianceDetailItem['status'],
-            verificationId: batteryReg.batteryPassportId || batteryReg.vcId,
-            lastChecked: dpp.metadata.last_updated, // Comma is critical here
+            status: br.status as ComplianceDetailItem['status'],
+            verificationId: br.batteryPassportId || br.vcId,
+            lastChecked: dpp.metadata.last_updated, // Comma here is critical
             notes: notesValue
         });
     }
+
 
     const complianceOverallStatusDetails = getOverallComplianceDetails(dpp);
 
@@ -192,7 +197,7 @@ export default function ProductDetailPage() {
                       console.error("Failed to parse customAttributesJsonString from localStorage for USER_PROD:", e);
                   }
               }
-             const certificationsForUserProd = userProductData.certifications?.map(sc => ({
+             const certificationsForUserProd: Certification[] = userProductData.certifications?.map(sc => ({
                 id: `cert_user_${sc.name.replace(/\s+/g, '_')}`, // mock an ID
                 name: sc.name,
                 issuer: sc.authority,
@@ -229,6 +234,15 @@ export default function ProductDetailPage() {
               },
               compliance: { // Basic compliance from StoredUserProduct
                 eprel: userProductData.complianceSummary?.eprel,
+                battery_regulation: userProductData.complianceSummary?.specificRegulations?.find(r => r.regulationName === "EU Battery Regulation")
+                  ? {
+                      status: userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.status as DigitalProductPassport['compliance']['battery_regulation']['status'] || 'not_applicable',
+                      carbonFootprint: {
+                        value: parseFloat(userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.notes?.match(/CF: ([\d.]+)/)?.[1] || "0") || 0,
+                        unit: userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.notes?.match(/CF: [\d.]+ (\w+)/)?.[1] || ""
+                      }
+                    }
+                  : { status: 'not_applicable' }
               },
               ebsiVerification: userProductData.complianceSummary?.ebsi ? {
                 status: userProductData.complianceSummary.ebsi.status as EbsiVerificationDetails['status'],
@@ -397,4 +411,3 @@ export default function ProductDetailPage() {
   );
 }
 
-    

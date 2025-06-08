@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import ProductContainer from '@/components/products/detail/ProductContainer';
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY, MOCK_DPPS } from '@/types/dpp';
-import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct, DigitalProductPassport, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification } from '@/types/dpp';
+import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct, DigitalProductPassport, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification } from '@/types/dpp'; // Added Certification
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow';
@@ -55,12 +55,21 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         });
     }
     if (dpp.compliance.battery_regulation) {
-        // Radically simplify this object for diagnosis
+        const br = dpp.compliance.battery_regulation;
+        let notesValue = "CF: N/A"; 
+
+        if (br.carbonFootprint) {
+            const cfValue = br.carbonFootprint.value !== null && br.carbonFootprint.value !== undefined ? br.carbonFootprint.value.toString() : 'N/A';
+            const cfUnit = br.carbonFootprint.unit || '';
+            notesValue = `CF: ${cfValue} ${cfUnit}`.trim();
+        }
+        
         specificRegulations.push({
-            regulationName: "EU Battery Regulation (Simplified)",
-            status: 'pending' as ComplianceDetailItem['status'], // Hardcoded simple value
-            lastChecked: new Date().toISOString(), // Hardcoded simple value
-            // notes field is intentionally omitted for this diagnostic step
+            regulationName: "EU Battery Regulation",
+            status: br.status as ComplianceDetailItem['status'],
+            verificationId: br.batteryPassportId || br.vcId,
+            lastChecked: dpp.metadata.last_updated, 
+            notes: notesValue, 
         });
     }
 
@@ -188,7 +197,7 @@ export default function ProductDetailPage() {
                   }
               }
              const certificationsForUserProd: Certification[] = userProductData.certifications?.map(sc => ({
-                id: `cert_user_${sc.name.replace(/\s+/g, '_')}`, // mock an ID
+                id: `cert_user_${sc.name.replace(/\s+/g, '_')}`, 
                 name: sc.name,
                 issuer: sc.authority,
                 issueDate: sc.issueDate,
@@ -200,7 +209,6 @@ export default function ProductDetailPage() {
               })) || [];
 
 
-            // Construct a DigitalProductPassport-like object from StoredUserProduct
             foundDpp = {
               id: userProductData.id,
               productName: userProductData.productName || "N/A",
@@ -211,19 +219,28 @@ export default function ProductDetailPage() {
               metadata: {
                 status: (userProductData.status?.toLowerCase() as DigitalProductPassport['metadata']['status']) || 'draft',
                 last_updated: userProductData.lastUpdated || new Date().toISOString(),
-                created_at: userProductData.lastUpdated || new Date().toISOString(), // Assuming created_at is same as lastUpdated for stored
+                created_at: userProductData.lastUpdated || new Date().toISOString(), 
               },
               productDetails: {
                 description: userProductData.productDescription,
                 imageUrl: userProductData.imageUrl,
                 imageHint: userProductData.imageHint,
                 sustainabilityClaims: userProductData.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
-                materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [], // Simplified mapping
+                materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [], 
                 energyLabel: userProductData.energyLabel,
                 customAttributes: parsedCustomAttributes,
               },
-              compliance: { // Basic compliance from StoredUserProduct
+              compliance: { 
                 eprel: userProductData.complianceSummary?.eprel,
+                battery_regulation: userProductData.complianceSummary?.specificRegulations?.find(r => r.regulationName === "EU Battery Regulation")
+                  ? { 
+                      status: userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.status as DigitalProductPassport['compliance']['battery_regulation']['status'],
+                      carbonFootprint: { 
+                        value: parseFloat(userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.notes?.split("CF:")[1]?.split(" ")[1] || '0') || 0,
+                        unit: userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.notes?.split("CF:")[1]?.split(" ")[2] || ''
+                      }
+                    }
+                  : { status: 'not_applicable' } 
               },
               ebsiVerification: userProductData.complianceSummary?.ebsi ? {
                 status: userProductData.complianceSummary.ebsi.status as EbsiVerificationDetails['status'],
@@ -239,18 +256,18 @@ export default function ProductDetailPage() {
               })),
               certifications: certificationsForUserProd,
               supplyChainLinks: userProductData.supplyChainLinks || [],
-            } as DigitalProductPassport; // Cast as it's a partial reconstruction
+            } as DigitalProductPassport; 
           }
         }
       } else {
         foundDpp = MOCK_DPPS.find(dpp => dpp.id === productId);
       }
 
-      setTimeout(() => { // Simulate loading delay
+      setTimeout(() => { 
         if (foundDpp) {
           setProduct(mapDppToSimpleProductDetail(foundDpp));
         } else {
-          setProduct(null); // Product not found
+          setProduct(null); 
         }
       }, 300);
     }
@@ -287,7 +304,6 @@ export default function ProductDetailPage() {
         console.error("Error saving supply chain to localStorage:", error);
       }
     } else {
-        // For mock products, update in-memory MOCK_DPPS if needed for session persistence beyond this component
         const mockDppIndex = MOCK_DPPS.findIndex(dpp => dpp.id === product.id);
         if (mockDppIndex > -1) {
             MOCK_DPPS[mockDppIndex].supplyChainLinks = updatedLinks;
@@ -323,7 +339,7 @@ export default function ProductDetailPage() {
         id: eprelIdToSet,
         status: result.syncStatus,
         lastChecked: result.lastChecked,
-        url: currentComplianceSummary.eprel?.url, // Preserve existing URL
+        url: currentComplianceSummary.eprel?.url, 
       };
       
       const updatedProductData: SimpleProductDetail = {
@@ -335,7 +351,6 @@ export default function ProductDetailPage() {
       };
       setProduct(updatedProductData);
 
-      // Update localStorage for USER_PROD or MOCK_DPPS for session
       if (product.id.startsWith("USER_PROD")) {
         const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
         let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
@@ -367,7 +382,7 @@ export default function ProductDetailPage() {
 
   const canSyncEprel = !!product?.modelNumber;
 
-  if (product === undefined) { // Loading state
+  if (product === undefined) { 
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] text-center p-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -377,7 +392,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  if (!product) { // Product not found after loading
+  if (!product) { 
     notFound();
   }
 
@@ -391,5 +406,3 @@ export default function ProductDetailPage() {
     />
   );
 }
-
-    

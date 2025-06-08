@@ -63,9 +63,8 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
     setIsLoadingComplianceCheck(targetEvent.id);
     
     let currentLifecycleStageName = "Initial Product Phase"; 
-    if (currentIndex === 0 && product.lifecycleEvents[0].id === targetEvent.id) {
-        currentLifecycleStageName = "Pre-Production / Design";
-    } else if (currentIndex > 0) {
+    if (currentIndex > 0) {
+        // Find the most recent completed or in-progress event before the current one
         let foundPreviousStage = false;
         for (let i = currentIndex - 1; i >= 0; i--) {
             if (product.lifecycleEvents[i].status === 'Completed' || product.lifecycleEvents[i].status === 'In Progress') {
@@ -74,9 +73,13 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
                 break;
             }
         }
+        // If no such prior event, use the name of the immediately preceding event, or a default
         if (!foundPreviousStage) {
-            currentLifecycleStageName = product.lifecycleEvents[currentIndex - 1].eventName;
+           currentLifecycleStageName = product.lifecycleEvents[currentIndex - 1]?.eventName || "Pre-Production / Design";
         }
+    } else if (currentIndex === 0 && (targetEvent.status === 'Upcoming' || targetEvent.status === 'In Progress')) {
+        // If it's the first event and it's being advanced (e.g., from design to manufacturing)
+        currentLifecycleStageName = "Pre-Production / Design";
     }
 
 
@@ -140,6 +143,7 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
       </CardHeader>
       <CardContent>
         <div className="relative pl-6 space-y-6">
+          {/* Vertical line */}
           <div className="absolute left-[calc(0.75rem-1px)] top-2 bottom-2 w-0.5 bg-border rounded-full -translate-x-1/2"></div>
 
           {product.lifecycleEvents.map((event, index) => {
@@ -148,10 +152,12 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
             
             return (
               <div key={event.id} className="relative flex items-start">
+                {/* Icon badge on the line */}
                 <div className="absolute left-0 top-1 flex items-center justify-center w-6 h-6 bg-card border-2 border-primary rounded-full -translate-x-1/2 z-10">
                   <IconComponent className="h-3 w-3 text-primary" />
                 </div>
                 
+                {/* Event Card */}
                 <div className={cn(
                   "ml-8 w-full p-4 border rounded-lg shadow-sm bg-background hover:shadow-md transition-shadow"
                 )}>
@@ -204,3 +210,4 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
   );
 }
 
+    

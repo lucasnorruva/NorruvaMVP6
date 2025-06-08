@@ -1,10 +1,11 @@
 
 "use client";
 
+import React, { useState, useEffect } from 'react'; // Added useState, useEffect
 import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, UserCircle, Users, LogOut, User, Settings as SettingsIcon, Bell } from "lucide-react"; // Added Bell
+import { Menu, UserCircle, Users, LogOut, User, Settings as SettingsIcon, Bell } from "lucide-react";
 import AppSidebarContent from "./AppSidebarContent";
 import { Logo } from "@/components/icons/Logo";
 import { useRole, type UserRole } from "@/contexts/RoleContext";
@@ -24,20 +25,63 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import Link from "next/link";
-import { Badge } from "@/components/ui/badge"; // Added Badge
+import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+interface AppNotification {
+  id: string;
+  title: string;
+  description: string;
+  time: string;
+}
 
-const mockNotifications = [
-  { id: "notif1", title: "Compliance Update", description: "Product PROD001 status changed to 'Compliant'. All checks passed successfully after recent data submission for EU Battery Regulation and ESPR alignment checks.", time: "5m ago" },
-  { id: "notif2", title: "New API Key Generated", description: "A new Sandbox API key 'sand_sk_...cdef' was generated for your account.", time: "1h ago" },
-  { id: "notif3", title: "System Maintenance Scheduled", description: "Important: System maintenance is scheduled for Sunday 2 AM UTC. Expect brief downtime of approximately 15-30 minutes for platform upgrades.", time: "1d ago" },
-  { id: "notif4", title: "Data Request from EcoGoods Inc.", description: "Manufacturer 'EcoGoods Inc.' requests updated specifications for Component Z (Part No. CZ-885). Please respond by EOD Friday.", time: "2d ago" },
-];
+const generateMockNotifications = (role: UserRole): AppNotification[] => {
+  const now = Date.now();
+  const baseNotifications: AppNotification[] = [
+    { id: `gen_sys_${now+1}`, title: "Platform Update v1.2 Deployed", description: "New features include enhanced reporting and faster DPP generation. See changelog for details.", time: "2h ago" },
+    { id: `gen_sec_${now+2}`, title: "Security Tip: Rotate API Keys", description: "Remember to periodically rotate your API keys for enhanced security.", time: "3d ago" },
+  ];
+
+  switch (role) {
+    case 'admin':
+      return [
+        { id: `admin_rev_${now}`, title: "Review Queue Update", description: "5 new products are awaiting compliance review in the admin dashboard.", time: "15m ago" },
+        { id: `admin_sys_${now+1}`, title: "System Health: Optimal", description: "All platform services are operating normally. Database backup successful.", time: "1h ago" },
+        ...baseNotifications.slice(0,2),
+      ];
+    case 'manufacturer':
+      return [
+        { id: `mfg_comp_${now}`, title: "ESPR Guidance Updated", description: "New guidance document for ESPR compliance in the 'Textiles' category published.", time: "30m ago" },
+        { id: `mfg_sup_${now+1}`, title: "Supplier 'EcoParts Ltd.' Update", description: "Supplier EcoParts Ltd. has updated their material certifications for 'Recycled Polymers'.", time: "4h ago" },
+        ...baseNotifications.slice(0,2),
+      ];
+    case 'supplier':
+      return [
+        { id: `sup_req_${now}`, title: "Data Request: Acme Corp", description: "Acme Corp has requested updated specifications for 'Component Alpha-7'. Deadline: EOD.", time: "10m ago" },
+        { id: `sup_cert_${now+1}`, title: "Certification Expiring Soon", description: "Your 'ISO 14001' certification for 'Eco-Solvents' is due for renewal next month.", time: "2d ago" },
+        ...baseNotifications.slice(0,2),
+      ];
+    case 'retailer':
+      return [
+        { id: `ret_dpp_${now}`, title: "New Product DPP Available", description: "DPP for 'Smart Toaster Pro X' from 'KitchenWiz' is now published and ready for consumer view.", time: "1h ago" },
+        { id: `ret_recall_${now+1}`, title: "Product Safety Alert (Mock)", description: "Minor update for 'Product Y' related to packaging information. No action required for sold units.", time: "1d ago" },
+        ...baseNotifications.slice(0,2),
+      ];
+    default:
+      return baseNotifications;
+  }
+};
+
 
 export default function AppHeader() {
   const { isMobile, state: sidebarState } = useSidebar();
   const { currentRole, setCurrentRole, availableRoles } = useRole();
+  const [notifications, setNotifications] = useState<AppNotification[]>([]);
+
+  useEffect(() => {
+    setNotifications(generateMockNotifications(currentRole));
+  }, [currentRole]);
+
 
   const handleLogout = () => {
     alert("Mock Logout: User logged out!");
@@ -87,12 +131,12 @@ export default function AppHeader() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative rounded-full">
               <Bell className="h-5 w-5" />
-              {mockNotifications.length > 0 && (
-                <Badge 
-                  variant="destructive" 
+              {notifications.length > 0 && (
+                <Badge
+                  variant="destructive"
                   className="absolute -top-1 -right-1 h-4 w-4 p-0 flex items-center justify-center text-xs rounded-full"
                 >
-                  {mockNotifications.length}
+                  {notifications.length}
                 </Badge>
               )}
               <span className="sr-only">Notifications</span>
@@ -100,14 +144,14 @@ export default function AppHeader() {
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80 sm:w-96">
             <DropdownMenuLabel className="flex justify-between items-center">
-              <span>Notifications</span>
-              {mockNotifications.length > 0 && (
-                <Badge variant="secondary" className="text-xs">{mockNotifications.length} New</Badge>
+              <span>Notifications ({currentRole.charAt(0).toUpperCase() + currentRole.slice(1)})</span>
+              {notifications.length > 0 && (
+                <Badge variant="secondary" className="text-xs">{notifications.length} New</Badge>
               )}
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            {mockNotifications.length > 0 ? (
-              mockNotifications.slice(0, 4).map(notification => ( 
+            {notifications.length > 0 ? (
+              notifications.slice(0, 4).map(notification => (
                 <DropdownMenuItem key={notification.id} className="flex flex-col items-start gap-1 py-2.5 px-3 cursor-pointer hover:bg-muted/50 focus:bg-muted/50" onClick={() => alert(`Mock: Navigating to notification ${notification.id}`)}>
                   <div className="flex justify-between w-full items-center">
                     <span className="text-sm font-semibold text-foreground">{notification.title}</span>
@@ -121,7 +165,7 @@ export default function AppHeader() {
                 No new notifications
               </DropdownMenuItem>
             )}
-            {mockNotifications.length > 0 && (
+            {notifications.length > 0 && (
               <>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>

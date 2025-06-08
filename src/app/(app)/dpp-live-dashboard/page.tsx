@@ -69,25 +69,46 @@ export default function DPPLiveDashboardPage() {
     setCurrentAiSummary(null);
 
     try {
-      const sustainabilityInfoParts = [
-        product.productDetails?.sustainabilityClaims?.map(c => c.claim).join(', '),
-        product.productDetails?.materials?.map(m => `${m.name} (${m.isRecycled ? 'recycled' : 'virgin'})`).join(', '),
-        product.productDetails?.energyLabel ? `Energy Label: ${product.productDetails.energyLabel}` : '',
-        product.productDetails?.repairabilityScore ? `Repairability: ${product.productDetails.repairabilityScore.value}/${product.productDetails.repairabilityScore.scale}` : '',
-      ].filter(Boolean).join(". ");
+      const sustainabilityInfoParts = [];
+      if (product.productDetails?.sustainabilityClaims && product.productDetails.sustainabilityClaims.length > 0) {
+        sustainabilityInfoParts.push(product.productDetails.sustainabilityClaims.map(c => c.claim).join(', '));
+      }
+      if (product.productDetails?.materials && product.productDetails.materials.length > 0) {
+        sustainabilityInfoParts.push("Materials: " + product.productDetails.materials.map(m => `${m.name}${m.isRecycled ? ' (recycled)' : ''}`).join(', '));
+      }
+      if (product.productDetails?.energyLabel) {
+        sustainabilityInfoParts.push(`Energy Label: ${product.productDetails.energyLabel}`);
+      }
+      if (product.productDetails?.repairabilityScore) {
+        sustainabilityInfoParts.push(`Repairability Score: ${product.productDetails.repairabilityScore.value}/${product.productDetails.repairabilityScore.scale}`);
+      }
+      const sustainabilityInformation = sustainabilityInfoParts.filter(Boolean).join(". ") || "General sustainability information not detailed.";
 
-      const complianceInfoParts = [
-        product.compliance.eprelId ? `EPREL ID: ${product.compliance.eprelId}` : '',
-        product.compliance.esprConformity ? `ESPR Status: ${product.compliance.esprConformity.status}` : '',
-        product.compliance.battery_regulation ? `Battery Reg. Status: ${product.compliance.battery_regulation.status}` : '',
-        product.ebsiVerification?.status ? `EBSI Status: ${product.ebsiVerification.status}` : '',
-      ].filter(Boolean).join(". ");
+      const complianceInfoParts = [];
+      if (product.compliance.eprel) {
+        let eprelStr = "EPREL: ";
+        if (product.compliance.eprel.id) eprelStr += `ID ${product.compliance.eprel.id}, `;
+        eprelStr += `Status ${product.compliance.eprel.status}`;
+        complianceInfoParts.push(eprelStr);
+      }
+      if (product.compliance.esprConformity) {
+        complianceInfoParts.push(`ESPR Conformity: ${product.compliance.esprConformity.status}`);
+      }
+      if (product.compliance.battery_regulation) {
+        complianceInfoParts.push(`Battery Regulation: ${product.compliance.battery_regulation.status}`);
+      }
+      if (product.ebsiVerification?.status) {
+        const ebsiStatusText = product.ebsiVerification.status.replace(/_/g, ' ');
+        complianceInfoParts.push(`EBSI Status: ${ebsiStatusText.charAt(0).toUpperCase() + ebsiStatusText.slice(1)}`);
+      }
+      const complianceInformation = complianceInfoParts.filter(Boolean).join(". ") || "General compliance information not detailed.";
+
 
       const input = {
         productName: product.productName,
-        productDescription: product.productDetails?.description || `A product in the ${product.category} category.`,
-        sustainabilityInformation: sustainabilityInfoParts || "General sustainability information not detailed.",
-        complianceInformation: complianceInfoParts || "General compliance information not detailed.",
+        productDescription: product.productDetails?.description || `A product in the ${product.category} category. No detailed description available.`,
+        sustainabilityInformation: sustainabilityInformation,
+        complianceInformation: complianceInformation,
       };
       const result = await generateProductSummary(input);
       setCurrentAiSummary(result.summary);
@@ -166,3 +187,4 @@ export default function DPPLiveDashboardPage() {
     </div>
   );
 }
+

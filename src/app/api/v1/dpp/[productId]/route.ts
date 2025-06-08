@@ -108,6 +108,7 @@ export async function PUT(
     // Add other top-level updatable fields similarly
   };
 
+  // Update the product in the in-memory MOCK_DPPS array
   MOCK_DPPS[productIndex] = updatedProduct;
 
   return NextResponse.json(updatedProduct);
@@ -134,11 +135,10 @@ export async function DELETE(
     return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found for deletion.` } }, { status: 404 });
   }
 
-  // For this mock, we'll mark the product as 'archived' instead of actually deleting it from the array
-  // to allow it to still be potentially "found" but with an archived status if needed elsewhere.
-  // If true deletion from MOCK_DPPS is required, use: MOCK_DPPS.splice(productIndex, 1);
+  // Mark the product as 'archived' in the in-memory array
   MOCK_DPPS[productIndex].metadata.status = 'archived';
   MOCK_DPPS[productIndex].metadata.last_updated = new Date().toISOString();
 
   return NextResponse.json({ message: `Product with ID ${productId} has been archived successfully.`, status: "Archived" });
 }
+

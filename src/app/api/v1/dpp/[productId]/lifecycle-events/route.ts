@@ -62,15 +62,13 @@ export async function POST(
     // vcId and transactionHash would be added by backend processes in a real system
   };
 
-  // Conceptually add to the product's events.
-  // In a real DB, this would be an update operation.
-  // For MOCK_DPPS, this change is in-memory and will reset on server restart.
-  // For true persistence in the mock, we'd need to write back to the MOCK_DPPS source or use localStorage
-  // if this API was hit from client-side directly (which it's not).
-  // We'll simulate by returning the event as if it were added.
-  // MOCK_DPPS[productIndex].lifecycleEvents = MOCK_DPPS[productIndex].lifecycleEvents || [];
-  // MOCK_DPPS[productIndex].lifecycleEvents!.push(newLifecycleEvent);
-  // MOCK_DPPS[productIndex].metadata.last_updated = now;
+  // Add the new event to the product's lifecycleEvents array in MOCK_DPPS
+  const product = MOCK_DPPS[productIndex];
+  if (!product.lifecycleEvents) {
+    product.lifecycleEvents = [];
+  }
+  product.lifecycleEvents.push(newLifecycleEvent);
+  product.metadata.last_updated = now; // Update the product's last_updated timestamp
 
 
   return NextResponse.json(newLifecycleEvent, { status: 201 });

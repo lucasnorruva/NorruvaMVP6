@@ -11,8 +11,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ListChecks, ShieldAlert, Info, Filter as FilterIcon, ChevronLeft, ChevronRight, Clock } from "lucide-react"; // Added Clock
+import { ListChecks, ShieldAlert, Info, Filter as FilterIcon, ChevronLeft, ChevronRight, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { DatePicker } from '@/components/ui/date-picker'; // Import DatePicker
 
 interface AuditLogEntry {
   id: string;
@@ -35,7 +36,6 @@ const mockAuditLogs: AuditLogEntry[] = [
   { id: "log008", timestamp: new Date(Date.now() - 1000 * 60 * 150).toISOString(), actor: "System", actionType: "Security Alert", details: "Failed login attempt for user 'unknown@example.com'.", ipAddress: "10.0.0.5", status: "Failure" },
   { id: "log009", timestamp: new Date(Date.now() - 1000 * 60 * 180).toISOString(), actor: "admin@norruva.com", actionType: "User Role Change", details: "User 'bob@example.com' role changed from Supplier to Manufacturer.", ipAddress: "192.168.1.10", status: "Success" },
   { id: "log010", timestamp: new Date(Date.now() - 1000 * 60 * 240).toISOString(), actor: "System", actionType: "System Maintenance", details: "Scheduled database optimization completed.", status: "Info" },
-  // Add 15 more diverse logs
   { id: "log011", timestamp: new Date(Date.now() - 1000 * 60 * 270).toISOString(), actor: "manufacturer@acme.com", actionType: "Product Create", details: "New product 'Smart Toaster v2' created in draft.", ipAddress: "203.0.113.45", status: "Success" },
   { id: "log012", timestamp: new Date(Date.now() - 1000 * 60 * 300).toISOString(), actor: "System", actionType: "Webhook Failure", details: "Webhook to 'https://partner.com/hook' failed for event 'dpp.updated'.", status: "Failure" },
   { id: "log013", timestamp: new Date(Date.now() - 1000 * 60 * 330).toISOString(), actor: "admin@norruva.com", actionType: "API Key Generated", details: "New production API key generated for 'RetailPartnerX'.", ipAddress: "192.168.1.10", status: "Success" },
@@ -55,9 +55,20 @@ const mockAuditLogs: AuditLogEntry[] = [
   { id: "log027", timestamp: new Date(Date.now() - 1000 * 60 * 750).toISOString(), actor: "manufacturer@acme.com", actionType: "Product Update", details: "Updated sustainability claims for 'EcoFriendly Refrigerator X2000'.", ipAddress: "203.0.113.45", status: "Success" },
 ];
 
+interface AuditLogFilters {
+  dateFrom: Date | undefined;
+  dateTo: Date | undefined;
+  actor: string;
+  actionType: string;
+}
 
 export default function AuditLogPage() {
-  const [filters, setFilters] = useState({ dateFrom: "", dateTo: "", actor: "", actionType: "all" });
+  const [filters, setFilters] = useState<AuditLogFilters>({
+    dateFrom: undefined,
+    dateTo: undefined,
+    actor: "",
+    actionType: "all"
+  });
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
@@ -66,9 +77,14 @@ export default function AuditLogPage() {
     return ["all", ...Array.from(types).sort()];
   }, []);
 
-  const handleFilterChange = (filterName: keyof typeof filters, value: string) => {
+  const handleDateFilterChange = (filterName: 'dateFrom' | 'dateTo', value: Date | undefined) => {
     setFilters(prev => ({ ...prev, [filterName]: value }));
-    setCurrentPage(1); // Reset to first page on filter change
+    setCurrentPage(1);
+  };
+  
+  const handleStringFilterChange = (filterName: 'actor' | 'actionType', value: string) => {
+    setFilters(prev => ({ ...prev, [filterName]: value }));
+    setCurrentPage(1);
   };
 
   const filteredLogs = useMemo(() => {
@@ -81,23 +97,13 @@ export default function AuditLogPage() {
       }
       const logDate = new Date(log.timestamp);
       if (filters.dateFrom) {
-        const dateFromParts = filters.dateFrom.split('-').map(Number);
-        // Create date in UTC to avoid timezone issues with comparison
-        let filterDateFrom = new Date(Date.UTC(dateFromParts[0], (dateFromParts[1] || 1) -1, dateFromParts[2] || 1));
+        const filterDateFrom = new Date(filters.dateFrom);
+        filterDateFrom.setHours(0, 0, 0, 0); // Compare from start of day
         if (logDate < filterDateFrom) return false;
       }
       if (filters.dateTo) {
-        const dateToParts = filters.dateTo.split('-').map(Number);
-        let filterDateTo: Date;
-        if (dateToParts.length === 3) { // YYYY-MM-DD
-            filterDateTo = new Date(Date.UTC(dateToParts[0], dateToParts[1] -1, dateToParts[2], 23, 59, 59, 999));
-        } else if (dateToParts.length === 2) { // YYYY-MM
-            // End of the specified month
-            filterDateTo = new Date(Date.UTC(dateToParts[0], dateToParts[1], 0, 23, 59, 59, 999)); 
-        } else { // YYYY
-            // End of the specified year
-            filterDateTo = new Date(Date.UTC(dateToParts[0], 11, 31, 23, 59, 59, 999));
-        }
+        const filterDateTo = new Date(filters.dateTo);
+        filterDateTo.setHours(23, 59, 59, 999); // Compare to end of day
         if (logDate > filterDateTo) return false;
       }
       return true;
@@ -129,13 +135,13 @@ export default function AuditLogPage() {
       case 'Pending':
         variant = "outline";
         className = "bg-yellow-100 text-yellow-700 border-yellow-300";
-        IconCmpt = Clock; // Updated icon for Pending
+        IconCmpt = Clock;
         break;
       case 'Info':
       default: 
         variant = "outline";
         className = "bg-blue-100 text-blue-700 border-blue-300";
-        IconCmpt = Info; // Updated icon for Info
+        IconCmpt = Info;
         break;
     }
     return <Badge variant={variant} className={cn("capitalize text-xs", className)}><IconCmpt className="mr-1 h-3 w-3"/>{status}</Badge>;
@@ -151,24 +157,24 @@ export default function AuditLogPage() {
             <FilterIcon className="mr-3 h-5 w-5 text-primary" />
             Filter Audit Logs
           </CardTitle>
-          <CardDescription>Refine the list of audit logs using the filters below. Date format: YYYY-MM-DD, YYYY-MM, or YYYY.</CardDescription>
+          <CardDescription>Refine the list of audit logs using the filters below. Use the calendar to select date ranges.</CardDescription>
         </CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
           <div>
             <Label htmlFor="dateFrom">Date From</Label>
-            <Input id="dateFrom" type="text" placeholder="YYYY-MM-DD" value={filters.dateFrom} onChange={(e) => handleFilterChange('dateFrom', e.target.value)} />
+            <DatePicker date={filters.dateFrom} setDate={(date) => handleDateFilterChange('dateFrom', date)} placeholder="Start date"/>
           </div>
           <div>
             <Label htmlFor="dateTo">Date To</Label>
-            <Input id="dateTo" type="text" placeholder="YYYY-MM-DD" value={filters.dateTo} onChange={(e) => handleFilterChange('dateTo', e.target.value)} />
+            <DatePicker date={filters.dateTo} setDate={(date) => handleDateFilterChange('dateTo', date)} placeholder="End date"/>
           </div>
           <div>
             <Label htmlFor="actor">Actor</Label>
-            <Input id="actor" placeholder="e.g., admin@norruva.com" value={filters.actor} onChange={(e) => handleFilterChange('actor', e.target.value)} />
+            <Input id="actor" placeholder="e.g., admin@norruva.com" value={filters.actor} onChange={(e) => handleStringFilterChange('actor', e.target.value)} />
           </div>
           <div>
             <Label htmlFor="actionType">Action Type</Label>
-            <Select value={filters.actionType} onValueChange={(value) => handleFilterChange('actionType', value)}>
+            <Select value={filters.actionType} onValueChange={(value) => handleStringFilterChange('actionType', value)}>
               <SelectTrigger id="actionType"><SelectValue placeholder="Select action type" /></SelectTrigger>
               <SelectContent>
                 {uniqueActionTypes.map(type => (
@@ -248,5 +254,3 @@ export default function AuditLogPage() {
     </div>
   );
 }
-
-    

@@ -9,8 +9,7 @@ import type { UseFormReturn } from "react-hook-form";
 import type { ProductFormData } from "@/components/products/ProductForm";
 import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Label } from "@/components/ui/label";
-import { FormDescription, FormField, FormItem, FormControl, FormMessage } from "@/components/ui/form";
+import { FormDescription, FormField, FormItem, FormControl, FormMessage, FormLabel } from "@/components/ui/form"; // Added FormLabel
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Input } from "@/components/ui/input";
 import { Cpu, ImagePlus, ImageIcon, Loader2 } from "lucide-react";
@@ -156,10 +155,10 @@ export default function ProductImageFormSection({
         control={form.control}
         name="imageHint"
         render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-sm">Image Style/Content Hint (for AI Generation)</FormLabel>
-            <FormControl><Input placeholder="e.g., minimalist, on white background" {...field} /></FormControl>
-            <FormDescription className="text-xs">Optional. Keywords to guide AI image generation (max 2-3 words).</FormDescription>
+          <FormItem className="mt-3">
+            <FormLabel className="text-sm">Image Hint (for AI Generation)</FormLabel>
+            <FormControl><Input placeholder="e.g., minimalist, studio shot" {...field} /></FormControl>
+            <FormDescription className="text-xs">Optional. Provide keywords to guide AI image generation (max 2 words).</FormDescription>
             <FormMessage />
           </FormItem>
         )}

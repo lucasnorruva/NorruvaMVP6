@@ -17,6 +17,7 @@ interface BatteryDetailsFormSectionProps {
   initialData?: Partial<InitialProductFormData>;
 }
 
+// Define AiIndicator component locally as it's small and specific to form sections
 const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' | 'manual', fieldName: string }) => {
   if (fieldOrigin === 'AI_EXTRACTED') {
     return (
@@ -81,7 +82,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
           <FormItem>
             <FormLabel className="flex items-center">
               Mfg. Carbon Footprint (kg CO₂e)
-              <AiIndicator fieldOrigin={initialData?.carbonFootprintManufacturingOrigin} fieldName="Carbon Footprint" />
+              <AiIndicator fieldOrigin={initialData?.carbonFootprintManufacturingOrigin} fieldName="Manufacturing Carbon Footprint" />
             </FormLabel>
             <FormControl>
               <Input
@@ -103,7 +104,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
           <FormItem>
             <FormLabel className="flex items-center">
               Recycled Content (%)
-              <AiIndicator fieldOrigin={initialData?.recycledContentPercentageOrigin} fieldName="Recycled Content" />
+              <AiIndicator fieldOrigin={initialData?.recycledContentPercentageOrigin} fieldName="Recycled Content Percentage" />
             </FormLabel>
             <FormControl>
               <Input
@@ -122,3 +123,4 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
   );
 }
 
+    

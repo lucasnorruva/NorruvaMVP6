@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle } from "lucide-react"; // Added XCircle
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIcon } from "lucide-react"; // Added XCircle
 import React, { useState, useEffect } from "react"; // Added useEffect
 import { useToast } from "@/hooks/use-toast";
 import BasicInfoFormSection from "./form/BasicInfoFormSection";
@@ -243,7 +243,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
 
   const formContent = (
-    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5', 'item-custom-attributes']} className="w-full">
+    <Accordion type="multiple" defaultValue={['item-1', 'item-5', 'item-2', 'item-3', 'item-4', 'item-custom-attributes']} className="w-full">
       <AccordionItem value="item-1">
         <AccordionTrigger className="text-lg font-semibold">Basic Information</AccordionTrigger>
         <AccordionContent>
@@ -261,7 +261,9 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       </AccordionItem>
 
       <AccordionItem value="item-5">
-        <AccordionTrigger className="text-lg font-semibold">Product Image</AccordionTrigger>
+        <AccordionTrigger className="text-lg font-semibold flex items-center">
+          <ImageIcon className="mr-2 h-5 w-5 text-primary" /> Product Image
+        </AccordionTrigger>
         <AccordionContent className="pt-4">
           <ProductImageFormSection
             form={form}

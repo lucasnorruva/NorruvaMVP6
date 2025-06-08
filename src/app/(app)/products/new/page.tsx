@@ -200,7 +200,7 @@ export default function AddNewProductPage() {
       if (result.carbonFootprintManufacturing !== undefined && result.carbonFootprintManufacturing !== null) { aiInitialFormData.carbonFootprintManufacturing = result.carbonFootprintManufacturing; aiInitialFormData.carbonFootprintManufacturingOrigin = 'AI_EXTRACTED'; }
       if (result.recycledContentPercentage !== undefined && result.recycledContentPercentage !== null) { aiInitialFormData.recycledContentPercentage = result.recycledContentPercentage; aiInitialFormData.recycledContentPercentageOrigin = 'AI_EXTRACTED'; }
 
-      aiInitialFormData.imageUrl = "";
+      aiInitialFormData.imageUrl = ""; // Reset image URL on new extraction
       aiInitialFormData.imageHint = "";
       aiInitialFormData.imageUrlOrigin = undefined;
       aiInitialFormData.customAttributesJsonString = "";
@@ -414,5 +414,3 @@ export default function AddNewProductPage() {
     </div>
   );
 }
-
-    

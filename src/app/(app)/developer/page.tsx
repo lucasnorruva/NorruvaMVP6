@@ -20,7 +20,7 @@ import {
     Lock, MessageSquare, Share2, BookText, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, 
     AlertTriangle as ErrorIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, 
     Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIcon, History, 
-    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon
+    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -105,6 +105,16 @@ const DataFlowKPIs = [
     { title: "Webhook Delivery Success", value: "99.95%", icon: Send, color: "text-green-500", description: "Successful event notifications to subscribed endpoints." },
 ];
 
+const systemStatusData = [
+    { name: "DPP Core API", status: "Operational", icon: CheckCircle, color: "text-green-500" },
+    { name: "AI Services (Genkit Flows)", status: "Operational", icon: CheckCircle, color: "text-green-500" },
+    { name: "Data Extraction Service (Mock)", status: "Degraded Performance", icon: AlertTriangle, color: "text-yellow-500" },
+    { name: "EBSI Mock Interface", status: "Operational", icon: CheckCircle, color: "text-green-500" },
+    { name: "Developer Portal Site", status: "Operational", icon: CheckCircle, color: "text-green-500" },
+    { name: "Sandbox Environment API", status: "Under Maintenance", icon: Wrench, color: "text-blue-500" },
+    { name: "Documentation Site", status: "Operational", icon: CheckCircle, color: "text-green-500" },
+];
+
 
 const generateMockCodeSnippet = (
   endpointKey: string,
@@ -187,6 +197,7 @@ export default function DeveloperPortalPage() {
   const [webhooks, setWebhooks] = useState<WebhookEntry[]>(initialMockWebhooks);
   const [currentEnvironment, setCurrentEnvironment] = useState<string>("sandbox");
   const mockOrganizationName = "Acme Innovations"; 
+  const [lastStatusCheckTime, setLastStatusCheckTime] = useState(new Date().toLocaleTimeString());
 
   const [getProductId, setGetProductId] = useState<string>("DPP001");
   const [getProductResponse, setGetProductResponse] = useState<string | null>(null);
@@ -479,7 +490,7 @@ export default function DeveloperPortalPage() {
   }
   const handleMockGetGraph = () => {
     updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet);
-    makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetGraphResponse);
+    makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetDppGraphCodeSnippet);
   }
 
 
@@ -618,17 +629,17 @@ export default function DeveloperPortalPage() {
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Avg. Latency:</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '120ms' : '85ms'}</span></div>
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>API Uptime (Last 7d):</span> <span className="font-semibold text-green-600">{currentEnvironment === 'sandbox' ? '99.95%' : '99.99%'}</span></div>
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Peak Requests/Sec:</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '15' : '250'}</span></div>
-                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>API Status:</span> <span className="font-semibold text-green-600 flex items-center"><CheckCircle className="h-4 w-4 mr-1.5"/>All Systems Operational</span></div>
+                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Overall API Status:</span> <span className="font-semibold text-green-600 flex items-center"><CheckCircle className="h-4 w-4 mr-1.5"/>All Systems Operational</span></div>
                 <Button variant="link" size="sm" className="p-0 h-auto text-primary mt-2" onClick={() => document.querySelector('#developer-portal-tabs [data-state="inactive"][value="settings_usage"]')?.ariaSelected === "false" ? (document.querySelector('#developer-portal-tabs [data-state="inactive"][value="settings_usage"]') as HTMLElement)?.click() : null}>View Full Usage Report</Button>
               </CardContent>
             </Card>
-
+            
             <Card className="shadow-md lg:col-span-2">
               <CardHeader>
                 <CardTitle className="font-headline text-lg flex items-center"><Megaphone className="mr-2 h-5 w-5 text-primary" /> Platform News &amp; Announcements</CardTitle>
                 <CardDescription>Stay updated with the latest from Norruva.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-3 text-sm max-h-60 overflow-y-auto">
+              <CardContent className="space-y-3 text-sm max-h-72 overflow-y-auto">
                 {platformAnnouncements.map(ann => (
                   <div key={ann.id} className="p-2.5 border-b last:border-b-0">
                     <h4 className="font-semibold text-foreground">{ann.title} <span className="text-xs text-muted-foreground font-normal">- {ann.date}</span></h4>
@@ -643,6 +654,41 @@ export default function DeveloperPortalPage() {
               </CardContent>
             </Card>
           </div>
+
+          <Card className="shadow-lg">
+            <CardHeader>
+                <CardTitle className="font-headline text-lg flex items-center">
+                    <ServerIconShadcn className="mr-2 h-5 w-5 text-primary" /> System &amp; Service Status
+                </CardTitle>
+                <CardDescription>Current operational status of Norruva platform components.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-3">
+                {systemStatusData.map((service) => {
+                    const StatusIcon = service.icon;
+                    return (
+                        <div key={service.name} className="flex items-center justify-between p-2.5 border-b last:border-b-0 rounded-md hover:bg-muted/30">
+                            <div className="flex items-center">
+                                <StatusIcon className={cn("h-5 w-5 mr-3", service.color)} />
+                                <span className="text-sm font-medium text-foreground">{service.name}</span>
+                            </div>
+                            <Badge
+                                variant={service.status === "Operational" ? "default" : service.status.includes("Degraded") ? "outline" : "secondary"}
+                                className={cn("text-xs",
+                                    service.status === "Operational" && "bg-green-100 text-green-700 border-green-300",
+                                    service.status.includes("Degraded") && "bg-yellow-100 text-yellow-700 border-yellow-300",
+                                    service.status.includes("Maintenance") && "bg-blue-100 text-blue-700 border-blue-300"
+                                )}
+                            >
+                                {service.status}
+                            </Badge>
+                        </div>
+                    );
+                })}
+                <p className="text-xs text-muted-foreground pt-2">
+                    Last checked: {lastStatusCheckTime}. For detailed incidents, visit status.norruva.com (conceptual).
+                </p>
+            </CardContent>
+          </Card>
 
           <Card className="shadow-lg bg-card border-primary/10">
             <CardHeader>

@@ -9,8 +9,8 @@ import { Progress } from "@/components/ui/progress";
 import Link from "next/link";
 import { generateCsrdSummary } from '@/ai/flows/generate-csrd-summary-flow';
 import { useToast } from '@/hooks/use-toast';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'; 
-import { Badge } from "@/components/ui/badge"; // Added missing import
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from "@/components/ui/badge"; // Corrected: Added missing import
 
 // Placeholder data for charts and reports
 const emissionData = {
@@ -213,4 +213,3 @@ export default function SustainabilityPage() {
     </div>
   );
 }
-

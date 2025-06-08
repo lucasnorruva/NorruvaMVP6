@@ -1,11 +1,11 @@
 
 // --- File: src/app/api/v1/dpp/route.ts ---
-// Description: Conceptual API endpoint to create a new Digital Product Passport.
+// Description: Conceptual API endpoint to create a new Digital Product Passport and list DPPs with filters.
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { MOCK_DPPS } from '@/types/dpp';
-import type { DigitalProductPassport, CustomAttribute } from '@/types/dpp';
+import type { DigitalProductPassport, CustomAttribute, DashboardFiltersState } from '@/types/dpp';
 
 interface CreateDppRequestBody {
   productName: string;
@@ -98,4 +98,59 @@ export async function POST(request: NextRequest) {
   await new Promise(resolve => setTimeout(resolve, 250));
 
   return NextResponse.json(newDpp, { status: 201 });
+}
+
+export async function GET(request: NextRequest) {
+  const { searchParams } = new URL(request.url);
+
+  const status = searchParams.get('status') as DashboardFiltersState['status'] | null;
+  const category = searchParams.get('category') as DashboardFiltersState['category'] | null;
+  const searchQuery = searchParams.get('searchQuery') as DashboardFiltersState['searchQuery'] | null;
+  const blockchainAnchored = searchParams.get('blockchainAnchored') as DashboardFiltersState['blockchainAnchored'] | null;
+  // Add limit and offset for conceptual pagination if needed later
+  // const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : undefined;
+  // const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!, 10) : undefined;
+
+
+  let filteredDPPs: DigitalProductPassport[] = [...MOCK_DPPS];
+
+  if (searchQuery) {
+    const lowerSearchQuery = searchQuery.toLowerCase();
+    filteredDPPs = filteredDPPs.filter(dpp =>
+      dpp.productName.toLowerCase().includes(lowerSearchQuery) ||
+      dpp.id.toLowerCase().includes(lowerSearchQuery) ||
+      (dpp.gtin && dpp.gtin.toLowerCase().includes(lowerSearchQuery)) ||
+      (dpp.manufacturer?.name && dpp.manufacturer.name.toLowerCase().includes(lowerSearchQuery))
+    );
+  }
+
+  if (status && status !== 'all') {
+    filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.status === status);
+  }
+
+  if (category && category !== 'all') {
+    filteredDPPs = filteredDPPs.filter(dpp => dpp.category === category);
+  }
+  
+  if (blockchainAnchored) {
+    if (blockchainAnchored === 'anchored') {
+        filteredDPPs = filteredDPPs.filter(dpp => !!dpp.blockchainIdentifiers?.anchorTransactionHash);
+    } else if (blockchainAnchored === 'not_anchored') {
+        filteredDPPs = filteredDPPs.filter(dpp => !dpp.blockchainIdentifiers?.anchorTransactionHash);
+    }
+  }
+
+  // Simulate API delay
+  await new Promise(resolve => setTimeout(resolve, 300));
+
+  return NextResponse.json({
+    data: filteredDPPs,
+    filtersApplied: {
+      status,
+      category,
+      searchQuery,
+      blockchainAnchored,
+    },
+    totalCount: filteredDPPs.length,
+  });
 }

@@ -61,7 +61,7 @@ export default function DeveloperDocumentationHubPage() {
               <li><Link href="/developer/docs/api-reference" className="text-primary hover:underline flex items-center"><BookText className="mr-2 h-4 w-4" />API Reference <span className="text-xs text-muted-foreground ml-1"> (Endpoints, Schemas)</span></Link></li>
               <li><Link href="/developer/docs/authentication" className="text-primary hover:underline flex items-center"><KeyRound className="mr-2 h-4 w-4" />Authentication <span className="text-xs text-muted-foreground ml-1"> (API Keys, OAuth2 Concept)</span></Link></li>
               <li><Link href="/developer/docs/webhooks-guide" className="text-primary hover:underline flex items-center"><Webhook className="mr-2 h-4 w-4" />Webhooks Guide <Badge variant="outline" className="ml-2 text-xs">Soon</Badge></Link></li>
-              <li><Link href="/developer/docs/rate-limiting" className="text-primary hover:underline flex items-center"><Clock className="mr-2 h-4 w-4" />Rate Limiting &amp; Usage <Badge variant="outline" className="ml-2 text-xs">Soon</Badge></Link></li>
+              <li><Link href="/developer/docs/rate-limiting" className="text-primary hover:underline flex items-center"><Clock className="mr-2 h-4 w-4" />Rate Limiting &amp; Usage</Link></li>
               <li><Link href="/developer/docs/error-codes" className="text-primary hover:underline flex items-center"><ErrorIcon className="mr-2 h-4 w-4" />Error Codes &amp; Handling</Link></li>
               <li><Link href="/developer/docs/api-changelog" className="text-primary hover:underline flex items-center"><History className="mr-2 h-4 w-4" />API Changelog</Link></li>
             </ul>

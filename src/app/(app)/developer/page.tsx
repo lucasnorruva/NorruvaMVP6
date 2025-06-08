@@ -20,7 +20,7 @@ import {
     Lock, MessageSquare, Share2, BookText, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, 
     AlertTriangle as ErrorIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, 
     Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIcon, History, 
-    UploadCloud, ShieldCheck, Cpu, HardDrive 
+    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -43,75 +43,6 @@ const initialMockWebhooks: WebhookEntry[] = [
   { id: "wh_3", url: "https://user.integrations.com/norruva/events", events: ["product.lifecycle.event.added", "product.deleted"], status: "Active" },
   { id: "wh_4", url: "https://another.service/endpoint/failed-hook", events: ["product.updated"], status: "Error" },
 ];
-
-const MOCK_API_PRODUCTS: Record<string, any> = {
-  "DPP001": { 
-    productId: "DPP001",
-    productName: "EcoSmart Refrigerator X500 (from MOCK_DPPS)",
-    category: "Appliances",
-    status: "Active",
-    manufacturer: "GreenTech Appliances",
-    modelNumber: "X500-ECO",
-    gtin: "01234567890123",
-    energyLabel: "A++",
-    compliance: {
-      REACH: { status: "Compliant", lastChecked: "2024-07-01" },
-      RoHS: { status: "Compliant", lastChecked: "2024-07-01" }
-    },
-    lifecycleEvents: [
-        { eventId: "EVT001", type: "Manufactured", timestamp: "2024-01-15T08:00:00Z", location: "EcoFactory, Germany" }
-    ],
-    metadata: { last_updated: "2024-07-28T10:00:00Z", status: "published", dppStandardVersion: "CIRPASS v0.9 Draft" },
-    productDetails: {
-      description: "An eco friendly fridge from MOCK_DPPS data source.",
-      imageUrl: "https://placehold.co/600x400.png",
-      imageHint: "refrigerator appliance",
-      materials: [{name: "Recycled Steel", percentage: 70, isRecycled: true}]
-    },
-    ebsiVerification: { status: "verified", verificationId: "EBSI_TX_ABC123", lastChecked: "2024-07-29T00:00:00Z"},
-    blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef"},
-    consumerScans: 1250,
-  },
-  "PROD002": {
-    productId: "PROD002",
-    productName: "Smart LED Bulb (4-Pack)",
-    category: "Electronics",
-    status: "Active",
-    manufacturer: "BrightSpark Electronics",
-    modelNumber: "BS-LED-S04B",
-    gtin: "98765432109876",
-    energyLabel: "A+",
-    compliance: {
-      RoHS: { status: "Compliant", lastChecked: "2024-07-01" },
-      CE_Mark: { status: "Compliant", lastChecked: "2024-07-01" },
-      Battery_Regulation: { status: "Pending Documentation", lastChecked: "2024-07-20"}
-    },
-    lifecycleEvents: []
-  }
-};
-
-const MOCK_COMPLIANCE_SUMMARIES: Record<string, any> = {
-    "DPP001": {
-        productId: "DPP001",
-        overallStatus: "Compliant",
-        details: [
-            { regulation: "REACH", status: "Compliant", lastChecked: "2024-07-01", evidenceLink: "/docs/PROD001/REACH.pdf" },
-            { regulation: "RoHS", status: "Compliant", lastChecked: "2024-07-01", evidenceLink: "/docs/PROD001/RoHS.pdf" },
-            { regulation: "WEEE", status: "Compliant", lastChecked: "2024-07-01", evidenceLink: "/docs/PROD001/WEEE.pdf" }
-        ],
-        nextReviewDate: "2025-07-01"
-    },
-    "PROD002": {
-        productId: "PROD002",
-        overallStatus: "Pending Documentation",
-        details: [
-            { regulation: "RoHS", status: "Compliant", lastChecked: "2024-07-01" },
-            { regulation: "CE Mark", status: "Compliant", lastChecked: "2024-07-01" },
-            { regulation: "EU Battery Regulation", status: "Pending Documentation", lastChecked: "2024-07-20", notes: "Awaiting battery chemistry details from supplier." }
-        ],
-        nextReviewDate: "2024-08-15"
-    }
-}
 
 const mockCodeSamples = [
   {
@@ -187,6 +118,13 @@ export default function DeveloperPortalPage() {
   const [getProductResponse, setGetProductResponse] = useState<string | null>(null);
   const [isGetProductLoading, setIsGetProductLoading] = useState(false);
 
+  // State for List DPPs filters
+  const [listDppFilters, setListDppFilters] = useState({
+    status: "all",
+    category: "all",
+    searchQuery: "",
+    blockchainAnchored: "all",
+  });
   const [listProductsResponse, setListProductsResponse] = useState<string | null>(null);
   const [isListProductsLoading, setIsListProductsLoading] = useState(false);
   
@@ -360,14 +298,25 @@ export default function DeveloperPortalPage() {
   };
 
   const handleMockGetProductDetails = () => makeApiCall(`/api/v1/dpp/${getProductId}`, 'GET', null, setIsGetProductLoading, setGetProductResponse);
-  const handleMockListProducts = () => makeApiCall('/api/v1/dpp', 'GET', null, setIsListProductsLoading, setListProductsResponse);
+  
+  const handleMockListProducts = () => {
+    const queryParams = new URLSearchParams();
+    if (listDppFilters.status !== 'all') queryParams.append('status', listDppFilters.status);
+    if (listDppFilters.category !== 'all') queryParams.append('category', listDppFilters.category);
+    if (listDppFilters.searchQuery) queryParams.append('searchQuery', listDppFilters.searchQuery);
+    if (listDppFilters.blockchainAnchored !== 'all') queryParams.append('blockchainAnchored', listDppFilters.blockchainAnchored);
+    
+    const url = `/api/v1/dpp?${queryParams.toString()}`;
+    makeApiCall(url, 'GET', null, setIsListProductsLoading, setListProductsResponse);
+  };
+
   const handleMockPostDpp = () => makeApiCall('/api/v1/dpp', 'POST', postDppBody, setIsPostDppLoading, setPostDppResponse);
   const handleMockPutProduct = () => makeApiCall(`/api/v1/dpp/${putProductId}`, 'PUT', putProductBody, setIsPutProductLoading, setPutProductResponse);
   const handleMockDeleteProduct = () => makeApiCall(`/api/v1/dpp/${deleteProductId}`, 'DELETE', null, setIsDeleteProductLoading, setDeleteProductResponse);
   const handleMockPostLifecycleEvent = () => makeApiCall(`/api/v1/dpp/${postLifecycleEventProductId}/lifecycle-events`, 'POST', postLifecycleEventBody, setIsPostLifecycleEventLoading, setPostLifecycleEventResponse);
   const handleMockGetComplianceSummary = () => makeApiCall(`/api/v1/dpp/${getComplianceProductId}/compliance-summary`, 'GET', null, setIsGetComplianceLoading, setGetComplianceResponse);
   const handleMockPostQrValidate = () => makeApiCall('/api/v1/qr/validate', 'POST', postQrValidateBody, setIsPostQrValidateLoading, setPostQrValidateResponse);
-  const handleMockPostVerify = () => makeApiCall(`/api/v1/dpp/verify`, 'POST', { productId: postVerifyProductId }, setIsPostVerifyLoading, setPostVerifyResponse); // Simplified body for conceptual verify
+  const handleMockPostVerify = () => makeApiCall(`/api/v1/dpp/verify`, 'POST', { productId: postVerifyProductId }, setIsPostVerifyLoading, setPostVerifyResponse); 
   const handleMockGetHistory = () => makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetHistoryResponse);
   const handleMockPostImport = () => makeApiCall('/api/v1/dpp/import', 'POST', { fileType: postImportFileType, data: "mock_file_content_base64_encoded" }, setIsPostImportLoading, setPostImportResponse);
   const handleMockGetGraph = () => makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetGraphResponse);
@@ -391,7 +340,7 @@ export default function DeveloperPortalPage() {
         materials: [{ name: "Mock Material", percentage: 100, isRecycled: false }],
       },
       compliance: {
-        eprel: { status: "N/A", lastChecked: new Date().toISOString() }
+        eprel: { status: 'N/A', lastChecked: new Date().toISOString() }
       },
     };
     setGeneratedMockDppJson(JSON.stringify(mockDpp, null, 2));
@@ -666,25 +615,55 @@ export default function DeveloperPortalPage() {
               <Card>
                   <CardHeader>
                   <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp</CardTitle>
-                  <CardDescription>Retrieve a list of all available Digital Product Passports.</CardDescription>
+                  <CardDescription>Retrieve a list of available Digital Product Passports with filtering.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                      <Button onClick={handleMockListProducts} disabled={isListProductsLoading} variant="secondary">
-                          {isListProductsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                          {isListProductsLoading ? "Fetching..." : "Send Request"}
-                      </Button>
-                       <Select defaultValue="cURL" disabled>
-                          <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                          <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                      </Select>
-                  </div>
-                  {listProductsResponse && (
-                      <div className="mt-4">
-                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
-                      <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{listProductsResponse}</code></pre>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div>
+                        <Label htmlFor="list-dpp-search">Search Query (ID, Name, GTIN, Manufacturer)</Label>
+                        <Input id="list-dpp-search" value={listDppFilters.searchQuery} onChange={(e) => setListDppFilters(prev => ({...prev, searchQuery: e.target.value}))} placeholder="e.g., EcoSmart, DPP001" />
                       </div>
-                  )}
+                      <div>
+                        <Label htmlFor="list-dpp-category">Category</Label>
+                        <Input id="list-dpp-category" value={listDppFilters.category === 'all' ? '' : listDppFilters.category} onChange={(e) => setListDppFilters(prev => ({...prev, category: e.target.value || 'all'}))} placeholder="e.g., Appliances (or 'all')" />
+                      </div>
+                      <div>
+                        <Label htmlFor="list-dpp-status">Status</Label>
+                        <Select value={listDppFilters.status} onValueChange={(value) => setListDppFilters(prev => ({...prev, status: value}))}>
+                          <SelectTrigger id="list-dpp-status"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {['all', 'draft', 'published', 'archived', 'pending_review', 'revoked'].map(s => <SelectItem key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div>
+                        <Label htmlFor="list-dpp-anchored">Blockchain Anchored</Label>
+                         <Select value={listDppFilters.blockchainAnchored} onValueChange={(value) => setListDppFilters(prev => ({...prev, blockchainAnchored: value}))}>
+                          <SelectTrigger id="list-dpp-anchored"><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="all">All</SelectItem>
+                            <SelectItem value="anchored">Anchored</SelectItem>
+                            <SelectItem value="not_anchored">Not Anchored</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between mt-4">
+                        <Button onClick={handleMockListProducts} disabled={isListProductsLoading} variant="secondary">
+                            {isListProductsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                            {isListProductsLoading ? "Fetching..." : "Send Request"}
+                        </Button>
+                         <Select defaultValue="cURL" disabled>
+                            <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                            <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                        </Select>
+                    </div>
+                    {listProductsResponse && (
+                        <div className="mt-4">
+                        <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
+                        <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{listProductsResponse}</code></pre>
+                        </div>
+                    )}
                   </CardContent>
               </Card>
 
@@ -1059,7 +1038,7 @@ export default function DeveloperPortalPage() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Button variant="outline" className="justify-start text-left" asChild>
                     <a href="/openapi.yaml" target="_blank" rel="noopener noreferrer">
-                      <FileJson className="mr-2"/>Download OpenAPI 3.1 Spec
+                      <FileJson className="mr-2"/>Download OpenAPI Spec
                     </a>
                   </Button>
                   <Button variant="outline" className="justify-start text-left" disabled>

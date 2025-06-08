@@ -35,7 +35,7 @@ const AiIndicator: React.FC<AiIndicatorProps> = ({ fieldOrigin, fieldName }) => 
             <Cpu className="h-4 w-4 text-info" />
           </TooltipTrigger>
           <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI document extraction.</p>
+            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -74,9 +74,16 @@ export default function SustainabilityComplianceFormSection({
           <FormItem>
             <FormLabel className="flex items-center">
               Key Materials
-              <AiIndicator fieldOrigin={initialData?.materialsOrigin} fieldName="Key Materials" />
+              <AiIndicator fieldOrigin={form.getValues("materialsOrigin") || initialData?.materialsOrigin} fieldName="Key Materials" />
             </FormLabel>
-            <FormControl><Textarea placeholder="e.g., Organic Cotton, Recycled PET" {...field} rows={3} /></FormControl>
+            <FormControl>
+              <Textarea 
+                placeholder="e.g., Organic Cotton, Recycled PET" 
+                {...field} 
+                rows={3} 
+                onChange={(e) => { field.onChange(e); form.setValue("materialsOrigin", "manual"); }}
+              />
+            </FormControl>
             <FormDescription>Primary materials used.</FormDescription>
             <FormMessage />
           </FormItem>
@@ -90,14 +97,21 @@ export default function SustainabilityComplianceFormSection({
             <div className="flex items-center justify-between">
               <FormLabel className="flex items-center">
                 Sustainability Claims
-                <AiIndicator fieldOrigin={initialData?.sustainabilityClaimsOrigin} fieldName="Sustainability Claims" />
+                <AiIndicator fieldOrigin={form.getValues("sustainabilityClaimsOrigin") || initialData?.sustainabilityClaimsOrigin} fieldName="Sustainability Claims" />
               </FormLabel>
               <Button type="button" variant="ghost" size="sm" onClick={callSuggestClaimsAI} disabled={anyAISuggestionInProgress || !!isSubmittingForm}>
                 {isSuggestingClaims ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
                 <span className="ml-2">{isSuggestingClaims ? "Suggesting..." : "Suggest Claims"}</span>
               </Button>
             </div>
-            <FormControl><Textarea placeholder="e.g., - Made with 70% recycled materials" {...field} rows={3} /></FormControl>
+            <FormControl>
+              <Textarea 
+                placeholder="e.g., - Made with 70% recycled materials" 
+                {...field} 
+                rows={3} 
+                onChange={(e) => { field.onChange(e); form.setValue("sustainabilityClaimsOrigin", "manual"); }}
+              />
+            </FormControl>
             <FormDescription>Highlight key sustainability features. Each claim on a new line, optionally start with '- '. AI suggestions will follow this format.</FormDescription>
             <FormMessage />
           </FormItem>
@@ -120,9 +134,15 @@ export default function SustainabilityComplianceFormSection({
           <FormItem>
             <FormLabel className="flex items-center">
               Energy Label
-              <AiIndicator fieldOrigin={initialData?.energyLabelOrigin} fieldName="Energy Label" />
+              <AiIndicator fieldOrigin={form.getValues("energyLabelOrigin") || initialData?.energyLabelOrigin} fieldName="Energy Label" />
             </FormLabel>
-            <FormControl><Input placeholder="e.g., A++" {...field} /></FormControl>
+            <FormControl>
+              <Input 
+                placeholder="e.g., A++" 
+                {...field} 
+                onChange={(e) => { field.onChange(e); form.setValue("energyLabelOrigin", "manual"); }}
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}
@@ -130,3 +150,4 @@ export default function SustainabilityComplianceFormSection({
     </div>
   );
 }
+    

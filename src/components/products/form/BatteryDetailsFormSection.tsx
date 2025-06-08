@@ -17,7 +17,6 @@ interface BatteryDetailsFormSectionProps {
   initialData?: Partial<InitialProductFormData>;
 }
 
-// Define AiIndicator component locally as it's small and specific to form sections
 const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' | 'manual', fieldName: string }) => {
   if (fieldOrigin === 'AI_EXTRACTED') {
     return (
@@ -27,7 +26,7 @@ const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' 
             <Cpu className="h-4 w-4 text-info" />
           </TooltipTrigger>
           <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI document extraction.</p>
+            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -46,9 +45,15 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
           <FormItem>
             <FormLabel className="flex items-center">
               Battery Chemistry
-              <AiIndicator fieldOrigin={initialData?.batteryChemistryOrigin} fieldName="Battery Chemistry" />
+              <AiIndicator fieldOrigin={form.getValues("batteryChemistryOrigin") || initialData?.batteryChemistryOrigin} fieldName="Battery Chemistry" />
             </FormLabel>
-            <FormControl><Input placeholder="e.g., Li-ion NMC" {...field} /></FormControl>
+            <FormControl>
+              <Input 
+                placeholder="e.g., Li-ion NMC" 
+                {...field} 
+                onChange={(e) => { field.onChange(e); form.setValue("batteryChemistryOrigin", "manual"); }}
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}
@@ -60,7 +65,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
           <FormItem>
             <FormLabel className="flex items-center">
               State of Health (%)
-              <AiIndicator fieldOrigin={initialData?.stateOfHealthOrigin} fieldName="State of Health" />
+              <AiIndicator fieldOrigin={form.getValues("stateOfHealthOrigin") || initialData?.stateOfHealthOrigin} fieldName="State of Health" />
             </FormLabel>
             <FormControl>
               <Input
@@ -68,7 +73,10 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
                 placeholder="e.g., 98"
                 {...field}
                 value={field.value ?? ''} 
-                onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)}
+                onChange={e => {
+                  field.onChange(e.target.value === '' ? null : e.target.valueAsNumber);
+                  form.setValue("stateOfHealthOrigin", "manual");
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -82,7 +90,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
           <FormItem>
             <FormLabel className="flex items-center">
               Mfg. Carbon Footprint (kg CO₂e)
-              <AiIndicator fieldOrigin={initialData?.carbonFootprintManufacturingOrigin} fieldName="Manufacturing Carbon Footprint" />
+              <AiIndicator fieldOrigin={form.getValues("carbonFootprintManufacturingOrigin") || initialData?.carbonFootprintManufacturingOrigin} fieldName="Manufacturing Carbon Footprint" />
             </FormLabel>
             <FormControl>
               <Input
@@ -90,7 +98,10 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
                 placeholder="e.g., 75.5"
                 {...field}
                 value={field.value ?? ''} 
-                onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)}
+                onChange={e => {
+                  field.onChange(e.target.value === '' ? null : e.target.valueAsNumber);
+                  form.setValue("carbonFootprintManufacturingOrigin", "manual");
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -104,7 +115,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
           <FormItem>
             <FormLabel className="flex items-center">
               Recycled Content (%)
-              <AiIndicator fieldOrigin={initialData?.recycledContentPercentageOrigin} fieldName="Recycled Content Percentage" />
+              <AiIndicator fieldOrigin={form.getValues("recycledContentPercentageOrigin") || initialData?.recycledContentPercentageOrigin} fieldName="Recycled Content Percentage" />
             </FormLabel>
             <FormControl>
               <Input
@@ -112,7 +123,10 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
                 placeholder="e.g., 15"
                 {...field}
                 value={field.value ?? ''} 
-                onChange={e => field.onChange(e.target.value === '' ? null : e.target.valueAsNumber)}
+                onChange={e => {
+                  field.onChange(e.target.value === '' ? null : e.target.valueAsNumber);
+                  form.setValue("recycledContentPercentageOrigin", "manual");
+                }}
               />
             </FormControl>
             <FormMessage />
@@ -122,5 +136,4 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
     </div>
   );
 }
-
     

@@ -24,6 +24,7 @@ const fileToDataUri = (file: File): Promise<string> => {
   });
 };
 
+// Extended ProductFormData to include origin fields for initial state management
 export interface InitialProductFormData extends ProductFormData {
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -37,62 +38,27 @@ export interface InitialProductFormData extends ProductFormData {
   stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
   carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
-  // customAttributesJsonString is already part of ProductFormData
-  // imageUrlOrigin is now part of ProductFormData
 }
 
-interface StoredUserProduct extends ProductFormData { // Now includes imageUrlOrigin from ProductFormData
+// StoredUserProduct now directly uses fields from ProductFormData including origins
+interface StoredUserProduct extends ProductFormData {
   id: string;
   status: string;
   compliance: string;
   lastUpdated: string;
-  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
-  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
-  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
-  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
-  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
-  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
-  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
-  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
-  batteryChemistryOrigin?: 'AI_EXTRACTED' | 'manual';
-  stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
-  carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
-  recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
-  productCategory?: string;
-  // imageUrl and imageHint are part of ProductFormData
-  keySustainabilityPoints?: string[];
-  keyCompliancePoints?: string[];
-  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
-  energyLabelRating?: string;
-  repairability?: { score: number; scale: number; detailsUrl?: string };
-  recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
-  supplyChainLinks?: ProductSupplyChainLink[];
-  lifecycleEvents?: SimpleLifecycleEvent[];
-  complianceSummary?: ProductComplianceSummary;
-  // customAttributesJsonString is part of ProductFormData
+  productCategory?: string; // Retain this as it might not be part of core ProductFormData for submission but useful for storage/display
+  keySustainabilityPoints?: string[]; // Optional display fields
+  keyCompliancePoints?: string[]; // Optional display fields
+  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[]; // Optional display fields
+  energyLabelRating?: string; // Optional display fields
+  repairability?: { score: number; scale: number; detailsUrl?: string }; // Optional display fields
+  recyclabilityInfo?: { percentage?: number; instructionsUrl?: string }; // Optional display fields
+  supplyChainLinks?: ProductSupplyChainLink[]; // Specific domain data
+  lifecycleEvents?: SimpleLifecycleEvent[]; // Specific domain data
+  complianceSummary?: ProductComplianceSummary; // Specific domain data
 }
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
-
-const determineOrigin = (
-  currentValue: any,
-  previousValue: any,
-  previousOrigin: 'AI_EXTRACTED' | 'manual' | undefined,
-  currentFormOrigin?: 'AI_EXTRACTED' | 'manual' // Added to check if AI set it in current session
-): 'AI_EXTRACTED' | 'manual' | undefined => {
-  if (currentFormOrigin === 'AI_EXTRACTED' && currentValue === previousValue) {
-    return 'AI_EXTRACTED'; // AI generated it in this session, and it wasn't changed from initial
-  }
-  if (currentValue !== previousValue) {
-    if ( (previousValue !== undefined && previousValue !== null && previousValue !== "") && (currentValue === "" || currentValue === null || currentValue === undefined) ) {
-        return 'manual'; // User cleared a pre-existing value
-    }
-    if (currentValue !== "" && currentValue !== null && currentValue !== undefined) {
-        return 'manual'; // User typed something new or changed an AI value
-    }
-  }
-  return previousOrigin; // No change, or changed from AI but not back to original AI value
-};
 
 
 export default function AddNewProductPage() {
@@ -131,17 +97,17 @@ export default function AddNewProductPage() {
       const userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
       const productToEdit = userProducts.find(p => p.id === editProductId);
       if (productToEdit) {
+        // Map StoredUserProduct to InitialProductFormData, including origin fields
         const editData: Partial<InitialProductFormData> = {
-          ...productToEdit,
+          ...productToEdit, // This now includes origin fields if they were saved
+          // Ensure numeric fields that could be null/undefined are handled
           stateOfHealth: productToEdit.stateOfHealth ?? undefined,
           carbonFootprintManufacturing: productToEdit.carbonFootprintManufacturing ?? undefined,
           recycledContentPercentage: productToEdit.recycledContentPercentage ?? undefined,
-          specificationsOrigin: productToEdit.specificationsOrigin,
-          customAttributesJsonString: productToEdit.customAttributesJsonString || "",
         };
         setCurrentProductDataForForm(editData);
         setActiveTab("manual");
-        setAiExtractionAppliedSuccessfully(false);
+        setAiExtractionAppliedSuccessfully(false); // Reset this flag for edit mode
       } else {
         toast({ title: "Error", description: "Product not found for editing.", variant: "destructive" });
         router.push("/products/new");
@@ -156,10 +122,11 @@ export default function AddNewProductPage() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setFile(event.target.files[0]);
+      // Reset only AI-extractable fields or all? For now, keeping some user choices like category.
       setCurrentProductDataForForm(prev => ({
-        ...defaultFormState,
-        gtin: prev.gtin,
-        productCategory: prev.productCategory,
+        ...defaultFormState, // Reset to defaults
+        gtin: prev.gtin, // Keep GTIN if user typed it
+        productCategory: prev.productCategory, // Keep category
       }));
       setError(null);
       setAiExtractionAppliedSuccessfully(false);
@@ -190,20 +157,23 @@ export default function AddNewProductPage() {
         aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED';
       } else {
         aiInitialFormData.specifications = "";
+        // If AI returned an empty object for specs, it's still an AI action.
         if (result.specifications) aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED';
       }
 
       if (result.energyLabel) { aiInitialFormData.energyLabel = result.energyLabel; aiInitialFormData.energyLabelOrigin = 'AI_EXTRACTED'; }
 
+      // Battery fields
       if (result.batteryChemistry) { aiInitialFormData.batteryChemistry = result.batteryChemistry; aiInitialFormData.batteryChemistryOrigin = 'AI_EXTRACTED'; }
       if (result.stateOfHealth !== undefined && result.stateOfHealth !== null) { aiInitialFormData.stateOfHealth = result.stateOfHealth; aiInitialFormData.stateOfHealthOrigin = 'AI_EXTRACTED'; }
       if (result.carbonFootprintManufacturing !== undefined && result.carbonFootprintManufacturing !== null) { aiInitialFormData.carbonFootprintManufacturing = result.carbonFootprintManufacturing; aiInitialFormData.carbonFootprintManufacturingOrigin = 'AI_EXTRACTED'; }
       if (result.recycledContentPercentage !== undefined && result.recycledContentPercentage !== null) { aiInitialFormData.recycledContentPercentage = result.recycledContentPercentage; aiInitialFormData.recycledContentPercentageOrigin = 'AI_EXTRACTED'; }
 
-      aiInitialFormData.imageUrl = ""; // Reset image URL on new extraction
+      // Reset image and custom attributes on new AI extraction
+      aiInitialFormData.imageUrl = ""; 
       aiInitialFormData.imageHint = "";
       aiInitialFormData.imageUrlOrigin = undefined;
-      aiInitialFormData.customAttributesJsonString = "";
+      aiInitialFormData.customAttributesJsonString = ""; // Reset custom attributes
 
       setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData}));
       setAiExtractionAppliedSuccessfully(true);
@@ -231,69 +201,49 @@ export default function AddNewProductPage() {
     try {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
       let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
-
-      const dataPriorToThisEdit = currentProductDataForForm;
-
-      const productToSave: StoredUserProduct = {
+      
+      // Create a base product object from formDataFromForm.
+      // The StoredUserProduct type is now aligned with ProductFormData for core fields + origins.
+      const productCoreData: StoredUserProduct = {
         id: isEditMode && editProductId ? editProductId : `USER_PROD${Date.now().toString().slice(-6)}`,
-        productName: formDataFromForm.productName || dataPriorToThisEdit.productName || "Unnamed Product",
-        gtin: formDataFromForm.gtin || dataPriorToThisEdit.gtin,
-        productDescription: formDataFromForm.productDescription || dataPriorToThisEdit.productDescription,
-        manufacturer: formDataFromForm.manufacturer || dataPriorToThisEdit.manufacturer,
-        modelNumber: formDataFromForm.modelNumber || dataPriorToThisEdit.modelNumber,
-        materials: formDataFromForm.materials || dataPriorToThisEdit.materials,
-        sustainabilityClaims: formDataFromForm.sustainabilityClaims || dataPriorToThisEdit.sustainabilityClaims,
-        specifications: formDataFromForm.specifications || dataPriorToThisEdit.specifications,
-        energyLabel: formDataFromForm.energyLabel || dataPriorToThisEdit.energyLabel,
-        productCategory: formDataFromForm.productCategory || dataPriorToThisEdit.productCategory,
-        imageUrl: formDataFromForm.imageUrl || dataPriorToThisEdit.imageUrl,
-        imageHint: formDataFromForm.imageHint || dataPriorToThisEdit.imageHint,
-        imageUrlOrigin: determineOrigin(formDataFromForm.imageUrl, dataPriorToThisEdit.imageUrl, dataPriorToThisEdit.imageUrlOrigin, formDataFromForm.imageUrlOrigin),
-        batteryChemistry: formDataFromForm.batteryChemistry || dataPriorToThisEdit.batteryChemistry,
-        stateOfHealth: formDataFromForm.stateOfHealth !== undefined && formDataFromForm.stateOfHealth !== null ? formDataFromForm.stateOfHealth : dataPriorToThisEdit.stateOfHealth,
-        carbonFootprintManufacturing: formDataFromForm.carbonFootprintManufacturing !== undefined && formDataFromForm.carbonFootprintManufacturing !== null ? formDataFromForm.carbonFootprintManufacturing : dataPriorToThisEdit.carbonFootprintManufacturing,
-        recycledContentPercentage: formDataFromForm.recycledContentPercentage !== undefined && formDataFromForm.recycledContentPercentage !== null ? formDataFromForm.recycledContentPercentage : dataPriorToThisEdit.recycledContentPercentage,
-        customAttributesJsonString: formDataFromForm.customAttributesJsonString || dataPriorToThisEdit.customAttributesJsonString,
-
-        productNameOrigin: determineOrigin(formDataFromForm.productName, dataPriorToThisEdit.productName, dataPriorToThisEdit.productNameOrigin),
-        productDescriptionOrigin: determineOrigin(formDataFromForm.productDescription, dataPriorToThisEdit.productDescription, dataPriorToThisEdit.productDescriptionOrigin),
-        manufacturerOrigin: determineOrigin(formDataFromForm.manufacturer, dataPriorToThisEdit.manufacturer, dataPriorToThisEdit.manufacturerOrigin),
-        modelNumberOrigin: determineOrigin(formDataFromForm.modelNumber, dataPriorToThisEdit.modelNumber, dataPriorToThisEdit.modelNumberOrigin),
-        materialsOrigin: determineOrigin(formDataFromForm.materials, dataPriorToThisEdit.materials, dataPriorToThisEdit.materialsOrigin),
-        sustainabilityClaimsOrigin: determineOrigin(formDataFromForm.sustainabilityClaims, dataPriorToThisEdit.sustainabilityClaims, dataPriorToThisEdit.sustainabilityClaimsOrigin),
-        energyLabelOrigin: determineOrigin(formDataFromForm.energyLabel, dataPriorToThisEdit.energyLabel, dataPriorToThisEdit.energyLabelOrigin),
-        specificationsOrigin: determineOrigin(formDataFromForm.specifications, dataPriorToThisEdit.specifications, dataPriorToThisEdit.specificationsOrigin),
-        batteryChemistryOrigin: determineOrigin(formDataFromForm.batteryChemistry, dataPriorToThisEdit.batteryChemistry, dataPriorToThisEdit.batteryChemistryOrigin),
-        stateOfHealthOrigin: determineOrigin(formDataFromForm.stateOfHealth, dataPriorToThisEdit.stateOfHealth, dataPriorToThisEdit.stateOfHealthOrigin),
-        carbonFootprintManufacturingOrigin: determineOrigin(formDataFromForm.carbonFootprintManufacturing, dataPriorToThisEdit.carbonFootprintManufacturing, dataPriorToThisEdit.carbonFootprintManufacturingOrigin),
-        recycledContentPercentageOrigin: determineOrigin(formDataFromForm.recycledContentPercentage, dataPriorToThisEdit.recycledContentPercentage, dataPriorToThisEdit.recycledContentPercentageOrigin),
-
+        ...formDataFromForm, // This now includes xxxOrigin fields directly
+        productName: formDataFromForm.productName || "Unnamed Product", // Ensure productName has a fallback
+        // Set status and lastUpdated, preserve existing data if editing
         status: (isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.status) : "Draft") || "Draft",
         compliance: (isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.compliance) : "N/A") || "N/A",
         lastUpdated: new Date().toISOString(),
+        // Preserve complex array/object fields if editing, otherwise initialize empty
         supplyChainLinks: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.supplyChainLinks) || [] : [],
         lifecycleEvents: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.lifecycleEvents) || [] : [],
         complianceSummary: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.complianceSummary) : undefined,
+        // These display-specific fields are not directly part of ProductFormData, they are derived for display
+        // For StoredUserProduct, they can remain optional or be populated if ProductFormData starts including them.
+        // For now, they are not directly transferred from formDataFromForm unless ProductFormData schema changes.
       };
 
 
       if (isEditMode && editProductId) {
         const productIndex = userProducts.findIndex(p => p.id === editProductId);
         if (productIndex > -1) {
-          userProducts[productIndex] = productToSave;
+          // Merge, ensuring complex objects from existing are not lost if not in formDataFromForm
+          userProducts[productIndex] = {
+            ...userProducts[productIndex], // Keep existing complex fields
+            ...productCoreData, // Overwrite with new simple fields and origins
+          };
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
-          toast({ title: "Product Updated", description: `${productToSave.productName} has been updated.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
+          toast({ title: "Product Updated", description: `${productCoreData.productName} has been updated.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
           router.push(`/products/${editProductId}`);
         } else {
           throw new Error("Product not found for update.");
         }
       } else {
-        userProducts.push(productToSave);
+        userProducts.push(productCoreData);
         localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
-        toast({ title: "Product Saved", description: `${productToSave.productName} has been saved.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
+        toast({ title: "Product Saved", description: `${productCoreData.productName} has been saved.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
         router.push('/products');
       }
 
+      // Reset form state for next creation
       setCurrentProductDataForForm(defaultFormState);
       setAiExtractionAppliedSuccessfully(false);
       if (!isEditMode) setActiveTab("ai-extraction");
@@ -324,7 +274,10 @@ export default function AddNewProductPage() {
       <Tabs value={activeTab} onValueChange={(newTab) => {
           setActiveTab(newTab);
           if (newTab !== "manual" && aiExtractionAppliedSuccessfully) {
-            setAiExtractionAppliedSuccessfully(false);
+            // If user navigates away from manual tab after AI extraction,
+            // consider if the AI data should be cleared or maintained.
+            // For now, it's maintained until a new extraction or save.
+            // setAiExtractionAppliedSuccessfully(false); // Potentially reset this
           }
       }} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
@@ -350,9 +303,9 @@ export default function AddNewProductPage() {
           <ProductForm
             onSubmit={handleProductFormSubmit}
             isSubmitting={isSubmittingProduct}
-            initialData={currentProductDataForForm}
+            initialData={currentProductDataForForm} // Pass the current state including origins
             isStandalonePage={true}
-            key={editProductId || 'new'}
+            key={editProductId || 'new'} // Ensure form re-renders if editProductId changes
           />
         </TabsContent>
 
@@ -414,3 +367,4 @@ export default function AddNewProductPage() {
     </div>
   );
 }
+    

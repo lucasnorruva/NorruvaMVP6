@@ -29,8 +29,8 @@ const pathways: Pathway[] = [
     title: 'EU ESPR Pathway',
     description: 'Navigate the Ecodesign for Sustainable Products Regulation. Address durability, repairability, recycled content, and information requirements for various product categories.',
     icon: Recycle,
-    href: '#',
-    status: 'coming_soon',
+    href: '/compliance/pathways/espr', // Updated href
+    status: 'active', // Updated status
   },
   {
     id: 'csrd',
@@ -129,3 +129,4 @@ export default function CompliancePathwaysPage() {
     </div>
   );
 }
+

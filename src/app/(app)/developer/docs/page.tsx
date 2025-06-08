@@ -1,4 +1,3 @@
-
 // --- File: page.tsx (Developer Documentation Hub) ---
 "use client";
 
@@ -72,10 +71,10 @@ export default function DeveloperDocumentationHubPage() {
             </h4>
             <ul className="list-none space-y-1.5 text-sm">
               <li><Link href="/developer/guides/quick-start" className="text-primary hover:underline flex items-center"><Rocket className="mr-2 h-4 w-4" />Quick Start Integration Guide</Link></li>
+              <li><Link href="/developer/guides/manufacturer-onboarding" className="text-primary hover:underline flex items-center"><Users className="mr-2 h-4 w-4" />Manufacturer Onboarding</Link></li>
               <li><Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline flex items-center"><Share2 className="mr-2 h-4 w-4" />EBSI Integration Overview</Link></li>
               <li><Link href="/developer/docs/regulatory-alignment" className="text-primary hover:underline flex items-center"><Scale className="mr-2 h-4 w-4" />Regulatory Alignment (ESPR, EPREL)</Link></li>
               <li><Link href="/developer/docs/data-management-best-practices" className="text-primary hover:underline flex items-center"><LayersIcon className="mr-2 h-4 w-4" />Data Management Best Practices</Link></li>
-              <li><Link href="#" className="text-primary hover:underline flex items-center opacity-50 cursor-not-allowed"><Users className="mr-2 h-4 w-4" />Manufacturer Onboarding <Badge variant="outline" className="ml-2 text-xs">Coming Soon</Badge></Link></li>
               <li><Link href="#" className="text-primary hover:underline flex items-center opacity-50 cursor-not-allowed"><ShieldCheck className="mr-2 h-4 w-4" />Auditor Integration <Badge variant="outline" className="ml-2 text-xs">Coming Soon</Badge></Link></li>
             </ul>
           </div>

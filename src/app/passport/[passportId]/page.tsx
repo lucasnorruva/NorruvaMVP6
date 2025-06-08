@@ -297,7 +297,7 @@ export default function PublicPassportPage({ params }: Props) {
               </Card>
             </div>
 
-            {product.customAttributes && product.customAttributes.length > 0 && (
+            {(product.customAttributes && product.customAttributes.length > 0) && (
               <div className="mt-8 pt-6 border-t border-border">
                 <Card className="border-0 shadow-none">
                   <CardHeader className="px-0 pt-0 pb-4">

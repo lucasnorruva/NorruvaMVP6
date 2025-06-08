@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { ListChecks, ShieldAlert, UserCircle, Info, Filter as FilterIcon, ChevronLeft, ChevronRight } from "lucide-react";
+import { ListChecks, ShieldAlert, Info, Filter as FilterIcon, ChevronLeft, ChevronRight, Clock } from "lucide-react"; // Added Clock
 import { cn } from "@/lib/utils";
 
 interface AuditLogEntry {
@@ -129,13 +129,13 @@ export default function AuditLogPage() {
       case 'Pending':
         variant = "outline";
         className = "bg-yellow-100 text-yellow-700 border-yellow-300";
-        IconCmpt = Info; // Using Info for Pending for now
+        IconCmpt = Clock; // Updated icon for Pending
         break;
       case 'Info':
-      default: // Catches 'Info' and any other unexpected status
+      default: 
         variant = "outline";
         className = "bg-blue-100 text-blue-700 border-blue-300";
-        IconCmpt = UserCircle; // Changed icon for 'Info' to UserCircle as ListChecks is for Success
+        IconCmpt = Info; // Updated icon for Info
         break;
     }
     return <Badge variant={variant} className={cn("capitalize text-xs", className)}><IconCmpt className="mr-1 h-3 w-3"/>{status}</Badge>;
@@ -248,6 +248,5 @@ export default function AuditLogPage() {
     </div>
   );
 }
-
 
     

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import ProductContainer from '@/components/products/detail/ProductContainer';
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY, MOCK_DPPS } from '@/types/dpp';
-import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct, DigitalProductPassport, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification } from '@/types/dpp';
+import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct, DigitalProductPassport, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification } from '@/types/dpp';
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow';
@@ -55,12 +55,16 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         });
     }
     if (dpp.compliance.battery_regulation) {
+        const cfValue = dpp.compliance.battery_regulation.carbonFootprint?.value || 'N/A';
+        const cfUnit = dpp.compliance.battery_regulation.carbonFootprint?.unit || '';
+        const notesValue = `CF: ${cfValue} ${cfUnit}`.trim();
+
         specificRegulations.push({
             regulationName: "EU Battery Regulation",
             status: dpp.compliance.battery_regulation.status as ComplianceDetailItem['status'],
             verificationId: dpp.compliance.battery_regulation.batteryPassportId || dpp.compliance.battery_regulation.vcId,
-            lastChecked: dpp.metadata.last_updated, // Ensure comma is here
-            notes: `CF: ${dpp.compliance.battery_regulation.carbonFootprint?.value || 'N/A'} ${dpp.compliance.battery_regulation.carbonFootprint?.unit || ''}`
+            lastChecked: dpp.metadata.last_updated, // Comma is definitely here
+            notes: notesValue
         });
     }
 
@@ -224,6 +228,12 @@ export default function ProductDetailPage() {
               },
               compliance: { // Basic compliance from StoredUserProduct
                 eprel: userProductData.complianceSummary?.eprel,
+                battery_regulation: userProductData.complianceSummary?.specificRegulations?.find(
+                  (reg: any) => reg.regulationName === "EU Battery Regulation" // Using 'any' for flexibility from string status
+                ) ? {
+                    status: userProductData.complianceSummary.specificRegulations.find((reg: any) => reg.regulationName === "EU Battery Regulation")!.status as DigitalProductPassport['compliance']['battery_regulation']['status'],
+                    // Map other battery fields if available in stored complianceSummary
+                } : { status: 'not_applicable' } // Default if not found
               },
               ebsiVerification: userProductData.complianceSummary?.ebsi ? {
                 status: userProductData.complianceSummary.ebsi.status as EbsiVerificationDetails['status'],

@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Added Select
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lightbulb, HelpCircle, CheckCircle, Loader2, Info, Recycle, Handshake, PackageCheck, AlertTriangle } from 'lucide-react';
+import { Lightbulb, HelpCircle, CheckCircle, Loader2, Info, Recycle, Handshake, PackageCheck, AlertTriangle, SearchCheck } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 // import { queryComplianceCopilot } from '@/ai/flows/compliance-copilot-flow'; // For future integration
 
@@ -18,6 +18,7 @@ interface WizardStep {
   id: string;
   title: string;
   description: string;
+  icon?: React.ElementType;
 }
 
 const euBatteryRegulationSteps: WizardStep[] = [
@@ -26,10 +27,10 @@ const euBatteryRegulationSteps: WizardStep[] = [
   { id: "step3", title: "Material Composition", description: "Declare critical raw materials (CRM) and restricted substances." },
   { id: "step4", title: "Carbon Footprint", description: "Provide manufacturing carbon footprint data." },
   { id: "step5", title: "Performance & Durability", description: "Detail battery performance characteristics." },
-  { id: "step6", title: "Recycled Content", description: "Declare the percentage of recycled content for key materials." },
-  { id: "step7", title: "Supply Chain Due Diligence", description: "Outline due diligence policies for responsible sourcing of raw materials." },
-  { id: "step8", title: "Collection & Recycling", description: "Information on EOL management, producer responsibility, and recycling/recovery targets." },
-  { id: "step9", title: "Review & Submit", description: "Verify all information and prepare for submission." },
+  { id: "step6", title: "Recycled Content", description: "Declare the percentage of recycled content for key materials.", icon: Recycle },
+  { id: "step7", title: "Supply Chain Due Diligence", description: "Outline due diligence policies for responsible sourcing of raw materials.", icon: Handshake },
+  { id: "step8", title: "Collection & Recycling", description: "Information on EOL management, producer responsibility, and recycling/recovery targets.", icon: PackageCheck },
+  { id: "step9", title: "Review & Submit", description: "Verify all information and prepare for submission.", icon: SearchCheck },
 ];
 
 export default function BatteryRegulationPathwayPage() {
@@ -120,6 +121,8 @@ export default function BatteryRegulationPathwayPage() {
         mockResponseDescription = `For Supply Chain Due Diligence, describe your policies for responsible sourcing of raw materials, especially Cobalt, Lithium, Natural Graphite, and Nickel. Align with OECD Due Diligence Guidance. If you have a public report on your due diligence activities, provide a link. This is crucial for demonstrating ethical and sustainable sourcing practices as required by Annex X of the EU Battery Regulation.`;
     } else if (stepContext === euBatteryRegulationSteps[7].title) { // Collection & Recycling
         mockResponseDescription = `For Collection & Recycling, detail how producer responsibility obligations are met. Provide a URL to information on collection and recycling schemes. Describe take-back systems and report on achievement of recycling efficiency and material recovery targets as per Annex XII of the EU Battery Regulation. This includes targets for Cobalt, Copper, Lead, Lithium, and Nickel recovery.`;
+    } else if (stepContext === euBatteryRegulationSteps[8].title) { // Review & Submit
+        mockResponseDescription = `For Review & Submit, carefully cross-check all provided information against the EU Battery Regulation requirements (Annexes I-XIII). Ensure data accuracy, completeness, and verifiability. Pay special attention to units, thresholds, and specific data elements required for each section. Confirm all linked documents are accessible and up-to-date. This is your final check before formal submission.`;
     }
 
 
@@ -149,6 +152,9 @@ export default function BatteryRegulationPathwayPage() {
   
   const renderStepContent = (stepId: string) => {
     const currentStepDetails = euBatteryRegulationSteps.find(s => s.id === stepId);
+    const stepIndex = euBatteryRegulationSteps.findIndex(s => s.id === stepId);
+    const currentStepInfo = euBatteryRegulationSteps[stepIndex];
+
     switch (stepId) {
       case "step1":
         return (
@@ -506,6 +512,40 @@ export default function BatteryRegulationPathwayPage() {
             </CardContent>
             </Card>
         );
+      case "step9":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                {currentStepInfo.icon && <currentStepInfo.icon className="mr-2 h-5 w-5 text-primary" />}
+                {currentStepInfo.title}
+              </CardTitle>
+              <CardDescription>{currentStepInfo.description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-foreground">
+                You have reached the final step. Please review all the information entered in the previous steps for accuracy and completeness.
+                Ensure all data aligns with the EU Battery Regulation requirements.
+              </p>
+              <div className="p-4 border rounded-md bg-muted/50">
+                <h4 className="font-semibold mb-2 text-primary">Key Review Points:</h4>
+                <ul className="list-disc list-inside text-sm space-y-1 text-muted-foreground">
+                  <li>Verify all mandatory fields across all steps are filled.</li>
+                  <li>Double-check numerical values, units, and percentages.</li>
+                  <li>Ensure any linked documents or URLs are correct and accessible.</li>
+                  <li>Confirm consistency of information across different sections.</li>
+                </ul>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Once you are satisfied, you can proceed to mock submit this pathway. In a real scenario, this would trigger formal data submission processes.
+              </p>
+              <Button variant="outline" size="sm" onClick={() => handleAskCopilot(currentStepInfo.title)} disabled={isLoadingCopilot}>
+                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+                Ask Co-Pilot about Final Review
+              </Button>
+            </CardContent>
+          </Card>
+        );
       default:
         return (
             <Card>
@@ -557,12 +597,14 @@ export default function BatteryRegulationPathwayPage() {
                 {currentStepIndex === euBatteryRegulationSteps.length -1 ? (
                     <Button onClick={() => {
                         toast({
-                            title: "Mock Submission",
-                            description: "This is a conceptual final submission. All data would be validated and sent to relevant authorities.",
-                            duration: 5000,
-                            action: <AlertTriangle className="text-white" />
+                            title: "Mock Submission Successful!",
+                            description: "Your EU Battery Regulation Pathway data has been conceptually submitted. The wizard will now reset.",
+                            duration: 7000,
+                            action: <CheckCircle className="text-green-500" />
                         });
                         setActiveStep(euBatteryRegulationSteps[0].id); // Reset to first step
+                        // Potentially clear formData here if desired after submission
+                        // setFormData(initialFormState); 
                     }} 
                     className="bg-accent text-accent-foreground hover:bg-accent/90">
                         <CheckCircle className="mr-2 h-4 w-4"/>

@@ -13,7 +13,7 @@ import {
     KeyRound, 
     Webhook, 
     Clock, 
-    AlertTriangle as ErrorIcon, // Alias to avoid conflict if AlertTriangle is used directly elsewhere
+    AlertTriangle as ErrorIcon, 
     FileJson, 
     Rocket, 
     Share2, 
@@ -24,7 +24,7 @@ import {
     TestTube2, 
     Server as ServerIconShadcn, 
     VenetianMask,
-    History // Added History for Changelog
+    History 
 } from "lucide-react";
 
 export default function DeveloperDocumentationHubPage() {

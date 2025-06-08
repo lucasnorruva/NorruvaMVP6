@@ -104,7 +104,10 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
                 <>
                   <p className="text-xs font-semibold mt-2 text-foreground/90">Missing essential fields:</p>
                   <ul className="list-disc list-inside text-xs text-muted-foreground max-h-32 overflow-y-auto space-y-0.5 mt-1">
-                    {completenessData.missingFields.map(field => <li key={field}>{field}</li>)}
+                    {completenessData.missingFields.slice(0, 5).map(field => <li key={field}>{field}</li>)}
+                    {completenessData.missingFields.length > 5 && (
+                      <li>...and {completenessData.missingFields.length - 5} more.</li>
+                    )}
                   </ul>
                 </>
               ) : (
@@ -156,5 +159,3 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
     </TableRow>
   );
 }
-
-    

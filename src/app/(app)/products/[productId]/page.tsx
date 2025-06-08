@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import ProductContainer from '@/components/products/detail/ProductContainer';
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY, MOCK_DPPS } from '@/types/dpp';
-import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct, DigitalProductPassport, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute } from '@/types/dpp';
+import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct, DigitalProductPassport, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification } from '@/types/dpp';
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow';
@@ -59,7 +59,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             regulationName: "EU Battery Regulation",
             status: dpp.compliance.battery_regulation.status as ComplianceDetailItem['status'],
             verificationId: dpp.compliance.battery_regulation.batteryPassportId || dpp.compliance.battery_regulation.vcId,
-            lastChecked: dpp.metadata.last_updated,
+            lastChecked: dpp.metadata.last_updated, // Ensure this comma is present
             notes: `CF: ${dpp.compliance.battery_regulation.carbonFootprint?.value || 'N/A'} ${dpp.compliance.battery_regulation.carbonFootprint?.unit || ''}`
         });
     }
@@ -92,6 +92,19 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
     }
     
     const customAttributes = dpp.productDetails?.customAttributes || [];
+
+    const mappedCertifications: SimpleCertification[] = dpp.certifications?.map(cert => ({
+        name: cert.name,
+        authority: cert.issuer,
+        standard: cert.standard,
+        issueDate: cert.issueDate,
+        expiryDate: cert.expiryDate,
+        documentUrl: cert.documentUrl,
+        isVerified: !!(cert.vcId || cert.transactionHash),
+        vcId: cert.vcId,
+        transactionHash: cert.transactionHash,
+    })) || [];
+
 
     return {
         id: dpp.id,
@@ -142,6 +155,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         repairability: dpp.productDetails?.repairabilityScore ? { score: dpp.productDetails.repairabilityScore.value, scale: dpp.productDetails.repairabilityScore.scale, detailsUrl: dpp.productDetails.repairabilityScore.reportUrl } : undefined,
         recyclabilityInfo: dpp.productDetails?.recyclabilityInformation ? { percentage: dpp.productDetails.recyclabilityInformation.recycledContentPercentage, instructionsUrl: dpp.productDetails.recyclabilityInformation.instructionsUrl } : undefined,
         supplyChainLinks: dpp.supplyChainLinks || [],
+        certifications: mappedCertifications,
         customAttributes: customAttributes,
     };
 }
@@ -173,6 +187,18 @@ export default function ProductDetailPage() {
                       console.error("Failed to parse customAttributesJsonString from localStorage for USER_PROD:", e);
                   }
               }
+             const certificationsForUserProd: Certification[] = userProductData.certifications?.map(sc => ({
+                id: `cert_user_${sc.name.replace(/\s+/g, '_')}`, // mock an ID
+                name: sc.name,
+                issuer: sc.authority,
+                issueDate: sc.issueDate,
+                expiryDate: sc.expiryDate,
+                documentUrl: sc.documentUrl,
+                standard: sc.standard,
+                vcId: sc.vcId,
+                transactionHash: sc.transactionHash,
+              })) || [];
+
 
             // Construct a DigitalProductPassport-like object from StoredUserProduct
             foundDpp = {
@@ -185,6 +211,7 @@ export default function ProductDetailPage() {
               metadata: {
                 status: (userProductData.status?.toLowerCase() as DigitalProductPassport['metadata']['status']) || 'draft',
                 last_updated: userProductData.lastUpdated || new Date().toISOString(),
+                created_at: userProductData.lastUpdated || new Date().toISOString(), // Assuming created_at is same as lastUpdated for stored
               },
               productDetails: {
                 description: userProductData.productDescription,
@@ -197,7 +224,6 @@ export default function ProductDetailPage() {
               },
               compliance: { // Basic compliance from StoredUserProduct
                 eprel: userProductData.complianceSummary?.eprel,
-                // Add other compliance aspects if available in StoredUserProduct
               },
               ebsiVerification: userProductData.complianceSummary?.ebsi ? {
                 status: userProductData.complianceSummary.ebsi.status as EbsiVerificationDetails['status'],
@@ -211,6 +237,7 @@ export default function ProductDetailPage() {
                   location: e.location,
                   data: e.notes ? { notes: e.notes } : undefined,
               })),
+              certifications: certificationsForUserProd,
               supplyChainLinks: userProductData.supplyChainLinks || [],
             } as DigitalProductPassport; // Cast as it's a partial reconstruction
           }
@@ -264,6 +291,7 @@ export default function ProductDetailPage() {
         const mockDppIndex = MOCK_DPPS.findIndex(dpp => dpp.id === product.id);
         if (mockDppIndex > -1) {
             MOCK_DPPS[mockDppIndex].supplyChainLinks = updatedLinks;
+            MOCK_DPPS[mockDppIndex].metadata.last_updated = new Date().toISOString();
         }
         toast({ title: "Supply Chain Updated (Session Only)", description: "Supply chain links updated for this session (mock product).", variant: "default" });
     }
@@ -324,6 +352,7 @@ export default function ProductDetailPage() {
          const mockDppIndex = MOCK_DPPS.findIndex(dpp => dpp.id === product.id);
          if (mockDppIndex > -1 && MOCK_DPPS[mockDppIndex].compliance) {
             MOCK_DPPS[mockDppIndex].compliance.eprel = newEprelData;
+            MOCK_DPPS[mockDppIndex].metadata.last_updated = result.lastChecked;
          }
       }
       toast({ title: "EPREL Sync", description: result.message, variant: result.syncStatus.toLowerCase().includes('error') || result.syncStatus.toLowerCase().includes('mismatch') ? "destructive" : "default" });
@@ -362,3 +391,5 @@ export default function ProductDetailPage() {
     />
   );
 }
+
+    

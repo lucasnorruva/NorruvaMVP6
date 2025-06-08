@@ -73,7 +73,8 @@ const mockTutorials = [
     id: "tut1",
     title: "Step-by-Step: Integrating DPP QR Scanning into a Retail App",
     description: "Learn how to use the Norruva API to allow consumers to scan QR codes and view product passports directly in your application.",
-    linkText: "Read Tutorial (Mock)",
+    linkText: "Read Tutorial", // Updated from (Mock)
+    href: "/developer/tutorials/qr-scan-integration", // Added href
     icon: BookText
   },
   {
@@ -81,6 +82,7 @@ const mockTutorials = [
     title: "Automating Compliance Updates with Webhooks",
     description: "A guide on setting up webhooks to receive real-time notifications for DPP status changes or new compliance requirements.",
     linkText: "Read Tutorial (Mock)",
+    href: "#", // Placeholder for now
     icon: BookText
   },
   {
@@ -88,6 +90,7 @@ const mockTutorials = [
     title: "Best Practices for Managing DPP Data via API",
     description: "Explore strategies for efficiently managing large volumes of product data, versioning DPPs, and ensuring data accuracy through API integrations.",
     linkText: "Read Tutorial (Mock)",
+    href: "#", // Placeholder for now
     icon: BookText
   },
 ];
@@ -530,11 +533,11 @@ export default function DeveloperPortalPage() {
 
   const codeSampleLanguages = ["cURL", "JavaScript", "Python"]; 
   const conceptualSdks = [
-      { name: "JavaScript SDK", link: "#", soon: true, icon: FileCode, description: "Client library for Node.js and browser environments." },
-      { name: "Python SDK", link: "#", soon: true, icon: FileCode, description: "Integrate Norruva APIs with your Python applications." },
-      { name: "Java SDK", link: "#", soon: true, icon: FileCode, description: "SDK for Java-based enterprise systems." },
-      { name: "Go SDK", link: "#", soon: true, icon: FileCode, description: "Efficient Go library for backend integrations." },
-      { name: "C# SDK", link: "#", soon: true, icon: FileCode, description: "SDK for .NET applications." },
+      { name: "JavaScript SDK", href: "/developer/sdks/javascript", soon: false, icon: FileCode, description: "Client library for Node.js and browser environments." },
+      { name: "Python SDK", href: "#", soon: true, icon: FileCode, description: "Integrate Norruva APIs with your Python applications." },
+      { name: "Java SDK", href: "#", soon: true, icon: FileCode, description: "SDK for Java-based enterprise systems." },
+      { name: "Go SDK", href: "#", soon: true, icon: FileCode, description: "Efficient Go library for backend integrations." },
+      { name: "C# SDK", href: "#", soon: true, icon: FileCode, description: "SDK for .NET applications." },
   ];
 
   const getUsageMetric = (metricType: 'calls' | 'errorRate') => {
@@ -1189,9 +1192,9 @@ export default function DeveloperPortalPage() {
                   <CardContent className="space-y-2">
                     <p className="text-xs text-muted-foreground h-10">{sdk.description}</p>
                     <Button variant="outline" size="sm" className="w-full group" asChild>
-                      <a href={sdk.link} target="_blank" rel="noopener noreferrer" className={cn(sdk.soon && "opacity-60 cursor-not-allowed")}>
-                        {sdk.soon ? "Coming Soon" : <>View on GitHub <ExternalLinkIcon className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" /></>}
-                      </a>
+                      <Link href={sdk.href} passHref className={cn(sdk.soon && "opacity-60 cursor-not-allowed")}>
+                        {sdk.soon ? "Coming Soon" : <>View Details <ExternalLinkIcon className="ml-1.5 h-3.5 w-3.5 group-hover:translate-x-0.5 transition-transform" /></>}
+                      </Link>
                     </Button>
                   </CardContent>
                 </Card>
@@ -1294,8 +1297,14 @@ export default function DeveloperPortalPage() {
                   </CardHeader>
                   <CardContent className="space-y-2">
                     <p className="text-xs text-muted-foreground h-12">{tutorial.description}</p>
-                    <Button variant="link" size="sm" className="p-0 h-auto text-primary group" disabled>
-                      {tutorial.linkText} <ExternalLinkIcon className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                    <Button variant="link" size="sm" className="p-0 h-auto text-primary group" asChild={tutorial.href !== "#"}>
+                        {tutorial.href === "#" ? (
+                            <span className="opacity-60 cursor-not-allowed flex items-center">{tutorial.linkText} <ExternalLinkIcon className="ml-1 h-3 w-3" /></span>
+                        ) : (
+                            <Link href={tutorial.href}>
+                                {tutorial.linkText} <ExternalLinkIcon className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                            </Link>
+                        )}
                     </Button>
                   </CardContent>
                 </Card>
@@ -1382,5 +1391,4 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
-
 

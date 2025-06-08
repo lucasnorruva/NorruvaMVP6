@@ -34,6 +34,7 @@ export async function handleSuggestNameAI(
       productCategory: productCategory || undefined,
     });
     toast({ title: "Product Name Suggested!", description: `AI suggested: "${result.productName}"`, variant: "default" });
+    // The calling component will use form.setValue
     return result.productName;
   } catch (error) {
     console.error("Failed to suggest product name:", error);
@@ -69,6 +70,7 @@ export async function handleSuggestDescriptionAI(
       keyFeatures: materials || undefined,
     });
     toast({ title: "Product Description Suggested!", description: "AI has generated a product description.", variant: "default" });
+    // The calling component will use form.setValue
     return result.productDescription;
   } catch (error) {
     console.error("Failed to suggest product description:", error);
@@ -92,15 +94,22 @@ export async function handleSuggestClaimsAI(
 ): Promise<string[] | null> {
   setLoadingState(true);
   const formData = form.getValues();
+  if (!formData.productCategory && !formData.productName && !formData.materials) {
+    toast({ title: "Input Required", description: "Please provide product category, name, or materials to suggest claims.", variant: "destructive" });
+    setLoadingState(false);
+    return null;
+  }
   try {
     const result = await suggestSustainabilityClaims({
-      productCategory: formData.productCategory || "Unknown",
+      productCategory: formData.productCategory || "General Product", // Provide a default if empty
       productName: formData.productName,
       productDescription: formData.productDescription,
       materials: formData.materials,
     });
     if (result.claims.length === 0) {
       toast({ title: "No specific claims suggested.", description: "Try adding more product details like category or materials." });
+    } else {
+      toast({ title: "Sustainability Claims Suggested!", description: `${result.claims.length} claims suggested by AI.`, variant: "default" });
     }
     return result.claims;
   } catch (error) {
@@ -137,6 +146,7 @@ export async function handleGenerateImageAI(
       imageHint: formData.imageHint, // Pass the imageHint
     });
     toast({ title: "Image Generated Successfully", description: "The product image has been generated." });
+    // The calling component will use form.setValue
     return result.imageUrl;
   } catch (error) {
     console.error("Failed to generate image:", error);
@@ -172,6 +182,7 @@ export async function handleSuggestSpecificationsAI(
       productCategory: productCategory || undefined,
     });
     toast({ title: "Specifications Suggested!", description: `AI suggested specifications for "${productName || 'the product'}".`, variant: "default" });
+    // The calling component will use form.setValue
     return result.specificationsJsonString;
   } catch (error) {
     console.error("Failed to suggest specifications:", error);

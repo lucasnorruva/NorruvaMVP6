@@ -93,7 +93,7 @@ export default function DeveloperDocumentationHubPage() {
                 <ServerIconShadcn className="mr-2 h-5 w-5 text-accent" />Operations
               </h4>
               <ul className="list-none space-y-1.5 text-sm">
-                <li><Link href="/developer/docs/deployment-monitoring" className="text-primary hover:underline flex items-center"><ServerIconShadcn className="mr-2 h-4 w-4" />Deployment &amp; Monitoring Guide</Link></li>
+                <li><Link href="/developer/docs/deployment-monitoring" className="text-primary hover:underline flex items-center"><ServerIconShadcn className="mr-2 h-4 w-4" />Deployment &amp; Monitoring Guide <Badge variant="outline" className="ml-2 text-xs">Coming Soon</Badge></Link></li>
               </ul>
             </div>
             <div className="space-y-3">
@@ -111,3 +111,5 @@ export default function DeveloperDocumentationHubPage() {
   );
 }
 
+
+    

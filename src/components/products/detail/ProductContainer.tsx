@@ -12,8 +12,9 @@ import SustainabilityTab from './SustainabilityTab';
 import ComplianceTab from './ComplianceTab';
 import LifecycleTab from './LifecycleTab';
 import SupplyChainTab from './SupplyChainTab';
+import CertificationsTab from './CertificationsTab'; // Import the new tab
 
-import { Package, Leaf, ShieldCheck, History, Layers } from 'lucide-react';
+import { Package, Leaf, ShieldCheck, History, Layers, Award } from 'lucide-react';
 
 
 interface ProductContainerProps {
@@ -21,7 +22,7 @@ interface ProductContainerProps {
   onSupplyChainUpdate: (updatedLinks: ProductSupplyChainLink[]) => void;
   onSyncEprel: () => Promise<void>;
   isSyncingEprel: boolean;
-  canSyncEprel: boolean;
+  canSyncEprel: boolean; 
 }
 
 export default function ProductContainer({ 
@@ -36,28 +37,31 @@ export default function ProductContainer({
   if (!product) {
     return <p>Product not found.</p>;
   }
+  
+  const tabItems = [
+    { value: "overview", label: "Overview", icon: Package },
+    { value: "sustainability", label: "Sustainability", icon: Leaf },
+    { value: "compliance", label: "Compliance", icon: ShieldCheck },
+    { value: "certifications", label: "Certifications", icon: Award },
+    { value: "lifecycle", label: "Lifecycle", icon: History },
+    { value: "supplyChain", label: "Supply Chain", icon: Layers },
+  ];
 
   return (
     <div className="space-y-6">
       <ProductHeader product={product} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2 h-auto p-1.5">
-          <TabsTrigger value="overview" className="flex items-center gap-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
-            <Package className="h-4 w-4" /> Overview
-          </TabsTrigger>
-          <TabsTrigger value="sustainability" className="flex items-center gap-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
-            <Leaf className="h-4 w-4" /> Sustainability
-          </TabsTrigger>
-          <TabsTrigger value="compliance" className="flex items-center gap-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
-            <ShieldCheck className="h-4 w-4" /> Compliance
-          </TabsTrigger>
-          <TabsTrigger value="lifecycle" className="flex items-center gap-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
-            <History className="h-4 w-4" /> Lifecycle
-          </TabsTrigger>
-          <TabsTrigger value="supplyChain" className="flex items-center gap-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm">
-            <Layers className="h-4 w-4" /> Supply Chain
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 h-auto p-1.5">
+          {tabItems.map(tab => (
+            <TabsTrigger 
+              key={tab.value} 
+              value={tab.value} 
+              className="flex items-center gap-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm"
+            >
+              <tab.icon className="h-4 w-4" /> {tab.label}
+            </TabsTrigger>
+          ))}
         </TabsList>
 
         <TabsContent value="overview" className="mt-6">
@@ -76,6 +80,10 @@ export default function ProductContainer({
             canSyncEprel={canSyncEprel}
           />
         </TabsContent>
+        
+        <TabsContent value="certifications" className="mt-6">
+          <CertificationsTab product={product} />
+        </TabsContent>
 
         <TabsContent value="lifecycle" className="mt-6">
           <LifecycleTab product={product} />
@@ -90,3 +98,4 @@ export default function ProductContainer({
 }
 
     
+

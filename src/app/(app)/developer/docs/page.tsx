@@ -75,7 +75,7 @@ export default function DeveloperDocumentationHubPage() {
               <li><Link href="/developer/guides/manufacturer-onboarding" className="text-primary hover:underline flex items-center"><Users className="mr-2 h-4 w-4" />Manufacturer Onboarding</Link></li>
               <li><Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline flex items-center"><Share2 className="mr-2 h-4 w-4" />EBSI Integration Overview</Link></li>
               <li><Link href="/developer/docs/regulatory-alignment" className="text-primary hover:underline flex items-center"><Scale className="mr-2 h-4 w-4" />Regulatory Alignment (ESPR, EPREL)</Link></li>
-              <li><Link href="/developer/docs/data-management-best-practices" className="text-primary hover:underline flex items-center"><LayersIcon className="mr-2 h-4 w-4" />Data Management Best Practices <Badge variant="outline" className="ml-2 text-xs">Soon</Badge></Link></li>
+              <li><Link href="/developer/docs/data-management-best-practices" className="text-primary hover:underline flex items-center"><LayersIcon className="mr-2 h-4 w-4" />Data Management Best Practices</Link></li>
               <li><Link href="/developer/guides/auditor-integration" className="text-primary hover:underline flex items-center"><ShieldCheck className="mr-2 h-4 w-4" />Auditor Integration</Link></li>
             </ul>
           </div>
@@ -85,7 +85,7 @@ export default function DeveloperDocumentationHubPage() {
                 <TestTube2 className="mr-2 h-5 w-5 text-accent" />Testing &amp; Validation
               </h4>
               <ul className="list-none space-y-1.5 text-sm">
-                <li><Link href="/developer/docs/testing-validation" className="text-primary hover:underline flex items-center"><TestTube2 className="mr-2 h-4 w-4" />Testing &amp; Validation Guide</Link></li>
+                <li><Link href="/developer/docs/testing-validation" className="text-primary hover:underline flex items-center"><TestTube2 className="mr-2 h-4 w-4" />Testing &amp; Validation Guide <Badge variant="outline" className="ml-2 text-xs">Soon</Badge></Link></li>
               </ul>
             </div>
             <div className="space-y-3">

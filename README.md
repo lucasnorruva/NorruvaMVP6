@@ -8,7 +8,7 @@ Welcome to the Norruva Digital Product Passport (DPP) concept application! This 
 - [Tech Stack](#tech-stack)
 - [Core Features (Conceptual)](#core-features-conceptual)
 - [Current Implemented Features](#current-implemented-features)
-- [Important Note: Product Detail Page Refactoring](#important-note-product-detail-page-refactoring)
+- [Product Detail Page](#product-detail-page)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -53,30 +53,26 @@ As of the current version, the following key areas and features have been protot
 
 - **Role-Based Dashboard:** Different views and actions based on user roles (Admin, Manufacturer, Supplier, etc.).
 - **DPP Live Dashboard:** A view for public-facing DPPs, with filtering and AI summary generation.
-- **Product Management (Basic):**
+- **Product Management:**
     - Listing existing products.
     - Adding new products via manual entry or AI-assisted document extraction.
-    - **Note:** The individual product detail view (`/products/[productId]`) is currently a placeholder and is undergoing refactoring (see below).
+    - Viewing detailed product information on the individual product detail page.
 - **AI Compliance Co-Pilot:** An AI assistant to answer questions about EU DPP regulations.
 - **Compliance Pathways:** Step-by-step guidance for specific regulations (e.g., EU Battery Regulation).
 - **GDPR Management Page:** Mock interface for consent and data subject rights.
 - **Sustainability Reporting:** Mock CSRD summary generation and emissions overview.
 - **Customs & Compliance Dashboard:** A specialized view for customs-related product tracking and compliance alerts.
-- **Supply Chain Management (Basic):**
+- **Supply Chain Management:**
     - Managing a list of suppliers.
-    - Linking suppliers to products (viewable on the product detail page's "Supply Chain" tab, once refactored).
+    - Linking suppliers to products (viewable on the product detail page's "Supply Chain" tab).
 - **Developer Portal:** Mock portal with API key management, interactive playground, and conceptual documentation.
 - **Settings Page:** Basic user profile, notifications, and organization settings.
 
-## Important Note: Product Detail Page Refactoring
+## Product Detail Page
 
-The individual **Product Detail Page** (typically accessed via `/products/[productId]`) is currently **undergoing a significant refactoring**. The previous implementation became very large and complex.
+The individual **Product Detail Page** (accessed via `/products/[productId]`) has been refactored and is now fully functional. It provides a comprehensive tabbed view of product information, including overview, sustainability, compliance, lifecycle, and supply chain details.
 
-To address this:
-- The content of `/src/app/(app)/products/[productId]/page.tsx` has been temporarily replaced with a placeholder.
-- Links leading to this specific detail view from other parts of the application (like the product list or DPP Live Dashboard) have been temporarily disabled or modified to prevent navigation to the placeholder.
-
-This was a deliberate step to allow for a cleaner, more maintainable rebuild of this crucial page. The "Products" *listing page* (`/products`) and the "Add New Product" page (`/products/new`) are still functional for managing the list and creating new entries.
+Links from other parts of the application, such as the "Products" listing page (`/products`) and the "DPP Live Dashboard" (`/dpp-live-dashboard`), that lead to this internal detail view are active and direct users to the relevant product's detailed information. The "Products" listing page (`/products`) and the "Add New Product" page (`/products/new`) are also fully functional for managing the product list and creating/editing entries.
 
 ## Getting Started
 

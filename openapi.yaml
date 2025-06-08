@@ -1,0 +1,927 @@
+openapi: 3.0.0
+info:
+  title: Norruva DPP API
+  version: v1
+  description: Conceptual API endpoints for managing Digital Product Passports.
+paths:
+  /api/v1/dpp/{productId}:
+    get:
+      operationId: getDppById
+      summary: Retrieve a Digital Product Passport
+      description: Fetches the complete Digital Product Passport for a specific product.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalProductPassport'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    put:
+      operationId: updateDpp
+      summary: Update a Digital Product Passport
+      description: Updates an existing Digital Product Passport. You can send partial or full updates.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the DPP to update.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateDppRequestBody'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalProductPassport'
+        '400':
+          description: Invalid input data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    delete:
+      operationId: archiveDpp
+      summary: Archive a Digital Product Passport
+      description: Archives an existing Digital Product Passport by setting its status to 'archived'.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the DPP to archive.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Product with ID DPP001 has been archived successfully.
+                  status:
+                    type: string
+                    example: Archived
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp:
+    post:
+      operationId: createDpp
+      summary: Create a Digital Product Passport
+      description: Creates a new Digital Product Passport with the provided initial data.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateDppRequestBody'
+      responses:
+        '201':
+          description: Successful creation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalProductPassport'
+        '400':
+          description: Invalid input data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/qr/validate:
+    post:
+      operationId: validateQrCode
+      summary: Validate QR Code & Retrieve DPP Summary
+      description: Validates a unique identifier (typically from a QR code) and retrieves a summary of the product passport.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - qrIdentifier
+              properties:
+                qrIdentifier:
+                  type: string
+                  description: The unique identifier extracted from the QR code.
+                  example: DPP001
+      responses:
+        '200':
+          description: Successful validation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  productId:
+                    type: string
+                  productName:
+                    type: string
+                  category:
+                    type: string
+                  manufacturer:
+                    type: string
+                  verificationStatus:
+                    type: string
+                    example: valid_dpp_found
+                  dppUrl:
+                    type: string
+                    example: /passport/DPP001
+                  ebsiCompliance:
+                    type: object
+                    properties:
+                      status:
+                        type: string
+                        example: verified
+                      verificationId:
+                        type: string
+                        nullable: true
+                  blockchainAnchor:
+                    type: object
+                    properties:
+                      transactionHash:
+                        type: string
+                        nullable: true
+                      platform:
+                        type: string
+                        nullable: true
+        '400':
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: QR identifier invalid or product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: integer
+            message:
+              type: string
+    DigitalProductPassport:
+      type: object
+      properties:
+        id:
+          type: string
+        version:
+          type: integer
+          nullable: true
+        productName:
+          type: string
+        category:
+          type: string
+        gtin:
+          type: string
+          nullable: true
+        modelNumber:
+          type: string
+          nullable: true
+        manufacturer:
+          type: object
+          nullable: true
+          properties:
+            name:
+              type: string
+            did:
+              type: string
+              nullable: true
+            address:
+              type: string
+              nullable: true
+        metadata:
+          type: object
+          properties:
+            created_at:
+              type: string
+              format: date-time
+              nullable: true
+            last_updated:
+              type: string
+              format: date-time
+            status:
+              type: string
+              enum:
+                - draft
+                - published
+                - archived
+                - pending_review
+                - revoked
+            dppStandardVersion:
+              type: string
+              nullable: true
+            dataSchemaVersion:
+              type: string
+              nullable: true
+        blockchainIdentifiers:
+          type: object
+          nullable: true
+          properties:
+            platform:
+              type: string
+              nullable: true
+            contractAddress:
+              type: string
+              nullable: true
+            tokenId:
+              type: string
+              nullable: true
+            anchorTransactionHash:
+              type: string
+              nullable: true
+        productDetails:
+          type: object
+          nullable: true
+          properties:
+            description:
+              type: string
+              nullable: true
+            imageUrl:
+              type: string
+              nullable: true
+            imageHint:
+              type: string
+              nullable: true
+            materials:
+              type: array
+              nullable: true
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  percentage:
+                    type: number
+                    nullable: true
+                  origin:
+                    type: string
+                    nullable: true
+                  isRecycled:
+                    type: boolean
+                    nullable: true
+                  recycledContentPercentage:
+                     type: number
+                     nullable: true
+            sustainabilityClaims:
+              type: array
+              nullable: true
+              items:
+                type: object
+                properties:
+                  claim:
+                    type: string
+                  evidenceVcId:
+                    type: string
+                    nullable: true
+                  verificationDetails:
+                    type: string
+                    nullable: true
+            energyLabel:
+              type: string
+              nullable: true
+            repairabilityScore:
+              type: object
+              nullable: true
+              properties:
+                value:
+                  type: number
+                scale:
+                  type: number
+                reportUrl:
+                  type: string
+                  nullable: true
+                vcId:
+                  type: string
+                  nullable: true
+            recyclabilityInformation:
+              type: object
+              nullable: true
+              properties:
+                instructionsUrl:
+                  type: string
+                  nullable: true
+                recycledContentPercentage:
+                  type: number
+                  nullable: true
+                designForRecycling:
+                  type: boolean
+                  nullable: true
+                vcId:
+                  type: string
+                  nullable: true
+            customAttributes:
+              type: array
+              nullable: true
+              items:
+                $ref: '#/components/schemas/CustomAttribute'
+        lifecycleEvents:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/LifecycleEvent'
+        certifications:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/Certification'
+        traceability:
+          $ref: '#/components/schemas/TraceabilityInfo'
+          nullable: true
+        compliance:
+          type: object
+          properties:
+            eprel:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: string
+                  nullable: true
+                status:
+                  type: string
+                url:
+                  type: string
+                  nullable: true
+                lastChecked:
+                  type: string
+                  format: date-time
+            esprConformity:
+              type: object
+              nullable: true
+              properties:
+                assessmentId:
+                  type: string
+                  nullable: true
+                status:
+                  type: string
+                  enum:
+                    - conformant
+                    - non_conformant
+                    - pending_assessment
+                assessmentDate:
+                  type: string
+                  format: date-time
+                  nullable: true
+                vcId:
+                  type: string
+                  nullable: true
+            eu_espr:
+              type: object
+              nullable: true
+              properties:
+                status:
+                  type: string
+                  enum:
+                    - compliant
+                    - non_compliant
+                    - pending
+                reportUrl:
+                  type: string
+                  nullable: true
+                vcId:
+                  type: string
+                  nullable: true
+            us_scope3:
+              type: object
+              nullable: true
+              properties:
+                status:
+                  type: string
+                  enum:
+                    - compliant
+                    - non_compliant
+                    - pending
+                reportUrl:
+                  type: string
+                  nullable: true
+                vcId:
+                  type: string
+                  nullable: true
+            battery_regulation:
+              type: object
+              nullable: true
+              properties:
+                status:
+                  type: string
+                  enum:
+                    - compliant
+                    - non_compliant
+                    - pending
+                    - not_applicable
+                batteryPassportId:
+                  type: string
+                  nullable: true
+                carbonFootprint:
+                  type: object
+                  nullable: true
+                  properties:
+                    value:
+                      type: number
+                    unit:
+                      type: string
+                    calculationMethod:
+                      type: string
+                      nullable: true
+                    vcId:
+                      type: string
+                      nullable: true
+                recycledContent:
+                  type: array
+                  nullable: true
+                  items:
+                    type: object
+                    properties:
+                      material:
+                        type: string
+                      percentage:
+                        type: number
+                      vcId:
+                        type: string
+                        nullable: true
+                stateOfHealth:
+                  type: object
+                  nullable: true
+                  properties:
+                    value:
+                      type: number
+                    unit:
+                      type: string
+                    measurementDate:
+                      type: string
+                      format: date-time
+                    vcId:
+                      type: string
+                      nullable: true
+                vcId:
+                  type: string
+                  nullable: true
+        ebsiVerification:
+          type: object
+          nullable: true
+          properties:
+            status:
+              type: string
+              enum:
+                - verified
+                - pending_verification
+                - not_verified
+                - error
+            verificationId:
+              type: string
+              nullable: true
+            lastChecked:
+              type: string
+              format: date-time
+            message:
+              type: string
+              nullable: true
+        verifiableCredentials:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/VerifiableCredentialReference'
+        consumerScans:
+          type: integer
+          nullable: true
+        dataController:
+          type: string
+          nullable: true
+        accessControlPolicyUrl:
+          type: string
+          format: url
+          nullable: true
+        privacyPolicyUrl:
+          type: string
+          format: url
+          nullable: true
+        supplyChainLinks:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/ProductSupplyChainLink'
+    LifecycleEvent:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        location:
+          type: string
+          nullable: true
+        responsibleParty:
+          type: string
+          nullable: true
+        data:
+          type: object
+          additionalProperties: true
+          nullable: true
+        transactionHash:
+          type: string
+          nullable: true
+        vcId:
+          type: string
+          nullable: true
+    Certification:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        issuer:
+          type: string
+        issueDate:
+          type: string
+          format: date
+        expiryDate:
+          type: string
+          format: date
+          nullable: true
+        vcId:
+          type: string
+          nullable: true
+        documentUrl:
+          type: string
+          format: url
+          nullable: true
+        standard:
+          type: string
+          nullable: true
+        transactionHash:
+          type: string
+          nullable: true
+    TraceabilityInfo:
+      type: object
+      properties:
+        batchId:
+          type: string
+          nullable: true
+        originCountry:
+          type: string
+          nullable: true
+        supplyChainSteps:
+          type: array
+          nullable: true
+          items:
+            type: object
+            properties:
+              stepName:
+                type: string
+              actorDid:
+                type: string
+                nullable: true
+              timestamp:
+                type: string
+                format: date-time
+              location:
+                type: string
+                nullable: true
+              transactionHash:
+                type: string
+                nullable: true
+    VerifiableCredentialReference:
+      type: object
+      properties:
+        id:
+          type: string
+        type:
+          type: array
+          items:
+            type: string
+        name:
+          type: string
+          nullable: true
+        issuer:
+          type: string
+        issuanceDate:
+          type: string
+          format: date-time
+        credentialSubject:
+          type: object
+          additionalProperties: true
+        proof:
+          type: object
+          additionalProperties: true
+          nullable: true
+        verificationMethod:
+          type: string
+          nullable: true
+    CustomAttribute:
+      type: object
+      properties:
+        key:
+          type: string
+        value:
+          type: string
+    ProductSupplyChainLink:
+      type: object
+      properties:
+        supplierId:
+          type: string
+        suppliedItem:
+          type: string
+        notes:
+          type: string
+          nullable: true
+    CreateDppRequestBody:
+      type: object
+      required:
+        - productName
+        - category
+      properties:
+        productName:
+          type: string
+        category:
+          type: string
+        gtin:
+          type: string
+          nullable: true
+        manufacturerName:
+          type: string
+          nullable: true
+        modelNumber:
+          type: string
+          nullable: true
+        productDetails:
+          type: object
+          nullable: true
+          properties:
+            description:
+              type: string
+              nullable: true
+            materials:
+              type: array
+              nullable: true
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  percentage:
+                    type: number
+                    nullable: true
+                  isRecycled:
+                    type: boolean
+                    nullable: true
+            energyLabel:
+              type: string
+              nullable: true
+            customAttributes:
+              type: array
+              nullable: true
+              items:
+                $ref: '#/components/schemas/CustomAttribute'
+            imageUrl:
+              type: string
+              format: url
+              nullable: true
+            imageHint:
+              type: string
+              nullable: true
+    UpdateDppRequestBody:
+      type: object
+      properties:
+        productName:
+          type: string
+          nullable: true
+        category:
+          type: string
+          nullable: true
+        gtin:
+          type: string
+          nullable: true
+        manufacturerName:
+          type: string
+          nullable: true
+        modelNumber:
+          type: string
+          nullable: true
+        metadata:
+          type: object
+          nullable: true
+          properties:
+            status:
+              type: string
+              enum:
+                - draft
+                - published
+                - archived
+                - pending_review
+                - revoked
+              nullable: true
+            dppStandardVersion:
+              type: string
+              nullable: true
+        productDetails:
+          type: object
+          nullable: true
+          properties:
+            description:
+              type: string
+              nullable: true
+            materials:
+              type: array
+              nullable: true
+              items:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  percentage:
+                    type: number
+                    nullable: true
+                  isRecycled:
+                    type: boolean
+                    nullable: true
+            sustainabilityClaims:
+              type: array
+              nullable: true
+              items:
+                type: object
+                properties:
+                  claim:
+                    type: string
+                  verificationDetails:
+                    type: string
+                    nullable: true
+            energyLabel:
+              type: string
+              nullable: true
+            customAttributes:
+              type: array
+              nullable: true
+              items:
+                $ref: '#/components/schemas/CustomAttribute'
+            imageUrl:
+              type: string
+              format: url
+              nullable: true
+            imageHint:
+              type: string
+              nullable: true
+        compliance:
+          type: object # Allow partial updates to compliance substructures
+          nullable: true
+          properties:
+            eprel:
+              type: object
+              nullable: true
+              properties:
+                id:
+                  type: string
+                  nullable: true
+                status:
+                  type: string
+                  nullable: true
+                url:
+                  type: string
+                  nullable: true
+                lastChecked:
+                  type: string
+                  format: date-time
+                  nullable: true
+            # Add other compliance substructures as needed
+        ebsiVerification:
+          type: object
+          nullable: true
+          properties:
+            status:
+              type: string
+              enum:
+                - verified
+                - pending_verification
+                - not_verified
+                - error
+              nullable: true
+            verificationId:
+              type: string
+              nullable: true
+            message:
+              type: string
+              nullable: true
+        # Add other top-level updatable fields from DigitalProductPassport schema here
+        # e.g., lifecycleEvents, certifications, supplyChainLinks (as arrays)
+        # Example:
+        # lifecycleEvents:
+        #   type: array
+        #   items:
+        #     $ref: '#/components/schemas/LifecycleEvent'
+        #   nullable: true
+security:
+  - ApiKeyAuth: []
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: API key for authentication. Provide as 'Bearer YOUR_API_KEY'.
+
+    

@@ -34,7 +34,7 @@ const AiIndicator: React.FC<AiIndicatorProps> = ({ fieldOrigin, fieldName }) => 
             <Cpu className="h-4 w-4 text-info" />
           </TooltipTrigger>
           <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI document extraction.</p>
+            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -70,14 +70,21 @@ export default function TechnicalSpecificationsFormSection({
             <div className="flex items-center justify-between">
               <FormLabel className="flex items-center">
                 Specifications (JSON)
-                <AiIndicator fieldOrigin={initialData?.specificationsOrigin} fieldName="Specifications" />
+                <AiIndicator fieldOrigin={form.getValues("specificationsOrigin") || initialData?.specificationsOrigin} fieldName="Specifications" />
               </FormLabel>
               <Button type="button" variant="ghost" size="sm" onClick={callSuggestSpecificationsAI} disabled={anyAISuggestionInProgress || !!isSubmittingForm}>
                 {isSuggestingSpecs ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
                 <span className="ml-2">{isSuggestingSpecs ? "Suggesting..." : "Suggest Specs"}</span>
               </Button>
             </div>
-            <FormControl><Textarea placeholder='e.g., { "color": "blue", "weight": "10kg" }' {...field} rows={5} /></FormControl>
+            <FormControl>
+              <Textarea 
+                placeholder='e.g., { "color": "blue", "weight": "10kg" }' 
+                {...field} 
+                rows={5} 
+                onChange={(e) => { field.onChange(e); form.setValue("specificationsOrigin", "manual"); }}
+              />
+            </FormControl>
             <FormDescription>Enter as a JSON object. AI can help suggest a structure. You can pretty-format JSON using online tools before pasting.</FormDescription>
             <FormMessage />
           </FormItem>
@@ -86,3 +93,4 @@ export default function TechnicalSpecificationsFormSection({
     </div>
   );
 }
+    

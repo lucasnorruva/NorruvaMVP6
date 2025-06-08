@@ -41,7 +41,7 @@ const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' 
             <Cpu className="h-4 w-4 text-info" />
           </TooltipTrigger>
           <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI document extraction or generation.</p>
+            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -68,6 +68,7 @@ export default function ProductImageFormSection({
         setCurrentImageUrl(value.imageUrl || null);
       }
     });
+    // Initialize with form value or initial prop
     const formImageUrl = form.getValues("imageUrl");
     setCurrentImageUrl(formImageUrl || initialImageUrl || null);
     return () => subscription.unsubscribe();
@@ -78,7 +79,7 @@ export default function ProductImageFormSection({
     const newImageUrl = await aiImageHelper(form, toast, setIsGeneratingImageState);
     if (newImageUrl) {
       form.setValue("imageUrl", newImageUrl, { shouldValidate: true });
-      form.setValue("imageUrlOrigin", "AI_EXTRACTED", { shouldValidate: true });
+      form.setValue("imageUrlOrigin", "AI_EXTRACTED", { shouldValidate: true }); // Set origin
     }
   };
 
@@ -123,7 +124,14 @@ export default function ProductImageFormSection({
             name="imageUrl"
             render={({ field }) => (
               <FormItem>
-                <FormControl><Input type="url" placeholder="Enter image URL or generate with AI" {...field} /></FormControl>
+                <FormControl>
+                  <Input 
+                    type="url" 
+                    placeholder="Enter image URL or generate with AI" 
+                    {...field} 
+                    onChange={(e) => { field.onChange(e); form.setValue("imageUrlOrigin", "manual"); }}
+                  />
+                </FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -154,3 +162,5 @@ export default function ProductImageFormSection({
     </div>
   );
 }
+
+    

@@ -20,9 +20,9 @@ import { useToast } from "@/hooks/use-toast";
 import BasicInfoFormSection from "./form/BasicInfoFormSection";
 import ProductImageFormSection from "./form/ProductImageFormSection";
 import BatteryDetailsFormSection from "./form/BatteryDetailsFormSection";
-import SustainabilityComplianceFormSection from "./form/SustainabilityComplianceFormSection"; // New import
-import TechnicalSpecificationsFormSection from "./form/TechnicalSpecificationsFormSection"; // New import
-import CustomAttributesFormSection from "./form/CustomAttributesFormSection"; // New import
+import SustainabilityComplianceFormSection from "./form/SustainabilityComplianceFormSection";
+import TechnicalSpecificationsFormSection from "./form/TechnicalSpecificationsFormSection";
+import CustomAttributesFormSection from "./form/CustomAttributesFormSection";
 import {
   handleSuggestNameAI,
   handleSuggestDescriptionAI,
@@ -39,22 +39,34 @@ import type { CustomAttribute } from "@/types/dpp";
 
 const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
+  productNameOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   gtin: z.string().optional().describe("Global Trade Item Number"),
   productDescription: z.string().optional(),
+  productDescriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   manufacturer: z.string().optional(),
+  manufacturerOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   modelNumber: z.string().optional(),
+  modelNumberOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   materials: z.string().optional().describe("Key materials used in the product, e.g., Cotton, Recycled Polyester, Aluminum."),
+  materialsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   sustainabilityClaims: z.string().optional().describe("Brief sustainability claims, e.g., 'Made with 50% recycled content', 'Carbon neutral production'."),
+  sustainabilityClaimsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   specifications: z.string().optional(),
+  specificationsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   energyLabel: z.string().optional(),
+  energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
   imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")),
   imageHint: z.string().max(30, "Hint should be concise, max 2-3 words or 30 chars.").optional(),
   imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   batteryChemistry: z.string().optional(),
+  batteryChemistryOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   stateOfHealth: z.coerce.number().nullable().optional(),
+  stateOfHealthOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   carbonFootprintManufacturing: z.coerce.number().nullable().optional(),
+  carbonFootprintManufacturingOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   recycledContentPercentage: z.coerce.number().nullable().optional(),
+  recycledContentPercentageOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   customAttributesJsonString: z.string().optional(),
 });
 
@@ -97,22 +109,34 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     resolver: zodResolver(formSchema),
     defaultValues: {
       productName: initialData?.productName || "",
+      productNameOrigin: initialData?.productNameOrigin,
       gtin: initialData?.gtin || "",
       productDescription: initialData?.productDescription || "",
+      productDescriptionOrigin: initialData?.productDescriptionOrigin,
       manufacturer: initialData?.manufacturer || "",
+      manufacturerOrigin: initialData?.manufacturerOrigin,
       modelNumber: initialData?.modelNumber || "",
+      modelNumberOrigin: initialData?.modelNumberOrigin,
       materials: initialData?.materials || "",
+      materialsOrigin: initialData?.materialsOrigin,
       sustainabilityClaims: initialData?.sustainabilityClaims || "",
+      sustainabilityClaimsOrigin: initialData?.sustainabilityClaimsOrigin,
       specifications: initialData?.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
+      specificationsOrigin: initialData?.specificationsOrigin,
       energyLabel: initialData?.energyLabel || "",
+      energyLabelOrigin: initialData?.energyLabelOrigin,
       productCategory: initialData?.productCategory || "",
       imageUrl: initialData?.imageUrl || "",
       imageHint: initialData?.imageHint || "",
-      imageUrlOrigin: initialData?.imageUrlOrigin || undefined,
+      imageUrlOrigin: initialData?.imageUrlOrigin,
       batteryChemistry: initialData?.batteryChemistry || "",
+      batteryChemistryOrigin: initialData?.batteryChemistryOrigin,
       stateOfHealth: initialData?.stateOfHealth ?? undefined,
+      stateOfHealthOrigin: initialData?.stateOfHealthOrigin,
       carbonFootprintManufacturing: initialData?.carbonFootprintManufacturing ?? undefined,
+      carbonFootprintManufacturingOrigin: initialData?.carbonFootprintManufacturingOrigin,
       recycledContentPercentage: initialData?.recycledContentPercentage ?? undefined,
+      recycledContentPercentageOrigin: initialData?.recycledContentPercentageOrigin,
       customAttributesJsonString: initialData?.customAttributesJsonString || "",
     },
   });
@@ -150,28 +174,39 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     if (initialData) {
       form.reset({
         productName: initialData.productName || "",
+        productNameOrigin: initialData.productNameOrigin,
         gtin: initialData.gtin || "",
         productDescription: initialData.productDescription || "",
+        productDescriptionOrigin: initialData.productDescriptionOrigin,
         manufacturer: initialData.manufacturer || "",
+        manufacturerOrigin: initialData.manufacturerOrigin,
         modelNumber: initialData.modelNumber || "",
+        modelNumberOrigin: initialData.modelNumberOrigin,
         materials: initialData.materials || "",
+        materialsOrigin: initialData.materialsOrigin,
         sustainabilityClaims: initialData.sustainabilityClaims || "",
+        sustainabilityClaimsOrigin: initialData.sustainabilityClaimsOrigin,
         specifications: initialData.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
+        specificationsOrigin: initialData.specificationsOrigin,
         energyLabel: initialData.energyLabel || "",
+        energyLabelOrigin: initialData.energyLabelOrigin,
         productCategory: initialData.productCategory || "",
         imageUrl: initialData.imageUrl || "",
         imageHint: initialData.imageHint || "",
-        imageUrlOrigin: initialData.imageUrlOrigin || undefined,
+        imageUrlOrigin: initialData.imageUrlOrigin,
         batteryChemistry: initialData.batteryChemistry || "",
+        batteryChemistryOrigin: initialData.batteryChemistryOrigin,
         stateOfHealth: initialData.stateOfHealth ?? undefined,
+        stateOfHealthOrigin: initialData.stateOfHealthOrigin,
         carbonFootprintManufacturing: initialData.carbonFootprintManufacturing ?? undefined,
+        carbonFootprintManufacturingOrigin: initialData.carbonFootprintManufacturingOrigin,
         recycledContentPercentage: initialData.recycledContentPercentage ?? undefined,
+        recycledContentPercentageOrigin: initialData.recycledContentPercentageOrigin,
         customAttributesJsonString: initialData.customAttributesJsonString || "",
       });
     }
   }, [initialData, form]);
   
-  // Effect to update the hidden form field when customAttributes local state changes
   useEffect(() => {
     form.setValue("customAttributesJsonString", JSON.stringify(customAttributes), { shouldValidate: true });
   }, [customAttributes, form]);
@@ -190,7 +225,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     const result = await handleSuggestNameAI(form, toast, setIsSuggestingName);
     if (result) {
         form.setValue("productName", result, { shouldValidate: true });
-        form.setValue("productNameOrigin" as any, 'AI_EXTRACTED'); // Track origin if using InitialProductFormData
+        form.setValue("productNameOrigin", 'AI_EXTRACTED');
     }
   };
 
@@ -198,7 +233,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     const result = await handleSuggestDescriptionAI(form, toast, setIsSuggestingDescription);
      if (result) {
         form.setValue("productDescription", result, { shouldValidate: true });
-        form.setValue("productDescriptionOrigin" as any, 'AI_EXTRACTED');
+        form.setValue("productDescriptionOrigin", 'AI_EXTRACTED');
     }
   };
 
@@ -215,7 +250,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     const result = await handleSuggestSpecificationsAI(form, toast, setIsSuggestingSpecs);
     if (result) {
         form.setValue("specifications", result, { shouldValidate: true });
-        form.setValue("specificationsOrigin" as any, 'AI_EXTRACTED');
+        form.setValue("specificationsOrigin", 'AI_EXTRACTED');
     }
   };
 
@@ -225,7 +260,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     const currentClaimsValue = form.getValues("sustainabilityClaims") || "";
     const newClaimsValue = currentClaimsValue ? `${currentClaimsValue}\n- ${claim}` : `- ${claim}`;
     form.setValue("sustainabilityClaims", newClaimsValue, { shouldValidate: true });
-    form.setValue("sustainabilityClaimsOrigin" as any, 'manual'); // User selected it
+    form.setValue("sustainabilityClaimsOrigin", 'manual');
   };
 
   const handleAddCustomAttribute = () => {
@@ -373,3 +408,4 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   );
 }
 
+    

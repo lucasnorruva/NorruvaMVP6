@@ -55,17 +55,12 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         });
     }
     if (dpp.compliance.battery_regulation) {
-        const br = dpp.compliance.battery_regulation;
-        // const cfValue = br.carbonFootprint?.value ?? 'N/A';
-        // const cfUnit = br.carbonFootprint?.unit ?? '';
-        // const notesValue = `CF: ${cfValue} ${cfUnit}`.trim();
-
+        // Radically simplify this object for diagnosis
         specificRegulations.push({
-            regulationName: "EU Battery Regulation",
-            status: br.status as ComplianceDetailItem['status'],
-            verificationId: br.batteryPassportId || br.vcId,
-            lastChecked: dpp.metadata.last_updated,
-            // notes: notesValue, // Temporarily removed for debugging
+            regulationName: "EU Battery Regulation (Simplified)",
+            status: 'pending' as ComplianceDetailItem['status'], // Hardcoded simple value
+            lastChecked: new Date().toISOString(), // Hardcoded simple value
+            // notes field is intentionally omitted for this diagnostic step
         });
     }
 
@@ -229,15 +224,6 @@ export default function ProductDetailPage() {
               },
               compliance: { // Basic compliance from StoredUserProduct
                 eprel: userProductData.complianceSummary?.eprel,
-                battery_regulation: userProductData.complianceSummary?.specificRegulations?.find(r => r.regulationName === "EU Battery Regulation")
-                  ? {
-                      status: userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.status as DigitalProductPassport['compliance']['battery_regulation']['status'] || 'not_applicable',
-                      carbonFootprint: {
-                        value: parseFloat(userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.notes?.match(/CF: ([\d.]+)/)?.[1] || "0") || 0,
-                        unit: userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.notes?.match(/CF: [\d.]+ (\w+)/)?.[1] || ""
-                      }
-                    }
-                  : { status: 'not_applicable' }
               },
               ebsiVerification: userProductData.complianceSummary?.ebsi ? {
                 status: userProductData.complianceSummary.ebsi.status as EbsiVerificationDetails['status'],

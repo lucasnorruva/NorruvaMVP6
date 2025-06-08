@@ -3,7 +3,7 @@
 // Description: Main page for the Developer Portal, providing access to API keys, documentation, and tools.
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -21,11 +21,11 @@ import {
     Lock, MessageSquare, Share2, BookText, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, 
     AlertTriangle as ErrorIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, 
     Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIcon, History, 
-    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle
+    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // Import Alert components
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; 
 
 
 import ApiKeysManager, { type ApiKey } from '@/components/developer/ApiKeysManager';
@@ -546,6 +546,22 @@ export default function DeveloperPortalPage() {
     return metricType === 'calls' ? '105,678' : '0.05%';
   };
 
+  const overallSystemStatus = useMemo(() => {
+    const nonOperationalServices = systemStatusData.filter(s => s.status !== "Operational");
+    if (nonOperationalServices.length === 0) {
+      return { text: "All Systems Operational", icon: CheckCircle, color: "text-green-500" };
+    }
+    if (nonOperationalServices.some(s => s.status === "Degraded Performance" || s.status === "Under Maintenance")) {
+      return { text: "Some Systems Impacted", icon: AlertTriangle, color: "text-yellow-500" };
+    }
+    return { text: "Multiple Issues Detected", icon: ServerCrash, color: "text-red-500" };
+  }, []);
+
+  const handleRefreshStatus = () => {
+    setLastStatusCheckTime(new Date().toLocaleTimeString());
+    toast({title: "System Status Refreshed", description: "Mock status data re-evaluated."});
+  };
+
 
   return (
     <div className="space-y-6">
@@ -631,7 +647,12 @@ export default function DeveloperPortalPage() {
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Avg. Latency:</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '120ms' : '85ms'}</span></div>
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>API Uptime (Last 7d):</span> <span className="font-semibold text-green-600">{currentEnvironment === 'sandbox' ? '99.95%' : '99.99%'}</span></div>
                 <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Peak Requests/Sec:</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '15' : '250'}</span></div>
-                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Overall API Status:</span> <span className="font-semibold text-green-600 flex items-center"><CheckCircle className="h-4 w-4 mr-1.5"/>All Systems Operational</span></div>
+                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md">
+                    <span>Overall API Status:</span> 
+                    <span className={cn("font-semibold flex items-center", overallSystemStatus.color)}>
+                        <overallSystemStatus.icon className="h-4 w-4 mr-1.5"/>{overallSystemStatus.text}
+                    </span>
+                </div>
                 <Button variant="link" size="sm" className="p-0 h-auto text-primary mt-2" onClick={() => document.querySelector('#developer-portal-tabs [data-state="inactive"][value="settings_usage"]')?.ariaSelected === "false" ? (document.querySelector('#developer-portal-tabs [data-state="inactive"][value="settings_usage"]') as HTMLElement)?.click() : null}>View Full Usage Report</Button>
               </CardContent>
             </Card>
@@ -658,13 +679,26 @@ export default function DeveloperPortalPage() {
           </div>
 
           <Card className="shadow-lg">
-            <CardHeader>
-                <CardTitle className="font-headline text-lg flex items-center">
-                    <ServerIconShadcn className="mr-2 h-5 w-5 text-primary" /> System &amp; Service Status
-                </CardTitle>
-                <CardDescription>Current operational status of Norruva platform components.</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                    <CardTitle className="font-headline text-lg flex items-center">
+                        <ServerIconShadcn className="mr-2 h-5 w-5 text-primary" /> System &amp; Service Status
+                    </CardTitle>
+                    <CardDescription>Current operational status of Norruva platform components.</CardDescription>
+                </div>
+                <Button variant="outline" size="sm" onClick={handleRefreshStatus}>
+                    <RefreshCw className="mr-2 h-4 w-4"/> Refresh
+                </Button>
             </CardHeader>
             <CardContent className="space-y-3">
+                <div className={cn("p-3 rounded-md flex items-center text-sm font-medium",
+                    overallSystemStatus.color === "text-green-500" && "bg-green-500/10 border border-green-500/30",
+                    overallSystemStatus.color === "text-yellow-500" && "bg-yellow-500/10 border border-yellow-500/30",
+                    overallSystemStatus.color === "text-red-500" && "bg-red-500/10 border border-red-500/30"
+                )}>
+                    <overallSystemStatus.icon className={cn("h-5 w-5 mr-2", overallSystemStatus.color)} />
+                    Overall: {overallSystemStatus.text}
+                </div>
                 {systemStatusData.map((service) => {
                     const StatusIcon = service.icon;
                     return (

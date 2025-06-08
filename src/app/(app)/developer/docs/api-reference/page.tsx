@@ -46,12 +46,16 @@ export default function ApiReferencePage() {
         { name: "Recycled Aluminum (Case)", percentage: 80, isRecycled: true },
         { name: "Organic Polymer (Strap)", percentage: 20 }
       ],
-      energyLabel: "A"
+      energyLabel: "A",
+      customAttributes: [
+        { "key": "Display Type", "value": "AMOLED" },
+        { "key": "OS", "value": "WearOS" }
+      ]
     }
   }, null, 2);
 
   const conceptualCreateDppResponseBody = JSON.stringify({
-    ...MOCK_DPPS[0], // Use a base structure
+    // ...MOCK_DPPS[0], // Use a base structure, but specific fields will be overridden for clarity
     id: "DPP_NEW_12345", // Newly generated ID
     version: 1,
     productName: "Sustainable Smart Watch Series 5",
@@ -63,7 +67,7 @@ export default function ApiReferencePage() {
       created_at: new Date().toISOString(), // Current timestamp
       last_updated: new Date().toISOString(),
       status: "draft", // Initial status
-      dppStandardVersion: MOCK_DPPS[0].metadata.dppStandardVersion
+      dppStandardVersion: MOCK_DPPS[0]?.metadata?.dppStandardVersion || "CIRPASS v1.0 Draft"
     },
     productDetails: {
       description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case and energy-efficient display.",
@@ -72,10 +76,14 @@ export default function ApiReferencePage() {
         { name: "Organic Polymer (Strap)", percentage: 20 }
       ],
       energyLabel: "A",
-      imageUrl: "https://placehold.co/600x400.png", // Placeholder image
-      imageHint: "smart watch wearable"
+      imageUrl: "https://placehold.co/600x400.png", 
+      imageHint: "smart watch wearable",
+      customAttributes: [
+        { "key": "Display Type", "value": "AMOLED" },
+        { "key": "OS", "value": "WearOS" }
+      ]
     },
-    compliance: { battery_regulation: { status: "not_applicable" } }, // Simplified compliance for example
+    compliance: { battery_regulation: { status: "not_applicable", lastChecked: new Date().toISOString() } }, 
     ebsiVerification: { status: "pending_verification", lastChecked: new Date().toISOString() },
     lifecycleEvents: [],
     certifications: [],
@@ -87,6 +95,11 @@ export default function ApiReferencePage() {
       description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case, energy-efficient display, and enhanced battery life.",
       sustainabilityClaims: [
         { claim: "Made with 80% recycled aluminum", verificationDetails: "Verified by GreenCert" }
+      ],
+      customAttributes: [
+        { "key": "Display Type", "value": "AMOLED" },
+        { "key": "OS", "value": "WearOS Pro" },
+        { "key": "Water Resistance", "value": "5 ATM" }
       ]
     },
     metadata: {
@@ -95,18 +108,25 @@ export default function ApiReferencePage() {
   }, null, 2);
   
   const conceptualUpdateDppResponseBody = JSON.stringify({
-    ...MOCK_DPPS[0], // Assume it's an update to PROD001 for example
+    ...(MOCK_DPPS[0] || {}), // Assume it's an update to PROD001 for example
+    id: MOCK_DPPS[0]?.id || "DPP001_MOCK",
+    productName: MOCK_DPPS[0]?.productName || "EcoSmart Refrigerator X500", // Keep original if not updated
     productDetails: {
-        ...MOCK_DPPS[0].productDetails,
-        description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case, energy-efficient display, and enhanced battery life.",
-        sustainabilityClaims: [
-        { claim: "Made with 80% recycled aluminum", verificationDetails: "Verified by GreenCert" }
+        ...(MOCK_DPPS[0]?.productDetails || {}),
+        description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case, energy-efficient display, and enhanced battery life.", // Description updated
+        sustainabilityClaims: [ // Sustainability claims updated
+          { claim: "Made with 80% recycled aluminum", verificationDetails: "Verified by GreenCert" }
+        ],
+        customAttributes: [ // Custom attributes updated
+            { "key": "Display Type", "value": "AMOLED" },
+            { "key": "OS", "value": "WearOS Pro" },
+            { "key": "Water Resistance", "value": "5 ATM" }
         ]
     },
     metadata: {
-        ...MOCK_DPPS[0].metadata,
-        status: "pending_review",
-        last_updated: new Date().toISOString()
+        ...(MOCK_DPPS[0]?.metadata || {}),
+        status: "pending_review", // Status updated
+        last_updated: new Date().toISOString() // Last updated timestamp refreshed
     }
   }, null, 2);
 
@@ -218,7 +238,7 @@ export default function ApiReferencePage() {
               <p className="text-sm mb-1">Returns a DPP object based on the <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">DigitalProductPassport</code> type definition.</p>
               <details className="border rounded-md">
                 <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
-                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Click to view example JSON response
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Click to view example JSON response for DPP001
                 </summary>
                 <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
                   <code>
@@ -283,7 +303,7 @@ export default function ApiReferencePage() {
               </ul>
             </section>
             <section>
-              <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
+              <h4 className="font-semibold mb-1">Example Response (Success 200 OK for DPP001)</h4>
               <p className="text-sm mb-1">Returns a product summary, its public DPP URL, verification status, and key compliance details.</p>
               <details className="border rounded-md">
                 <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">

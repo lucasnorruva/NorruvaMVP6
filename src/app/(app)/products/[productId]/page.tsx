@@ -283,16 +283,26 @@ export default function ProductDetailPage() {
       });
 
       const currentComplianceSummary = product.complianceSummary || { overallStatus: "N/A" as SimpleProductDetail['complianceSummary']['overallStatus'] };
+      
+      let eprelIdToSet: string | undefined = currentComplianceSummary.eprel?.id;
+      if (result.syncStatus.toLowerCase().includes('successfully') || result.syncStatus.toLowerCase().includes('mismatch')) {
+        eprelIdToSet = result.eprelId; 
+      } else if (result.syncStatus.toLowerCase().includes('not found') || result.syncStatus.toLowerCase().includes('error')) {
+        eprelIdToSet = undefined; 
+      }
+
+      const newEprelData = {
+        id: eprelIdToSet,
+        status: result.syncStatus,
+        lastChecked: result.lastChecked,
+        url: currentComplianceSummary.eprel?.url, // Preserve existing URL
+      };
+      
       const updatedProductData: SimpleProductDetail = {
         ...product,
         complianceSummary: {
           ...currentComplianceSummary,
-          eprel: {
-            id: result.eprelId || currentComplianceSummary.eprel?.id,
-            status: result.syncStatus,
-            lastChecked: result.lastChecked,
-            url: currentComplianceSummary.eprel?.url,
-          },
+          eprel: newEprelData,
         },
       };
       setProduct(updatedProductData);
@@ -303,17 +313,17 @@ export default function ProductDetailPage() {
         let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
         const productIndex = userProducts.findIndex(p => p.id === product.id);
         if (productIndex > -1) {
-          if (!userProducts[productIndex].complianceSummary) { // Ensure complianceSummary object exists
+          if (!userProducts[productIndex].complianceSummary) { 
             userProducts[productIndex].complianceSummary = { overallStatus: "N/A" };
           }
-          userProducts[productIndex].complianceSummary!.eprel = updatedProductData.complianceSummary?.eprel;
+          userProducts[productIndex].complianceSummary!.eprel = newEprelData;
           userProducts[productIndex].lastUpdated = result.lastChecked;
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
         }
       } else {
          const mockDppIndex = MOCK_DPPS.findIndex(dpp => dpp.id === product.id);
          if (mockDppIndex > -1 && MOCK_DPPS[mockDppIndex].compliance) {
-            MOCK_DPPS[mockDppIndex].compliance.eprel = updatedProductData.complianceSummary?.eprel;
+            MOCK_DPPS[mockDppIndex].compliance.eprel = newEprelData;
          }
       }
       toast({ title: "EPREL Sync", description: result.message, variant: result.syncStatus.toLowerCase().includes('error') || result.syncStatus.toLowerCase().includes('mismatch') ? "destructive" : "default" });
@@ -352,3 +362,4 @@ export default function ProductDetailPage() {
     />
   );
 }
+

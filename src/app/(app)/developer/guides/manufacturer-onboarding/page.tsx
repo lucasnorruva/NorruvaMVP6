@@ -1,3 +1,4 @@
+
 // --- File: page.tsx (Manufacturer Onboarding Guide) ---
 "use client";
 

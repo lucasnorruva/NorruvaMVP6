@@ -6,8 +6,8 @@
 import { useEffect, useState } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import ProductContainer from '@/components/products/detail/ProductContainer';
-import { SIMPLE_MOCK_PRODUCTS, USER_PRODUCTS_LOCAL_STORAGE_KEY, MOCK_DPPS } from '@/types/dpp'; // Added MOCK_DPPS
-import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct, ProductComplianceSummary, DigitalProductPassport, ComplianceDetailItem, SimpleLifecycleEvent, CustomAttribute } from '@/types/dpp';
+import { USER_PRODUCTS_LOCAL_STORAGE_KEY, MOCK_DPPS } from '@/types/dpp';
+import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct, DigitalProductPassport, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute } from '@/types/dpp';
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import { syncEprelData } from '@/ai/flows/sync-eprel-data-flow';
@@ -22,8 +22,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             case 'archived': return 'Archived';
             case 'pending_review': return 'Pending';
             case 'draft': return 'Draft';
-            case 'revoked': return 'Archived';
-            default: return 'Draft';
+            case 'revoked': return 'Archived'; // Treat revoked as archived for simple display
+            default: return 'Draft'; // Default for any unhandled statuses
         }
     };
 
@@ -31,7 +31,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
     if (dpp.compliance.eu_espr) {
         specificRegulations.push({
             regulationName: "EU ESPR",
-            status: dpp.compliance.eu_espr.status,
+            status: dpp.compliance.eu_espr.status as ComplianceDetailItem['status'],
             detailsUrl: dpp.compliance.eu_espr.reportUrl,
             verificationId: dpp.compliance.eu_espr.vcId,
             lastChecked: dpp.metadata.last_updated,
@@ -40,7 +40,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
     if (dpp.compliance.esprConformity) {
          specificRegulations.push({
             regulationName: "ESPR Conformity Assessment",
-            status: dpp.compliance.esprConformity.status,
+            status: dpp.compliance.esprConformity.status as ComplianceDetailItem['status'],
             verificationId: dpp.compliance.esprConformity.assessmentId || dpp.compliance.esprConformity.vcId,
             lastChecked: dpp.compliance.esprConformity.assessmentDate || dpp.metadata.last_updated,
         });
@@ -48,7 +48,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
     if (dpp.compliance.us_scope3) {
         specificRegulations.push({
             regulationName: "US Scope 3 Emissions",
-            status: dpp.compliance.us_scope3.status,
+            status: dpp.compliance.us_scope3.status as ComplianceDetailItem['status'],
             detailsUrl: dpp.compliance.us_scope3.reportUrl,
             verificationId: dpp.compliance.us_scope3.vcId,
             lastChecked: dpp.metadata.last_updated,
@@ -57,19 +57,20 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
     if (dpp.compliance.battery_regulation) {
         specificRegulations.push({
             regulationName: "EU Battery Regulation",
-            status: dpp.compliance.battery_regulation.status,
+            status: dpp.compliance.battery_regulation.status as ComplianceDetailItem['status'],
             verificationId: dpp.compliance.battery_regulation.batteryPassportId || dpp.compliance.battery_regulation.vcId,
             lastChecked: dpp.metadata.last_updated,
-            notes: `Carbon Footprint: ${dpp.compliance.battery_regulation.carbonFootprint?.value || 'N/A'} ${dpp.compliance.battery_regulation.carbonFootprint?.unit || ''}`
+            notes: `CF: ${dpp.compliance.battery_regulation.carbonFootprint?.value || 'N/A'} ${dpp.compliance.battery_regulation.carbonFootprint?.unit || ''}`
         });
     }
 
-    const complianceOverallStatus = getOverallComplianceDetails(dpp);
+    const complianceOverallStatusDetails = getOverallComplianceDetails(dpp);
 
     const keyCompliancePointsPopulated: string[] = [];
-    if (complianceOverallStatus.text && complianceOverallStatus.text.toLowerCase() !== 'n/a' && complianceOverallStatus.text.toLowerCase() !== 'no data') {
-        keyCompliancePointsPopulated.push(`Overall Status: ${complianceOverallStatus.text}`);
+     if (complianceOverallStatusDetails.text && complianceOverallStatusDetails.text.toLowerCase() !== 'n/a' && complianceOverallStatusDetails.text.toLowerCase() !== 'no data') {
+        keyCompliancePointsPopulated.push(`Overall Status: ${complianceOverallStatusDetails.text}`);
     }
+
     if (dpp.ebsiVerification?.status && dpp.ebsiVerification.status.toLowerCase() !== 'n/a') {
         const ebsiStatusText = dpp.ebsiVerification.status.replace(/_/g, ' ');
         const capitalizedEbsiStatus = ebsiStatusText.charAt(0).toUpperCase() + ebsiStatusText.slice(1);
@@ -78,7 +79,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
     let specificRegCount = 0;
     specificRegulations.forEach(reg => {
-        if (specificRegCount < 2 && (reg.status.toLowerCase() === 'compliant' || reg.status.toLowerCase() === 'pending' || reg.status.toLowerCase() === 'pending_review' || reg.status.toLowerCase() === 'registered' || reg.status.toLowerCase() === 'conformant')) {
+        if (specificRegCount < 2 && reg.status && reg.status.toLowerCase() !== 'n/a' && reg.status.toLowerCase() !== 'not applicable') {
             const regStatusText = reg.status.replace(/_/g, ' ');
             const capitalizedRegStatus = regStatusText.charAt(0).toUpperCase() + regStatusText.slice(1);
             keyCompliancePointsPopulated.push(`${reg.regulationName}: ${capitalizedRegStatus}`);
@@ -89,7 +90,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
     if (keyCompliancePointsPopulated.length === 0 && specificRegulations.length > 0) {
         keyCompliancePointsPopulated.push("Review Compliance tab for regulation details.");
     }
-
+    
+    const customAttributes = dpp.productDetails?.customAttributes || [];
 
     return {
         id: dpp.id,
@@ -102,13 +104,13 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         description: dpp.productDetails?.description,
         imageUrl: dpp.productDetails?.imageUrl,
         imageHint: dpp.productDetails?.imageHint,
-        keySustainabilityPoints: dpp.productDetails?.sustainabilityClaims?.map(c => c.claim).filter(Boolean),
+        keySustainabilityPoints: dpp.productDetails?.sustainabilityClaims?.map(c => c.claim).filter(Boolean) || [],
         keyCompliancePoints: keyCompliancePointsPopulated,
-        specifications: dpp.productDetails?.materials ?
+        specifications: dpp.productDetails?.materials ? 
             Object.fromEntries(dpp.productDetails.materials.map((m, i) => [`material_${i+1}`, `${m.name} (${m.percentage || 'N/A'}%)`]))
             : undefined,
         complianceSummary: {
-            overallStatus: complianceOverallStatus.text as ProductComplianceSummary['overallStatus'],
+            overallStatus: complianceOverallStatusDetails.text,
             eprel: dpp.compliance.eprel ? {
                 id: dpp.compliance.eprel.id,
                 status: dpp.compliance.eprel.status,
@@ -128,7 +130,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             date: event.timestamp,
             location: event.location,
             notes: event.data ? `Data: ${JSON.stringify(event.data)}` : (event.responsibleParty ? `Responsible: ${event.responsibleParty}` : undefined),
-            status: event.transactionHash ? 'Completed' : 'In Progress',
+            status: event.transactionHash ? 'Completed' : (event.type.toLowerCase().includes('schedul') || event.type.toLowerCase().includes('upcoming') ? 'Upcoming' : 'In Progress'),
             iconName: event.type.toLowerCase().includes('manufactur') ? 'Factory' :
                       event.type.toLowerCase().includes('ship') ? 'Truck' :
                       event.type.toLowerCase().includes('quality') || event.type.toLowerCase().includes('certif') ? 'ShieldCheck' :
@@ -140,7 +142,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         repairability: dpp.productDetails?.repairabilityScore ? { score: dpp.productDetails.repairabilityScore.value, scale: dpp.productDetails.repairabilityScore.scale, detailsUrl: dpp.productDetails.repairabilityScore.reportUrl } : undefined,
         recyclabilityInfo: dpp.productDetails?.recyclabilityInformation ? { percentage: dpp.productDetails.recyclabilityInformation.recycledContentPercentage, instructionsUrl: dpp.productDetails.recyclabilityInformation.instructionsUrl } : undefined,
         supplyChainLinks: dpp.supplyChainLinks || [],
-        customAttributes: dpp.productDetails?.customAttributes || [],
+        customAttributes: customAttributes,
     };
 }
 
@@ -148,84 +150,81 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 export default function ProductDetailPage() {
   const params = useParams();
   const productId = params.productId as string;
-  const [product, setProduct] = useState<SimpleProductDetail | null | undefined>(undefined); // undefined for loading state
+  const [product, setProduct] = useState<SimpleProductDetail | null | undefined>(undefined);
   const [isSyncingEprel, setIsSyncingEprel] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
     if (productId) {
-      let foundProduct: SimpleProductDetail | undefined;
+      let foundDpp: DigitalProductPassport | undefined;
 
       if (productId.startsWith("USER_PROD")) {
         const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
         if (storedProductsString) {
           const userProducts: StoredUserProduct[] = JSON.parse(storedProductsString);
-          const userProductToDisplay = userProducts.find(p => p.id === productId);
-          if (userProductToDisplay) {
+          const userProductData = userProducts.find(p => p.id === productId);
+          if (userProductData) {
+             let parsedCustomAttributes: CustomAttribute[] = [];
+              if (userProductData.customAttributesJsonString) {
+                  try {
+                      const parsed = JSON.parse(userProductData.customAttributesJsonString);
+                      if (Array.isArray(parsed)) parsedCustomAttributes = parsed;
+                  } catch (e) {
+                      console.error("Failed to parse customAttributesJsonString from localStorage for USER_PROD:", e);
+                  }
+              }
 
-            let parsedCustomAttributes: CustomAttribute[] = [];
-            if (userProductToDisplay.customAttributesJsonString) {
-                try {
-                    parsedCustomAttributes = JSON.parse(userProductToDisplay.customAttributesJsonString);
-                } catch (e) {
-                    console.error("Failed to parse customAttributesJsonString from localStorage", e);
-                }
-            }
-
-            const tempDppForMapping: Partial<DigitalProductPassport> = {
-              id: userProductToDisplay.id,
-              productName: userProductToDisplay.productName || "N/A",
-              category: userProductToDisplay.productCategory || "N/A",
-              manufacturer: { name: userProductToDisplay.manufacturer || "N/A" },
-              modelNumber: userProductToDisplay.modelNumber,
-              gtin: userProductToDisplay.gtin,
+            // Construct a DigitalProductPassport-like object from StoredUserProduct
+            foundDpp = {
+              id: userProductData.id,
+              productName: userProductData.productName || "N/A",
+              category: userProductData.productCategory || "N/A",
+              manufacturer: { name: userProductData.manufacturer || "N/A" },
+              modelNumber: userProductData.modelNumber,
+              gtin: userProductData.gtin,
               metadata: {
-                status: (userProductToDisplay.status?.toLowerCase() as DigitalProductPassport['metadata']['status']) || 'draft',
-                last_updated: userProductToDisplay.lastUpdated || new Date().toISOString(),
+                status: (userProductData.status?.toLowerCase() as DigitalProductPassport['metadata']['status']) || 'draft',
+                last_updated: userProductData.lastUpdated || new Date().toISOString(),
               },
               productDetails: {
-                description: userProductToDisplay.productDescription,
-                imageUrl: userProductToDisplay.imageUrl,
-                imageHint: userProductToDisplay.imageHint,
-                sustainabilityClaims: userProductToDisplay.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
-                materials: userProductToDisplay.materials?.split(',').map(m => ({ name: m.trim() })) || [],
-                energyLabel: userProductToDisplay.energyLabel,
+                description: userProductData.productDescription,
+                imageUrl: userProductData.imageUrl,
+                imageHint: userProductData.imageHint,
+                sustainabilityClaims: userProductData.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
+                materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [], // Simplified mapping
+                energyLabel: userProductData.energyLabel,
                 customAttributes: parsedCustomAttributes,
               },
-              compliance: {
-                eprel: userProductToDisplay.complianceSummary?.eprel,
+              compliance: { // Basic compliance from StoredUserProduct
+                eprel: userProductData.complianceSummary?.eprel,
+                // Add other compliance aspects if available in StoredUserProduct
               },
-              ebsiVerification: userProductToDisplay.complianceSummary?.ebsi ? {
-                status: userProductToDisplay.complianceSummary.ebsi.status as EbsiVerificationDetails['status'],
-                verificationId: userProductToDisplay.complianceSummary.ebsi.verificationId,
-                lastChecked: userProductToDisplay.complianceSummary.ebsi.lastChecked,
+              ebsiVerification: userProductData.complianceSummary?.ebsi ? {
+                status: userProductData.complianceSummary.ebsi.status as EbsiVerificationDetails['status'],
+                verificationId: userProductData.complianceSummary.ebsi.verificationId,
+                lastChecked: userProductData.complianceSummary.ebsi.lastChecked,
               } : undefined,
-              lifecycleEvents: userProductToDisplay.lifecycleEvents?.map(e => ({
+              lifecycleEvents: userProductData.lifecycleEvents?.map(e => ({
                   id: e.id,
                   type: e.eventName,
                   timestamp: e.date,
                   location: e.location,
                   data: e.notes ? { notes: e.notes } : undefined,
               })),
-              supplyChainLinks: userProductToDisplay.supplyChainLinks || [],
-            };
-            foundProduct = mapDppToSimpleProductDetail(tempDppForMapping as DigitalProductPassport);
+              supplyChainLinks: userProductData.supplyChainLinks || [],
+            } as DigitalProductPassport; // Cast as it's a partial reconstruction
           }
         }
       } else {
-        const dppFromMocks = MOCK_DPPS.find(dpp => dpp.id === productId);
-        if (dppFromMocks) {
-            foundProduct = mapDppToSimpleProductDetail(dppFromMocks);
-        } else {
-            const simpleMockProduct = SIMPLE_MOCK_PRODUCTS.find(p => p.id === productId);
-            if(simpleMockProduct) {
-                foundProduct = simpleMockProduct;
-            }
-        }
+        foundDpp = MOCK_DPPS.find(dpp => dpp.id === productId);
       }
 
-      setTimeout(() => {
-        setProduct(foundProduct || null);
+      setTimeout(() => { // Simulate loading delay
+        if (foundDpp) {
+          setProduct(mapDppToSimpleProductDetail(foundDpp));
+        } else {
+          setProduct(null); // Product not found
+        }
       }, 300);
     }
   }, [productId]);
@@ -233,14 +232,13 @@ export default function ProductDetailPage() {
   const handleSupplyChainUpdate = (updatedLinks: ProductSupplyChainLink[]) => {
     if (!product) return;
 
-    const updatedProduct = { ...product, supplyChainLinks: updatedLinks };
-    setProduct(updatedProduct);
+    const updatedProductData = { ...product, supplyChainLinks: updatedLinks };
+    setProduct(updatedProductData);
 
     if (product.id.startsWith("USER_PROD")) {
       try {
         const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
         let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
-
         const productIndex = userProducts.findIndex(p => p.id === product.id);
         if (productIndex > -1) {
           userProducts[productIndex] = {
@@ -262,6 +260,7 @@ export default function ProductDetailPage() {
         console.error("Error saving supply chain to localStorage:", error);
       }
     } else {
+        // For mock products, update in-memory MOCK_DPPS if needed for session persistence beyond this component
         const mockDppIndex = MOCK_DPPS.findIndex(dpp => dpp.id === product.id);
         if (mockDppIndex > -1) {
             MOCK_DPPS[mockDppIndex].supplyChainLinks = updatedLinks;
@@ -283,12 +282,11 @@ export default function ProductDetailPage() {
         modelNumber: product.modelNumber,
       });
 
-      const currentComplianceSummary = product.complianceSummary || { overallStatus: "N/A" };
+      const currentComplianceSummary = product.complianceSummary || { overallStatus: "N/A" as SimpleProductDetail['complianceSummary']['overallStatus'] };
       const updatedProductData: SimpleProductDetail = {
         ...product,
         complianceSummary: {
           ...currentComplianceSummary,
-          overallStatus: currentComplianceSummary.overallStatus,
           eprel: {
             id: result.eprelId || currentComplianceSummary.eprel?.id,
             status: result.syncStatus,
@@ -299,12 +297,13 @@ export default function ProductDetailPage() {
       };
       setProduct(updatedProductData);
 
+      // Update localStorage for USER_PROD or MOCK_DPPS for session
       if (product.id.startsWith("USER_PROD")) {
         const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
         let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
         const productIndex = userProducts.findIndex(p => p.id === product.id);
         if (productIndex > -1) {
-          if (!userProducts[productIndex].complianceSummary) {
+          if (!userProducts[productIndex].complianceSummary) { // Ensure complianceSummary object exists
             userProducts[productIndex].complianceSummary = { overallStatus: "N/A" };
           }
           userProducts[productIndex].complianceSummary!.eprel = updatedProductData.complianceSummary?.eprel;
@@ -312,10 +311,10 @@ export default function ProductDetailPage() {
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
         }
       } else {
-        const mockDppIndex = MOCK_DPPS.findIndex(dpp => dpp.id === product.id);
-        if (mockDppIndex > -1 && MOCK_DPPS[mockDppIndex].compliance) {
+         const mockDppIndex = MOCK_DPPS.findIndex(dpp => dpp.id === product.id);
+         if (mockDppIndex > -1 && MOCK_DPPS[mockDppIndex].compliance) {
             MOCK_DPPS[mockDppIndex].compliance.eprel = updatedProductData.complianceSummary?.eprel;
-        }
+         }
       }
       toast({ title: "EPREL Sync", description: result.message, variant: result.syncStatus.toLowerCase().includes('error') || result.syncStatus.toLowerCase().includes('mismatch') ? "destructive" : "default" });
 
@@ -329,8 +328,7 @@ export default function ProductDetailPage() {
 
   const canSyncEprel = !!product?.modelNumber;
 
-
-  if (product === undefined) {
+  if (product === undefined) { // Loading state
     return (
       <div className="flex flex-col items-center justify-center min-h-[calc(100vh-12rem)] text-center p-4">
         <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
@@ -340,7 +338,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  if (!product) {
+  if (!product) { // Product not found after loading
     notFound();
   }
 
@@ -354,5 +352,3 @@ export default function ProductDetailPage() {
     />
   );
 }
-
-    

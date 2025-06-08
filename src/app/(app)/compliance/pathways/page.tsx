@@ -29,16 +29,16 @@ const pathways: Pathway[] = [
     title: 'EU ESPR Pathway',
     description: 'Navigate the Ecodesign for Sustainable Products Regulation. Address durability, repairability, recycled content, and information requirements for various product categories.',
     icon: Recycle,
-    href: '/compliance/pathways/espr', // Updated href
-    status: 'active', // Updated status
+    href: '/compliance/pathways/espr',
+    status: 'active',
   },
   {
     id: 'csrd',
     title: 'CSRD Alignment Guide',
     description: 'Understand how DPP data can support your Corporate Sustainability Reporting Directive obligations, particularly for product-related environmental and social impacts.',
     icon: BookOpen,
-    href: '#',
-    status: 'coming_soon',
+    href: '/compliance/pathways/csrd', // Updated href
+    status: 'active', // Updated status
   },
   {
     id: 'scip',
@@ -129,4 +129,3 @@ export default function CompliancePathwaysPage() {
     </div>
   );
 }
-

@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Added Select
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lightbulb, HelpCircle, CheckCircle, Loader2, Info, Recycle } from 'lucide-react';
+import { Lightbulb, HelpCircle, CheckCircle, Loader2, Info, Recycle, Handshake } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 // import { queryComplianceCopilot } from '@/ai/flows/compliance-copilot-flow'; // For future integration
 
@@ -27,7 +27,7 @@ const euBatteryRegulationSteps: WizardStep[] = [
   { id: "step4", title: "Carbon Footprint", description: "Provide manufacturing carbon footprint data." },
   { id: "step5", title: "Performance & Durability", description: "Detail battery performance characteristics." },
   { id: "step6", title: "Recycled Content", description: "Declare the percentage of recycled content for key materials." },
-  { id: "step7", title: "Supply Chain Due Diligence", description: "Outline due diligence policies." },
+  { id: "step7", title: "Supply Chain Due Diligence", description: "Outline due diligence policies for responsible sourcing of raw materials." },
   { id: "step8", title: "Collection & Recycling", description: "Information on EOL management." },
   { id: "step9", title: "Review & Submit", description: "Verify all information and prepare for submission." },
 ];
@@ -68,6 +68,9 @@ export default function BatteryRegulationPathwayPage() {
     step6_recycledNickelPercentage: "",
     step6_recycledContentDataSource: "",
     step6_recycledContentVerificationUrl: "",
+    step7_dueDiligencePolicies: "",
+    step7_isReportPublic: "no",
+    step7_publicReportUrl: "",
   });
   const [isLoadingCopilot, setIsLoadingCopilot] = useState(false);
   const { toast } = useToast();
@@ -108,6 +111,8 @@ export default function BatteryRegulationPathwayPage() {
         mockResponseDescription = `For Performance & Durability, provide rated capacity (e.g., '100 Ah'), nominal voltage (e.g., '48V'), expected lifetime (e.g., '2000 cycles at 80% DoD'), operating temperature range (e.g., '-20°C to 60°C'), internal resistance (e.g., '<50 mOhms'), and power capability (e.g., '5 kW continuous'). State compliance with key safety tests like IEC 62133, UN 38.3, or IEC 62619. Refer to Annex IV of the EU Battery Regulation.`;
     } else if (stepContext === euBatteryRegulationSteps[5].title) { // Recycled Content
         mockResponseDescription = `For Recycled Content, accurately declare the percentage by weight of recovered cobalt, lead, lithium, and nickel used in active materials of the battery. This information is crucial for demonstrating circularity. Specify the data source and methodology for these declarations. Refer to Annex VII of the EU Battery Regulation for minimum thresholds and calculation methodologies. Providing a URL to verification documents is recommended.`;
+    } else if (stepContext === euBatteryRegulationSteps[6].title) { // Supply Chain Due Diligence
+        mockResponseDescription = `For Supply Chain Due Diligence, describe your policies for responsible sourcing of raw materials, especially Cobalt, Lithium, Natural Graphite, and Nickel. Align with OECD Due Diligence Guidance. If you have a public report on your due diligence activities, provide a link. This is crucial for demonstrating ethical and sustainable sourcing practices as required by Annex X of the EU Battery Regulation.`;
     }
 
 
@@ -402,6 +407,39 @@ export default function BatteryRegulationPathwayPage() {
                 <Input id="step6_recycledContentVerificationUrl" value={formData.step6_recycledContentVerificationUrl || ""} onChange={(e) => handleInputChange("step6", "recycledContentVerificationUrl", e.target.value)} placeholder="https://example.com/docs/recycled_content_verification.pdf" />
               </div>
               <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[5].title)} disabled={isLoadingCopilot}>
+                {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+                Ask Co-Pilot about this step
+              </Button>
+            </CardContent>
+          </Card>
+        );
+      case "step7":
+        return (
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center"><Handshake className="mr-2 h-5 w-5 text-primary" />{euBatteryRegulationSteps[6].title}</CardTitle>
+              <CardDescription>{euBatteryRegulationSteps[6].description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div>
+                <Label htmlFor="step7_dueDiligencePolicies">Description of Due Diligence Policies</Label>
+                <Textarea id="step7_dueDiligencePolicies" value={formData.step7_dueDiligencePolicies || ""} onChange={(e) => handleInputChange("step7", "dueDiligencePolicies", e.target.value)} placeholder="Describe your company's due diligence policies for responsible sourcing of Cobalt, Lithium, Natural Graphite, and Nickel. Refer to OECD guidance." rows={5}/>
+                <p className="text-xs text-muted-foreground mt-1">Include information on risk assessment, mitigation measures, and supplier engagement related to human rights, labor, environmental, and ethical issues.</p>
+              </div>
+              <div>
+                <Label className="mb-1 block">Is a Due Diligence Report Publicly Available?</Label>
+                <RadioGroup value={formData.step7_isReportPublic || "no"} onValueChange={(value) => handleRadioChange("step7", "isReportPublic", value)} className="flex gap-4">
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="report_public_yes" /><Label htmlFor="report_public_yes" className="font-normal">Yes</Label></div>
+                  <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="report_public_no" /><Label htmlFor="report_public_no" className="font-normal">No</Label></div>
+                </RadioGroup>
+              </div>
+              {formData.step7_isReportPublic === "yes" && (
+                 <div>
+                    <Label htmlFor="step7_publicReportUrl">URL to Public Due Diligence Report</Label>
+                    <Input id="step7_publicReportUrl" value={formData.step7_publicReportUrl || ""} onChange={(e) => handleInputChange("step7", "publicReportUrl", e.target.value)} placeholder="https://example.com/sustainability/due_diligence_report_2023.pdf" />
+                </div>
+              )}
+               <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[6].title)} disabled={isLoadingCopilot}>
                 {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
                 Ask Co-Pilot about this step
               </Button>

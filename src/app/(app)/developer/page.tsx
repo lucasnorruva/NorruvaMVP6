@@ -125,7 +125,7 @@ const generateMockCodeSnippet = (
   currentEnv: string
 ): string => {
   const apiKeyPlaceholder = `YOUR_${currentEnv.toUpperCase()}_API_KEY`;
-  const baseUrl = 'http://localhost:9002/api/v1';
+  const baseUrl = 'http://localhost:9002/api/v1'; // Ensure this matches your app's local port
 
   let urlPath = "";
   switch (endpointKey) {
@@ -152,12 +152,12 @@ const generateMockCodeSnippet = (
   }
 
   const fullUrl = `${baseUrl}${urlPath}`;
-  const safeBody = body || '{}'; // Ensure body is a valid JSON string if null
+  const safeBody = body || '{}'; 
 
   if (language === "cURL") {
     let curlCmd = `curl -X ${method} \\\n  '${fullUrl}' \\\n  -H 'Authorization: Bearer ${apiKeyPlaceholder}'`;
     if (method === "POST" || method === "PUT") {
-      curlCmd += ` \\\n  -H 'Content-Type: application/json' \\\n  -d '${safeBody.replace(/'/g, "'\\''")}'`; // Basic escaping for single quotes in body
+      curlCmd += ` \\\n  -H 'Content-Type: application/json' \\\n  -d '${safeBody.replace(/'/g, "'\\''")}'`; 
     }
     return curlCmd;
   } else if (language === "JavaScript") {
@@ -178,7 +178,7 @@ const generateMockCodeSnippet = (
     }
     pyRequests += `\n}`;
     if (method === "POST" || method === "PUT") {
-      pyRequests += `\npayload = json.dumps(${safeBody})`; // Assume safeBody is a valid Python dict representation or JSON string
+      pyRequests += `\npayload = json.dumps(${safeBody})`; 
       pyRequests += `\nresponse = requests.request("${method}", url, headers=headers, data=payload)`;
     } else {
       pyRequests += `\nresponse = requests.request("${method}", url, headers=headers)`;
@@ -250,7 +250,7 @@ export default function DeveloperPortalPage() {
   const [isPutProductLoading, setIsPutProductLoading] = useState(false);
   const [updateDppSnippetLang, setUpdateDppSnippetLang] = useState("cURL");
 
-  const [deleteProductId, setDeleteProductId] = useState<string>("PROD002"); 
+  const [deleteProductId, setDeleteProductId] = useState<string>("DPP002"); 
   const [deleteProductResponse, setDeleteProductResponse] = useState<string | null>(null);
   const [isDeleteProductLoading, setIsDeleteProductLoading] = useState(false);
   const [deleteDppSnippetLang, setDeleteDppSnippetLang] = useState("cURL");
@@ -528,7 +528,7 @@ export default function DeveloperPortalPage() {
     { label: "Check API Status", href: "#", icon: ServerCrash, targetTab: "dashboard", tooltip: "View API Status on Dashboard" },
   ];
 
-  const codeSampleLanguages = ["cURL", "JavaScript", "Python"]; // Simplified list
+  const codeSampleLanguages = ["cURL", "JavaScript", "Python"]; 
   const conceptualSdks = [
       { name: "JavaScript SDK", link: "#", soon: true, icon: FileCode, description: "Client library for Node.js and browser environments." },
       { name: "Python SDK", link: "#", soon: true, icon: FileCode, description: "Integrate Norruva APIs with your Python applications." },
@@ -1382,4 +1382,5 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+
 

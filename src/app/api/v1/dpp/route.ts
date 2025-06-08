@@ -92,6 +92,7 @@ export async function POST(request: NextRequest) {
     consumerScans: 0,
   };
 
+  // Actually add the new DPP to the in-memory array
   MOCK_DPPS.push(newDpp);
 
   // Simulate API delay
@@ -154,3 +155,4 @@ export async function GET(request: NextRequest) {
     totalCount: filteredDPPs.length,
   });
 }
+

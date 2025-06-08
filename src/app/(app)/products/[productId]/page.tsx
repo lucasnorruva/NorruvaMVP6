@@ -59,7 +59,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             regulationName: "EU Battery Regulation",
             status: dpp.compliance.battery_regulation.status as ComplianceDetailItem['status'],
             verificationId: dpp.compliance.battery_regulation.batteryPassportId || dpp.compliance.battery_regulation.vcId,
-            lastChecked: dpp.metadata.last_updated, // This is the line before the problematic 'notes'
+            lastChecked: dpp.metadata.last_updated, // Ensure comma is here
             notes: `CF: ${dpp.compliance.battery_regulation.carbonFootprint?.value || 'N/A'} ${dpp.compliance.battery_regulation.carbonFootprint?.unit || ''}`
         });
     }
@@ -392,3 +392,4 @@ export default function ProductDetailPage() {
   );
 }
     
+

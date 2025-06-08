@@ -14,7 +14,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIcon } from "lucide-react";
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIcon, FileText, Leaf, Settings2, Tag } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import BasicInfoFormSection from "./form/BasicInfoFormSection";
@@ -29,7 +29,7 @@ import {
   handleSuggestClaimsAI,
   handleGenerateImageAI,
   handleSuggestSpecificationsAI,
-  handleSuggestCustomAttributesAI, // New import
+  handleSuggestCustomAttributesAI,
 } from "@/utils/aiFormHelpers";
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,7 +58,7 @@ const formSchema = z.object({
   energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
   imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")),
-  imageHint: z.string().max(30, "Hint should be concise, max 2-3 words or 30 chars.").optional(),
+  imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(), // Increased limit slightly
   imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   batteryChemistry: z.string().optional(),
   batteryChemistryOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
@@ -314,16 +314,15 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       return;
     }
     setCustomAttributes(prev => [...prev, suggestedAttr]);
-    // Remove it from suggested list once added
     setSuggestedCustomAttributes(prev => prev.filter(attr => attr.key !== suggestedAttr.key));
     toast({ title: "Attribute Added", description: `"${suggestedAttr.key}" has been added.`, variant: "default" });
   };
 
 
   const formContent = (
-    <Accordion type="multiple" defaultValue={['item-1', 'item-5', 'item-2', 'item-3', 'item-4', 'item-custom-attributes']} className="w-full">
+    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5', 'item-6']} className="w-full">
       <AccordionItem value="item-1">
-        <AccordionTrigger className="text-lg font-semibold">Basic Information</AccordionTrigger>
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><FileText className="mr-2 h-5 w-5 text-primary" />Basic Information</AccordionTrigger>
         <AccordionContent>
           <BasicInfoFormSection
             form={form}
@@ -338,11 +337,11 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem value="item-5">
+      <AccordionItem value="item-2">
         <AccordionTrigger className="text-lg font-semibold flex items-center">
           <ImageIcon className="mr-2 h-5 w-5 text-primary" /> Product Image
         </AccordionTrigger>
-        <AccordionContent className="pt-4">
+        <AccordionContent>
           <ProductImageFormSection
             form={form}
             aiImageHelper={handleGenerateImageAI}
@@ -355,8 +354,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem value="item-2">
-        <AccordionTrigger className="text-lg font-semibold">Sustainability & Compliance</AccordionTrigger>
+      <AccordionItem value="item-3">
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><Leaf className="mr-2 h-5 w-5 text-primary" />Sustainability & Compliance</AccordionTrigger>
         <AccordionContent>
           <SustainabilityComplianceFormSection
             form={form}
@@ -371,8 +370,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem value="item-3">
-        <AccordionTrigger className="text-lg font-semibold">Technical Specifications</AccordionTrigger>
+      <AccordionItem value="item-4">
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><Tag className="mr-2 h-5 w-5 text-primary" />Technical Specifications</AccordionTrigger>
         <AccordionContent>
           <TechnicalSpecificationsFormSection
             form={form}
@@ -385,15 +384,15 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem value="item-4">
+      <AccordionItem value="item-5">
         <AccordionTrigger className="text-lg font-semibold flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-primary" /> Battery Details (if applicable)</AccordionTrigger>
-        <AccordionContent className="pt-4">
+        <AccordionContent>
           <BatteryDetailsFormSection form={form} initialData={initialData} />
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem value="item-custom-attributes">
-        <AccordionTrigger className="text-lg font-semibold">Custom Attributes</AccordionTrigger>
+      <AccordionItem value="item-6">
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><Settings2 className="mr-2 h-5 w-5 text-primary" />Custom Attributes</AccordionTrigger>
         <AccordionContent>
           <CustomAttributesFormSection
             customAttributes={customAttributes}
@@ -443,5 +442,3 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
-
-    

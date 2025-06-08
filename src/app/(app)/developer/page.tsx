@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"; // Added Accordion imports
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { 
     KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, 
     Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, 
@@ -25,6 +25,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; // Import Alert components
+
 
 import ApiKeysManager, { type ApiKey } from '@/components/developer/ApiKeysManager';
 import WebhooksManager, { type WebhookEntry } from '@/components/developer/WebhooksManager';
@@ -400,7 +402,7 @@ export default function DeveloperPortalPage() {
   ) => {
     setLoading(true);
     setResponse(null);
-    toast({ title: "Sending Request...", description: `${method} ${url}` });
+    toast({ title: "Sending Mock API Request...", description: `${method} ${url}` });
     try {
       const options: RequestInit = {
         method,
@@ -420,15 +422,15 @@ export default function DeveloperPortalPage() {
       
       if (!res.ok) {
         setResponse(JSON.stringify({ status: res.status, error: responseData }, null, 2));
-        toast({ title: `Error: ${res.status}`, description: responseData.error?.message || 'An API error occurred.', variant: "destructive" });
+        toast({ title: `Mock API Error: ${res.status}`, description: responseData.error?.message || 'A mock API error occurred.', variant: "destructive" });
       } else {
         setResponse(JSON.stringify(responseData, null, 2));
-        toast({ title: "Success!", description: `${method} request to ${url} was successful.`, variant: "default"});
+        toast({ title: "Mock API Response Received", description: `${method} request to ${url} was successful (simulated).`, variant: "default"});
       }
     } catch (e) {
       const errorMsg = e instanceof Error ? e.message : String(e);
-      setResponse(JSON.stringify({ error: "Network or parsing error", details: errorMsg }, null, 2));
-      toast({ title: "Request Failed", description: errorMsg, variant: "destructive" });
+      setResponse(JSON.stringify({ error: "Network or parsing error during mock call", details: errorMsg }, null, 2));
+      toast({ title: "Mock Request Failed", description: errorMsg, variant: "destructive" });
     } finally {
       setLoading(false);
     }
@@ -789,6 +791,14 @@ export default function DeveloperPortalPage() {
         </TabsContent>
 
         <TabsContent value="playground" className="mt-6 space-y-6">
+          <Alert variant="default" className="bg-info/10 border-info/50 text-info-foreground">
+            <Info className="h-5 w-5 text-info" />
+            <AlertTitle className="font-semibold text-info">Mock API Environment</AlertTitle>
+            <AlertDescription>
+              This playground interacts with a <strong>mock API backend</strong>. Responses are simulated based on predefined data (like MOCK_DPPS) and conceptual API logic. 
+              This is for testing and exploration in the <Badge variant="outline" className="capitalize bg-card text-card-foreground">{currentEnvironment}</Badge> environment.
+            </AlertDescription>
+          </Alert>
           <Card className="shadow-xl border-primary/20">
             <CardHeader>
             <CardTitle className="font-headline flex items-center"><PlayCircle className="mr-3 h-6 w-6 text-primary" /> Full Interactive API Playground</CardTitle>
@@ -821,7 +831,7 @@ export default function DeveloperPortalPage() {
                           </Select>
                         </div>
                         {getProductCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({getProductSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{getProductCodeSnippet}</code></pre></div>}
-                        {getProductResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getProductResponse}</code></pre></div>}
+                        {getProductResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{getProductResponse}</code></pre></div>}
                         </CardContent>
                     </Card>
 
@@ -900,7 +910,7 @@ export default function DeveloperPortalPage() {
                           </Select>
                         </div>
                          {createDppCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({createDppSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{createDppCodeSnippet}</code></pre></div>}
-                         {postDppResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postDppResponse}</code></pre></div>}
+                         {postDppResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{postDppResponse}</code></pre></div>}
                         </CardContent>
                     </Card>
 
@@ -931,7 +941,7 @@ export default function DeveloperPortalPage() {
                           </Select>
                         </div>
                         {updateDppCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({updateDppSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{updateDppCodeSnippet}</code></pre></div>}
-                        {putProductResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{putProductResponse}</code></pre></div>}
+                        {putProductResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{putProductResponse}</code></pre></div>}
                         </CardContent>
                     </Card>
 
@@ -957,7 +967,7 @@ export default function DeveloperPortalPage() {
                           </Select>
                         </div>
                         {deleteDppCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({deleteDppSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{deleteDppCodeSnippet}</code></pre></div>}
-                        {deleteProductResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{deleteProductResponse}</code></pre></div>}
+                        {deleteProductResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{deleteProductResponse}</code></pre></div>}
                         </CardContent>
                     </Card>
                   </AccordionContent>
@@ -988,7 +998,7 @@ export default function DeveloperPortalPage() {
                           </Select>
                         </div>
                         {qrValidateCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({qrValidateSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{qrValidateCodeSnippet}</code></pre></div>}
-                        {postQrValidateResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postQrValidateResponse}</code></pre></div>}
+                        {postQrValidateResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{postQrValidateResponse}</code></pre></div>}
                         </CardContent>
                     </Card>
 
@@ -1018,7 +1028,7 @@ export default function DeveloperPortalPage() {
                             </Select>
                         </div>
                         {addLifecycleEventCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({addLifecycleEventSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{addLifecycleEventCodeSnippet}</code></pre></div>}
-                        {postLifecycleEventResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postLifecycleEventResponse}</code></pre></div>}
+                        {postLifecycleEventResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{postLifecycleEventResponse}</code></pre></div>}
                         </CardContent>
                     </Card>
 
@@ -1044,7 +1054,7 @@ export default function DeveloperPortalPage() {
                             </Select>
                         </div>
                         {getComplianceSummaryCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({getComplianceSummarySnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{getComplianceSummaryCodeSnippet}</code></pre></div>}
-                        {getComplianceResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getComplianceResponse}</code></pre></div>}
+                        {getComplianceResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{getComplianceResponse}</code></pre></div>}
                         </CardContent>
                     </Card>
 
@@ -1070,7 +1080,7 @@ export default function DeveloperPortalPage() {
                           </Select>
                         </div>
                         {verifyDppCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({verifyDppSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{verifyDppCodeSnippet}</code></pre></div>}
-                        {postVerifyResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postVerifyResponse}</code></pre></div>}
+                        {postVerifyResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{postVerifyResponse}</code></pre></div>}
                         </CardContent>
                     </Card>
                    
@@ -1096,7 +1106,7 @@ export default function DeveloperPortalPage() {
                           </Select>
                         </div>
                         {getDppHistoryCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({getDppHistorySnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{getDppHistoryCodeSnippet}</code></pre></div>}
-                        {getHistoryResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getHistoryResponse}</code></pre></div>}
+                        {getHistoryResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{getHistoryResponse}</code></pre></div>}
                       </CardContent>
                     </Card>
 
@@ -1132,7 +1142,7 @@ export default function DeveloperPortalPage() {
                           </Select>
                         </div>
                         {importDppsCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({importDppsSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{importDppsCodeSnippet}</code></pre></div>}
-                        {postImportResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postImportResponse}</code></pre></div>}
+                        {postImportResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{postImportResponse}</code></pre></div>}
                       </CardContent>
                     </Card>
 
@@ -1158,7 +1168,7 @@ export default function DeveloperPortalPage() {
                           </Select>
                         </div>
                         {getDppGraphCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({getDppGraphSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{getDppGraphCodeSnippet}</code></pre></div>}
-                        {getGraphResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getGraphResponse}</code></pre></div>}
+                        {getGraphResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{getGraphResponse}</code></pre></div>}
                       </CardContent>
                     </Card>
                   </AccordionContent>

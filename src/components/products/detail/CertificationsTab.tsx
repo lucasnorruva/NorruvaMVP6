@@ -7,9 +7,10 @@ import type { SimpleProductDetail, SimpleCertification } from "@/types/dpp";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Award, ShieldCheck, FileText, ExternalLink, CalendarDays } from "lucide-react";
+import { Award, ShieldCheck, FileText, ExternalLink, CalendarDays, Fingerprint, DatabaseZap } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface CertificationsTabProps {
   product: SimpleProductDetail;
@@ -59,7 +60,7 @@ export default function CertificationsTab({ product }: CertificationsTabProps) {
                 </Badge>
               )}
             </div>
-            <div className="text-xs space-y-1 text-muted-foreground">
+            <div className="text-xs space-y-1.5 text-muted-foreground">
               <p><strong className="text-foreground/80">Issuing Authority:</strong> {cert.authority}</p>
               {cert.standard && <p><strong className="text-foreground/80">Standard:</strong> {cert.standard}</p>}
               <p className="flex items-center">
@@ -67,8 +68,41 @@ export default function CertificationsTab({ product }: CertificationsTabProps) {
                 <strong className="text-foreground/80">Issued:</strong> {new Date(cert.issueDate).toLocaleDateString()}
                 {cert.expiryDate && <span className="ml-2"><strong className="text-foreground/80">Expires:</strong> {new Date(cert.expiryDate).toLocaleDateString()}</span>}
               </p>
-              {cert.vcId && <p className="truncate" title={cert.vcId}><strong className="text-foreground/80">VC ID:</strong> {cert.vcId}</p>}
-              {cert.transactionHash && <p className="truncate" title={cert.transactionHash}><strong className="text-foreground/80">Blockchain Tx:</strong> {cert.transactionHash}</p>}
+              
+              {cert.vcId && (
+                <TooltipProvider delayDuration={100}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center cursor-default">
+                        <Fingerprint className="h-3.5 w-3.5 mr-1.5 text-indigo-500 flex-shrink-0" />
+                        <strong className="text-foreground/80 mr-1">VC ID:</strong>
+                        <span className="font-mono truncate text-foreground/90">{cert.vcId}</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" align="start" className="bg-popover text-popover-foreground shadow-lg rounded-md p-2 border max-w-xs">
+                      <p className="text-xs break-all">{cert.vcId}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+
+              {cert.transactionHash && (
+                <TooltipProvider delayDuration={100}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                       <div className="flex items-center cursor-default">
+                        <DatabaseZap className="h-3.5 w-3.5 mr-1.5 text-teal-500 flex-shrink-0" />
+                        <strong className="text-foreground/80 mr-1">Blockchain Tx:</strong>
+                        <span className="font-mono truncate text-foreground/90">{cert.transactionHash}</span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="bottom" align="start" className="bg-popover text-popover-foreground shadow-lg rounded-md p-2 border max-w-xs">
+                      <p className="text-xs break-all">{cert.transactionHash}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+
               {cert.documentUrl && (
                 <Button variant="link" size="sm" asChild className="p-0 h-auto text-primary mt-1.5">
                   <Link href={cert.documentUrl} target="_blank" rel="noopener noreferrer">
@@ -83,4 +117,3 @@ export default function CertificationsTab({ product }: CertificationsTabProps) {
     </Card>
   );
 }
-

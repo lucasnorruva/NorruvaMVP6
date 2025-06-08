@@ -29,6 +29,7 @@ import {
   handleSuggestClaimsAI,
   handleGenerateImageAI,
   handleSuggestSpecificationsAI,
+  handleSuggestCustomAttributesAI, // New import
 } from "@/utils/aiFormHelpers";
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
@@ -86,7 +87,7 @@ const AiIndicator: React.FC<AiIndicatorProps> = ({ fieldOrigin, fieldName }) => 
             <Cpu className="h-4 w-4 text-info" />
           </TooltipTrigger>
           <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI document extraction.</p>
+            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
           </TooltipContent>
         </Tooltip>
       </TooltipProvider>
@@ -143,12 +144,16 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
   const { toast } = useToast();
   const [suggestedClaims, setSuggestedClaims] = useState<string[]>([]);
+  const [suggestedCustomAttributes, setSuggestedCustomAttributes] = useState<CustomAttribute[]>([]);
+
 
   const [isSuggestingName, setIsSuggestingName] = useState(false);
   const [isSuggestingDescription, setIsSuggestingDescription] = useState(false);
   const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [isSuggestingSpecs, setIsSuggestingSpecs] = useState(false);
+  const [isSuggestingCustomAttrs, setIsSuggestingCustomAttrs] = useState(false);
+
 
   const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>([]);
   const [currentCustomKey, setCurrentCustomKey] = useState("");
@@ -253,8 +258,18 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         form.setValue("specificationsOrigin", 'AI_EXTRACTED');
     }
   };
+  
+  const callSuggestCustomAttributesAI = async () => {
+    const attributes = await handleSuggestCustomAttributesAI(form, toast, setIsSuggestingCustomAttrs);
+    if (attributes) {
+      setSuggestedCustomAttributes(attributes);
+    } else {
+      setSuggestedCustomAttributes([]);
+    }
+  };
 
-  const anyAISuggestionInProgress = isSuggestingName || isSuggestingDescription || isSuggestingClaims || isGeneratingImage || isSuggestingSpecs;
+
+  const anyAISuggestionInProgress = isSuggestingName || isSuggestingDescription || isSuggestingClaims || isGeneratingImage || isSuggestingSpecs || isSuggestingCustomAttrs;
 
   const handleClaimClick = (claim: string) => {
     const currentClaimsValue = form.getValues("sustainabilityClaims") || "";
@@ -287,6 +302,21 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
   const handleRemoveCustomAttribute = (keyToRemove: string) => {
     setCustomAttributes(customAttributes.filter(attr => attr.key !== keyToRemove));
+  };
+  
+  const handleAddSuggestedCustomAttribute = (suggestedAttr: CustomAttribute) => {
+    if (customAttributes.some(attr => attr.key.toLowerCase() === suggestedAttr.key.toLowerCase())) {
+      toast({
+        title: "Attribute Exists",
+        description: `An attribute with key "${suggestedAttr.key}" already exists. You can edit it or use a different key.`,
+        variant: "default",
+      });
+      return;
+    }
+    setCustomAttributes(prev => [...prev, suggestedAttr]);
+    // Remove it from suggested list once added
+    setSuggestedCustomAttributes(prev => prev.filter(attr => attr.key !== suggestedAttr.key));
+    toast({ title: "Attribute Added", description: `"${suggestedAttr.key}" has been added.`, variant: "default" });
   };
 
 
@@ -375,6 +405,12 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             handleAddCustomAttribute={handleAddCustomAttribute}
             handleRemoveCustomAttribute={handleRemoveCustomAttribute}
             form={form}
+            isSuggestingCustomAttrs={isSuggestingCustomAttrs}
+            callSuggestCustomAttributesAI={callSuggestCustomAttributesAI}
+            suggestedCustomAttributes={suggestedCustomAttributes}
+            handleAddSuggestedCustomAttribute={handleAddSuggestedCustomAttribute}
+            anyAISuggestionInProgress={anyAISuggestionInProgress}
+            isSubmittingForm={isSubmitting}
           />
         </AccordionContent>
       </AccordionItem>

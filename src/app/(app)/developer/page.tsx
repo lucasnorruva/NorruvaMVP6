@@ -189,6 +189,12 @@ export default function DeveloperPortalPage() {
 
   const [listProductsResponse, setListProductsResponse] = useState<string | null>(null);
   const [isListProductsLoading, setIsListProductsLoading] = useState(false);
+  
+  const [postDppBody, setPostDppBody] = useState<string>(
+    JSON.stringify({ productName: "New Widget Pro", category: "Gadgets", gtin: "1234500000123" }, null, 2)
+  );
+  const [postDppResponse, setPostDppResponse] = useState<string | null>(null);
+  const [isPostDppLoading, setIsPostDppLoading] = useState(false);
 
   const [postLifecycleEventProductId, setPostLifecycleEventProductId] = useState<string>("DPP001");
   const [postLifecycleEventBody, setPostLifecycleEventBody] = useState<string>(
@@ -200,6 +206,13 @@ export default function DeveloperPortalPage() {
   const [getComplianceProductId, setGetComplianceProductId] = useState<string>("DPP001");
   const [getComplianceResponse, setGetComplianceResponse] = useState<string | null>(null);
   const [isGetComplianceLoading, setIsGetComplianceLoading] = useState(false);
+  
+  const [postQrValidateBody, setPostQrValidateBody] = useState<string>(
+    JSON.stringify({ qrIdentifier: "DPP001" }, null, 2)
+  );
+  const [postQrValidateResponse, setPostQrValidateResponse] = useState<string | null>(null);
+  const [isPostQrValidateLoading, setIsPostQrValidateLoading] = useState(false);
+
 
   const [postVerifyProductId, setPostVerifyProductId] = useState<string>("DPP001");
   const [postVerifyResponse, setPostVerifyResponse] = useState<string | null>(null);
@@ -305,127 +318,60 @@ export default function DeveloperPortalPage() {
   };
 
 
-  const handleMockGetProductDetails = async () => {
-    setIsGetProductLoading(true);
-    setGetProductResponse(null);
-    await new Promise(resolve => setTimeout(resolve, 700));
-    const product = MOCK_API_PRODUCTS[getProductId];
-    if (product) {
-      setGetProductResponse(JSON.stringify(product, null, 2));
-    } else {
-      setGetProductResponse(JSON.stringify({ error: "Product not found", productId: getProductId }, null, 2));
-    }
-    setIsGetProductLoading(false);
-  };
-
-  const handleMockListProducts = async () => {
-    setIsListProductsLoading(true);
-    setListProductsResponse(null);
-    await new Promise(resolve => setTimeout(resolve, 500));
-    const response = {
-      data: Object.values(MOCK_API_PRODUCTS),
-      pageInfo: {
-        totalCount: Object.keys(MOCK_API_PRODUCTS).length,
-        hasNextPage: false,
-      }
-    };
-    setListProductsResponse(JSON.stringify(response, null, 2));
-    setIsListProductsLoading(false);
-  };
-
-  const handleMockPostLifecycleEvent = async () => {
-    setIsPostLifecycleEventLoading(true);
-    setPostLifecycleEventResponse(null);
-    await new Promise(resolve => setTimeout(resolve, 600));
+  const makeApiCall = async (
+    url: string,
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+    body: any | null,
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>,
+    setResponse: React.Dispatch<React.SetStateAction<string | null>>
+  ) => {
+    setLoading(true);
+    setResponse(null);
+    toast({ title: "Sending Request...", description: `${method} ${url}` });
     try {
-        const requestBody = JSON.parse(postLifecycleEventBody);
-        if (!MOCK_API_PRODUCTS[postLifecycleEventProductId]) {
-            setPostLifecycleEventResponse(JSON.stringify({ error: "Product not found", productId: postLifecycleEventProductId }, null, 2));
-            setIsPostLifecycleEventLoading(false);
-            return;
+      const options: RequestInit = {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer MOCK_API_KEY_FOR_${currentEnvironment.toUpperCase()}`
         }
-        const response = {
-            success: true,
-            eventId: `EVT_MOCK_${Date.now().toString().slice(-5)}`,
-            productId: postLifecycleEventProductId,
-            message: "Lifecycle event added successfully (mock).",
-            receivedData: requestBody
-        };
-        setPostLifecycleEventResponse(JSON.stringify(response, null, 2));
+      };
+      if (body && (method === 'POST' || method === 'PUT')) {
+        options.body = typeof body === 'string' ? body : JSON.stringify(body);
+      }
+
+      const res = await fetch(url, options);
+      const responseData = await res.json();
+      
+      if (!res.ok) {
+        setResponse(JSON.stringify({ status: res.status, error: responseData }, null, 2));
+        toast({ title: `Error: ${res.status}`, description: responseData.error?.message || 'An API error occurred.', variant: "destructive" });
+      } else {
+        setResponse(JSON.stringify(responseData, null, 2));
+        toast({ title: "Success!", description: `${method} request to ${url} was successful.`, variant: "default"});
+      }
     } catch (e) {
-        setPostLifecycleEventResponse(JSON.stringify({ error: "Invalid JSON in request body.", details: e instanceof Error ? e.message : String(e) }, null, 2));
+      const errorMsg = e instanceof Error ? e.message : String(e);
+      setResponse(JSON.stringify({ error: "Network or parsing error", details: errorMsg }, null, 2));
+      toast({ title: "Request Failed", description: errorMsg, variant: "destructive" });
     } finally {
-        setIsPostLifecycleEventLoading(false);
+      setLoading(false);
     }
   };
 
-  const handleMockGetComplianceSummary = async () => {
-    setIsGetComplianceLoading(true);
-    setGetComplianceResponse(null);
-    await new Promise(resolve => setTimeout(resolve, 650));
-    const summary = MOCK_COMPLIANCE_SUMMARIES[getComplianceProductId];
-    if (summary) {
-      setGetComplianceResponse(JSON.stringify(summary, null, 2));
-    } else {
-      setGetComplianceResponse(JSON.stringify({ error: "Compliance summary not found for product", productId: getComplianceProductId }, null, 2));
-    }
-    setIsGetComplianceLoading(false);
-  }
+  const handleMockGetProductDetails = () => makeApiCall(`/api/v1/dpp/${getProductId}`, 'GET', null, setIsGetProductLoading, setGetProductResponse);
+  const handleMockListProducts = () => makeApiCall('/api/v1/dpp', 'GET', null, setIsListProductsLoading, setListProductsResponse);
+  const handleMockPostDpp = () => makeApiCall('/api/v1/dpp', 'POST', postDppBody, setIsPostDppLoading, setPostDppResponse);
+  const handleMockPutProduct = () => makeApiCall(`/api/v1/dpp/${putProductId}`, 'PUT', putProductBody, setIsPutProductLoading, setPutProductResponse);
+  const handleMockDeleteProduct = () => makeApiCall(`/api/v1/dpp/${deleteProductId}`, 'DELETE', null, setIsDeleteProductLoading, setDeleteProductResponse);
+  const handleMockPostLifecycleEvent = () => makeApiCall(`/api/v1/dpp/${postLifecycleEventProductId}/lifecycle-events`, 'POST', postLifecycleEventBody, setIsPostLifecycleEventLoading, setPostLifecycleEventResponse);
+  const handleMockGetComplianceSummary = () => makeApiCall(`/api/v1/dpp/${getComplianceProductId}/compliance-summary`, 'GET', null, setIsGetComplianceLoading, setGetComplianceResponse);
+  const handleMockPostQrValidate = () => makeApiCall('/api/v1/qr/validate', 'POST', postQrValidateBody, setIsPostQrValidateLoading, setPostQrValidateResponse);
+  const handleMockPostVerify = () => makeApiCall(`/api/v1/dpp/verify`, 'POST', { productId: postVerifyProductId }, setIsPostVerifyLoading, setPostVerifyResponse); // Simplified body for conceptual verify
+  const handleMockGetHistory = () => makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetHistoryResponse);
+  const handleMockPostImport = () => makeApiCall('/api/v1/dpp/import', 'POST', { fileType: postImportFileType, data: "mock_file_content_base64_encoded" }, setIsPostImportLoading, setPostImportResponse);
+  const handleMockGetGraph = () => makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetGraphResponse);
 
-  const handleMockPostVerify = async () => {
-    setIsPostVerifyLoading(true);
-    setPostVerifyResponse(null);
-    await new Promise(resolve => setTimeout(resolve, 600));
-    const product = MOCK_API_PRODUCTS[postVerifyProductId];
-    if (product) {
-        const mockVerificationResult = {
-            productId: postVerifyProductId,
-            verificationStatus: "Verified (Mock)",
-            complianceChecks: [
-                { regulation: "REACH", status: "Compliant", details: "All substances within limits." },
-                { regulation: "RoHS", status: "Compliant", details: "No restricted hazardous substances found." }
-            ],
-            authenticity: "Authentic (Mock)",
-            timestamp: new Date().toISOString()
-        };
-      setPostVerifyResponse(JSON.stringify(mockVerificationResult, null, 2));
-    } else {
-      setPostVerifyResponse(JSON.stringify({ error: "Product not found for verification", productId: postVerifyProductId }, null, 2));
-    }
-    setIsPostVerifyLoading(false);
-  };
-
-  const handleMockPutProduct = async () => {
-    setIsPutProductLoading(true);
-    setPutProductResponse(null);
-    await new Promise(resolve => setTimeout(resolve, 550));
-    const productExists = MOCK_API_PRODUCTS[putProductId];
-    if (productExists) {
-        try {
-            const requestBody = JSON.parse(putProductBody);
-            const updatedProduct = { ...productExists, ...requestBody, metadata: { ...productExists.metadata, ...requestBody.metadata, last_updated: new Date().toISOString() } };
-            setPutProductResponse(JSON.stringify(updatedProduct, null, 2));
-        } catch (e) {
-            setPutProductResponse(JSON.stringify({ error: "Invalid JSON in request body for PUT.", details: e instanceof Error ? e.message : String(e) }, null, 2));
-        }
-    } else {
-        setPutProductResponse(JSON.stringify({ error: "Product not found for update", productId: putProductId }, null, 2));
-    }
-    setIsPutProductLoading(false);
-  };
-
-  const handleMockDeleteProduct = async () => {
-    setIsDeleteProductLoading(true);
-    setDeleteProductResponse(null);
-    await new Promise(resolve => setTimeout(resolve, 450));
-    const productExists = MOCK_API_PRODUCTS[deleteProductId];
-    if (productExists) {
-      setDeleteProductResponse(JSON.stringify({ message: `Product ${deleteProductId} archived successfully (mock).`, status: "Archived", timestamp: new Date().toISOString() }, null, 2));
-    } else {
-      setDeleteProductResponse(JSON.stringify({ error: "Product not found for deletion", productId: deleteProductId }, null, 2));
-    }
-    setIsDeleteProductLoading(false);
-  };
 
   const handleGenerateMockDpp = async () => {
     setIsGeneratingMockDpp(true);
@@ -451,65 +397,6 @@ export default function DeveloperPortalPage() {
     setGeneratedMockDppJson(JSON.stringify(mockDpp, null, 2));
     toast({ title: "Mock DPP Generated", description: "A sample DPP JSON has been displayed." });
     setIsGeneratingMockDpp(false);
-  };
-
-  const handleMockGetHistory = async () => {
-    setIsGetHistoryLoading(true);
-    setGetHistoryResponse(null);
-    await new Promise(resolve => setTimeout(resolve, 400));
-    const product = MOCK_API_PRODUCTS[getHistoryProductId];
-    if (product) {
-        const history = [
-            { event: "DPP Created", timestamp: "2024-01-01T10:00:00Z", user: "system" },
-            { event: "Lifecycle Event Added: Manufactured", timestamp: "2024-01-15T08:00:00Z", user: "manufacturer_user@example.com", details: { location: "EcoFactory, Germany" } },
-            { event: "Compliance Status Updated: REACH to Compliant", timestamp: "2024-07-01T12:00:00Z", user: "verifier_bot" },
-        ];
-        setGetHistoryResponse(JSON.stringify({ productId: getHistoryProductId, auditTrail: history }, null, 2));
-    } else {
-        setGetHistoryResponse(JSON.stringify({ error: "Product not found for history", productId: getHistoryProductId }, null, 2));
-    }
-    setIsGetHistoryLoading(false);
-  };
-
-  const handleMockPostImport = async () => {
-    setIsPostImportLoading(true);
-    setPostImportResponse(null);
-    await new Promise(resolve => setTimeout(resolve, 800));
-    const mockSuccessCount = Math.floor(Math.random() * 50) + 10; 
-    setPostImportResponse(JSON.stringify({
-        message: `Batch import processed (mock). File type: ${postImportFileType.toUpperCase()}`,
-        importedCount: mockSuccessCount,
-        failedCount: Math.floor(Math.random() * 5),
-        timestamp: new Date().toISOString()
-    }, null, 2));
-    setIsPostImportLoading(false);
-  };
-
-  const handleMockGetGraph = async () => {
-    setIsGetGraphLoading(true);
-    setGetGraphResponse(null);
-    await new Promise(resolve => setTimeout(resolve, 750));
-    const product = MOCK_API_PRODUCTS[getGraphProductId];
-    if (product) {
-        const graphData = {
-            productId: getGraphProductId,
-            graphType: "supply_chain_visualization",
-            nodes: [
-                { id: "SUP001", label: "GreenCompress Ltd.", type: "supplier" },
-                { id: "SUP002", label: "RecycleSteel Corp.", type: "supplier" },
-                { id: getGraphProductId, label: product.productName, type: "product" }
-            ],
-            edges: [
-                { source: "SUP001", target: getGraphProductId, label: "Compressor Unit" },
-                { source: "SUP002", target: getGraphProductId, label: "Recycled Steel Panels" }
-            ],
-            message: "Conceptual supply chain graph data."
-        };
-        setGetGraphResponse(JSON.stringify(graphData, null, 2));
-    } else {
-        setGetGraphResponse(JSON.stringify({ error: "Product not found for graph", productId: getGraphProductId }, null, 2));
-    }
-    setIsGetGraphLoading(false);
   };
 
 
@@ -768,7 +655,7 @@ export default function DeveloperPortalPage() {
                   </div>
                   {getProductResponse && (
                       <div className="mt-4">
-                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
                       <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getProductResponse}</code></pre>
                       </div>
                   )}
@@ -779,7 +666,7 @@ export default function DeveloperPortalPage() {
               <Card>
                   <CardHeader>
                   <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp</CardTitle>
-                  <CardDescription>Retrieve a list of all available Digital Product Passports (mock data).</CardDescription>
+                  <CardDescription>Retrieve a list of all available Digital Product Passports.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                   <div className="flex items-center justify-between">
@@ -794,7 +681,7 @@ export default function DeveloperPortalPage() {
                   </div>
                   {listProductsResponse && (
                       <div className="mt-4">
-                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
                       <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{listProductsResponse}</code></pre>
                       </div>
                   )}
@@ -805,19 +692,30 @@ export default function DeveloperPortalPage() {
               <Card>
                   <CardHeader>
                   <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp</CardTitle>
-                  <CardDescription>Create a new Digital Product Passport (Conceptual).</CardDescription>
+                  <CardDescription>Create a new Digital Product Passport.</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
-                    <p className="text-sm text-muted-foreground">To create a new DPP with a full form, please use the <Link href="/products/new" className="text-primary hover:underline">Add New Product page</Link>. This playground simulates a basic create action.</p>
+                  <div>
+                      <Label htmlFor="postDppBody">Request Body (JSON)</Label>
+                      <Textarea id="postDppBody" value={postDppBody} onChange={(e) => setPostDppBody(e.target.value)} rows={5} className="font-mono text-xs"/>
+                      <p className="text-xs text-muted-foreground mt-1">Example required fields: productName, category. See API Reference for full schema.</p>
+                  </div>
                   <div className="flex items-center justify-between">
-                    <Button onClick={() => toast({title: "Mock POST /api/v1/dpp", description: "Simulated DPP creation request sent."})} variant="secondary">
-                        <Send className="mr-2 h-4 w-4" /> Send Create Request (Mock)
+                    <Button onClick={handleMockPostDpp} disabled={isPostDppLoading} variant="secondary">
+                        {isPostDppLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                        {isPostDppLoading ? "Creating..." : "Send Request"}
                     </Button>
                     <Select defaultValue="cURL" disabled>
                         <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
                         <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
                     </Select>
                   </div>
+                   {postDppResponse && (
+                      <div className="mt-4">
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
+                      <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postDppResponse}</code></pre>
+                      </div>
+                  )}
                   </CardContent>
               </Card>
 
@@ -835,6 +733,7 @@ export default function DeveloperPortalPage() {
                   <div>
                       <Label htmlFor="putProductBody">Request Body (JSON)</Label>
                       <Textarea id="putProductBody" value={putProductBody} onChange={(e) => setPutProductBody(e.target.value)} rows={4} className="font-mono text-xs"/>
+                       <p className="text-xs text-muted-foreground mt-1">Send partial or full updates. See API Reference for updatable fields.</p>
                   </div>
                   <div className="flex items-center justify-between">
                     <Button onClick={handleMockPutProduct} disabled={isPutProductLoading} variant="secondary">
@@ -848,7 +747,7 @@ export default function DeveloperPortalPage() {
                   </div>
                   {putProductResponse && (
                       <div className="mt-4">
-                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
                       <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{putProductResponse}</code></pre>
                       </div>
                   )}
@@ -878,18 +777,49 @@ export default function DeveloperPortalPage() {
                   </div>
                   {deleteProductResponse && (
                       <div className="mt-4">
-                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
                       <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{deleteProductResponse}</code></pre>
                       </div>
                   )}
                   </CardContent>
               </Card>
               
+              {/* POST /api/v1/qr/validate */}
+              <Card>
+                  <CardHeader>
+                  <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/qr/validate</CardTitle>
+                  <CardDescription>Validate a QR identifier and retrieve a DPP summary.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                  <div>
+                      <Label htmlFor="postQrValidateBody">Request Body (JSON)</Label>
+                      <Textarea id="postQrValidateBody" value={postQrValidateBody} onChange={(e) => setPostQrValidateBody(e.target.value)} rows={3} className="font-mono text-xs"/>
+                  </div>
+                   <div className="flex items-center justify-between">
+                    <Button onClick={handleMockPostQrValidate} disabled={isPostQrValidateLoading} variant="secondary">
+                        {isPostQrValidateLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                        {isPostQrValidateLoading ? "Validating..." : "Send Request"}
+                    </Button>
+                    <Select defaultValue="cURL" disabled>
+                        <SelectTrigger className="w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
+                        <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={lang} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                    </Select>
+                  </div>
+                  {postQrValidateResponse && (
+                      <div className="mt-4">
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
+                      <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postQrValidateResponse}</code></pre>
+                      </div>
+                  )}
+                  </CardContent>
+              </Card>
+
+
               {/* POST /api/v1/dpp/{productId}/lifecycle-events */}
               <Card>
                   <CardHeader>
                   <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp/{'{productId}'}/lifecycle-events</CardTitle>
-                  <CardDescription>Add a new lifecycle event to a specific DPP.</CardDescription>
+                  <CardDescription>Add a new lifecycle event to a specific DPP (Conceptual - Not implemented in mock API).</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                   <div>
@@ -912,7 +842,7 @@ export default function DeveloperPortalPage() {
                   </div>
                   {postLifecycleEventResponse && (
                       <div className="mt-4">
-                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
                       <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postLifecycleEventResponse}</code></pre>
                       </div>
                   )}
@@ -923,7 +853,7 @@ export default function DeveloperPortalPage() {
               <Card>
                   <CardHeader>
                   <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/{'{productId}'}/compliance-summary</CardTitle>
-                  <CardDescription>Retrieve a compliance summary for a specific product.</CardDescription>
+                  <CardDescription>Retrieve a compliance summary for a specific product (Conceptual - Not implemented in mock API).</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                   <div>
@@ -942,7 +872,7 @@ export default function DeveloperPortalPage() {
                   </div>
                   {getComplianceResponse && (
                       <div className="mt-4">
-                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
                       <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getComplianceResponse}</code></pre>
                       </div>
                   )}
@@ -953,7 +883,7 @@ export default function DeveloperPortalPage() {
               <Card>
                   <CardHeader>
                   <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp/verify</CardTitle>
-                  <CardDescription>Perform compliance and authenticity checks on a DPP (mock).</CardDescription>
+                  <CardDescription>Perform compliance and authenticity checks on a DPP (Conceptual - Not implemented in mock API).</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
                   <div>
@@ -972,7 +902,7 @@ export default function DeveloperPortalPage() {
                   </div>
                   {postVerifyResponse && (
                       <div className="mt-4">
-                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
                       <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postVerifyResponse}</code></pre>
                       </div>
                   )}
@@ -983,7 +913,7 @@ export default function DeveloperPortalPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center"><History className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/history/{'{productId}'}</CardTitle>
-                  <CardDescription>Retrieve the audit trail / history for a specific DPP.</CardDescription>
+                  <CardDescription>Retrieve the audit trail / history for a specific DPP (Conceptual - Not implemented in mock API).</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -1002,7 +932,7 @@ export default function DeveloperPortalPage() {
                   </div>
                   {getHistoryResponse && (
                     <div className="mt-4">
-                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
                       <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getHistoryResponse}</code></pre>
                     </div>
                   )}
@@ -1013,7 +943,7 @@ export default function DeveloperPortalPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center"><UploadCloud className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp/import</CardTitle>
-                  <CardDescription>Batch import Digital Product Passports (CSV, JSON, etc.).</CardDescription>
+                  <CardDescription>Batch import Digital Product Passports (CSV, JSON, etc.) (Conceptual - Not implemented in mock API).</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -1042,7 +972,7 @@ export default function DeveloperPortalPage() {
                   </div>
                   {postImportResponse && (
                     <div className="mt-4">
-                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
                       <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{postImportResponse}</code></pre>
                     </div>
                   )}
@@ -1053,7 +983,7 @@ export default function DeveloperPortalPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center"><Share2 className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/graph/{'{productId}'}</CardTitle>
-                  <CardDescription>Retrieve data for supply chain visualization.</CardDescription>
+                  <CardDescription>Retrieve data for supply chain visualization (Conceptual - Not implemented in mock API).</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
@@ -1072,7 +1002,7 @@ export default function DeveloperPortalPage() {
                   </div>
                   {getGraphResponse && (
                     <div className="mt-4">
-                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Mock Response:</Label>
+                      <Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label>
                       <pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-60"><code>{getGraphResponse}</code></pre>
                     </div>
                   )}
@@ -1227,10 +1157,10 @@ export default function DeveloperPortalPage() {
           </div>
         </TabsContent>
 
-        <TabsContent value="settings_usage" className="mt-6 grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-           <Card className="shadow-lg lg:col-span-2">
+        <TabsContent value="settings_usage" className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <Card className="shadow-lg lg:col-span-2">
                 <CardHeader>
-                <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage &amp; Reporting</CardTitle>
+                <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage & Reporting</CardTitle>
                 <CardDescription>Monitor your API usage, view logs, and understand integration performance (Mock Data for <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge> environment for <Badge variant="outline">{mockOrganizationName}</Badge>).</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -1262,7 +1192,7 @@ export default function DeveloperPortalPage() {
                     <p className="text-xs text-muted-foreground mt-2">Note: Usage metrics are specific to '{mockOrganizationName}'. In a multi-tenant setup, admins would see aggregated views or switch tenant reports.</p>
                 </CardContent>
             </Card>
-            <div className="space-y-6">
+            <div className="space-y-6 lg:col-span-1">
                 <Card className="shadow-lg">
                     <CardHeader>
                     <CardTitle className="font-headline flex items-center"><Settings2 className="mr-3 h-6 w-6 text-primary" /> Advanced Organization Settings</CardTitle>
@@ -1285,7 +1215,7 @@ export default function DeveloperPortalPage() {
                 </Card>
                  <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle className="font-headline flex items-center"><HelpCircle className="mr-3 h-6 w-6 text-primary" /> Support &amp; Feedback</CardTitle>
+                        <CardTitle className="font-headline flex items-center"><HelpCircle className="mr-3 h-6 w-6 text-primary" /> Support & Feedback</CardTitle>
                         <CardDescription>Get help and share your thoughts.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -1300,3 +1230,4 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+

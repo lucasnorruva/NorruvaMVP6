@@ -313,11 +313,7 @@ export default function ProductsPage() {
                 />
               ))}
                {filteredAndSortedProducts.length === 0 && (
-                <TableRow>
-                    <TableCell colSpan={10} className="text-center text-muted-foreground py-8">
-                    No products found matching your filters.
-                    </TableCell>
-                </TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">No products found matching your filters.</TableCell></TableRow>
                 )}
             </TableBody>
           </Table>

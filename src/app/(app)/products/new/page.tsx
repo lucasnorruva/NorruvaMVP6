@@ -11,7 +11,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import ProductForm, { type ProductFormData } from "@/components/products/ProductForm";
 import { extractProductData } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
-import { AlertTriangle, CheckCircle2, Loader2, ScanLine, Info, Cpu, Edit, FileWarning } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Loader2, ScanLine, Info, Cpu, Edit, FileWarning, Compass, Wand2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute } from "@/types/dpp";
 
@@ -24,7 +24,6 @@ const fileToDataUri = (file: File): Promise<string> => {
   });
 };
 
-// Extended ProductFormData to include origin fields for initial state management
 export interface InitialProductFormData extends ProductFormData {
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -40,22 +39,21 @@ export interface InitialProductFormData extends ProductFormData {
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
 }
 
-// StoredUserProduct now directly uses fields from ProductFormData including origins
 interface StoredUserProduct extends ProductFormData {
   id: string;
   status: string;
   compliance: string;
   lastUpdated: string;
-  productCategory?: string; // Retain this as it might not be part of core ProductFormData for submission but useful for storage/display
-  keySustainabilityPoints?: string[]; // Optional display fields
-  keyCompliancePoints?: string[]; // Optional display fields
-  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[]; // Optional display fields
-  energyLabelRating?: string; // Optional display fields
-  repairability?: { score: number; scale: number; detailsUrl?: string }; // Optional display fields
-  recyclabilityInfo?: { percentage?: number; instructionsUrl?: string }; // Optional display fields
-  supplyChainLinks?: ProductSupplyChainLink[]; // Specific domain data
-  lifecycleEvents?: SimpleLifecycleEvent[]; // Specific domain data
-  complianceSummary?: ProductComplianceSummary; // Specific domain data
+  productCategory?: string; 
+  keySustainabilityPoints?: string[]; 
+  keyCompliancePoints?: string[]; 
+  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[]; 
+  energyLabelRating?: string; 
+  repairability?: { score: number; scale: number; detailsUrl?: string }; 
+  recyclabilityInfo?: { percentage?: number; instructionsUrl?: string }; 
+  supplyChainLinks?: ProductSupplyChainLink[]; 
+  lifecycleEvents?: SimpleLifecycleEvent[]; 
+  complianceSummary?: ProductComplianceSummary; 
 }
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -97,17 +95,15 @@ export default function AddNewProductPage() {
       const userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
       const productToEdit = userProducts.find(p => p.id === editProductId);
       if (productToEdit) {
-        // Map StoredUserProduct to InitialProductFormData, including origin fields
         const editData: Partial<InitialProductFormData> = {
-          ...productToEdit, // This now includes origin fields if they were saved
-          // Ensure numeric fields that could be null/undefined are handled
+          ...productToEdit, 
           stateOfHealth: productToEdit.stateOfHealth ?? undefined,
           carbonFootprintManufacturing: productToEdit.carbonFootprintManufacturing ?? undefined,
           recycledContentPercentage: productToEdit.recycledContentPercentage ?? undefined,
         };
         setCurrentProductDataForForm(editData);
         setActiveTab("manual");
-        setAiExtractionAppliedSuccessfully(false); // Reset this flag for edit mode
+        setAiExtractionAppliedSuccessfully(false); 
       } else {
         toast({ title: "Error", description: "Product not found for editing.", variant: "destructive" });
         router.push("/products/new");
@@ -122,11 +118,10 @@ export default function AddNewProductPage() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setFile(event.target.files[0]);
-      // Reset only AI-extractable fields or all? For now, keeping some user choices like category.
       setCurrentProductDataForForm(prev => ({
-        ...defaultFormState, // Reset to defaults
-        gtin: prev.gtin, // Keep GTIN if user typed it
-        productCategory: prev.productCategory, // Keep category
+        ...defaultFormState, 
+        gtin: prev.gtin, 
+        productCategory: prev.productCategory, 
       }));
       setError(null);
       setAiExtractionAppliedSuccessfully(false);
@@ -157,31 +152,29 @@ export default function AddNewProductPage() {
         aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED';
       } else {
         aiInitialFormData.specifications = "";
-        // If AI returned an empty object for specs, it's still an AI action.
         if (result.specifications) aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED';
       }
 
       if (result.energyLabel) { aiInitialFormData.energyLabel = result.energyLabel; aiInitialFormData.energyLabelOrigin = 'AI_EXTRACTED'; }
 
-      // Battery fields
       if (result.batteryChemistry) { aiInitialFormData.batteryChemistry = result.batteryChemistry; aiInitialFormData.batteryChemistryOrigin = 'AI_EXTRACTED'; }
       if (result.stateOfHealth !== undefined && result.stateOfHealth !== null) { aiInitialFormData.stateOfHealth = result.stateOfHealth; aiInitialFormData.stateOfHealthOrigin = 'AI_EXTRACTED'; }
       if (result.carbonFootprintManufacturing !== undefined && result.carbonFootprintManufacturing !== null) { aiInitialFormData.carbonFootprintManufacturing = result.carbonFootprintManufacturing; aiInitialFormData.carbonFootprintManufacturingOrigin = 'AI_EXTRACTED'; }
       if (result.recycledContentPercentage !== undefined && result.recycledContentPercentage !== null) { aiInitialFormData.recycledContentPercentage = result.recycledContentPercentage; aiInitialFormData.recycledContentPercentageOrigin = 'AI_EXTRACTED'; }
 
-      // Reset image and custom attributes on new AI extraction
       aiInitialFormData.imageUrl = ""; 
       aiInitialFormData.imageHint = "";
       aiInitialFormData.imageUrlOrigin = undefined;
-      aiInitialFormData.customAttributesJsonString = ""; // Reset custom attributes
+      aiInitialFormData.customAttributesJsonString = ""; 
 
       setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData}));
       setAiExtractionAppliedSuccessfully(true);
 
       toast({
-        title: "Data Extracted Successfully",
-        description: "Review and complete the extracted information in the form now shown in 'Manual Entry / Review'. Fields suggested by AI are marked.",
+        title: "AI Extraction Complete!",
+        description: "Information has been extracted from your document. Please review and complete the details in the 'Manual Entry / Review' tab. Fields populated by AI are marked.",
         variant: "default",
+        duration: 7000,
         action: <CheckCircle2 className="text-green-500" />,
       });
       setActiveTab("manual");
@@ -202,33 +195,25 @@ export default function AddNewProductPage() {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
       let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
       
-      // Create a base product object from formDataFromForm.
-      // The StoredUserProduct type is now aligned with ProductFormData for core fields + origins.
       const productCoreData: StoredUserProduct = {
         id: isEditMode && editProductId ? editProductId : `USER_PROD${Date.now().toString().slice(-6)}`,
-        ...formDataFromForm, // This now includes xxxOrigin fields directly
-        productName: formDataFromForm.productName || "Unnamed Product", // Ensure productName has a fallback
-        // Set status and lastUpdated, preserve existing data if editing
+        ...formDataFromForm, 
+        productName: formDataFromForm.productName || "Unnamed Product", 
         status: (isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.status) : "Draft") || "Draft",
         compliance: (isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.compliance) : "N/A") || "N/A",
         lastUpdated: new Date().toISOString(),
-        // Preserve complex array/object fields if editing, otherwise initialize empty
         supplyChainLinks: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.supplyChainLinks) || [] : [],
         lifecycleEvents: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.lifecycleEvents) || [] : [],
         complianceSummary: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.complianceSummary) : undefined,
-        // These display-specific fields are not directly part of ProductFormData, they are derived for display
-        // For StoredUserProduct, they can remain optional or be populated if ProductFormData starts including them.
-        // For now, they are not directly transferred from formDataFromForm unless ProductFormData schema changes.
       };
 
 
       if (isEditMode && editProductId) {
         const productIndex = userProducts.findIndex(p => p.id === editProductId);
         if (productIndex > -1) {
-          // Merge, ensuring complex objects from existing are not lost if not in formDataFromForm
           userProducts[productIndex] = {
-            ...userProducts[productIndex], // Keep existing complex fields
-            ...productCoreData, // Overwrite with new simple fields and origins
+            ...userProducts[productIndex], 
+            ...productCoreData, 
           };
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
           toast({ title: "Product Updated", description: `${productCoreData.productName} has been updated.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
@@ -243,7 +228,6 @@ export default function AddNewProductPage() {
         router.push('/products');
       }
 
-      // Reset form state for next creation
       setCurrentProductDataForForm(defaultFormState);
       setAiExtractionAppliedSuccessfully(false);
       if (!isEditMode) setActiveTab("ai-extraction");
@@ -264,20 +248,36 @@ export default function AddNewProductPage() {
           {isEditMode && <Edit className="mr-3 h-7 w-7 text-primary" />}
           {isEditMode ? "Edit Product" : "Add New Product"}
         </h1>
-        <p className="text-muted-foreground">
+        <p className="text-muted-foreground mt-1">
           {isEditMode
-            ? `Modify the details for product ID: ${editProductId}. Fields previously suggested by AI document extraction are marked with a CPU icon.`
-            : "Create a Digital Product Passport by extracting data from a document using AI, or by filling the form manually."}
+            ? `Modify the details for product ID: ${editProductId}. Fields previously suggested by AI are marked with a CPU icon.`
+            : "Create a Digital Product Passport by providing product information. You can start by extracting data from a document using AI, or fill the form manually."}
         </p>
       </div>
+      
+      {!isEditMode && (
+        <Card className="shadow-md bg-muted/30 border-primary/20">
+            <CardHeader className="pb-3">
+                <CardTitle className="font-headline text-xl flex items-center"><Compass className="mr-2 h-5 w-5 text-primary"/>Choose Your Path</CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm text-muted-foreground grid md:grid-cols-2 gap-4">
+                <div>
+                    <h4 className="font-semibold text-primary mb-1 flex items-center"><Wand2 className="mr-1.5 h-4 w-4"/>AI-Powered Start</h4>
+                    <p>Upload a product document (like a spec sheet or invoice) and let our AI extract key information to pre-fill the form. Great for quick starts and complex products.</p>
+                </div>
+                <div>
+                    <h4 className="font-semibold text-primary mb-1 flex items-center"><Edit className="mr-1.5 h-4 w-4"/>Manual Entry</h4>
+                    <p>Prefer to enter details yourself or have specific information ready? Head straight to the manual form. You can still use AI to suggest content for individual fields.</p>
+                </div>
+            </CardContent>
+        </Card>
+      )}
+
 
       <Tabs value={activeTab} onValueChange={(newTab) => {
           setActiveTab(newTab);
           if (newTab !== "manual" && aiExtractionAppliedSuccessfully) {
-            // If user navigates away from manual tab after AI extraction,
-            // consider if the AI data should be cleared or maintained.
-            // For now, it's maintained until a new extraction or save.
-            // setAiExtractionAppliedSuccessfully(false); // Potentially reset this
+            // User moved away from manual review after AI extraction
           }
       }} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
@@ -287,25 +287,25 @@ export default function AddNewProductPage() {
 
         <TabsContent value="manual" className="mt-6">
            {(aiExtractionAppliedSuccessfully || isEditMode) && activeTab === 'manual' && (
-            <Alert className="mb-6 border-info bg-info/10 text-info-foreground">
+            <Alert className="mb-6 border-info bg-info/10 text-info-foreground shadow-sm">
               <FileWarning className="h-5 w-5 text-info" />
               <AlertTitle className="font-semibold text-info">
-                {isEditMode ? "Editing Product" : "AI Data Populated"}
+                {isEditMode ? "Editing Product: Review AI-Suggested Fields" : "AI Data Ready for Review"}
               </AlertTitle>
               <AlertDescription>
                 {isEditMode
-                  ? "You are editing an existing product. Fields suggested by AI document extraction or generation are marked."
-                  : "Some fields below have been pre-filled based on the AI data extraction. Please review all fields carefully and complete any missing information."}
-                Fields suggested by AI are marked with a <Cpu className="inline h-4 w-4 align-middle" /> icon. Modifying these fields will change their origin to 'manual'.
+                  ? "You are editing an existing product. Fields suggested by AI previously are marked with a CPU icon."
+                  : "Information extracted by AI has been pre-filled below. Please review each field carefully, complete any missing details, and make corrections as needed."}
+                <br/>Fields populated or suggested by AI are marked with a <Cpu className="inline h-4 w-4 align-middle" /> icon. Modifying these fields will change their origin to 'manual'.
               </AlertDescription>
             </Alert>
           )}
           <ProductForm
             onSubmit={handleProductFormSubmit}
             isSubmitting={isSubmittingProduct}
-            initialData={currentProductDataForForm} // Pass the current state including origins
+            initialData={currentProductDataForForm} 
             isStandalonePage={true}
-            key={editProductId || 'new'} // Ensure form re-renders if editProductId changes
+            key={editProductId || 'new'} 
           />
         </TabsContent>
 
@@ -324,7 +324,6 @@ export default function AddNewProductPage() {
                 <CardTitle className="font-headline flex items-center"><ScanLine className="mr-2 h-6 w-6 text-primary" />Upload Document for AI Extraction</CardTitle>
                 <CardDescription>
                   Select a document file (PDF, DOCX, TXT, PNG, JPG). Max 10MB. AI will attempt to pre-fill the product form.
-                  For battery products, try a 'battery_spec_sheet' document type.
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -334,7 +333,8 @@ export default function AddNewProductPage() {
                 </div>
                 <div className="grid w-full max-w-sm items-center gap-2">
                   <Label htmlFor="document-type">Document Type</Label>
-                  <Input id="document-type" value={documentType} onChange={(e) => setDocumentType(e.target.value)} placeholder="e.g., invoice, specification, battery_spec_sheet" />
+                  <Input id="document-type" value={documentType} onChange={(e) => setDocumentType(e.target.value)} placeholder="e.g., invoice, specification sheet" />
+                   <p className="text-xs text-muted-foreground mt-1">Examples: invoice, specification, battery_spec_sheet, bill_of_materials, technical_drawing.</p>
                 </div>
 
                 <Button onClick={handleExtractData} disabled={isLoadingAi || !file} variant="secondary">

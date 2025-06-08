@@ -5,10 +5,10 @@
 
 import React from "react";
 import type { UseFormReturn } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
+import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, XCircle, Sparkles, Loader2 } from "lucide-react";
+import { PlusCircle, XCircle, Sparkles, Loader2, Info } from "lucide-react";
 import type { CustomAttribute } from "@/types/dpp";
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { ToastInput } from "@/hooks/use-toast";
@@ -36,7 +36,6 @@ interface CustomAttributesFormSectionProps {
 
 export default function CustomAttributesFormSection({
   customAttributes,
-  // setCustomAttributes, // No longer needed as prop, handled by parent via effect
   currentCustomKey,
   setCurrentCustomKey,
   currentCustomValue,
@@ -59,9 +58,10 @@ export default function CustomAttributesFormSection({
 
   return (
     <div className="space-y-4 pt-4">
-      <p className="text-sm text-muted-foreground">
-        Define additional key-value pairs specific to this product.
-      </p>
+      <FormDescription>
+        Define any additional key-value pairs that are specific to this product and not covered by standard fields. For example, 'Compatible Devices: Smartphone X, Tablet Y' or 'Special Edition: Yes'.
+      </FormDescription>
+      
       <div className="flex justify-end">
         <Button type="button" variant="ghost" size="sm" onClick={callSuggestCustomAttributesAI} disabled={anyAISuggestionInProgress || !!isSubmittingForm}>
             {isSuggestingCustomAttrs ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
@@ -70,8 +70,10 @@ export default function CustomAttributesFormSection({
       </div>
 
       {suggestedCustomAttributes.length > 0 && (
-        <div className="space-y-2 rounded-md border p-3 bg-muted/30">
-          <FormLabel className="text-xs text-muted-foreground">AI Suggested Attributes:</FormLabel>
+        <div className="space-y-2 rounded-md border border-dashed p-3 bg-muted/30">
+          <FormLabel className="text-sm font-medium text-muted-foreground flex items-center">
+             <Info className="h-4 w-4 mr-2 text-info"/> AI Suggested Attributes (click to add):
+          </FormLabel>
           {suggestedCustomAttributes.map((attr, index) => (
             <div key={`suggested-${index}`} className="flex items-center justify-between text-sm p-1.5 bg-background rounded shadow-sm">
               <div>
@@ -88,7 +90,7 @@ export default function CustomAttributesFormSection({
 
       {customAttributes.length > 0 && (
         <div className="space-y-2 rounded-md border p-3 bg-muted/30">
-          <FormLabel className="text-xs text-muted-foreground">Current Custom Attributes:</FormLabel>
+          <FormLabel className="text-sm font-medium text-muted-foreground">Current Custom Attributes:</FormLabel>
           {customAttributes.map((attr, index) => (
             <div key={index} className="flex items-center justify-between text-sm p-1.5 bg-background rounded shadow-sm">
               <div>
@@ -102,7 +104,7 @@ export default function CustomAttributesFormSection({
           ))}
         </div>
       )}
-      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
+      <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 items-end pt-2">
         <FormItem>
           <FormLabel htmlFor="customAttrKey" className="text-xs">Attribute Key</FormLabel>
           <FormControl>
@@ -128,7 +130,7 @@ export default function CustomAttributesFormSection({
           </FormControl>
         </FormItem>
         <Button type="button" variant="outline" onClick={handleAddCustomAttribute} className="h-9 mt-auto sm:mt-0">
-          <PlusCircle className="mr-2 h-4 w-4" /> Add
+          <PlusCircle className="mr-2 h-4 w-4" /> Add Attribute
         </Button>
       </div>
       <FormField

@@ -17,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu, Loader2, Sparkles } from "lucide-react";
+import { Cpu, Loader2, Sparkles, Info } from "lucide-react";
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 
@@ -78,13 +78,13 @@ export default function SustainabilityComplianceFormSection({
             </FormLabel>
             <FormControl>
               <Textarea 
-                placeholder="e.g., Organic Cotton, Recycled PET" 
+                placeholder="e.g., Organic Cotton, Recycled PET, Aluminum (comma-separated)" 
                 {...field} 
                 rows={3} 
                 onChange={(e) => { field.onChange(e); form.setValue("materialsOrigin", "manual"); }}
               />
             </FormControl>
-            <FormDescription>Primary materials used.</FormDescription>
+            <FormDescription>List primary materials. This helps AI suggest relevant claims.</FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -106,23 +106,29 @@ export default function SustainabilityComplianceFormSection({
             </div>
             <FormControl>
               <Textarea 
-                placeholder="e.g., - Made with 70% recycled materials" 
+                placeholder="e.g., - Made with 70% recycled materials\n- Carbon neutral production" 
                 {...field} 
-                rows={3} 
+                rows={4} 
                 onChange={(e) => { field.onChange(e); form.setValue("sustainabilityClaimsOrigin", "manual"); }}
               />
             </FormControl>
-            <FormDescription>Highlight key sustainability features. Each claim on a new line, optionally start with '- '. AI suggestions will follow this format.</FormDescription>
+            <FormDescription>
+              Enter sustainability claims manually, one per line (optionally start with '- '). Or, use AI suggestions which will be appended.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
       />
       {suggestedClaims.length > 0 && (
-        <div className="space-y-2 pt-2">
-          <p className="text-sm font-medium text-muted-foreground">Click to add suggested claim:</p>
+        <div className="space-y-2 pt-2 border border-dashed p-3 rounded-md bg-muted/30">
+          <FormLabel className="text-sm font-medium text-muted-foreground flex items-center">
+             <Info className="h-4 w-4 mr-2 text-info"/> AI Suggested Claims (click to add to the textarea above):
+          </FormLabel>
           <div className="flex flex-wrap gap-2">
             {suggestedClaims.map((claim, index) => (
-              <Button key={index} type="button" variant="outline" size="sm" onClick={() => handleClaimClick(claim)}>{claim}</Button>
+              <Button key={index} type="button" variant="outline" size="sm" onClick={() => handleClaimClick(claim)} className="bg-background hover:bg-accent/10">
+                {claim}
+              </Button>
             ))}
           </div>
         </div>
@@ -138,11 +144,12 @@ export default function SustainabilityComplianceFormSection({
             </FormLabel>
             <FormControl>
               <Input 
-                placeholder="e.g., A++" 
+                placeholder="e.g., A++, B, Not Applicable" 
                 {...field} 
                 onChange={(e) => { field.onChange(e); form.setValue("energyLabelOrigin", "manual"); }}
               />
             </FormControl>
+            <FormDescription>Specify the product's energy efficiency rating, if applicable.</FormDescription>
             <FormMessage />
           </FormItem>
         )}

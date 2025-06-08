@@ -19,14 +19,14 @@ import React, { useState, useEffect } from "react"; // Added useEffect
 import { useToast } from "@/hooks/use-toast";
 import BasicInfoFormSection from "./form/BasicInfoFormSection";
 import ProductImageFormSection from "./form/ProductImageFormSection";
-import BatteryDetailsFormSection from "./form/BatteryDetailsFormSection"; 
+import BatteryDetailsFormSection from "./form/BatteryDetailsFormSection";
 import {
   handleSuggestNameAI,
   handleSuggestDescriptionAI,
   handleSuggestClaimsAI,
   handleGenerateImageAI,
   handleSuggestSpecificationsAI,
-} from "@/utils/aiFormHelpers.tsx"; 
+} from "@/utils/aiFormHelpers.tsx";
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
@@ -82,11 +82,11 @@ const AiIndicator: React.FC<AiIndicatorProps> = ({ fieldOrigin, fieldName }) => 
 
 
 interface ProductFormProps {
-  id?: string; 
-  initialData?: Partial<InitialProductFormData>; 
+  id?: string;
+  initialData?: Partial<InitialProductFormData>;
   onSubmit: (data: ProductFormData) => Promise<void>;
   isSubmitting?: boolean;
-  isStandalonePage?: boolean; 
+  isStandalonePage?: boolean;
 }
 
 export default function ProductForm({ id, initialData, onSubmit, isSubmitting, isStandalonePage = true }: ProductFormProps) {
@@ -116,7 +116,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
   const { toast } = useToast();
   const [suggestedClaims, setSuggestedClaims] = useState<string[]>([]);
-  
+
   const [isSuggestingName, setIsSuggestingName] = useState(false);
   const [isSuggestingDescription, setIsSuggestingDescription] = useState(false);
   const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
@@ -126,7 +126,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>([]);
   const [currentCustomKey, setCurrentCustomKey] = useState("");
   const [currentCustomValue, setCurrentCustomValue] = useState("");
-  
+
   useEffect(() => {
     if (initialData?.customAttributesJsonString) {
       try {
@@ -167,7 +167,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       });
     }
   }, [initialData, form]);
-  
+
   const handleFormSubmit = (data: ProductFormData) => {
     const dataToSubmit = {
       ...data,
@@ -190,7 +190,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         form.setValue("productDescription", result, { shouldValidate: true });
     }
   };
-  
+
   const callSuggestClaimsAI = async () => {
     const claims = await handleSuggestClaimsAI(form, toast, setIsSuggestingClaims);
     if (claims) {
@@ -206,7 +206,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         form.setValue("specifications", result, { shouldValidate: true });
     }
   };
-  
+
   const anyAISuggestionInProgress = isSuggestingName || isSuggestingDescription || isSuggestingClaims || isGeneratingImage || isSuggestingSpecs;
 
   const handleClaimClick = (claim: string) => {
@@ -217,7 +217,6 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
   const handleAddCustomAttribute = () => {
     if (currentCustomKey.trim() && currentCustomValue.trim()) {
-      // Check for duplicate keys
       if (customAttributes.some(attr => attr.key.toLowerCase() === currentCustomKey.trim().toLowerCase())) {
         toast({
           title: "Duplicate Key",
@@ -266,7 +265,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         <AccordionContent className="pt-4">
           <ProductImageFormSection
             form={form}
-            aiImageHelper={handleGenerateImageAI} 
+            aiImageHelper={handleGenerateImageAI}
             initialImageUrlOrigin={initialData?.imageUrlOrigin}
             toast={toast}
             isGeneratingImageState={isGeneratingImage}
@@ -285,12 +284,12 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           <FormField control={form.control} name="energyLabel" render={({ field }) => ( <FormItem> <FormLabel className="flex items-center">Energy Label <AiIndicator fieldOrigin={initialData?.energyLabelOrigin} fieldName="Energy Label" /></FormLabel> <FormControl><Input placeholder="e.g., A++" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
         </AccordionContent>
       </AccordionItem>
-      
+
       <AccordionItem value="item-3">
         <AccordionTrigger className="text-lg font-semibold">Technical Specifications</AccordionTrigger>
         <AccordionContent className="pt-4">
-           <FormField control={form.control} name="specifications" render={({ field }) => ( 
-            <FormItem> 
+           <FormField control={form.control} name="specifications" render={({ field }) => (
+            <FormItem>
               <div className="flex items-center justify-between">
                 <FormLabel className="flex items-center">Specifications (JSON) <AiIndicator fieldOrigin={initialData?.specificationsOrigin} fieldName="Specifications" /></FormLabel>
                 <Button type="button" variant="ghost" size="sm" onClick={callSuggestSpecificationsAI} disabled={anyAISuggestionInProgress || !!isSubmitting}>
@@ -298,10 +297,10 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
                   <span className="ml-2">{isSuggestingSpecs ? "Suggesting..." : "Suggest Specs"}</span>
                 </Button>
               </div>
-              <FormControl><Textarea placeholder='e.g., { "color": "blue", "weight": "10kg" }' {...field} rows={5} /></FormControl> 
-              <FormDescription>Enter as a JSON object. AI can help suggest a structure. You can pretty-format JSON using online tools before pasting.</FormDescription> 
-              <FormMessage /> 
-            </FormItem> 
+              <FormControl><Textarea placeholder='e.g., { "color": "blue", "weight": "10kg" }' {...field} rows={5} /></FormControl>
+              <FormDescription>Enter as a JSON object. AI can help suggest a structure. You can pretty-format JSON using online tools before pasting.</FormDescription>
+              <FormMessage />
+            </FormItem>
             )}/>
         </AccordionContent>
       </AccordionItem>
@@ -339,10 +338,10 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             <FormItem>
               <FormLabel htmlFor="customAttrKey" className="text-xs">Attribute Key</FormLabel>
               <FormControl>
-                <Input 
-                  id="customAttrKey" 
-                  value={currentCustomKey} 
-                  onChange={(e) => setCurrentCustomKey(e.target.value)} 
+                <Input
+                  id="customAttrKey"
+                  value={currentCustomKey}
+                  onChange={(e) => setCurrentCustomKey(e.target.value)}
                   placeholder="e.g., Color Code"
                   className="h-9"
                 />
@@ -351,10 +350,10 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             <FormItem>
               <FormLabel htmlFor="customAttrValue" className="text-xs">Attribute Value</FormLabel>
               <FormControl>
-                <Input 
-                  id="customAttrValue" 
-                  value={currentCustomValue} 
-                  onChange={(e) => setCurrentCustomValue(e.target.value)} 
+                <Input
+                  id="customAttrValue"
+                  value={currentCustomValue}
+                  onChange={(e) => setCurrentCustomValue(e.target.value)}
                   placeholder="e.g., #FF0000"
                   className="h-9"
                 />
@@ -364,6 +363,15 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
               <PlusCircle className="mr-2 h-4 w-4" /> Add
             </Button>
           </div>
+           <FormField
+            control={form.control}
+            name="customAttributesJsonString"
+            render={({ field }) => (
+              <FormItem className="hidden"> {/* Hidden field to store JSON string for form submission */}
+                <FormControl><Input type="hidden" {...field} value={JSON.stringify(customAttributes)} /></FormControl>
+              </FormItem>
+            )}
+          />
         </AccordionContent>
       </AccordionItem>
     </Accordion>
@@ -396,3 +404,4 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   );
 }
 
+    

@@ -37,7 +37,7 @@ export interface InitialProductFormData extends ProductFormData {
   stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
   carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
   recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
-  customAttributesJsonString?: string; // Added for custom attributes
+  // customAttributesJsonString is already part of ProductFormData
   // imageUrlOrigin is now part of ProductFormData
 }
 
@@ -69,7 +69,7 @@ interface StoredUserProduct extends ProductFormData { // Now includes imageUrlOr
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
-  customAttributesJsonString?: string; // Added for storing custom attributes
+  // customAttributesJsonString is part of ProductFormData
 }
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -102,20 +102,20 @@ export default function AddNewProductPage() {
   const isEditMode = !!editProductId;
 
   const [file, setFile] = useState<File | null>(null);
-  const [documentType, setDocumentType] = useState<string>("invoice"); 
+  const [documentType, setDocumentType] = useState<string>("invoice");
   const [isLoadingAi, setIsLoadingAi] = useState(false);
   const [isSubmittingProduct, setIsSubmittingProduct] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState(isEditMode ? "manual" : "ai-extraction");
   const [aiExtractionAppliedSuccessfully, setAiExtractionAppliedSuccessfully] = useState(false);
-  
+
   const defaultFormState: Partial<InitialProductFormData> = {
     productName: "", gtin: "", productDescription: "", manufacturer: "", modelNumber: "",
     materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
     imageUrl: "", imageHint: "", imageUrlOrigin: undefined,
     batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined,
-    customAttributesJsonString: "", // Added for custom attributes
+    customAttributesJsonString: "",
     productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined,
     modelNumberOrigin: undefined, materialsOrigin: undefined, sustainabilityClaimsOrigin: undefined,
     energyLabelOrigin: undefined, specificationsOrigin: undefined, batteryChemistryOrigin: undefined,
@@ -132,17 +132,16 @@ export default function AddNewProductPage() {
       const productToEdit = userProducts.find(p => p.id === editProductId);
       if (productToEdit) {
         const editData: Partial<InitialProductFormData> = {
-          ...productToEdit, 
+          ...productToEdit,
           stateOfHealth: productToEdit.stateOfHealth ?? undefined,
           carbonFootprintManufacturing: productToEdit.carbonFootprintManufacturing ?? undefined,
           recycledContentPercentage: productToEdit.recycledContentPercentage ?? undefined,
-          specificationsOrigin: productToEdit.specificationsOrigin, // Ensure this is loaded
-          customAttributesJsonString: productToEdit.customAttributesJsonString || "", // Load custom attributes
-          // imageUrlOrigin is already part of productToEdit due to StoredUserProduct extending ProductFormData
+          specificationsOrigin: productToEdit.specificationsOrigin,
+          customAttributesJsonString: productToEdit.customAttributesJsonString || "",
         };
         setCurrentProductDataForForm(editData);
         setActiveTab("manual");
-        setAiExtractionAppliedSuccessfully(false); 
+        setAiExtractionAppliedSuccessfully(false);
       } else {
         toast({ title: "Error", description: "Product not found for editing.", variant: "destructive" });
         router.push("/products/new");
@@ -157,10 +156,10 @@ export default function AddNewProductPage() {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
       setFile(event.target.files[0]);
-      setCurrentProductDataForForm(prev => ({ 
-        ...defaultFormState, // Reset all fields except gtin and category if they were manually entered before file selection
-        gtin: prev.gtin, 
-        productCategory: prev.productCategory, 
+      setCurrentProductDataForForm(prev => ({
+        ...defaultFormState,
+        gtin: prev.gtin,
+        productCategory: prev.productCategory,
       }));
       setError(null);
       setAiExtractionAppliedSuccessfully(false);
@@ -179,45 +178,43 @@ export default function AddNewProductPage() {
     try {
       const documentDataUri = await fileToDataUri(file);
       const result = await extractProductData({ documentDataUri, documentType });
-      
+
       const aiInitialFormData: Partial<InitialProductFormData> = {};
       if (result.productName) { aiInitialFormData.productName = result.productName; aiInitialFormData.productNameOrigin = 'AI_EXTRACTED'; }
       if (result.productDescription) { aiInitialFormData.productDescription = result.productDescription; aiInitialFormData.productDescriptionOrigin = 'AI_EXTRACTED'; }
       if (result.manufacturer) { aiInitialFormData.manufacturer = result.manufacturer; aiInitialFormData.manufacturerOrigin = 'AI_EXTRACTED'; }
       if (result.modelNumber) { aiInitialFormData.modelNumber = result.modelNumber; aiInitialFormData.modelNumberOrigin = 'AI_EXTRACTED'; }
-      
-      if (result.specifications && Object.keys(result.specifications).length > 0) { 
-        aiInitialFormData.specifications = JSON.stringify(result.specifications, null, 2); 
-        aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED'; 
-      } else { 
-        aiInitialFormData.specifications = ""; 
-        if (result.specifications) aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED'; // Mark origin even if empty obj from AI
+
+      if (result.specifications && Object.keys(result.specifications).length > 0) {
+        aiInitialFormData.specifications = JSON.stringify(result.specifications, null, 2);
+        aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED';
+      } else {
+        aiInitialFormData.specifications = "";
+        if (result.specifications) aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED';
       }
 
       if (result.energyLabel) { aiInitialFormData.energyLabel = result.energyLabel; aiInitialFormData.energyLabelOrigin = 'AI_EXTRACTED'; }
-      
+
       if (result.batteryChemistry) { aiInitialFormData.batteryChemistry = result.batteryChemistry; aiInitialFormData.batteryChemistryOrigin = 'AI_EXTRACTED'; }
       if (result.stateOfHealth !== undefined && result.stateOfHealth !== null) { aiInitialFormData.stateOfHealth = result.stateOfHealth; aiInitialFormData.stateOfHealthOrigin = 'AI_EXTRACTED'; }
       if (result.carbonFootprintManufacturing !== undefined && result.carbonFootprintManufacturing !== null) { aiInitialFormData.carbonFootprintManufacturing = result.carbonFootprintManufacturing; aiInitialFormData.carbonFootprintManufacturingOrigin = 'AI_EXTRACTED'; }
       if (result.recycledContentPercentage !== undefined && result.recycledContentPercentage !== null) { aiInitialFormData.recycledContentPercentage = result.recycledContentPercentage; aiInitialFormData.recycledContentPercentageOrigin = 'AI_EXTRACTED'; }
-      
-      // Note: AI Document Extraction does not currently provide imageUrl or imageHint.
-      // imageUrlOrigin will be handled if/when AI image generation is used from the form.
-      aiInitialFormData.imageUrl = ""; // Ensure it's reset if AI doesn't provide it
+
+      aiInitialFormData.imageUrl = "";
       aiInitialFormData.imageHint = "";
       aiInitialFormData.imageUrlOrigin = undefined;
-      aiInitialFormData.customAttributesJsonString = ""; // Reset custom attributes
+      aiInitialFormData.customAttributesJsonString = "";
 
       setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData}));
       setAiExtractionAppliedSuccessfully(true);
-      
+
       toast({
         title: "Data Extracted Successfully",
         description: "Review and complete the extracted information in the form now shown in 'Manual Entry / Review'. Fields suggested by AI are marked.",
         variant: "default",
         action: <CheckCircle2 className="text-green-500" />,
       });
-      setActiveTab("manual"); 
+      setActiveTab("manual");
     } catch (err) {
       console.error("Extraction failed:", err);
       const errorMessage = err instanceof Error ? err.message : "An unknown error occurred during extraction.";
@@ -227,10 +224,10 @@ export default function AddNewProductPage() {
       setIsLoadingAi(false);
     }
   };
-  
+
   const handleProductFormSubmit = async (formDataFromForm: ProductFormData) => {
     setIsSubmittingProduct(true);
-    
+
     try {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
       let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
@@ -256,7 +253,7 @@ export default function AddNewProductPage() {
         stateOfHealth: formDataFromForm.stateOfHealth !== undefined && formDataFromForm.stateOfHealth !== null ? formDataFromForm.stateOfHealth : dataPriorToThisEdit.stateOfHealth,
         carbonFootprintManufacturing: formDataFromForm.carbonFootprintManufacturing !== undefined && formDataFromForm.carbonFootprintManufacturing !== null ? formDataFromForm.carbonFootprintManufacturing : dataPriorToThisEdit.carbonFootprintManufacturing,
         recycledContentPercentage: formDataFromForm.recycledContentPercentage !== undefined && formDataFromForm.recycledContentPercentage !== null ? formDataFromForm.recycledContentPercentage : dataPriorToThisEdit.recycledContentPercentage,
-        customAttributesJsonString: formDataFromForm.customAttributesJsonString || dataPriorToThisEdit.customAttributesJsonString, // Save custom attributes
+        customAttributesJsonString: formDataFromForm.customAttributesJsonString || dataPriorToThisEdit.customAttributesJsonString,
 
         productNameOrigin: determineOrigin(formDataFromForm.productName, dataPriorToThisEdit.productName, dataPriorToThisEdit.productNameOrigin),
         productDescriptionOrigin: determineOrigin(formDataFromForm.productDescription, dataPriorToThisEdit.productDescription, dataPriorToThisEdit.productDescriptionOrigin),
@@ -270,7 +267,7 @@ export default function AddNewProductPage() {
         stateOfHealthOrigin: determineOrigin(formDataFromForm.stateOfHealth, dataPriorToThisEdit.stateOfHealth, dataPriorToThisEdit.stateOfHealthOrigin),
         carbonFootprintManufacturingOrigin: determineOrigin(formDataFromForm.carbonFootprintManufacturing, dataPriorToThisEdit.carbonFootprintManufacturing, dataPriorToThisEdit.carbonFootprintManufacturingOrigin),
         recycledContentPercentageOrigin: determineOrigin(formDataFromForm.recycledContentPercentage, dataPriorToThisEdit.recycledContentPercentage, dataPriorToThisEdit.recycledContentPercentageOrigin),
-        
+
         status: (isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.status) : "Draft") || "Draft",
         compliance: (isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.compliance) : "N/A") || "N/A",
         lastUpdated: new Date().toISOString(),
@@ -296,11 +293,11 @@ export default function AddNewProductPage() {
         toast({ title: "Product Saved", description: `${productToSave.productName} has been saved.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
         router.push('/products');
       }
-      
-      setCurrentProductDataForForm(defaultFormState); 
+
+      setCurrentProductDataForForm(defaultFormState);
       setAiExtractionAppliedSuccessfully(false);
       if (!isEditMode) setActiveTab("ai-extraction");
-      
+
     } catch (e) {
       console.error("Failed to save/update product:", e);
       const action = isEditMode ? "updating" : "saving";
@@ -318,7 +315,7 @@ export default function AddNewProductPage() {
           {isEditMode ? "Edit Product" : "Add New Product"}
         </h1>
         <p className="text-muted-foreground">
-          {isEditMode 
+          {isEditMode
             ? `Modify the details for product ID: ${editProductId}. Fields previously suggested by AI document extraction are marked with a CPU icon.`
             : "Create a Digital Product Passport by extracting data from a document using AI, or by filling the form manually."}
         </p>
@@ -327,14 +324,14 @@ export default function AddNewProductPage() {
       <Tabs value={activeTab} onValueChange={(newTab) => {
           setActiveTab(newTab);
           if (newTab !== "manual" && aiExtractionAppliedSuccessfully) {
-            setAiExtractionAppliedSuccessfully(false); 
+            setAiExtractionAppliedSuccessfully(false);
           }
       }} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:w-[400px]">
           <TabsTrigger value="ai-extraction" disabled={isEditMode}>AI Data Extraction</TabsTrigger>
           <TabsTrigger value="manual">{isEditMode ? "Edit Product Details" : "Manual Entry / Review"}</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="manual" className="mt-6">
            {(aiExtractionAppliedSuccessfully || isEditMode) && activeTab === 'manual' && (
             <Alert className="mb-6 border-info bg-info/10 text-info-foreground">
@@ -343,19 +340,19 @@ export default function AddNewProductPage() {
                 {isEditMode ? "Editing Product" : "AI Data Populated"}
               </AlertTitle>
               <AlertDescription>
-                {isEditMode 
+                {isEditMode
                   ? "You are editing an existing product. Fields suggested by AI document extraction or generation are marked."
                   : "Some fields below have been pre-filled based on the AI data extraction. Please review all fields carefully and complete any missing information."}
                 Fields suggested by AI are marked with a <Cpu className="inline h-4 w-4 align-middle" /> icon. Modifying these fields will change their origin to 'manual'.
               </AlertDescription>
             </Alert>
           )}
-          <ProductForm 
+          <ProductForm
             onSubmit={handleProductFormSubmit}
             isSubmitting={isSubmittingProduct}
-            initialData={currentProductDataForForm} 
+            initialData={currentProductDataForForm}
             isStandalonePage={true}
-            key={editProductId || 'new'} 
+            key={editProductId || 'new'}
           />
         </TabsContent>
 
@@ -386,7 +383,7 @@ export default function AddNewProductPage() {
                   <Label htmlFor="document-type">Document Type</Label>
                   <Input id="document-type" value={documentType} onChange={(e) => setDocumentType(e.target.value)} placeholder="e.g., invoice, specification, battery_spec_sheet" />
                 </div>
-                
+
                 <Button onClick={handleExtractData} disabled={isLoadingAi || !file} variant="secondary">
                   {isLoadingAi ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Cpu className="mr-2 h-4 w-4" /> )}
                   {isLoadingAi ? "Extracting Data..." : "Extract Data with AI"}
@@ -418,3 +415,4 @@ export default function AddNewProductPage() {
   );
 }
 
+    

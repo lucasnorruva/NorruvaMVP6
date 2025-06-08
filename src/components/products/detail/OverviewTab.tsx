@@ -37,6 +37,20 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   const imageDisplayUrl = product.imageUrl || "https://placehold.co/400x300.png?text=No+Image";
   const aiHint = getAiHintForImage(product);
 
+  let parsedSpecifications: Record<string, any> = {};
+  if (product.specifications && typeof product.specifications === 'string') {
+      try {
+          parsedSpecifications = JSON.parse(product.specifications);
+      } catch (e) {
+          console.warn("Failed to parse specifications JSON string, displaying as raw string or handling as error.", e);
+          // Optionally, display raw string or specific error message
+          // For now, if it fails to parse, it will be caught by the Object.keys check below
+      }
+  } else if (typeof product.specifications === 'object' && product.specifications !== null) {
+      parsedSpecifications = product.specifications;
+  }
+
+
   return (
     <div className="grid md:grid-cols-3 gap-6">
       {/* Left Column: Image and Identifiers */}
@@ -162,8 +176,8 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             </Card>
           )}
         </div>
-        
-        {product.specifications && Object.keys(product.specifications).length > 0 ? (
+
+        {Object.keys(parsedSpecifications).length > 0 ? (
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center">
@@ -173,7 +187,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             </CardHeader>
             <CardContent>
               <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-2 text-sm">
-                {Object.entries(product.specifications).map(([key, value]) => (
+                {Object.entries(parsedSpecifications).map(([key, value]) => (
                   <div key={key} className="flex">
                     <dt className="font-medium text-muted-foreground w-1/3 truncate capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</dt>
                     <dd className="text-foreground/90 w-2/3">{String(value)}</dd>
@@ -216,3 +230,4 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   );
 }
 
+    

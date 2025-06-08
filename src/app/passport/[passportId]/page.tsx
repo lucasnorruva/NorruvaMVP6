@@ -1,5 +1,5 @@
 
-"use client"; 
+"use client";
 
 // --- File: page.tsx (Public Product Passport Viewer) ---
 // Description: Main page component for displaying the public view of a Digital Product Passport.
@@ -11,16 +11,16 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import * as LucideIcons from 'lucide-react'; // Import all icons as LucideIcons
-import { 
-  Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint, 
+import {
+  Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint,
   ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot
 } from 'lucide-react'; // Keep specific imports for direct use or if iconMap was very selective
 import { Logo } from '@/components/icons/Logo';
-import React, { useState, useEffect } from 'react'; 
+import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useRole } from '@/contexts/RoleContext';
-import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification } from '@/types/dpp';
-import { MOCK_PUBLIC_PASSPORTS } from '@/types/dpp'; 
+import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification, CustomAttribute } from '@/types/dpp';
+import { MOCK_PUBLIC_PASSPORTS } from '@/types/dpp';
 import RoleSpecificCard from '@/components/passport/RoleSpecificCard';
 
 // Removed manual iconMap
@@ -51,13 +51,17 @@ export default function PublicPassportPage({ params }: Props) {
   const [product, setProduct] = useState<PublicProductInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
-  const { currentRole } = useRole(); 
+  const { currentRole } = useRole();
 
   useEffect(() => {
     // Simulate fetching product data
     const fetchedProduct = MOCK_PUBLIC_PASSPORTS[params.passportId];
     if (fetchedProduct) {
-      setProduct(fetchedProduct);
+      // Ensure customAttributes is always an array, even if undefined in mock
+      setProduct({
+        ...fetchedProduct,
+        customAttributes: fetchedProduct.customAttributes || []
+      });
     }
     setIsLoading(false);
   }, [params.passportId]);
@@ -79,7 +83,7 @@ export default function PublicPassportPage({ params }: Props) {
   };
 
   const displayProductStory = isStoryExpanded || product.productStory.length <= STORY_TRUNCATE_LENGTH
-    ? product.productStory 
+    ? product.productStory
     : `${product.productStory.substring(0, STORY_TRUNCATE_LENGTH)}...`;
 
   const getEbsiStatusBadge = (status?: 'verified' | 'pending' | 'not_verified' | 'error') => {
@@ -96,10 +100,10 @@ export default function PublicPassportPage({ params }: Props) {
         return <Badge variant="secondary">Unknown</Badge>;
     }
   };
-  
+
   const aiCopilotQuery = encodeURIComponent(`What are the key compliance requirements for a product like '${product.productName}' in the '${product.category}' category? Also, what are specific considerations for its EBSI status of '${product.ebsiStatus || 'N/A'}'?`);
   const aiCopilotLink = `/copilot?contextQuery=${aiCopilotQuery}`;
-  
+
   const aiHintForImage = getAiHintForPublicImage(product);
 
   return (
@@ -147,9 +151,9 @@ export default function PublicPassportPage({ params }: Props) {
                 <CardContent>
                   <p className="text-foreground leading-relaxed">{displayProductStory}</p>
                   {product.productStory.length > STORY_TRUNCATE_LENGTH && (
-                    <Button 
-                      variant="link" 
-                      onClick={toggleStoryExpansion} 
+                    <Button
+                      variant="link"
+                      onClick={toggleStoryExpansion}
                       className="p-0 h-auto mt-2 text-primary hover:text-primary/80"
                     >
                       {isStoryExpanded ? "Read Less" : "Read More"}
@@ -187,7 +191,7 @@ export default function PublicPassportPage({ params }: Props) {
               </Card>
             </div>
           </div>
-          
+
           <div className="mt-10 pt-8 border-t border-border text-center">
               <Link href={aiCopilotLink} passHref>
                 <Button variant="secondary" size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
@@ -222,7 +226,7 @@ export default function PublicPassportPage({ params }: Props) {
                   )}
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-xl text-primary flex items-center">
@@ -292,7 +296,7 @@ export default function PublicPassportPage({ params }: Props) {
                 </CardContent>
               </Card>
             </div>
-            
+
             {product.customAttributes && product.customAttributes.length > 0 && (
               <div className="mt-8 pt-6 border-t border-border">
                 <Card className="border-0 shadow-none">
@@ -316,7 +320,7 @@ export default function PublicPassportPage({ params }: Props) {
             )}
 
             <div className="mt-8 pt-6 border-t border-border">
-                 <Card className="border-0 shadow-none"> {/* Removed md:col-span-2 lg:col-span-1 for full width */}
+                 <Card className="border-0 shadow-none">
                     <CardHeader className="px-0 pt-0 pb-4">
                     <CardTitle className="text-xl text-primary flex items-center">
                         <Fingerprint className="mr-2 h-6 w-6" /> Blockchain &amp; EBSI Verification
@@ -382,7 +386,7 @@ export default function PublicPassportPage({ params }: Props) {
             </div>
           </div>
         </div>
-        <RoleSpecificCard product={product} /> 
+        <RoleSpecificCard product={product} />
       </main>
 
       <footer className="py-8 bg-foreground text-background text-center mt-12">
@@ -395,3 +399,4 @@ export default function PublicPassportPage({ params }: Props) {
   );
 }
 
+    

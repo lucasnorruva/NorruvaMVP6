@@ -359,7 +359,7 @@ export interface SimpleProductDetail {
   imageHint?: string;
   keySustainabilityPoints?: string[];
   keyCompliancePoints?: string[];
-  specifications?: Record<string, string>;
+  specifications?: Record<string, string> | string; // Allow string for JSON
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
   repairability?: { score: number; scale: number; detailsUrl?: string };
@@ -472,7 +472,7 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     complianceSummary: {
       overallStatus: "Compliant",
       eprel: { id: "EPREL12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-07-01T00:00:00Z" },
-      ebsi: { status: "Verified", verificationId: "EBSI-VC-XYZ-001", transactionUrl: "#ebsi-tx-001", lastChecked: "2024-07-05T00:00:00Z" },
+      ebsi: { status: "Verified", verificationId: "EBSI-VC-XYZ-00123", transactionUrl: "#ebsi-tx-001", lastChecked: "2024-07-05T00:00:00Z" },
       specificRegulations: [
         { regulationName: "EU Ecodesign 2019/2019", status: "Compliant", verificationId: "ECOD001", lastChecked: "2024-06-15T00:00:00Z", detailsUrl: "#ecodesign-report" },
         { regulationName: "RoHS Directive 2011/65/EU", status: "Compliant", lastChecked: "2024-06-10T00:00:00Z" },
@@ -628,6 +628,7 @@ export interface DisplayableProduct {
   productDescription?: string;
   imageUrl?: string;
   imageHint?: string;
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual'; // Added for image
   materials?: string;
   sustainabilityClaims?: string;
   energyLabel?: string;
@@ -800,5 +801,3 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ]
   }
 };
-
-    

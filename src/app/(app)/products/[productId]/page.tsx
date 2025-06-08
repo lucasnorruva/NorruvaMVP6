@@ -54,25 +54,20 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             lastChecked: dpp.metadata.last_updated,
         });
     }
-
     if (dpp.compliance.battery_regulation) {
         const br = dpp.compliance.battery_regulation;
-        let notesValue = "CF: N/A";
-        if (br.carbonFootprint) {
-            const cfValue = br.carbonFootprint.value !== undefined ? br.carbonFootprint.value : 'N/A';
-            const cfUnit = br.carbonFootprint.unit || '';
-            notesValue = `CF: ${cfValue} ${cfUnit}`.trim();
-        }
+        // const cfValue = br.carbonFootprint?.value ?? 'N/A';
+        // const cfUnit = br.carbonFootprint?.unit ?? '';
+        // const notesValue = `CF: ${cfValue} ${cfUnit}`.trim();
 
         specificRegulations.push({
             regulationName: "EU Battery Regulation",
             status: br.status as ComplianceDetailItem['status'],
             verificationId: br.batteryPassportId || br.vcId,
-            lastChecked: dpp.metadata.last_updated, // Comma here is critical
-            notes: notesValue
+            lastChecked: dpp.metadata.last_updated,
+            // notes: notesValue, // Temporarily removed for debugging
         });
     }
-
 
     const complianceOverallStatusDetails = getOverallComplianceDetails(dpp);
 
@@ -411,3 +406,4 @@ export default function ProductDetailPage() {
   );
 }
 
+    

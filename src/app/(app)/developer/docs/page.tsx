@@ -76,7 +76,7 @@ export default function DeveloperDocumentationHubPage() {
               <li><Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline flex items-center"><Share2 className="mr-2 h-4 w-4" />EBSI Integration Overview</Link></li>
               <li><Link href="/developer/docs/regulatory-alignment" className="text-primary hover:underline flex items-center"><Scale className="mr-2 h-4 w-4" />Regulatory Alignment (ESPR, EPREL)</Link></li>
               <li><Link href="/developer/docs/data-management-best-practices" className="text-primary hover:underline flex items-center"><LayersIcon className="mr-2 h-4 w-4" />Data Management Best Practices</Link></li>
-              <li><Link href="/developer/guides/auditor-integration" className="text-primary hover:underline flex items-center"><ShieldCheck className="mr-2 h-4 w-4" />Auditor Integration</Link></li>
+              <li><Link href="/developer/guides/auditor-integration" className="text-primary hover:underline flex items-center"><ShieldCheck className="mr-2 h-4 w-4" />Auditor Integration <Badge variant="outline" className="ml-2 text-xs bg-yellow-100 text-yellow-700 border-yellow-300">Coming Soon</Badge></Link></li>
             </ul>
           </div>
           <div className="space-y-6"> {/* This column will stack its internal groups */}

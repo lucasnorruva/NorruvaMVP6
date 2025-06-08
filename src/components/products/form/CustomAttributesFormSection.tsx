@@ -8,7 +8,7 @@ import type { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, XCircle } from "lucide-react";
+import { PlusCircle, XCircle, Sparkles, Loader2 } from "lucide-react";
 import type { CustomAttribute } from "@/types/dpp";
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { ToastInput } from "@/hooks/use-toast";
@@ -25,7 +25,13 @@ interface CustomAttributesFormSectionProps {
   setCurrentCustomValue: React.Dispatch<React.SetStateAction<string>>;
   handleAddCustomAttribute: () => void;
   handleRemoveCustomAttribute: (keyToRemove: string) => void;
-  form: UseFormReturn<ProductFormData>; // To set the hidden JSON string field
+  form: UseFormReturn<ProductFormData>;
+  isSuggestingCustomAttrs: boolean;
+  callSuggestCustomAttributesAI: () => Promise<void>;
+  suggestedCustomAttributes: CustomAttribute[];
+  handleAddSuggestedCustomAttribute: (attribute: CustomAttribute) => void;
+  anyAISuggestionInProgress: boolean;
+  isSubmittingForm?: boolean;
 }
 
 export default function CustomAttributesFormSection({
@@ -37,10 +43,15 @@ export default function CustomAttributesFormSection({
   setCurrentCustomValue,
   handleAddCustomAttribute,
   handleRemoveCustomAttribute,
-  form, // Used to set the hidden field
+  form,
+  isSuggestingCustomAttrs,
+  callSuggestCustomAttributesAI,
+  suggestedCustomAttributes,
+  handleAddSuggestedCustomAttribute,
+  anyAISuggestionInProgress,
+  isSubmittingForm,
 }: CustomAttributesFormSectionProps) {
 
-  // This effect updates the hidden form field whenever local customAttributes change
   React.useEffect(() => {
     form.setValue("customAttributesJsonString", JSON.stringify(customAttributes), { shouldValidate: true });
   }, [customAttributes, form]);
@@ -51,6 +62,30 @@ export default function CustomAttributesFormSection({
       <p className="text-sm text-muted-foreground">
         Define additional key-value pairs specific to this product.
       </p>
+      <div className="flex justify-end">
+        <Button type="button" variant="ghost" size="sm" onClick={callSuggestCustomAttributesAI} disabled={anyAISuggestionInProgress || !!isSubmittingForm}>
+            {isSuggestingCustomAttrs ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
+            <span className="ml-2">{isSuggestingCustomAttrs ? "Suggesting..." : "Suggest Attributes"}</span>
+        </Button>
+      </div>
+
+      {suggestedCustomAttributes.length > 0 && (
+        <div className="space-y-2 rounded-md border p-3 bg-muted/30">
+          <FormLabel className="text-xs text-muted-foreground">AI Suggested Attributes:</FormLabel>
+          {suggestedCustomAttributes.map((attr, index) => (
+            <div key={`suggested-${index}`} className="flex items-center justify-between text-sm p-1.5 bg-background rounded shadow-sm">
+              <div>
+                <span className="font-medium">{attr.key}:</span>
+                <span className="text-muted-foreground ml-1">{attr.value}</span>
+              </div>
+              <Button type="button" variant="outline" size="xs" onClick={() => handleAddSuggestedCustomAttribute(attr)} className="h-6 px-2 py-1">
+                <PlusCircle className="mr-1 h-3 w-3" /> Add
+              </Button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {customAttributes.length > 0 && (
         <div className="space-y-2 rounded-md border p-3 bg-muted/30">
           <FormLabel className="text-xs text-muted-foreground">Current Custom Attributes:</FormLabel>
@@ -100,8 +135,6 @@ export default function CustomAttributesFormSection({
         control={form.control}
         name="customAttributesJsonString"
         render={({ field }) => (
-          // This field is now managed by the useEffect hook above.
-          // It needs to be registered with react-hook-form for submission.
           <FormItem className="hidden">
             <FormControl><Input type="hidden" {...field} /></FormControl>
           </FormItem>

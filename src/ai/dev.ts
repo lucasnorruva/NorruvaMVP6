@@ -13,5 +13,6 @@ import '@/ai/flows/generate-csrd-summary-flow.ts';
 import '@/ai/flows/generate-product-name-flow.ts'; 
 import '@/ai/flows/generate-product-description-flow.ts';
 import '@/ai/flows/generate-product-specifications-flow.ts';
+import '@/ai/flows/generate-custom-attributes-flow.ts';
 
 

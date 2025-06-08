@@ -11,6 +11,8 @@ import { generateProductDescription } from "@/ai/flows/generate-product-descript
 import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow";
 import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
 import { generateProductSpecifications } from "@/ai/flows/generate-product-specifications-flow";
+import { generateCustomAttributes } from "@/ai/flows/generate-custom-attributes-flow"; // New import
+import type { CustomAttribute } from "@/types/dpp"; // New import
 import type { ToastInput } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";
 
@@ -189,6 +191,45 @@ export async function handleSuggestSpecificationsAI(
     const iconElement = <AlertTriangle className="text-white" />;
     toast({
       title: "Error Suggesting Specifications",
+      description: error instanceof Error ? error.message : "An unknown error occurred.",
+      variant: "destructive",
+      action: iconElement,
+    });
+    return null;
+  } finally {
+    setLoadingState(false);
+  }
+}
+
+export async function handleSuggestCustomAttributesAI(
+  form: UseFormReturn<ProductFormData>,
+  toast: ToastFn,
+  setLoadingState: (loading: boolean) => void
+): Promise<CustomAttribute[] | null> {
+  setLoadingState(true);
+  const { productName, productCategory, productDescription } = form.getValues();
+  if (!productName && !productCategory && !productDescription) {
+    toast({ title: "Input Required", description: "Please provide product name, category, or description to suggest custom attributes.", variant: "destructive" });
+    setLoadingState(false);
+    return null;
+  }
+  try {
+    const result = await generateCustomAttributes({
+      productName: productName || "",
+      productCategory: productCategory || undefined,
+      productDescription: productDescription || undefined,
+    });
+    if (result.customAttributes.length === 0) {
+        toast({ title: "No specific attributes suggested.", description: "Try adding more product details." });
+    } else {
+        toast({ title: "Custom Attributes Suggested!", description: `${result.customAttributes.length} custom attributes suggested by AI.`, variant: "default" });
+    }
+    return result.customAttributes;
+  } catch (error) {
+    console.error("Failed to suggest custom attributes:", error);
+    const iconElement = <AlertTriangle className="text-white" />;
+    toast({
+      title: "Error Suggesting Attributes",
       description: error instanceof Error ? error.message : "An unknown error occurred.",
       variant: "destructive",
       action: iconElement,

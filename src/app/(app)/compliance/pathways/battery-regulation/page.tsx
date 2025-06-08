@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Added Select
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Lightbulb, HelpCircle, CheckCircle, Loader2, Info, Recycle, Handshake } from 'lucide-react';
+import { Lightbulb, HelpCircle, CheckCircle, Loader2, Info, Recycle, Handshake, PackageCheck, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 // import { queryComplianceCopilot } from '@/ai/flows/compliance-copilot-flow'; // For future integration
 
@@ -28,7 +28,7 @@ const euBatteryRegulationSteps: WizardStep[] = [
   { id: "step5", title: "Performance & Durability", description: "Detail battery performance characteristics." },
   { id: "step6", title: "Recycled Content", description: "Declare the percentage of recycled content for key materials." },
   { id: "step7", title: "Supply Chain Due Diligence", description: "Outline due diligence policies for responsible sourcing of raw materials." },
-  { id: "step8", title: "Collection & Recycling", description: "Information on EOL management." },
+  { id: "step8", title: "Collection & Recycling", description: "Information on EOL management, producer responsibility, and recycling/recovery targets." },
   { id: "step9", title: "Review & Submit", description: "Verify all information and prepare for submission." },
 ];
 
@@ -71,6 +71,11 @@ export default function BatteryRegulationPathwayPage() {
     step7_dueDiligencePolicies: "",
     step7_isReportPublic: "no",
     step7_publicReportUrl: "",
+    step8_producerResponsibilityStatement: "",
+    step8_collectionRecyclingInfoUrl: "",
+    step8_takeBackSchemesDescription: "",
+    step8_recyclingEfficiencyTargetMet: "not_yet_assessed",
+    step8_materialRecoveryTargetsMet: "not_yet_assessed",
   });
   const [isLoadingCopilot, setIsLoadingCopilot] = useState(false);
   const { toast } = useToast();
@@ -113,6 +118,8 @@ export default function BatteryRegulationPathwayPage() {
         mockResponseDescription = `For Recycled Content, accurately declare the percentage by weight of recovered cobalt, lead, lithium, and nickel used in active materials of the battery. This information is crucial for demonstrating circularity. Specify the data source and methodology for these declarations. Refer to Annex VII of the EU Battery Regulation for minimum thresholds and calculation methodologies. Providing a URL to verification documents is recommended.`;
     } else if (stepContext === euBatteryRegulationSteps[6].title) { // Supply Chain Due Diligence
         mockResponseDescription = `For Supply Chain Due Diligence, describe your policies for responsible sourcing of raw materials, especially Cobalt, Lithium, Natural Graphite, and Nickel. Align with OECD Due Diligence Guidance. If you have a public report on your due diligence activities, provide a link. This is crucial for demonstrating ethical and sustainable sourcing practices as required by Annex X of the EU Battery Regulation.`;
+    } else if (stepContext === euBatteryRegulationSteps[7].title) { // Collection & Recycling
+        mockResponseDescription = `For Collection & Recycling, detail how producer responsibility obligations are met. Provide a URL to information on collection and recycling schemes. Describe take-back systems and report on achievement of recycling efficiency and material recovery targets as per Annex XII of the EU Battery Regulation. This includes targets for Cobalt, Copper, Lead, Lithium, and Nickel recovery.`;
     }
 
 
@@ -446,6 +453,59 @@ export default function BatteryRegulationPathwayPage() {
             </CardContent>
           </Card>
         );
+    case "step8":
+        return (
+            <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center"><PackageCheck className="mr-2 h-5 w-5 text-primary" />{euBatteryRegulationSteps[7].title}</CardTitle>
+                <CardDescription>{euBatteryRegulationSteps[7].description}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+                <div>
+                    <Label htmlFor="step8_producerResponsibilityStatement">Producer Responsibility Statement</Label>
+                    <Textarea id="step8_producerResponsibilityStatement" value={formData.step8_producerResponsibilityStatement || ""} onChange={(e) => handleInputChange("step8", "producerResponsibilityStatement", e.target.value)} placeholder="Describe how producer responsibility obligations are met (e.g., financing of collection and recycling, participation in EPR schemes)." rows={4}/>
+                </div>
+                <div>
+                    <Label htmlFor="step8_collectionRecyclingInfoUrl">URL to Collection & Recycling Information</Label>
+                    <Input id="step8_collectionRecyclingInfoUrl" type="url" value={formData.step8_collectionRecyclingInfoUrl || ""} onChange={(e) => handleInputChange("step8", "collectionRecyclingInfoUrl", e.target.value)} placeholder="https://example.com/battery-recycling-info" />
+                    <p className="text-xs text-muted-foreground mt-1">Link to publicly available information on collection, take-back, and recycling schemes.</p>
+                </div>
+                <div>
+                    <Label htmlFor="step8_takeBackSchemesDescription">Description of Take-back & Collection Schemes</Label>
+                    <Textarea id="step8_takeBackSchemesDescription" value={formData.step8_takeBackSchemesDescription || ""} onChange={(e) => handleInputChange("step8", "takeBackSchemesDescription", e.target.value)} placeholder="Detail the schemes in place for battery collection and take-back." rows={3}/>
+                </div>
+
+                <div className="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <Label className="mb-2 block">Recycling Efficiency Targets Met?</Label>
+                        <RadioGroup value={formData.step8_recyclingEfficiencyTargetMet || "not_yet_assessed"} onValueChange={(value) => handleRadioChange("step8", "recyclingEfficiencyTargetMet", value)} className="space-y-1.5">
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="ret_yes" /><Label htmlFor="ret_yes" className="font-normal">Yes</Label></div>
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="ret_no" /><Label htmlFor="ret_no" className="font-normal">No</Label></div>
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="partially" id="ret_partially" /><Label htmlFor="ret_partially" className="font-normal">Partially</Label></div>
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="not_applicable" id="ret_na" /><Label htmlFor="ret_na" className="font-normal">Not Applicable</Label></div>
+                             <div className="flex items-center space-x-2"><RadioGroupItem value="not_yet_assessed" id="ret_nya" /><Label htmlFor="ret_nya" className="font-normal">Not Yet Assessed</Label></div>
+                        </RadioGroup>
+                        <p className="text-xs text-muted-foreground mt-1">As per Annex XII, Part B.</p>
+                    </div>
+                    <div>
+                        <Label className="mb-2 block">Material Recovery Targets Met?</Label>
+                        <RadioGroup value={formData.step8_materialRecoveryTargetsMet || "not_yet_assessed"} onValueChange={(value) => handleRadioChange("step8", "materialRecoveryTargetsMet", value)} className="space-y-1.5">
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="yes" id="mrt_yes" /><Label htmlFor="mrt_yes" className="font-normal">Yes</Label></div>
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="no" id="mrt_no" /><Label htmlFor="mrt_no" className="font-normal">No</Label></div>
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="partially" id="mrt_partially" /><Label htmlFor="mrt_partially" className="font-normal">Partially</Label></div>
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="not_applicable" id="mrt_na" /><Label htmlFor="mrt_na" className="font-normal">Not Applicable</Label></div>
+                            <div className="flex items-center space-x-2"><RadioGroupItem value="not_yet_assessed" id="mrt_nya" /><Label htmlFor="mrt_nya" className="font-normal">Not Yet Assessed</Label></div>
+                        </RadioGroup>
+                        <p className="text-xs text-muted-foreground mt-1">For Cobalt, Copper, Lead, Lithium, Nickel (Annex XII, Part B).</p>
+                    </div>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => handleAskCopilot(euBatteryRegulationSteps[7].title)} disabled={isLoadingCopilot}>
+                    {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+                    Ask Co-Pilot about this step
+                </Button>
+            </CardContent>
+            </Card>
+        );
       default:
         return (
             <Card>
@@ -495,9 +555,18 @@ export default function BatteryRegulationPathwayPage() {
                     Previous Step
                 </Button>
                 {currentStepIndex === euBatteryRegulationSteps.length -1 ? (
-                    <Button onClick={() => alert("Mock: Final Review & Submission")} className="bg-accent text-accent-foreground hover:bg-accent/90">
+                    <Button onClick={() => {
+                        toast({
+                            title: "Mock Submission",
+                            description: "This is a conceptual final submission. All data would be validated and sent to relevant authorities.",
+                            duration: 5000,
+                            action: <AlertTriangle className="text-white" />
+                        });
+                        setActiveStep(euBatteryRegulationSteps[0].id); // Reset to first step
+                    }} 
+                    className="bg-accent text-accent-foreground hover:bg-accent/90">
                         <CheckCircle className="mr-2 h-4 w-4"/>
-                        Final Review & Submission
+                        Final Review & Submit (Mock)
                     </Button>
                 ) : (
                     <Button onClick={goToNextStep} disabled={!canGoNext}>

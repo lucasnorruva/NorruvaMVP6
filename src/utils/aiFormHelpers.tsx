@@ -36,7 +36,6 @@ export async function handleSuggestNameAI(
       productCategory: productCategory || undefined,
     });
     toast({ title: "Product Name Suggested!", description: `AI suggested: "${result.productName}"`, variant: "default" });
-    // The calling component will use form.setValue
     return result.productName;
   } catch (error) {
     console.error("Failed to suggest product name:", error);
@@ -72,7 +71,6 @@ export async function handleSuggestDescriptionAI(
       keyFeatures: materials || undefined,
     });
     toast({ title: "Product Description Suggested!", description: "AI has generated a product description.", variant: "default" });
-    // The calling component will use form.setValue
     return result.productDescription;
   } catch (error) {
     console.error("Failed to suggest product description:", error);
@@ -148,7 +146,6 @@ export async function handleGenerateImageAI(
       imageHint: formData.imageHint, // Pass the imageHint
     });
     toast({ title: "Image Generated Successfully", description: "The product image has been generated." });
-    // The calling component will use form.setValue
     return result.imageUrl;
   } catch (error) {
     console.error("Failed to generate image:", error);
@@ -184,7 +181,6 @@ export async function handleSuggestSpecificationsAI(
       productCategory: productCategory || undefined,
     });
     toast({ title: "Specifications Suggested!", description: `AI suggested specifications for "${productName || 'the product'}".`, variant: "default" });
-    // The calling component will use form.setValue
     return result.specificationsJsonString;
   } catch (error) {
     console.error("Failed to suggest specifications:", error);

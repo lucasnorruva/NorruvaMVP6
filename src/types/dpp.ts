@@ -752,3 +752,4 @@ export interface DisplayableProduct {
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; // Add this for filtering
 }
 
+

@@ -30,6 +30,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import ApiKeysManager, { type ApiKey } from '@/components/developer/ApiKeysManager';
 import WebhooksManager, { type WebhookEntry } from '@/components/developer/WebhooksManager';
+import ApiPlaygroundEndpointCard from '@/components/developer/ApiPlaygroundEndpointCard'; // New Import
 import { cn } from '@/lib/utils';
 
 
@@ -420,7 +421,6 @@ export default function DeveloperPortalPage() {
 
       await new Promise(resolve => setTimeout(resolve, 500));
       
-      // Target our Next.js API route
       const res = await fetch(url, options);
       const responseData = await res.json();
       
@@ -806,7 +806,7 @@ export default function DeveloperPortalPage() {
               apiKeys={apiKeys}
               onCopyKey={handleCopyKey}
               onGenerateSandboxKey={handleGenerateSandboxKey}
-              onRequestProductionKey={onRequestProductionKey}
+              onRequestProductionKey={handleRequestProductionKey}
               onDeleteApiKey={handleDeleteApiKey}
             />
             <Card className="mt-6 shadow-md">
@@ -847,314 +847,230 @@ export default function DeveloperPortalPage() {
                 <AccordionItem value="dpp-core">
                   <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline">DPP Core Management Endpoints</AccordionTrigger>
                   <AccordionContent className="pt-4 space-y-6">
-                    {/* GET /api/v1/dpp/{productId} */}
-                    <Card>
-                        <CardHeader>
-                        <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/{'{productId}'}</CardTitle>
-                        <CardDescription>Retrieve details for a specific product by its ID.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
+                    <ApiPlaygroundEndpointCard
+                      title="GET /api/v1/dpp/{productId}"
+                      description="Retrieve details for a specific product by its ID."
+                      onSendRequest={handleMockGetProductDetails}
+                      isLoading={isGetProductLoading}
+                      response={getProductResponse}
+                      codeSnippet={getProductCodeSnippet}
+                      snippetLanguage={getProductSnippetLang}
+                      onSnippetLanguageChange={(lang) => {setGetProductSnippetLang(lang); updateSnippet("getProduct", "GET", lang, { productId: getProductId }, null, setGetProductCodeSnippet);}}
+                      codeSampleLanguages={codeSampleLanguages}
+                    >
+                      <div>
+                        <Label htmlFor="productIdInput-get">Product ID</Label>
+                        <Input id="productIdInput-get" value={getProductId} onChange={(e) => setGetProductId(e.target.value)} placeholder="e.g., DPP001" />
+                      </div>
+                    </ApiPlaygroundEndpointCard>
+
+                    <ApiPlaygroundEndpointCard
+                      title="GET /api/v1/dpp"
+                      description="Retrieve a list of available Digital Product Passports with filtering."
+                      onSendRequest={handleMockListProducts}
+                      isLoading={isListProductsLoading}
+                      response={listProductsResponse}
+                      codeSnippet={listDppsCodeSnippet}
+                      snippetLanguage={listDppsSnippetLang}
+                      onSnippetLanguageChange={(lang) => {setListDppsSnippetLang(lang); updateSnippet("listDpps", "GET", lang, listDppFilters, null, setListDppsCodeSnippet);}}
+                      codeSampleLanguages={codeSampleLanguages}
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <Label htmlFor="productIdInput-get">Product ID</Label>
-                            <Input id="productIdInput-get" value={getProductId} onChange={(e) => setGetProductId(e.target.value)} placeholder="e.g., DPP001" />
+                          <Label htmlFor="list-dpp-search">Search Query (ID, Name, GTIN, Manufacturer)</Label>
+                          <Input id="list-dpp-search" value={listDppFilters.searchQuery} onChange={(e) => setListDppFilters(prev => ({...prev, searchQuery: e.target.value}))} placeholder="e.g., EcoSmart, DPP001" />
                         </div>
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <Button onClick={handleMockGetProductDetails} disabled={isGetProductLoading} variant="secondary">
-                              {isGetProductLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                              {isGetProductLoading ? "Fetching..." : "Send Request"}
-                          </Button>
-                          <Select value={getProductSnippetLang} onValueChange={(value) => {setGetProductSnippetLang(value); updateSnippet("getProduct", "GET", value, {productId: getProductId}, null, setGetProductCodeSnippet);}}>
-                              <SelectTrigger className="w-full sm:w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                              <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={`getProd-${lang}`} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                        <div>
+                          <Label htmlFor="list-dpp-category">Category</Label>
+                          <Input id="list-dpp-category" value={listDppFilters.category === 'all' ? '' : listDppFilters.category} onChange={(e) => setListDppFilters(prev => ({...prev, category: e.target.value || 'all'}))} placeholder="e.g., Appliances (or 'all')" />
+                        </div>
+                        <div>
+                          <Label htmlFor="list-dpp-status">Status</Label>
+                          <Select value={listDppFilters.status} onValueChange={(value) => setListDppFilters(prev => ({...prev, status: value}))}>
+                            <SelectTrigger id="list-dpp-status"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              {['all', 'draft', 'published', 'archived', 'pending_review', 'revoked'].map(s => <SelectItem key={`listStatus-${s}`} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
+                            </SelectContent>
                           </Select>
                         </div>
-                        {getProductCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({getProductSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{getProductCodeSnippet}</code></pre></div>}
-                        {getProductResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{getProductResponse}</code></pre></div>}
-                        </CardContent>
-                    </Card>
-
-                    {/* GET /api/v1/dpp (List DPPs) */}
-                    <Card>
-                        <CardHeader>
-                        <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp</CardTitle>
-                        <CardDescription>Retrieve a list of available Digital Product Passports with filtering.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
-                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="list-dpp-search">Search Query (ID, Name, GTIN, Manufacturer)</Label>
-                              <Input id="list-dpp-search" value={listDppFilters.searchQuery} onChange={(e) => setListDppFilters(prev => ({...prev, searchQuery: e.target.value}))} placeholder="e.g., EcoSmart, DPP001" />
-                            </div>
-                            <div>
-                              <Label htmlFor="list-dpp-category">Category</Label>
-                              <Input id="list-dpp-category" value={listDppFilters.category === 'all' ? '' : listDppFilters.category} onChange={(e) => setListDppFilters(prev => ({...prev, category: e.target.value || 'all'}))} placeholder="e.g., Appliances (or 'all')" />
-                            </div>
-                            <div>
-                              <Label htmlFor="list-dpp-status">Status</Label>
-                              <Select value={listDppFilters.status} onValueChange={(value) => setListDppFilters(prev => ({...prev, status: value}))}>
-                                <SelectTrigger id="list-dpp-status"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  {['all', 'draft', 'published', 'archived', 'pending_review', 'revoked'].map(s => <SelectItem key={`listStatus-${s}`} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
-                                </SelectContent>
-                              </Select>
-                            </div>
-                            <div>
-                              <Label htmlFor="list-dpp-anchored">Blockchain Anchored</Label>
-                               <Select value={listDppFilters.blockchainAnchored} onValueChange={(value) => setListDppFilters(prev => ({...prev, blockchainAnchored: value}))}>
-                                <SelectTrigger id="list-dpp-anchored"><SelectValue /></SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="all">All</SelectItem>
-                                  <SelectItem value="anchored">Anchored</SelectItem>
-                                  <SelectItem value="not_anchored">Not Anchored</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                          </div>
-                          <div className="flex items-center justify-between flex-wrap gap-2 mt-4">
-                              <Button onClick={handleMockListProducts} disabled={isListProductsLoading} variant="secondary">
-                                  {isListProductsLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                                  {isListProductsLoading ? "Fetching..." : "Send Request"}
-                              </Button>
-                               <Select value={listDppsSnippetLang} onValueChange={(value) => {setListDppsSnippetLang(value); updateSnippet("listDpps", "GET", value, listDppFilters, null, setListDppsCodeSnippet);}}>
-                                  <SelectTrigger className="w-full sm:w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                                  <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={`listDpp-${lang}`} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                              </Select>
-                          </div>
-                          {listDppsCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({listDppsSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{listDppsCodeSnippet}</code></pre></div>}
-                          {listProductsResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{listProductsResponse}</code></pre></div>}
-                        </CardContent>
-                    </Card>
-
-                    {/* POST /api/v1/dpp */}
-                    <Card>
-                        <CardHeader>
-                        <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp</CardTitle>
-                        <CardDescription>Create a new Digital Product Passport.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
                         <div>
-                            <Label htmlFor="postDppBody">Request Body (JSON)</Label>
-                            <Textarea id="postDppBody" value={postDppBody} onChange={(e) => setPostDppBody(e.target.value)} rows={5} className="font-mono text-xs"/>
-                            <p className="text-xs text-muted-foreground mt-1">Example required fields: productName, category. See API Reference for full schema.</p>
-                        </div>
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <Button onClick={handleMockPostDpp} disabled={isPostDppLoading} variant="secondary">
-                              {isPostDppLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                              {isPostDppLoading ? "Creating..." : "Send Request"}
-                          </Button>
-                          <Select value={createDppSnippetLang} onValueChange={(value) => {setCreateDppSnippetLang(value); updateSnippet("createDpp", "POST", value, {}, postDppBody, setCreateDppCodeSnippet);}}>
-                              <SelectTrigger className="w-full sm:w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                              <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={`createDpp-${lang}`} value={lang}>{lang}</SelectItem>)}</SelectContent>
+                          <Label htmlFor="list-dpp-anchored">Blockchain Anchored</Label>
+                           <Select value={listDppFilters.blockchainAnchored} onValueChange={(value) => setListDppFilters(prev => ({...prev, blockchainAnchored: value}))}>
+                            <SelectTrigger id="list-dpp-anchored"><SelectValue /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="all">All</SelectItem>
+                              <SelectItem value="anchored">Anchored</SelectItem>
+                              <SelectItem value="not_anchored">Not Anchored</SelectItem>
+                            </SelectContent>
                           </Select>
                         </div>
-                         {createDppCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({createDppSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{createDppCodeSnippet}</code></pre></div>}
-                         {postDppResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{postDppResponse}</code></pre></div>}
-                        </CardContent>
-                    </Card>
+                      </div>
+                    </ApiPlaygroundEndpointCard>
+                    
+                    <ApiPlaygroundEndpointCard
+                      title="POST /api/v1/dpp"
+                      description="Create a new Digital Product Passport."
+                      onSendRequest={handleMockPostDpp}
+                      isLoading={isPostDppLoading}
+                      response={postDppResponse}
+                      codeSnippet={createDppCodeSnippet}
+                      snippetLanguage={createDppSnippetLang}
+                      onSnippetLanguageChange={(lang) => {setCreateDppSnippetLang(lang); updateSnippet("createDpp", "POST", lang, {}, postDppBody, setCreateDppCodeSnippet);}}
+                      codeSampleLanguages={codeSampleLanguages}
+                    >
+                      <div>
+                        <Label htmlFor="postDppBody">Request Body (JSON)</Label>
+                        <Textarea id="postDppBody" value={postDppBody} onChange={(e) => setPostDppBody(e.target.value)} rows={5} className="font-mono text-xs"/>
+                        <p className="text-xs text-muted-foreground mt-1">Example required fields: productName, category. See API Reference for full schema.</p>
+                      </div>
+                    </ApiPlaygroundEndpointCard>
 
                     {/* PUT /api/v1/dpp/{productId} */}
-                    <Card>
-                        <CardHeader>
-                        <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>PUT /api/v1/dpp/{'{productId}'}</CardTitle>
-                        <CardDescription>Update an existing Digital Product Passport.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
+                    <ApiPlaygroundEndpointCard
+                        title="PUT /api/v1/dpp/{productId}"
+                        description="Update an existing Digital Product Passport."
+                        onSendRequest={handleMockPutProduct}
+                        isLoading={isPutProductLoading}
+                        response={putProductResponse}
+                        codeSnippet={updateDppCodeSnippet}
+                        snippetLanguage={updateDppSnippetLang}
+                        onSnippetLanguageChange={(lang) => {setUpdateDppSnippetLang(lang); updateSnippet("updateDpp", "PUT", lang, {productId: putProductId}, putProductBody, setUpdateDppCodeSnippet);}}
+                        codeSampleLanguages={codeSampleLanguages}
+                    >
                         <div>
                             <Label htmlFor="productIdInput-put">Product ID</Label>
                             <Input id="productIdInput-put" value={putProductId} onChange={(e) => setPutProductId(e.target.value)} placeholder="e.g., DPP001"/>
                         </div>
-                        <div>
+                        <div className="mt-2">
                             <Label htmlFor="putProductBody">Request Body (JSON)</Label>
                             <Textarea id="putProductBody" value={putProductBody} onChange={(e) => setPutProductBody(e.target.value)} rows={4} className="font-mono text-xs"/>
-                             <p className="text-xs text-muted-foreground mt-1">Send partial or full updates. See API Reference for updatable fields.</p>
+                            <p className="text-xs text-muted-foreground mt-1">Send partial or full updates. See API Reference for updatable fields.</p>
                         </div>
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <Button onClick={handleMockPutProduct} disabled={isPutProductLoading} variant="secondary">
-                              {isPutProductLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                              {isPutProductLoading ? "Sending..." : "Send Request"}
-                          </Button>
-                           <Select value={updateDppSnippetLang} onValueChange={(value) => {setUpdateDppSnippetLang(value); updateSnippet("updateDpp", "PUT", value, {productId: putProductId}, putProductBody, setUpdateDppCodeSnippet);}}>
-                              <SelectTrigger className="w-full sm:w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                              <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={`updateDpp-${lang}`} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </div>
-                        {updateDppCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({updateDppSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{updateDppCodeSnippet}</code></pre></div>}
-                        {putProductResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{putProductResponse}</code></pre></div>}
-                        </CardContent>
-                    </Card>
+                    </ApiPlaygroundEndpointCard>
 
                     {/* DELETE /api/v1/dpp/{productId} */}
-                    <Card>
-                        <CardHeader>
-                        <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>DELETE /api/v1/dpp/{'{productId}'}</CardTitle>
-                        <CardDescription>Archive a Digital Product Passport.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
+                    <ApiPlaygroundEndpointCard
+                        title="DELETE /api/v1/dpp/{productId}"
+                        description="Archive a Digital Product Passport."
+                        onSendRequest={handleMockDeleteProduct}
+                        isLoading={isDeleteProductLoading}
+                        response={deleteProductResponse}
+                        codeSnippet={deleteDppCodeSnippet}
+                        snippetLanguage={deleteDppSnippetLang}
+                        onSnippetLanguageChange={(lang) => {setDeleteDppSnippetLang(lang); updateSnippet("deleteDpp", "DELETE", lang, {productId: deleteProductId}, null, setDeleteDppCodeSnippet);}}
+                        codeSampleLanguages={codeSampleLanguages}
+                    >
                         <div>
                             <Label htmlFor="productIdInput-delete">Product ID</Label>
                             <Input id="productIdInput-delete" value={deleteProductId} onChange={(e) => setDeleteProductId(e.target.value)} placeholder="e.g., PROD002"/>
                         </div>
-                         <div className="flex items-center justify-between flex-wrap gap-2">
-                          <Button onClick={handleMockDeleteProduct} disabled={isDeleteProductLoading} variant="destructive">
-                              {isDeleteProductLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Trash2 className="mr-2 h-4 w-4" />}
-                              {isDeleteProductLoading ? "Deleting..." : "Send Request"}
-                          </Button>
-                          <Select value={deleteDppSnippetLang} onValueChange={(value) => {setDeleteDppSnippetLang(value); updateSnippet("deleteDpp", "DELETE", value, {productId: deleteProductId}, null, setDeleteDppCodeSnippet);}}>
-                              <SelectTrigger className="w-full sm:w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                              <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={`deleteDpp-${lang}`} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </div>
-                        {deleteDppCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({deleteDppSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{deleteDppCodeSnippet}</code></pre></div>}
-                        {deleteProductResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{deleteProductResponse}</code></pre></div>}
-                        </CardContent>
-                    </Card>
+                    </ApiPlaygroundEndpointCard>
                   </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="dpp-utility">
                   <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline">DPP Utility & Advanced Endpoints</AccordionTrigger>
                   <AccordionContent className="pt-4 space-y-6">
-                    {/* POST /api/v1/qr/validate */}
-                    <Card>
-                        <CardHeader>
-                        <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/qr/validate</CardTitle>
-                        <CardDescription>Validate a QR identifier and retrieve a DPP summary.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
+                    <ApiPlaygroundEndpointCard
+                        title="POST /api/v1/qr/validate"
+                        description="Validate a QR identifier and retrieve a DPP summary."
+                        onSendRequest={handleMockPostQrValidate}
+                        isLoading={isPostQrValidateLoading}
+                        response={postQrValidateResponse}
+                        codeSnippet={qrValidateCodeSnippet}
+                        snippetLanguage={qrValidateSnippetLang}
+                        onSnippetLanguageChange={(lang) => {setQrValidateSnippetLang(lang); updateSnippet("qrValidate", "POST", lang, {}, postQrValidateBody, setQrValidateCodeSnippet);}}
+                        codeSampleLanguages={codeSampleLanguages}
+                    >
                         <div>
                             <Label htmlFor="postQrValidateBody">Request Body (JSON)</Label>
                             <Textarea id="postQrValidateBody" value={postQrValidateBody} onChange={(e) => setPostQrValidateBody(e.target.value)} rows={3} className="font-mono text-xs"/>
                         </div>
-                         <div className="flex items-center justify-between flex-wrap gap-2">
-                          <Button onClick={handleMockPostQrValidate} disabled={isPostQrValidateLoading} variant="secondary">
-                              {isPostQrValidateLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                              {isPostQrValidateLoading ? "Validating..." : "Send Request"}
-                          </Button>
-                          <Select value={qrValidateSnippetLang} onValueChange={(value) => {setQrValidateSnippetLang(value); updateSnippet("qrValidate", "POST", value, {}, postQrValidateBody, setQrValidateCodeSnippet);}}>
-                              <SelectTrigger className="w-full sm:w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                              <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={`qrValidate-${lang}`} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </div>
-                        {qrValidateCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({qrValidateSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{qrValidateCodeSnippet}</code></pre></div>}
-                        {postQrValidateResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{postQrValidateResponse}</code></pre></div>}
-                        </CardContent>
-                    </Card>
+                    </ApiPlaygroundEndpointCard>
 
-                    {/* POST /api/v1/dpp/{productId}/lifecycle-events */}
-                    <Card>
-                        <CardHeader>
-                        <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp/{'{productId}'}/lifecycle-events</CardTitle>
-                        <CardDescription>Add a new lifecycle event to a specific DPP.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
+                    <ApiPlaygroundEndpointCard
+                        title="POST /api/v1/dpp/{productId}/lifecycle-events"
+                        description="Add a new lifecycle event to a specific DPP."
+                        onSendRequest={handleMockPostLifecycleEvent}
+                        isLoading={isPostLifecycleEventLoading}
+                        response={postLifecycleEventResponse}
+                        codeSnippet={addLifecycleEventCodeSnippet}
+                        snippetLanguage={addLifecycleEventSnippetLang}
+                        onSnippetLanguageChange={(lang) => {setAddLifecycleEventSnippetLang(lang); updateSnippet("addLifecycleEvent", "POST", lang, {productId: postLifecycleEventProductId}, postLifecycleEventBody, setAddLifecycleEventCodeSnippet);}}
+                        codeSampleLanguages={codeSampleLanguages}
+                    >
                         <div>
                             <Label htmlFor="productIdInput-post-event">Product ID</Label>
                             <Input id="productIdInput-post-event" value={postLifecycleEventProductId} onChange={(e) => setPostLifecycleEventProductId(e.target.value)} placeholder="e.g., DPP001"/>
                         </div>
-                        <div>
+                        <div className="mt-2">
                             <Label htmlFor="postLifecycleEventBody">Request Body (JSON)</Label>
                             <Textarea id="postLifecycleEventBody" value={postLifecycleEventBody} onChange={(e) => setPostLifecycleEventBody(e.target.value)} rows={5} className="font-mono text-xs"/>
                         </div>
-                         <div className="flex items-center justify-between flex-wrap gap-2">
-                            <Button onClick={handleMockPostLifecycleEvent} disabled={isPostLifecycleEventLoading} variant="secondary">
-                                {isPostLifecycleEventLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                                {isPostLifecycleEventLoading ? "Sending..." : "Send Request"}
-                            </Button>
-                            <Select value={addLifecycleEventSnippetLang} onValueChange={(value) => {setAddLifecycleEventSnippetLang(value); updateSnippet("addLifecycleEvent", "POST", value, {productId: postLifecycleEventProductId}, postLifecycleEventBody, setAddLifecycleEventCodeSnippet);}}>
-                                <SelectTrigger className="w-full sm:w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                                <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={`addLifecycle-${lang}`} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                            </Select>
-                        </div>
-                        {addLifecycleEventCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({addLifecycleEventSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{addLifecycleEventCodeSnippet}</code></pre></div>}
-                        {postLifecycleEventResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{postLifecycleEventResponse}</code></pre></div>}
-                        </CardContent>
-                    </Card>
+                    </ApiPlaygroundEndpointCard>
 
-                    {/* GET /api/v1/dpp/{productId}/compliance-summary */}
-                    <Card>
-                        <CardHeader>
-                        <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/{'{productId}'}/compliance-summary</CardTitle>
-                        <CardDescription>Retrieve a compliance summary for a specific product.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
+                    <ApiPlaygroundEndpointCard
+                        title="GET /api/v1/dpp/{productId}/compliance-summary"
+                        description="Retrieve a compliance summary for a specific product."
+                        onSendRequest={handleMockGetComplianceSummary}
+                        isLoading={isGetComplianceLoading}
+                        response={getComplianceResponse}
+                        codeSnippet={getComplianceSummaryCodeSnippet}
+                        snippetLanguage={getComplianceSummarySnippetLang}
+                        onSnippetLanguageChange={(lang) => {setGetComplianceSummarySnippetLang(lang); updateSnippet("getComplianceSummary", "GET", lang, {productId: getComplianceProductId}, null, setGetComplianceSummaryCodeSnippet);}}
+                        codeSampleLanguages={codeSampleLanguages}
+                    >
                         <div>
                             <Label htmlFor="productIdInput-get-compliance">Product ID</Label>
                             <Input id="productIdInput-get-compliance" value={getComplianceProductId} onChange={(e) => setGetComplianceProductId(e.target.value)} placeholder="e.g., DPP001" />
                         </div>
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                            <Button onClick={handleMockGetComplianceSummary} disabled={isGetComplianceLoading} variant="secondary">
-                                {isGetComplianceLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                                {isGetComplianceLoading ? "Fetching..." : "Send Request"}
-                            </Button>
-                             <Select value={getComplianceSummarySnippetLang} onValueChange={(value) => {setGetComplianceSummarySnippetLang(value); updateSnippet("getComplianceSummary", "GET", value, {productId: getComplianceProductId}, null, setGetComplianceSummaryCodeSnippet);}}>
-                                <SelectTrigger className="w-full sm:w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                                <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={`getCompliance-${lang}`} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                            </Select>
-                        </div>
-                        {getComplianceSummaryCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({getComplianceSummarySnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{getComplianceSummaryCodeSnippet}</code></pre></div>}
-                        {getComplianceResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{getComplianceResponse}</code></pre></div>}
-                        </CardContent>
-                    </Card>
+                    </ApiPlaygroundEndpointCard>
 
-                    {/* POST /api/v1/dpp/verify */}
-                    <Card>
-                        <CardHeader>
-                        <CardTitle className="text-lg flex items-center"><ServerLucideIcon className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp/verify</CardTitle>
-                        <CardDescription>Perform compliance and authenticity checks on a DPP.</CardDescription>
-                        </CardHeader>
-                        <CardContent className="space-y-4">
+                    <ApiPlaygroundEndpointCard
+                        title="POST /api/v1/dpp/verify"
+                        description="Perform compliance and authenticity checks on a DPP."
+                        onSendRequest={handleMockPostVerify}
+                        isLoading={isPostVerifyLoading}
+                        response={postVerifyResponse}
+                        codeSnippet={verifyDppCodeSnippet}
+                        snippetLanguage={verifyDppSnippetLang}
+                        onSnippetLanguageChange={(lang) => {setVerifyDppSnippetLang(lang); updateSnippet("verifyDpp", "POST", lang, {productId: postVerifyProductId}, JSON.stringify({productId: postVerifyProductId}), setVerifyDppCodeSnippet);}}
+                        codeSampleLanguages={codeSampleLanguages}
+                    >
                         <div>
                             <Label htmlFor="productIdInput-verify">Product ID to Verify</Label>
                             <Input id="productIdInput-verify" value={postVerifyProductId} onChange={(e) => setPostVerifyProductId(e.target.value)} placeholder="e.g., DPP001"/>
                         </div>
-                         <div className="flex items-center justify-between flex-wrap gap-2">
-                          <Button onClick={handleMockPostVerify} disabled={isPostVerifyLoading} variant="secondary">
-                              {isPostVerifyLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                              {isPostVerifyLoading ? "Verifying..." : "Send Request"}
-                          </Button>
-                          <Select value={verifyDppSnippetLang} onValueChange={(value) => {setVerifyDppSnippetLang(value); updateSnippet("verifyDpp", "POST", value, {productId: postVerifyProductId}, JSON.stringify({productId: postVerifyProductId}), setVerifyDppCodeSnippet);}}>
-                              <SelectTrigger className="w-full sm:w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                              <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={`verifyDpp-${lang}`} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </div>
-                        {verifyDppCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({verifyDppSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{verifyDppCodeSnippet}</code></pre></div>}
-                        {postVerifyResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{postVerifyResponse}</code></pre></div>}
-                        </CardContent>
-                    </Card>
+                    </ApiPlaygroundEndpointCard>
                    
-                    {/* GET /api/v1/dpp/history/{productId} */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center"><History className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/history/{'{productId}'}</CardTitle>
-                        <CardDescription>Retrieve the audit trail / history for a specific DPP.</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <Label htmlFor="historyProductIdInput">Product ID</Label>
-                          <Input id="historyProductIdInput" value={getHistoryProductId} onChange={(e) => setGetHistoryProductId(e.target.value)} placeholder="e.g., DPP001" />
-                        </div>
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <Button onClick={handleMockGetHistory} disabled={isGetHistoryLoading} variant="secondary">
-                              {isGetHistoryLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                              {isGetHistoryLoading ? "Fetching History..." : "Send Request"}
-                          </Button>
-                          <Select value={getDppHistorySnippetLang} onValueChange={(value) => {setGetDppHistorySnippetLang(value); updateSnippet("getDppHistory", "GET", value, {productId: getHistoryProductId}, null, setGetDppHistoryCodeSnippet);}}>
-                              <SelectTrigger className="w-full sm:w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                              <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={`getHistory-${lang}`} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </div>
-                        {getDppHistoryCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({getDppHistorySnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{getDppHistoryCodeSnippet}</code></pre></div>}
-                        {getHistoryResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{getHistoryResponse}</code></pre></div>}
-                      </CardContent>
-                    </Card>
+                    <ApiPlaygroundEndpointCard
+                      title="GET /api/v1/dpp/history/{productId}"
+                      description="Retrieve the audit trail / history for a specific DPP."
+                      onSendRequest={handleMockGetHistory}
+                      isLoading={isGetHistoryLoading}
+                      response={getHistoryResponse}
+                      codeSnippet={getDppHistoryCodeSnippet}
+                      snippetLanguage={getDppHistorySnippetLang}
+                      onSnippetLanguageChange={(lang) => {setGetDppHistorySnippetLang(lang); updateSnippet("getDppHistory", "GET", lang, {productId: getHistoryProductId}, null, setGetDppHistoryCodeSnippet);}}
+                      codeSampleLanguages={codeSampleLanguages}
+                    >
+                      <div>
+                        <Label htmlFor="historyProductIdInput">Product ID</Label>
+                        <Input id="historyProductIdInput" value={getHistoryProductId} onChange={(e) => setGetHistoryProductId(e.target.value)} placeholder="e.g., DPP001" />
+                      </div>
+                    </ApiPlaygroundEndpointCard>
 
-                    {/* POST /api/v1/dpp/import */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center"><UploadCloud className="mr-2 h-5 w-5 text-info"/>POST /api/v1/dpp/import</CardTitle>
-                        <CardDescription>Batch import Digital Product Passports (CSV, JSON, etc.).</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
+                    <ApiPlaygroundEndpointCard
+                        title="POST /api/v1/dpp/import"
+                        description="Batch import Digital Product Passports (CSV, JSON, etc.)."
+                        onSendRequest={handleMockPostImport}
+                        isLoading={isPostImportLoading}
+                        response={postImportResponse}
+                        codeSnippet={importDppsCodeSnippet}
+                        snippetLanguage={importDppsSnippetLang}
+                        onSnippetLanguageChange={(lang) => {setImportDppsSnippetLang(lang); updateSnippet("importDpps", "POST", lang, {fileType: postImportFileType}, JSON.stringify({fileType: postImportFileType, data: "mock_base64_data"}), setImportDppsCodeSnippet);}}
+                        codeSampleLanguages={codeSampleLanguages}
+                    >
                         <div>
                           <Label htmlFor="importFileType">File Type (Conceptual)</Label>
                           <Select value={postImportFileType} onValueChange={setPostImportFileType}>
@@ -1168,47 +1084,25 @@ export default function DeveloperPortalPage() {
                             </SelectContent>
                           </Select>
                         </div>
-                        <p className="text-xs text-muted-foreground">For this mock, just select a type and send. A real implementation would include file upload or data input.</p>
-                        <div className="flex items-center justify-between flex-wrap gap-2">
-                          <Button onClick={handleMockPostImport} disabled={isPostImportLoading} variant="secondary">
-                              {isPostImportLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                              {isPostImportLoading ? "Importing..." : "Send Request"}
-                          </Button>
-                          <Select value={importDppsSnippetLang} onValueChange={(value) => {setImportDppsSnippetLang(value); updateSnippet("importDpps", "POST", value, {fileType: postImportFileType}, JSON.stringify({fileType: postImportFileType, data: "mock_base64_data"}), setImportDppsCodeSnippet);}}>
-                              <SelectTrigger className="w-full sm:w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                              <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={`importDpps-${lang}`} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </div>
-                        {importDppsCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({importDppsSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{importDppsCodeSnippet}</code></pre></div>}
-                        {postImportResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{postImportResponse}</code></pre></div>}
-                      </CardContent>
-                    </Card>
+                        <p className="text-xs text-muted-foreground mt-1">For this mock, just select a type and send. A real implementation would include file upload or data input.</p>
+                    </ApiPlaygroundEndpointCard>
 
-                    {/* GET /api/v1/dpp/graph/{productId} */}
-                    <Card>
-                      <CardHeader>
-                        <CardTitle className="text-lg flex items-center"><Share2 className="mr-2 h-5 w-5 text-info"/>GET /api/v1/dpp/graph/{'{productId}'}</CardTitle>
-                        <CardDescription>Retrieve data for supply chain visualization.</CardDescription>
-                      </CardHeader>
-                      <CardContent className="space-y-4">
-                        <div>
-                          <Label htmlFor="graphProductIdInput">Product ID</Label>
-                          <Input id="graphProductIdInput" value={getGraphProductId} onChange={(e) => setGetGraphProductId(e.target.value)} placeholder="e.g., DPP001" />
-                        </div>
-                         <div className="flex items-center justify-between flex-wrap gap-2">
-                          <Button onClick={handleMockGetGraph} disabled={isGetGraphLoading} variant="secondary">
-                              {isGetGraphLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                              {isGetGraphLoading ? "Fetching Graph Data..." : "Send Request"}
-                          </Button>
-                          <Select value={getDppGraphSnippetLang} onValueChange={(value) => {setGetDppGraphSnippetLang(value); updateSnippet("getDppGraph", "GET", value, {productId: getGraphProductId}, null, setGetDppGraphCodeSnippet);}}>
-                              <SelectTrigger className="w-full sm:w-[150px] text-xs h-9"><SelectValue placeholder="Code Sample" /></SelectTrigger>
-                              <SelectContent>{codeSampleLanguages.map(lang => <SelectItem key={`getGraph-${lang}`} value={lang}>{lang}</SelectItem>)}</SelectContent>
-                          </Select>
-                        </div>
-                        {getDppGraphCodeSnippet && <div className="mt-2"><Label className="text-xs text-muted-foreground">Code Snippet ({getDppGraphSnippetLang}):</Label><pre className="mt-1 p-2 bg-muted rounded-md text-xs overflow-x-auto max-h-40"><code>{getDppGraphCodeSnippet}</code></pre></div>}
-                        {getGraphResponse && <div className="mt-4"><Label className="flex items-center"><FileJson className="mr-2 h-4 w-4 text-accent"/>Response:</Label><pre className="mt-1 p-3 bg-muted rounded-md text-xs overflow-x-auto max-h-96"><code>{getGraphResponse}</code></pre></div>}
-                      </CardContent>
-                    </Card>
+                    <ApiPlaygroundEndpointCard
+                        title="GET /api/v1/dpp/graph/{productId}"
+                        description="Retrieve data for supply chain visualization."
+                        onSendRequest={handleMockGetGraph}
+                        isLoading={isGetGraphLoading}
+                        response={getGraphResponse}
+                        codeSnippet={getDppGraphCodeSnippet}
+                        snippetLanguage={getDppGraphSnippetLang}
+                        onSnippetLanguageChange={(lang) => {setGetDppGraphSnippetLang(lang); updateSnippet("getDppGraph", "GET", lang, {productId: getGraphProductId}, null, setGetDppGraphCodeSnippet);}}
+                        codeSampleLanguages={codeSampleLanguages}
+                    >
+                      <div>
+                        <Label htmlFor="graphProductIdInput">Product ID</Label>
+                        <Input id="graphProductIdInput" value={getGraphProductId} onChange={(e) => setGetGraphProductId(e.target.value)} placeholder="e.g., DPP001" />
+                      </div>
+                    </ApiPlaygroundEndpointCard>
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>
@@ -1233,7 +1127,6 @@ export default function DeveloperPortalPage() {
           </Card>
         </TabsContent>
 
-        {/* --- Resources Tab --- */}
         <TabsContent value="resources" className="mt-6 space-y-8">
           <Card className="shadow-lg">
             <CardHeader>
@@ -1455,4 +1348,3 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
-

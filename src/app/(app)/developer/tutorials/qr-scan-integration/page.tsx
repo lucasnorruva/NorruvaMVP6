@@ -152,4 +152,3 @@ async function validateProductQr(qrIdentifier) {
     </DocsPageLayout>
   );
 }
-

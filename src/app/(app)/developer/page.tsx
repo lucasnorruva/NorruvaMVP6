@@ -120,7 +120,7 @@ const generateMockCodeSnippet = (
         break;
     case "createDpp": urlPath = "/dpp"; break;
     case "updateDpp": urlPath = `/dpp/${params.productId || '{productId}'}`; break;
-    case "patchDppExtend": urlPath = `/dpp/extend/${params.productId || '{productId}'}`; break; // Added
+    case "patchDppExtend": urlPath = `/dpp/extend/${params.productId || '{productId}'}`; break;
     case "deleteDpp": urlPath = `/dpp/${params.productId || '{productId}'}`; break;
     case "qrValidate": urlPath = "/qr/validate"; break;
     case "addLifecycleEvent": urlPath = `/dpp/${params.productId || '{productId}'}/lifecycle-events`; break;
@@ -138,28 +138,28 @@ const generateMockCodeSnippet = (
 
   if (language === "cURL") {
     let curlCmd = `curl -X ${method} \\\n  '${fullUrl}' \\\n  -H 'Authorization: Bearer ${apiKeyPlaceholder}'`;
-    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) { // Added PATCH
+    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) {
       curlCmd += ` \\\n  -H 'Content-Type: application/json' \\\n  -d '${safeBody.replace(/'/g, "'\\''")}'`;
     }
     return curlCmd;
   } else if (language === "JavaScript") {
     let jsFetch = `fetch('${fullUrl}', {\n  method: '${method}',\n  headers: {\n    'Authorization': 'Bearer ${apiKeyPlaceholder}'`;
-    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) { // Added PATCH
+    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) {
       jsFetch += `,\n    'Content-Type': 'application/json'`;
     }
     jsFetch += `\n  }`;
-    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) { // Added PATCH
+    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) {
       jsFetch += `,\n  body: JSON.stringify(${safeBody})`;
     }
     jsFetch += `\n})\n.then(response => response.json())\n.then(data => console.log(data))\n.catch(error => console.error('Error:', error));`;
     return jsFetch;
   } else if (language === "Python") {
     let pyRequests = `import requests\nimport json\n\nurl = "${fullUrl}"\nheaders = {\n  "Authorization": "Bearer ${apiKeyPlaceholder}"`;
-    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) { // Added PATCH
+    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) {
       pyRequests += `,\n  "Content-Type": "application/json"`;
     }
     pyRequests += `\n}`;
-    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) { // Added PATCH
+    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) {
       pyRequests += `\npayload = json.dumps(${safeBody})`;
       pyRequests += `\nresponse = requests.request("${method}", url, headers=headers, data=payload)`;
     } else {
@@ -284,7 +284,7 @@ export default function DeveloperPortalPage() {
   const [listDppsCodeSnippet, setListDppsCodeSnippet] = useState("");
   const [createDppCodeSnippet, setCreateDppCodeSnippet] = useState("");
   const [updateDppCodeSnippet, setUpdateDppCodeSnippet] = useState("");
-  const [patchDppExtendCodeSnippet, setPatchDppExtendCodeSnippet] = useState(""); // Added
+  const [patchDppExtendCodeSnippet, setPatchDppExtendCodeSnippet] = useState("");
   const [deleteDppCodeSnippet, setDeleteDppCodeSnippet] = useState("");
   const [qrValidateCodeSnippet, setQrValidateCodeSnippet] = useState("");
   const [addLifecycleEventCodeSnippet, setAddLifecycleEventCodeSnippet] = useState("");
@@ -313,7 +313,7 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("listDpps", "GET", listDppsSnippetLang, listDppFilters, null, setListDppsCodeSnippet), [listDppFilters, listDppsSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("createDpp", "POST", createDppSnippetLang, {}, postDppBody, setCreateDppCodeSnippet), [postDppBody, createDppSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("updateDpp", "PUT", updateDppSnippetLang, { productId: putProductId }, putProductBody, setUpdateDppCodeSnippet), [putProductId, putProductBody, updateDppSnippetLang, updateSnippet]);
-  useEffect(() => updateSnippet("patchDppExtend", "PATCH", patchDppExtendSnippetLang, { productId: patchDppExtendProductId }, patchDppExtendBody, setPatchDppExtendCodeSnippet), [patchDppExtendProductId, patchDppExtendBody, patchDppExtendSnippetLang, updateSnippet]); // Added
+  useEffect(() => updateSnippet("patchDppExtend", "PATCH", patchDppExtendSnippetLang, { productId: patchDppExtendProductId }, patchDppExtendBody, setPatchDppExtendCodeSnippet), [patchDppExtendProductId, patchDppExtendBody, patchDppExtendSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("deleteDpp", "DELETE", deleteDppSnippetLang, { productId: deleteProductId }, null, setDeleteDppCodeSnippet), [deleteProductId, deleteDppSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("qrValidate", "POST", qrValidateSnippetLang, {}, postQrValidateBody, setQrValidateCodeSnippet), [postQrValidateBody, qrValidateSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("addLifecycleEvent", "POST", addLifecycleEventSnippetLang, { productId: postLifecycleEventProductId }, postLifecycleEventBody, setAddLifecycleEventCodeSnippet), [postLifecycleEventProductId, postLifecycleEventBody, addLifecycleEventSnippetLang, updateSnippet]);
@@ -399,7 +399,7 @@ export default function DeveloperPortalPage() {
 
   const makeApiCall = async (
     url: string,
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH', // Added PATCH
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH',
     body: any | null,
     setLoading: React.Dispatch<React.SetStateAction<boolean>>,
     setResponse: React.Dispatch<React.SetStateAction<string | null>>
@@ -415,11 +415,11 @@ export default function DeveloperPortalPage() {
           'Authorization': `Bearer YOUR_${currentEnvironment.toUpperCase()}_API_KEY`
         }
       };
-      if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) { // Added PATCH
+      if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
         options.body = typeof body === 'string' ? body : JSON.stringify(body);
       }
 
-      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
+      await new Promise(resolve => setTimeout(resolve, 500)); 
 
       const res = await fetch(url, options);
       const responseData = await res.json();
@@ -444,13 +444,13 @@ export default function DeveloperPortalPage() {
   const handleMockListProducts = () => { const queryParams = new URLSearchParams(); if (listDppFilters.status !== 'all') queryParams.append('status', listDppFilters.status); if (listDppFilters.category !== 'all') queryParams.append('category', listDppFilters.category); if (listDppFilters.searchQuery) queryParams.append('searchQuery', listDppFilters.searchQuery); if (listDppFilters.blockchainAnchored !== 'all') queryParams.append('blockchainAnchored', listDppFilters.blockchainAnchored); const url = `/api/v1/dpp?${queryParams.toString()}`; updateSnippet("listDpps", "GET", listDppsSnippetLang, listDppFilters, null, setListDppsCodeSnippet); makeApiCall(url, 'GET', null, setIsListProductsLoading, setListProductsResponse); };
   const handleMockPostDpp = () => { updateSnippet("createDpp", "POST", createDppSnippetLang, {}, postDppBody, setCreateDppCodeSnippet); makeApiCall('/api/v1/dpp', 'POST', postDppBody, setIsPostDppLoading, setPostDppResponse); }
   const handleMockPutProduct = () => { updateSnippet("updateDpp", "PUT", updateDppSnippetLang, { productId: putProductId }, putProductBody, setUpdateDppCodeSnippet); makeApiCall(`/api/v1/dpp/${putProductId}`, 'PUT', putProductBody, setIsPutProductLoading, setPutProductResponse); }
-  const handleMockPatchDppExtend = () => { updateSnippet("patchDppExtend", "PATCH", patchDppExtendSnippetLang, { productId: patchDppExtendProductId }, patchDppExtendBody, setPatchDppExtendCodeSnippet); makeApiCall(`/api/v1/dpp/extend/${patchDppExtendProductId}`, 'PATCH', patchDppExtendBody, setIsPatchDppExtendLoading, setPatchDppExtendResponse); } // Added
+  const handleMockPatchDppExtend = () => { updateSnippet("patchDppExtend", "PATCH", patchDppExtendSnippetLang, { productId: patchDppExtendProductId }, patchDppExtendBody, setPatchDppExtendCodeSnippet); makeApiCall(`/api/v1/dpp/extend/${patchDppExtendProductId}`, 'PATCH', patchDppExtendBody, setIsPatchDppExtendLoading, setPatchDppExtendResponse); }
   const handleMockDeleteProduct = () => { updateSnippet("deleteDpp", "DELETE", deleteDppSnippetLang, { productId: deleteProductId }, null, setDeleteDppCodeSnippet); makeApiCall(`/api/v1/dpp/${deleteProductId}`, 'DELETE', null, setIsDeleteProductLoading, setDeleteProductResponse); }
   const handleMockPostLifecycleEvent = () => { updateSnippet("addLifecycleEvent", "POST", addLifecycleEventSnippetLang, { productId: postLifecycleEventProductId }, postLifecycleEventBody, setAddLifecycleEventCodeSnippet); makeApiCall(`/api/v1/dpp/${postLifecycleEventProductId}/lifecycle-events`, 'POST', postLifecycleEventBody, setIsPostLifecycleEventLoading, setPostLifecycleEventResponse); }
   const handleMockGetComplianceSummary = () => { updateSnippet("getComplianceSummary", "GET", getComplianceSummarySnippetLang, { productId: getComplianceProductId }, null, setGetComplianceSummaryCodeSnippet); makeApiCall(`/api/v1/dpp/${getComplianceProductId}/compliance-summary`, 'GET', null, setIsGetComplianceLoading, setGetComplianceResponse); }
   const handleMockPostQrValidate = () => { updateSnippet("qrValidate", "POST", qrValidateSnippetLang, {}, postQrValidateBody, setQrValidateCodeSnippet); makeApiCall('/api/v1/qr/validate', 'POST', postQrValidateBody, setIsPostQrValidateLoading, setPostQrValidateResponse); }
   const handleMockPostVerify = () => { updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productIdPath: postVerifyProductIdPath }, null, setVerifyDppCodeSnippet); makeApiCall(`/api/v1/dpp/verify/${postVerifyProductIdPath}`, 'POST', null, setIsPostVerifyLoading, setPostVerifyResponse); }
-  const handleMockGetHistory = () => { updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet); makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetDppHistoryResponse); }
+  const handleMockGetHistory = () => { updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet); makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetHistoryResponse); }
   const handleMockPostImport = () => { const body = { fileType: postImportFileType, data: "mock_file_content_base64_encoded" }; updateSnippet("importDpps", "POST", importDppsSnippetLang, body, JSON.stringify(body), setImportDppsCodeSnippet); makeApiCall('/api/v1/dpp/import', 'POST', body, setIsPostImportLoading, setPostImportResponse); }
   const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetDppGraphResponse); }
   const handleMockGetStatus = () => { updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet); makeApiCall(`/api/v1/dpp/status/${getStatusProductId}`, 'GET', null, setIsGetStatusLoading, setGetStatusResponse); }
@@ -546,7 +546,7 @@ export default function DeveloperPortalPage() {
         const trigger = tabsElement.querySelector(`button[role="tab"][value="${tabValue}"]`) as HTMLElement | null;
         trigger?.click();
     }
-    setActiveTopTab(tabValue); // Also update internal state
+    setActiveTopTab(tabValue); 
   };
 
   return (
@@ -1218,3 +1218,4 @@ export default function DeveloperPortalPage() {
 
 
     
+

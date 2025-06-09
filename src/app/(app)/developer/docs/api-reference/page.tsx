@@ -29,6 +29,7 @@ export default function ApiReferencePage() {
 
   const error401 = JSON.stringify({ error: { code: 401, message: "API key missing or invalid." } }, null, 2);
   const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }, null, 2);
+  const error400_general = JSON.stringify({ error: { code: 400, message: "Invalid request payload or parameters." } }, null, 2);
   const error400_qr = JSON.stringify({ error: { code: 400, message: "Invalid request body. 'qrIdentifier' is required." } }, null, 2);
   const error500 = JSON.stringify({ error: { code: 500, message: "An unexpected error occurred on the server." } }, null, 2);
 
@@ -145,7 +146,7 @@ export default function ApiReferencePage() {
       code: 400,
       message: "Invalid request body for update. Field 'metadata.status' has an invalid value 'incorrect_status'.",
       details: [
-         { field: "metadata.status", issue: "value must be one of: draft, published, archived, pending_review, revoked" }
+         { field: "metadata.status", issue: "value must be one of: draft, published, archived, pending_review, revoked, flagged" }
       ]
     }
   }, null, 2);
@@ -187,6 +188,24 @@ export default function ApiReferencePage() {
       message: "Invalid input data. 'documentName', 'documentUrl', and 'documentType' are required for documentReference.",
     }
   }, null, 2);
+
+  const addLifecycleEventRequestBodyExample = JSON.stringify({
+    eventType: "Shipped",
+    location: "Warehouse B, Hamburg",
+    details: { "carrier": "GlobalTrans", "trackingNumber": "GT123456789DE" },
+    responsibleParty: "Logistics Inc."
+  }, null, 2);
+
+  const addLifecycleEventResponseExample = JSON.stringify({
+    id: "evt_mock_123456",
+    type: "Shipped",
+    timestamp: new Date().toISOString(),
+    location: "Warehouse B, Hamburg",
+    data: { "carrier": "GlobalTrans", "trackingNumber": "GT123456789DE" },
+    responsibleParty: "Logistics Inc."
+  }, null, 2);
+
+  const error400_lifecycle_event = JSON.stringify({ error: { code: 400, message: "Field 'eventType' is required and must be a non-empty string." } }, null, 2);
 
 
   return (
@@ -492,13 +511,75 @@ export default function ApiReferencePage() {
                     <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error400_patch_dpp}</code></pre>
                   </details>
                 </li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>. (Example above)</li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>. (Example above)</li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>. (Example above)</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>. (Example in GET /dpp/{id})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>. (Example in GET /dpp/{id})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>. (Example in GET /dpp/{id})</li>
               </ul>
             </section>
           </CardContent>
         </Card>
+        
+        <Card className="shadow-lg mt-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Add Lifecycle Event to DPP</CardTitle>
+            <CardDescription>
+              <span className="inline-flex items-center font-mono text-sm">
+                <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
+                <code className="bg-muted px-1 py-0.5 rounded-sm">/dpp/{'{productId}'}/lifecycle-events</code>
+              </span>
+              <br/>
+              Adds a new lifecycle event to the specified Digital Product Passport.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <section>
+              <h4 className="font-semibold mb-1">Path Parameters</h4>
+              <ul className="list-disc list-inside text-sm space-y-1">
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> (string, required): The unique identifier of the product.</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1">Request Body (JSON)</h4>
+              <p className="text-sm mb-1">Provide details for the lifecycle event. 'eventType' is required.</p>
+              <details className="border rounded-md">
+                <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Request Body
+                </summary>
+                <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+                  <code>{addLifecycleEventRequestBodyExample}</code>
+                </pre>
+              </details>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1">Example Response (Success 201 Created)</h4>
+              <p className="text-sm mb-1">Returns the newly created LifecycleEvent object.</p>
+              <details className="border rounded-md">
+                <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Response
+                </summary>
+                <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+                  <code>{addLifecycleEventResponseExample}</code>
+                </pre>
+              </details>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
+              <ul className="list-disc list-inside text-sm space-y-2">
+                <li>
+                  <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Invalid input data (e.g., missing 'eventType').
+                  <details className="border rounded-md mt-1">
+                    <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                    <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error400_lifecycle_event}</code></pre>
+                  </details>
+                </li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>. (See example under GET /dpp/{id})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>. (See example under GET /dpp/{id})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>. (See example under GET /dpp/{id})</li>
+              </ul>
+            </section>
+          </CardContent>
+        </Card>
+
 
         <Card className="shadow-lg mt-6">
           <CardHeader>
@@ -638,7 +719,51 @@ export default function ApiReferencePage() {
           </CardContent>
         </Card>
       </section>
+
+      {/* Placeholder for other sections like Compliance, History, Import, Graph, Status - can be added similarly */}
+      <section id="compliance-endpoints" className="mt-8">
+        <h2 className="text-2xl font-semibold font-headline mt-8 mb-4 flex items-center">
+          <Server className="mr-3 h-6 w-6 text-primary" /> Compliance & Verification Endpoints
+        </h2>
+         <Card className="shadow-lg mt-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Retrieve Compliance Summary</CardTitle>
+            <CardDescription>
+              <span className="inline-flex items-center font-mono text-sm">
+                <Badge variant="outline" className="bg-sky-100 text-sky-700 border-sky-300 mr-2 font-semibold">GET</Badge>
+                <code className="bg-muted px-1 py-0.5 rounded-sm">/dpp/{'{productId}'}/compliance-summary</code>
+              </span>
+              <br/>
+              Fetches a summary of the compliance status for a specific product.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Path Params, Example Response, Error Responses would go here. For brevity, skipping full duplication but would follow pattern of GET /dpp/{id} */}
+             <p className="text-sm text-muted-foreground">Details for this endpoint are in the OpenAPI specification and can be tested in the Playground.</p>
+          </CardContent>
+        </Card>
+        <Card className="shadow-lg mt-6">
+          <CardHeader>
+            <CardTitle className="text-lg">Verify Digital Product Passport</CardTitle>
+            <CardDescription>
+              <span className="inline-flex items-center font-mono text-sm">
+                <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
+                <code className="bg-muted px-1 py-0.5 rounded-sm">/dpp/verify/{'{productId}'}</code>
+              </span>
+              <br/>
+              Performs compliance and authenticity checks on a specific DPP.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Path Params, Example Response, Error Responses would go here. */}
+            <p className="text-sm text-muted-foreground">Details for this endpoint are in the OpenAPI specification and can be tested in the Playground.</p>
+          </CardContent>
+        </Card>
+      </section>
+
+
     </DocsPageLayout>
   );
 }
+
 

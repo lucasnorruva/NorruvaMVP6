@@ -1,31 +1,16 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Server, Cloud, Shield, ArrowUpCircle, BarChart, Info, Settings, Globe, Eye, Activity, TrendingUp, DatabaseZap, Zap, ArrowLeft } from "lucide-react"; 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Server, Cloud, Shield, Settings, Globe, Eye, Activity, TrendingUp, DatabaseZap } from "lucide-react";
+import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function DeploymentMonitoringPage() {
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <Server className="mr-3 h-7 w-7 text-primary" />
-          Deployment & Monitoring (Conceptual)
-        </h1>
-        <Button variant="outline" asChild>
-            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Conceptual Documentation</AlertTitle>
-        <AlertDescription>
-          This document outlines conceptual strategies for deploying and monitoring the Norruva DPP platform. Actual implementation would require detailed planning and infrastructure choices.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+      pageTitle="Deployment & Monitoring (Conceptual)"
+      pageIcon={Server}
+      alertTitle="Conceptual Documentation"
+      alertDescription="This document outlines conceptual strategies for deploying and monitoring the Norruva DPP platform. Actual implementation would require detailed planning and infrastructure choices."
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center"><Cloud className="mr-2 h-5 w-5 text-primary"/>Deployment Considerations (Conceptual)</CardTitle>
@@ -53,7 +38,7 @@ export default function DeploymentMonitoringPage() {
               <li><strong>API Gateway:</strong> Use an API Gateway (e.g., Google Cloud API Gateway, Amazon API Gateway) for managing, securing, and monitoring API endpoints.</li>
             </ul>
           </section>
-          
+
           <section>
             <h3 className="font-semibold text-lg mb-2 flex items-center"><Settings className="mr-2 h-4 w-4 text-accent"/>(Mock) Blockchain Nodes (Conceptual)</h3>
              <p className="text-sm text-muted-foreground mb-1">If simulating a private or consortium blockchain for enhanced data integrity or EBSI interaction:</p>
@@ -86,14 +71,14 @@ export default function DeploymentMonitoringPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center"><BarChart className="mr-2 h-5 w-5 text-primary"/>Monitoring & Optimization (Conceptual)</CardTitle>
+          <CardTitle className="flex items-center"><Eye className="mr-2 h-5 w-5 text-primary"/>Monitoring & Optimization (Conceptual)</CardTitle>
           <CardDescription>
             Strategies for monitoring system health and optimizing performance for the DPP platform.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           <section>
-            <h3 className="font-semibold text-lg mb-2 flex items-center"><Eye className="mr-2 h-4 w-4 text-accent"/>Key Metrics to Monitor</h3>
+            <h3 className="font-semibold text-lg mb-2 flex items-center"><Activity className="mr-2 h-4 w-4 text-accent"/>Key Metrics to Monitor</h3>
             <ul className="list-disc list-inside text-sm space-y-2">
               <li>
                 <strong>DPP Viewer (Frontend):</strong>
@@ -126,7 +111,7 @@ export default function DeploymentMonitoringPage() {
           </section>
 
           <section>
-            <h3 className="font-semibold text-lg mb-2 flex items-center"><Activity className="mr-2 h-4 w-4 text-accent"/>Monitoring Tools (Conceptual)</h3>
+            <h3 className="font-semibold text-lg mb-2 flex items-center"><TrendingUp className="mr-2 h-4 w-4 text-accent"/>Monitoring Tools (Conceptual)</h3>
             <ul className="list-disc list-inside text-sm space-y-1">
               <li><strong>Cloud Provider Monitoring:</strong> Services like Google Cloud Monitoring, AWS CloudWatch for infrastructure and service-level metrics.</li>
               <li><strong>Application Performance Monitoring (APM):</strong> Tools like Sentry, Datadog, New Relic for detailed application tracing, error tracking, and performance insights.</li>
@@ -137,7 +122,7 @@ export default function DeploymentMonitoringPage() {
           </section>
 
           <section>
-            <h3 className="font-semibold text-lg mb-2 flex items-center"><TrendingUp className="mr-2 h-4 w-4 text-accent"/>Optimization Strategies (Conceptual)</h3>
+            <h3 className="font-semibold text-lg mb-2 flex items-center"><DatabaseZap className="mr-2 h-4 w-4 text-accent"/>Optimization Strategies (Conceptual)</h3>
             <ul className="list-disc list-inside text-sm space-y-2">
               <li>
                 <strong>Caching:</strong>
@@ -184,7 +169,6 @@ export default function DeploymentMonitoringPage() {
           </section>
         </CardContent>
       </Card>
-
-    </div>
+    </DocsPageLayout>
   );
 }

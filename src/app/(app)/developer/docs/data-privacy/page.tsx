@@ -2,32 +2,18 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { ShieldAlert, UserCheck, Info, VenetianMask, FileText, Trash2, DownloadCloud, ArrowLeft, KeyRound, Globe, Activity, ShieldCheck as ShieldCheckIcon } from "lucide-react";
+import { UserCheck, VenetianMask, FileText, Trash2, DownloadCloud, KeyRound, Globe, Activity, ShieldCheck as ShieldCheckIcon } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function DataPrivacyPage() {
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <VenetianMask className="mr-3 h-7 w-7 text-primary" />
-          Data Privacy, Security & Compliance
-        </h1>
-        <Button variant="outline" asChild>
-            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Conceptual Documentation</AlertTitle>
-        <AlertDescription>
-          This document outlines conceptual approaches to data privacy, security, and broader compliance within the Norruva DPP platform. Actual implementation details would require legal and technical review.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+      pageTitle="Data Privacy, Security & Compliance"
+      pageIcon={VenetianMask}
+      alertTitle="Conceptual Documentation"
+      alertDescription="This document outlines conceptual approaches to data privacy, security, and broader compliance within the Norruva DPP platform. Actual implementation details would require legal and technical review."
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Introduction</CardTitle>
@@ -92,7 +78,7 @@ export default function DataPrivacyPage() {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center"><ShieldCheckIcon className="mr-2 h-5 w-5 text-primary"/>Broader Compliance & Security Posture (Conceptual)</CardTitle>
@@ -123,7 +109,7 @@ export default function DataPrivacyPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center"><ShieldAlert className="mr-2 h-5 w-5 text-primary"/>QR Codes &amp; Data Privacy</CardTitle>
+          <CardTitle className="flex items-center"><VenetianMask className="mr-2 h-5 w-5 text-primary"/>QR Codes &amp; Data Privacy</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm">
@@ -131,7 +117,7 @@ export default function DataPrivacyPage() {
           </p>
         </CardContent>
       </Card>
-      
+
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Developer Responsibilities</CardTitle>
@@ -150,6 +136,6 @@ export default function DataPrivacyPage() {
           </ul>
         </CardContent>
       </Card>
-    </div>
+    </DocsPageLayout>
   );
 }

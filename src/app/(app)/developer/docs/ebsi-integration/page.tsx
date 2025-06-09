@@ -1,31 +1,16 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Share2, ShieldCheck, BookOpen, Info, Workflow, Database, Users as UsersIcon, Layers, QrCode, FileCog, ArrowLeft } from "lucide-react"; 
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { Share2, BookOpen, Workflow, Database, QrCode, FileCog } from "lucide-react";
+import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function EbsiIntegrationOverviewPage() {
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <Share2 className="mr-3 h-7 w-7 text-primary" />
-          EBSI Integration Overview
-        </h1>
-        <Button variant="outline" asChild>
-            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Conceptual Documentation</AlertTitle>
-        <AlertDescription>
-          This page outlines the conceptual approach to integrating with the European Blockchain Services Infrastructure (EBSI) for Digital Product Passports. Actual implementation details will vary.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+      pageTitle="EBSI Integration Overview"
+      pageIcon={Share2}
+      alertTitle="Conceptual Documentation"
+      alertDescription="This page outlines the conceptual approach to integrating with the European Blockchain Services Infrastructure (EBSI) for Digital Product Passports. Actual implementation details will vary."
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center"><BookOpen className="mr-2 h-5 w-5 text-primary"/>Understanding EBSI Core Architecture</CardTitle>
@@ -76,7 +61,7 @@ export default function EbsiIntegrationOverviewPage() {
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center"><Layers className="mr-2 h-5 w-5 text-primary"/>Blockchain Platform Selection for Norruva DPP</CardTitle>
+          <CardTitle className="flex items-center"><Database className="mr-2 h-5 w-5 text-primary"/>Blockchain Platform Selection for Norruva DPP</CardTitle>
           <CardDescription>
             Choosing a suitable blockchain platform is critical for a successful and compliant EBSI integration.
           </CardDescription>
@@ -272,10 +257,6 @@ export default function EbsiIntegrationOverviewPage() {
           </section>
         </CardContent>
       </Card>
-
-    </div>
+    </DocsPageLayout>
   );
 }
-    
-
-    

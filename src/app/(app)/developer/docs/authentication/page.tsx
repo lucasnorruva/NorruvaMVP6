@@ -1,23 +1,15 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { KeyRound, ShieldCheck, Info, ArrowLeft } from "lucide-react";
+import { KeyRound, ShieldCheck } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function AuthenticationPage() {
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <KeyRound className="mr-3 h-7 w-7 text-primary" />
-          API Authentication
-        </h1>
-        <Button variant="outline" asChild>
-            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
+    <DocsPageLayout
+      pageTitle="API Authentication"
+      pageIcon={KeyRound}
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Overview</CardTitle>
@@ -89,7 +81,6 @@ export default function AuthenticationPage() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </DocsPageLayout>
   );
 }
-

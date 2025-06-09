@@ -1,31 +1,16 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { TestTube2, QrCode, Link as LinkIconPath, Info, ShieldCheck, ListChecks, UserCheckIcon, DatabaseZap, GitCompareArrows, GlobeLock, FileBadge, AlertTriangle as AlertTriangleIcon, SearchCheck, Palette, SmartphoneDevice, ArrowLeft } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { TestTube2, QrCode, GlobeLock, UserCheckIcon, DatabaseZap } from "lucide-react";
+import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function TestingValidationPage() {
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <TestTube2 className="mr-3 h-7 w-7 text-primary" />
-          Testing and Validation (Conceptual)
-        </h1>
-        <Button variant="outline" asChild>
-            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Conceptual Documentation</AlertTitle>
-        <AlertDescription>
-          This document outlines conceptual testing strategies for the Norruva DPP platform. Actual testing would involve more detailed test cases and tools.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+      pageTitle="Testing and Validation (Conceptual)"
+      pageIcon={TestTube2}
+      alertTitle="Conceptual Documentation"
+      alertDescription="This document outlines conceptual testing strategies for the Norruva DPP platform. Actual testing would involve more detailed test cases and tools."
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center"><QrCode className="mr-2 h-5 w-5 text-primary"/>Testing QR Code Functionality</CardTitle>
@@ -169,7 +154,7 @@ export default function TestingValidationPage() {
             <h3 className="font-semibold text-lg mb-2 mt-4">Key UAT Areas</h3>
             <ul className="list-disc list-inside text-sm space-y-2">
               <li>
-                <strong className="flex items-center"><Info className="mr-1.5 h-4 w-4 text-accent"/>Intuitiveness &amp; Understandability:</strong>
+                <strong className="flex items-center"><UserCheckIcon className="mr-1.5 h-4 w-4 text-accent"/>Intuitiveness &amp; Understandability:</strong>
                 <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
                   <li>Is the information presented clearly and easy for different user personas (consumers, retailers, recyclers, auditors) to understand?</li>
                   <li>Are technical terms (like blockchain hashes, EBSI IDs) explained or contextualized appropriately (e.g., via tooltips)?</li>
@@ -177,7 +162,7 @@ export default function TestingValidationPage() {
                 </ul>
               </li>
               <li>
-                <strong className="flex items-center"><Palette className="mr-1.5 h-4 w-4 text-accent"/>Navigation &amp; Layout:</strong>
+                <strong className="flex items-center"><UserCheckIcon className="mr-1.5 h-4 w-4 text-accent"/>Navigation &amp; Layout:</strong>
                  <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
                   <li>Is the viewer easy to navigate and scroll through?</li>
                   <li>Is the layout logical and does it prioritize key information effectively?</li>
@@ -185,7 +170,7 @@ export default function TestingValidationPage() {
                 </ul>
               </li>
               <li>
-                <strong className="flex items-center"><SmartphoneDevice className="mr-1.5 h-4 w-4 text-accent"/>Responsiveness &amp; Accessibility:</strong>
+                <strong className="flex items-center"><UserCheckIcon className="mr-1.5 h-4 w-4 text-accent"/>Responsiveness &amp; Accessibility:</strong>
                  <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
                   <li>Does the viewer adapt well to various screen sizes (desktop, tablet, mobile)?</li>
                   <li>Are there any display issues on common web browsers?</li>
@@ -193,21 +178,21 @@ export default function TestingValidationPage() {
                 </ul>
               </li>
               <li>
-                <strong className="flex items-center"><SearchCheck className="mr-1.5 h-4 w-4 text-accent"/>Accuracy of (Mock) Information:</strong>
+                <strong className="flex items-center"><UserCheckIcon className="mr-1.5 h-4 w-4 text-accent"/>Accuracy of (Mock) Information:</strong>
                  <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
                   <li>Does the data displayed on the viewer accurately reflect the mock data defined for the product (e.g., from `MOCK_PUBLIC_PASSPORTS`)?</li>
                   <li>Are all relevant sections (e.g., certifications, lifecycle events, blockchain details) populated correctly based on the mock product data?</li>
                 </ul>
               </li>
               <li>
-                <strong className="flex items-center"><QrCode className="mr-1.5 h-4 w-4 text-accent"/>QR Code Path (Conceptual):</strong>
+                <strong className="flex items-center"><UserCheckIcon className="mr-1.5 h-4 w-4 text-accent"/>QR Code Path (Conceptual):</strong>
                  <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
                   <li>Does simulating a QR scan (e.g., via the DPP Live Dashboard mock scanner) correctly lead to the corresponding public DPP viewer page?</li>
                   <li>Does the QR code (conceptually, if displayed on an internal product page) link to the correct public passport?</li>
                 </ul>
               </li>
               <li>
-                <strong className="flex items-center"><ShieldCheck className="mr-1.5 h-4 w-4 text-accent"/>Clarity of Compliance &amp; Verification Indicators:</strong>
+                <strong className="flex items-center"><UserCheckIcon className="mr-1.5 h-4 w-4 text-accent"/>Clarity of Compliance &amp; Verification Indicators:</strong>
                  <ul className="list-disc list-inside ml-5 text-xs text-muted-foreground">
                   <li>Are EBSI status, blockchain anchor presence, and certification verification statuses visually clear and easy to understand?</li>
                   <li>Do tooltips or contextual help adequately explain these indicators?</li>
@@ -230,16 +215,6 @@ export default function TestingValidationPage() {
           </section>
         </CardContent>
       </Card>
-    </div>
+    </DocsPageLayout>
   );
 }
-    
-    
-    
-
-    
-
-    
-
-    
-  

@@ -1,15 +1,13 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Badge } from "@/components/ui/badge"; 
-import { Server, FileJson, KeyRound, Info, BookText, ArrowLeft } from "lucide-react"; 
+import { Badge } from "@/components/ui/badge";
+import { Server, FileJson, KeyRound, BookText } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { MOCK_DPPS } from "@/types/dpp"; 
-import { cn } from "@/lib/utils";
+import { MOCK_DPPS } from "@/types/dpp";
+import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function ApiReferencePage() {
-  const exampleDppResponse = JSON.stringify(MOCK_DPPS[0], null, 2); 
+  const exampleDppResponse = JSON.stringify(MOCK_DPPS[0], null, 2);
 
   const qrValidationResponseExample = {
     productId: MOCK_DPPS[0].id,
@@ -17,7 +15,7 @@ export default function ApiReferencePage() {
     category: MOCK_DPPS[0].category,
     manufacturer: MOCK_DPPS[0].manufacturer?.name || "N/A",
     verificationStatus: "valid_dpp_found", // Example status
-    dppUrl: `/passport/${MOCK_DPPS[0].id}`, 
+    dppUrl: `/passport/${MOCK_DPPS[0].id}`,
     ebsiCompliance: {
       status: MOCK_DPPS[0].ebsiVerification?.status || "unknown",
       verificationId: MOCK_DPPS[0].ebsiVerification?.verificationId
@@ -76,14 +74,14 @@ export default function ApiReferencePage() {
         { name: "Organic Polymer (Strap)", percentage: 20 }
       ],
       energyLabel: "A",
-      imageUrl: "https://placehold.co/600x400.png", 
+      imageUrl: "https://placehold.co/600x400.png",
       imageHint: "smart watch wearable",
       customAttributes: [
         { "key": "Display Type", "value": "AMOLED" },
         { "key": "OS", "value": "WearOS" }
       ]
     },
-    compliance: { battery_regulation: { status: "not_applicable", lastChecked: new Date().toISOString() } }, 
+    compliance: { battery_regulation: { status: "not_applicable", lastChecked: new Date().toISOString() } },
     ebsiVerification: { status: "pending_verification", lastChecked: new Date().toISOString() },
     lifecycleEvents: [],
     certifications: [],
@@ -106,7 +104,7 @@ export default function ApiReferencePage() {
       status: "pending_review"
     }
   }, null, 2);
-  
+
   const conceptualUpdateDppResponseBody = JSON.stringify({
     ...(MOCK_DPPS[0] || {}), // Assume it's an update to PROD001 for example
     id: MOCK_DPPS[0]?.id || "DPP001_MOCK",
@@ -159,25 +157,12 @@ export default function ApiReferencePage() {
 
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <BookText className="mr-3 h-7 w-7 text-primary" />
-          API Reference (Conceptual)
-        </h1>
-        <Button variant="outline" asChild>
-            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Conceptual Documentation</AlertTitle>
-        <AlertDescription>
-          This API reference is conceptual and outlines how API endpoints for the Norruva DPP platform might be structured. Actual implementation details may vary.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+      pageTitle="API Reference (Conceptual)"
+      pageIcon={BookText}
+      alertTitle="Conceptual Documentation"
+      alertDescription="This API reference is conceptual and outlines how API endpoints for the Norruva DPP platform might be structured. Actual implementation details may vary."
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Introduction</CardTitle>
@@ -280,13 +265,13 @@ export default function ApiReferencePage() {
             </section>
           </CardContent>
         </Card>
-        
+
         <Card className="shadow-lg mt-6">
           <CardHeader>
             <CardTitle className="text-lg">Validate QR Code & Retrieve DPP Summary</CardTitle>
             <CardDescription>
               <span className="inline-flex items-center font-mono text-sm">
-                <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge> 
+                <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
                 <code className="bg-muted px-1 py-0.5 rounded-sm">/qr/validate</code>
               </span>
               <br/>
@@ -552,16 +537,7 @@ export default function ApiReferencePage() {
             </section>
           </CardContent>
         </Card>
-        
       </section>
-    </div>
+    </DocsPageLayout>
   );
 }
-    
-    
-    
-
-    
-
-    
-

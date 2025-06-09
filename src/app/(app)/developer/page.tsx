@@ -53,6 +53,7 @@ const mockCodeSamples = [
     title: "Fetching a Product Passport (Python)",
     description: "A Python script demonstrating how to authenticate and retrieve a DPP using its ID.",
     linkText: "View on GitHub (Mock)",
+    href: "#",
     icon: FileCode
   },
   {
@@ -60,6 +61,7 @@ const mockCodeSamples = [
     title: "Creating a New DPP with Battery Data (Node.js)",
     description: "Node.js example for creating a new product passport, including specific fields for EU Battery Regulation.",
     linkText: "View Snippet (Mock)",
+    href: "#",
     icon: FileCode
   },
   {
@@ -67,6 +69,7 @@ const mockCodeSamples = [
     title: "Validating a QR Identifier (Java)",
     description: "Java code snippet for using the QR validation endpoint to get product summary information.",
     linkText: "View on GitHub (Mock)",
+    href: "#",
     icon: FileCode
   },
 ];
@@ -417,6 +420,7 @@ export default function DeveloperPortalPage() {
 
       await new Promise(resolve => setTimeout(resolve, 500));
       
+      // Target our Next.js API route
       const res = await fetch(url, options);
       const responseData = await res.json();
       
@@ -492,7 +496,7 @@ export default function DeveloperPortalPage() {
   }
   const handleMockGetGraph = () => {
     updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet);
-    makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetDppGraphResponse);
+    makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetGraphResponse);
   }
 
 
@@ -802,7 +806,7 @@ export default function DeveloperPortalPage() {
               apiKeys={apiKeys}
               onCopyKey={handleCopyKey}
               onGenerateSandboxKey={handleGenerateSandboxKey}
-              onRequestProductionKey={handleRequestProductionKey}
+              onRequestProductionKey={onRequestProductionKey}
               onDeleteApiKey={handleDeleteApiKey}
             />
             <Card className="mt-6 shadow-md">
@@ -1229,6 +1233,7 @@ export default function DeveloperPortalPage() {
           </Card>
         </TabsContent>
 
+        {/* --- Resources Tab --- */}
         <TabsContent value="resources" className="mt-6 space-y-8">
           <Card className="shadow-lg">
             <CardHeader>
@@ -1271,8 +1276,10 @@ export default function DeveloperPortalPage() {
                     <p className="text-xs text-muted-foreground flex-grow min-h-[48px]">{sample.description}</p>
                   </CardContent>
                    <div className="p-4 pt-0">
-                    <Button variant="link" size="sm" className="p-0 h-auto text-primary group" disabled>
-                      {sample.linkText} <ExternalLinkIcon className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                    <Button variant="link" size="sm" className="p-0 h-auto text-primary group" asChild>
+                        <Link href={sample.href} passHref className="opacity-60 cursor-not-allowed">
+                           {sample.linkText} <ExternalLinkIcon className="ml-1 h-3 w-3 group-hover:translate-x-0.5 transition-transform" />
+                        </Link>
                     </Button>
                   </div>
                 </Card>
@@ -1369,9 +1376,7 @@ export default function DeveloperPortalPage() {
               </div>
             </CardContent>
           </Card>
-
         </TabsContent>
-
 
         <TabsContent value="settings_usage" className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="shadow-lg lg:col-span-2">

@@ -20,7 +20,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   }
 
   const imageDisplayUrl = product.imageUrl || "https://placehold.co/400x300.png?text=No+Image";
-  // Use the centralized utility function
   const aiHint = getAiHintForImage({
     productName: product.productName,
     category: product.category,
@@ -33,13 +32,14 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           parsedSpecifications = JSON.parse(product.specifications);
       } catch (e) {
           console.warn("Failed to parse specifications JSON string, displaying as raw string or handling as error.", e);
-          // Optionally, display raw string or specific error message
-          // For now, if it fails to parse, it will be caught by the Object.keys check below
+          // Display raw string if parsing fails and it's not empty
+          if (product.specifications.trim() !== "") {
+            parsedSpecifications = { "Raw Specifications": product.specifications };
+          }
       }
-  } else if (typeof product.specifications === 'object' && product.specifications !== null) {
-      parsedSpecifications = product.specifications;
   }
-
+  // Note: If product.specifications was already an object, it would be used directly by `SimpleProductDetail` type,
+  // but current mapping ensures it's a string for `SimpleProductDetail` if coming from `DigitalProductPassport`.
 
   return (
     <div className="grid md:grid-cols-3 gap-6">
@@ -172,7 +172,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center">
                 <Tag className="mr-2 h-5 w-5 text-primary" />
-                Specifications
+                Technical Specifications
               </CardTitle>
             </CardHeader>
             <CardContent>
@@ -180,7 +180,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 {Object.entries(parsedSpecifications).map(([key, value]) => (
                   <div key={key} className="flex">
                     <dt className="font-medium text-muted-foreground w-1/3 truncate capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</dt>
-                    <dd className="text-foreground/90 w-2/3">{String(value)}</dd>
+                    <dd className="text-foreground/90 w-2/3 whitespace-pre-wrap">{String(value)}</dd>
                   </div>
                 ))}
               </dl>
@@ -188,8 +188,8 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           </Card>
         ) : (
            <Card className="shadow-sm">
-            <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><Tag className="mr-2 h-5 w-5 text-primary" />Specifications</CardTitle></CardHeader>
-            <CardContent><p className="text-sm text-muted-foreground">No specifications provided.</p></CardContent>
+            <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><Tag className="mr-2 h-5 w-5 text-primary" />Technical Specifications</CardTitle></CardHeader>
+            <CardContent><p className="text-sm text-muted-foreground">No technical specifications provided.</p></CardContent>
           </Card>
         )}
 
@@ -197,7 +197,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
               <ListChecks className="mr-2 h-5 w-5 text-primary" />
-              Custom Attributes
+              Additional Attributes
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -206,12 +206,12 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 {product.customAttributes.map((attr) => (
                   <div key={attr.key} className="flex">
                     <dt className="font-medium text-muted-foreground w-1/3 truncate">{attr.key}:</dt>
-                    <dd className="text-foreground/90 w-2/3">{attr.value}</dd>
+                    <dd className="text-foreground/90 w-2/3 whitespace-pre-wrap">{attr.value}</dd>
                   </div>
                 ))}
               </dl>
             ) : (
-              <p className="text-sm text-muted-foreground">No custom attributes provided.</p>
+              <p className="text-sm text-muted-foreground">No additional attributes provided.</p>
             )}
           </CardContent>
         </Card>
@@ -219,3 +219,4 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
+

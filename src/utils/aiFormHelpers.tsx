@@ -218,7 +218,7 @@ export async function handleSuggestCustomAttributesAI(
     if (result.customAttributes.length === 0) {
         toast({ title: "No specific attributes suggested.", description: "Try adding more product details." });
     } else {
-        toast({ title: "Custom Attributes Suggested!", description: `${result.customAttributes.length} custom attributes suggested by AI.`, variant: "default" });
+        toast({ title: "Custom Attributes Suggested!", description: `${result.customAttributes.length} custom attribute(s) suggested by AI.`, variant: "default" });
     }
     return result.customAttributes;
   } catch (error) {

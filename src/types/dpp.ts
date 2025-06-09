@@ -175,7 +175,12 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     category: "Appliances",
     manufacturer: { name: "GreenTech Appliances"},
     modelNumber: "X500-ECO",
-    metadata: { last_updated: "2024-07-28T10:00:00Z", status: "published", dppStandardVersion: "CIRPASS v0.9 Draft", created_at: "2024-01-01T10:00:00Z" },
+    metadata: { 
+      created_at: "2024-01-01T10:00:00Z", 
+      last_updated: "2024-01-30T10:00:00Z",
+      status: "published", 
+      dppStandardVersion: "CIRPASS v0.9 Draft" 
+    },
     productDetails: {
       description: "An eco friendly fridge.",
       energyLabel: "A++",
@@ -191,19 +196,23 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       ],
     },
     compliance: {
-      eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-07-01T00:00:00Z" },
-      esprConformity: { status: "conformant", assessmentId: "ESPR_ASSESS_001", assessmentDate: "2024-07-01" },
+      eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" }, 
+      esprConformity: { status: "conformant", assessmentId: "ESPR_ASSESS_001", assessmentDate: "2024-01-01" },
       battery_regulation: { status: "not_applicable" },
     },
-    ebsiVerification: { status: "verified", verificationId: "EBSI_TX_ABC123", lastChecked: "2024-07-29T00:00:00Z"},
+    ebsiVerification: { 
+      status: "verified", 
+      verificationId: "EBSI_TX_ABC123", 
+      lastChecked: "2024-01-25T00:00:00Z"
+    },
     blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef"},
     consumerScans: 1250,
     lifecycleEvents: [
-      {id: "evt1", type: "Manufactured", timestamp: "2024-01-01T00:00:00Z", transactionHash: "0xabc...def", responsibleParty: "GreenTech Appliances"}
+      {id: "evt1", type: "Manufactured", timestamp: "2024-01-15T00:00:00Z", transactionHash: "0xabc...def", responsibleParty: "GreenTech Appliances"}
     ],
     certifications: [
-      {id: "cert1", name: "Energy Star", issuer: "EPA", issueDate: "2024-01-01", documentUrl: "#", transactionHash: "0xcertAnchor1", standard: "Energy Star Program Requirements for Refrigerators v6.0"},
-      {id: "cert2", name: "ISO 14001", issuer: "TUV Rheinland", issueDate: "2023-11-15", expiryDate: "2026-11-14", documentUrl: "#iso14001", vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015"}
+      {id: "cert1", name: "Energy Star", issuer: "EPA", issueDate: "2024-01-01T11:00:00Z", documentUrl: "#", transactionHash: "0xcertAnchor1", standard: "Energy Star Program Requirements for Refrigerators v6.0"},
+      {id: "cert2", name: "ISO 14001", issuer: "TUV Rheinland", issueDate: "2024-01-20T00:00:00Z", expiryDate: "2026-11-14", documentUrl: "#iso14001", vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015"}
     ],
     supplyChainLinks: [
       { supplierId: "SUP001", suppliedItem: "Compressor Unit XJ-500", notes: "Primary compressor supplier for EU market. Audited for ethical sourcing." },
@@ -531,109 +540,10 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
       { name: "Energy Star", authority: "EPA", issueDate: "2024-01-01", documentUrl: "#", isVerified: true, standard: "Energy Star Program Requirements for Refrigerators v6.0", transactionHash: "0xcertAnchor1" },
       { name: "ISO 14001", authority: "TUV Rheinland", issueDate: "2023-11-15", expiryDate: "2026-11-14", documentUrl: "#iso14001", isVerified: true, vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015" }
     ],
-  },
-  {
-    id: "PROD002",
-    productName: "Smart LED Bulb (4-Pack)",
-    category: "Electronics",
-    status: "Active",
-    manufacturer: "BrightSpark Electronics",
-    gtin: "98765432109876",
-    modelNumber: "BS-LED-S04B",
-    description: "Tunable white and color smart LED bulbs, designed for long lifespan and connectivity with smart home systems. Uses 85% less energy than traditional incandescent bulbs.",
-    imageUrl: "https://placehold.co/600x400.png",
-    imageHint: "led bulbs packaging",
-    keySustainabilityPoints: ["Uses 85% less energy", "Recyclable packaging materials", "Mercury-free design", "Long lifespan (25,000 hours)"],
-    keyCompliancePoints: ["RoHS Compliant", "CE Marked"],
-    specifications: JSON.stringify({ "Lumens per bulb": "800lm", "Connectivity": "Wi-Fi, Bluetooth", "Lifespan (hours)": "25000", "Color Temperature": "2700K-6500K", "Wattage (per bulb)": "9W" }, null, 2),
-    customAttributes: [
-        {key: "Smart Home Compatibility", value: "Google Home, Amazon Alexa, Apple HomeKit"},
-        {key: "Light Color Options", value: "RGBW (16 million colors + Tunable White)"},
-    ],
-    materialsUsed: [
-      { name: "Polycarbonate (Housing)", percentage: 60, isRecycled: false },
-      { name: "Aluminum (Heat Sink)", percentage: 30, isRecycled: true },
-      { name: "Electronic Components", percentage: 10 }
-    ],
-    energyLabelRating: "A+",
-    repairability: { score: 6.0, scale: 10, detailsUrl: "#repair-details-PROD002" },
-    recyclabilityInfo: { percentage: 75, instructionsUrl: "#recycling-PROD002" },
-    supplyChainLinks: [
-      { supplierId: "SUP004", suppliedItem: "LED Chips & Drivers", notes: "Specialized electronics supplier from Shanghai." }
-    ],
-    complianceSummary: {
-      overallStatus: "Pending Review",
-      eprel: { status: "Data Mismatch", lastChecked: "2024-07-10T00:00:00Z", id: "EPREL_EXISTING_BS-LED-S04B" },
-      ebsi: { status: "Pending", lastChecked: "2024-07-15T00:00:00Z" },
-      specificRegulations: [
-        { regulationName: "RoHS Directive 2011/65/EU", status: "Compliant", lastChecked: "2024-07-01T00:00:00Z" },
-        { regulationName: "EMC Directive 2014/30/EU", status: "Pending", lastChecked: "2024-07-01T00:00:00Z", notes: "Awaiting test report" },
-        { regulationName: "EU Battery Regulation (if applicable)", status: "Data Incomplete", lastChecked: "2024-07-20T00:00:00Z", notes: "Internal battery component data needed."},
-      ]
-    },
-    lifecycleEvents: [
-      { id: "lc006", eventName: "Production Started", date: "2024-03-01T00:00:00Z", location: "Shenzhen, China", status: "In Progress", iconName: "Cog" },
-      { id: "lc007", eventName: "Firmware Update v1.2 Deployment", date: "2024-08-01T00:00:00Z", notes: "Improved energy efficiency algorithm and security patches.", status: "Upcoming", iconName: "UploadCloud" },
-      { id: "lc008", eventName: "Batch Testing", date: "2024-03-10T00:00:00Z", status: "Completed", iconName: "ClipboardCheck"},
-    ],
-    certifications: [
-      { name: "RoHS Compliance", authority: "Self-Certified", issueDate: "2024-03-01", isVerified: true, standard: "Directive 2011/65/EU" },
-      { name: "CE Marking", authority: "Self-Certified", issueDate: "2024-03-01", isVerified: true },
-      { name: "Bluetooth SIG Qualification", authority: "Bluetooth SIG", issueDate: "2024-03-05", expiryDate: "2028-01-01", documentUrl:"#", isVerified: true, standard: "Bluetooth Core Spec v5.2" },
-    ],
-  },
-  {
-    id: "USER_PROD123456", // Example User-Added Product
-    productName: "Custom Craft Wooden Chair",
-    category: "Furniture",
-    status: "Draft",
-    manufacturer: "Artisan Woodworks",
-    gtin: "11223344556677",
-    modelNumber: "CWC-001",
-    description: "A handcrafted wooden chair made from sustainably sourced oak. Each chair is unique and built to last.",
-    imageUrl: "https://placehold.co/600x400.png",
-    imageHint: "wooden chair artisan",
-    keySustainabilityPoints: ["Sustainably Sourced Oak", "Handcrafted Locally", "Durable Design", "Low VOC Finish"],
-    keyCompliancePoints: ["TSCA Title VI Compliant (Formaldehyde)"],
-    specifications: JSON.stringify({ "Material": "Solid Oak", "Finish": "Natural Oil", "Weight Capacity (kg)": "120", "Dimensions (HxWxD cm)": "90x45x50" }, null, 2),
-    customAttributes: [
-        {key: "Wood Type", value: "Oak"},
-        {key: "Finish", value: "Natural Oil"},
-        {key: "Artisan Name", value: "John Craft"},
-        {key: "Lead Time", value: "4-6 Weeks"}
-    ],
-    materialsUsed: [
-        { name: "FSC Certified Oak Wood", percentage: 95, source: "Sustainable Forests Co-op" },
-        { name: "Natural Oil Finish", percentage: 5, source: "EcoFinishes Ltd." }
-    ],
-    energyLabelRating: "N/A",
-    repairability: { score: 7.5, scale: 10 },
-    recyclabilityInfo: { percentage: 80, instructionsUrl: "#recycling-USER_PROD123456"},
-    supplyChainLinks: [],
-    complianceSummary: {
-      overallStatus: "N/A",
-      eprel: { status: "Product Not Found in EPREL", lastChecked: "2024-07-20T00:00:00Z" },
-      ebsi: { status: "N/A", lastChecked: "2024-07-20T00:00:00Z" },
-      specificRegulations: [
-        { regulationName: "TSCA Title VI", status: "Pending", lastChecked: "2024-07-18T00:00:00Z", notes: "Awaiting supplier declaration for finish."}
-      ]
-    },
-    lifecycleEvents: [
-        { id: "lc_user_001", eventName: "Design Finalized", date: "2024-06-01T00:00:00Z", status: "Completed", iconName: "PenTool"},
-        { id: "lc_user_002", eventName: "Material Sourcing", date: "2024-06-05T00:00:00Z", status: "In Progress", iconName: "Search"},
-        { id: "lc_user_003", eventName: "Assembly Scheduled", date: "2024-08-15T00:00:00Z", status: "Upcoming", iconName: "CalendarCheck"},
-    ],
-    certifications: [],
   }
 ];
 
-// --- Types for Public Passport Page ---
 export type IconName = keyof typeof import('lucide-react');
-
-export interface SustainabilityHighlight {
-  iconName: IconName;
-  text: string;
-}
 
 export interface LifecycleHighlight {
   stage: string;
@@ -647,8 +557,11 @@ export interface PublicCertification {
   name: string;
   authority: string;
   expiryDate?: string;
-  link?: string;
   isVerified?: boolean;
+  link?: string;
+  standard?: string;
+  vcId?: string;
+  transactionHash?: string;
 }
 
 export interface PublicProductInfo {
@@ -656,9 +569,9 @@ export interface PublicProductInfo {
   productName: string;
   tagline: string;
   imageUrl: string;
-  imageHint: string;
+  imageHint?: string;
   productStory: string;
-  sustainabilityHighlights: SustainabilityHighlight[];
+  sustainabilityHighlights: Array<{ iconName?: IconName; text: string }>;
   manufacturerName: string;
   manufacturerWebsite?: string;
   brandLogoUrl?: string;
@@ -679,45 +592,42 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
   "PROD001": {
     passportId: "PROD001",
     productName: "EcoFriendly Refrigerator X2000",
-    tagline: "Sustainable Cooling, Smart Living.",
+    tagline: "Cool, Efficient, Sustainable.",
     imageUrl: "https://placehold.co/800x600.png",
-    imageHint: "modern refrigerator kitchen",
-    productStory: "Experience the future of refrigeration with the EcoFriendly Refrigerator X2000. Designed with both the planet and your lifestyle in mind, this appliance combines cutting-edge cooling technology with sustainable materials. Its spacious interior, smart energy management, and sleek design make it a perfect addition to any modern, eco-conscious home. We believe in transparency, and this Digital Product Passport gives you insight into its journey and impact. Built to last and designed for efficiency, the X2000 helps you reduce your environmental footprint without compromising on performance or style. More details include advanced frost-free systems, optimized airflow for even temperature distribution, and compartments designed for specific food types to prolong freshness.",
+    imageHint: "refrigerator kitchen",
+    productStory: "The EcoFriendly Refrigerator X2000 is designed for the modern, environmentally conscious household. It features our latest FrostFree technology, an A+++ energy rating, and is built with over 70% recycled materials. Its smart features help optimize cooling and reduce energy consumption, contributing to a greener planet one kitchen at a time. This DPP provides full transparency into its lifecycle and sustainability credentials.",
     sustainabilityHighlights: [
-      { iconName: "Zap", text: "Energy Star Certified A+++" },
-      { iconName: "Recycle", text: "Made with 70% recycled steel" },
-      { iconName: "Recycle", text: "95% recyclable at end-of-life" },
-      { iconName: "Zap", text: "Smart energy consumption features" }
+      { iconName: "Zap", text: "A+++ Energy Rating" },
+      { iconName: "Recycle", text: "Made with 70% Recycled Steel" },
+      { iconName: "Leaf", text: "Low GWP Refrigerant Used" },
+      { iconName: "Award", text: "Certified for 15-year Durability" }
     ],
     manufacturerName: "GreenTech Appliances",
     manufacturerWebsite: "#",
     brandLogoUrl: "https://placehold.co/150x50.png?text=GreenTech",
     learnMoreLink: "#",
-    complianceSummary: "Fully compliant with EU Ecodesign and Energy Labelling regulations. EBSI verified.",
-    category: "Home Appliances",
-    modelNumber: "X2000-ECO",
+    complianceSummary: "Fully compliant with EU Ecodesign and Energy Labelling directives. EPREL registered. EBSI verification completed for key claims.",
+    category: "Appliances",
+    modelNumber: "X500-ECO",
     anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef",
-    blockchainPlatform: "MockChain (Ethereum Compatible)",
+    blockchainPlatform: "MockChain (Ethereum L1)",
     ebsiStatus: 'verified',
-    ebsiVerificationId: "EBSI-VC-ATTR-XYZ-00123",
+    ebsiVerificationId: "EBSI-VC-XYZ-00123",
     lifecycleHighlights: [
-      { stage: "Manufactured", date: "2024-01-15", details: "Initial production run batch #PB789 completed at EcoFactory, Germany.", isEbsiVerified: true, iconName: "Factory" },
-      { stage: "Quality Assurance", date: "2024-01-16", details: "All quality control checks passed. Product meets ISO 9001 standards.", isEbsiVerified: true, iconName: "ShieldCheck" },
-      { stage: "Shipped to Distributor", date: "2024-01-20", details: "Outbound shipment via GreenLogistics. Container #C0N741N3R.", isEbsiVerified: true, iconName: "Truck" },
-      { stage: "Sold to Consumer", date: "2024-02-10", details: "First retail sale recorded. Warranty activated for customer.", isEbsiVerified: false, iconName: "ShoppingCart" },
-      { stage: "Scheduled Maintenance", date: "2025-02-15", details: "Preventative maintenance, including filter replacement, due. Customer notified.", isEbsiVerified: false, iconName: "Wrench" },
+      { stage: "Manufacturing", date: "Jan 2024", details: "Produced in our green-certified facility in Germany.", isEbsiVerified: true, iconName: "Factory" },
+      { stage: "Shipped", date: "Feb 2024", details: "Transported via low-emission logistics partners to EU distribution centers.", isEbsiVerified: false, iconName: "Truck" },
+      { stage: "Sold", date: "Mar 2024", details: "First retail sale recorded in Paris, France.", isEbsiVerified: false, iconName: "ShoppingCart" },
+      { stage: "End-of-Life Path", date: "Est. 2039", details: "Designed for 95% recyclability. Refer to local WEEE collection.", isEbsiVerified: false, iconName: "Recycle" }
     ],
     certifications: [
-      { name: "EU Energy Label A+++", authority: "European Commission", expiryDate: "N/A", link: "#", isVerified: true },
-      { name: "CE Marking", authority: "Self-Certified (Manufacturer)", expiryDate: "N/A", isVerified: true },
-      { name: "ISO 9001:2015", authority: "TUV SUD", expiryDate: "2026-05-20", link: "#", isVerified: false },
-      { name: "Green Product Award 2024", authority: "EcoChoice Org", expiryDate: "N/A", link: "#", isVerified: true },
+      { name: "Energy Star", authority: "EPA", isVerified: true, standard: "Energy Star Program Requirements for Refrigerators v6.0", transactionHash: "0xcertAnchor1" },
+      { name: "ISO 14001", authority: "TUV Rheinland", expiryDate: "2026-11-14", isVerified: true, vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015" }
     ],
     customAttributes: [
-      {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
-      {key: "Special Feature", value: "AI Defrost Technology"},
-      {key: "Warranty Period", value: "5 Years"},
-      {key: "Country of Origin", value: "Germany"},
+        {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
+        {key: "Special Feature", value: "AI Defrost Technology"},
+        {key: "Warranty Period", value: "5 Years"},
+        {key: "Country of Origin", value: "Germany"},
     ],
   },
   "PROD002": {
@@ -749,8 +659,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { stage: "Product Registration", date: "2024-03-20", details: "Registered in EPREL database (ID: EPREL_PENDING_002), awaiting final data submission.", isEbsiVerified: false, iconName: "ClipboardCheck" },
     ],
     certifications: [
-      { name: "RoHS Compliance", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
-      { name: "CE Marking", authority: "Self-Certified", expiryDate: "N/A", isVerified: true },
+      { name: "RoHS Compliance", authority: "Self-Certified", isVerified: true },
+      { name: "CE Marking", authority: "Self-Certified", isVerified: true },
       { name: "Bluetooth SIG Qualification", authority: "Bluetooth SIG", expiryDate: "2028-01-01", link:"#", isVerified: true },
     ],
     customAttributes: [
@@ -782,7 +692,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
         {key: "Finish", value: "Natural Oil"},
         {key: "Artisan Name", value: "John Craft"},
         {key: "Lead Time", value: "4-6 Weeks"}
-    ]
+    ],
   }
 };
 
@@ -841,4 +751,3 @@ export interface DisplayableProduct {
   customAttributesJsonString?: string; // Stays as string for form consistency
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; // Add this for filtering
 }
-

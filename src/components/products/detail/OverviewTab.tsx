@@ -8,26 +8,11 @@ import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks } from "lucide-react";
+import { getAiHintForImage } from "@/utils/imageUtils"; // Import centralized utility
 
 interface OverviewTabProps {
   product: SimpleProductDetail;
 }
-
-const getAiHintForImage = (product: SimpleProductDetail): string => {
-  if (product.imageHint && product.imageHint.trim()) {
-    return product.imageHint.trim().split(" ").slice(0, 2).join(" ");
-  }
-  if (product.productName && product.productName.trim()) {
-    const nameWords = product.productName.trim().split(" ");
-    if (nameWords.length === 1) return nameWords[0].toLowerCase();
-    return nameWords.slice(0, 2).join(" ").toLowerCase();
-  }
-  if (product.category && product.category.trim()) {
-    return product.category.trim().split(" ")[0].toLowerCase();
-  }
-  return "product photo"; // Default fallback
-};
-
 
 export default function OverviewTab({ product }: OverviewTabProps) {
   if (!product) {
@@ -35,7 +20,12 @@ export default function OverviewTab({ product }: OverviewTabProps) {
   }
 
   const imageDisplayUrl = product.imageUrl || "https://placehold.co/400x300.png?text=No+Image";
-  const aiHint = getAiHintForImage(product);
+  // Use the centralized utility function
+  const aiHint = getAiHintForImage({
+    productName: product.productName,
+    category: product.category,
+    imageHint: product.imageHint,
+  });
 
   let parsedSpecifications: Record<string, any> = {};
   if (product.specifications && typeof product.specifications === 'string') {

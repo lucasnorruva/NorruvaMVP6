@@ -223,6 +223,14 @@ export default function ApiReferencePage() {
     }
   }, null, 2);
 
+  const conceptualVerifyDppResponse = JSON.stringify({
+    productId: "DPP001",
+    verificationStatus: "Verified",
+    message: "Product DPP for ID DPP001 integrity and key compliance points (mock) verified successfully.",
+    timestamp: new Date().toISOString(),
+    checksPerformed: ["Mock Data Integrity Check", "Mock EBSI Anchor Verification"]
+  }, null, 2);
+
 
   return (
     <DocsPageLayout
@@ -790,12 +798,40 @@ export default function ApiReferencePage() {
                 <code className="bg-muted px-1 py-0.5 rounded-sm">/dpp/verify/{'{productId}'}</code>
               </span>
               <br/>
-              Performs compliance and authenticity checks on a specific DPP.
+              Performs compliance and authenticity checks on a specific DPP (conceptual EBSI-linked verification).
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Path Params, Example Response, Error Responses would go here. */}
-            <p className="text-sm text-muted-foreground">Details for this endpoint are in the OpenAPI specification and can be tested in the Playground.</p>
+            <section>
+              <h4 className="font-semibold mb-1">Path Parameters</h4>
+              <ul className="list-disc list-inside text-sm space-y-1">
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> (string, required): The unique identifier of the product to verify.</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1">Request Body</h4>
+              <p className="text-sm mb-1">This endpoint does not require a request body for the mock implementation.</p>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
+              <p className="text-sm mb-1">Returns a verification result object.</p>
+              <details className="border rounded-md">
+                <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Response
+                </summary>
+                <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+                  <code>{conceptualVerifyDppResponse}</code>
+                </pre>
+              </details>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
+              <ul className="list-disc list-inside text-sm space-y-2">
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>. (Example in GET /dpp/{'{id}'})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>. (Example in GET /dpp/{'{id}'})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>. (Example in GET /dpp/{'{id}'})</li>
+              </ul>
+            </section>
           </CardContent>
         </Card>
       </section>
@@ -804,6 +840,7 @@ export default function ApiReferencePage() {
     </DocsPageLayout>
   );
 }
+
 
 
 

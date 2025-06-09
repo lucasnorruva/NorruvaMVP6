@@ -11,8 +11,7 @@ export default function ApiReferencePage() {
 
   const exampleListDppsResponse = JSON.stringify({
     data: [
-      MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0], // Use a specific mock or fallback
-      // Add another if space allows or keep it concise
+      MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0],
     ],
     filtersApplied: {
       status: "published",
@@ -20,7 +19,7 @@ export default function ApiReferencePage() {
       blockchainAnchored: "all",
       searchQuery: "EcoSmart"
     },
-    totalCount: 1 // Example count, in reality, it would match filtered results
+    totalCount: 1
   }, null, 2);
 
 
@@ -29,7 +28,7 @@ export default function ApiReferencePage() {
     productName: MOCK_DPPS[0].productName,
     category: MOCK_DPPS[0].category,
     manufacturer: MOCK_DPPS[0].manufacturer?.name || "N/A",
-    verificationStatus: "valid_dpp_found", // Example status
+    verificationStatus: "valid_dpp_found", 
     dppUrl: `/passport/${MOCK_DPPS[0].id}`,
     ebsiCompliance: {
       status: MOCK_DPPS[0].ebsiVerification?.status || "unknown",
@@ -43,7 +42,7 @@ export default function ApiReferencePage() {
   const exampleQrValidationResponse = JSON.stringify(qrValidationResponseExample, null, 2);
 
   const error401 = JSON.stringify({ error: { code: 401, message: "API key missing or invalid." } }, null, 2);
-  const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }, { status: 404 }); // Corrected for status prop
+  const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }, { status: 404 }); 
   const error400_general = JSON.stringify({ error: { code: 400, message: "Invalid request payload or parameters." } }, null, 2);
   const error400_qr = JSON.stringify({ error: { code: 400, message: "Invalid request body. 'qrIdentifier' is required." } }, null, 2);
   const error500 = JSON.stringify({ error: { code: 500, message: "An unexpected error occurred on the server." } }, null, 2);
@@ -69,8 +68,7 @@ export default function ApiReferencePage() {
   }, null, 2);
 
   const conceptualCreateDppResponseBody = JSON.stringify({
-    // ...MOCK_DPPS[0], // Use a base structure, but specific fields will be overridden for clarity
-    id: "DPP_API_12345", // Newly generated ID
+    id: "DPP_API_12345", 
     version: 1,
     productName: "Sustainable Smart Watch Series 5",
     category: "Wearable Technology",
@@ -78,9 +76,9 @@ export default function ApiReferencePage() {
     manufacturer: { name: "FutureGadgets Inc." },
     modelNumber: "SW-S5-ECO",
     metadata: {
-      created_at: new Date().toISOString(), // Current timestamp
+      created_at: new Date().toISOString(), 
       last_updated: new Date().toISOString(),
-      status: "draft", // Initial status
+      status: "draft", 
       dppStandardVersion: MOCK_DPPS[0]?.metadata?.dppStandardVersion || "CIRPASS v1.0 Draft"
     },
     productDetails: {
@@ -97,7 +95,7 @@ export default function ApiReferencePage() {
         { "key": "OS", "value": "WearOS" }
       ]
     },
-    compliance: { battery_regulation: { status: "not_applicable", /* lastChecked removed from creation */ } },
+    compliance: { battery_regulation: { status: "not_applicable" } },
     ebsiVerification: { status: "pending_verification", lastChecked: new Date().toISOString() },
     lifecycleEvents: [],
     certifications: [],
@@ -429,7 +427,7 @@ export default function ApiReferencePage() {
           <CardContent className="space-y-4">
             <section>
               <h4 className="font-semibold mb-1">Request Body (JSON)</h4>
-              <p className="text-sm mb-1">Provide initial product information. Required fields typically include <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productName</code> and <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">category</code>.</p>
+              <p className="text-sm mb-1">Provide initial product information. Refer to the <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">CreateDppRequestBody</code> schema in OpenAPI. Required fields typically include <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productName</code> and <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">category</code>.</p>
               <details className="border rounded-md">
                 <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
                   <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Request Body
@@ -499,7 +497,7 @@ export default function ApiReferencePage() {
             </section>
             <section>
               <h4 className="font-semibold mb-1">Request Body (JSON)</h4>
-              <p className="text-sm mb-1">Provide the fields you want to update. Unspecified fields will remain unchanged.</p>
+              <p className="text-sm mb-1">Provide the fields you want to update. Unspecified fields will remain unchanged. Refer to <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">UpdateDppRequestBody</code> schema.</p>
               <details className="border rounded-md">
                 <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
                   <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Request Body (Partial Update)
@@ -912,6 +910,7 @@ export default function ApiReferencePage() {
     </DocsPageLayout>
   );
 }
+
 
 
 

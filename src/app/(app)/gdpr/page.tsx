@@ -1,17 +1,48 @@
 
+"use client";
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { ShieldCheck, FileCog, Trash2, DownloadCloud } from "lucide-react";
+import { ShieldCheck, FileCog, Trash2, DownloadCloud, CheckCircle } from "lucide-react";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
+
+interface ConsentSettings {
+  analytics: boolean;
+  marketing: boolean;
+  personalization: boolean;
+}
 
 export default function GdprPage() {
+  const { toast } = useToast();
+  const [consentSettings, setConsentSettings] = useState<ConsentSettings>({
+    analytics: true, // Default analytics to true
+    marketing: false,
+    personalization: false,
+  });
+
   const consentItems = [
-    { id: "analytics", label: "Analytics Cookies", description: "Allow collection of anonymized usage data." },
-    { id: "marketing", label: "Marketing Communications", description: "Receive promotional emails and offers." },
-    { id: "personalization", label: "Content Personalization", description: "Allow personalized content recommendations." },
+    { id: "analytics" as keyof ConsentSettings, label: "Analytics Cookies", description: "Allow collection of anonymized usage data." },
+    { id: "marketing" as keyof ConsentSettings, label: "Marketing Communications", description: "Receive promotional emails and offers." },
+    { id: "personalization" as keyof ConsentSettings, label: "Content Personalization", description: "Allow personalized content recommendations." },
   ];
+
+  const handleConsentChange = (consentId: keyof ConsentSettings, checked: boolean) => {
+    setConsentSettings(prev => ({ ...prev, [consentId]: checked }));
+  };
+
+  const handleSaveConsent = () => {
+    // Simulate saving settings
+    console.log("Saving consent settings:", consentSettings);
+    toast({
+      title: "Consent Settings Saved",
+      description: "Your consent preferences have been updated successfully.",
+      action: <CheckCircle className="text-green-500" />,
+    });
+  };
 
   return (
     <div className="space-y-8">
@@ -35,10 +66,15 @@ export default function GdprPage() {
                 <Label htmlFor={item.id} className="text-base font-medium">{item.label}</Label>
                 <p className="text-sm text-muted-foreground">{item.description}</p>
               </div>
-              <Switch id={item.id} defaultChecked={item.id === 'analytics'} aria-label={item.label} />
+              <Switch
+                id={item.id}
+                checked={consentSettings[item.id]}
+                onCheckedChange={(checked) => handleConsentChange(item.id, checked)}
+                aria-label={item.label}
+              />
             </div>
           ))}
-           <Button className="bg-primary text-primary-foreground hover:bg-primary/90">Save Consent Settings</Button>
+           <Button onClick={handleSaveConsent} className="bg-primary text-primary-foreground hover:bg-primary/90">Save Consent Settings</Button>
         </CardContent>
       </Card>
 

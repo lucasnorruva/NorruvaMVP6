@@ -89,7 +89,7 @@ export interface DigitalProductPassport {
   metadata: {
     created_at?: string;
     last_updated: string;
-    status: 'draft' | 'published' | 'archived' | 'pending_review' | 'revoked';
+    status: 'draft' | 'published' | 'archived' | 'pending_review' | 'revoked' | 'flagged';
     dppStandardVersion?: string;
     dataSchemaVersion?: string;
   };
@@ -153,7 +153,7 @@ export interface DigitalProductPassport {
 }
 
 export interface DashboardFiltersState {
-  status: 'all' | 'draft' | 'published' | 'archived' | 'pending_review' | 'revoked';
+  status: 'all' | 'draft' | 'published' | 'archived' | 'pending_review' | 'revoked' | 'flagged';
   regulation: 'all' | 'eu_espr' | 'us_scope3' | 'battery_regulation';
   category: 'all' | string;
   searchQuery?: string;
@@ -255,7 +255,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     category: "Accessories",
     manufacturer: { name: "ReCase It"},
     modelNumber: "RC-POLY-IP15",
-    metadata: { last_updated: "2024-07-22T09:15:00Z", status: "published", created_at: "2024-04-10T10:00:00Z" },
+    metadata: { last_updated: "2024-07-22T09:15:00Z", status: "flagged", created_at: "2024-04-10T10:00:00Z" }, // Changed to flagged
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-22T00:00:00Z" },
       eu_espr: { status: "compliant" },
@@ -334,7 +334,7 @@ export interface ComplianceDetailItem {
 
 // Updated structure for compliance summary within SimpleProductDetail
 export interface ProductComplianceSummary {
-  overallStatus: 'Compliant' | 'Non-Compliant' | 'Pending Review' | 'N/A' | 'Data Incomplete' | string;
+  overallStatus: 'Compliant' | 'Non-Compliant' | 'Pending Review' | 'N/A' | 'Data Incomplete' | 'Flagged' | string;
   eprel?: {
     id?: string;
     status: string;
@@ -379,7 +379,7 @@ export interface SimpleProductDetail {
   id: string;
   productName: string;
   category: string;
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending';
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged';
   manufacturer?: string;
   gtin?: string;
   modelNumber?: string;
@@ -420,7 +420,7 @@ export interface StoredUserProduct {
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
   recycledContentPercentage?: number | null;
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | string; // Allow string for flexibility
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string; // Allow string for flexibility
   compliance: string;
   lastUpdated: string;
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -448,7 +448,7 @@ export interface RichMockProduct {
   productId: string;
   productName: string;
   category?: string;
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending';
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged';
   compliance: string;
   lastUpdated: string;
   gtin?: string;
@@ -723,7 +723,7 @@ export interface DisplayableProduct {
   productName?: string;
   category?: string;
   productCategory?: string;
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | string;
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string;
   compliance: string;
   lastUpdated: string;
   gtin?: string;
@@ -753,3 +753,6 @@ export interface DisplayableProduct {
 }
 
 
+
+
+    

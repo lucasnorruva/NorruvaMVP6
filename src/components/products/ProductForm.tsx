@@ -326,7 +326,12 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       <AccordionItem value="item-5">
         <AccordionTrigger className="text-lg font-semibold flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-primary" /> Battery Details (if applicable)</AccordionTrigger>
         <AccordionContent>
-          <BatteryDetailsFormSection form={form} initialData={initialData} />
+          <BatteryDetailsFormSection 
+            form={form} 
+            initialData={initialData} 
+            isSubmittingForm={isSubmitting}
+            toast={toast}
+          />
         </AccordionContent>
       </AccordionItem>
 
@@ -379,4 +384,3 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
-

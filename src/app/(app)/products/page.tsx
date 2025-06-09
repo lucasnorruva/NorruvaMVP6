@@ -9,7 +9,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, ArrowDown, ArrowUp, ChevronsUpDown } from "lucide-react"; // Removed AlertTriangleIcon as it was unused
+import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, ArrowDown, ArrowUp, ChevronsUpDown, PieChart, Edit3 } from "lucide-react"; // Added PieChart, Edit3
 import {
   AlertDialog,
   AlertDialogAction,
@@ -249,8 +249,10 @@ export default function ProductsPage() {
     const active = allProducts.filter(p => p.status === 'Active').length;
     const draft = allProducts.filter(p => p.status === 'Draft').length;
     const issues = allProducts.filter(p => p.compliance === 'Non-Compliant' || p.compliance === 'Pending').length;
-    return { total, active, draft, issues };
-  }, [allProducts]);
+    const totalCompletenessScore = productsWithCompleteness.reduce((sum, p) => sum + p.completeness.score, 0);
+    const averageCompleteness = total > 0 ? (totalCompletenessScore / total).toFixed(1) + "%" : "0%";
+    return { total, active, draft, issues, averageCompleteness };
+  }, [allProducts, productsWithCompleteness]);
 
   return (
     <div className="space-y-8">
@@ -266,11 +268,12 @@ export default function ProductsPage() {
         )}
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
         <MetricCard title="Total Products" value={summaryMetrics.total} icon={PackageIcon} />
         <MetricCard title="Active Products" value={summaryMetrics.active} icon={CheckCircle2} />
-        <MetricCard title="Draft Products" value={summaryMetrics.draft} icon={FileTextIconPg} />
+        <MetricCard title="Draft Products" value={summaryMetrics.draft} icon={Edit3} />
         <MetricCard title="Compliance Issues" value={summaryMetrics.issues} trendDirection={summaryMetrics.issues > 0 ? "up" : "neutral"} />
+        <MetricCard title="Avg. DPP Completeness" value={summaryMetrics.averageCompleteness} icon={PieChart} />
       </div>
 
       <ProductManagementFiltersComponent

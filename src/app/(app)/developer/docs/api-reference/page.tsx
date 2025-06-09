@@ -485,7 +485,7 @@ export default function ApiReferencePage() {
                 <code className="bg-muted px-1 py-0.5 rounded-sm">/dpp/{'{productId}'}</code>
               </span>
               <br/>
-              Updates an existing Digital Product Passport. You can send partial or full updates.
+              Updates an existing Digital Product Passport. You can send partial or full updates. Unspecified fields will remain unchanged.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -497,7 +497,7 @@ export default function ApiReferencePage() {
             </section>
             <section>
               <h4 className="font-semibold mb-1">Request Body (JSON)</h4>
-              <p className="text-sm mb-1">Provide the fields you want to update. Unspecified fields will remain unchanged. Refer to <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">UpdateDppRequestBody</code> schema.</p>
+              <p className="text-sm mb-1">Provide the fields you want to update. Refer to <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">UpdateDppRequestBody</code> schema in OpenAPI.</p>
               <details className="border rounded-md">
                 <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
                   <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Request Body (Partial Update)
@@ -910,6 +910,7 @@ export default function ApiReferencePage() {
     </DocsPageLayout>
   );
 }
+
 
 
 

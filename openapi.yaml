@@ -241,6 +241,82 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp/extend/{productId}: # New Endpoint Definition
+    patch:
+      operationId: extendDpp
+      summary: Extend a Digital Product Passport
+      description: Allows for extending a DPP by adding document references or other modular data.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the DPP to extend.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                documentReference:
+                  type: object
+                  properties:
+                    documentName:
+                      type: string
+                      description: Name of the document.
+                    documentUrl:
+                      type: string
+                      format: url
+                      description: URL to access the document.
+                    documentType:
+                      type: string
+                      description: Type of the document (e.g., "Compliance Certificate", "Technical Manual").
+                  required:
+                    - documentName
+                    - documentUrl
+                    - documentType
+                chainOfCustodyUpdate: # Conceptual - further definition needed for real use
+                  type: object
+                  description: "Conceptual: For updating chain of custody information."
+                  properties:
+                    newOwnerDid:
+                      type: string
+                    transferTimestamp:
+                      type: string
+                      format: date-time
+      responses:
+        '200':
+          description: Successful extension
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalProductPassport' # Returns the updated DPP
+        '400':
+          description: Invalid input data (e.g., missing documentReference).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/dpp/{productId}/lifecycle-events:
     post:
       operationId: addDppLifecycleEvent
@@ -781,6 +857,23 @@ components:
           type: string
           description: The current status of the Digital Product Passport.
           enum: ["draft", "published", "archived", "pending_review", "revoked", "flagged"]
+    DocumentReference: # Added new schema
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the document.
+        url:
+          type: string
+          format: url
+          description: A URL pointing to the document.
+        type:
+          type: string
+          description: The type of document (e.g., "User Manual", "Safety Certificate").
+        addedTimestamp:
+          type: string
+          format: date-time
+          description: Timestamp when the document reference was added.
     DigitalProductPassport:
       type: object
       properties:
@@ -952,6 +1045,11 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/Certification'
+        documents: # Added new documents field
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/DocumentReference'
         traceability:
           $ref: '#/components/schemas/TraceabilityInfo'
           nullable: true
@@ -1441,6 +1539,11 @@ components:
             message:
               type: string
               nullable: true
+        documents: # Allow updating documents via PUT
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/DocumentReference'
         # Add other top-level updatable fields from DigitalProductPassport schema here
         # e.g., lifecycleEvents, certifications, supplyChainLinks (as arrays)
         # Example:

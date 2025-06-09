@@ -21,7 +21,7 @@ import {
     Lock, MessageSquare, Share2, BookText, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock,
     AlertTriangle as ErrorIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone,
     Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIcon, History,
-    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags
+    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags, FilePlus2
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -120,6 +120,7 @@ const generateMockCodeSnippet = (
         break;
     case "createDpp": urlPath = "/dpp"; break;
     case "updateDpp": urlPath = `/dpp/${params.productId || '{productId}'}`; break;
+    case "patchDppExtend": urlPath = `/dpp/extend/${params.productId || '{productId}'}`; break; // Added
     case "deleteDpp": urlPath = `/dpp/${params.productId || '{productId}'}`; break;
     case "qrValidate": urlPath = "/qr/validate"; break;
     case "addLifecycleEvent": urlPath = `/dpp/${params.productId || '{productId}'}/lifecycle-events`; break;
@@ -137,28 +138,28 @@ const generateMockCodeSnippet = (
 
   if (language === "cURL") {
     let curlCmd = `curl -X ${method} \\\n  '${fullUrl}' \\\n  -H 'Authorization: Bearer ${apiKeyPlaceholder}'`;
-    if ((method === "POST" || method === "PUT") && body) { 
+    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) { // Added PATCH
       curlCmd += ` \\\n  -H 'Content-Type: application/json' \\\n  -d '${safeBody.replace(/'/g, "'\\''")}'`;
     }
     return curlCmd;
   } else if (language === "JavaScript") {
     let jsFetch = `fetch('${fullUrl}', {\n  method: '${method}',\n  headers: {\n    'Authorization': 'Bearer ${apiKeyPlaceholder}'`;
-    if ((method === "POST" || method === "PUT") && body) {
+    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) { // Added PATCH
       jsFetch += `,\n    'Content-Type': 'application/json'`;
     }
     jsFetch += `\n  }`;
-    if ((method === "POST" || method === "PUT") && body) {
+    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) { // Added PATCH
       jsFetch += `,\n  body: JSON.stringify(${safeBody})`;
     }
     jsFetch += `\n})\n.then(response => response.json())\n.then(data => console.log(data))\n.catch(error => console.error('Error:', error));`;
     return jsFetch;
   } else if (language === "Python") {
     let pyRequests = `import requests\nimport json\n\nurl = "${fullUrl}"\nheaders = {\n  "Authorization": "Bearer ${apiKeyPlaceholder}"`;
-    if ((method === "POST" || method === "PUT") && body) {
+    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) { // Added PATCH
       pyRequests += `,\n  "Content-Type": "application/json"`;
     }
     pyRequests += `\n}`;
-    if ((method === "POST" || method === "PUT") && body) {
+    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) { // Added PATCH
       pyRequests += `\npayload = json.dumps(${safeBody})`;
       pyRequests += `\nresponse = requests.request("${method}", url, headers=headers, data=payload)`;
     } else {
@@ -182,7 +183,6 @@ export default function DeveloperPortalPage() {
   const [activeTopTab, setActiveTopTab] = useState("dashboard");
 
   useEffect(() => {
-    // This effect runs only on the client after hydration
     if (typeof window !== 'undefined') { 
       setLastStatusCheckTime(new Date().toLocaleTimeString());
     }
@@ -240,6 +240,14 @@ export default function DeveloperPortalPage() {
   const [isPutProductLoading, setIsPutProductLoading] = useState(false);
   const [updateDppSnippetLang, setUpdateDppSnippetLang] = useState("cURL");
 
+  const [patchDppExtendProductId, setPatchDppExtendProductId] = useState<string>("DPP001");
+  const [patchDppExtendBody, setPatchDppExtendBody] = useState<string>(
+    JSON.stringify({ documentReference: { documentName: "Compliance Report 2024", documentUrl: "https://example.com/report.pdf", documentType: "Compliance Certificate" } }, null, 2)
+  );
+  const [patchDppExtendResponse, setPatchDppExtendResponse] = useState<string | null>(null);
+  const [isPatchDppExtendLoading, setIsPatchDppExtendLoading] = useState(false);
+  const [patchDppExtendSnippetLang, setPatchDppExtendSnippetLang] = useState("cURL");
+
   const [deleteProductId, setDeleteProductId] = useState<string>("DPP002");
   const [deleteProductResponse, setDeleteProductResponse] = useState<string | null>(null);
   const [isDeleteProductLoading, setIsDeleteProductLoading] = useState(false);
@@ -276,6 +284,7 @@ export default function DeveloperPortalPage() {
   const [listDppsCodeSnippet, setListDppsCodeSnippet] = useState("");
   const [createDppCodeSnippet, setCreateDppCodeSnippet] = useState("");
   const [updateDppCodeSnippet, setUpdateDppCodeSnippet] = useState("");
+  const [patchDppExtendCodeSnippet, setPatchDppExtendCodeSnippet] = useState(""); // Added
   const [deleteDppCodeSnippet, setDeleteDppCodeSnippet] = useState("");
   const [qrValidateCodeSnippet, setQrValidateCodeSnippet] = useState("");
   const [addLifecycleEventCodeSnippet, setAddLifecycleEventCodeSnippet] = useState("");
@@ -304,6 +313,7 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("listDpps", "GET", listDppsSnippetLang, listDppFilters, null, setListDppsCodeSnippet), [listDppFilters, listDppsSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("createDpp", "POST", createDppSnippetLang, {}, postDppBody, setCreateDppCodeSnippet), [postDppBody, createDppSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("updateDpp", "PUT", updateDppSnippetLang, { productId: putProductId }, putProductBody, setUpdateDppCodeSnippet), [putProductId, putProductBody, updateDppSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("patchDppExtend", "PATCH", patchDppExtendSnippetLang, { productId: patchDppExtendProductId }, patchDppExtendBody, setPatchDppExtendCodeSnippet), [patchDppExtendProductId, patchDppExtendBody, patchDppExtendSnippetLang, updateSnippet]); // Added
   useEffect(() => updateSnippet("deleteDpp", "DELETE", deleteDppSnippetLang, { productId: deleteProductId }, null, setDeleteDppCodeSnippet), [deleteProductId, deleteDppSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("qrValidate", "POST", qrValidateSnippetLang, {}, postQrValidateBody, setQrValidateCodeSnippet), [postQrValidateBody, qrValidateSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("addLifecycleEvent", "POST", addLifecycleEventSnippetLang, { productId: postLifecycleEventProductId }, postLifecycleEventBody, setAddLifecycleEventCodeSnippet), [postLifecycleEventProductId, postLifecycleEventBody, addLifecycleEventSnippetLang, updateSnippet]);
@@ -389,7 +399,7 @@ export default function DeveloperPortalPage() {
 
   const makeApiCall = async (
     url: string,
-    method: 'GET' | 'POST' | 'PUT' | 'DELETE',
+    method: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH', // Added PATCH
     body: any | null,
     setLoading: React.Dispatch<React.SetStateAction<boolean>>,
     setResponse: React.Dispatch<React.SetStateAction<string | null>>
@@ -405,7 +415,7 @@ export default function DeveloperPortalPage() {
           'Authorization': `Bearer YOUR_${currentEnvironment.toUpperCase()}_API_KEY`
         }
       };
-      if (body && (method === 'POST' || method === 'PUT')) {
+      if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) { // Added PATCH
         options.body = typeof body === 'string' ? body : JSON.stringify(body);
       }
 
@@ -434,6 +444,7 @@ export default function DeveloperPortalPage() {
   const handleMockListProducts = () => { const queryParams = new URLSearchParams(); if (listDppFilters.status !== 'all') queryParams.append('status', listDppFilters.status); if (listDppFilters.category !== 'all') queryParams.append('category', listDppFilters.category); if (listDppFilters.searchQuery) queryParams.append('searchQuery', listDppFilters.searchQuery); if (listDppFilters.blockchainAnchored !== 'all') queryParams.append('blockchainAnchored', listDppFilters.blockchainAnchored); const url = `/api/v1/dpp?${queryParams.toString()}`; updateSnippet("listDpps", "GET", listDppsSnippetLang, listDppFilters, null, setListDppsCodeSnippet); makeApiCall(url, 'GET', null, setIsListProductsLoading, setListProductsResponse); };
   const handleMockPostDpp = () => { updateSnippet("createDpp", "POST", createDppSnippetLang, {}, postDppBody, setCreateDppCodeSnippet); makeApiCall('/api/v1/dpp', 'POST', postDppBody, setIsPostDppLoading, setPostDppResponse); }
   const handleMockPutProduct = () => { updateSnippet("updateDpp", "PUT", updateDppSnippetLang, { productId: putProductId }, putProductBody, setUpdateDppCodeSnippet); makeApiCall(`/api/v1/dpp/${putProductId}`, 'PUT', putProductBody, setIsPutProductLoading, setPutProductResponse); }
+  const handleMockPatchDppExtend = () => { updateSnippet("patchDppExtend", "PATCH", patchDppExtendSnippetLang, { productId: patchDppExtendProductId }, patchDppExtendBody, setPatchDppExtendCodeSnippet); makeApiCall(`/api/v1/dpp/extend/${patchDppExtendProductId}`, 'PATCH', patchDppExtendBody, setIsPatchDppExtendLoading, setPatchDppExtendResponse); } // Added
   const handleMockDeleteProduct = () => { updateSnippet("deleteDpp", "DELETE", deleteDppSnippetLang, { productId: deleteProductId }, null, setDeleteDppCodeSnippet); makeApiCall(`/api/v1/dpp/${deleteProductId}`, 'DELETE', null, setIsDeleteProductLoading, setDeleteProductResponse); }
   const handleMockPostLifecycleEvent = () => { updateSnippet("addLifecycleEvent", "POST", addLifecycleEventSnippetLang, { productId: postLifecycleEventProductId }, postLifecycleEventBody, setAddLifecycleEventCodeSnippet); makeApiCall(`/api/v1/dpp/${postLifecycleEventProductId}/lifecycle-events`, 'POST', postLifecycleEventBody, setIsPostLifecycleEventLoading, setPostLifecycleEventResponse); }
   const handleMockGetComplianceSummary = () => { updateSnippet("getComplianceSummary", "GET", getComplianceSummarySnippetLang, { productId: getComplianceProductId }, null, setGetComplianceSummaryCodeSnippet); makeApiCall(`/api/v1/dpp/${getComplianceProductId}/compliance-summary`, 'GET', null, setIsGetComplianceLoading, setGetComplianceResponse); }
@@ -754,6 +765,28 @@ export default function DeveloperPortalPage() {
                             <Label htmlFor="putProductBody">Request Body (JSON)</Label>
                             <Textarea id="putProductBody" value={putProductBody} onChange={(e) => setPutProductBody(e.target.value)} rows={4} className="font-mono text-xs"/>
                             <p className="text-xs text-muted-foreground mt-1">Send partial or full updates. See API Reference for updatable fields.</p>
+                        </div>
+                    </ApiPlaygroundEndpointCard>
+
+                    <ApiPlaygroundEndpointCard
+                        title="PATCH /api/v1/dpp/extend/{productId}"
+                        description="Extend a DPP by adding document references or other modular data."
+                        onSendRequest={handleMockPatchDppExtend}
+                        isLoading={isPatchDppExtendLoading}
+                        response={patchDppExtendResponse}
+                        codeSnippet={patchDppExtendCodeSnippet}
+                        snippetLanguage={patchDppExtendSnippetLang}
+                        onSnippetLanguageChange={(lang) => {setPatchDppExtendSnippetLang(lang); updateSnippet("patchDppExtend", "PATCH", lang, {productId: patchDppExtendProductId}, patchDppExtendBody, setPatchDppExtendCodeSnippet);}}
+                        codeSampleLanguages={codeSampleLanguages}
+                    >
+                        <div>
+                            <Label htmlFor="productIdInput-patch">Product ID (Path Parameter)</Label>
+                            <Input id="productIdInput-patch" value={patchDppExtendProductId} onChange={(e) => setPatchDppExtendProductId(e.target.value)} placeholder="e.g., DPP001"/>
+                        </div>
+                        <div className="mt-2">
+                            <Label htmlFor="patchDppExtendBody">Request Body (JSON)</Label>
+                            <Textarea id="patchDppExtendBody" value={patchDppExtendBody} onChange={(e) => setPatchDppExtendBody(e.target.value)} rows={4} className="font-mono text-xs"/>
+                            <p className="text-xs text-muted-foreground mt-1">Example: Add a document reference. See API Reference.</p>
                         </div>
                     </ApiPlaygroundEndpointCard>
 

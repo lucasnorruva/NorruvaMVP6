@@ -110,6 +110,7 @@ export interface DigitalProductPassport {
     energyLabel?: string;
     repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
     recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
+    specifications?: string; // JSON string for technical specifications
     customAttributes?: CustomAttribute[];
   };
 
@@ -181,6 +182,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       imageUrl: "https://placehold.co/600x400.png",
       imageHint: "refrigerator appliance",
       materials: [{name: "Recycled Steel", percentage: 70, isRecycled: true}],
+      specifications: JSON.stringify({ "Capacity (Liters)": "400", "Annual Energy Consumption (kWh)": "150", "Noise Level (dB)": "38", "Dimensions (HxWxD cm)": "180x70x65", "Color": "Stainless Steel" }, null, 2),
       customAttributes: [
         {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
         {key: "Special Feature", value: "AI Defrost Technology"},
@@ -220,6 +222,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       imageUrl: "https://placehold.co/600x400.png",
       imageHint: "cotton t-shirt apparel",
       materials: [{name: "Organic Cotton", percentage: 100}],
+      specifications: JSON.stringify({ "Fit": "Regular", "GSM": "180", "Origin": "India", "Care": "Machine wash cold" }, null, 2),
       customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}]
     },
     compliance: {
@@ -284,6 +287,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       description: "A high-performance EV battery module.",
       imageUrl: "https://placehold.co/600x400.png",
       imageHint: "ev battery module",
+      specifications: JSON.stringify({ "Capacity (kWh)": "75", "Voltage (V)": "400", "Weight (kg)": "450", "Chemistry": "NMC 811" }, null, 2),
       customAttributes: [
         {key: "Cycle Life", value: "3000 cycles @ 80% DoD"},
         {key: "Charging Time (0-80%)", value: "45 minutes (DC Fast Charge)"}
@@ -375,7 +379,7 @@ export interface SimpleProductDetail {
   imageHint?: string;
   keySustainabilityPoints?: string[];
   keyCompliancePoints?: string[];
-  specifications?: Record<string, string> | string; // Allow string for JSON
+  specifications?: string; // Changed to string to hold JSON string
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
   repairability?: { score: number; scale: number; detailsUrl?: string };
@@ -383,7 +387,7 @@ export interface SimpleProductDetail {
   supplyChainLinks?: ProductSupplyChainLink[];
   complianceSummary?: ProductComplianceSummary;
   lifecycleEvents?: SimpleLifecycleEvent[];
-  certifications?: SimpleCertification[]; // Added certifications field
+  certifications?: SimpleCertification[];
   customAttributes?: CustomAttribute[];
 }
 
@@ -425,8 +429,8 @@ export interface StoredUserProduct {
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
-  certifications?: SimpleCertification[]; // Added for stored user products
-  customAttributesJsonString?: string;
+  certifications?: SimpleCertification[]; 
+  customAttributesJsonString?: string; // Used to store CustomAttribute[] as JSON string
 }
 
 // Initial mock product data for /products page (more detailed than SimpleProductDetail)
@@ -444,10 +448,10 @@ export interface RichMockProduct {
   description?: string;
   imageUrl?: string;
   imageHint?: string;
-  materials?: string;
+  materials?: string; // This is a simple string in RichMockProduct, maybe it should be array of objects?
   sustainabilityClaims?: string;
   energyLabel?: string;
-  specifications?: Record<string, string> | string;
+  specifications?: string; // JSON string for technical specifications
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
   batteryChemistry?: string;
@@ -455,9 +459,10 @@ export interface RichMockProduct {
   carbonFootprintManufacturing?: number | null;
   recycledContentPercentage?: number | null;
   ebsiVerification?: EbsiVerificationDetails;
-  certifications?: Certification[]; // Use full Certification here if it's the source
+  certifications?: Certification[]; 
   supplyChainLinks?: ProductSupplyChainLink[];
-  customAttributesJsonString?: string;
+  customAttributes?: CustomAttribute[]; // For consistency with DigitalProductPassport
+  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
 }
 
 
@@ -475,7 +480,13 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     imageHint: "modern refrigerator kitchen",
     keySustainabilityPoints: ["Energy Star Certified", "Made with 70% recycled steel", "95% recyclable at end-of-life", "Low Global Warming Potential (GWP) refrigerant"],
     keyCompliancePoints: ["EU Ecodesign Compliant", "EU Energy Labelling Compliant", "EPREL Registered"],
-    specifications: { "Capacity": "400L", "Warranty": "5 years", "Dimensions": "180x70x65 cm", "Color": "Stainless Steel", "Noise Level": "38 dB"},
+    specifications: JSON.stringify({ "Capacity (Liters)": "400", "Annual Energy Consumption (kWh)": "150", "Noise Level (dB)": "38", "Dimensions (HxWxD cm)": "180x70x65", "Color": "Stainless Steel" }, null, 2),
+    customAttributes: [
+        {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
+        {key: "Special Feature", value: "AI Defrost Technology"},
+        {key: "Warranty Period", value: "5 Years"},
+        {key: "Country of Origin", value: "Germany"}
+    ],
     materialsUsed: [
       { name: "Recycled Steel", percentage: 70, source: "Certified Recycler A", isRecycled: true },
       { name: "Bio-based Polymers (Insulation)", percentage: 15, source: "EcoPoly Corp" },
@@ -520,12 +531,6 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
       { name: "Energy Star", authority: "EPA", issueDate: "2024-01-01", documentUrl: "#", isVerified: true, standard: "Energy Star Program Requirements for Refrigerators v6.0", transactionHash: "0xcertAnchor1" },
       { name: "ISO 14001", authority: "TUV Rheinland", issueDate: "2023-11-15", expiryDate: "2026-11-14", documentUrl: "#iso14001", isVerified: true, vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015" }
     ],
-    customAttributes: [
-      {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
-      {key: "Special Feature", value: "AI Defrost Technology"},
-      {key: "Warranty Period", value: "5 Years"},
-      {key: "Country of Origin", value: "Germany"}
-    ]
   },
   {
     id: "PROD002",
@@ -540,7 +545,11 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     imageHint: "led bulbs packaging",
     keySustainabilityPoints: ["Uses 85% less energy", "Recyclable packaging materials", "Mercury-free design", "Long lifespan (25,000 hours)"],
     keyCompliancePoints: ["RoHS Compliant", "CE Marked"],
-    specifications: { "Lumens": "800lm per bulb", "Connectivity": "Wi-Fi, Bluetooth", "Lifespan": "25,000 hours", "Color Temperature": "2700K-6500K", "Wattage": "9W (Equivalent to 60W)"},
+    specifications: JSON.stringify({ "Lumens per bulb": "800lm", "Connectivity": "Wi-Fi, Bluetooth", "Lifespan (hours)": "25000", "Color Temperature": "2700K-6500K", "Wattage (per bulb)": "9W" }, null, 2),
+    customAttributes: [
+        {key: "Smart Home Compatibility", value: "Google Home, Amazon Alexa, Apple HomeKit"},
+        {key: "Light Color Options", value: "RGBW (16 million colors + Tunable White)"},
+    ],
     materialsUsed: [
       { name: "Polycarbonate (Housing)", percentage: 60, isRecycled: false },
       { name: "Aluminum (Heat Sink)", percentage: 30, isRecycled: true },
@@ -572,10 +581,6 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
       { name: "CE Marking", authority: "Self-Certified", issueDate: "2024-03-01", isVerified: true },
       { name: "Bluetooth SIG Qualification", authority: "Bluetooth SIG", issueDate: "2024-03-05", expiryDate: "2028-01-01", documentUrl:"#", isVerified: true, standard: "Bluetooth Core Spec v5.2" },
     ],
-    customAttributes: [
-        {key: "Smart Home Compatibility", value: "Google Home, Amazon Alexa, Apple HomeKit"},
-        {key: "Light Color Options", value: "RGBW (16 million colors + Tunable White)"}
-    ]
   },
   {
     id: "USER_PROD123456", // Example User-Added Product
@@ -590,7 +595,13 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     imageHint: "wooden chair artisan",
     keySustainabilityPoints: ["Sustainably Sourced Oak", "Handcrafted Locally", "Durable Design", "Low VOC Finish"],
     keyCompliancePoints: ["TSCA Title VI Compliant (Formaldehyde)"],
-    specifications: { "Material": "Solid Oak", "Finish": "Natural Oil", "Weight Capacity": "120kg", "Dimensions": "45cm x 50cm x 90cm" },
+    specifications: JSON.stringify({ "Material": "Solid Oak", "Finish": "Natural Oil", "Weight Capacity (kg)": "120", "Dimensions (HxWxD cm)": "90x45x50" }, null, 2),
+    customAttributes: [
+        {key: "Wood Type", value: "Oak"},
+        {key: "Finish", value: "Natural Oil"},
+        {key: "Artisan Name", value: "John Craft"},
+        {key: "Lead Time", value: "4-6 Weeks"}
+    ],
     materialsUsed: [
         { name: "FSC Certified Oak Wood", percentage: 95, source: "Sustainable Forests Co-op" },
         { name: "Natural Oil Finish", percentage: 5, source: "EcoFinishes Ltd." }
@@ -612,13 +623,7 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
         { id: "lc_user_002", eventName: "Material Sourcing", date: "2024-06-05T00:00:00Z", status: "In Progress", iconName: "Search"},
         { id: "lc_user_003", eventName: "Assembly Scheduled", date: "2024-08-15T00:00:00Z", status: "Upcoming", iconName: "CalendarCheck"},
     ],
-    certifications: [], // User products might start with no certs
-    customAttributes: [
-        {key: "Wood Type", value: "Oak"},
-        {key: "Finish", value: "Natural Oil"},
-        {key: "Artisan Name", value: "John Craft"},
-        {key: "Lead Time", value: "4-6 Weeks"}
-    ]
+    certifications: [],
   }
 ];
 
@@ -771,13 +776,13 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     category: "Furniture",
     modelNumber: "CWC-001",
     ebsiStatus: 'not_verified',
-    certifications: [], // User-added products might start with fewer certs
+    certifications: [], 
     customAttributes: [
         {key: "Wood Type", value: "Oak"},
         {key: "Finish", value: "Natural Oil"},
         {key: "Artisan Name", value: "John Craft"},
-        {key: "Lead Time", value: "4-6 Weeks"},
-    ],
+        {key: "Lead Time", value: "4-6 Weeks"}
+    ]
   }
 };
 
@@ -818,19 +823,22 @@ export interface DisplayableProduct {
   productDescription?: string;
   imageUrl?: string;
   imageHint?: string;
-  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual'; // Added for image
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual'; 
   materials?: string;
   sustainabilityClaims?: string;
   energyLabel?: string;
-  specifications?: Record<string, string> | string;
+  specifications?: string; // Changed to string to hold JSON string for display & form consistency
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
   batteryChemistry?: string;
   stateOfHealth?: number | null;
   carbonFootprintManufacturing?: number | null;
   recycledContentPercentage?: number | null;
-  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A'; // For DisplayableProduct on list view
+  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A'; 
   supplyChainLinks?: ProductSupplyChainLink[];
-  certifications?: SimpleCertification[]; // Added to DisplayableProduct
-  customAttributesJsonString?: string;
+  certifications?: SimpleCertification[]; 
+  customAttributes?: CustomAttribute[]; // For display on list if needed; form uses customAttributesJsonString
+  customAttributesJsonString?: string; // Stays as string for form consistency
+  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; // Add this for filtering
 }
+

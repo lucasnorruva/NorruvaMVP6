@@ -8,7 +8,6 @@ import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, Co
 import { getOverallComplianceDetails } from '@/utils/dppDisplayUtils';
 
 // Helper function to map DigitalProductPassport to SimpleProductDetail
-// This function is moved here from the product detail page
 function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProductDetail {
     const mapStatus = (status: DigitalProductPassport['metadata']['status']): SimpleProductDetail['status'] => {
         switch (status) {
@@ -114,9 +113,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         imageHint: dpp.productDetails?.imageHint,
         keySustainabilityPoints: dpp.productDetails?.sustainabilityClaims?.map(c => c.claim).filter(Boolean) || [],
         keyCompliancePoints: keyCompliancePointsPopulated,
-        specifications: dpp.productDetails?.materials ?
-            Object.fromEntries(dpp.productDetails.materials.map((m, i) => [`material_${i+1}`, `${m.name} (${m.percentage || 'N/A'}%)`]))
-            : undefined,
+        specifications: dpp.productDetails?.specifications, // Directly pass the JSON string
+        customAttributes: customAttributes, // Directly pass CustomAttribute[]
         complianceSummary: {
             overallStatus: complianceOverallStatusDetails.text,
             eprel: dpp.compliance.eprel ? {
@@ -151,7 +149,6 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         recyclabilityInfo: dpp.productDetails?.recyclabilityInformation ? { percentage: dpp.productDetails.recyclabilityInformation.recycledContentPercentage, instructionsUrl: dpp.productDetails.recyclabilityInformation.instructionsUrl } : undefined,
         supplyChainLinks: dpp.supplyChainLinks || [],
         certifications: mappedCertifications,
-        customAttributes: customAttributes,
     };
 }
 
@@ -208,7 +205,8 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             sustainabilityClaims: userProductData.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
             materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [],
             energyLabel: userProductData.energyLabel,
-            customAttributes: parsedCustomAttributes,
+            specifications: userProductData.specifications, // Pass as string
+            customAttributes: parsedCustomAttributes, // Pass as array
           },
           compliance: {
             eprel: userProductData.complianceSummary?.eprel,

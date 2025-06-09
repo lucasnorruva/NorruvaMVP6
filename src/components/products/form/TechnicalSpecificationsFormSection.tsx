@@ -3,7 +3,7 @@
 // Description: Form section component for technical specifications.
 "use client";
 
-import React from "react";
+import React, { useState } from "react"; // Added useState
 import type { UseFormReturn } from "react-hook-form";
 import {
   FormField,
@@ -15,28 +15,38 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import AiIndicator from "./AiIndicator"; // Import shared component
+import AiIndicator from "./AiIndicator";
 import { Loader2, Sparkles } from "lucide-react";
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
+import type { ToastInput } from "@/hooks/use-toast"; // Simplified toast type
+import { handleSuggestSpecificationsAI } from "@/utils/aiFormHelpers"; // Import helper
+
+type ToastFn = (input: ToastInput) => void;
 
 interface TechnicalSpecificationsFormSectionProps {
   form: UseFormReturn<ProductFormData>;
   initialData?: Partial<InitialProductFormData>;
-  isSuggestingSpecs: boolean;
-  callSuggestSpecificationsAI: () => Promise<void>;
-  anyAISuggestionInProgress: boolean;
   isSubmittingForm?: boolean;
+  toast: ToastFn; // Added toast prop
 }
 
 export default function TechnicalSpecificationsFormSection({
   form,
   initialData,
-  isSuggestingSpecs,
-  callSuggestSpecificationsAI,
-  anyAISuggestionInProgress,
   isSubmittingForm,
+  toast, // Destructure toast
 }: TechnicalSpecificationsFormSectionProps) {
+  const [isSuggestingSpecsInternal, setIsSuggestingSpecsInternal] = useState(false);
+
+  const callSuggestSpecificationsAIInternal = async () => {
+    const result = await handleSuggestSpecificationsAI(form, toast, setIsSuggestingSpecsInternal);
+    if (result) {
+        form.setValue("specifications", result, { shouldValidate: true });
+        form.setValue("specificationsOrigin", 'AI_EXTRACTED');
+    }
+  };
+
   return (
     <div className="pt-4">
       <FormField
@@ -49,9 +59,9 @@ export default function TechnicalSpecificationsFormSection({
                 Specifications (JSON)
                 <AiIndicator fieldOrigin={form.getValues("specificationsOrigin") || initialData?.specificationsOrigin} fieldName="Specifications" />
               </FormLabel>
-              <Button type="button" variant="ghost" size="sm" onClick={callSuggestSpecificationsAI} disabled={anyAISuggestionInProgress || !!isSubmittingForm}>
-                {isSuggestingSpecs ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
-                <span className="ml-2">{isSuggestingSpecs ? "Suggesting..." : "Suggest Specs"}</span>
+              <Button type="button" variant="ghost" size="sm" onClick={callSuggestSpecificationsAIInternal} disabled={isSuggestingSpecsInternal || !!isSubmittingForm}>
+                {isSuggestingSpecsInternal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
+                <span className="ml-2">{isSuggestingSpecsInternal ? "Suggesting..." : "Suggest Specs"}</span>
               </Button>
             </div>
             <FormControl>

@@ -3,7 +3,7 @@
 // Description: Form section component for managing custom product attributes.
 "use client";
 
-import React from "react";
+import React, { useState } from "react"; // Added useState
 import type { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -12,7 +12,7 @@ import { PlusCircle, XCircle, Sparkles, Loader2, Info, ListChecks } from "lucide
 import type { CustomAttribute } from "@/types/dpp";
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { ToastInput } from "@/hooks/use-toast";
-
+import { handleSuggestCustomAttributesAI } from "@/utils/aiFormHelpers"; // Import helper
 
 type ToastFn = (input: ToastInput) => void;
 
@@ -26,12 +26,11 @@ interface CustomAttributesFormSectionProps {
   handleAddCustomAttribute: () => void;
   handleRemoveCustomAttribute: (keyToRemove: string) => void;
   form: UseFormReturn<ProductFormData>;
-  isSuggestingCustomAttrs: boolean;
-  callSuggestCustomAttributesAI: () => Promise<void>;
-  suggestedCustomAttributes: CustomAttribute[];
+  suggestedCustomAttributes: CustomAttribute[]; // Keep this prop
+  setSuggestedCustomAttributes: React.Dispatch<React.SetStateAction<CustomAttribute[]>>; // Keep this prop
   handleAddSuggestedCustomAttribute: (attribute: CustomAttribute) => void;
-  anyAISuggestionInProgress: boolean;
   isSubmittingForm?: boolean;
+  toast: ToastFn; // Added toast prop
 }
 
 export default function CustomAttributesFormSection({
@@ -44,18 +43,26 @@ export default function CustomAttributesFormSection({
   handleAddCustomAttribute,
   handleRemoveCustomAttribute,
   form,
-  isSuggestingCustomAttrs,
-  callSuggestCustomAttributesAI,
   suggestedCustomAttributes,
+  setSuggestedCustomAttributes, // Destructure
   handleAddSuggestedCustomAttribute,
-  anyAISuggestionInProgress,
   isSubmittingForm,
+  toast, // Destructure
 }: CustomAttributesFormSectionProps) {
+  const [isSuggestingCustomAttrsInternal, setIsSuggestingCustomAttrsInternal] = useState(false);
 
   React.useEffect(() => {
     form.setValue("customAttributesJsonString", JSON.stringify(customAttributes), { shouldValidate: true });
   }, [customAttributes, form]);
 
+  const callSuggestCustomAttributesAIInternal = async () => {
+    const attributes = await handleSuggestCustomAttributesAI(form, toast, setIsSuggestingCustomAttrsInternal);
+    if (attributes) {
+      setSuggestedCustomAttributes(attributes); // Update parent state
+    } else {
+      setSuggestedCustomAttributes([]); // Update parent state
+    }
+  };
 
   return (
     <div className="space-y-6 pt-4">
@@ -64,9 +71,9 @@ export default function CustomAttributesFormSection({
       </FormDescription>
       
       <div className="flex justify-end">
-        <Button type="button" variant="ghost" size="sm" onClick={callSuggestCustomAttributesAI} disabled={anyAISuggestionInProgress || !!isSubmittingForm}>
-            {isSuggestingCustomAttrs ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
-            <span className="ml-2">{isSuggestingCustomAttrs ? "Suggesting Attributes..." : "Suggest Custom Attributes"}</span>
+        <Button type="button" variant="ghost" size="sm" onClick={callSuggestCustomAttributesAIInternal} disabled={isSuggestingCustomAttrsInternal || !!isSubmittingForm}>
+            {isSuggestingCustomAttrsInternal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
+            <span className="ml-2">{isSuggestingCustomAttrsInternal ? "Suggesting Attributes..." : "Suggest Custom Attributes"}</span>
         </Button>
       </div>
 
@@ -176,4 +183,3 @@ export default function CustomAttributesFormSection({
     </div>
   );
 }
-

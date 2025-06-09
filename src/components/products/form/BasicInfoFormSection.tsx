@@ -3,7 +3,7 @@
 // Description: Form section component for basic product information.
 "use client";
 
-import React from "react";
+import React, { useState } from "react"; // Added useState
 import type { UseFormReturn } from "react-hook-form";
 import {
   FormField,
@@ -16,32 +16,49 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import AiIndicator from "./AiIndicator"; // Import shared component
+import AiIndicator from "./AiIndicator";
 import { Loader2, Sparkles } from "lucide-react";
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
+import type { ToastInput } from "@/hooks/use-toast";
+import { handleSuggestNameAI, handleSuggestDescriptionAI } from "@/utils/aiFormHelpers"; // Import helpers
+
+type ToastFn = (input: ToastInput) => void;
 
 interface BasicInfoFormSectionProps {
   form: UseFormReturn<ProductFormData>;
   initialData?: Partial<InitialProductFormData>;
-  isSuggestingName: boolean;
-  callSuggestNameAI: () => Promise<void>;
-  isSuggestingDescription: boolean;
-  callSuggestDescriptionAI: () => Promise<void>;
-  anyAISuggestionInProgress: boolean;
   isSubmittingForm?: boolean;
+  toast: ToastFn; // Added toast prop
 }
 
 export default function BasicInfoFormSection({
   form,
   initialData,
-  isSuggestingName,
-  callSuggestNameAI,
-  isSuggestingDescription,
-  callSuggestDescriptionAI,
-  anyAISuggestionInProgress,
   isSubmittingForm,
+  toast, // Destructure toast
 }: BasicInfoFormSectionProps) {
+  const [isSuggestingNameInternal, setIsSuggestingNameInternal] = useState(false);
+  const [isSuggestingDescriptionInternal, setIsSuggestingDescriptionInternal] = useState(false);
+
+  const callSuggestNameAIInternal = async () => {
+    const result = await handleSuggestNameAI(form, toast, setIsSuggestingNameInternal);
+    if (result) {
+      form.setValue("productName", result, { shouldValidate: true });
+      form.setValue("productNameOrigin", 'AI_EXTRACTED');
+    }
+  };
+
+  const callSuggestDescriptionAIInternal = async () => {
+    const result = await handleSuggestDescriptionAI(form, toast, setIsSuggestingDescriptionInternal);
+    if (result) {
+      form.setValue("productDescription", result, { shouldValidate: true });
+      form.setValue("productDescriptionOrigin", 'AI_EXTRACTED');
+    }
+  };
+
+  const anyLocalAISuggestionInProgress = isSuggestingNameInternal || isSuggestingDescriptionInternal;
+
   return (
     <div className="space-y-6 pt-4">
       <FormField
@@ -51,9 +68,9 @@ export default function BasicInfoFormSection({
           <FormItem>
             <div className="flex items-center justify-between">
               <FormLabel className="flex items-center">Product Name <AiIndicator fieldOrigin={form.getValues("productNameOrigin") || initialData?.productNameOrigin} fieldName="Product Name" /></FormLabel>
-              <Button type="button" variant="ghost" size="sm" onClick={callSuggestNameAI} disabled={anyAISuggestionInProgress || !!isSubmittingForm}>
-                {isSuggestingName ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
-                <span className="ml-2">{isSuggestingName ? "Suggesting..." : "Suggest Name"}</span>
+              <Button type="button" variant="ghost" size="sm" onClick={callSuggestNameAIInternal} disabled={anyLocalAISuggestionInProgress || !!isSubmittingForm}>
+                {isSuggestingNameInternal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
+                <span className="ml-2">{isSuggestingNameInternal ? "Suggesting..." : "Suggest Name"}</span>
               </Button>
             </div>
             <FormControl>
@@ -91,9 +108,9 @@ export default function BasicInfoFormSection({
           <FormItem>
             <div className="flex items-center justify-between">
               <FormLabel className="flex items-center">Product Description <AiIndicator fieldOrigin={form.getValues("productDescriptionOrigin") || initialData?.productDescriptionOrigin} fieldName="Product Description" /></FormLabel>
-              <Button type="button" variant="ghost" size="sm" onClick={callSuggestDescriptionAI} disabled={anyAISuggestionInProgress || !!isSubmittingForm}>
-                {isSuggestingDescription ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
-                <span className="ml-2">{isSuggestingDescription ? "Suggesting..." : "Suggest Description"}</span>
+              <Button type="button" variant="ghost" size="sm" onClick={callSuggestDescriptionAIInternal} disabled={anyLocalAISuggestionInProgress || !!isSubmittingForm}>
+                {isSuggestingDescriptionInternal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
+                <span className="ml-2">{isSuggestingDescriptionInternal ? "Suggesting..." : "Suggest Description"}</span>
               </Button>
             </div>
             <FormControl>

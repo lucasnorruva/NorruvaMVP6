@@ -2,7 +2,7 @@
 "use client";
 // --- File: ProductForm.tsx ---
 // Description: Main form component for creating or editing product DPPs.
-// Now uses aiFormHelpers.tsx for AI logic and sub-components for sections.
+// Now delegates AI loading states to individual section components.
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormReturn } from "react-hook-form";
@@ -24,12 +24,7 @@ import SustainabilityComplianceFormSection from "./form/SustainabilityCompliance
 import TechnicalSpecificationsFormSection from "./form/TechnicalSpecificationsFormSection";
 import CustomAttributesFormSection from "./form/CustomAttributesFormSection";
 import {
-  handleSuggestNameAI,
-  handleSuggestDescriptionAI,
-  handleSuggestClaimsAI,
-  handleGenerateImageAI,
-  handleSuggestSpecificationsAI,
-  handleSuggestCustomAttributesAI,
+  handleGenerateImageAI, // Keep this specific helper if ProductImageFormSection needs it directly
 } from "@/utils/aiFormHelpers";
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
@@ -58,7 +53,7 @@ const formSchema = z.object({
   energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
   imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")),
-  imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(), // Increased limit slightly
+  imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(),
   imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   batteryChemistry: z.string().optional(),
   batteryChemistryOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
@@ -147,12 +142,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   const [suggestedCustomAttributes, setSuggestedCustomAttributes] = useState<CustomAttribute[]>([]);
 
 
-  const [isSuggestingName, setIsSuggestingName] = useState(false);
-  const [isSuggestingDescription, setIsSuggestingDescription] = useState(false);
-  const [isSuggestingClaims, setIsSuggestingClaims] = useState(false);
+  // State for ProductImageFormSection (already managed there, but need to pass down setter)
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
-  const [isSuggestingSpecs, setIsSuggestingSpecs] = useState(false);
-  const [isSuggestingCustomAttrs, setIsSuggestingCustomAttrs] = useState(false);
 
 
   const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>([]);
@@ -226,51 +217,6 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   };
 
 
-  const callSuggestNameAI = async () => {
-    const result = await handleSuggestNameAI(form, toast, setIsSuggestingName);
-    if (result) {
-        form.setValue("productName", result, { shouldValidate: true });
-        form.setValue("productNameOrigin", 'AI_EXTRACTED');
-    }
-  };
-
-  const callSuggestDescriptionAI = async () => {
-    const result = await handleSuggestDescriptionAI(form, toast, setIsSuggestingDescription);
-     if (result) {
-        form.setValue("productDescription", result, { shouldValidate: true });
-        form.setValue("productDescriptionOrigin", 'AI_EXTRACTED');
-    }
-  };
-
-  const callSuggestClaimsAI = async () => {
-    const claims = await handleSuggestClaimsAI(form, toast, setIsSuggestingClaims);
-    if (claims) {
-        setSuggestedClaims(claims);
-    } else {
-        setSuggestedClaims([]);
-    }
-  };
-
-  const callSuggestSpecificationsAI = async () => {
-    const result = await handleSuggestSpecificationsAI(form, toast, setIsSuggestingSpecs);
-    if (result) {
-        form.setValue("specifications", result, { shouldValidate: true });
-        form.setValue("specificationsOrigin", 'AI_EXTRACTED');
-    }
-  };
-  
-  const callSuggestCustomAttributesAI = async () => {
-    const attributes = await handleSuggestCustomAttributesAI(form, toast, setIsSuggestingCustomAttrs);
-    if (attributes) {
-      setSuggestedCustomAttributes(attributes);
-    } else {
-      setSuggestedCustomAttributes([]);
-    }
-  };
-
-
-  const anyAISuggestionInProgress = isSuggestingName || isSuggestingDescription || isSuggestingClaims || isGeneratingImage || isSuggestingSpecs || isSuggestingCustomAttrs;
-
   const handleClaimClick = (claim: string) => {
     const currentClaimsValue = form.getValues("sustainabilityClaims") || "";
     const newClaimsValue = currentClaimsValue ? `${currentClaimsValue}\n- ${claim}` : `- ${claim}`;
@@ -327,12 +273,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           <BasicInfoFormSection
             form={form}
             initialData={initialData}
-            isSuggestingName={isSuggestingName}
-            callSuggestNameAI={callSuggestNameAI}
-            isSuggestingDescription={isSuggestingDescription}
-            callSuggestDescriptionAI={callSuggestDescriptionAI}
-            anyAISuggestionInProgress={anyAISuggestionInProgress}
             isSubmittingForm={isSubmitting}
+            toast={toast}
           />
         </AccordionContent>
       </AccordionItem>
@@ -344,7 +286,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         <AccordionContent>
           <ProductImageFormSection
             form={form}
-            aiImageHelper={handleGenerateImageAI}
+            aiImageHelper={handleGenerateImageAI} // Passed directly from aiFormHelpers
             initialImageUrlOrigin={initialData?.imageUrlOrigin}
             toast={toast}
             isGeneratingImageState={isGeneratingImage}
@@ -360,12 +302,11 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           <SustainabilityComplianceFormSection
             form={form}
             initialData={initialData}
-            isSuggestingClaims={isSuggestingClaims}
-            callSuggestClaimsAI={callSuggestClaimsAI}
             suggestedClaims={suggestedClaims}
+            setSuggestedClaims={setSuggestedClaims}
             handleClaimClick={handleClaimClick}
-            anyAISuggestionInProgress={anyAISuggestionInProgress}
             isSubmittingForm={isSubmitting}
+            toast={toast}
           />
         </AccordionContent>
       </AccordionItem>
@@ -376,10 +317,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           <TechnicalSpecificationsFormSection
             form={form}
             initialData={initialData}
-            isSuggestingSpecs={isSuggestingSpecs}
-            callSuggestSpecificationsAI={callSuggestSpecificationsAI}
-            anyAISuggestionInProgress={anyAISuggestionInProgress}
             isSubmittingForm={isSubmitting}
+            toast={toast}
           />
         </AccordionContent>
       </AccordionItem>
@@ -404,12 +343,11 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             handleAddCustomAttribute={handleAddCustomAttribute}
             handleRemoveCustomAttribute={handleRemoveCustomAttribute}
             form={form}
-            isSuggestingCustomAttrs={isSuggestingCustomAttrs}
-            callSuggestCustomAttributesAI={callSuggestCustomAttributesAI}
             suggestedCustomAttributes={suggestedCustomAttributes}
+            setSuggestedCustomAttributes={setSuggestedCustomAttributes}
             handleAddSuggestedCustomAttribute={handleAddSuggestedCustomAttribute}
-            anyAISuggestionInProgress={anyAISuggestionInProgress}
             isSubmittingForm={isSubmitting}
+            toast={toast}
           />
         </AccordionContent>
       </AccordionItem>
@@ -427,9 +365,9 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             </CardHeader>
             <CardContent>{formContent}</CardContent>
           </Card>
-          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={!!isSubmitting || anyAISuggestionInProgress}>
-            {(!!isSubmitting || anyAISuggestionInProgress) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            {isSubmitting ? "Saving..." : (anyAISuggestionInProgress ? "AI Processing..." : "Save Product")}
+          <Button type="submit" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto" disabled={!!isSubmitting || isGeneratingImage}>
+            {(!!isSubmitting || isGeneratingImage) && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            {isSubmitting ? "Saving..." : (isGeneratingImage ? "AI Processing..." : "Save Product")}
           </Button>
         </form>
       </Form>

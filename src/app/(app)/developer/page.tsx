@@ -31,6 +31,7 @@ import ApiKeysManager, { type ApiKey } from '@/components/developer/ApiKeysManag
 import WebhooksManager, { type WebhookEntry } from '@/components/developer/WebhooksManager';
 import ApiPlaygroundEndpointCard from '@/components/developer/ApiPlaygroundEndpointCard';
 import { cn } from '@/lib/utils';
+import { generateMockCodeSnippet } from '@/utils/apiPlaygroundUtils'; // Import the refactored function
 
 // Import new dashboard section components
 import ApiMetricsCard from '@/components/developer/dashboard/ApiMetricsCard';
@@ -95,81 +96,6 @@ const dashboardQuickActions = [
   { label: "Manage Webhooks", href: "#", targetTab: "webhooks", icon: Webhook },
   { label: "Check API Status", href: "#", targetTab: "dashboard", icon: ServerCrash, tooltip: "View API Status on Dashboard" },
 ];
-
-const generateMockCodeSnippet = (
-  endpointKey: string,
-  method: string,
-  language: string,
-  params: any,
-  body: string | null,
-  currentEnv: string
-): string => {
-  const apiKeyPlaceholder = `YOUR_${currentEnv.toUpperCase()}_API_KEY`;
-  const baseUrl = 'http://localhost:9002/api/v1'; // This should ideally come from an env var or config
-
-  let urlPath = "";
-  switch (endpointKey) {
-    case "getProduct": urlPath = `/dpp/${params.productId || '{productId}'}`; break;
-    case "listDpps":
-        const queryParams = new URLSearchParams();
-        if (params.status && params.status !== 'all') queryParams.append('status', params.status);
-        if (params.category && params.category !== 'all') queryParams.append('category', params.category);
-        if (params.searchQuery) queryParams.append('searchQuery', params.searchQuery);
-        if (params.blockchainAnchored && params.blockchainAnchored !== 'all') queryParams.append('blockchainAnchored', params.blockchainAnchored);
-        urlPath = `/dpp${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-        break;
-    case "createDpp": urlPath = "/dpp"; break;
-    case "updateDpp": urlPath = `/dpp/${params.productId || '{productId}'}`; break;
-    case "patchDppExtend": urlPath = `/dpp/extend/${params.productId || '{productId}'}`; break;
-    case "deleteDpp": urlPath = `/dpp/${params.productId || '{productId}'}`; break;
-    case "qrValidate": urlPath = "/qr/validate"; break;
-    case "addLifecycleEvent": urlPath = `/dpp/${params.productId || '{productId}'}/lifecycle-events`; break;
-    case "getComplianceSummary": urlPath = `/dpp/${params.productId || '{productId}'}/compliance-summary`; break;
-    case "verifyDpp": urlPath = `/dpp/verify/${params.productIdPath || '{productId}'}`; break; 
-    case "getDppHistory": urlPath = `/dpp/history/${params.productId || '{productId}'}`; break;
-    case "importDpps": urlPath = "/dpp/import"; break;
-    case "getDppGraph": urlPath = `/dpp/graph/${params.productId || '{productId}'}`; break;
-    case "getDppStatus": urlPath = `/dpp/status/${params.productId || '{productId}'}`; break;
-    default: urlPath = "/unknown-endpoint";
-  }
-
-  const fullUrl = `${baseUrl}${urlPath}`;
-  const safeBody = body || '{}';
-
-  if (language === "cURL") {
-    let curlCmd = `curl -X ${method} \\\n  '${fullUrl}' \\\n  -H 'Authorization: Bearer ${apiKeyPlaceholder}'`;
-    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) {
-      curlCmd += ` \\\n  -H 'Content-Type: application/json' \\\n  -d '${safeBody.replace(/'/g, "'\\''")}'`;
-    }
-    return curlCmd;
-  } else if (language === "JavaScript") {
-    let jsFetch = `fetch('${fullUrl}', {\n  method: '${method}',\n  headers: {\n    'Authorization': 'Bearer ${apiKeyPlaceholder}'`;
-    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) {
-      jsFetch += `,\n    'Content-Type': 'application/json'`;
-    }
-    jsFetch += `\n  }`;
-    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) {
-      jsFetch += `,\n  body: JSON.stringify(${safeBody})`;
-    }
-    jsFetch += `\n})\n.then(response => response.json())\n.then(data => console.log(data))\n.catch(error => console.error('Error:', error));`;
-    return jsFetch;
-  } else if (language === "Python") {
-    let pyRequests = `import requests\nimport json\n\nurl = "${fullUrl}"\nheaders = {\n  "Authorization": "Bearer ${apiKeyPlaceholder}"`;
-    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) {
-      pyRequests += `,\n  "Content-Type": "application/json"`;
-    }
-    pyRequests += `\n}`;
-    if ((method === "POST" || method === "PUT" || method === "PATCH") && body) {
-      pyRequests += `\npayload = json.dumps(${safeBody})`;
-      pyRequests += `\nresponse = requests.request("${method}", url, headers=headers, data=payload)`;
-    } else {
-      pyRequests += `\nresponse = requests.request("${method}", url, headers=headers)`;
-    }
-    pyRequests += `\n\nprint(response.json())`;
-    return pyRequests;
-  }
-  return "Code snippet not available for this language.";
-};
 
 
 export default function DeveloperPortalPage() {
@@ -1226,6 +1152,7 @@ export default function DeveloperPortalPage() {
 
 
     
+
 
 
 

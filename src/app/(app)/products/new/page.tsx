@@ -14,15 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, Loader2, ScanLine, Info, Cpu, Edit, FileWarning, Compass, Wand2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute } from "@/types/dpp";
-
-const fileToDataUri = (file: File): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
-    reader.onload = () => resolve(reader.result as string);
-    reader.onerror = reject;
-    reader.readAsDataURL(file);
-  });
-};
+import { fileToDataUri } from '@/utils/fileUtils'; // Import the utility function
 
 export interface InitialProductFormData extends ProductFormData {
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -196,7 +188,7 @@ export default function AddNewProductPage() {
       let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
       
       const productCoreData: StoredUserProduct = {
-        id: isEditMode && editProductId ? editProductId : `USER_PROD${Date.now().toString().slice(-6)}`,
+        id: isEditMode && editProductId ? editProductId : `USER_PROD_${Date.now().toString().slice(-6)}`, // Ensure USER_PROD prefix
         ...formDataFromForm, 
         productName: formDataFromForm.productName || "Unnamed Product", 
         status: (isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.status) : "Draft") || "Draft",

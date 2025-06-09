@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ShieldCheck, Info, ArrowLeft, FileSearch, History, Bot, Edit, Database, KeyRound, Users } from "lucide-react";
+import { ShieldCheck, Info, FileSearch, History, Bot, Edit, Database, KeyRound } from "lucide-react";
+import DocsPageLayout from '@/components/developer/DocsPageLayout'; // Import the layout
 
 export default function AuditorIntegrationPage() {
   const steps = [
@@ -60,25 +61,14 @@ export default function AuditorIntegrationPage() {
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <ShieldCheck className="mr-3 h-7 w-7 text-primary" />
-          Auditor & Verifier Integration Guide
-        </h1>
-        <Button variant="outline" asChild>
-          <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Conceptual Guide</AlertTitle>
-        <AlertDescription>
-          This guide outlines conceptual integration points and workflows for auditors and verifiers interacting with the Norruva DPP platform. Specific features and API endpoints are illustrative.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+      pageTitle="Auditor & Verifier Integration Guide"
+      pageIcon={ShieldCheck}
+      backLink="/developer/docs"
+      backLinkText="Back to Docs Hub"
+      alertTitle="Conceptual Guide"
+      alertDescription="This guide outlines conceptual integration points and workflows for auditors and verifiers interacting with the Norruva DPP platform. Specific features and API endpoints are illustrative."
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Introduction for Auditors & Verifiers</CardTitle>
@@ -133,8 +123,7 @@ export default function AuditorIntegrationPage() {
             </ul>
         </CardContent>
       </Card>
-
-    </div>
+    </DocsPageLayout>
   );
 }
 

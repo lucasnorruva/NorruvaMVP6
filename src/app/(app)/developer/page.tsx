@@ -63,7 +63,7 @@ const mockCodeSamples = [
 const mockTutorials = [
   { id: "tut1", title: "Step-by-Step: Integrating DPP QR Scanning into a Retail App", description: "Learn how to use the Norruva API to allow consumers to scan QR codes and view product passports directly in your application.", linkText: "Read Tutorial", href: "/developer/tutorials/qr-scan-integration", icon: BookText },
   { id: "tut2", title: "Automating Compliance Updates with Webhooks", description: "A guide on setting up webhooks to receive real-time notifications for DPP status changes or new compliance requirements.", linkText: "Read Tutorial", href: "/developer/tutorials/webhooks-automation", icon: BookText },
-  { id: "tut3", title: "Best Practices for Managing DPP Data via API", description: "Explore strategies for efficiently managing large volumes of product data, versioning DPPs, and ensuring data accuracy through API integrations.", linkText: "Read Tutorial (Mock)", href: "#", icon: BookText },
+  { id: "tut3", title: "Best Practices for Managing DPP Data via API", description: "Explore strategies for efficiently managing large volumes of product data, versioning DPPs, and ensuring data accuracy through API integrations.", linkText: "Read Tutorial", href: "/developer/tutorials/dpp-data-management-api", icon: BookText },
 ];
 
 const platformAnnouncements = [

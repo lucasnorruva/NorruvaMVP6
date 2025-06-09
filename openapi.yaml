@@ -1,3 +1,4 @@
+
 openapi: 3.0.0
 info:
   title: Norruva DPP API
@@ -133,6 +134,78 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
   /api/v1/dpp:
+    get:
+      operationId: listDpps
+      summary: List Digital Product Passports
+      description: Retrieves a list of DPPs, with optional filtering.
+      parameters:
+        - name: status
+          in: query
+          required: false
+          description: Filter by DPP status (e.g., draft, published, archived).
+          schema:
+            type: string
+            enum: ["draft", "published", "archived", "pending_review", "revoked", "all"]
+            default: "all"
+        - name: category
+          in: query
+          required: false
+          description: Filter by product category.
+          schema:
+            type: string
+        - name: searchQuery
+          in: query
+          required: false
+          description: Search term for product name, ID, GTIN, or manufacturer.
+          schema:
+            type: string
+        - name: blockchainAnchored
+          in: query
+          required: false
+          description: Filter by blockchain anchoring status.
+          schema:
+            type: string
+            enum: ["all", "anchored", "not_anchored"]
+            default: "all"
+        # Conceptual pagination parameters
+        # - name: limit
+        #   in: query
+        #   schema:
+        #     type: integer
+        #     default: 20
+        # - name: offset
+        #   in: query
+        #   schema:
+        #     type: integer
+        #     default: 0
+      responses:
+        '200':
+          description: A list of Digital Product Passports.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/DigitalProductPassport' # Or a summary version
+                  filtersApplied:
+                    type: object
+                  totalCount:
+                    type: integer
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
     post:
       operationId: createDpp
       summary: Create a Digital Product Passport
@@ -158,6 +231,405 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '401':
           description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp/{productId}/lifecycle-events:
+    post:
+      operationId: addDppLifecycleEvent
+      summary: Add a Lifecycle Event to a DPP
+      description: Adds a new lifecycle event to the specified Digital Product Passport.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                eventType:
+                  type: string
+                  description: Type of the lifecycle event (e.g., "Manufactured", "Shipped").
+                  example: "Shipped"
+                location:
+                  type: string
+                  nullable: true
+                  description: Location where the event occurred.
+                  example: "Warehouse B"
+                details:
+                  type: object
+                  additionalProperties: true
+                  nullable: true
+                  description: Custom data related to the event.
+                  example: {"orderId": "SO12345"}
+                responsibleParty:
+                  type: string
+                  nullable: true
+                  description: Party responsible for the event.
+                  example: "Logistics Inc."
+              required:
+                - eventType
+      responses:
+        '201':
+          description: Lifecycle event added successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LifecycleEvent'
+        '400':
+          description: Invalid input data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp/{productId}/compliance-summary:
+    get:
+      operationId: getDppComplianceSummary
+      summary: Retrieve Compliance Summary for a DPP
+      description: Fetches a summary of the compliance status for a specific product.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  productId:
+                    type: string
+                  productName:
+                    type: string
+                  overallStatus:
+                    type: string
+                    enum: ["Fully Compliant", "Pending Review", "Non-Compliant", "Review Needed", "N/A", "No Data"]
+                  eprelStatus:
+                    type: string
+                    nullable: true
+                  ebsiVerificationStatus:
+                    type: string
+                    nullable: true
+                  batteryRegulationStatus:
+                    type: string
+                    nullable: true
+                  esprStatus:
+                    type: string
+                    nullable: true
+                  lastChecked:
+                    type: string
+                    format: date-time
+                  details:
+                    type: object
+                    properties:
+                      eprel:
+                        type: object
+                        nullable: true
+                        properties:
+                          id: { type: string, nullable: true }
+                          status: { type: string }
+                          url: { type: string, nullable: true }
+                          lastChecked: { type: string, format: "date-time"}
+                      ebsi:
+                        type: object
+                        nullable: true
+                        properties:
+                          status: { type: string }
+                          verificationId: { type: string, nullable: true }
+                          transactionUrl: { type: string, nullable: true }
+                          lastChecked: { type: string, format: "date-time" }
+                      batteryRegulation:
+                        type: object
+                        nullable: true
+                        properties:
+                          status: { type: string }
+                      esprConformity:
+                        type: object
+                        nullable: true
+                        properties:
+                          status: { type: string }
+                      euEspr:
+                        type: object
+                        nullable: true
+                        properties:
+                          status: { type: string }
+                      usScope3:
+                        type: object
+                        nullable: true
+                        properties:
+                          status: { type: string }
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp/{productId}/verify:
+    post:
+      operationId: verifyDppById
+      summary: Verify a Digital Product Passport
+      description: Performs compliance and authenticity checks on a specific DPP.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product to verify.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Verification result.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  productId:
+                    type: string
+                  verificationStatus:
+                    type: string
+                    enum: ["Verified", "VerificationFailed", "PendingFurtherChecks", "ProductNotFound"]
+                  message:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+                  checksPerformed:
+                    type: array
+                    items:
+                      type: string
+                    example: ["Mock Data Integrity Check", "Mock EBSI Anchor Verification"]
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp/{productId}/history:
+    get:
+      operationId: getDppHistoryById
+      summary: Retrieve History/Audit Trail for a DPP
+      description: Fetches the history of changes and events for a specific Digital Product Passport.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    timestamp:
+                      type: string
+                      format: date-time
+                    actionType:
+                      type: string
+                    details:
+                      type: string
+                      nullable: true
+                    changedBy:
+                      type: string
+                    version:
+                      type: integer
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp/import:
+    post:
+      operationId: importDpps
+      summary: Batch Import Digital Product Passports
+      description: Allows for batch creation or update of DPPs from an uploaded file or data payload.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fileType:
+                  type: string
+                  description: Type of the import file (e.g., "csv", "json").
+                  example: "csv"
+                data: # Could be base64 string of file content or structured JSON data
+                  type: string
+                  description: The data to import.
+                  example: "UEsDBAoAAAAA..." # Example for a file
+                sourceDescription:
+                  type: string
+                  nullable: true
+                  description: Optional description of the import source.
+              required:
+                - fileType
+                - data
+      responses:
+        '200': # Or 202 Accepted if it's a long-running job
+          description: Import job acknowledged or completed.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  status:
+                    type: string
+                    enum: ["PendingProcessing", "Completed", "Failed"]
+                  jobId:
+                    type: string
+                    nullable: true
+                  fileTypeReceived:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+        '400':
+          description: Invalid input data (e.g., missing fileType or data).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error during import.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp/{productId}/graph:
+    get:
+      operationId: getDppGraphData
+      summary: Retrieve Graph Data for a DPP
+      description: Fetches graph data (nodes and edges) for visualizing the supply chain or lifecycle related to a DPP.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  nodes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        label: { type: string }
+                        type: { type: string, enum: ["product", "manufacturer", "supplier", "lifecycle_event", "component"] }
+                        data: { type: object, additionalProperties: true, nullable: true }
+                  edges:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id: { type: string }
+                        source: { type: string }
+                        target: { type: string }
+                        label: { type: string }
+                        data: { type: object, additionalProperties: true, nullable: true }
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
           content:
             application/json:
               schema:
@@ -412,6 +884,11 @@ components:
                 vcId:
                   type: string
                   nullable: true
+            specifications: # Added for clarity
+              type: string
+              description: "A JSON string representing key-value technical specifications."
+              example: "{\"color\": \"blue\", \"weight\": \"250g\"}"
+              nullable: true
             customAttributes:
               type: array
               nullable: true
@@ -773,6 +1250,11 @@ components:
             energyLabel:
               type: string
               nullable: true
+            specifications: # Added for consistency
+              type: string
+              description: "A JSON string representing key-value technical specifications."
+              example: "{\"color\": \"blue\"}"
+              nullable: true
             customAttributes:
               type: array
               nullable: true
@@ -854,6 +1336,10 @@ components:
             energyLabel:
               type: string
               nullable: true
+            specifications: # Added for consistency
+              type: string
+              description: "A JSON string representing key-value technical specifications."
+              nullable: true
             customAttributes:
               type: array
               nullable: true
@@ -923,5 +1409,6 @@ components:
       in: header
       name: Authorization
       description: API key for authentication. Provide as 'Bearer YOUR_API_KEY'.
+    
 
     

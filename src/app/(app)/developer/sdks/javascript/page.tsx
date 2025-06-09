@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft, FileCode, Info, Download, Terminal, Settings, Workflow } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function JavaScriptSdkPage() {
   const installationCommand = "npm install @norruva/dpp-sdk";
@@ -59,28 +60,14 @@ createNewDpp({
   `;
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <FileCode className="mr-3 h-7 w-7 text-primary" />
-          JavaScript SDK (Conceptual)
-        </h1>
-        <Button variant="outline" asChild>
-          <Link href="/developer#resources">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Developer Resources
-          </Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Conceptual SDK Documentation</AlertTitle>
-        <AlertDescription>
-          This page describes a conceptual JavaScript SDK for interacting with the Norruva DPP API. The SDK <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">@norruva/dpp-sdk</code> is not yet published. All examples are for illustrative purposes.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+      pageTitle="JavaScript SDK (Conceptual)"
+      pageIcon={FileCode}
+      backLink="/developer#resources"
+      backLinkText="Back to Developer Resources"
+      alertTitle="Conceptual SDK Documentation"
+      alertDescription="This page describes a conceptual JavaScript SDK for interacting with the Norruva DPP API. The SDK @norruva/dpp-sdk is not yet published. All examples are for illustrative purposes."
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Introduction</CardTitle>
@@ -104,6 +91,7 @@ createNewDpp({
           <pre className="bg-muted p-3 rounded-md text-xs overflow-x-auto">
             <code className="text-pink-600 dark:text-pink-400">{installationCommand}</code>
           </pre>
+          <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-300">Note: This package is not yet published.</Badge>
         </CardContent>
       </Card>
 
@@ -159,6 +147,6 @@ createNewDpp({
           </Button>
         </CardContent>
       </Card>
-    </div>
+    </DocsPageLayout>
   );
 }

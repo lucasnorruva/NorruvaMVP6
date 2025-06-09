@@ -3,11 +3,9 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { History, Info, ArrowLeft, CalendarDays, ListChecks, PlusCircle, AlertTriangle as AlertTriangleIcon } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import { History, CalendarDays } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import DocsPageLayout from '@/components/developer/DocsPageLayout'; // Import the new layout
 
 const mockChangelogEntries = [
   {
@@ -69,25 +67,12 @@ export default function ApiChangelogPage() {
 
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <History className="mr-3 h-7 w-7 text-primary" />
-          API Changelog
-        </h1>
-        <Button variant="outline" asChild>
-            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Stay Updated</AlertTitle>
-        <AlertDescription>
-          This page lists updates, new features, improvements, and important changes to the Norruva Digital Product Passport API. Subscribe to our developer newsletter for major announcements.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+      pageTitle="API Changelog"
+      pageIcon={History}
+      alertTitle="Stay Updated"
+      alertDescription="This page lists updates, new features, improvements, and important changes to the Norruva Digital Product Passport API. Subscribe to our developer newsletter for major announcements."
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Version History</CardTitle>
@@ -140,7 +125,6 @@ export default function ApiChangelogPage() {
             </p>
         </CardContent>
       </Card>
-    </div>
+    </DocsPageLayout>
   );
 }
-

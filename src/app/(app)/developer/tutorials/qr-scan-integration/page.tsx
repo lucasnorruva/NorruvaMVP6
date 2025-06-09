@@ -6,8 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { ArrowLeft, BookText, Info, QrCode, Settings, Send, Smartphone, Layers, ExternalLink } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { BookText, Info, QrCode, Settings, Send, Smartphone, Layers, ExternalLink } from "lucide-react";
+import DocsPageLayout from '@/components/developer/DocsPageLayout'; // Import the layout
 
 export default function QrScanIntegrationTutorialPage() {
   const validateQrEndpoint = "/api/v1/qr/validate";
@@ -126,28 +126,14 @@ async function validateProductQr(qrIdentifier) {
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <QrCode className="mr-3 h-7 w-7 text-primary" />
-          Tutorial: Integrating DPP QR Scanning (Conceptual)
-        </h1>
-        <Button variant="outline" asChild>
-          <Link href="/developer#resources">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Developer Resources
-          </Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Conceptual Tutorial</AlertTitle>
-        <AlertDescription>
-          This tutorial outlines the steps for integrating QR scanning for DPPs. Code examples are illustrative and conceptual. You'll need to adapt them to your specific application stack.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+      pageTitle="Tutorial: Integrating DPP QR Scanning (Conceptual)"
+      pageIcon={QrCode}
+      backLink="/developer/docs"
+      backLinkText="Back to Docs Hub"
+      alertTitle="Conceptual Tutorial"
+      alertDescription="This tutorial outlines the steps for integrating QR scanning for DPPs. Code examples are illustrative and conceptual. You'll need to adapt them to your specific application stack."
+    >
       <div className="space-y-6">
         {steps.map((step, index) => (
           <Card key={index} className="shadow-md">
@@ -163,6 +149,7 @@ async function validateProductQr(qrIdentifier) {
           </Card>
         ))}
       </div>
-    </div>
+    </DocsPageLayout>
   );
 }
+

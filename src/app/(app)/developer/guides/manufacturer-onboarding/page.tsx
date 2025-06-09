@@ -6,7 +6,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Building, Info, ArrowLeft, Users, FileText, Layers, CheckCircle, Rocket, HelpCircle, PlusCircle } from "lucide-react"; // Added PlusCircle, removed Bot
+import { Building, Info, Users, FileText, Layers, CheckCircle, Rocket, HelpCircle, PlusCircle } from "lucide-react";
+import DocsPageLayout from '@/components/developer/DocsPageLayout'; // Import the layout
 
 export default function ManufacturerOnboardingPage() {
   const steps = [
@@ -28,7 +29,7 @@ export default function ManufacturerOnboardingPage() {
     },
     {
       title: "Creating Your First Product DPP",
-      icon: PlusCircle, // Changed from Bot to PlusCircle
+      icon: PlusCircle,
       description: "Utilize our platform tools to create Digital Product Passports. You can leverage AI-powered data extraction from existing documents or use the manual entry form. The platform guides you through essential fields.",
       link: "/products/new",
       linkText: "Add New Product"
@@ -59,25 +60,14 @@ export default function ManufacturerOnboardingPage() {
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <Building className="mr-3 h-7 w-7 text-primary" />
-          Manufacturer Onboarding Guide (Conceptual)
-        </h1>
-        <Button variant="outline" asChild>
-          <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Conceptual Guide</AlertTitle>
-        <AlertDescription>
-          This guide outlines the conceptual steps for manufacturers to onboard onto the Norruva DPP platform. Specific features and workflows are for illustrative purposes.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+      pageTitle="Manufacturer Onboarding Guide (Conceptual)"
+      pageIcon={Building}
+      backLink="/developer/docs"
+      backLinkText="Back to Docs Hub"
+      alertTitle="Conceptual Guide"
+      alertDescription="This guide outlines the conceptual steps for manufacturers to onboard onto the Norruva DPP platform. Specific features and workflows are for illustrative purposes."
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Welcome, Manufacturer!</CardTitle>
@@ -135,8 +125,7 @@ export default function ManufacturerOnboardingPage() {
             </Button>
         </CardContent>
       </Card>
-
-    </div>
+    </DocsPageLayout>
   );
 }
 

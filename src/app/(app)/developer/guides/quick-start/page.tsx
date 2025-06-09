@@ -3,9 +3,9 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Rocket, KeyRound, Send, BookOpen, Info, ArrowLeft, Terminal, Package, FileJson, ChevronRightCircle, Workflow } from "lucide-react";
+import { Rocket, KeyRound, Send, Package, Info, Terminal, FileJson, ChevronRightCircle, Workflow } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import DocsPageLayout from '@/components/developer/DocsPageLayout'; // Import the layout
 
 export default function QuickStartGuidePage() {
   const curlExample = `
@@ -15,25 +15,14 @@ curl -X GET \\
   `;
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <Rocket className="mr-3 h-7 w-7 text-primary" />
-          Quick Start Guide
-        </h1>
-        <Button variant="outline" asChild>
-            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Welcome Developer!</AlertTitle>
-        <AlertDescription>
-          This guide will walk you through the essential steps to start understanding and conceptually integrating with the Norruva Digital Product Passport (DPP) API.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+      pageTitle="Quick Start Guide"
+      pageIcon={Rocket}
+      backLink="/developer/docs"
+      backLinkText="Back to Docs Hub"
+      alertTitle="Welcome Developer!"
+      alertDescription="This guide will walk you through the essential steps to start understanding and conceptually integrating with the Norruva Digital Product Passport (DPP) API."
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center"><Info className="mr-2 h-5 w-5 text-primary"/>1. Understanding the Basics</CardTitle>
@@ -153,7 +142,7 @@ curl -X GET \\
           </ul>
         </CardContent>
       </Card>
-    </div>
+    </DocsPageLayout>
   );
 }
 

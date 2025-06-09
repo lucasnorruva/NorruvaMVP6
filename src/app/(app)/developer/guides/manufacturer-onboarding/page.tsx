@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Building, Info, ArrowLeft, Users, FileText, Bot, Layers, CheckCircle, Rocket, HelpCircle } from "lucide-react";
+import { Building, Info, ArrowLeft, Users, FileText, Layers, CheckCircle, Rocket, HelpCircle, PlusCircle } from "lucide-react"; // Added PlusCircle, removed Bot
 
 export default function ManufacturerOnboardingPage() {
   const steps = [
@@ -28,7 +28,7 @@ export default function ManufacturerOnboardingPage() {
     },
     {
       title: "Creating Your First Product DPP",
-      icon: Bot,
+      icon: PlusCircle, // Changed from Bot to PlusCircle
       description: "Utilize our platform tools to create Digital Product Passports. You can leverage AI-powered data extraction from existing documents or use the manual entry form. The platform guides you through essential fields.",
       link: "/products/new",
       linkText: "Add New Product"
@@ -139,3 +139,4 @@ export default function ManufacturerOnboardingPage() {
     </div>
   );
 }
+

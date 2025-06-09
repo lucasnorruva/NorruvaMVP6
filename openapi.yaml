@@ -664,27 +664,7 @@ paths:
           content:
             application/json:
               schema:
-                type: object
-                properties:
-                  nodes:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id: { type: string }
-                        label: { type: string }
-                        type: { type: string, enum: ["product", "manufacturer", "supplier", "lifecycle_event", "component"] }
-                        data: { type: object, additionalProperties: true, nullable: true }
-                  edges:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id: { type: string }
-                        source: { type: string }
-                        target: { type: string }
-                        label: { type: string }
-                        data: { type: object, additionalProperties: true, nullable: true }
+                $ref: '#/components/schemas/DppGraphResponse'
         '401':
           description: API key missing or invalid.
           content:
@@ -844,6 +824,32 @@ components:
           type: string
           description: The current status of the Digital Product Passport.
           enum: ["draft", "published", "archived", "pending_review", "revoked", "flagged"]
+    DppGraphNode:
+      type: object
+      properties:
+        id: { type: string }
+        label: { type: string }
+        type: { type: string, enum: ["product", "manufacturer", "supplier", "lifecycle_event", "component"] }
+        data: { type: object, additionalProperties: true, nullable: true }
+    DppGraphEdge:
+      type: object
+      properties:
+        id: { type: string }
+        source: { type: string, description: "ID of the source node" }
+        target: { type: string, description: "ID of the target node" }
+        label: { type: string, description: "Description of the relationship" }
+        data: { type: object, additionalProperties: true, nullable: true }
+    DppGraphResponse:
+      type: object
+      properties:
+        nodes:
+          type: array
+          items:
+            $ref: '#/components/schemas/DppGraphNode'
+        edges:
+          type: array
+          items:
+            $ref: '#/components/schemas/DppGraphEdge'
     DocumentReference:
       type: object
       properties:
@@ -861,7 +867,7 @@ components:
           type: string
           format: date-time
           description: Timestamp when the document reference was added.
-    HistoryEntry: # Added HistoryEntry schema
+    HistoryEntry: 
       type: object
       properties:
         timestamp:
@@ -1565,4 +1571,5 @@ components:
     
 
     
+
 

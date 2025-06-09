@@ -26,11 +26,11 @@ interface CustomAttributesFormSectionProps {
   handleAddCustomAttribute: () => void;
   handleRemoveCustomAttribute: (keyToRemove: string) => void;
   form: UseFormReturn<ProductFormData>;
-  suggestedCustomAttributes: CustomAttribute[]; // Keep this prop
-  setSuggestedCustomAttributes: React.Dispatch<React.SetStateAction<CustomAttribute[]>>; // Keep this prop
-  handleAddSuggestedCustomAttribute: (attribute: CustomAttribute) => void;
+  suggestedCustomAttributes: CustomAttribute[]; 
+  setSuggestedCustomAttributes: React.Dispatch<React.SetStateAction<CustomAttribute[]>>; 
+  handleAddSuggestedCustomAttribute: (attribute: CustomAttribute) => void; // Keep this if ProductForm defines it
   isSubmittingForm?: boolean;
-  toast: ToastFn; // Added toast prop
+  toast: ToastFn; 
 }
 
 export default function CustomAttributesFormSection({
@@ -44,10 +44,10 @@ export default function CustomAttributesFormSection({
   handleRemoveCustomAttribute,
   form,
   suggestedCustomAttributes,
-  setSuggestedCustomAttributes, // Destructure
-  handleAddSuggestedCustomAttribute,
+  setSuggestedCustomAttributes, 
+  // handleAddSuggestedCustomAttribute, // This prop can be removed if logic is fully internal
   isSubmittingForm,
-  toast, // Destructure
+  toast, 
 }: CustomAttributesFormSectionProps) {
   const [isSuggestingCustomAttrsInternal, setIsSuggestingCustomAttrsInternal] = useState(false);
 
@@ -58,11 +58,27 @@ export default function CustomAttributesFormSection({
   const callSuggestCustomAttributesAIInternal = async () => {
     const attributes = await handleSuggestCustomAttributesAI(form, toast, setIsSuggestingCustomAttrsInternal);
     if (attributes) {
-      setSuggestedCustomAttributes(attributes); // Update parent state
+      setSuggestedCustomAttributes(attributes); 
     } else {
-      setSuggestedCustomAttributes([]); // Update parent state
+      setSuggestedCustomAttributes([]); 
     }
   };
+
+  // Internal handler for adding suggested attributes
+  const internalHandleAddSuggestedAttribute = (suggestedAttr: CustomAttribute) => {
+    if (customAttributes.some(attr => attr.key.toLowerCase() === suggestedAttr.key.toLowerCase())) {
+      toast({
+        title: "Attribute Exists",
+        description: `An attribute with key "${suggestedAttr.key}" already exists. You can edit it or use a different key.`,
+        variant: "default",
+      });
+      return;
+    }
+    setCustomAttributes(prev => [...prev, suggestedAttr]);
+    setSuggestedCustomAttributes(prev => prev.filter(attr => attr.key.toLowerCase() !== suggestedAttr.key.toLowerCase()));
+    toast({ title: "Attribute Added", description: `"${suggestedAttr.key}" has been added from suggestions.`, variant: "default" });
+  };
+
 
   return (
     <div className="space-y-6 pt-4">
@@ -97,7 +113,7 @@ export default function CustomAttributesFormSection({
                   type="button" 
                   variant="ghost" 
                   size="icon" 
-                  onClick={() => handleAddSuggestedCustomAttribute(attr)} 
+                  onClick={() => internalHandleAddSuggestedAttribute(attr)} 
                   className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-500/10"
                   title={`Add attribute "${attr.key}"`}
                 >

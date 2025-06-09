@@ -246,7 +246,7 @@ export default function ApiReferencePage() {
   return (
     <DocsPageLayout
       pageTitle="API Reference (Conceptual)"
-      pageIcon={BookText}
+      pageIcon="BookText"
       alertTitle="Conceptual Documentation"
       alertDescription="This API reference is conceptual and outlines how API endpoints for the Norruva DPP platform might be structured. Actual implementation details may vary."
     >
@@ -910,6 +910,7 @@ export default function ApiReferencePage() {
     </DocsPageLayout>
   );
 }
+
 
 
 

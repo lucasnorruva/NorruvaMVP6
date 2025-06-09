@@ -69,7 +69,7 @@ export default function ApiChangelogPage() {
   return (
     <DocsPageLayout
       pageTitle="API Changelog"
-      pageIcon={History}
+      pageIcon="History"
       alertTitle="Stay Updated"
       alertDescription="This page lists updates, new features, improvements, and important changes to the Norruva Digital Product Passport API. Subscribe to our developer newsletter for major announcements."
     >

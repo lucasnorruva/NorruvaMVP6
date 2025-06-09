@@ -5,13 +5,14 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
-import { Filter, ListFilter, Search, Tag, ShieldAlert, CheckSquare } from "lucide-react";
+import { Filter, ListFilter, Search, Tag, ShieldAlert, CheckSquare, Link as LinkIcon } from "lucide-react"; // Added LinkIcon
 
 export interface ProductManagementFilterState {
   searchQuery: string;
   status: string;
   compliance: string;
   category: string;
+  blockchainAnchored?: 'all' | 'anchored' | 'not_anchored'; // Added blockchainAnchored
 }
 
 interface ProductManagementFiltersComponentProps {
@@ -33,11 +34,17 @@ export default function ProductManagementFiltersComponent({
   const handleInputChange = (filterName: keyof ProductManagementFilterState, value: string) => {
     onFilterChange({ ...filters, [filterName]: value });
   };
+  
+  const anchoringOptions = [
+    { value: "all", label: "All Anchoring Statuses" },
+    { value: "anchored", label: "Anchored" },
+    { value: "not_anchored", label: "Not Anchored" },
+  ];
 
   return (
     <Card className="shadow-md">
       <CardContent className="p-4">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 items-end"> {/* Adjusted grid to 5 cols */}
           <div>
             <Label htmlFor="search-query" className="text-sm font-medium mb-1 flex items-center">
               <Search className="h-4 w-4 mr-2 text-primary" />
@@ -110,6 +117,27 @@ export default function ProductManagementFiltersComponent({
                 {categoryOptions.map((category) => (
                   <SelectItem key={category} value={category}>
                     {category}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="anchoring-filter-pm" className="text-sm font-medium mb-1 flex items-center"> {/* Changed id to avoid conflict */}
+              <LinkIcon className="h-4 w-4 mr-1.5 text-primary" />
+              Blockchain Anchoring
+            </Label>
+            <Select
+              value={filters.blockchainAnchored || 'all'}
+              onValueChange={(value) => handleInputChange('blockchainAnchored', value as ProductManagementFilterState['blockchainAnchored'])}
+            >
+              <SelectTrigger id="anchoring-filter-pm" className="w-full">
+                <SelectValue placeholder="Select anchoring status" />
+              </SelectTrigger>
+              <SelectContent>
+                {anchoringOptions.map((option) => (
+                  <SelectItem key={`pm-anchor-${option.value}`} value={option.value}> {/* Changed key for uniqueness */}
+                    {option.label}
                   </SelectItem>
                 ))}
               </SelectContent>

@@ -30,7 +30,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import ApiKeysManager, { type ApiKey } from '@/components/developer/ApiKeysManager';
 import WebhooksManager, { type WebhookEntry } from '@/components/developer/WebhooksManager';
-import ApiPlaygroundEndpointCard from '@/components/developer/ApiPlaygroundEndpointCard'; // New Import
+import ApiPlaygroundEndpointCard from '@/components/developer/ApiPlaygroundEndpointCard'; 
 import { cn } from '@/lib/utils';
 
 
@@ -925,7 +925,6 @@ export default function DeveloperPortalPage() {
                       </div>
                     </ApiPlaygroundEndpointCard>
 
-                    {/* PUT /api/v1/dpp/{productId} */}
                     <ApiPlaygroundEndpointCard
                         title="PUT /api/v1/dpp/{productId}"
                         description="Update an existing Digital Product Passport."
@@ -948,7 +947,6 @@ export default function DeveloperPortalPage() {
                         </div>
                     </ApiPlaygroundEndpointCard>
 
-                    {/* DELETE /api/v1/dpp/{productId} */}
                     <ApiPlaygroundEndpointCard
                         title="DELETE /api/v1/dpp/{productId}"
                         description="Archive a Digital Product Passport."
@@ -1348,3 +1346,4 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+

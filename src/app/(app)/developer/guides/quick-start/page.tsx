@@ -1,4 +1,5 @@
 
+// --- File: page.tsx (Quick Start Integration Guide) ---
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -137,7 +138,7 @@ curl -X GET \\
             <li>Learn about real-time event notifications with our <Link href="/developer/docs/webhooks-guide" className="text-primary hover:underline font-medium">Webhooks Guide</Link>.</li>
             <li>Understand how to test your integration and validate DPP data using the <Link href="/developer/docs/testing-validation" className="text-primary hover:underline font-medium">Testing & Validation Guide</Link>.</li>
             <li>Explore <Link href="/developer#resources" className="text-primary hover:underline font-medium">SDKs and Code Samples</Link> (conceptual, under the "Resources" tab) to accelerate your integration.</li>
-            <li>Check out the <Link href="/developer#resources" className="text-primary hover:underline font-medium">Tutorials</Link> (conceptual, under the "Resources" tab) for common use cases.</li>
+            <li>Check out the <Link href="/developer/tutorials" className="text-primary hover:underline font-medium">Tutorials</Link> (conceptual, this links to hub) for common use cases.</li>
             <li>Review <Link href="/developer/docs/rate-limiting" className="text-primary hover:underline font-medium">API Rate Limiting</Link> and <Link href="/developer/docs/error-codes" className="text-primary hover:underline font-medium">Error Handling</Link> best practices.</li>
           </ul>
         </CardContent>

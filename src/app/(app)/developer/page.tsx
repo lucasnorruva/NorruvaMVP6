@@ -105,7 +105,7 @@ const generateMockCodeSnippet = (
   currentEnv: string
 ): string => {
   const apiKeyPlaceholder = `YOUR_${currentEnv.toUpperCase()}_API_KEY`;
-  const baseUrl = 'http://localhost:9002/api/v1';
+  const baseUrl = 'http://localhost:9002/api/v1'; // This should ideally come from an env var or config
 
   let urlPath = "";
   switch (endpointKey) {
@@ -124,7 +124,7 @@ const generateMockCodeSnippet = (
     case "qrValidate": urlPath = "/qr/validate"; break;
     case "addLifecycleEvent": urlPath = `/dpp/${params.productId || '{productId}'}/lifecycle-events`; break;
     case "getComplianceSummary": urlPath = `/dpp/${params.productId || '{productId}'}/compliance-summary`; break;
-    case "verifyDpp": urlPath = "/dpp/verify"; break;
+    case "verifyDpp": urlPath = `/dpp/verify/${params.productId || '{productId}'}`; break; // Updated for path param
     case "getDppHistory": urlPath = `/dpp/history/${params.productId || '{productId}'}`; break;
     case "importDpps": urlPath = "/dpp/import"; break;
     case "getDppGraph": urlPath = `/dpp/graph/${params.productId || '{productId}'}`; break;
@@ -136,28 +136,28 @@ const generateMockCodeSnippet = (
 
   if (language === "cURL") {
     let curlCmd = `curl -X ${method} \\\n  '${fullUrl}' \\\n  -H 'Authorization: Bearer ${apiKeyPlaceholder}'`;
-    if (method === "POST" || method === "PUT") {
+    if ((method === "POST" || method === "PUT") && body) { // Only add body if it exists
       curlCmd += ` \\\n  -H 'Content-Type: application/json' \\\n  -d '${safeBody.replace(/'/g, "'\\''")}'`;
     }
     return curlCmd;
   } else if (language === "JavaScript") {
     let jsFetch = `fetch('${fullUrl}', {\n  method: '${method}',\n  headers: {\n    'Authorization': 'Bearer ${apiKeyPlaceholder}'`;
-    if (method === "POST" || method === "PUT") {
+    if ((method === "POST" || method === "PUT") && body) {
       jsFetch += `,\n    'Content-Type': 'application/json'`;
     }
     jsFetch += `\n  }`;
-    if (method === "POST" || method === "PUT") {
+    if ((method === "POST" || method === "PUT") && body) {
       jsFetch += `,\n  body: JSON.stringify(${safeBody})`;
     }
     jsFetch += `\n})\n.then(response => response.json())\n.then(data => console.log(data))\n.catch(error => console.error('Error:', error));`;
     return jsFetch;
   } else if (language === "Python") {
     let pyRequests = `import requests\nimport json\n\nurl = "${fullUrl}"\nheaders = {\n  "Authorization": "Bearer ${apiKeyPlaceholder}"`;
-    if (method === "POST" || method === "PUT") {
+    if ((method === "POST" || method === "PUT") && body) {
       pyRequests += `,\n  "Content-Type": "application/json"`;
     }
     pyRequests += `\n}`;
-    if (method === "POST" || method === "PUT") {
+    if ((method === "POST" || method === "PUT") && body) {
       pyRequests += `\npayload = json.dumps(${safeBody})`;
       pyRequests += `\nresponse = requests.request("${method}", url, headers=headers, data=payload)`;
     } else {
@@ -199,7 +199,7 @@ export default function DeveloperPortalPage() {
 
   const [postLifecycleEventProductId, setPostLifecycleEventProductId] = useState<string>("DPP001");
   const [postLifecycleEventBody, setPostLifecycleEventBody] = useState<string>(
-    JSON.stringify({ eventType: "Shipped", location: "Warehouse B", details: "Order #SO12345" }, null, 2)
+    JSON.stringify({ eventType: "Shipped", location: "Warehouse B", details: { orderId: "SO12345" } }, null, 2)
   );
   const [postLifecycleEventResponse, setPostLifecycleEventResponse] = useState<string | null>(null);
   const [isPostLifecycleEventLoading, setIsPostLifecycleEventLoading] = useState(false);
@@ -218,7 +218,7 @@ export default function DeveloperPortalPage() {
   const [qrValidateSnippetLang, setQrValidateSnippetLang] = useState("cURL");
 
 
-  const [postVerifyProductId, setPostVerifyProductId] = useState<string>("DPP001");
+  const [postVerifyProductIdPath, setPostVerifyProductIdPath] = useState<string>("DPP001"); // New state for path param
   const [postVerifyResponse, setPostVerifyResponse] = useState<string | null>(null);
   const [isPostVerifyLoading, setIsPostVerifyLoading] = useState(false);
   const [verifyDppSnippetLang, setVerifyDppSnippetLang] = useState("cURL");
@@ -238,7 +238,7 @@ export default function DeveloperPortalPage() {
 
   const [mockDppGeneratorProductName, setMockDppGeneratorProductName] = useState("");
   const [mockDppGeneratorCategory, setMockDppGeneratorCategory] = useState("");
-  const [mockDppGeneratorGtin, setMockDppGeneratorGtin] = useState(""); // New state for GTIN
+  const [mockDppGeneratorGtin, setMockDppGeneratorGtin] = useState(""); 
   const [generatedMockDppJson, setGeneratedMockDppJson] = useState<string | null>(null);
   const [isGeneratingMockDpp, setIsGeneratingMockDpp] = useState(false);
 
@@ -292,7 +292,7 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("qrValidate", "POST", qrValidateSnippetLang, {}, postQrValidateBody, setQrValidateCodeSnippet), [postQrValidateBody, qrValidateSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("addLifecycleEvent", "POST", addLifecycleEventSnippetLang, { productId: postLifecycleEventProductId }, postLifecycleEventBody, setAddLifecycleEventCodeSnippet), [postLifecycleEventProductId, postLifecycleEventBody, addLifecycleEventSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getComplianceSummary", "GET", getComplianceSummarySnippetLang, { productId: getComplianceProductId }, null, setGetComplianceSummaryCodeSnippet), [getComplianceProductId, getComplianceSummarySnippetLang, updateSnippet]);
-  useEffect(() => updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productId: postVerifyProductId }, JSON.stringify({ productId: postVerifyProductId }), setVerifyDppCodeSnippet), [postVerifyProductId, verifyDppSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productId: postVerifyProductIdPath }, null, setVerifyDppCodeSnippet), [postVerifyProductIdPath, verifyDppSnippetLang, updateSnippet]); // Updated for path param, body is null
   useEffect(() => updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet), [getHistoryProductId, getDppHistorySnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("importDpps", "POST", importDppsSnippetLang, { fileType: postImportFileType }, JSON.stringify({ fileType: postImportFileType, data: "mock_base64_data" }), setImportDppsCodeSnippet), [postImportFileType, importDppsSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet), [getGraphProductId, getDppGraphSnippetLang, updateSnippet]);
@@ -392,7 +392,7 @@ export default function DeveloperPortalPage() {
         options.body = typeof body === 'string' ? body : JSON.stringify(body);
       }
 
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500)); // Simulate network delay
 
       const res = await fetch(url, options);
       const responseData = await res.json();
@@ -421,8 +421,8 @@ export default function DeveloperPortalPage() {
   const handleMockPostLifecycleEvent = () => { updateSnippet("addLifecycleEvent", "POST", addLifecycleEventSnippetLang, { productId: postLifecycleEventProductId }, postLifecycleEventBody, setAddLifecycleEventCodeSnippet); makeApiCall(`/api/v1/dpp/${postLifecycleEventProductId}/lifecycle-events`, 'POST', postLifecycleEventBody, setIsPostLifecycleEventLoading, setPostLifecycleEventResponse); }
   const handleMockGetComplianceSummary = () => { updateSnippet("getComplianceSummary", "GET", getComplianceSummarySnippetLang, { productId: getComplianceProductId }, null, setGetComplianceSummaryCodeSnippet); makeApiCall(`/api/v1/dpp/${getComplianceProductId}/compliance-summary`, 'GET', null, setIsGetComplianceLoading, setGetComplianceResponse); }
   const handleMockPostQrValidate = () => { updateSnippet("qrValidate", "POST", qrValidateSnippetLang, {}, postQrValidateBody, setQrValidateCodeSnippet); makeApiCall('/api/v1/qr/validate', 'POST', postQrValidateBody, setIsPostQrValidateLoading, setPostQrValidateResponse); }
-  const handleMockPostVerify = () => { const body = { productId: postVerifyProductId }; updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, body, JSON.stringify(body), setVerifyDppCodeSnippet); makeApiCall(`/api/v1/dpp/verify`, 'POST', body, setIsPostVerifyLoading, setPostVerifyResponse); }
-  const handleMockGetHistory = () => { updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet); makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetHistoryResponse); }
+  const handleMockPostVerify = () => { updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productId: postVerifyProductIdPath }, null, setVerifyDppCodeSnippet); makeApiCall(`/api/v1/dpp/verify/${postVerifyProductIdPath}`, 'POST', null, setIsPostVerifyLoading, setPostVerifyResponse); }
+  const handleMockGetHistory = () => { updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet); makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetDppHistoryResponse); }
   const handleMockPostImport = () => { const body = { fileType: postImportFileType, data: "mock_file_content_base64_encoded" }; updateSnippet("importDpps", "POST", importDppsSnippetLang, body, JSON.stringify(body), setImportDppsCodeSnippet); makeApiCall('/api/v1/dpp/import', 'POST', body, setIsPostImportLoading, setPostImportResponse); }
   const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetDppGraphResponse); }
 
@@ -669,7 +669,7 @@ export default function DeveloperPortalPage() {
                       codeSampleLanguages={codeSampleLanguages}
                     >
                       <div>
-                        <Label htmlFor="productIdInput-get">Product ID</Label>
+                        <Label htmlFor="productIdInput-get">Product ID (Path Parameter)</Label>
                         <Input id="productIdInput-get" value={getProductId} onChange={(e) => setGetProductId(e.target.value)} placeholder="e.g., DPP001" />
                       </div>
                     </ApiPlaygroundEndpointCard>
@@ -747,7 +747,7 @@ export default function DeveloperPortalPage() {
                         codeSampleLanguages={codeSampleLanguages}
                     >
                         <div>
-                            <Label htmlFor="productIdInput-put">Product ID</Label>
+                            <Label htmlFor="productIdInput-put">Product ID (Path Parameter)</Label>
                             <Input id="productIdInput-put" value={putProductId} onChange={(e) => setPutProductId(e.target.value)} placeholder="e.g., DPP001"/>
                         </div>
                         <div className="mt-2">
@@ -769,7 +769,7 @@ export default function DeveloperPortalPage() {
                         codeSampleLanguages={codeSampleLanguages}
                     >
                         <div>
-                            <Label htmlFor="productIdInput-delete">Product ID</Label>
+                            <Label htmlFor="productIdInput-delete">Product ID (Path Parameter)</Label>
                             <Input id="productIdInput-delete" value={deleteProductId} onChange={(e) => setDeleteProductId(e.target.value)} placeholder="e.g., PROD002"/>
                         </div>
                     </ApiPlaygroundEndpointCard>
@@ -808,7 +808,7 @@ export default function DeveloperPortalPage() {
                         codeSampleLanguages={codeSampleLanguages}
                     >
                         <div>
-                            <Label htmlFor="productIdInput-post-event">Product ID</Label>
+                            <Label htmlFor="productIdInput-post-event">Product ID (Path Parameter)</Label>
                             <Input id="productIdInput-post-event" value={postLifecycleEventProductId} onChange={(e) => setPostLifecycleEventProductId(e.target.value)} placeholder="e.g., DPP001"/>
                         </div>
                         <div className="mt-2">
@@ -829,25 +829,26 @@ export default function DeveloperPortalPage() {
                         codeSampleLanguages={codeSampleLanguages}
                     >
                         <div>
-                            <Label htmlFor="productIdInput-get-compliance">Product ID</Label>
+                            <Label htmlFor="productIdInput-get-compliance">Product ID (Path Parameter)</Label>
                             <Input id="productIdInput-get-compliance" value={getComplianceProductId} onChange={(e) => setGetComplianceProductId(e.target.value)} placeholder="e.g., DPP001" />
                         </div>
                     </ApiPlaygroundEndpointCard>
 
                     <ApiPlaygroundEndpointCard
-                        title="POST /api/v1/dpp/verify"
+                        title="POST /api/v1/dpp/verify/{productId}"
                         description="Perform compliance and authenticity checks on a DPP."
                         onSendRequest={handleMockPostVerify}
                         isLoading={isPostVerifyLoading}
                         response={postVerifyResponse}
                         codeSnippet={verifyDppCodeSnippet}
                         snippetLanguage={verifyDppSnippetLang}
-                        onSnippetLanguageChange={(lang) => {setVerifyDppSnippetLang(lang); updateSnippet("verifyDpp", "POST", lang, {productId: postVerifyProductId}, JSON.stringify({productId: postVerifyProductId}), setVerifyDppCodeSnippet);}}
+                        onSnippetLanguageChange={(lang) => {setVerifyDppSnippetLang(lang); updateSnippet("verifyDpp", "POST", lang, {productId: postVerifyProductIdPath}, null, setVerifyDppCodeSnippet);}}
                         codeSampleLanguages={codeSampleLanguages}
                     >
                         <div>
-                            <Label htmlFor="productIdInput-verify">Product ID to Verify</Label>
-                            <Input id="productIdInput-verify" value={postVerifyProductId} onChange={(e) => setPostVerifyProductId(e.target.value)} placeholder="e.g., DPP001"/>
+                            <Label htmlFor="productIdInput-verify-path">Product ID (Path Parameter)</Label>
+                            <Input id="productIdInput-verify-path" value={postVerifyProductIdPath} onChange={(e) => setPostVerifyProductIdPath(e.target.value)} placeholder="e.g., DPP001"/>
+                            <p className="text-xs text-muted-foreground mt-1">No request body needed for this mock endpoint.</p>
                         </div>
                     </ApiPlaygroundEndpointCard>
 
@@ -863,7 +864,7 @@ export default function DeveloperPortalPage() {
                       codeSampleLanguages={codeSampleLanguages}
                     >
                       <div>
-                        <Label htmlFor="historyProductIdInput">Product ID</Label>
+                        <Label htmlFor="historyProductIdInput">Product ID (Path Parameter)</Label>
                         <Input id="historyProductIdInput" value={getHistoryProductId} onChange={(e) => setGetHistoryProductId(e.target.value)} placeholder="e.g., DPP001" />
                       </div>
                     </ApiPlaygroundEndpointCard>
@@ -907,7 +908,7 @@ export default function DeveloperPortalPage() {
                         codeSampleLanguages={codeSampleLanguages}
                     >
                       <div>
-                        <Label htmlFor="graphProductIdInput">Product ID</Label>
+                        <Label htmlFor="graphProductIdInput">Product ID (Path Parameter)</Label>
                         <Input id="graphProductIdInput" value={getGraphProductId} onChange={(e) => setGetGraphProductId(e.target.value)} placeholder="e.g., DPP001" />
                       </div>
                     </ApiPlaygroundEndpointCard>

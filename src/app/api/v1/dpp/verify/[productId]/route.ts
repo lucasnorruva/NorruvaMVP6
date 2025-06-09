@@ -1,14 +1,15 @@
 
-// --- File: src/app/api/v1/dpp/verify/route.ts ---
-// Description: Conceptual API endpoint to simulate verification of a DPP.
+// --- File: src/app/api/v1/dpp/verify/[productId]/route.ts ---
+// Description: Conceptual API endpoint to simulate verification of a DPP by Product ID from path.
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { MOCK_DPPS } from '@/types/dpp';
 
-interface VerifyDppRequestBody {
-  productId?: string;
-}
+// Request body is currently not used for this endpoint as productId comes from path.
+// interface VerifyDppRequestBody {
+//   // Potentially other verification parameters in the future
+// }
 
 interface VerificationResponse {
   productId: string;
@@ -18,21 +19,16 @@ interface VerificationResponse {
   checksPerformed?: string[];
 }
 
-export async function POST(request: NextRequest) {
-  let requestBody: VerifyDppRequestBody;
-
-  try {
-    requestBody = await request.json();
-  } catch (error) {
-    return NextResponse.json({ error: { code: 400, message: "Invalid JSON payload." } }, { status: 400 });
-  }
-
-  const { productId } = requestBody;
+export async function POST(
+  request: NextRequest,
+  { params }: { params: { productId: string } }
+) {
+  const productId = params.productId;
 
   if (!productId || typeof productId !== 'string' || productId.trim() === '') {
-    return NextResponse.json({ error: { code: 400, message: "Field 'productId' is required and must be a non-empty string." } }, { status: 400 });
+    return NextResponse.json({ error: { code: 400, message: "Path parameter 'productId' is required and must be a non-empty string." } }, { status: 400 });
   }
-
+  
   // Conceptual API key authentication - skipped for mock
   // const authHeader = request.headers.get('Authorization');
   // if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -91,3 +87,4 @@ export async function POST(request: NextRequest) {
 
   return NextResponse.json(responsePayload);
 }
+

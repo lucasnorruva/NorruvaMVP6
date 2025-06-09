@@ -28,7 +28,6 @@ interface CustomAttributesFormSectionProps {
   form: UseFormReturn<ProductFormData>;
   suggestedCustomAttributes: CustomAttribute[]; 
   setSuggestedCustomAttributes: React.Dispatch<React.SetStateAction<CustomAttribute[]>>; 
-  handleAddSuggestedCustomAttribute: (attribute: CustomAttribute) => void; // Keep this if ProductForm defines it
   isSubmittingForm?: boolean;
   toast: ToastFn; 
 }
@@ -45,7 +44,6 @@ export default function CustomAttributesFormSection({
   form,
   suggestedCustomAttributes,
   setSuggestedCustomAttributes, 
-  // handleAddSuggestedCustomAttribute, // This prop can be removed if logic is fully internal
   isSubmittingForm,
   toast, 
 }: CustomAttributesFormSectionProps) {

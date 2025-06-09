@@ -25,6 +25,9 @@ export async function POST(request: NextRequest) {
   if (!fileType || typeof fileType !== 'string' || fileType.trim() === '') {
     return NextResponse.json({ error: { code: 400, message: "Field 'fileType' is required and must be a non-empty string (e.g., 'csv', 'json')." } }, { status: 400 });
   }
+  if (!data) {
+    return NextResponse.json({ error: { code: 400, message: "Field 'data' is required." } }, { status: 400 });
+  }
 
   // Conceptual API key authentication - skipped for mock
   // const authHeader = request.headers.get('Authorization');
@@ -51,4 +54,3 @@ export async function POST(request: NextRequest) {
     timestamp: new Date(nowTimestamp).toISOString(),
   });
 }
-

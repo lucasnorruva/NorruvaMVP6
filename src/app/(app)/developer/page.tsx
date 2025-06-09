@@ -265,6 +265,7 @@ export default function DeveloperPortalPage() {
   const [getDppHistorySnippetLang, setGetDppHistorySnippetLang] = useState("cURL");
 
   const [postImportFileType, setPostImportFileType] = useState<string>("csv");
+  const [postImportSourceDescription, setPostImportSourceDescription] = useState<string>("");
   const [postImportResponse, setPostImportResponse] = useState<string | null>(null);
   const [isPostImportLoading, setIsPostImportLoading] = useState(false);
   const [importDppsSnippetLang, setImportDppsSnippetLang] = useState("cURL");
@@ -320,7 +321,7 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("getComplianceSummary", "GET", getComplianceSummarySnippetLang, { productId: getComplianceProductId }, null, setGetComplianceSummaryCodeSnippet), [getComplianceProductId, getComplianceSummarySnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productIdPath: postVerifyProductIdPath }, null, setVerifyDppCodeSnippet), [postVerifyProductIdPath, verifyDppSnippetLang, updateSnippet]); 
   useEffect(() => updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet), [getHistoryProductId, getDppHistorySnippetLang, updateSnippet]);
-  useEffect(() => updateSnippet("importDpps", "POST", importDppsSnippetLang, { fileType: postImportFileType }, JSON.stringify({ fileType: postImportFileType, data: "mock_base64_data" }), setImportDppsCodeSnippet), [postImportFileType, importDppsSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("importDpps", "POST", importDppsSnippetLang, { fileType: postImportFileType, sourceDescription: postImportSourceDescription }, JSON.stringify({ fileType: postImportFileType, data: "mock_base64_data", sourceDescription: postImportSourceDescription }), setImportDppsCodeSnippet), [postImportFileType, postImportSourceDescription, importDppsSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet), [getGraphProductId, getDppGraphSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet), [getStatusProductId, getStatusSnippetLang, updateSnippet]);
 
@@ -451,8 +452,8 @@ export default function DeveloperPortalPage() {
   const handleMockPostQrValidate = () => { updateSnippet("qrValidate", "POST", qrValidateSnippetLang, {}, postQrValidateBody, setQrValidateCodeSnippet); makeApiCall('/api/v1/qr/validate', 'POST', postQrValidateBody, setIsPostQrValidateLoading, setPostQrValidateResponse); }
   const handleMockPostVerify = () => { updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productIdPath: postVerifyProductIdPath }, null, setVerifyDppCodeSnippet); makeApiCall(`/api/v1/dpp/verify/${postVerifyProductIdPath}`, 'POST', null, setIsPostVerifyLoading, setPostVerifyResponse); }
   const handleMockGetHistory = () => { updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet); makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetHistoryResponse); }
-  const handleMockPostImport = () => { const body = { fileType: postImportFileType, data: "mock_file_content_base64_encoded" }; updateSnippet("importDpps", "POST", importDppsSnippetLang, body, JSON.stringify(body), setImportDppsCodeSnippet); makeApiCall('/api/v1/dpp/import', 'POST', body, setIsPostImportLoading, setPostImportResponse); }
-  const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetDppGraphResponse); }
+  const handleMockPostImport = () => { const body = { fileType: postImportFileType, data: "mock_file_content_base64_encoded", sourceDescription: postImportSourceDescription }; updateSnippet("importDpps", "POST", importDppsSnippetLang, body, JSON.stringify(body), setImportDppsCodeSnippet); makeApiCall('/api/v1/dpp/import', 'POST', body, setIsPostImportLoading, setPostImportResponse); }
+  const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetGraphResponse); }
   const handleMockGetStatus = () => { updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet); makeApiCall(`/api/v1/dpp/status/${getStatusProductId}`, 'GET', null, setIsGetStatusLoading, setGetStatusResponse); }
 
 
@@ -536,7 +537,9 @@ export default function DeveloperPortalPage() {
   }, []);
 
   const handleRefreshStatus = () => {
-    setLastStatusCheckTime(new Date().toLocaleTimeString());
+    if (typeof window !== 'undefined') {
+      setLastStatusCheckTime(new Date().toLocaleTimeString());
+    }
     toast({title: "System Status Refreshed", description: "Mock status data re-evaluated."});
   };
 
@@ -927,23 +930,29 @@ export default function DeveloperPortalPage() {
                         response={postImportResponse}
                         codeSnippet={importDppsCodeSnippet}
                         snippetLanguage={importDppsSnippetLang}
-                        onSnippetLanguageChange={(lang) => {setImportDppsSnippetLang(lang); updateSnippet("importDpps", "POST", lang, {fileType: postImportFileType}, JSON.stringify({fileType: postImportFileType, data: "mock_base64_data"}), setImportDppsCodeSnippet);}}
+                        onSnippetLanguageChange={(lang) => {setImportDppsSnippetLang(lang); updateSnippet("importDpps", "POST", lang, {fileType: postImportFileType, sourceDescription: postImportSourceDescription}, JSON.stringify({fileType: postImportFileType, data: "mock_base64_data", sourceDescription: postImportSourceDescription}), setImportDppsCodeSnippet);}}
                         codeSampleLanguages={codeSampleLanguages}
                     >
-                        <div>
-                          <Label htmlFor="importFileType">File Type (Conceptual)</Label>
-                          <Select value={postImportFileType} onValueChange={setPostImportFileType}>
-                            <SelectTrigger id="importFileType">
-                              <SelectValue placeholder="Select file type" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="csv">CSV</SelectItem>
-                              <SelectItem value="json">JSON</SelectItem>
-                              <SelectItem value="api">API (Simulate direct data feed)</SelectItem>
-                            </SelectContent>
-                          </Select>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                              <Label htmlFor="importFileType">File Type</Label>
+                              <Select value={postImportFileType} onValueChange={setPostImportFileType}>
+                                <SelectTrigger id="importFileType">
+                                  <SelectValue placeholder="Select file type" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="csv">CSV</SelectItem>
+                                  <SelectItem value="json">JSON</SelectItem>
+                                  <SelectItem value="api">API (Simulate direct data feed)</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                             <div>
+                              <Label htmlFor="importSourceDescription">Source Description (Optional)</Label>
+                              <Input id="importSourceDescription" value={postImportSourceDescription} onChange={(e) => setPostImportSourceDescription(e.target.value)} placeholder="e.g., Q3 Supplier Data Upload"/>
+                            </div>
                         </div>
-                        <p className="text-xs text-muted-foreground mt-1">For this mock, just select a type and send. A real implementation would include file upload or data input.</p>
+                        <p className="text-xs text-muted-foreground mt-1">For this mock, 'data' field is simulated. See API Reference.</p>
                     </ApiPlaygroundEndpointCard>
 
                     <ApiPlaygroundEndpointCard
@@ -1218,4 +1227,5 @@ export default function DeveloperPortalPage() {
 
 
     
+
 

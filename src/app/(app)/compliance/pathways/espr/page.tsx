@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,6 +31,7 @@ const esprPathwaySteps: WizardStep[] = [
 ];
 
 export default function EsprPathwayPage() {
+  const router = useRouter(); // Initialize router
   const [activeStep, setActiveStep] = useState<string>(esprPathwaySteps[0].id);
   const [formData, setFormData] = useState<Record<string, any>>({
     step1_productCategory: "",
@@ -52,7 +54,7 @@ export default function EsprPathwayPage() {
     step6_batchTraceabilityInfo: "",
     step7_finalReviewCheck: false,
   });
-  const [isLoadingCopilot, setIsLoadingCopilot] = useState(false);
+  // isLoadingCopilot state removed as navigation handles loading indication
   const { toast } = useToast();
 
   const handleInputChange = (step: string, field: string, value: string | number | boolean) => {
@@ -64,40 +66,10 @@ export default function EsprPathwayPage() {
   };
 
   const handleAskCopilot = async (stepContext: string) => {
-    setIsLoadingCopilot(true);
-    toast({
-      title: "Asking AI Co-Pilot...",
-      description: `Getting information related to ESPR: ${stepContext}`,
-    });
-
-    await new Promise(resolve => setTimeout(resolve, 1500));
-
-    let mockResponseDescription = `For ESPR step '${stepContext}', it's crucial to consult the specific product group delegated acts. Ensure all data is documented and verifiable. The DPP will be key for transparency.`;
-
-    // Custom mock responses per step (conceptual)
-    if (stepContext === esprPathwaySteps[0].title) {
-        mockResponseDescription = `For '${stepContext}', accurately determine your product's category under ESPR. Check the European Commission's website for latest product group lists and specific delegated acts. This determines which specific ecodesign and information requirements apply.`;
-    } else if (stepContext === esprPathwaySteps[1].title) {
-        mockResponseDescription = `For '${stepContext}', detail how your product addresses durability (e.g., expected lifetime, resistance to wear), repairability (e.g., availability of spare parts, ease of disassembly), recycled content (percentage and type), energy efficiency (relevant metrics), and any restricted substances. Refer to the specific ecodesign requirements for your product group.`;
-    } else if (stepContext === esprPathwaySteps[2].title) {
-        mockResponseDescription = `For '${stepContext}', compile all data points mandated by ESPR for your product's DPP. This includes material composition, environmental impact data, circularity information, and instructions for use/repair/disposal. Ensure data is accurate and verifiable.`;
-    } else if (stepContext === esprPathwaySteps[3].title) {
-        mockResponseDescription = `For '${stepContext}', ensure each product unit has a clear link to its DPP, typically via a QR code or other data carrier. The DPP must be publicly accessible or accessible according to ESPR rules. Specify your strategy for data carrier placement and DPP accessibility.`;
-    } else if (stepContext === esprPathwaySteps[4].title) {
-        mockResponseDescription = `For '${stepContext}', select the appropriate conformity assessment procedure (e.g., Module A - Internal Production Control, or modules involving a notified body). Provide a link to the EU Declaration of Conformity. If a notified body was involved, include their ID.`;
-    } else if (stepContext === esprPathwaySteps[5].title) {
-        mockResponseDescription = `For '${stepContext}', ensure you can provide necessary information to market surveillance authorities upon request. This includes technical documentation, DPP access, and traceability information (e.g., batch/serial numbers).`;
-    } else if (stepContext === esprPathwaySteps[6].title) {
-        mockResponseDescription = `For '${stepContext}', perform a final comprehensive review of all ESPR-related information. Confirm all ecodesign parameters are addressed, DPP data is complete, conformity assessment is documented, and market surveillance information is ready.`;
-    }
-
-
-     toast({
-        title: "AI Co-Pilot (Mock ESPR Response)",
-        description: mockResponseDescription,
-        duration: 12000,
-      });
-    setIsLoadingCopilot(false);
+    // Construct the query
+    const query = `What are the key considerations for the '${stepContext}' step of the EU ESPR (Ecodesign for Sustainable Products Regulation)? Include any specifics related to Digital Product Passports.`;
+    // Navigate to the co-pilot page with the query
+    router.push(`/copilot?contextQuery=${encodeURIComponent(query)}`);
   };
 
   const currentStepIndex = esprPathwaySteps.findIndex(s => s.id === activeStep);
@@ -339,12 +311,16 @@ export default function EsprPathwayPage() {
 
             <div className="mb-4">
                 {renderStepContent(activeStep)}
-                 <Button variant="outline" size="sm" onClick={() => handleAskCopilot(currentStepInfo.title)} disabled={isLoadingCopilot} className="mt-4 w-full md:w-auto">
-                    {isLoadingCopilot ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />}
+                 <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => handleAskCopilot(currentStepInfo.title)} 
+                    className="mt-4 w-full md:w-auto"
+                  >
+                    <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />
                     Ask Co-Pilot about "{currentStepInfo.title}"
                 </Button>
             </div>
-
 
             <div className="mt-6 flex justify-between items-center">
                 <Button onClick={goToPrevStep} disabled={!canGoPrev} variant="outline">

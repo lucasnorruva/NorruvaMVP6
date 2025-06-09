@@ -207,6 +207,22 @@ export default function ApiReferencePage() {
 
   const error400_lifecycle_event = JSON.stringify({ error: { code: 400, message: "Field 'eventType' is required and must be a non-empty string." } }, null, 2);
 
+  const conceptualComplianceSummaryResponse = JSON.stringify({
+    productId: "DPP001",
+    productName: "EcoSmart Refrigerator X500",
+    overallStatus: "Fully Compliant",
+    eprelStatus: "Registered",
+    ebsiVerificationStatus: "verified",
+    batteryRegulationStatus: "not_applicable",
+    esprStatus: "conformant",
+    lastChecked: new Date().toISOString(),
+    details: {
+      eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" },
+      ebsi: { status: "verified", verificationId: "EBSI_TX_ABC123", lastChecked: "2024-07-25T00:00:00Z" },
+      // ... other detail fields as per openapi.yaml
+    }
+  }, null, 2);
+
 
   return (
     <DocsPageLayout
@@ -511,9 +527,9 @@ export default function ApiReferencePage() {
                     <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error400_patch_dpp}</code></pre>
                   </details>
                 </li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>. (Example in GET /dpp/{id})</li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>. (Example in GET /dpp/{id})</li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>. (Example in GET /dpp/{id})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>. (Example in GET /dpp/{'{id}'})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>. (Example in GET /dpp/{'{id}'})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>. (Example in GET /dpp/{'{id}'})</li>
               </ul>
             </section>
           </CardContent>
@@ -572,9 +588,9 @@ export default function ApiReferencePage() {
                     <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error400_lifecycle_event}</code></pre>
                   </details>
                 </li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>. (See example under GET /dpp/{id})</li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>. (See example under GET /dpp/{id})</li>
-                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>. (See example under GET /dpp/{id})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>. (See example under GET /dpp/{'{id}'})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>. (See example under GET /dpp/{'{id}'})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>. (See example under GET /dpp/{'{id}'})</li>
               </ul>
             </section>
           </CardContent>
@@ -720,7 +736,6 @@ export default function ApiReferencePage() {
         </Card>
       </section>
 
-      {/* Placeholder for other sections like Compliance, History, Import, Graph, Status - can be added similarly */}
       <section id="compliance-endpoints" className="mt-8">
         <h2 className="text-2xl font-semibold font-headline mt-8 mb-4 flex items-center">
           <Server className="mr-3 h-6 w-6 text-primary" /> Compliance & Verification Endpoints
@@ -738,8 +753,32 @@ export default function ApiReferencePage() {
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {/* Path Params, Example Response, Error Responses would go here. For brevity, skipping full duplication but would follow pattern of GET /dpp/{id} */}
-             <p className="text-sm text-muted-foreground">Details for this endpoint are in the OpenAPI specification and can be tested in the Playground.</p>
+            <section>
+              <h4 className="font-semibold mb-1">Path Parameters</h4>
+              <ul className="list-disc list-inside text-sm space-y-1">
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> (string, required): The unique identifier of the product.</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
+              <p className="text-sm mb-1">Returns a compliance summary object. See OpenAPI spec for full details.</p>
+              <details className="border rounded-md">
+                <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Response
+                </summary>
+                <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+                  <code>{conceptualComplianceSummaryResponse}</code>
+                </pre>
+              </details>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
+              <ul className="list-disc list-inside text-sm space-y-2">
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>. (Example in GET /dpp/{'{id}'})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>. (Example in GET /dpp/{'{id}'})</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>. (Example in GET /dpp/{'{id}'})</li>
+              </ul>
+            </section>
           </CardContent>
         </Card>
         <Card className="shadow-lg mt-6">
@@ -765,5 +804,6 @@ export default function ApiReferencePage() {
     </DocsPageLayout>
   );
 }
+
 
 

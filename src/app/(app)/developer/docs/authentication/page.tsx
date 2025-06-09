@@ -8,7 +8,7 @@ export default function AuthenticationPage() {
   return (
     <DocsPageLayout
       pageTitle="API Authentication"
-      pageIcon="KeyRound" // Changed from KeyRound component to "KeyRound" string
+      pageIcon="KeyRound" // Ensure this is a string
     >
       <Card className="shadow-lg">
         <CardHeader>

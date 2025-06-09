@@ -124,7 +124,7 @@ const generateMockCodeSnippet = (
     case "qrValidate": urlPath = "/qr/validate"; break;
     case "addLifecycleEvent": urlPath = `/dpp/${params.productId || '{productId}'}/lifecycle-events`; break;
     case "getComplianceSummary": urlPath = `/dpp/${params.productId || '{productId}'}/compliance-summary`; break;
-    case "verifyDpp": urlPath = `/dpp/verify/${params.productId || '{productId}'}`; break; // Updated for path param
+    case "verifyDpp": urlPath = `/dpp/verify/${params.productId || '{productId}'}`; break; 
     case "getDppHistory": urlPath = `/dpp/history/${params.productId || '{productId}'}`; break;
     case "importDpps": urlPath = "/dpp/import"; break;
     case "getDppGraph": urlPath = `/dpp/graph/${params.productId || '{productId}'}`; break;
@@ -136,7 +136,7 @@ const generateMockCodeSnippet = (
 
   if (language === "cURL") {
     let curlCmd = `curl -X ${method} \\\n  '${fullUrl}' \\\n  -H 'Authorization: Bearer ${apiKeyPlaceholder}'`;
-    if ((method === "POST" || method === "PUT") && body) { // Only add body if it exists
+    if ((method === "POST" || method === "PUT") && body) { 
       curlCmd += ` \\\n  -H 'Content-Type: application/json' \\\n  -d '${safeBody.replace(/'/g, "'\\''")}'`;
     }
     return curlCmd;
@@ -218,7 +218,7 @@ export default function DeveloperPortalPage() {
   const [qrValidateSnippetLang, setQrValidateSnippetLang] = useState("cURL");
 
 
-  const [postVerifyProductIdPath, setPostVerifyProductIdPath] = useState<string>("DPP001"); // New state for path param
+  const [postVerifyProductIdPath, setPostVerifyProductIdPath] = useState<string>("DPP001"); 
   const [postVerifyResponse, setPostVerifyResponse] = useState<string | null>(null);
   const [isPostVerifyLoading, setIsPostVerifyLoading] = useState(false);
   const [verifyDppSnippetLang, setVerifyDppSnippetLang] = useState("cURL");
@@ -292,7 +292,7 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("qrValidate", "POST", qrValidateSnippetLang, {}, postQrValidateBody, setQrValidateCodeSnippet), [postQrValidateBody, qrValidateSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("addLifecycleEvent", "POST", addLifecycleEventSnippetLang, { productId: postLifecycleEventProductId }, postLifecycleEventBody, setAddLifecycleEventCodeSnippet), [postLifecycleEventProductId, postLifecycleEventBody, addLifecycleEventSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getComplianceSummary", "GET", getComplianceSummarySnippetLang, { productId: getComplianceProductId }, null, setGetComplianceSummaryCodeSnippet), [getComplianceProductId, getComplianceSummarySnippetLang, updateSnippet]);
-  useEffect(() => updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productId: postVerifyProductIdPath }, null, setVerifyDppCodeSnippet), [postVerifyProductIdPath, verifyDppSnippetLang, updateSnippet]); // Updated for path param, body is null
+  useEffect(() => updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productId: postVerifyProductIdPath }, null, setVerifyDppCodeSnippet), [postVerifyProductIdPath, verifyDppSnippetLang, updateSnippet]); 
   useEffect(() => updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet), [getHistoryProductId, getDppHistorySnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("importDpps", "POST", importDppsSnippetLang, { fileType: postImportFileType }, JSON.stringify({ fileType: postImportFileType, data: "mock_base64_data" }), setImportDppsCodeSnippet), [postImportFileType, importDppsSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet), [getGraphProductId, getDppGraphSnippetLang, updateSnippet]);
@@ -434,7 +434,7 @@ export default function DeveloperPortalPage() {
     
     const randomDigits = (n: number) => Math.random().toString().slice(2, 2 + n);
     const gtinValue = mockDppGeneratorGtin || `0${randomDigits(12)}`;
-    const modelNumValue = `MOCK-${randomDigits(3)}-${randomDigits(2)}`;
+    const modelNumValue = `MOCK-MODEL-${randomDigits(4)}`;
 
     const mockDpp = {
       id: `MOCK_DPP_${Date.now().toString().slice(-5)}`,
@@ -450,7 +450,7 @@ export default function DeveloperPortalPage() {
         dppStandardVersion: "CIRPASS v1.0 Draft",
       },
       productDetails: {
-        description: `This is a mock Digital Product Passport for ${mockDppGeneratorProductName || "Mock Product Alpha"}, a ${mockDppGeneratorCategory || "generic electronic device"}. Generated for testing and demonstration purposes.`,
+        description: `This is a mock Digital Product Passport for ${mockDppGeneratorProductName || "Mock Product Alpha"}, a ${mockDppGeneratorCategory || "generic electronic device"}. GTIN: ${gtinValue}. Model: ${modelNumValue}. Generated for testing and demonstration purposes.`,
         materials: [{ name: "Recycled ABS Plastic", percentage: 60, isRecycled: true }, { name: "Aluminum Alloy", percentage: 30 }, {name: "Glass", percentage: 10}],
         specifications: JSON.stringify({
           "Color": "Space Gray",
@@ -517,6 +517,7 @@ export default function DeveloperPortalPage() {
         const trigger = tabsElement.querySelector(`button[role="tab"][value="${tabValue}"]`) as HTMLElement | null;
         trigger?.click();
     }
+    setActiveTopTab(tabValue); // Also update internal state
   };
 
   return (

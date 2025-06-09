@@ -183,9 +183,8 @@ export default function DeveloperPortalPage() {
   const [activeTopTab, setActiveTopTab] = useState("dashboard");
 
   useEffect(() => {
-    if (typeof window !== 'undefined') { 
-      setLastStatusCheckTime(new Date().toLocaleTimeString());
-    }
+    // This effect runs only on the client side
+    setLastStatusCheckTime(new Date().toLocaleTimeString());
   }, []);
 
 
@@ -1227,5 +1226,6 @@ export default function DeveloperPortalPage() {
 
 
     
+
 
 

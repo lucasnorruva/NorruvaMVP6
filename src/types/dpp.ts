@@ -177,7 +177,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     modelNumber: "X500-ECO",
     metadata: { 
       created_at: "2024-01-01T10:00:00Z", 
-      last_updated: "2024-01-30T10:00:00Z",
+      last_updated: "2024-07-30T10:00:00Z",
       status: "published", 
       dppStandardVersion: "CIRPASS v0.9 Draft" 
     },
@@ -203,7 +203,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ebsiVerification: { 
       status: "verified", 
       verificationId: "EBSI_TX_ABC123", 
-      lastChecked: "2024-01-25T00:00:00Z"
+      lastChecked: "2024-07-25T00:00:00Z"
     },
     blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef"},
     consumerScans: 1250,
@@ -494,7 +494,7 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
         {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
         {key: "Special Feature", value: "AI Defrost Technology"},
         {key: "Warranty Period", value: "5 Years"},
-        {key: "Country of Origin", value: "Germany"}
+        {key: "Country of Origin", value: "Germany"},
     ],
     materialsUsed: [
       { name: "Recycled Steel", percentage: 70, source: "Certified Recycler A", isRecycled: true },
@@ -751,3 +751,4 @@ export interface DisplayableProduct {
   customAttributesJsonString?: string; // Stays as string for form consistency
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; // Add this for filtering
 }
+

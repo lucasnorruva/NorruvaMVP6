@@ -3,7 +3,7 @@
 // Description: Main page for the Developer Portal, providing access to API keys, documentation, and tools.
 "use client";
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,24 +14,30 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { 
-    KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson, 
-    Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath, 
-    ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Rocket, Settings2, PackageSearch, Layers, 
-    Lock, MessageSquare, Share2, BookText, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock, 
-    AlertTriangle as ErrorIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone, 
-    Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIcon, History, 
+import {
+    KeyRound, BookOpen, Lightbulb, ShieldAlert, LifeBuoy, PlusCircle, Copy, Trash2, PlayCircle, Send, FileJson,
+    Loader2, ServerIcon as ServerLucideIcon, BarChart2, FileClock, Edit2, Link as LinkIconPath,
+    ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Rocket, Settings2, PackageSearch, Layers,
+    Lock, MessageSquare, Share2, BookText, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock,
+    AlertTriangle as ErrorIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone,
+    Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIcon, History,
     UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"; 
-
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import ApiKeysManager, { type ApiKey } from '@/components/developer/ApiKeysManager';
 import WebhooksManager, { type WebhookEntry } from '@/components/developer/WebhooksManager';
-import ApiPlaygroundEndpointCard from '@/components/developer/ApiPlaygroundEndpointCard'; 
+import ApiPlaygroundEndpointCard from '@/components/developer/ApiPlaygroundEndpointCard';
 import { cn } from '@/lib/utils';
+
+// Import new dashboard section components
+import ApiMetricsCard from '@/components/developer/dashboard/ApiMetricsCard';
+import PlatformNewsCard from '@/components/developer/dashboard/PlatformNewsCard';
+import ServiceStatusCard from '@/components/developer/dashboard/ServiceStatusCard';
+import DataFlowKpisCard from '@/components/developer/dashboard/DataFlowKpisCard';
+import QuickActionsCard from '@/components/developer/dashboard/QuickActionsCard';
 
 
 const initialMockApiKeys: ApiKey[] = [
@@ -49,57 +55,15 @@ const initialMockWebhooks: WebhookEntry[] = [
 ];
 
 const mockCodeSamples = [
-  {
-    id: "sample1",
-    title: "Fetching a Product Passport (Python)",
-    description: "A Python script demonstrating how to authenticate and retrieve a DPP using its ID.",
-    linkText: "View on GitHub (Mock)",
-    href: "#",
-    icon: FileCode
-  },
-  {
-    id: "sample2",
-    title: "Creating a New DPP with Battery Data (Node.js)",
-    description: "Node.js example for creating a new product passport, including specific fields for EU Battery Regulation.",
-    linkText: "View Snippet (Mock)",
-    href: "#",
-    icon: FileCode
-  },
-  {
-    id: "sample3",
-    title: "Validating a QR Identifier (Java)",
-    description: "Java code snippet for using the QR validation endpoint to get product summary information.",
-    linkText: "View on GitHub (Mock)",
-    href: "#",
-    icon: FileCode
-  },
+  { id: "sample1", title: "Fetching a Product Passport (Python)", description: "A Python script demonstrating how to authenticate and retrieve a DPP using its ID.", linkText: "View on GitHub (Mock)", href: "#", icon: FileCode },
+  { id: "sample2", title: "Creating a New DPP with Battery Data (Node.js)", description: "Node.js example for creating a new product passport, including specific fields for EU Battery Regulation.", linkText: "View Snippet (Mock)", href: "#", icon: FileCode },
+  { id: "sample3", title: "Validating a QR Identifier (Java)", description: "Java code snippet for using the QR validation endpoint to get product summary information.", linkText: "View on GitHub (Mock)", href: "#", icon: FileCode },
 ];
 
 const mockTutorials = [
-  {
-    id: "tut1",
-    title: "Step-by-Step: Integrating DPP QR Scanning into a Retail App",
-    description: "Learn how to use the Norruva API to allow consumers to scan QR codes and view product passports directly in your application.",
-    linkText: "Read Tutorial", 
-    href: "/developer/tutorials/qr-scan-integration", 
-    icon: BookText
-  },
-  {
-    id: "tut2",
-    title: "Automating Compliance Updates with Webhooks",
-    description: "A guide on setting up webhooks to receive real-time notifications for DPP status changes or new compliance requirements.",
-    linkText: "Read Tutorial (Mock)",
-    href: "#", 
-    icon: BookText
-  },
-  {
-    id: "tut3",
-    title: "Best Practices for Managing DPP Data via API",
-    description: "Explore strategies for efficiently managing large volumes of product data, versioning DPPs, and ensuring data accuracy through API integrations.",
-    linkText: "Read Tutorial (Mock)",
-    href: "#", 
-    icon: BookText
-  },
+  { id: "tut1", title: "Step-by-Step: Integrating DPP QR Scanning into a Retail App", description: "Learn how to use the Norruva API to allow consumers to scan QR codes and view product passports directly in your application.", linkText: "Read Tutorial", href: "/developer/tutorials/qr-scan-integration", icon: BookText },
+  { id: "tut2", title: "Automating Compliance Updates with Webhooks", description: "A guide on setting up webhooks to receive real-time notifications for DPP status changes or new compliance requirements.", linkText: "Read Tutorial (Mock)", href: "#", icon: BookText },
+  { id: "tut3", title: "Best Practices for Managing DPP Data via API", description: "Explore strategies for efficiently managing large volumes of product data, versioning DPPs, and ensuring data accuracy through API integrations.", linkText: "Read Tutorial (Mock)", href: "#", icon: BookText },
 ];
 
 const platformAnnouncements = [
@@ -125,6 +89,12 @@ const systemStatusData = [
     { name: "Documentation Site", status: "Operational", icon: CheckCircle, color: "text-green-500" },
 ];
 
+const dashboardQuickActions = [
+  { label: "View My API Keys", href: "#", targetTab: "api_keys", icon: KeyRound },
+  { label: "Explore API Reference", href: "/developer/docs/api-reference", icon: BookText },
+  { label: "Manage Webhooks", href: "#", targetTab: "webhooks", icon: Webhook },
+  { label: "Check API Status", href: "#", targetTab: "dashboard", icon: ServerCrash, tooltip: "View API Status on Dashboard" },
+];
 
 const generateMockCodeSnippet = (
   endpointKey: string,
@@ -135,7 +105,7 @@ const generateMockCodeSnippet = (
   currentEnv: string
 ): string => {
   const apiKeyPlaceholder = `YOUR_${currentEnv.toUpperCase()}_API_KEY`;
-  const baseUrl = 'http://localhost:9002/api/v1'; 
+  const baseUrl = 'http://localhost:9002/api/v1';
 
   let urlPath = "";
   switch (endpointKey) {
@@ -162,12 +132,12 @@ const generateMockCodeSnippet = (
   }
 
   const fullUrl = `${baseUrl}${urlPath}`;
-  const safeBody = body || '{}'; 
+  const safeBody = body || '{}';
 
   if (language === "cURL") {
     let curlCmd = `curl -X ${method} \\\n  '${fullUrl}' \\\n  -H 'Authorization: Bearer ${apiKeyPlaceholder}'`;
     if (method === "POST" || method === "PUT") {
-      curlCmd += ` \\\n  -H 'Content-Type: application/json' \\\n  -d '${safeBody.replace(/'/g, "'\\''")}'`; 
+      curlCmd += ` \\\n  -H 'Content-Type: application/json' \\\n  -d '${safeBody.replace(/'/g, "'\\''")}'`;
     }
     return curlCmd;
   } else if (language === "JavaScript") {
@@ -188,7 +158,7 @@ const generateMockCodeSnippet = (
     }
     pyRequests += `\n}`;
     if (method === "POST" || method === "PUT") {
-      pyRequests += `\npayload = json.dumps(${safeBody})`; 
+      pyRequests += `\npayload = json.dumps(${safeBody})`;
       pyRequests += `\nresponse = requests.request("${method}", url, headers=headers, data=payload)`;
     } else {
       pyRequests += `\nresponse = requests.request("${method}", url, headers=headers)`;
@@ -206,8 +176,9 @@ export default function DeveloperPortalPage() {
   const [apiKeys, setApiKeys] = useState<ApiKey[]>(initialMockApiKeys);
   const [webhooks, setWebhooks] = useState<WebhookEntry[]>(initialMockWebhooks);
   const [currentEnvironment, setCurrentEnvironment] = useState<string>("sandbox");
-  const mockOrganizationName = "Acme Innovations"; 
+  const mockOrganizationName = "Acme Innovations";
   const [lastStatusCheckTime, setLastStatusCheckTime] = useState(new Date().toLocaleTimeString());
+  const [activeTopTab, setActiveTopTab] = useState("dashboard");
 
   const [getProductId, setGetProductId] = useState<string>("DPP001");
   const [getProductResponse, setGetProductResponse] = useState<string | null>(null);
@@ -218,7 +189,7 @@ export default function DeveloperPortalPage() {
   const [listProductsResponse, setListProductsResponse] = useState<string | null>(null);
   const [isListProductsLoading, setIsListProductsLoading] = useState(false);
   const [listDppsSnippetLang, setListDppsSnippetLang] = useState("cURL");
-  
+
   const [postDppBody, setPostDppBody] = useState<string>(
     JSON.stringify({ productName: "New Widget Pro", category: "Gadgets", gtin: "1234500000123" }, null, 2)
   );
@@ -238,7 +209,7 @@ export default function DeveloperPortalPage() {
   const [getComplianceResponse, setGetComplianceResponse] = useState<string | null>(null);
   const [isGetComplianceLoading, setIsGetComplianceLoading] = useState(false);
   const [getComplianceSummarySnippetLang, setGetComplianceSummarySnippetLang] = useState("cURL");
-  
+
   const [postQrValidateBody, setPostQrValidateBody] = useState<string>(
     JSON.stringify({ qrIdentifier: "DPP001" }, null, 2)
   );
@@ -260,7 +231,7 @@ export default function DeveloperPortalPage() {
   const [isPutProductLoading, setIsPutProductLoading] = useState(false);
   const [updateDppSnippetLang, setUpdateDppSnippetLang] = useState("cURL");
 
-  const [deleteProductId, setDeleteProductId] = useState<string>("DPP002"); 
+  const [deleteProductId, setDeleteProductId] = useState<string>("DPP002");
   const [deleteProductResponse, setDeleteProductResponse] = useState<string | null>(null);
   const [isDeleteProductLoading, setIsDeleteProductLoading] = useState(false);
   const [deleteDppSnippetLang, setDeleteDppSnippetLang] = useState("cURL");
@@ -299,30 +270,31 @@ export default function DeveloperPortalPage() {
   const [getDppGraphCodeSnippet, setGetDppGraphCodeSnippet] = useState("");
 
 
-  const updateSnippet = (
-    endpointKey: string, 
-    method: string, 
-    lang: string, 
-    params: any, 
-    body: string | null, 
+  const updateSnippet = useCallback((
+    endpointKey: string,
+    method: string,
+    lang: string,
+    params: any,
+    body: string | null,
     setSnippetFn: React.Dispatch<React.SetStateAction<string>>
   ) => {
     const snippet = generateMockCodeSnippet(endpointKey, method, lang, params, body, currentEnvironment);
     setSnippetFn(snippet);
-  };
+  }, [currentEnvironment]);
 
-  useEffect(() => updateSnippet("getProduct", "GET", getProductSnippetLang, { productId: getProductId }, null, setGetProductCodeSnippet), [getProductId, getProductSnippetLang, currentEnvironment]);
-  useEffect(() => updateSnippet("listDpps", "GET", listDppsSnippetLang, listDppFilters, null, setListDppsCodeSnippet), [listDppFilters, listDppsSnippetLang, currentEnvironment]);
-  useEffect(() => updateSnippet("createDpp", "POST", createDppSnippetLang, {}, postDppBody, setCreateDppCodeSnippet), [postDppBody, createDppSnippetLang, currentEnvironment]);
-  useEffect(() => updateSnippet("updateDpp", "PUT", updateDppSnippetLang, { productId: putProductId }, putProductBody, setUpdateDppCodeSnippet), [putProductId, putProductBody, updateDppSnippetLang, currentEnvironment]);
-  useEffect(() => updateSnippet("deleteDpp", "DELETE", deleteDppSnippetLang, { productId: deleteProductId }, null, setDeleteDppCodeSnippet), [deleteProductId, deleteDppSnippetLang, currentEnvironment]);
-  useEffect(() => updateSnippet("qrValidate", "POST", qrValidateSnippetLang, {}, postQrValidateBody, setQrValidateCodeSnippet), [postQrValidateBody, qrValidateSnippetLang, currentEnvironment]);
-  useEffect(() => updateSnippet("addLifecycleEvent", "POST", addLifecycleEventSnippetLang, { productId: postLifecycleEventProductId }, postLifecycleEventBody, setAddLifecycleEventCodeSnippet), [postLifecycleEventProductId, postLifecycleEventBody, addLifecycleEventSnippetLang, currentEnvironment]);
-  useEffect(() => updateSnippet("getComplianceSummary", "GET", getComplianceSummarySnippetLang, { productId: getComplianceProductId }, null, setGetComplianceSummaryCodeSnippet), [getComplianceProductId, getComplianceSummarySnippetLang, currentEnvironment]);
-  useEffect(() => updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productId: postVerifyProductId }, JSON.stringify({ productId: postVerifyProductId }), setVerifyDppCodeSnippet), [postVerifyProductId, verifyDppSnippetLang, currentEnvironment]);
-  useEffect(() => updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet), [getHistoryProductId, getDppHistorySnippetLang, currentEnvironment]);
-  useEffect(() => updateSnippet("importDpps", "POST", importDppsSnippetLang, { fileType: postImportFileType }, JSON.stringify({ fileType: postImportFileType, data: "mock_base64_data" }), setImportDppsCodeSnippet), [postImportFileType, importDppsSnippetLang, currentEnvironment]);
-  useEffect(() => updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet), [getGraphProductId, getDppGraphSnippetLang, currentEnvironment]);
+
+  useEffect(() => updateSnippet("getProduct", "GET", getProductSnippetLang, { productId: getProductId }, null, setGetProductCodeSnippet), [getProductId, getProductSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("listDpps", "GET", listDppsSnippetLang, listDppFilters, null, setListDppsCodeSnippet), [listDppFilters, listDppsSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("createDpp", "POST", createDppSnippetLang, {}, postDppBody, setCreateDppCodeSnippet), [postDppBody, createDppSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("updateDpp", "PUT", updateDppSnippetLang, { productId: putProductId }, putProductBody, setUpdateDppCodeSnippet), [putProductId, putProductBody, updateDppSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("deleteDpp", "DELETE", deleteDppSnippetLang, { productId: deleteProductId }, null, setDeleteDppCodeSnippet), [deleteProductId, deleteDppSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("qrValidate", "POST", qrValidateSnippetLang, {}, postQrValidateBody, setQrValidateCodeSnippet), [postQrValidateBody, qrValidateSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("addLifecycleEvent", "POST", addLifecycleEventSnippetLang, { productId: postLifecycleEventProductId }, postLifecycleEventBody, setAddLifecycleEventCodeSnippet), [postLifecycleEventProductId, postLifecycleEventBody, addLifecycleEventSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("getComplianceSummary", "GET", getComplianceSummarySnippetLang, { productId: getComplianceProductId }, null, setGetComplianceSummaryCodeSnippet), [getComplianceProductId, getComplianceSummarySnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productId: postVerifyProductId }, JSON.stringify({ productId: postVerifyProductId }), setVerifyDppCodeSnippet), [postVerifyProductId, verifyDppSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet), [getHistoryProductId, getDppHistorySnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("importDpps", "POST", importDppsSnippetLang, { fileType: postImportFileType }, JSON.stringify({ fileType: postImportFileType, data: "mock_base64_data" }), setImportDppsCodeSnippet), [postImportFileType, importDppsSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet), [getGraphProductId, getDppGraphSnippetLang, updateSnippet]);
 
 
   const handleCopyKey = (keyToCopy: string) => {
@@ -412,7 +384,7 @@ export default function DeveloperPortalPage() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer YOUR_${currentEnvironment.toUpperCase()}_API_KEY` 
+          'Authorization': `Bearer YOUR_${currentEnvironment.toUpperCase()}_API_KEY`
         }
       };
       if (body && (method === 'POST' || method === 'PUT')) {
@@ -420,10 +392,10 @@ export default function DeveloperPortalPage() {
       }
 
       await new Promise(resolve => setTimeout(resolve, 500));
-      
+
       const res = await fetch(url, options);
       const responseData = await res.json();
-      
+
       if (!res.ok) {
         setResponse(JSON.stringify({ status: res.status, error: responseData }, null, 2));
         toast({ title: `Mock API Error: ${res.status}`, description: responseData.error?.message || 'A mock API error occurred.', variant: "destructive" });
@@ -440,70 +412,24 @@ export default function DeveloperPortalPage() {
     }
   };
 
-  const handleMockGetProductDetails = () => {
-    updateSnippet("getProduct", "GET", getProductSnippetLang, { productId: getProductId }, null, setGetProductCodeSnippet);
-    makeApiCall(`/api/v1/dpp/${getProductId}`, 'GET', null, setIsGetProductLoading, setGetProductResponse);
-  }
-  
-  const handleMockListProducts = () => {
-    const queryParams = new URLSearchParams();
-    if (listDppFilters.status !== 'all') queryParams.append('status', listDppFilters.status);
-    if (listDppFilters.category !== 'all') queryParams.append('category', listDppFilters.category);
-    if (listDppFilters.searchQuery) queryParams.append('searchQuery', listDppFilters.searchQuery);
-    if (listDppFilters.blockchainAnchored !== 'all') queryParams.append('blockchainAnchored', listDppFilters.blockchainAnchored);
-    const url = `/api/v1/dpp?${queryParams.toString()}`;
-    updateSnippet("listDpps", "GET", listDppsSnippetLang, listDppFilters, null, setListDppsCodeSnippet);
-    makeApiCall(url, 'GET', null, setIsListProductsLoading, setListProductsResponse);
-  };
-
-  const handleMockPostDpp = () => {
-    updateSnippet("createDpp", "POST", createDppSnippetLang, {}, postDppBody, setCreateDppCodeSnippet);
-    makeApiCall('/api/v1/dpp', 'POST', postDppBody, setIsPostDppLoading, setPostDppResponse);
-  }
-  const handleMockPutProduct = () => {
-    updateSnippet("updateDpp", "PUT", updateDppSnippetLang, { productId: putProductId }, putProductBody, setUpdateDppCodeSnippet);
-    makeApiCall(`/api/v1/dpp/${putProductId}`, 'PUT', putProductBody, setIsPutProductLoading, setPutProductResponse);
-  }
-  const handleMockDeleteProduct = () => {
-    updateSnippet("deleteDpp", "DELETE", deleteDppSnippetLang, { productId: deleteProductId }, null, setDeleteDppCodeSnippet);
-    makeApiCall(`/api/v1/dpp/${deleteProductId}`, 'DELETE', null, setIsDeleteProductLoading, setDeleteProductResponse);
-  }
-  const handleMockPostLifecycleEvent = () => {
-    updateSnippet("addLifecycleEvent", "POST", addLifecycleEventSnippetLang, { productId: postLifecycleEventProductId }, postLifecycleEventBody, setAddLifecycleEventCodeSnippet);
-    makeApiCall(`/api/v1/dpp/${postLifecycleEventProductId}/lifecycle-events`, 'POST', postLifecycleEventBody, setIsPostLifecycleEventLoading, setPostLifecycleEventResponse);
-  }
-  const handleMockGetComplianceSummary = () => {
-    updateSnippet("getComplianceSummary", "GET", getComplianceSummarySnippetLang, { productId: getComplianceProductId }, null, setGetComplianceSummaryCodeSnippet);
-    makeApiCall(`/api/v1/dpp/${getComplianceProductId}/compliance-summary`, 'GET', null, setIsGetComplianceLoading, setGetComplianceResponse);
-  }
-  const handleMockPostQrValidate = () => {
-    updateSnippet("qrValidate", "POST", qrValidateSnippetLang, {}, postQrValidateBody, setQrValidateCodeSnippet);
-    makeApiCall('/api/v1/qr/validate', 'POST', postQrValidateBody, setIsPostQrValidateLoading, setPostQrValidateResponse);
-  }
-  const handleMockPostVerify = () => {
-    const body = { productId: postVerifyProductId };
-    updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, body, JSON.stringify(body), setVerifyDppCodeSnippet);
-    makeApiCall(`/api/v1/dpp/verify`, 'POST', body, setIsPostVerifyLoading, setPostVerifyResponse); 
-  }
-  const handleMockGetHistory = () => {
-    updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet);
-    makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetHistoryResponse);
-  }
-  const handleMockPostImport = () => {
-    const body = { fileType: postImportFileType, data: "mock_file_content_base64_encoded" };
-    updateSnippet("importDpps", "POST", importDppsSnippetLang, body, JSON.stringify(body), setImportDppsCodeSnippet);
-    makeApiCall('/api/v1/dpp/import', 'POST', body, setIsPostImportLoading, setPostImportResponse);
-  }
-  const handleMockGetGraph = () => {
-    updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet);
-    makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetGraphResponse);
-  }
+  const handleMockGetProductDetails = () => { updateSnippet("getProduct", "GET", getProductSnippetLang, { productId: getProductId }, null, setGetProductCodeSnippet); makeApiCall(`/api/v1/dpp/${getProductId}`, 'GET', null, setIsGetProductLoading, setGetProductResponse); }
+  const handleMockListProducts = () => { const queryParams = new URLSearchParams(); if (listDppFilters.status !== 'all') queryParams.append('status', listDppFilters.status); if (listDppFilters.category !== 'all') queryParams.append('category', listDppFilters.category); if (listDppFilters.searchQuery) queryParams.append('searchQuery', listDppFilters.searchQuery); if (listDppFilters.blockchainAnchored !== 'all') queryParams.append('blockchainAnchored', listDppFilters.blockchainAnchored); const url = `/api/v1/dpp?${queryParams.toString()}`; updateSnippet("listDpps", "GET", listDppsSnippetLang, listDppFilters, null, setListDppsCodeSnippet); makeApiCall(url, 'GET', null, setIsListProductsLoading, setListProductsResponse); };
+  const handleMockPostDpp = () => { updateSnippet("createDpp", "POST", createDppSnippetLang, {}, postDppBody, setCreateDppCodeSnippet); makeApiCall('/api/v1/dpp', 'POST', postDppBody, setIsPostDppLoading, setPostDppResponse); }
+  const handleMockPutProduct = () => { updateSnippet("updateDpp", "PUT", updateDppSnippetLang, { productId: putProductId }, putProductBody, setUpdateDppCodeSnippet); makeApiCall(`/api/v1/dpp/${putProductId}`, 'PUT', putProductBody, setIsPutProductLoading, setPutProductResponse); }
+  const handleMockDeleteProduct = () => { updateSnippet("deleteDpp", "DELETE", deleteDppSnippetLang, { productId: deleteProductId }, null, setDeleteDppCodeSnippet); makeApiCall(`/api/v1/dpp/${deleteProductId}`, 'DELETE', null, setIsDeleteProductLoading, setDeleteProductResponse); }
+  const handleMockPostLifecycleEvent = () => { updateSnippet("addLifecycleEvent", "POST", addLifecycleEventSnippetLang, { productId: postLifecycleEventProductId }, postLifecycleEventBody, setAddLifecycleEventCodeSnippet); makeApiCall(`/api/v1/dpp/${postLifecycleEventProductId}/lifecycle-events`, 'POST', postLifecycleEventBody, setIsPostLifecycleEventLoading, setPostLifecycleEventResponse); }
+  const handleMockGetComplianceSummary = () => { updateSnippet("getComplianceSummary", "GET", getComplianceSummarySnippetLang, { productId: getComplianceProductId }, null, setGetComplianceSummaryCodeSnippet); makeApiCall(`/api/v1/dpp/${getComplianceProductId}/compliance-summary`, 'GET', null, setIsGetComplianceLoading, setGetComplianceResponse); }
+  const handleMockPostQrValidate = () => { updateSnippet("qrValidate", "POST", qrValidateSnippetLang, {}, postQrValidateBody, setQrValidateCodeSnippet); makeApiCall('/api/v1/qr/validate', 'POST', postQrValidateBody, setIsPostQrValidateLoading, setPostQrValidateResponse); }
+  const handleMockPostVerify = () => { const body = { productId: postVerifyProductId }; updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, body, JSON.stringify(body), setVerifyDppCodeSnippet); makeApiCall(`/api/v1/dpp/verify`, 'POST', body, setIsPostVerifyLoading, setPostVerifyResponse); }
+  const handleMockGetHistory = () => { updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet); makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetHistoryResponse); }
+  const handleMockPostImport = () => { const body = { fileType: postImportFileType, data: "mock_file_content_base64_encoded" }; updateSnippet("importDpps", "POST", importDppsSnippetLang, body, JSON.stringify(body), setImportDppsCodeSnippet); makeApiCall('/api/v1/dpp/import', 'POST', body, setIsPostImportLoading, setPostImportResponse); }
+  const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetGraphResponse); }
 
 
   const handleGenerateMockDpp = async () => {
     setIsGeneratingMockDpp(true);
     setGeneratedMockDppJson(null);
-    await new Promise(resolve => setTimeout(resolve, 700)); 
+    await new Promise(resolve => setTimeout(resolve, 700));
     const mockDpp = {
       id: `MOCK_DPP_${Date.now().toString().slice(-5)}`,
       productName: mockDppGeneratorProductName || "Mock Product Alpha",
@@ -527,14 +453,7 @@ export default function DeveloperPortalPage() {
   };
 
 
-  const dashboardQuickActions = [
-    { label: "View My API Keys", href: "#", targetTab: "api_keys", icon: KeyRound },
-    { label: "Explore API Reference", href: "/developer/docs/api-reference", icon: BookText },
-    { label: "Manage Webhooks", href: "#", targetTab: "webhooks", icon: Webhook },
-    { label: "Check API Status", href: "#", icon: ServerCrash, targetTab: "dashboard", tooltip: "View API Status on Dashboard" },
-  ];
-
-  const codeSampleLanguages = ["cURL", "JavaScript", "Python"]; 
+  const codeSampleLanguages = ["cURL", "JavaScript", "Python"];
   const conceptualSdks = [
       { name: "JavaScript SDK", href: "/developer/sdks/javascript", soon: false, icon: FileCode, description: "Client library for Node.js and browser environments." },
       { name: "Python SDK", href: "#", soon: true, icon: FileCode, description: "Integrate Norruva APIs with your Python applications." },
@@ -543,12 +462,12 @@ export default function DeveloperPortalPage() {
       { name: "C# SDK", href: "#", soon: true, icon: FileCode, description: "SDK for .NET applications." },
   ];
 
-  const getUsageMetric = (metricType: 'calls' | 'errorRate') => {
+  const getUsageMetric = useCallback((metricType: 'calls' | 'errorRate') => {
     if (currentEnvironment === 'sandbox') {
         return metricType === 'calls' ? '1,234' : '0.2%';
     }
     return metricType === 'calls' ? '105,678' : '0.05%';
-  };
+  }, [currentEnvironment]);
 
   const overallSystemStatus = useMemo(() => {
     const nonOperationalServices = systemStatusData.filter(s => s.status !== "Operational");
@@ -566,6 +485,13 @@ export default function DeveloperPortalPage() {
     toast({title: "System Status Refreshed", description: "Mock status data re-evaluated."});
   };
 
+  const handleDashboardQuickActionTabChange = (tabValue: string) => {
+    const tabsElement = document.getElementById('developer-portal-tabs');
+    if (tabsElement) {
+        const trigger = tabsElement.querySelector(`button[role="tab"][value="${tabValue}"]`) as HTMLElement | null;
+        trigger?.click();
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -597,19 +523,19 @@ export default function DeveloperPortalPage() {
             </Select>
         </div>
       </div>
-      
+
       <div className="relative w-full sm:w-auto md:max-w-md ml-auto">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
         <Input
             type="search"
             placeholder="Search Portal (API docs, guides...)"
             className="pl-10 bg-background shadow-sm h-10"
-            disabled 
+            disabled
         />
       </div>
 
 
-      <Tabs defaultValue="dashboard" className="w-full" id="developer-portal-tabs">
+      <Tabs defaultValue="dashboard" className="w-full" id="developer-portal-tabs" value={activeTopTab} onValueChange={setActiveTopTab}>
         <TabsList className="grid w-full grid-cols-3 sm:grid-cols-4 md:grid-cols-7">
           <TabsTrigger value="dashboard"><LayoutGrid className="mr-1.5 h-4 w-4 sm:hidden md:inline-block" />Dashboard</TabsTrigger>
           <TabsTrigger value="api_keys"><KeyRound className="mr-1.5 h-4 w-4 sm:hidden md:inline-block" />API Keys</TabsTrigger>
@@ -640,165 +566,23 @@ export default function DeveloperPortalPage() {
           </Card>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <Card className="shadow-md lg:col-span-1">
-              <CardHeader>
-                <CardTitle className="font-headline text-lg flex items-center"><BarChartBig className="mr-2 h-5 w-5 text-primary" /> Key API Metrics &amp; Health (<span className="capitalize">{currentEnvironment}</span>)</CardTitle>
-                <CardDescription>Mock conceptual API metrics for the current environment.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>API Calls (Last 24h):</span> <span className="font-semibold">{getUsageMetric('calls')}</span></div>
-                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Error Rate (Last 24h):</span> <span className="font-semibold">{getUsageMetric('errorRate')}</span></div>
-                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Avg. Latency:</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '120ms' : '85ms'}</span></div>
-                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>API Uptime (Last 7d):</span> <span className="font-semibold text-green-600">{currentEnvironment === 'sandbox' ? '99.95%' : '99.99%'}</span></div>
-                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md"><span>Peak Requests/Sec:</span> <span className="font-semibold">{currentEnvironment === 'sandbox' ? '15' : '250'}</span></div>
-                <div className="flex justify-between items-center p-2 bg-muted/50 rounded-md">
-                    <span>Overall API Status:</span> 
-                    <span className={cn("font-semibold flex items-center", overallSystemStatus.color)}>
-                        <overallSystemStatus.icon className="h-4 w-4 mr-1.5"/>{overallSystemStatus.text}
-                    </span>
-                </div>
-                <Button variant="link" size="sm" className="p-0 h-auto text-primary mt-2" onClick={() => document.querySelector('#developer-portal-tabs [data-state="inactive"][value="settings_usage"]')?.ariaSelected === "false" ? (document.querySelector('#developer-portal-tabs [data-state="inactive"][value="settings_usage"]') as HTMLElement)?.click() : null}>View Full Usage Report</Button>
-              </CardContent>
-            </Card>
-            
-            <Card className="shadow-md lg:col-span-2">
-              <CardHeader>
-                <CardTitle className="font-headline text-lg flex items-center"><Megaphone className="mr-2 h-5 w-5 text-primary" /> Platform News &amp; Announcements</CardTitle>
-                <CardDescription>Stay updated with the latest from Norruva.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm max-h-72 overflow-y-auto">
-                {platformAnnouncements.map(ann => (
-                  <div key={ann.id} className="p-2.5 border-b last:border-b-0">
-                    <h4 className="font-semibold text-foreground">{ann.title} <span className="text-xs text-muted-foreground font-normal">- {ann.date}</span></h4>
-                    <p className="text-xs text-muted-foreground mt-0.5">{ann.summary}</p>
-                    {ann.link !== "#" ? (
-                      <Link href={ann.link} passHref><Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs mt-1">Learn More <ExternalLinkIcon className="ml-1 h-3 w-3"/></Button></Link>
-                    ) : (
-                       <Button variant="link" size="sm" className="p-0 h-auto text-primary text-xs mt-1" disabled>Learn More</Button>
-                    )}
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
+            <ApiMetricsCard
+              currentEnvironment={currentEnvironment}
+              getUsageMetric={getUsageMetric}
+              overallApiStatus={overallSystemStatus}
+              onViewFullReportClick={() => setActiveTopTab("settings_usage")}
+            />
+            <PlatformNewsCard announcements={platformAnnouncements} />
           </div>
 
-          <Card className="shadow-lg">
-            <CardHeader className="flex flex-row items-center justify-between">
-                <div>
-                    <CardTitle className="font-headline text-lg flex items-center">
-                        <ServerIconShadcn className="mr-2 h-5 w-5 text-primary" /> System &amp; Service Status
-                    </CardTitle>
-                    <CardDescription>Current operational status of Norruva platform components.</CardDescription>
-                </div>
-                <Button variant="outline" size="sm" onClick={handleRefreshStatus}>
-                    <RefreshCw className="mr-2 h-4 w-4"/> Refresh
-                </Button>
-            </CardHeader>
-            <CardContent className="space-y-3">
-                <div className={cn("p-3 rounded-md flex items-center text-sm font-medium",
-                    overallSystemStatus.color === "text-green-500" && "bg-green-500/10 border border-green-500/30",
-                    overallSystemStatus.color === "text-yellow-500" && "bg-yellow-500/10 border border-yellow-500/30",
-                    overallSystemStatus.color === "text-red-500" && "bg-red-500/10 border border-red-500/30"
-                )}>
-                    <overallSystemStatus.icon className={cn("h-5 w-5 mr-2", overallSystemStatus.color)} />
-                    Overall: {overallSystemStatus.text}
-                </div>
-                {systemStatusData.map((service) => {
-                    const StatusIcon = service.icon;
-                    return (
-                        <div key={service.name} className="flex items-center justify-between p-2.5 border-b last:border-b-0 rounded-md hover:bg-muted/30">
-                            <div className="flex items-center">
-                                <StatusIcon className={cn("h-5 w-5 mr-3", service.color)} />
-                                <span className="text-sm font-medium text-foreground">{service.name}</span>
-                            </div>
-                            <Badge
-                                variant={service.status === "Operational" ? "default" : service.status.includes("Degraded") ? "outline" : "secondary"}
-                                className={cn("text-xs",
-                                    service.status === "Operational" && "bg-green-100 text-green-700 border-green-300",
-                                    service.status.includes("Degraded") && "bg-yellow-100 text-yellow-700 border-yellow-300",
-                                    service.status.includes("Maintenance") && "bg-blue-100 text-blue-700 border-blue-300"
-                                )}
-                            >
-                                {service.status}
-                            </Badge>
-                        </div>
-                    );
-                })}
-                <p className="text-xs text-muted-foreground pt-2">
-                    Last checked: {lastStatusCheckTime}. For detailed incidents, visit status.norruva.com (conceptual).
-                </p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-lg bg-card border-primary/10">
-            <CardHeader>
-                <CardTitle className="font-headline text-lg flex items-center"><Share2 className="mr-2 h-5 w-5 text-primary" />Conceptual API Data Flow &amp; KPIs</CardTitle>
-                <CardDescription>Visualizing typical API interactions and target performance indicators.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-4">
-                    <h4 className="font-medium text-md text-foreground">Data Flow Example:</h4>
-                    <div className="p-4 border rounded-md bg-muted/50 space-y-3 text-sm">
-                        <div className="flex items-center gap-2"><Laptop className="h-5 w-5 text-info"/> Developer App <span className="text-muted-foreground mx-1">&rarr;</span> <ServerIconShadcn className="h-5 w-5 text-primary"/> Norruva API (DPP Create)</div>
-                        <div className="flex items-center gap-2 ml-4"><ServerIconShadcn className="h-5 w-5 text-primary"/> Norruva API <span className="text-muted-foreground mx-1">&rarr;</span> <DatabaseZap className="h-5 w-5 text-accent"/> DPP Storage/Blockchain</div>
-                        <div className="flex items-center gap-2 ml-4"><DatabaseZap className="h-5 w-5 text-accent"/> DPP Storage <span className="text-muted-foreground mx-1">&rarr;</span> <ServerIconShadcn className="h-5 w-5 text-primary"/> Norruva API (DPP Read)</div>
-                        <div className="flex items-center gap-2"><ServerIconShadcn className="h-5 w-5 text-primary"/> Norruva API <span className="text-muted-foreground mx-1">&rarr;</span> <Users className="h-5 w-5 text-info"/> Consumers/Verifiers</div>
-                        <div className="flex items-center gap-2 ml-4"><ServerIconShadcn className="h-5 w-5 text-primary"/> Norruva API <span className="text-muted-foreground mx-1">&rarr;</span> <Webhook className="h-5 w-5 text-info"/> Developer App (Events)</div>
-                    </div>
-                     <p className="text-xs text-muted-foreground">This is a simplified representation. Actual flows may involve more components like EBSI integration.</p>
-                </div>
-                <div className="space-y-3">
-                    <h4 className="font-medium text-md text-foreground">Key Performance Indicators (Targets):</h4>
-                    {DataFlowKPIs.map(kpi => (
-                        <div key={kpi.title} className="flex items-start p-2.5 border-b last:border-b-0 rounded-md hover:bg-muted/20">
-                            <kpi.icon className={cn("h-5 w-5 mr-3 mt-0.5 flex-shrink-0", kpi.color)} />
-                            <div>
-                                <span className="font-semibold text-sm text-foreground">{kpi.title}: <span className={cn("font-bold", kpi.color)}>{kpi.value}</span></span>
-                                <p className="text-xs text-muted-foreground">{kpi.description}</p>
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-md">
-            <CardHeader>
-              <CardTitle className="font-headline text-lg flex items-center"><ZapIcon className="mr-2 h-5 w-5 text-primary" /> Quick Actions</CardTitle>
-              <CardDescription>Access common developer tasks and resources directly.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-              {dashboardQuickActions.map(action => (
-                action.targetTab ? (
-                  <Button key={action.label} variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10" onClick={() => {
-                    const targetTabTrigger = document.querySelector(`#developer-portal-tabs [data-state="inactive"][value="${action.targetTab}"]`) as HTMLElement | null;
-                    if (targetTabTrigger && targetTabTrigger.ariaSelected === "false") {
-                        targetTabTrigger.click();
-                    } else if (action.targetTab === 'dashboard') { 
-                        const dashboardTab = document.querySelector(`#developer-portal-tabs [value="dashboard"]`) as HTMLElement | null;
-                        if (dashboardTab) dashboardTab.click();
-                    }
-                  }}>
-                    <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
-                    <div>
-                      <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
-                    </div>
-                  </Button>
-                ) : (
-                  <Link key={action.label} href={action.href} passHref legacyBehavior>
-                    <a className="block">
-                      <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
-                        <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
-                        <div>
-                          <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
-                        </div>
-                      </Button>
-                    </a>
-                  </Link>
-                )
-              ))}
-            </CardContent>
-          </Card>
+          <ServiceStatusCard
+            systemStatusData={systemStatusData}
+            overallSystemStatus={overallSystemStatus}
+            lastStatusCheckTime={lastStatusCheckTime}
+            onRefreshStatus={handleRefreshStatus}
+          />
+          <DataFlowKpisCard kpis={DataFlowKPIs} />
+          <QuickActionsCard actions={dashboardQuickActions} onTabChange={handleDashboardQuickActionTabChange} />
         </TabsContent>
 
         <TabsContent value="api_keys" className="mt-6">
@@ -833,8 +617,8 @@ export default function DeveloperPortalPage() {
             <Info className="h-5 w-5 text-info" />
             <AlertTitle className="font-semibold text-info">Mock API Environment</AlertTitle>
             <AlertDescription>
-              This playground interacts with a <strong>mock API backend</strong>. Responses are simulated based on predefined data (like MOCK_DPPS) and conceptual API logic. 
-              This is for testing and exploration in the <Badge variant="outline" className="capitalize bg-card text-card-foreground">{currentEnvironment}</Badge> environment.
+              This playground interacts with a <strong>mock API backend</strong>. Responses are simulated based on predefined data (like MOCK_DPPS) and conceptual API logic.
+              This is for testing and exploration in the <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge> environment.
             </AlertDescription>
           </Alert>
           <Card className="shadow-xl border-primary/20">
@@ -906,7 +690,7 @@ export default function DeveloperPortalPage() {
                         </div>
                       </div>
                     </ApiPlaygroundEndpointCard>
-                    
+
                     <ApiPlaygroundEndpointCard
                       title="POST /api/v1/dpp"
                       description="Create a new Digital Product Passport."
@@ -1040,7 +824,7 @@ export default function DeveloperPortalPage() {
                             <Input id="productIdInput-verify" value={postVerifyProductId} onChange={(e) => setPostVerifyProductId(e.target.value)} placeholder="e.g., DPP001"/>
                         </div>
                     </ApiPlaygroundEndpointCard>
-                   
+
                     <ApiPlaygroundEndpointCard
                       title="GET /api/v1/dpp/history/{productId}"
                       description="Retrieve the audit trail / history for a specific DPP."
@@ -1177,7 +961,7 @@ export default function DeveloperPortalPage() {
               ))}
             </CardContent>
           </Card>
-          
+
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="font-headline flex items-center"><BookText className="mr-3 h-6 w-6 text-primary" /> Tutorials</CardTitle>
@@ -1207,7 +991,7 @@ export default function DeveloperPortalPage() {
               ))}
             </CardContent>
           </Card>
-          
+
           <Card className="shadow-lg">
             <CardHeader>
               <CardTitle className="font-headline flex items-center"><Wrench className="mr-3 h-6 w-6 text-primary" />Developer Tools</CardTitle>

@@ -89,7 +89,7 @@ export default function ProductImageFormSection({
                 priority={!currentImageUrl.startsWith("data:")}
               />
             </AspectRatio>
-            {(form.getValues("imageUrlOrigin") === 'AI_EXTRACTED' || initialImageUrlOrigin === 'AI_EXTRACTED') && (
+            {(form.getValues("imageUrlOrigin") === 'AI_EXTRACTED' || (initialImageUrlOrigin === 'AI_EXTRACTED' && form.getValues("imageUrl") === initialImageUrl)) && (
                  <AiIndicator fieldOrigin="AI_EXTRACTED" fieldName="Image" className="text-xs text-info text-center py-1.5 flex items-center justify-center" />
             )}
           </div>
@@ -150,3 +150,4 @@ export default function ProductImageFormSection({
     </div>
   );
 }
+

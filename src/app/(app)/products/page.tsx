@@ -22,7 +22,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { useRole } from "@/contexts/RoleContext";
 import { useToast } from "@/hooks/use-toast";
-import type { StoredUserProduct, RichMockProduct, DisplayableProduct } from "@/types/dpp";
+import type { StoredUserProduct, RichMockProduct, DisplayableProduct, DigitalProductPassport } from "@/types/dpp"; // Added DigitalProductPassport
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from "@/types/dpp";
 import ProductManagementFiltersComponent, { type ProductManagementFilterState } from "@/components/products/ProductManagementFiltersComponent";
 import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
@@ -37,7 +37,8 @@ const initialMockProductsData: RichMockProduct[] = [
     supplyChainLinks: [
       { supplierId: "SUP001", suppliedItem: "Compressor Unit XJ-500", notes: "Primary compressor supplier for EU market. Audited for ethical sourcing." },
       { supplierId: "SUP002", suppliedItem: "Recycled Steel Panels (70%)", notes: "Certified post-consumer recycled content." }
-    ]
+    ],
+    blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef"}, // Added for PROD001
   },
   {
     id: "PROD002", productId: "PROD002", productName: "Smart LED Bulb Pack (4-pack)", category: "Electronics", status: "Active", compliance: "Pending", lastUpdated: "2024-07-18",
@@ -46,11 +47,13 @@ const initialMockProductsData: RichMockProduct[] = [
     supplyChainLinks: [
        { supplierId: "SUP004", suppliedItem: "LED Chips & Drivers", notes: "Specialized electronics supplier from Shanghai." }
     ]
+    // PROD002 does not have blockchainIdentifiers to test "Not Anchored" filter
   },
   {
     id: "PROD003", productId: "PROD003", productName: "Organic Cotton T-Shirt", category: "Apparel", status: "Archived", compliance: "Compliant", lastUpdated: "2024-06-10",
     description: "100% organic cotton t-shirt.", materials: "Organic Cotton", sustainabilityClaims: "GOTS Certified", imageUrl: "https://placehold.co/400x300.png", imageHint: "cotton t-shirt", manufacturer: "EcoThreads",
-    specifications: {"Fit": "Regular", "Origin": "India"}, lifecycleEvents: [], complianceSummary: { overallStatus: "Compliant", eprel: {status: "N/A", lastChecked: "2024-06-01"}, ebsi: {status: "N/A", lastChecked: "2024-06-01"} }, supplyChainLinks: []
+    specifications: {"Fit": "Regular", "Origin": "India"}, lifecycleEvents: [], complianceSummary: { overallStatus: "Compliant", eprel: {status: "N/A", lastChecked: "2024-06-01"}, ebsi: {status: "N/A", lastChecked: "2024-06-01"} }, supplyChainLinks: [],
+    blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0xProd003CottonAnchorHash"}, // Added for PROD003
   },
   {
     id: "PROD004", productId: "PROD004", productName: "Recycled Plastic Water Bottle", category: "Homeware", status: "Active", compliance: "Non-Compliant", lastUpdated: "2024-07-21",
@@ -92,13 +95,14 @@ const SortableTableHead: React.FC<{
 
 interface ProductWithCompleteness extends DisplayableProduct {
   completeness: { score: number; filledFields: number; totalFields: number; missingFields: string[] };
+  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; // Ensure this is available
 }
 
 
 export default function ProductsPage() {
   const { currentRole } = useRole();
-  const [allProducts, setAllProducts] = useState<DisplayableProduct[]>([]);
-  const [productToDelete, setProductToDelete] = useState<DisplayableProduct | null>(null);
+  const [allProducts, setAllProducts] = useState<ProductWithCompleteness[]>([]); // Ensure type includes blockchainIdentifiers
+  const [productToDelete, setProductToDelete] = useState<ProductWithCompleteness | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const { toast } = useToast();
 
@@ -107,6 +111,7 @@ export default function ProductsPage() {
     status: "All",
     compliance: "All",
     category: "All",
+    blockchainAnchored: "all", // Initialize new filter
   });
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
@@ -115,20 +120,24 @@ export default function ProductsPage() {
     const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
     const userAddedStoredProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
 
-    const userAddedDisplayable: DisplayableProduct[] = userAddedStoredProducts.map(p => ({
+    const userAddedDisplayable: ProductWithCompleteness[] = userAddedStoredProducts.map(p => ({
       ...p,
       productId: p.id,
       complianceSummary: p.complianceSummary || { overallStatus: 'N/A', eprel: { status: 'N/A', lastChecked: p.lastUpdated }, ebsi: { status: 'N/A', lastChecked: p.lastUpdated } },
       lifecycleEvents: p.lifecycleEvents || [],
       supplyChainLinks: p.supplyChainLinks || [],
+      completeness: calculateDppCompletenessForList(p as DisplayableProduct), // Calculate completeness
+      // blockchainIdentifiers can be undefined if not present
     }));
 
-    const initialDisplayable: DisplayableProduct[] = initialMockProductsData.map(mock => ({
+    const initialDisplayable: ProductWithCompleteness[] = initialMockProductsData.map(mock => ({
       ...mock,
       productId: mock.productId || mock.id,
       complianceSummary: mock.complianceSummary || { overallStatus: 'N/A', eprel: { status: 'N/A', lastChecked: mock.lastUpdated }, ebsi: { status: 'N/A', lastChecked: mock.lastUpdated } },
       lifecycleEvents: mock.lifecycleEvents || [],
       supplyChainLinks: mock.supplyChainLinks || [],
+      completeness: calculateDppCompletenessForList(mock as DisplayableProduct), // Calculate completeness
+      blockchainIdentifiers: mock.blockchainIdentifiers, // Include from mock
     }));
 
     const combined = [
@@ -146,16 +155,8 @@ export default function ProductsPage() {
     setSortConfig({ key, direction });
   };
 
-  const productsWithCompleteness: ProductWithCompleteness[] = useMemo(() => {
-    return allProducts.map(p => ({
-      ...p,
-      completeness: calculateDppCompletenessForList(p)
-    }));
-  }, [allProducts]);
-
-
   const filteredAndSortedProducts = useMemo(() => {
-    let tempProducts = [...productsWithCompleteness];
+    let tempProducts = [...allProducts];
 
     if (filters.searchQuery) {
       const lowerSearchQuery = filters.searchQuery.toLowerCase();
@@ -165,17 +166,22 @@ export default function ProductsPage() {
         p.manufacturer?.toLowerCase().includes(lowerSearchQuery)
       );
     }
-
     if (filters.status !== "All") {
       tempProducts = tempProducts.filter(p => p.status === filters.status);
     }
-
     if (filters.compliance !== "All") {
       tempProducts = tempProducts.filter(p => p.compliance === filters.compliance);
     }
-
     if (filters.category !== "All") {
       tempProducts = tempProducts.filter(p => (p.category || p.productCategory) === filters.category);
+    }
+    // Add filtering for blockchainAnchored
+    if (filters.blockchainAnchored && filters.blockchainAnchored !== "all") {
+      if (filters.blockchainAnchored === "anchored") {
+        tempProducts = tempProducts.filter(p => !!p.blockchainIdentifiers?.anchorTransactionHash);
+      } else if (filters.blockchainAnchored === "not_anchored") {
+        tempProducts = tempProducts.filter(p => !p.blockchainIdentifiers?.anchorTransactionHash);
+      }
     }
 
     if (sortConfig.key && sortConfig.direction) {
@@ -209,10 +215,10 @@ export default function ProductsPage() {
       });
     }
     return tempProducts;
-  }, [filters, productsWithCompleteness, sortConfig]);
+  }, [filters, allProducts, sortConfig]);
 
 
-  const openDeleteConfirmDialog = (product: DisplayableProduct) => {
+  const openDeleteConfirmDialog = (product: ProductWithCompleteness) => {
     setProductToDelete(product);
     setIsAlertOpen(true);
   };
@@ -249,10 +255,10 @@ export default function ProductsPage() {
     const active = allProducts.filter(p => p.status === 'Active').length;
     const draft = allProducts.filter(p => p.status === 'Draft').length;
     const issues = allProducts.filter(p => p.compliance === 'Non-Compliant' || p.compliance === 'Pending').length;
-    const totalCompletenessScore = productsWithCompleteness.reduce((sum, p) => sum + p.completeness.score, 0);
+    const totalCompletenessScore = allProducts.reduce((sum, p) => sum + p.completeness.score, 0);
     const averageCompleteness = total > 0 ? (totalCompletenessScore / total).toFixed(1) + "%" : "0%";
     return { total, active, draft, issues, averageCompleteness };
-  }, [allProducts, productsWithCompleteness]);
+  }, [allProducts]);
 
   return (
     <div className="space-y-8">
@@ -343,5 +349,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-
-    

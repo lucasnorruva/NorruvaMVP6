@@ -7,8 +7,7 @@ import React from "react";
 import type { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu } from "lucide-react";
+import AiIndicator from "./AiIndicator"; // Import shared component
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 
@@ -16,24 +15,6 @@ interface BatteryDetailsFormSectionProps {
   form: UseFormReturn<ProductFormData>;
   initialData?: Partial<InitialProductFormData>;
 }
-
-const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' | 'manual', fieldName: string }) => {
-  if (fieldOrigin === 'AI_EXTRACTED') {
-    return (
-      <TooltipProvider>
-        <Tooltip delayDuration={100}>
-          <TooltipTrigger type="button" className="ml-1.5 cursor-help align-middle">
-            <Cpu className="h-4 w-4 text-info" />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-  return null;
-};
 
 export default function BatteryDetailsFormSection({ form, initialData }: BatteryDetailsFormSectionProps) {
   return (
@@ -48,9 +29,9 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
               <AiIndicator fieldOrigin={form.getValues("batteryChemistryOrigin") || initialData?.batteryChemistryOrigin} fieldName="Battery Chemistry" />
             </FormLabel>
             <FormControl>
-              <Input 
-                placeholder="e.g., Li-ion NMC" 
-                {...field} 
+              <Input
+                placeholder="e.g., Li-ion NMC"
+                {...field}
                 onChange={(e) => { field.onChange(e); form.setValue("batteryChemistryOrigin", "manual"); }}
               />
             </FormControl>
@@ -72,7 +53,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
                 type="number"
                 placeholder="e.g., 98"
                 {...field}
-                value={field.value ?? ''} 
+                value={field.value ?? ''}
                 onChange={e => {
                   field.onChange(e.target.value === '' ? null : e.target.valueAsNumber);
                   form.setValue("stateOfHealthOrigin", "manual");
@@ -97,7 +78,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
                 type="number"
                 placeholder="e.g., 75.5"
                 {...field}
-                value={field.value ?? ''} 
+                value={field.value ?? ''}
                 onChange={e => {
                   field.onChange(e.target.value === '' ? null : e.target.valueAsNumber);
                   form.setValue("carbonFootprintManufacturingOrigin", "manual");
@@ -122,7 +103,7 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
                 type="number"
                 placeholder="e.g., 15"
                 {...field}
-                value={field.value ?? ''} 
+                value={field.value ?? ''}
                 onChange={e => {
                   field.onChange(e.target.value === '' ? null : e.target.valueAsNumber);
                   form.setValue("recycledContentPercentageOrigin", "manual");
@@ -136,4 +117,3 @@ export default function BatteryDetailsFormSection({ form, initialData }: Battery
     </div>
   );
 }
-    

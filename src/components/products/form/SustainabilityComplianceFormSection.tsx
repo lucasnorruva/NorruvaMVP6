@@ -16,33 +16,10 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu, Loader2, Sparkles, Info } from "lucide-react";
+import AiIndicator from "./AiIndicator"; // Import shared component
+import { Loader2, Sparkles, Info } from "lucide-react";
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-
-interface AiIndicatorProps {
-  fieldOrigin?: 'AI_EXTRACTED' | 'manual';
-  fieldName: string;
-}
-
-const AiIndicator: React.FC<AiIndicatorProps> = ({ fieldOrigin, fieldName }) => {
-  if (fieldOrigin === 'AI_EXTRACTED') {
-    return (
-      <TooltipProvider>
-        <Tooltip delayDuration={100}>
-          <TooltipTrigger type="button" className="ml-1.5 cursor-help align-middle">
-            <Cpu className="h-4 w-4 text-info" />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-  return null;
-};
 
 interface SustainabilityComplianceFormSectionProps {
   form: UseFormReturn<ProductFormData>;
@@ -77,10 +54,10 @@ export default function SustainabilityComplianceFormSection({
               <AiIndicator fieldOrigin={form.getValues("materialsOrigin") || initialData?.materialsOrigin} fieldName="Key Materials" />
             </FormLabel>
             <FormControl>
-              <Textarea 
-                placeholder="e.g., Organic Cotton, Recycled PET, Aluminum (comma-separated)" 
-                {...field} 
-                rows={3} 
+              <Textarea
+                placeholder="e.g., Organic Cotton, Recycled PET, Aluminum (comma-separated)"
+                {...field}
+                rows={3}
                 onChange={(e) => { field.onChange(e); form.setValue("materialsOrigin", "manual"); }}
               />
             </FormControl>
@@ -105,10 +82,10 @@ export default function SustainabilityComplianceFormSection({
               </Button>
             </div>
             <FormControl>
-              <Textarea 
-                placeholder="e.g., - Made with 70% recycled materials\n- Carbon neutral production" 
-                {...field} 
-                rows={4} 
+              <Textarea
+                placeholder="e.g., - Made with 70% recycled materials\n- Carbon neutral production"
+                {...field}
+                rows={4}
                 onChange={(e) => { field.onChange(e); form.setValue("sustainabilityClaimsOrigin", "manual"); }}
               />
             </FormControl>
@@ -143,9 +120,9 @@ export default function SustainabilityComplianceFormSection({
               <AiIndicator fieldOrigin={form.getValues("energyLabelOrigin") || initialData?.energyLabelOrigin} fieldName="Energy Label" />
             </FormLabel>
             <FormControl>
-              <Input 
-                placeholder="e.g., A++, B, Not Applicable" 
-                {...field} 
+              <Input
+                placeholder="e.g., A++, B, Not Applicable"
+                {...field}
                 onChange={(e) => { field.onChange(e); form.setValue("energyLabelOrigin", "manual"); }}
               />
             </FormControl>
@@ -157,4 +134,3 @@ export default function SustainabilityComplianceFormSection({
     </div>
   );
 }
-    

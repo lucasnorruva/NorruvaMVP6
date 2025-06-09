@@ -15,33 +15,10 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu, Loader2, Sparkles } from "lucide-react";
+import AiIndicator from "./AiIndicator"; // Import shared component
+import { Loader2, Sparkles } from "lucide-react";
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-
-interface AiIndicatorProps {
-  fieldOrigin?: 'AI_EXTRACTED' | 'manual';
-  fieldName: string;
-}
-
-const AiIndicator: React.FC<AiIndicatorProps> = ({ fieldOrigin, fieldName }) => {
-  if (fieldOrigin === 'AI_EXTRACTED') {
-    return (
-      <TooltipProvider>
-        <Tooltip delayDuration={100}>
-          <TooltipTrigger type="button" className="ml-1.5 cursor-help align-middle">
-            <Cpu className="h-4 w-4 text-info" />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-  return null;
-};
 
 interface TechnicalSpecificationsFormSectionProps {
   form: UseFormReturn<ProductFormData>;
@@ -78,10 +55,10 @@ export default function TechnicalSpecificationsFormSection({
               </Button>
             </div>
             <FormControl>
-              <Textarea 
-                placeholder='e.g., { "color": "blue", "weight": "10kg" }' 
-                {...field} 
-                rows={5} 
+              <Textarea
+                placeholder='e.g., { "color": "blue", "weight": "10kg" }'
+                {...field}
+                rows={5}
                 onChange={(e) => { field.onChange(e); form.setValue("specificationsOrigin", "manual"); }}
               />
             </FormControl>

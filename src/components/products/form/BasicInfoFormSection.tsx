@@ -16,8 +16,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Cpu, Loader2, Sparkles } from "lucide-react";
+import AiIndicator from "./AiIndicator"; // Import shared component
+import { Loader2, Sparkles } from "lucide-react";
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 
@@ -31,24 +31,6 @@ interface BasicInfoFormSectionProps {
   anyAISuggestionInProgress: boolean;
   isSubmittingForm?: boolean;
 }
-
-const AiIndicator = ({ fieldOrigin, fieldName }: { fieldOrigin?: 'AI_EXTRACTED' | 'manual', fieldName: string }) => {
-  if (fieldOrigin === 'AI_EXTRACTED') {
-    return (
-      <TooltipProvider>
-        <Tooltip delayDuration={100}>
-          <TooltipTrigger type="button" className="ml-1.5 cursor-help align-middle">
-            <Cpu className="h-4 w-4 text-info" />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-  return null;
-};
 
 export default function BasicInfoFormSection({
   form,
@@ -75,9 +57,9 @@ export default function BasicInfoFormSection({
               </Button>
             </div>
             <FormControl>
-              <Input 
-                placeholder="e.g., EcoBoiler X1" 
-                {...field} 
+              <Input
+                placeholder="e.g., EcoBoiler X1"
+                {...field}
                 onChange={(e) => { field.onChange(e); form.setValue("productNameOrigin", "manual"); }}
               />
             </FormControl>
@@ -86,77 +68,77 @@ export default function BasicInfoFormSection({
         )}
       />
       <FormField control={form.control} name="gtin" render={({ field }) => ( <FormItem> <FormLabel>GTIN</FormLabel> <FormControl><Input placeholder="e.g., 01234567890123" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
-      <FormField 
-        control={form.control} 
-        name="productCategory" 
-        render={({ field }) => ( 
-          <FormItem> 
-            <FormLabel>Product Category</FormLabel> 
+      <FormField
+        control={form.control}
+        name="productCategory"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Product Category</FormLabel>
             <FormControl>
-              <Input 
-                placeholder="e.g., Electronics, Apparel" 
-                {...field} 
+              <Input
+                placeholder="e.g., Electronics, Apparel"
+                {...field}
               />
-            </FormControl> 
-            <FormDescription>Used to help generate relevant suggestions.</FormDescription> 
-            <FormMessage /> 
-          </FormItem> 
+            </FormControl>
+            <FormDescription>Used to help generate relevant suggestions.</FormDescription>
+            <FormMessage />
+          </FormItem>
       )}/>
-      <FormField 
-        control={form.control} 
-        name="productDescription" 
-        render={({ field }) => ( 
-          <FormItem> 
-            <div className="flex items-center justify-between"> 
-              <FormLabel className="flex items-center">Product Description <AiIndicator fieldOrigin={form.getValues("productDescriptionOrigin") || initialData?.productDescriptionOrigin} fieldName="Product Description" /></FormLabel> 
-              <Button type="button" variant="ghost" size="sm" onClick={callSuggestDescriptionAI} disabled={anyAISuggestionInProgress || !!isSubmittingForm}> 
-                {isSuggestingDescription ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />} 
-                <span className="ml-2">{isSuggestingDescription ? "Suggesting..." : "Suggest Description"}</span> 
-              </Button> 
-            </div> 
+      <FormField
+        control={form.control}
+        name="productDescription"
+        render={({ field }) => (
+          <FormItem>
+            <div className="flex items-center justify-between">
+              <FormLabel className="flex items-center">Product Description <AiIndicator fieldOrigin={form.getValues("productDescriptionOrigin") || initialData?.productDescriptionOrigin} fieldName="Product Description" /></FormLabel>
+              <Button type="button" variant="ghost" size="sm" onClick={callSuggestDescriptionAI} disabled={anyAISuggestionInProgress || !!isSubmittingForm}>
+                {isSuggestingDescription ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
+                <span className="ml-2">{isSuggestingDescription ? "Suggesting..." : "Suggest Description"}</span>
+              </Button>
+            </div>
             <FormControl>
-              <Textarea 
-                placeholder="Detailed description..." 
-                {...field} 
-                rows={4} 
+              <Textarea
+                placeholder="Detailed description..."
+                {...field}
+                rows={4}
                 onChange={(e) => { field.onChange(e); form.setValue("productDescriptionOrigin", "manual"); }}
               />
-            </FormControl> 
-            <FormMessage /> 
-          </FormItem> 
+            </FormControl>
+            <FormMessage />
+          </FormItem>
       )}/>
       <div className="grid md:grid-cols-2 gap-6">
-        <FormField 
-          control={form.control} 
-          name="manufacturer" 
-          render={({ field }) => ( 
-            <FormItem> 
-              <FormLabel className="flex items-center">Manufacturer <AiIndicator fieldOrigin={form.getValues("manufacturerOrigin") || initialData?.manufacturerOrigin} fieldName="Manufacturer" /></FormLabel> 
+        <FormField
+          control={form.control}
+          name="manufacturer"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center">Manufacturer <AiIndicator fieldOrigin={form.getValues("manufacturerOrigin") || initialData?.manufacturerOrigin} fieldName="Manufacturer" /></FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="e.g., GreenTech Inc." 
-                  {...field} 
+                <Input
+                  placeholder="e.g., GreenTech Inc."
+                  {...field}
                   onChange={(e) => { field.onChange(e); form.setValue("manufacturerOrigin", "manual"); }}
                 />
-              </FormControl> 
-              <FormMessage /> 
-            </FormItem> 
+              </FormControl>
+              <FormMessage />
+            </FormItem>
         )}/>
-        <FormField 
-          control={form.control} 
-          name="modelNumber" 
-          render={({ field }) => ( 
-            <FormItem> 
-              <FormLabel className="flex items-center">Model Number <AiIndicator fieldOrigin={form.getValues("modelNumberOrigin") || initialData?.modelNumberOrigin} fieldName="Model Number" /></FormLabel> 
+        <FormField
+          control={form.control}
+          name="modelNumber"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="flex items-center">Model Number <AiIndicator fieldOrigin={form.getValues("modelNumberOrigin") || initialData?.modelNumberOrigin} fieldName="Model Number" /></FormLabel>
               <FormControl>
-                <Input 
-                  placeholder="e.g., GTX-EB-001" 
-                  {...field} 
+                <Input
+                  placeholder="e.g., GTX-EB-001"
+                  {...field}
                   onChange={(e) => { field.onChange(e); form.setValue("modelNumberOrigin", "manual"); }}
                 />
-              </FormControl> 
-              <FormMessage /> 
-            </FormItem> 
+              </FormControl>
+              <FormMessage />
+            </FormItem>
         )}/>
       </div>
     </div>

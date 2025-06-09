@@ -38,6 +38,8 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
     { value: "pending_review", label: "Pending Review" },
     { value: "published", label: "Published" },
     { value: "archived", label: "Archived" },
+    { value: "flagged", label: "Flagged" },
+    { value: "revoked", label: "Revoked" },
   ];
 
   const anchoringOptions = [
@@ -193,3 +195,5 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
     </Card>
   );
 };
+
+    

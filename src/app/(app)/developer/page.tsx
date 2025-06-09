@@ -21,7 +21,7 @@ import {
     Lock, MessageSquare, Share2, BookText, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock,
     AlertTriangle as ErrorIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone,
     Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIcon, History,
-    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw
+    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -128,6 +128,7 @@ const generateMockCodeSnippet = (
     case "getDppHistory": urlPath = `/dpp/history/${params.productId || '{productId}'}`; break;
     case "importDpps": urlPath = "/dpp/import"; break;
     case "getDppGraph": urlPath = `/dpp/graph/${params.productId || '{productId}'}`; break;
+    case "getDppStatus": urlPath = `/dpp/status/${params.productId || '{productId}'}`; break;
     default: urlPath = "/unknown-endpoint";
   }
 
@@ -181,7 +182,8 @@ export default function DeveloperPortalPage() {
   const [activeTopTab, setActiveTopTab] = useState("dashboard");
 
   useEffect(() => {
-    if (typeof window !== 'undefined') { // Ensure this runs only on the client
+    // This effect runs only on the client after hydration
+    if (typeof window !== 'undefined') { 
       setLastStatusCheckTime(new Date().toLocaleTimeString());
     }
   }, []);
@@ -264,6 +266,12 @@ export default function DeveloperPortalPage() {
   const [isGetGraphLoading, setIsGetGraphLoading] = useState(false);
   const [getDppGraphSnippetLang, setGetDppGraphSnippetLang] = useState("cURL");
 
+  const [getStatusProductId, setGetStatusProductId] = useState<string>("DPP001");
+  const [getStatusResponse, setGetStatusResponse] = useState<string | null>(null);
+  const [isGetStatusLoading, setIsGetStatusLoading] = useState(false);
+  const [getStatusSnippetLang, setGetStatusSnippetLang] = useState("cURL");
+
+
   const [getProductCodeSnippet, setGetProductCodeSnippet] = useState("");
   const [listDppsCodeSnippet, setListDppsCodeSnippet] = useState("");
   const [createDppCodeSnippet, setCreateDppCodeSnippet] = useState("");
@@ -276,6 +284,7 @@ export default function DeveloperPortalPage() {
   const [getDppHistoryCodeSnippet, setGetDppHistoryCodeSnippet] = useState("");
   const [importDppsCodeSnippet, setImportDppsCodeSnippet] = useState("");
   const [getDppGraphCodeSnippet, setGetDppGraphCodeSnippet] = useState("");
+  const [getStatusCodeSnippet, setGetStatusCodeSnippet] = useState("");
 
 
   const updateSnippet = useCallback((
@@ -303,6 +312,7 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet), [getHistoryProductId, getDppHistorySnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("importDpps", "POST", importDppsSnippetLang, { fileType: postImportFileType }, JSON.stringify({ fileType: postImportFileType, data: "mock_base64_data" }), setImportDppsCodeSnippet), [postImportFileType, importDppsSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet), [getGraphProductId, getDppGraphSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet), [getStatusProductId, getStatusSnippetLang, updateSnippet]);
 
 
   const handleCopyKey = (keyToCopy: string) => {
@@ -432,6 +442,7 @@ export default function DeveloperPortalPage() {
   const handleMockGetHistory = () => { updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet); makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetDppHistoryResponse); }
   const handleMockPostImport = () => { const body = { fileType: postImportFileType, data: "mock_file_content_base64_encoded" }; updateSnippet("importDpps", "POST", importDppsSnippetLang, body, JSON.stringify(body), setImportDppsCodeSnippet); makeApiCall('/api/v1/dpp/import', 'POST', body, setIsPostImportLoading, setPostImportResponse); }
   const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetDppGraphResponse); }
+  const handleMockGetStatus = () => { updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet); makeApiCall(`/api/v1/dpp/status/${getStatusProductId}`, 'GET', null, setIsGetStatusLoading, setGetStatusResponse); }
 
 
   const handleGenerateMockDpp = async () => {
@@ -629,7 +640,7 @@ export default function DeveloperPortalPage() {
 
         <TabsContent value="playground" className="mt-6 space-y-6">
           <Alert variant="default" className="bg-info/10 border-info/50 text-info-foreground">
-            <Info className="h-5 w-5 text-info" />
+            <InfoIconLucide className="h-5 w-5 text-info" />
             <AlertTitle className="font-semibold text-info">Mock API Environment</AlertTitle>
             <AlertDescription>
               This playground interacts with a <strong>mock API backend</strong>. Responses are simulated based on predefined data (like MOCK_DPPS) and conceptual API logic.
@@ -688,7 +699,7 @@ export default function DeveloperPortalPage() {
                           <Select value={listDppFilters.status} onValueChange={(value) => setListDppFilters(prev => ({...prev, status: value}))}>
                             <SelectTrigger id="list-dpp-status"><SelectValue /></SelectTrigger>
                             <SelectContent>
-                              {['all', 'draft', 'published', 'archived', 'pending_review', 'revoked'].map(s => <SelectItem key={`listStatus-${s}`} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</SelectItem>)}
+                              {['all', 'draft', 'published', 'archived', 'pending_review', 'revoked', 'flagged'].map(s => <SelectItem key={`listStatus-${s}`} value={s}>{s.charAt(0).toUpperCase() + s.slice(1).replace('_', ' ')}</SelectItem>)}
                             </SelectContent>
                           </Select>
                         </div>
@@ -768,6 +779,23 @@ export default function DeveloperPortalPage() {
                 <AccordionItem value="dpp-utility">
                   <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline">DPP Utility & Advanced Endpoints</AccordionTrigger>
                   <AccordionContent className="pt-4 space-y-6">
+                    <ApiPlaygroundEndpointCard
+                        title="GET /api/v1/dpp/status/{productId}"
+                        description="Retrieve the current status of a specific DPP."
+                        onSendRequest={handleMockGetStatus}
+                        isLoading={isGetStatusLoading}
+                        response={getStatusResponse}
+                        codeSnippet={getStatusCodeSnippet}
+                        snippetLanguage={getStatusSnippetLang}
+                        onSnippetLanguageChange={(lang) => {setGetStatusSnippetLang(lang); updateSnippet("getDppStatus", "GET", lang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet);}}
+                        codeSampleLanguages={codeSampleLanguages}
+                    >
+                        <div>
+                            <Label htmlFor="productIdInput-get-status">Product ID (Path Parameter)</Label>
+                            <Input id="productIdInput-get-status" value={getStatusProductId} onChange={(e) => setGetStatusProductId(e.target.value)} placeholder="e.g., DPP001" />
+                        </div>
+                    </ApiPlaygroundEndpointCard>
+                    
                     <ApiPlaygroundEndpointCard
                         title="POST /api/v1/qr/validate"
                         description="Validate a QR identifier and retrieve a DPP summary."
@@ -1152,5 +1180,8 @@ export default function DeveloperPortalPage() {
 }
 
     
+
+    
+
 
     

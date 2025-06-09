@@ -73,6 +73,13 @@ export interface CustomAttribute {
   value: string;
 }
 
+export interface DocumentReference {
+  name: string;
+  url: string;
+  type: string;
+  addedTimestamp: string;
+}
+
 export interface DigitalProductPassport {
   id: string;
   version?: number;
@@ -116,6 +123,7 @@ export interface DigitalProductPassport {
 
   lifecycleEvents?: LifecycleEvent[];
   certifications?: Certification[];
+  documents?: DocumentReference[]; // Added new documents field
   traceability?: TraceabilityInfo;
 
   compliance: {
@@ -214,6 +222,10 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       {id: "cert1", name: "Energy Star", issuer: "EPA", issueDate: "2024-01-01T11:00:00Z", documentUrl: "#", transactionHash: "0xcertAnchor1", standard: "Energy Star Program Requirements for Refrigerators v6.0"},
       {id: "cert2", name: "ISO 14001", issuer: "TUV Rheinland", issueDate: "2024-01-20T00:00:00Z", expiryDate: "2026-11-14", documentUrl: "#iso14001", vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015"}
     ],
+    documents: [
+      { name: "User Manual v1.2", url: "#manual_v1.2.pdf", type: "User Manual", addedTimestamp: "2024-01-15T00:00:00Z" },
+      { name: "Warranty Card", url: "#warranty.pdf", type: "Warranty", addedTimestamp: "2024-01-15T00:00:00Z" },
+    ],
     supplyChainLinks: [
       { supplierId: "SUP001", suppliedItem: "Compressor Unit XJ-500", notes: "Primary compressor supplier for EU market. Audited for ethical sourcing." },
       { supplierId: "SUP002", suppliedItem: "Recycled Steel Panels (70%)", notes: "Certified post-consumer recycled content." }
@@ -245,6 +257,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     certifications: [
       {id: "cert3", name: "GOTS", issuer: "Control Union", issueDate: "2024-02-20", expiryDate: "2025-02-19", documentUrl: "#gots", standard: "Global Organic Textile Standard 6.0"},
     ],
+    documents: [],
     supplyChainLinks: [
        { supplierId: "SUP003", suppliedItem: "Organic Cotton Yarn", notes: "GOTS Certified Supplier for all global production." }
     ]
@@ -265,6 +278,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     consumerScans: 2100,
      productDetails: { description: "A recycled phone case."},
      blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0x789polymerAnchorHash000333"},
+     documents: [],
      supplyChainLinks: [],
      ebsiVerification: { status: "not_verified", lastChecked: "2024-07-23T00:00:00Z"},
   },
@@ -282,6 +296,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     consumerScans: 850,
     productDetails: { description: "A modular sofa."},
+    documents: [],
     supplyChainLinks: [],
     ebsiVerification: { status: "error", lastChecked: "2024-07-19T00:00:00Z", message: "Connection timeout to EBSI node."},
   },
@@ -317,6 +332,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     certifications: [
       {id: "cert_bat_01", name: "UN 38.3 Transport Test", issuer: "TestCert Ltd.", issueDate: "2024-07-01", documentUrl: "#", transactionHash: "0xcertAnchorBat1", standard: "UN Manual of Tests and Criteria, Part III, subsection 38.3"}
     ],
+    documents: [],
     blockchainIdentifiers: { platform: "BatteryChain", anchorTransactionHash: "0xevBatteryAnchorHash555AAA"},
     supplyChainLinks: []
   },
@@ -397,6 +413,7 @@ export interface SimpleProductDetail {
   complianceSummary?: ProductComplianceSummary;
   lifecycleEvents?: SimpleLifecycleEvent[];
   certifications?: SimpleCertification[];
+  documents?: DocumentReference[]; // Added documents
   customAttributes?: CustomAttribute[];
 }
 
@@ -439,6 +456,7 @@ export interface StoredUserProduct {
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
   certifications?: SimpleCertification[]; 
+  documents?: DocumentReference[]; // Added documents
   customAttributesJsonString?: string; // Used to store CustomAttribute[] as JSON string
 }
 
@@ -469,6 +487,7 @@ export interface RichMockProduct {
   recycledContentPercentage?: number | null;
   ebsiVerification?: EbsiVerificationDetails;
   certifications?: Certification[]; 
+  documents?: DocumentReference[]; // Added documents
   supplyChainLinks?: ProductSupplyChainLink[];
   customAttributes?: CustomAttribute[]; // For consistency with DigitalProductPassport
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
@@ -540,6 +559,10 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
       { name: "Energy Star", authority: "EPA", issueDate: "2024-01-01", documentUrl: "#", isVerified: true, standard: "Energy Star Program Requirements for Refrigerators v6.0", transactionHash: "0xcertAnchor1" },
       { name: "ISO 14001", authority: "TUV Rheinland", issueDate: "2023-11-15", expiryDate: "2026-11-14", documentUrl: "#iso14001", isVerified: true, vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015" }
     ],
+    documents: [ // Added documents to simple mock
+      { name: "User Manual v1.2", url: "#manual_v1.2.pdf", type: "User Manual", addedTimestamp: "2024-01-15T00:00:00Z" },
+      { name: "Warranty Card", url: "#warranty.pdf", type: "Warranty", addedTimestamp: "2024-01-15T00:00:00Z" },
+    ],
   }
 ];
 
@@ -586,6 +609,7 @@ export interface PublicProductInfo {
   lifecycleHighlights?: LifecycleHighlight[];
   certifications?: PublicCertification[];
   customAttributes?: CustomAttribute[];
+  documents?: DocumentReference[]; // Added documents
 }
 
 export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
@@ -622,6 +646,10 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     certifications: [
       { name: "Energy Star", authority: "EPA", isVerified: true, standard: "Energy Star Program Requirements for Refrigerators v6.0", transactionHash: "0xcertAnchor1" },
       { name: "ISO 14001", authority: "TUV Rheinland", expiryDate: "2026-11-14", isVerified: true, vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015" }
+    ],
+    documents: [ // Added documents
+      { name: "User Manual v1.2", url: "#manual_v1.2.pdf", type: "User Manual", addedTimestamp: "2024-01-15T00:00:00Z" },
+      { name: "Warranty Card", url: "#warranty.pdf", type: "Warranty", addedTimestamp: "2024-01-15T00:00:00Z" },
     ],
     customAttributes: [
         {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
@@ -663,6 +691,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { name: "CE Marking", authority: "Self-Certified", isVerified: true },
       { name: "Bluetooth SIG Qualification", authority: "Bluetooth SIG", expiryDate: "2028-01-01", link:"#", isVerified: true },
     ],
+    documents: [],
     customAttributes: [
         {key: "Smart Home Compatibility", value: "Google Home, Amazon Alexa, Apple HomeKit"},
         {key: "Light Color Options", value: "RGBW (16 million colors + Tunable White)"},
@@ -687,6 +716,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     modelNumber: "CWC-001",
     ebsiStatus: 'not_verified',
     certifications: [], 
+    documents: [],
     customAttributes: [
         {key: "Wood Type", value: "Oak"},
         {key: "Finish", value: "Natural Oil"},
@@ -747,12 +777,8 @@ export interface DisplayableProduct {
   ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A'; 
   supplyChainLinks?: ProductSupplyChainLink[];
   certifications?: SimpleCertification[]; 
+  documents?: DocumentReference[]; // Added documents
   customAttributes?: CustomAttribute[]; // For display on list if needed; form uses customAttributesJsonString
   customAttributesJsonString?: string; // Stays as string for form consistency
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; // Add this for filtering
 }
-
-
-
-
-    

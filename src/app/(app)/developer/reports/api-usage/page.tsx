@@ -7,7 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft, BarChart3, AlertTriangle, Users, Clock, FileJson, Info, ListFilter } from "lucide-react";
-import {ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Bar } from 'recharts';
+import {ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar } from 'recharts';
 
 const mockApiCallData = [
   { date: "2024-07-01", calls: 1200 }, { date: "2024-07-02", calls: 1500 },

@@ -16,8 +16,9 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import AiIndicator from "./AiIndicator"; // Import shared component
-import { Loader2, Sparkles, Info } from "lucide-react";
+import AiIndicator from "./AiIndicator"; 
+import AiSuggestionDisplay from "./AiSuggestionDisplay"; // Import the new component
+import { Loader2, Sparkles } from "lucide-react";
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 
@@ -96,20 +97,14 @@ export default function SustainabilityComplianceFormSection({
           </FormItem>
         )}
       />
-      {suggestedClaims.length > 0 && (
-        <div className="space-y-2 pt-2 border border-dashed p-3 rounded-md bg-muted/30">
-          <FormLabel className="text-sm font-medium text-muted-foreground flex items-center">
-             <Info className="h-4 w-4 mr-2 text-info"/> AI Suggested Claims (click to add to the textarea above):
-          </FormLabel>
-          <div className="flex flex-wrap gap-2">
-            {suggestedClaims.map((claim, index) => (
-              <Button key={index} type="button" variant="outline" size="sm" onClick={() => handleClaimClick(claim)} className="bg-background hover:bg-accent/10">
-                {claim}
-              </Button>
-            ))}
-          </div>
-        </div>
-      )}
+      
+      <AiSuggestionDisplay
+        suggestions={suggestedClaims}
+        onAddSuggestion={handleClaimClick}
+        title="AI Suggested Claims:"
+        itemNoun="claim"
+      />
+
       <FormField
         control={form.control}
         name="energyLabel"

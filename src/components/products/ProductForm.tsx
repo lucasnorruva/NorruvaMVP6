@@ -2,7 +2,7 @@
 "use client";
 // --- File: ProductForm.tsx ---
 // Description: Main form component for creating or editing product DPPs.
-// Now delegates AI loading states to individual section components.
+// AI loading states for text suggestions are now managed within individual section components.
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormReturn } from "react-hook-form";
@@ -24,7 +24,7 @@ import SustainabilityComplianceFormSection from "./form/SustainabilityCompliance
 import TechnicalSpecificationsFormSection from "./form/TechnicalSpecificationsFormSection";
 import CustomAttributesFormSection from "./form/CustomAttributesFormSection";
 import {
-  handleGenerateImageAI, // Keep this specific helper if ProductImageFormSection needs it directly
+  handleGenerateImageAI, 
 } from "@/utils/aiFormHelpers";
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
@@ -286,7 +286,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         <AccordionContent>
           <ProductImageFormSection
             form={form}
-            aiImageHelper={handleGenerateImageAI} // Passed directly from aiFormHelpers
+            aiImageHelper={handleGenerateImageAI} 
             initialImageUrlOrigin={initialData?.imageUrlOrigin}
             toast={toast}
             isGeneratingImageState={isGeneratingImage}
@@ -345,7 +345,6 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             form={form}
             suggestedCustomAttributes={suggestedCustomAttributes}
             setSuggestedCustomAttributes={setSuggestedCustomAttributes}
-            handleAddSuggestedCustomAttribute={handleAddSuggestedCustomAttribute}
             isSubmittingForm={isSubmitting}
             toast={toast}
           />
@@ -380,3 +379,4 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
+

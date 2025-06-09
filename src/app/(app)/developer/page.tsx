@@ -62,7 +62,7 @@ const mockCodeSamples = [
 
 const mockTutorials = [
   { id: "tut1", title: "Step-by-Step: Integrating DPP QR Scanning into a Retail App", description: "Learn how to use the Norruva API to allow consumers to scan QR codes and view product passports directly in your application.", linkText: "Read Tutorial", href: "/developer/tutorials/qr-scan-integration", icon: BookText },
-  { id: "tut2", title: "Automating Compliance Updates with Webhooks", description: "A guide on setting up webhooks to receive real-time notifications for DPP status changes or new compliance requirements.", linkText: "Read Tutorial", href: "/developer/tutorials/webhooks-automation", icon: BookText },
+  { id: "tut2", title: "Automating Updates with Webhooks", description: "A guide on setting up webhooks to receive real-time notifications for DPP status changes or new compliance requirements.", linkText: "Read Tutorial", href: "/developer/tutorials/webhooks-automation", icon: BookText },
   { id: "tut3", title: "Best Practices for Managing DPP Data via API", description: "Explore strategies for efficiently managing large volumes of product data, versioning DPPs, and ensuring data accuracy through API integrations.", linkText: "Read Tutorial", href: "/developer/tutorials/dpp-data-management-api", icon: BookText },
 ];
 
@@ -177,12 +177,13 @@ export default function DeveloperPortalPage() {
   const [webhooks, setWebhooks] = useState<WebhookEntry[]>(initialMockWebhooks);
   const [currentEnvironment, setCurrentEnvironment] = useState<string>("sandbox");
   const mockOrganizationName = "Acme Innovations";
-  const [lastStatusCheckTime, setLastStatusCheckTime] = useState<string | null>(null); // Initialize as null
+  const [lastStatusCheckTime, setLastStatusCheckTime] = useState<string | null>(null); 
   const [activeTopTab, setActiveTopTab] = useState("dashboard");
 
-  // Initialize lastStatusCheckTime on client-side
   useEffect(() => {
-    setLastStatusCheckTime(new Date().toLocaleTimeString());
+    if (typeof window !== 'undefined') { // Ensure this runs only on the client
+      setLastStatusCheckTime(new Date().toLocaleTimeString());
+    }
   }, []);
 
 

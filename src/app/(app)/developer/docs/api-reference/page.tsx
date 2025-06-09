@@ -9,6 +9,21 @@ import DocsPageLayout from '@/components/developer/DocsPageLayout';
 export default function ApiReferencePage() {
   const exampleDppResponse = JSON.stringify(MOCK_DPPS[0], null, 2);
 
+  const exampleListDppsResponse = JSON.stringify({
+    data: [
+      MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0], // Use a specific mock or fallback
+      // Add another if space allows or keep it concise
+    ],
+    filtersApplied: {
+      status: "published",
+      category: "Electronics",
+      blockchainAnchored: "all",
+      searchQuery: "EcoSmart"
+    },
+    totalCount: 1 // Example count, in reality, it would match filtered results
+  }, null, 2);
+
+
   const qrValidationResponseExample = {
     productId: MOCK_DPPS[0].id,
     productName: MOCK_DPPS[0].productName,
@@ -28,7 +43,7 @@ export default function ApiReferencePage() {
   const exampleQrValidationResponse = JSON.stringify(qrValidationResponseExample, null, 2);
 
   const error401 = JSON.stringify({ error: { code: 401, message: "API key missing or invalid." } }, null, 2);
-  const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }, null, 2);
+  const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }, { status: 404 }); // Corrected for status prop
   const error400_general = JSON.stringify({ error: { code: 400, message: "Invalid request payload or parameters." } }, null, 2);
   const error400_qr = JSON.stringify({ error: { code: 400, message: "Invalid request body. 'qrIdentifier' is required." } }, null, 2);
   const error500 = JSON.stringify({ error: { code: 500, message: "An unexpected error occurred on the server." } }, null, 2);
@@ -82,7 +97,7 @@ export default function ApiReferencePage() {
         { "key": "OS", "value": "WearOS" }
       ]
     },
-    compliance: { battery_regulation: { status: "not_applicable", lastChecked: new Date().toISOString() } },
+    compliance: { battery_regulation: { status: "not_applicable", /* lastChecked removed from creation */ } },
     ebsiVerification: { status: "pending_verification", lastChecked: new Date().toISOString() },
     lifecycleEvents: [],
     certifications: [],
@@ -107,16 +122,16 @@ export default function ApiReferencePage() {
   }, null, 2);
 
   const conceptualUpdateDppResponseBody = JSON.stringify({
-    ...(MOCK_DPPS[0] || {}), // Assume it's an update to PROD001 for example
+    ...(MOCK_DPPS[0] || {}), 
     id: MOCK_DPPS[0]?.id || "DPP001_MOCK",
-    productName: MOCK_DPPS[0]?.productName || "EcoSmart Refrigerator X500", // Keep original if not updated
+    productName: MOCK_DPPS[0]?.productName || "EcoSmart Refrigerator X500", 
     productDetails: {
         ...(MOCK_DPPS[0]?.productDetails || {}),
-        description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case, energy-efficient display, and enhanced battery life.", // Description updated
-        sustainabilityClaims: [ // Sustainability claims updated
+        description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case, energy-efficient display, and enhanced battery life.", 
+        sustainabilityClaims: [ 
           { claim: "Made with 80% recycled aluminum", verificationDetails: "Verified by GreenCert" }
         ],
-        customAttributes: [ // Custom attributes updated
+        customAttributes: [ 
             { "key": "Display Type", "value": "AMOLED" },
             { "key": "OS", "value": "WearOS Pro" },
             { "key": "Water Resistance", "value": "5 ATM" }
@@ -124,8 +139,8 @@ export default function ApiReferencePage() {
     },
     metadata: {
         ...(MOCK_DPPS[0]?.metadata || {}),
-        status: "pending_review", // Status updated
-        last_updated: new Date().toISOString() // Last updated timestamp refreshed
+        status: "pending_review", 
+        last_updated: new Date().toISOString() 
     }
   }, null, 2);
 
@@ -165,7 +180,6 @@ export default function ApiReferencePage() {
   }, null, 2);
 
   const conceptualPatchDppExtendResponseBody = JSON.stringify({
-    // Returns the full updated DPP, example assumes DPP001 and adding a new document
     ...(MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0]),
     documents: [
       ...(MOCK_DPPS.find(dpp => dpp.id === "DPP001")?.documents || []),
@@ -219,7 +233,6 @@ export default function ApiReferencePage() {
     details: {
       eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" },
       ebsi: { status: "verified", verificationId: "EBSI_TX_ABC123", lastChecked: "2024-07-25T00:00:00Z" },
-      // ... other detail fields as per openapi.yaml
     }
   }, null, 2);
 
@@ -280,7 +293,66 @@ export default function ApiReferencePage() {
           <Server className="mr-3 h-6 w-6 text-primary" /> Digital Product Passport (DPP) Endpoints
         </h2>
 
-        <Card className="shadow-lg">
+        <Card className="shadow-lg mt-6">
+          <CardHeader>
+            <CardTitle className="text-lg">List Digital Product Passports</CardTitle>
+            <CardDescription>
+              <span className="inline-flex items-center font-mono text-sm">
+                <Badge variant="outline" className="bg-sky-100 text-sky-700 border-sky-300 mr-2 font-semibold">GET</Badge>
+                <code className="bg-muted px-1 py-0.5 rounded-sm">/dpp</code>
+              </span>
+              <br/>
+              Retrieves a list of Digital Product Passports, with optional filtering.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <section>
+              <h4 className="font-semibold mb-1">Query Parameters (Optional)</h4>
+              <ul className="list-disc list-inside text-sm space-y-1">
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">status</code> (string): Filter by DPP status (e.g., "draft", "published", "archived", "pending_review", "revoked", "flagged", "all"). Defaults to "all".</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">category</code> (string): Filter by product category (e.g., "Electronics").</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">searchQuery</code> (string): Search term for product name, ID, GTIN, or manufacturer.</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">blockchainAnchored</code> (string): Filter by blockchain anchoring status ("all", "anchored", "not_anchored"). Defaults to "all".</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">limit</code> (integer, conceptual): Number of items to return per page.</li>
+                <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">offset</code> (integer, conceptual): Number of items to skip for pagination.</li>
+              </ul>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
+              <p className="text-sm mb-1">Returns a list of DPP objects, applied filters, and total count.</p>
+              <details className="border rounded-md">
+                <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Response
+                </summary>
+                <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+                  <code>{exampleListDppsResponse}</code>
+                </pre>
+              </details>
+            </section>
+            <section>
+              <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
+                <ul className="list-disc list-inside text-sm space-y-2">
+                    <li>
+                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>: API key missing or invalid.
+                        <details className="border rounded-md mt-1">
+                            <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                            <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error401}</code></pre>
+                        </details>
+                    </li>
+                    <li>
+                        <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>: Server-side error.
+                        <details className="border rounded-md mt-1">
+                            <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
+                            <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error500}</code></pre>
+                        </details>
+                    </li>
+                </ul>
+            </section>
+          </CardContent>
+        </Card>
+
+
+        <Card className="shadow-lg mt-6">
           <CardHeader>
             <CardTitle className="text-lg">Retrieve a Digital Product Passport</CardTitle>
             <CardDescription>
@@ -503,10 +575,10 @@ export default function ApiReferencePage() {
             </section>
             <section>
               <h4 className="font-semibold mb-1">Request Body (JSON)</h4>
-              <p className="text-sm mb-1">Example: Adding a document reference. See OpenAPI spec for other extendable modules.</p>
+              <p className="text-sm mb-1">Example: Adding a document reference. See OpenAPI spec for other extendable modules (e.g., conceptual chainOfCustodyUpdate).</p>
               <details className="border rounded-md">
                 <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
-                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Request Body
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Request Body (Add Document)
                 </summary>
                 <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
                   <code>{conceptualPatchDppExtendRequestBody}</code>
@@ -515,10 +587,10 @@ export default function ApiReferencePage() {
             </section>
             <section>
               <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
-              <p className="text-sm mb-1">Returns the complete, updated DPP object with the new document added.</p>
+              <p className="text-sm mb-1">Returns the complete, updated DPP object with the new data added.</p>
               <details className="border rounded-md">
                 <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
-                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Response
+                  <FileJson className="inline h-4 w-4 mr-1 align-middle"/>Example JSON Response (Document Added)
                 </summary>
                 <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
                   <code>{conceptualPatchDppExtendResponseBody}</code>
@@ -840,6 +912,7 @@ export default function ApiReferencePage() {
     </DocsPageLayout>
   );
 }
+
 
 
 

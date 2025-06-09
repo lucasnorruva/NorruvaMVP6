@@ -1160,5 +1160,3 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
-
-    

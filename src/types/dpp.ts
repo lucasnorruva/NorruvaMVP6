@@ -80,6 +80,14 @@ export interface DocumentReference {
   addedTimestamp: string;
 }
 
+export interface HistoryEntry {
+  timestamp: string;
+  actionType: string;
+  details?: string;
+  changedBy: string;
+  version?: number;
+}
+
 export interface DigitalProductPassport {
   id: string;
   version?: number;
@@ -123,7 +131,7 @@ export interface DigitalProductPassport {
 
   lifecycleEvents?: LifecycleEvent[];
   certifications?: Certification[];
-  documents?: DocumentReference[]; // Added new documents field
+  documents?: DocumentReference[];
   traceability?: TraceabilityInfo;
 
   compliance: {
@@ -268,7 +276,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     category: "Accessories",
     manufacturer: { name: "ReCase It"},
     modelNumber: "RC-POLY-IP15",
-    metadata: { last_updated: "2024-07-22T09:15:00Z", status: "flagged", created_at: "2024-04-10T10:00:00Z" }, // Changed to flagged
+    metadata: { last_updated: "2024-07-22T09:15:00Z", status: "flagged", created_at: "2024-04-10T10:00:00Z" },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-22T00:00:00Z" },
       eu_espr: { status: "compliant" },
@@ -405,6 +413,7 @@ export interface SimpleProductDetail {
   keySustainabilityPoints?: string[];
   keyCompliancePoints?: string[];
   specifications?: string; // Changed to string to hold JSON string
+  customAttributes?: CustomAttribute[];
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
   repairability?: { score: number; scale: number; detailsUrl?: string };
@@ -413,8 +422,7 @@ export interface SimpleProductDetail {
   complianceSummary?: ProductComplianceSummary;
   lifecycleEvents?: SimpleLifecycleEvent[];
   certifications?: SimpleCertification[];
-  documents?: DocumentReference[]; // Added documents
-  customAttributes?: CustomAttribute[];
+  documents?: DocumentReference[];
 }
 
 // This type is used when storing user-created/edited products in localStorage.
@@ -456,7 +464,7 @@ export interface StoredUserProduct {
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
   certifications?: SimpleCertification[]; 
-  documents?: DocumentReference[]; // Added documents
+  documents?: DocumentReference[];
   customAttributesJsonString?: string; // Used to store CustomAttribute[] as JSON string
 }
 
@@ -487,7 +495,7 @@ export interface RichMockProduct {
   recycledContentPercentage?: number | null;
   ebsiVerification?: EbsiVerificationDetails;
   certifications?: Certification[]; 
-  documents?: DocumentReference[]; // Added documents
+  documents?: DocumentReference[];
   supplyChainLinks?: ProductSupplyChainLink[];
   customAttributes?: CustomAttribute[]; // For consistency with DigitalProductPassport
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
@@ -559,7 +567,7 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
       { name: "Energy Star", authority: "EPA", issueDate: "2024-01-01", documentUrl: "#", isVerified: true, standard: "Energy Star Program Requirements for Refrigerators v6.0", transactionHash: "0xcertAnchor1" },
       { name: "ISO 14001", authority: "TUV Rheinland", issueDate: "2023-11-15", expiryDate: "2026-11-14", documentUrl: "#iso14001", isVerified: true, vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015" }
     ],
-    documents: [ // Added documents to simple mock
+    documents: [
       { name: "User Manual v1.2", url: "#manual_v1.2.pdf", type: "User Manual", addedTimestamp: "2024-01-15T00:00:00Z" },
       { name: "Warranty Card", url: "#warranty.pdf", type: "Warranty", addedTimestamp: "2024-01-15T00:00:00Z" },
     ],
@@ -609,7 +617,7 @@ export interface PublicProductInfo {
   lifecycleHighlights?: LifecycleHighlight[];
   certifications?: PublicCertification[];
   customAttributes?: CustomAttribute[];
-  documents?: DocumentReference[]; // Added documents
+  documents?: DocumentReference[];
 }
 
 export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
@@ -647,7 +655,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { name: "Energy Star", authority: "EPA", isVerified: true, standard: "Energy Star Program Requirements for Refrigerators v6.0", transactionHash: "0xcertAnchor1" },
       { name: "ISO 14001", authority: "TUV Rheinland", expiryDate: "2026-11-14", isVerified: true, vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015" }
     ],
-    documents: [ // Added documents
+    documents: [
       { name: "User Manual v1.2", url: "#manual_v1.2.pdf", type: "User Manual", addedTimestamp: "2024-01-15T00:00:00Z" },
       { name: "Warranty Card", url: "#warranty.pdf", type: "Warranty", addedTimestamp: "2024-01-15T00:00:00Z" },
     ],
@@ -777,8 +785,9 @@ export interface DisplayableProduct {
   ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A'; 
   supplyChainLinks?: ProductSupplyChainLink[];
   certifications?: SimpleCertification[]; 
-  documents?: DocumentReference[]; // Added documents
+  documents?: DocumentReference[];
   customAttributes?: CustomAttribute[]; // For display on list if needed; form uses customAttributesJsonString
   customAttributesJsonString?: string; // Stays as string for form consistency
-  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; // Add this for filtering
+  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
 }
+

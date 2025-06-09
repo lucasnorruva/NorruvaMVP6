@@ -5,15 +5,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { MOCK_DPPS } from '@/types/dpp';
-import type { DigitalProductPassport, LifecycleEvent, Certification, EbsiVerificationDetails } from '@/types/dpp';
-
-interface HistoryEntry {
-  timestamp: string;
-  actionType: string;
-  details?: string;
-  changedBy: string;
-  version?: number; // Conceptual version number
-}
+import type { DigitalProductPassport, LifecycleEvent, Certification, EbsiVerificationDetails, HistoryEntry } from '@/types/dpp';
 
 export async function GET(
   request: NextRequest,
@@ -84,28 +76,25 @@ export async function GET(
   // General updates based on last_updated (if significantly different from creation/last event)
   const productLastUpdatedTime = new Date(product.metadata.last_updated).getTime();
   if (productLastUpdatedTime > maxEventTimestamp) {
-     // Only add if there's a significant difference (e.g., more than 1 minute (60000ms) to avoid noise from minor, almost simultaneous updates)
      if (productLastUpdatedTime - maxEventTimestamp > 60000) {
         potentialHistory.push({
             timestamp: product.metadata.last_updated,
-            actionType: "DPP Data Updated", // More specific name
+            actionType: "DPP Data Updated", 
             details: "Product information was updated via platform.",
             changedBy: "Manufacturer Portal Update (Mock)",
         });
      }
   }
   
-  // Sort history by timestamp ascending to assign versions correctly
   potentialHistory.sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 
-  // Assign versions
   const versionedHistory: HistoryEntry[] = potentialHistory.map((entry, index) => ({
     ...entry,
     version: index + 1,
   }));
   
-  // Final sort: by timestamp descending (most recent first) for API response
   versionedHistory.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
 
   return NextResponse.json(versionedHistory);
 }
+

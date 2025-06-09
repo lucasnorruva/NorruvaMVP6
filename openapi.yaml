@@ -241,7 +241,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/v1/dpp/extend/{productId}: # New Endpoint Definition
+  /api/v1/dpp/extend/{productId}:
     patch:
       operationId: extendDpp
       summary: Extend a Digital Product Passport
@@ -561,20 +561,7 @@ paths:
               schema:
                 type: array
                 items:
-                  type: object
-                  properties:
-                    timestamp:
-                      type: string
-                      format: date-time
-                    actionType:
-                      type: string
-                    details:
-                      type: string
-                      nullable: true
-                    changedBy:
-                      type: string
-                    version:
-                      type: integer
+                  $ref: '#/components/schemas/HistoryEntry'
         '401':
           description: API key missing or invalid.
           content:
@@ -609,10 +596,10 @@ paths:
                   type: string
                   description: Type of the import file (e.g., "csv", "json").
                   example: "csv"
-                data: # Could be base64 string of file content or structured JSON data
+                data: 
                   type: string
-                  description: The data to import.
-                  example: "UEsDBAoAAAAA..." # Example for a file
+                  description: The data to import (e.g., base64 string of file content or structured JSON data).
+                  example: "UEsDBAoAAAAA..." 
                 sourceDescription:
                   type: string
                   nullable: true
@@ -621,7 +608,7 @@ paths:
                 - fileType
                 - data
       responses:
-        '200': # Or 202 Accepted if it's a long-running job
+        '200': 
           description: Import job acknowledged or completed.
           content:
             application/json:
@@ -857,7 +844,7 @@ components:
           type: string
           description: The current status of the Digital Product Passport.
           enum: ["draft", "published", "archived", "pending_review", "revoked", "flagged"]
-    DocumentReference: # Added new schema
+    DocumentReference:
       type: object
       properties:
         name:
@@ -874,6 +861,27 @@ components:
           type: string
           format: date-time
           description: Timestamp when the document reference was added.
+    HistoryEntry: # Added HistoryEntry schema
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the historical event.
+        actionType:
+          type: string
+          description: Type of action performed (e.g., "DPP Created", "Lifecycle Event: Shipped").
+        details:
+          type: string
+          nullable: true
+          description: Additional details about the event.
+        changedBy:
+          type: string
+          description: User or system that made the change.
+        version:
+          type: integer
+          nullable: true
+          description: Conceptual version number of the DPP after this change.
     DigitalProductPassport:
       type: object
       properties:
@@ -1025,7 +1033,7 @@ components:
                 vcId:
                   type: string
                   nullable: true
-            specifications: # Added for clarity
+            specifications: 
               type: string
               description: "A JSON string representing key-value technical specifications."
               example: "{\"color\": \"blue\", \"weight\": \"250g\"}"
@@ -1045,7 +1053,7 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/Certification'
-        documents: # Added new documents field
+        documents: 
           type: array
           nullable: true
           items:
@@ -1396,7 +1404,7 @@ components:
             energyLabel:
               type: string
               nullable: true
-            specifications: # Added for consistency
+            specifications:
               type: string
               description: "A JSON string representing key-value technical specifications."
               example: "{\"color\": \"blue\"}"
@@ -1483,7 +1491,7 @@ components:
             energyLabel:
               type: string
               nullable: true
-            specifications: # Added for consistency
+            specifications:
               type: string
               description: "A JSON string representing key-value technical specifications."
               nullable: true
@@ -1500,7 +1508,7 @@ components:
               type: string
               nullable: true
         compliance:
-          type: object # Allow partial updates to compliance substructures
+          type: object 
           nullable: true
           properties:
             eprel:
@@ -1520,7 +1528,6 @@ components:
                   type: string
                   format: date-time
                   nullable: true
-            # Add other compliance substructures as needed
         ebsiVerification:
           type: object
           nullable: true
@@ -1539,19 +1546,11 @@ components:
             message:
               type: string
               nullable: true
-        documents: # Allow updating documents via PUT
+        documents:
           type: array
           nullable: true
           items:
             $ref: '#/components/schemas/DocumentReference'
-        # Add other top-level updatable fields from DigitalProductPassport schema here
-        # e.g., lifecycleEvents, certifications, supplyChainLinks (as arrays)
-        # Example:
-        # lifecycleEvents:
-        #   type: array
-        #   items:
-        #     $ref: '#/components/schemas/LifecycleEvent'
-        #   nullable: true
 security:
   - ApiKeyAuth: []
 components:
@@ -1566,3 +1565,4 @@ components:
     
 
     
+

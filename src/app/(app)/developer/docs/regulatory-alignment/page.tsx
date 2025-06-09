@@ -3,23 +3,16 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scale, Info, Settings, ArrowLeft } from "lucide-react";
+import { Scale, Settings } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function RegulatoryAlignmentPage() {
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <Scale className="mr-3 h-7 w-7 text-primary" />
-          Regulatory Alignment (ESPR, EPREL, etc.)
-        </h1>
-        <Button variant="outline" asChild>
-            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
+    <DocsPageLayout
+      pageTitle="Regulatory Alignment (ESPR, EPREL, etc.)"
+      pageIcon={Scale}
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Overview of Regulatory Support</CardTitle>
@@ -76,10 +69,10 @@ export default function RegulatoryAlignmentPage() {
             </section>
         </CardContent>
       </Card>
-      
+
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center"><Info className="mr-2 h-5 w-5 text-primary"/>Staying Updated</CardTitle>
+          <CardTitle className="flex items-center"><Settings className="mr-2 h-5 w-5 text-primary"/>Staying Updated</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
@@ -87,6 +80,6 @@ export default function RegulatoryAlignmentPage() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </DocsPageLayout>
   );
 }

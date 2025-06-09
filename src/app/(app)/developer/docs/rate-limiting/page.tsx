@@ -3,9 +3,9 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Info, Clock, AlertTriangle, ArrowLeft } from "lucide-react";
+import { Clock, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function RateLimitingPage() {
   const http429Response = `{
@@ -13,22 +13,15 @@ export default function RateLimitingPage() {
     "code": "RATE_LIMIT_EXCEEDED",
     "httpStatus": 429,
     "message": "Too many requests. Please try again after some time. Limit: 100 requests per minute.",
-    "retryAfterSeconds": 60 
+    "retryAfterSeconds": 60
   }
 }`;
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <Clock className="mr-3 h-7 w-7 text-primary" />
-          API Rate Limiting & Usage
-        </h1>
-        <Button variant="outline" asChild>
-            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
+    <DocsPageLayout
+      pageTitle="API Rate Limiting & Usage"
+      pageIcon={Clock}
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Understanding Rate Limits</CardTitle>
@@ -40,7 +33,7 @@ export default function RateLimitingPage() {
           <p>
             Rate limiting helps prevent abuse and ensures that the API remains responsive for all users. Exceeding these limits will result in a <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">429 Too Many Requests</code> error response.
           </p>
-          
+
           <section>
             <h3 className="font-semibold text-lg mb-2">Conceptual Rate Limits</h3>
             <p className="text-sm text-muted-foreground mb-2">
@@ -139,7 +132,6 @@ export default function RateLimitingPage() {
           </Button>
         </CardContent>
       </Card>
-    </div>
+    </DocsPageLayout>
   );
 }
-

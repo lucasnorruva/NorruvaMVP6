@@ -3,34 +3,19 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Layers, Shield, RotateCcw, Users, CheckSquare, Search, DatabaseBackup, Link as LinkIconPath, ArrowLeft } from "lucide-react";
+import { Layers, Shield, RotateCcw, Users, CheckSquare, Search, DatabaseBackup, Link as LinkIconPath } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info } from "lucide-react";
+import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 
 export default function DataManagementBestPracticesPage() {
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <Layers className="mr-3 h-7 w-7 text-primary" />
-          Data Management Best Practices
-        </h1>
-        <Button variant="outline" asChild>
-            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Guidance Note</AlertTitle>
-        <AlertDescription>
-          This document provides guidance on best practices for managing Digital Product Passport (DPP) data. Effective data management is crucial for regulatory compliance, supply chain transparency, and building consumer trust.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+      pageTitle="Data Management Best Practices"
+      pageIcon={Layers}
+      alertTitle="Guidance Note"
+      alertDescription="This document provides guidance on best practices for managing Digital Product Passport (DPP) data. Effective data management is crucial for regulatory compliance, supply chain transparency, and building consumer trust."
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle>Introduction</CardTitle>
@@ -79,7 +64,7 @@ export default function DataManagementBestPracticesPage() {
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-start gap-4">
             <Shield className="h-6 w-6 text-red-600 mt-1 flex-shrink-0" />
             <div>
@@ -109,7 +94,7 @@ export default function DataManagementBestPracticesPage() {
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-start gap-4">
             <LinkIconPath className="h-6 w-6 text-indigo-600 mt-1 flex-shrink-0" />
             <div>
@@ -121,7 +106,7 @@ export default function DataManagementBestPracticesPage() {
           </div>
         </CardContent>
       </Card>
-      
+
       <Card className="shadow-lg">
         <CardHeader>
             <CardTitle>Future Considerations</CardTitle>
@@ -132,7 +117,6 @@ export default function DataManagementBestPracticesPage() {
             </p>
         </CardContent>
       </Card>
-    </div>
+    </DocsPageLayout>
   );
 }
-

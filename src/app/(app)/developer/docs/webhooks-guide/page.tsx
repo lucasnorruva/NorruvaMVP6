@@ -3,10 +3,9 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Info, Webhook, ArrowLeft, Settings, FileJson, ShieldCheck, ThumbsUp, RefreshCw, ListChecks } from "lucide-react";
+import { Webhook, Settings, FileJson, ShieldCheck, ThumbsUp, RefreshCw, ListChecks } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
+import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function WebhooksGuidePage() {
   const examplePayload = `{
@@ -26,28 +25,15 @@ export default function WebhooksGuidePage() {
   const exampleSignatureHeader = "X-Norruva-Signature: t=1678886400,v1=a1b2c3d4e5f6...";
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <Webhook className="mr-3 h-7 w-7 text-primary" />
-          Webhooks Guide (Conceptual)
-        </h1>
-        <Button variant="outline" asChild>
-            <Link href="/developer"><ArrowLeft className="mr-2 h-4 w-4" />Back to Developer Portal</Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Conceptual Documentation</AlertTitle>
-        <AlertDescription>
-          This guide outlines how webhooks could conceptually function within the Norruva DPP platform to provide real-time event notifications. Specific implementation details may vary.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+      pageTitle="Webhooks Guide (Conceptual)"
+      pageIcon={Webhook}
+      alertTitle="Conceptual Documentation"
+      alertDescription="This guide outlines how webhooks could conceptually function within the Norruva DPP platform to provide real-time event notifications. Specific implementation details may vary."
+    >
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="flex items-center"><Info className="mr-2 h-5 w-5 text-primary"/>Understanding Webhooks</CardTitle>
+          <CardTitle className="flex items-center"><Webhook className="mr-2 h-5 w-5 text-primary"/>Understanding Webhooks</CardTitle>
           <CardDescription>
             Webhooks are automated messages sent from apps when something happens. They have a message (payload) which is sent to a unique URL – your webhook endpoint.
           </CardDescription>
@@ -116,7 +102,7 @@ export default function WebhooksGuidePage() {
           </p>
         </CardContent>
       </Card>
-      
+
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center"><FileJson className="mr-2 h-5 w-5 text-primary"/>Payload Structure (Conceptual)</CardTitle>
@@ -207,7 +193,6 @@ export default function WebhooksGuidePage() {
           </p>
         </CardContent>
       </Card>
-    </div>
+    </DocsPageLayout>
   );
 }
-

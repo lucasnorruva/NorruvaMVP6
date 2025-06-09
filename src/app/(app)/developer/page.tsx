@@ -124,7 +124,7 @@ const generateMockCodeSnippet = (
     case "qrValidate": urlPath = "/qr/validate"; break;
     case "addLifecycleEvent": urlPath = `/dpp/${params.productId || '{productId}'}/lifecycle-events`; break;
     case "getComplianceSummary": urlPath = `/dpp/${params.productId || '{productId}'}/compliance-summary`; break;
-    case "verifyDpp": urlPath = `/dpp/verify/${params.productId || '{productId}'}`; break; 
+    case "verifyDpp": urlPath = `/dpp/verify/${params.productIdPath || '{productId}'}`; break; 
     case "getDppHistory": urlPath = `/dpp/history/${params.productId || '{productId}'}`; break;
     case "importDpps": urlPath = "/dpp/import"; break;
     case "getDppGraph": urlPath = `/dpp/graph/${params.productId || '{productId}'}`; break;
@@ -177,8 +177,14 @@ export default function DeveloperPortalPage() {
   const [webhooks, setWebhooks] = useState<WebhookEntry[]>(initialMockWebhooks);
   const [currentEnvironment, setCurrentEnvironment] = useState<string>("sandbox");
   const mockOrganizationName = "Acme Innovations";
-  const [lastStatusCheckTime, setLastStatusCheckTime] = useState(new Date().toLocaleTimeString());
+  const [lastStatusCheckTime, setLastStatusCheckTime] = useState<string | null>(null); // Initialize as null
   const [activeTopTab, setActiveTopTab] = useState("dashboard");
+
+  // Initialize lastStatusCheckTime on client-side
+  useEffect(() => {
+    setLastStatusCheckTime(new Date().toLocaleTimeString());
+  }, []);
+
 
   const [getProductId, setGetProductId] = useState<string>("DPP001");
   const [getProductResponse, setGetProductResponse] = useState<string | null>(null);
@@ -292,7 +298,7 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("qrValidate", "POST", qrValidateSnippetLang, {}, postQrValidateBody, setQrValidateCodeSnippet), [postQrValidateBody, qrValidateSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("addLifecycleEvent", "POST", addLifecycleEventSnippetLang, { productId: postLifecycleEventProductId }, postLifecycleEventBody, setAddLifecycleEventCodeSnippet), [postLifecycleEventProductId, postLifecycleEventBody, addLifecycleEventSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getComplianceSummary", "GET", getComplianceSummarySnippetLang, { productId: getComplianceProductId }, null, setGetComplianceSummaryCodeSnippet), [getComplianceProductId, getComplianceSummarySnippetLang, updateSnippet]);
-  useEffect(() => updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productId: postVerifyProductIdPath }, null, setVerifyDppCodeSnippet), [postVerifyProductIdPath, verifyDppSnippetLang, updateSnippet]); 
+  useEffect(() => updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productIdPath: postVerifyProductIdPath }, null, setVerifyDppCodeSnippet), [postVerifyProductIdPath, verifyDppSnippetLang, updateSnippet]); 
   useEffect(() => updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet), [getHistoryProductId, getDppHistorySnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("importDpps", "POST", importDppsSnippetLang, { fileType: postImportFileType }, JSON.stringify({ fileType: postImportFileType, data: "mock_base64_data" }), setImportDppsCodeSnippet), [postImportFileType, importDppsSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet), [getGraphProductId, getDppGraphSnippetLang, updateSnippet]);
@@ -421,7 +427,7 @@ export default function DeveloperPortalPage() {
   const handleMockPostLifecycleEvent = () => { updateSnippet("addLifecycleEvent", "POST", addLifecycleEventSnippetLang, { productId: postLifecycleEventProductId }, postLifecycleEventBody, setAddLifecycleEventCodeSnippet); makeApiCall(`/api/v1/dpp/${postLifecycleEventProductId}/lifecycle-events`, 'POST', postLifecycleEventBody, setIsPostLifecycleEventLoading, setPostLifecycleEventResponse); }
   const handleMockGetComplianceSummary = () => { updateSnippet("getComplianceSummary", "GET", getComplianceSummarySnippetLang, { productId: getComplianceProductId }, null, setGetComplianceSummaryCodeSnippet); makeApiCall(`/api/v1/dpp/${getComplianceProductId}/compliance-summary`, 'GET', null, setIsGetComplianceLoading, setGetComplianceResponse); }
   const handleMockPostQrValidate = () => { updateSnippet("qrValidate", "POST", qrValidateSnippetLang, {}, postQrValidateBody, setQrValidateCodeSnippet); makeApiCall('/api/v1/qr/validate', 'POST', postQrValidateBody, setIsPostQrValidateLoading, setPostQrValidateResponse); }
-  const handleMockPostVerify = () => { updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productId: postVerifyProductIdPath }, null, setVerifyDppCodeSnippet); makeApiCall(`/api/v1/dpp/verify/${postVerifyProductIdPath}`, 'POST', null, setIsPostVerifyLoading, setPostVerifyResponse); }
+  const handleMockPostVerify = () => { updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productIdPath: postVerifyProductIdPath }, null, setVerifyDppCodeSnippet); makeApiCall(`/api/v1/dpp/verify/${postVerifyProductIdPath}`, 'POST', null, setIsPostVerifyLoading, setPostVerifyResponse); }
   const handleMockGetHistory = () => { updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet); makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetDppHistoryResponse); }
   const handleMockPostImport = () => { const body = { fileType: postImportFileType, data: "mock_file_content_base64_encoded" }; updateSnippet("importDpps", "POST", importDppsSnippetLang, body, JSON.stringify(body), setImportDppsCodeSnippet); makeApiCall('/api/v1/dpp/import', 'POST', body, setIsPostImportLoading, setPostImportResponse); }
   const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetDppGraphResponse); }
@@ -574,42 +580,23 @@ export default function DeveloperPortalPage() {
         </TabsList>
 
         <TabsContent value="dashboard" className="mt-6 space-y-6">
-          <Card className="shadow-lg bg-card border-primary/20">
-            <CardHeader>
-              <CardTitle className="font-headline text-xl text-primary flex items-center"><Rocket className="mr-3 h-6 w-6" />Welcome to Norruva DPP API!</CardTitle>
-              <CardDescription>Start here to learn the basics, set up your environment, and make your first API call.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Button variant="default" asChild size="lg">
-                <Link href="/developer/guides/quick-start">
-                  Read Quick Start Guide
-                  <ExternalLinkIcon className="ml-2 h-4 w-4"/>
-                </Link>
-              </Button>
-              <p className="text-sm text-muted-foreground mt-3">
-                Our Quick Start Guide will walk you through authentication and basic DPP operations for the selected environment: <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge>.
-              </p>
-            </CardContent>
-          </Card>
-
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <ApiMetricsCard
-              currentEnvironment={currentEnvironment}
-              getUsageMetric={getUsageMetric}
-              overallApiStatus={overallSystemStatus}
-              onViewFullReportClick={() => setActiveTopTab("settings_usage")}
-            />
-            <PlatformNewsCard announcements={platformAnnouncements} />
-          </div>
-
-          <ServiceStatusCard
-            systemStatusData={systemStatusData}
-            overallSystemStatus={overallSystemStatus}
-            lastStatusCheckTime={lastStatusCheckTime}
-            onRefreshStatus={handleRefreshStatus}
-          />
-          <DataFlowKpisCard kpis={DataFlowKPIs} />
-          <QuickActionsCard actions={dashboardQuickActions} onTabChange={handleDashboardQuickActionTabChange} />
+             <ApiMetricsCard
+                currentEnvironment={currentEnvironment}
+                getUsageMetric={getUsageMetric}
+                overallApiStatus={overallSystemStatus}
+                onViewFullReportClick={() => handleDashboardQuickActionTabChange("settings_usage")}
+              />
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <PlatformNewsCard announcements={platformAnnouncements} />
+              <ServiceStatusCard
+                systemStatusData={systemStatusData}
+                overallSystemStatus={overallSystemStatus}
+                lastStatusCheckTime={lastStatusCheckTime || "Loading..."}
+                onRefreshStatus={handleRefreshStatus}
+              />
+            </div>
+            <DataFlowKpisCard kpis={DataFlowKPIs} />
+            <QuickActionsCard actions={dashboardQuickActions} onTabChange={handleDashboardQuickActionTabChange} />
         </TabsContent>
 
         <TabsContent value="api_keys" className="mt-6">
@@ -843,7 +830,7 @@ export default function DeveloperPortalPage() {
                         response={postVerifyResponse}
                         codeSnippet={verifyDppCodeSnippet}
                         snippetLanguage={verifyDppSnippetLang}
-                        onSnippetLanguageChange={(lang) => {setVerifyDppSnippetLang(lang); updateSnippet("verifyDpp", "POST", lang, {productId: postVerifyProductIdPath}, null, setVerifyDppCodeSnippet);}}
+                        onSnippetLanguageChange={(lang) => {setVerifyDppSnippetLang(lang); updateSnippet("verifyDpp", "POST", lang, {productIdPath: postVerifyProductIdPath}, null, setVerifyDppCodeSnippet);}}
                         codeSampleLanguages={codeSampleLanguages}
                     >
                         <div>
@@ -1162,5 +1149,7 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+
+    
 
     

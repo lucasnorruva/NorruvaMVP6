@@ -6,9 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import type { DashboardFiltersState } from "@/types/dpp";
-import { Filter, ListFilter, Search, Link as LinkIcon, SlidersHorizontal } from "lucide-react";
+import { Filter, ListFilter, Search, Link as LinkIcon, SlidersHorizontal, XCircle } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button"; // Added Button import
 
 interface DashboardFiltersComponentProps {
   filters: DashboardFiltersState;
@@ -16,6 +17,14 @@ interface DashboardFiltersComponentProps {
   availableRegulations: Array<{ value: string, label: string }>;
   availableCategories: string[];
 }
+
+const defaultFilters: DashboardFiltersState = {
+  status: "all",
+  regulation: "all",
+  category: "all",
+  searchQuery: "",
+  blockchainAnchored: "all",
+};
 
 export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps> = ({
   filters,
@@ -39,11 +48,15 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
 
   const activeFilterCount = [
     filters.searchQuery && filters.searchQuery.length > 0,
-    filters.status !== 'all',
-    filters.regulation !== 'all',
-    filters.category !== 'all',
-    filters.blockchainAnchored !== 'all',
+    filters.status !== defaultFilters.status,
+    filters.regulation !== defaultFilters.regulation,
+    filters.category !== defaultFilters.category,
+    filters.blockchainAnchored !== defaultFilters.blockchainAnchored,
   ].filter(Boolean).length;
+
+  const handleClearFilters = () => {
+    onFiltersChange(defaultFilters);
+  };
 
   return (
     <Card className="shadow-md">
@@ -166,6 +179,13 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
                   </Select>
                 </div>
               </div>
+              {activeFilterCount > 0 && (
+                <div className="p-4 pt-0 text-right">
+                  <Button variant="outline" size="sm" onClick={handleClearFilters}>
+                    <XCircle className="mr-2 h-4 w-4" /> Clear All Filters
+                  </Button>
+                </div>
+              )}
             </AccordionContent>
           </AccordionItem>
         </Accordion>

@@ -238,6 +238,7 @@ export default function DeveloperPortalPage() {
 
   const [mockDppGeneratorProductName, setMockDppGeneratorProductName] = useState("");
   const [mockDppGeneratorCategory, setMockDppGeneratorCategory] = useState("");
+  const [mockDppGeneratorGtin, setMockDppGeneratorGtin] = useState(""); // New state for GTIN
   const [generatedMockDppJson, setGeneratedMockDppJson] = useState<string | null>(null);
   const [isGeneratingMockDpp, setIsGeneratingMockDpp] = useState(false);
 
@@ -430,25 +431,50 @@ export default function DeveloperPortalPage() {
     setIsGeneratingMockDpp(true);
     setGeneratedMockDppJson(null);
     await new Promise(resolve => setTimeout(resolve, 700));
+    
+    const randomDigits = (n: number) => Math.random().toString().slice(2, 2 + n);
+    const gtinValue = mockDppGeneratorGtin || `0${randomDigits(12)}`;
+    const modelNumValue = `MOCK-${randomDigits(3)}-${randomDigits(2)}`;
+
     const mockDpp = {
       id: `MOCK_DPP_${Date.now().toString().slice(-5)}`,
       productName: mockDppGeneratorProductName || "Mock Product Alpha",
       category: mockDppGeneratorCategory || "Electronics",
+      gtin: gtinValue,
+      modelNumber: modelNumValue,
       manufacturer: { name: "MockGen Inc." },
       metadata: {
-        status: "draft",
+        created_at: new Date().toISOString(),
         last_updated: new Date().toISOString(),
+        status: "draft",
+        dppStandardVersion: "CIRPASS v1.0 Draft",
       },
       productDetails: {
-        description: "This is a mock Digital Product Passport generated for testing and demonstration purposes.",
-        materials: [{ name: "Mock Material", percentage: 100, isRecycled: false }],
+        description: `This is a mock Digital Product Passport for ${mockDppGeneratorProductName || "Mock Product Alpha"}, a ${mockDppGeneratorCategory || "generic electronic device"}. Generated for testing and demonstration purposes.`,
+        materials: [{ name: "Recycled ABS Plastic", percentage: 60, isRecycled: true }, { name: "Aluminum Alloy", percentage: 30 }, {name: "Glass", percentage: 10}],
+        specifications: JSON.stringify({
+          "Color": "Space Gray",
+          "Dimensions (mm)": "150 x 75 x 8",
+          "Weight (g)": 180,
+          "Connectivity": ["Bluetooth 5.2", "Wi-Fi 6", "NFC"],
+          "Power Source": "Rechargeable Li-Po Battery"
+        }, null, 2),
+        customAttributes: [
+          { key: "Warranty", value: "2 Years International" },
+          { key: "Launch Date", value: `2024-Q${Math.floor(Math.random()*4)+1}` },
+          { key: "Eco-Certified", value: (Math.random() > 0.5).toString() }
+        ],
+        imageUrl: `https://placehold.co/600x400.png?text=${encodeURIComponent((mockDppGeneratorProductName || "Mock Product").substring(0,15))}`
       },
       compliance: {
-        eprel: { status: 'N/A', lastChecked: new Date().toISOString() }
+        eprel: { status: 'N/A', lastChecked: new Date().toISOString() },
+        battery_regulation: { status: 'not_applicable' }
       },
+      ebsiVerification: { status: 'pending_verification', lastChecked: new Date().toISOString() },
+      consumerScans: Math.floor(Math.random() * 100),
     };
     setGeneratedMockDppJson(JSON.stringify(mockDpp, null, 2));
-    toast({ title: "Mock DPP Generated", description: "A sample DPP JSON has been displayed." });
+    toast({ title: "Mock DPP Generated", description: "A sample DPP JSON has been displayed with more details." });
     setIsGeneratingMockDpp(false);
   };
 
@@ -1025,9 +1051,9 @@ export default function DeveloperPortalPage() {
               </div>
               <Separator />
               <div>
-                <h4 className="text-md font-semibold mb-2 flex items-center"><FileTextIcon className="mr-2 h-5 w-5 text-accent"/>Mock DPP Generator (Simplified)</h4>
+                <h4 className="text-md font-semibold mb-2 flex items-center"><FileTextIcon className="mr-2 h-5 w-5 text-accent"/>Mock DPP Generator (Enhanced)</h4>
                 <div className="space-y-3 p-3 border rounded-md bg-muted/30">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
                     <div>
                       <Label htmlFor="devToolsMockDppName" className="text-xs">Product Name (Optional)</Label>
                       <Input id="devToolsMockDppName" value={mockDppGeneratorProductName} onChange={(e) => setMockDppGeneratorProductName(e.target.value)} placeholder="e.g., Test Widget" className="h-8 text-xs"/>
@@ -1035,6 +1061,10 @@ export default function DeveloperPortalPage() {
                     <div>
                       <Label htmlFor="devToolsMockDppCategory" className="text-xs">Category (Optional)</Label>
                       <Input id="devToolsMockDppCategory" value={mockDppGeneratorCategory} onChange={(e) => setMockDppGeneratorCategory(e.target.value)} placeholder="e.g., Gadgets" className="h-8 text-xs"/>
+                    </div>
+                    <div>
+                      <Label htmlFor="devToolsMockDppGtin" className="text-xs">GTIN (Optional)</Label>
+                      <Input id="devToolsMockDppGtin" value={mockDppGeneratorGtin} onChange={(e) => setMockDppGeneratorGtin(e.target.value)} placeholder="e.g., 0123456789012" className="h-8 text-xs"/>
                     </div>
                   </div>
                   <Button size="sm" onClick={handleGenerateMockDpp} disabled={isGeneratingMockDpp} variant="secondary">
@@ -1044,7 +1074,7 @@ export default function DeveloperPortalPage() {
                   {generatedMockDppJson && (
                     <div className="mt-3">
                       <Label className="text-xs">Generated Mock DPP:</Label>
-                      <Textarea value={generatedMockDppJson} readOnly rows={6} className="font-mono text-xs bg-background"/>
+                      <Textarea value={generatedMockDppJson} readOnly rows={10} className="font-mono text-xs bg-background"/>
                     </div>
                   )}
                 </div>

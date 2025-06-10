@@ -2,7 +2,8 @@
 "use client"; // Add this because usePathname is a client hook
 import type { ReactNode } from 'react';
 import { usePathname } from 'next/navigation'; // Import usePathname
-import { SidebarProvider, Sidebar, SidebarInset } from "@/components/ui/sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar/SidebarProvider";
+import { Sidebar, SidebarInset } from "@/components/ui/sidebar/Sidebar";
 import AppHeader from "@/components/layout/AppHeader";
 import AppSidebarContent from "@/components/layout/AppSidebarContent";
 // Removed RoleProvider import as it's provided by the root layout

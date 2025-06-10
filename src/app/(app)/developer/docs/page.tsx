@@ -49,7 +49,7 @@ export default function DeveloperDocumentationHubPage() {
             <BookText className="mr-3 h-6 w-6 text-primary" /> API Documentation & Guides
           </CardTitle>
           <CardDescription>
-            Explore detailed documentation, integration guides, and best practices for building with Norruva DPP APIs.
+            Your central resource for detailed documentation, integration guides, and best practices for leveraging the Norruva DPP APIs.
           </CardDescription>
         </CardHeader>
         <CardContent className="grid md:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-8">

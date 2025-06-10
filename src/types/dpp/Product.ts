@@ -1,36 +1,11 @@
+// --- File: Product.ts ---
+// Description: Product related type definitions and mock data.
 
-// --- File: dpp.ts ---
-// Description: TypeScript type definitions for Digital Product Passports and related entities.
-import type { LucideIcon } from 'lucide-react';
+import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight } from './Lifecycle';
+import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification } from './Compliance';
 
-// Local storage keys
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
-
-
-// Interface for a single lifecycle event
-export interface LifecycleEvent {
-  id: string;
-  type: string;
-  timestamp: string;
-  location?: string;
-  responsibleParty?: string;
-  data?: Record<string, any>;
-  transactionHash?: string;
-  vcId?: string;
-}
-
-export interface Certification {
-  id: string;
-  name: string;
-  issuer: string;
-  issueDate: string;
-  expiryDate?: string;
-  vcId?: string;
-  documentUrl?: string;
-  standard?: string;
-  transactionHash?: string;
-}
 
 export interface TraceabilityInfo {
   batchId?: string;
@@ -55,13 +30,6 @@ export interface VerifiableCredentialReference {
   verificationMethod?: string;
 }
 
-export interface EbsiVerificationDetails {
-  status: 'verified' | 'pending_verification' | 'not_verified' | 'error';
-  verificationId?: string;
-  lastChecked: string;
-  message?: string;
-}
-
 export interface ProductSupplyChainLink {
   supplierId: string;
   suppliedItem: string;
@@ -78,14 +46,6 @@ export interface DocumentReference {
   url: string;
   type: string;
   addedTimestamp: string;
-}
-
-export interface HistoryEntry {
-  timestamp: string;
-  actionType: string;
-  details?: string;
-  changedBy: string;
-  version?: number;
 }
 
 export interface DigitalProductPassport {
@@ -154,7 +114,7 @@ export interface DigitalProductPassport {
       batteryPassportId?: string;
       carbonFootprint?: { value: number; unit: string; calculationMethod?: string; vcId?: string };
       recycledContent?: Array<{ material: string; percentage: number; vcId?: string }>;
-      stateOfHealth?: {value: number; unit: string; measurementDate: string; vcId?: string};
+      stateOfHealth?: { value: number; unit: string; measurementDate: string; vcId?: string };
       vcId?: string;
     };
   };
@@ -183,7 +143,179 @@ export interface SortConfig {
   direction: 'ascending' | 'descending' | null;
 }
 
+export interface SimpleProductDetail {
+  id: string;
+  productName: string;
+  category: string;
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged';
+  manufacturer?: string;
+  gtin?: string;
+  modelNumber?: string;
+  description?: string;
+  imageUrl?: string;
+  imageHint?: string;
+  keySustainabilityPoints?: string[];
+  keyCompliancePoints?: string[];
+  specifications?: string; // JSON string
+  customAttributes?: CustomAttribute[];
+  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
+  energyLabelRating?: string;
+  repairability?: { score: number; scale: number; detailsUrl?: string };
+  recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
+  supplyChainLinks?: ProductSupplyChainLink[];
+  complianceSummary?: ProductComplianceSummary;
+  lifecycleEvents?: SimpleLifecycleEvent[];
+  certifications?: SimpleCertification[];
+  documents?: DocumentReference[];
+}
 
+export interface StoredUserProduct {
+  id: string;
+  productName?: string;
+  gtin?: string;
+  productDescription?: string;
+  manufacturer?: string;
+  modelNumber?: string;
+  materials?: string;
+  sustainabilityClaims?: string;
+  specifications?: string; // JSON string
+  energyLabel?: string;
+  productCategory?: string;
+  imageUrl?: string;
+  imageHint?: string;
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  batteryChemistry?: string;
+  stateOfHealth?: number | null;
+  carbonFootprintManufacturing?: number | null;
+  recycledContentPercentage?: number | null;
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string;
+  compliance: string;
+  lastUpdated: string;
+  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
+  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
+  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
+  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+  batteryChemistryOrigin?: 'AI_EXTRACTED' | 'manual';
+  stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
+  carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
+  recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
+  supplyChainLinks?: ProductSupplyChainLink[];
+  lifecycleEvents?: SimpleLifecycleEvent[];
+  complianceSummary?: ProductComplianceSummary;
+  certifications?: SimpleCertification[];
+  documents?: DocumentReference[];
+  customAttributesJsonString?: string;
+}
+
+export interface RichMockProduct {
+  id: string;
+  productId: string;
+  productName: string;
+  category?: string;
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged';
+  compliance: string;
+  lastUpdated: string;
+  gtin?: string;
+  manufacturer?: string;
+  modelNumber?: string;
+  description?: string;
+  imageUrl?: string;
+  imageHint?: string;
+  materials?: string;
+  sustainabilityClaims?: string;
+  energyLabel?: string;
+  specifications?: string; // JSON string for technical specifications
+  lifecycleEvents?: SimpleLifecycleEvent[];
+  complianceSummary?: ProductComplianceSummary;
+  batteryChemistry?: string;
+  stateOfHealth?: number | null;
+  carbonFootprintManufacturing?: number | null;
+  recycledContentPercentage?: number | null;
+  ebsiVerification?: EbsiVerificationDetails;
+  certifications?: Certification[];
+  documents?: DocumentReference[];
+  supplyChainLinks?: ProductSupplyChainLink[];
+  customAttributes?: CustomAttribute[];
+  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
+}
+
+export interface PublicProductInfo {
+  passportId: string;
+  productName: string;
+  tagline: string;
+  imageUrl: string;
+  imageHint?: string;
+  productStory: string;
+  sustainabilityHighlights: Array<{ iconName?: LifecycleHighlight['iconName']; text: string }>;
+  manufacturerName: string;
+  manufacturerWebsite?: string;
+  brandLogoUrl?: string;
+  learnMoreLink?: string;
+  complianceSummary: string;
+  category: string;
+  modelNumber: string;
+  anchorTransactionHash?: string;
+  blockchainPlatform?: string;
+  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error';
+  ebsiVerificationId?: string;
+  lifecycleHighlights?: LifecycleHighlight[];
+  certifications?: PublicCertification[];
+  customAttributes?: CustomAttribute[];
+  documents?: DocumentReference[];
+}
+
+export interface Supplier {
+  id: string;
+  name: string;
+  contactPerson?: string;
+  email?: string;
+  location?: string;
+  materialsSupplied: string;
+  status: 'Active' | 'Inactive' | 'Pending Review';
+  lastUpdated: string;
+}
+
+export interface DisplayableProduct {
+  id: string;
+  productId?: string;
+  productName?: string;
+  category?: string;
+  productCategory?: string;
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string;
+  compliance: string;
+  lastUpdated: string;
+  gtin?: string;
+  manufacturer?: string;
+  modelNumber?: string;
+  description?: string;
+  productDescription?: string;
+  imageUrl?: string;
+  imageHint?: string;
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  materials?: string;
+  sustainabilityClaims?: string;
+  energyLabel?: string;
+  specifications?: string; // JSON string for display & form consistency
+  lifecycleEvents?: SimpleLifecycleEvent[];
+  complianceSummary?: ProductComplianceSummary;
+  batteryChemistry?: string;
+  stateOfHealth?: number | null;
+  carbonFootprintManufacturing?: number | null;
+  recycledContentPercentage?: number | null;
+  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A';
+  supplyChainLinks?: ProductSupplyChainLink[];
+  certifications?: SimpleCertification[];
+  documents?: DocumentReference[];
+  customAttributes?: CustomAttribute[];
+  customAttributesJsonString?: string;
+  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
+}
+
+// --- Mock data ---
 export const MOCK_DPPS: DigitalProductPassport[] = [
   {
     id: "DPP001",
@@ -345,163 +477,6 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     supplyChainLinks: []
   },
 ];
-
-// Type for individual compliance regulation details
-export interface ComplianceDetailItem {
-  regulationName: string;
-  status: 'Compliant' | 'Non-Compliant' | 'Pending' | 'Not Applicable' | 'In Progress' | 'Data Incomplete' | string; // string for flexibility
-  detailsUrl?: string;
-  verificationId?: string;
-  lastChecked: string; // ISO Date string
-  notes?: string;
-}
-
-// Updated structure for compliance summary within SimpleProductDetail
-export interface ProductComplianceSummary {
-  overallStatus: 'Compliant' | 'Non-Compliant' | 'Pending Review' | 'N/A' | 'Data Incomplete' | 'Flagged' | string;
-  eprel?: {
-    id?: string;
-    status: string;
-    url?: string;
-    lastChecked: string;
-  };
-  ebsi?: {
-    status: 'Verified' | 'Pending' | 'Not Verified' | 'Error' | 'N/A' | string;
-    verificationId?: string;
-    transactionUrl?: string;
-    lastChecked: string;
-  };
-  specificRegulations?: ComplianceDetailItem[];
-}
-
-// Interface for a simplified lifecycle event for the detail page
-export interface SimpleLifecycleEvent {
-  id: string;
-  eventName: string;
-  date: string; // ISO Date string
-  location?: string;
-  notes?: string;
-  status: 'Completed' | 'In Progress' | 'Upcoming' | 'Delayed' | 'Cancelled';
-  iconName?: keyof typeof import('lucide-react');
-  keyDocuments?: { name: string; type: 'PDF' | 'Link'; url: string }[];
-}
-
-export interface SimpleCertification {
-  name: string;
-  authority: string;
-  standard?: string;
-  issueDate: string;
-  expiryDate?: string;
-  documentUrl?: string;
-  isVerified?: boolean;
-  vcId?: string;
-  transactionHash?: string;
-}
-
-
-export interface SimpleProductDetail {
-  id: string;
-  productName: string;
-  category: string;
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged';
-  manufacturer?: string;
-  gtin?: string;
-  modelNumber?: string;
-  description?: string;
-  imageUrl?: string;
-  imageHint?: string;
-  keySustainabilityPoints?: string[];
-  keyCompliancePoints?: string[];
-  specifications?: string; // Changed to string to hold JSON string
-  customAttributes?: CustomAttribute[];
-  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
-  energyLabelRating?: string;
-  repairability?: { score: number; scale: number; detailsUrl?: string };
-  recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
-  supplyChainLinks?: ProductSupplyChainLink[];
-  complianceSummary?: ProductComplianceSummary;
-  lifecycleEvents?: SimpleLifecycleEvent[];
-  certifications?: SimpleCertification[];
-  documents?: DocumentReference[];
-}
-
-// This type is used when storing user-created/edited products in localStorage.
-export interface StoredUserProduct {
-  id: string;
-  productName?: string;
-  gtin?: string;
-  productDescription?: string;
-  manufacturer?: string;
-  modelNumber?: string;
-  materials?: string;
-  sustainabilityClaims?: string;
-  specifications?: string; // JSON string
-  energyLabel?: string;
-  productCategory?: string;
-  imageUrl?: string;
-  imageHint?: string;
-  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  batteryChemistry?: string;
-  stateOfHealth?: number | null;
-  carbonFootprintManufacturing?: number | null;
-  recycledContentPercentage?: number | null;
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string; // Allow string for flexibility
-  compliance: string;
-  lastUpdated: string;
-  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
-  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
-  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
-  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
-  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
-  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
-  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
-  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
-  batteryChemistryOrigin?: 'AI_EXTRACTED' | 'manual';
-  stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
-  carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
-  recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
-  supplyChainLinks?: ProductSupplyChainLink[];
-  lifecycleEvents?: SimpleLifecycleEvent[];
-  complianceSummary?: ProductComplianceSummary;
-  certifications?: SimpleCertification[]; 
-  documents?: DocumentReference[];
-  customAttributesJsonString?: string; // Used to store CustomAttribute[] as JSON string
-}
-
-// Initial mock product data for /products page (more detailed than SimpleProductDetail)
-export interface RichMockProduct {
-  id: string;
-  productId: string;
-  productName: string;
-  category?: string;
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged';
-  compliance: string;
-  lastUpdated: string;
-  gtin?: string;
-  manufacturer?: string;
-  modelNumber?: string;
-  description?: string;
-  imageUrl?: string;
-  imageHint?: string;
-  materials?: string; // This is a simple string in RichMockProduct, maybe it should be array of objects?
-  sustainabilityClaims?: string;
-  energyLabel?: string;
-  specifications?: string; // JSON string for technical specifications
-  lifecycleEvents?: SimpleLifecycleEvent[];
-  complianceSummary?: ProductComplianceSummary;
-  batteryChemistry?: string;
-  stateOfHealth?: number | null;
-  carbonFootprintManufacturing?: number | null;
-  recycledContentPercentage?: number | null;
-  ebsiVerification?: EbsiVerificationDetails;
-  certifications?: Certification[]; 
-  documents?: DocumentReference[];
-  supplyChainLinks?: ProductSupplyChainLink[];
-  customAttributes?: CustomAttribute[]; // For consistency with DigitalProductPassport
-  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-}
-
-
 export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
   {
     id: "PROD001",
@@ -573,52 +548,6 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     ],
   }
 ];
-
-export type IconName = keyof typeof import('lucide-react');
-
-export interface LifecycleHighlight {
-  stage: string;
-  date: string;
-  details?: string;
-  isEbsiVerified?: boolean;
-  iconName?: IconName;
-}
-
-export interface PublicCertification {
-  name: string;
-  authority: string;
-  expiryDate?: string;
-  isVerified?: boolean;
-  link?: string;
-  standard?: string;
-  vcId?: string;
-  transactionHash?: string;
-}
-
-export interface PublicProductInfo {
-  passportId: string;
-  productName: string;
-  tagline: string;
-  imageUrl: string;
-  imageHint?: string;
-  productStory: string;
-  sustainabilityHighlights: Array<{ iconName?: IconName; text: string }>;
-  manufacturerName: string;
-  manufacturerWebsite?: string;
-  brandLogoUrl?: string;
-  learnMoreLink?: string;
-  complianceSummary: string;
-  category: string;
-  modelNumber: string;
-  anchorTransactionHash?: string;
-  blockchainPlatform?: string;
-  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error';
-  ebsiVerificationId?: string;
-  lifecycleHighlights?: LifecycleHighlight[];
-  certifications?: PublicCertification[];
-  customAttributes?: CustomAttribute[];
-  documents?: DocumentReference[];
-}
 
 export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
   "PROD001": {
@@ -734,60 +663,9 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
   }
 };
 
-// Supplier type for managing suppliers
-export interface Supplier {
-  id: string;
-  name: string;
-  contactPerson?: string;
-  email?: string;
-  location?: string;
-  materialsSupplied: string;
-  status: 'Active' | 'Inactive' | 'Pending Review';
-  lastUpdated: string;
-}
-
-
 export const MOCK_SUPPLIERS: Supplier[] = [
   { id: "SUP001", name: "GreenCompress Ltd.", contactPerson: "Sarah Miller", email: "sarah.miller@greencompress.com", location: "Stuttgart, Germany", materialsSupplied: "Eco-friendly compressors, Cooling units", status: "Active", lastUpdated: "2024-07-15T10:00:00Z" },
   { id: "SUP002", name: "RecycleSteel Corp.", contactPerson: "John Davis", email: "jdavis@recyclesteel.com", location: "Rotterdam, Netherlands", materialsSupplied: "Recycled steel panels, Stainless steel components", status: "Active", lastUpdated: "2024-06-20T14:30:00Z" },
   { id: "SUP003", name: "Organic Textiles Co.", contactPerson: "Aisha Khan", email: "akhan@organictextiles.com", location: "Coimbatore, India", materialsSupplied: "GOTS certified organic cotton yarn, Natural dyes", status: "Active", lastUpdated: "2024-07-01T09:00:00Z" },
   { id: "SUP004", name: "PolySolutions Inc.", contactPerson: "Mike Chen", email: "chen.m@polysolutions.com", location: "Shanghai, China", materialsSupplied: "Recycled PET pellets, Bio-polymers, LED Chips & Drivers", status: "Pending Review", lastUpdated: "2024-05-10T11:00:00Z" },
 ];
-
-// Unified type for products displayed in the product list page
-export interface DisplayableProduct {
-  id: string;
-  productId?: string;
-  productName?: string;
-  category?: string;
-  productCategory?: string;
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string;
-  compliance: string;
-  lastUpdated: string;
-  gtin?: string;
-  manufacturer?: string;
-  modelNumber?: string;
-  description?: string;
-  productDescription?: string;
-  imageUrl?: string;
-  imageHint?: string;
-  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual'; 
-  materials?: string;
-  sustainabilityClaims?: string;
-  energyLabel?: string;
-  specifications?: string; // Changed to string to hold JSON string for display & form consistency
-  lifecycleEvents?: SimpleLifecycleEvent[];
-  complianceSummary?: ProductComplianceSummary;
-  batteryChemistry?: string;
-  stateOfHealth?: number | null;
-  carbonFootprintManufacturing?: number | null;
-  recycledContentPercentage?: number | null;
-  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A'; 
-  supplyChainLinks?: ProductSupplyChainLink[];
-  certifications?: SimpleCertification[]; 
-  documents?: DocumentReference[];
-  customAttributes?: CustomAttribute[]; // For display on list if needed; form uses customAttributesJsonString
-  customAttributesJsonString?: string; // Stays as string for form consistency
-  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-}
-

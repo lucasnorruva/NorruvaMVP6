@@ -22,7 +22,7 @@ curl -X GET \\
       backLink="/developer/docs"
       backLinkText="Back to Docs Hub"
       alertTitle="Welcome Developer!"
-      alertDescription="This guide will walk you through the essential steps to start understanding and conceptually integrating with the Norruva Digital Product Passport (DPP) API."
+      alertDescription="This guide provides essential steps to quickly understand and begin conceptually integrating with the Norruva Digital Product Passport (DPP) API. Let's get you started!"
     >
       <Card className="shadow-lg">
         <CardHeader>

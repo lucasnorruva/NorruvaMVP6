@@ -9,7 +9,7 @@ export default function TestingValidationPage() {
       pageTitle="Testing and Validation (Conceptual)"
       pageIcon={TestTube2}
       alertTitle="Conceptual Documentation"
-      alertDescription="This document outlines conceptual testing strategies for the Norruva DPP platform. Actual testing would involve more detailed test cases and tools."
+      alertDescription="This document outlines conceptual testing strategies for the Norruva DPP platform. Specific test cases and tools would be more detailed in a live system."
     >
       <Card className="shadow-lg">
         <CardHeader>

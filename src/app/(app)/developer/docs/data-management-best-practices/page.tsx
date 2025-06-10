@@ -1,8 +1,9 @@
+
 // --- File: page.tsx (Data Management Best Practices Docs) ---
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Layers, Shield, RotateCcw, Users, CheckSquare, Search, DatabaseBackup, Link as LinkIconPath } from "lucide-react";
+import { Shield, RotateCcw, Users, CheckSquare, Search, DatabaseBackup, Link as LinkIconPath } from "lucide-react";
 import Link from "next/link";
 import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
@@ -11,7 +12,7 @@ export default function DataManagementBestPracticesPage() {
   return (
     <DocsPageLayout
       pageTitle="Data Management Best Practices"
-      pageIcon={Layers}
+      pageIcon="Layers"
       alertTitle="Guidance Note"
       alertDescription="Essential best practices for managing Digital Product Passport (DPP) data to ensure compliance, transparency, and trust."
     >

@@ -9,7 +9,7 @@ export default function DeploymentMonitoringPage() {
       pageTitle="Deployment & Monitoring (Conceptual)"
       pageIcon={Server}
       alertTitle="Conceptual Documentation"
-      alertDescription="This document outlines conceptual strategies for deploying and monitoring the Norruva DPP platform. Actual implementation would require detailed planning and infrastructure choices."
+      alertDescription="This document provides conceptual strategies for deploying and monitoring the Norruva DPP platform. Actual implementation will require detailed planning and specific infrastructure choices."
     >
       <Card className="shadow-lg">
         <CardHeader>

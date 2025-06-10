@@ -231,7 +231,7 @@ export default function BatteryRegulationPathwayPage() {
                     </RadioGroup>
                   </div>
                 </div>
-                 <p className="text-xs text-muted-foreground mt-1">Batteries shall not contain mercury >0.0005% or cadmium >0.002% by weight, or lead >0.01% by weight (unless specific exemptions apply).</p>
+                 <p className="text-xs text-muted-foreground mt-1">Batteries shall not contain mercury &gt;0.0005% or cadmium &gt;0.002% by weight, or lead &gt;0.01% by weight (unless specific exemptions apply).</p>
               </div>
               
               <div>

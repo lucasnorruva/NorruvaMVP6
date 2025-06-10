@@ -13,6 +13,7 @@ Welcome to the Norruva Digital Product Passport (DPP) concept application! This 
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Running the Development Server](#running-the-development-server)
+  - [Running Tests](#running-tests)
 - [Key Directory Structure](#key-directory-structure)
 - [Firebase Studio Context](#firebase-studio-context)
 
@@ -90,6 +91,11 @@ Links from other parts of the application, such as the "Products" listing page (
     # or
     yarn install
     ```
+3.  Copy the example environment file and configure the values:
+    ```bash
+    cp .env.example .env
+    # then edit .env and add your API keys and other settings
+    ```
 
 ### Running the Development Server
 
@@ -105,9 +111,19 @@ Links from other parts of the application, such as the "Products" listing page (
     ```bash
     npm run dev
     ```
-    This will start the Next.js application, usually on `http://localhost:9002` (as configured in `package.json`).
+This will start the Next.js application, usually on `http://localhost:9002` (as configured in `package.json`).
 
 Open `http://localhost:9002` in your browser to view the application.
+
+### Running Tests
+
+Run the unit tests with:
+
+```bash
+npm test
+```
+
+Use `npm run test:watch` during development to re-run tests on file changes.
 
 ## Key Directory Structure
 

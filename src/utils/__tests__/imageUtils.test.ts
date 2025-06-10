@@ -1,23 +1,22 @@
-import { describe, it, expect } from 'vitest';
 import { getAiHintForImage } from '../imageUtils';
 
 describe('getAiHintForImage', () => {
-  it('uses imageHint when provided', () => {
-    const result = getAiHintForImage({ imageHint: 'luxury leather handbag' });
-    expect(result).toBe('luxury leather');
+  it('returns the imageHint when provided', () => {
+    const result = getAiHintForImage({ imageHint: 'shiny phone' });
+    expect(result).toBe('shiny phone');
   });
 
-  it('falls back to productName', () => {
-    const result = getAiHintForImage({ productName: 'Blue Cotton Shirt' });
-    expect(result).toBe('blue cotton');
+  it('uses the product name as fallback', () => {
+    const result = getAiHintForImage({ productName: 'Eco-Friendly Water Bottle' });
+    expect(result).toBe('eco-friendly water');
   });
 
-  it('falls back to category', () => {
-    const result = getAiHintForImage({ category: 'Home Appliances' });
-    expect(result).toBe('home');
+  it('uses the category if nothing else is available', () => {
+    const result = getAiHintForImage({ category: 'Electronics' });
+    expect(result).toBe('electronics');
   });
 
-  it('defaults to generic phrase', () => {
+  it('returns a default phrase when no info exists', () => {
     const result = getAiHintForImage({});
     expect(result).toBe('product photo');
   });

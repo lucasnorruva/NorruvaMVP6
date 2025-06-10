@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -7,12 +8,12 @@ import { Users, Package, Settings, FileText, ShieldCheck, ListChecks, SlidersHor
 
 export const AdminQuickActions = () => {
   const quickActions = [
-    { label: "Manage Users", href: "/settings/users", icon: Users, description: "Add, edit, or remove platform users and manage their permissions." },
-    { label: "View All Products", href: "/products", icon: Package, description: "Oversee all product entries and Digital Product Passports (DPPs) across the platform." },
-    { label: "Platform Configuration", href: "/settings", icon: Settings, description: "Adjust global platform settings, integrations, and default behaviors." },
-    { label: "Compliance Copilot", href: "/copilot", icon: FileText, description: "Access AI assistant for regulation queries and compliance interpretations." },
-    { label: "System Health", href: "#", icon: ShieldCheck, description: "Monitor platform status, API health, and key performance indicators." },
-    { label: "Audit Logs", href: "/audit-log", icon: ListChecks, description: "Review comprehensive system and user activity logs for security and compliance." },
+    { label: "Manage Users", href: "/settings/users", icon: Users },
+    { label: "View All Products", href: "/products", icon: Package },
+    { label: "Platform Configuration", href: "/settings", icon: Settings },
+    { label: "Compliance Copilot", href: "/copilot", icon: FileText },
+    { label: "System Health", href: "#", icon: ShieldCheck }, // Mock link
+    { label: "Audit Logs", href: "/audit-log", icon: ListChecks },
   ];
   return (
     <Card className="shadow-lg">
@@ -31,7 +32,7 @@ export const AdminQuickActions = () => {
                 <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors flex-shrink-0" />
                 <div className="flex-1 min-w-0">
                   <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
-                  <p className="text-xs text-muted-foreground break-words">{action.description}</p>
+                  {/* Description paragraph removed */}
                 </div>
               </Button>
             </a>

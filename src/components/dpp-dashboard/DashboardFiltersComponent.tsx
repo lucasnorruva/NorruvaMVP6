@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import useDebounce from "@/hooks/useDebounce";
 import type { DashboardFiltersState } from "@/types/dpp";
 import { Filter, ListFilter, Search, Link as LinkIcon, SlidersHorizontal, XCircle } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -32,6 +34,17 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
   availableRegulations,
   availableCategories,
 }) => {
+  const [searchValue, setSearchValue] = useState(filters.searchQuery);
+  const debouncedSearch = useDebounce(searchValue, 300);
+
+  useEffect(() => {
+    setSearchValue(filters.searchQuery);
+  }, [filters.searchQuery]);
+
+  useEffect(() => {
+    onFiltersChange({ searchQuery: debouncedSearch });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
   const statusOptions = [
     { value: "all", label: "All Statuses" },
     { value: "draft", label: "Draft" },
@@ -90,8 +103,8 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
                     id="search-query"
                     type="text"
                     placeholder="Enter product name..."
-                    value={filters.searchQuery || ""}
-                    onChange={(e) => onFiltersChange({ searchQuery: e.target.value })}
+                    value={searchValue}
+                    onChange={(e) => setSearchValue(e.target.value)}
                     className="w-full"
                   />
                 </div>

@@ -58,6 +58,7 @@ As of the current version, the following key areas and features have been protot
     - Listing existing products.
     - Adding new products via manual entry or AI-assisted document extraction.
     - Viewing detailed product information on the individual product detail page.
+    - Debounced search filtering for smoother performance on large datasets.
 - **AI Compliance Co-Pilot:** An AI assistant to answer questions about EU DPP regulations.
 - **Compliance Pathways:** Step-by-step guidance for specific regulations (e.g., EU Battery Regulation).
 - **GDPR Management Page:** Mock interface for consent and data subject rights.
@@ -68,6 +69,12 @@ As of the current version, the following key areas and features have been protot
     - Linking suppliers to products (viewable on the product detail page's "Supply Chain" tab).
 - **Developer Portal:** Mock portal with API key management, interactive playground, and conceptual documentation.
 - **Settings Page:** Basic user profile, notifications, and organization settings.
+
+## Performance Considerations
+
+Search filtering inputs now use a debounced update to avoid unnecessary renders.
+For very large DPP lists, implementing server-side pagination is recommended and
+profiling should be done with realistic datasets.
 
 ## Product Detail Page
 

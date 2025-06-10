@@ -2,7 +2,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import Globe, { type GlobeMethods } from 'react-globe.gl';
+import dynamic from 'next/dynamic';
+import type { GlobeMethods } from 'react-globe.gl';
+
+const Globe = dynamic(() => import('react-globe.gl'), { ssr: false });
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -145,6 +148,7 @@ export default function DppGlobalTrackerPage() {
 
   return (
     <div className="relative h-[calc(100vh-4rem)] w-full overflow-hidden">
+      {Globe && (
       <Globe
         ref={globeEl}
         globeImageUrl="https://unpkg.com/three-globe/example/img/earth-night.jpg"
@@ -182,6 +186,7 @@ export default function DppGlobalTrackerPage() {
         width={typeof window !== 'undefined' ? window.innerWidth : 600}
         height={typeof window !== 'undefined' ? window.innerHeight - 64 : 400} // Adjust height if needed
       />
+      )}
 
       {selectedInfo.data && (
         <Card className="absolute top-4 right-4 w-80 max-w-sm z-10 shadow-2xl bg-card/80 backdrop-blur-lg rounded-lg">

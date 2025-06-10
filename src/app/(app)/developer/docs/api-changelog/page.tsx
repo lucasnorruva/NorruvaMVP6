@@ -71,7 +71,7 @@ export default function ApiChangelogPage() {
       pageTitle="API Changelog"
       pageIcon="History"
       alertTitle="Stay Updated"
-      alertDescription="This page lists updates, new features, improvements, and important changes to the Norruva Digital Product Passport API. Subscribe to our developer newsletter for major announcements."
+      alertDescription="This page logs updates, new features, improvements, and significant changes to the Norruva Digital Product Passport API. For major announcements, subscribe to our developer newsletter."
     >
       <Card className="shadow-lg">
         <CardHeader>
@@ -128,3 +128,4 @@ export default function ApiChangelogPage() {
     </DocsPageLayout>
   );
 }
+

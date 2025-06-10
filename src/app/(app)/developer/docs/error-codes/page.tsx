@@ -3,7 +3,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { AlertTriangle } from "lucide-react";
+// Removed: import { AlertTriangle } from "lucide-react";
 import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function ErrorCodesPage() {
@@ -56,7 +56,7 @@ export default function ErrorCodesPage() {
   return (
     <DocsPageLayout
       pageTitle="API Error Codes & Handling"
-      pageIcon={AlertTriangle}
+      pageIcon="AlertTriangle" // Changed from {AlertTriangle}
     >
       <Card className="shadow-lg">
         <CardHeader>
@@ -106,3 +106,4 @@ export default function ErrorCodesPage() {
     </DocsPageLayout>
   );
 }
+

@@ -3,18 +3,17 @@
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import ProductForm, { type ProductFormData } from "@/components/products/ProductForm";
+import type { ProductFormData } from "@/components/products/ProductForm";
 import { extractProductData } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
-import { AlertTriangle, CheckCircle2, Loader2, ScanLine, Info, Cpu, Edit, FileWarning, Compass, Wand2 } from "lucide-react";
+import { AlertTriangle, CheckCircle2, Info, Edit, Compass, Wand2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute } from "@/types/dpp";
 import { fileToDataUri } from '@/utils/fileUtils'; // Import the utility function
+import AiExtractionSection from "@/components/products/new/AiExtractionSection";
+import ProductDetailsSection from "@/components/products/new/ProductDetailsSection";
 
 export interface InitialProductFormData extends ProductFormData {
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -278,26 +277,13 @@ export default function AddNewProductPage() {
         </TabsList>
 
         <TabsContent value="manual" className="mt-6">
-           {(aiExtractionAppliedSuccessfully || isEditMode) && activeTab === 'manual' && (
-            <Alert className="mb-6 border-info bg-info/10 text-info-foreground shadow-sm">
-              <FileWarning className="h-5 w-5 text-info" />
-              <AlertTitle className="font-semibold text-info">
-                {isEditMode ? "Editing Product: Review AI-Suggested Fields" : "AI Data Ready for Review"}
-              </AlertTitle>
-              <AlertDescription>
-                {isEditMode
-                  ? "You are editing an existing product. Fields suggested by AI previously are marked with a CPU icon."
-                  : "Information extracted by AI has been pre-filled below. Please review each field carefully, complete any missing details, and make corrections as needed."}
-                <br/>Fields populated or suggested by AI are marked with a <Cpu className="inline h-4 w-4 align-middle" /> icon. Modifying these fields will change their origin to 'manual'.
-              </AlertDescription>
-            </Alert>
-          )}
-          <ProductForm
-            onSubmit={handleProductFormSubmit}
+          <ProductDetailsSection
+            isEditMode={isEditMode}
+            aiExtractionAppliedSuccessfully={aiExtractionAppliedSuccessfully}
+            initialData={currentProductDataForForm}
             isSubmitting={isSubmittingProduct}
-            initialData={currentProductDataForForm} 
-            isStandalonePage={true}
-            key={editProductId || 'new'} 
+            onSubmit={handleProductFormSubmit}
+            editProductId={editProductId}
           />
         </TabsContent>
 
@@ -311,48 +297,17 @@ export default function AddNewProductPage() {
               </AlertDescription>
             </Alert>
           ) : (
-            <Card className="shadow-lg">
-              <CardHeader>
-                <CardTitle className="font-headline flex items-center"><ScanLine className="mr-2 h-6 w-6 text-primary" />Upload Document for AI Extraction</CardTitle>
-                <CardDescription>
-                  Select a document file (PDF, DOCX, TXT, PNG, JPG). Max 10MB. AI will attempt to pre-fill the product form.
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid w-full max-w-sm items-center gap-2">
-                  <Label htmlFor="document-upload">Document File</Label>
-                  <Input id="document-upload" type="file" onChange={handleFileChange} className="file:text-primary file:font-medium" />
-                </div>
-                <div className="grid w-full max-w-sm items-center gap-2">
-                  <Label htmlFor="document-type">Document Type</Label>
-                  <Input id="document-type" value={documentType} onChange={(e) => setDocumentType(e.target.value)} placeholder="e.g., invoice, specification sheet" />
-                   <p className="text-xs text-muted-foreground mt-1">Examples: invoice, specification, battery_spec_sheet, bill_of_materials, technical_drawing.</p>
-                </div>
-
-                <Button onClick={handleExtractData} disabled={isLoadingAi || !file} variant="secondary">
-                  {isLoadingAi ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Cpu className="mr-2 h-4 w-4" /> )}
-                  {isLoadingAi ? "Extracting Data..." : "Extract Data with AI"}
-                </Button>
-
-                {error && (
-                  <Alert variant="destructive">
-                    <AlertTriangle className="h-4 w-4" />
-                    <AlertTitle>Error</AlertTitle>
-                    <AlertDescription>{error}</AlertDescription>
-                  </Alert>
-                )}
-
-                {!currentProductDataForForm.productName && !isLoadingAi && file && !aiExtractionAppliedSuccessfully && (
-                  <Card className="border-dashed border-2 border-muted bg-muted/30">
-                    <CardContent className="p-6 text-center text-muted-foreground">
-                      <ScanLine className="mx-auto h-10 w-10 mb-3" />
-                      <p>Click "Extract Data with AI" above to populate product information from the selected file and document type.</p>
-                      <p className="text-xs mt-1">You will then be taken to the "Manual Entry / Review" tab to review it.</p>
-                    </CardContent>
-                  </Card>
-                )}
-              </CardContent>
-            </Card>
+            <AiExtractionSection
+              file={file}
+              documentType={documentType}
+              isLoading={isLoadingAi}
+              error={error}
+              currentProductData={currentProductDataForForm}
+              aiExtractionAppliedSuccessfully={aiExtractionAppliedSuccessfully}
+              onFileChange={handleFileChange}
+              onDocumentTypeChange={setDocumentType}
+              onExtractData={handleExtractData}
+            />
           )}
         </TabsContent>
       </Tabs>

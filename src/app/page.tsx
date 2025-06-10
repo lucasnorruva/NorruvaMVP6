@@ -13,7 +13,7 @@ export default function HomePage() {
         Norruva Digital Product Passport
       </h1>
       <p className="text-xl md:text-2xl text-foreground/80 max-w-3xl mx-auto mb-10">
-        Securely manage your product data, ensure EU compliance, and leverage AI for streamlined operations.
+        Securely manage your product data, ensure EU compliance, and harness the power of AI for streamlined operations.
       </p>
       <div className="space-y-4 sm:space-y-0 sm:flex sm:space-x-6">
         <Link href="/dashboard" passHref>

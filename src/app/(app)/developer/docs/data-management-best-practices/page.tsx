@@ -13,7 +13,7 @@ export default function DataManagementBestPracticesPage() {
       pageTitle="Data Management Best Practices"
       pageIcon={Layers}
       alertTitle="Guidance Note"
-      alertDescription="This guide outlines best practices for managing Digital Product Passport (DPP) data, essential for compliance, transparency, and trust."
+      alertDescription="Essential best practices for managing Digital Product Passport (DPP) data to ensure compliance, transparency, and trust."
     >
       <Card className="shadow-lg">
         <CardHeader>
@@ -119,3 +119,4 @@ export default function DataManagementBestPracticesPage() {
     </DocsPageLayout>
   );
 }
+

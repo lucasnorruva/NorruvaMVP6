@@ -21,15 +21,10 @@ import {
   Users 
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
-import {
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-  SidebarHeader,
-  SidebarContent,
-  SidebarFooter,
-  useSidebar,
-} from "@/components/ui/sidebar";
+import { SidebarHeader, SidebarContent, SidebarFooter } from "@/components/ui/sidebar/Sidebar";
+import { SidebarMenu } from "@/components/ui/sidebar/SidebarMenu";
+import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar/SidebarItem";
+import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 

@@ -54,7 +54,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 fill // Use fill for AspectRatio
                 className="object-contain" // object-contain to ensure full image is visible
                 data-ai-hint={aiHint}
-                priority={!imageDisplayUrl.startsWith("data:")} // Avoid priority for Data URIs
               />
             </AspectRatio>
           </CardHeader>

@@ -86,7 +86,6 @@ export default function ProductImageFormSection({
                 fill
                 className="object-contain rounded"
                 data-ai-hint={imageHintForDataAttr}
-                priority={!currentImageUrl.startsWith("data:")}
               />
             </AspectRatio>
             {(form.getValues("imageUrlOrigin") === 'AI_EXTRACTED' || (initialImageUrlOrigin === 'AI_EXTRACTED' && form.getValues("imageUrl") === initialImageUrl)) && (

@@ -151,7 +151,7 @@ async function processEvent(event) {
   return (
     <DocsPageLayout
       pageTitle="Tutorial: Automating Updates with Webhooks (Conceptual)"
-      pageIcon={Webhook}
+      pageIcon="Webhook"
       backLink="/developer/docs"
       backLinkText="Back to Docs Hub"
       alertTitle="Conceptual Tutorial"

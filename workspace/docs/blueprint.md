@@ -15,7 +15,7 @@
 - Saturated Blue (#29ABE2) - Evokes trust, security, and technology. This color will be used for prominent UI elements like headers, buttons, and navigation menus.
 - Light Desaturated Blue (#E5F6FD) - Creates a clean, modern, and professional look for the platform.
 - Vibrant Teal (#008080) - Used for highlighting interactive elements, calls to action, and buttons, ensuring that they stand out from the primary color.
-- Space Grotesk (sans-serif) - A tech-forward, modern font for headlines to convey innovation and professionalism.
+- Inter is also used for headlines, providing consistency across the interface.
 - Inter (sans-serif) - A clean and readable font for body text, ensuring an intuitive and comfortable reading experience for users.
 - Minimalist Icons: Clear, intuitive, and consistent icons will represent various data types and actions (e.g., product lifecycle stages, energy labels).
 - Use modular layout with well-defined sections for each product category, ensuring that users can easily navigate through product data.

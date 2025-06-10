@@ -88,6 +88,8 @@ export default function DppGlobalTrackerPage() {
   const [selectedInfo, setSelectedInfo] = useState<SelectedInfo>({ type: null, data: null });
   const [globeReady, setGlobeReady] = useState(false);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
+  const [viewportWidth, setViewportWidth] = useState(600);
+  const [viewportHeight, setViewportHeight] = useState(400);
 
 
   useEffect(() => {
@@ -111,6 +113,18 @@ export default function DppGlobalTrackerPage() {
       globeEl.current.pointOfView({ lat: 20, lng: 0, altitude: 3.0 }, 1500);
     }
   }, [globeReady]);
+
+  useEffect(() => {
+    const updateViewport = () => {
+      if (typeof window !== 'undefined') {
+        setViewportWidth(window.innerWidth);
+        setViewportHeight(window.innerHeight - 64);
+      }
+    };
+    updateViewport();
+    window.addEventListener('resize', updateViewport);
+    return () => window.removeEventListener('resize', updateViewport);
+  }, []);
 
   const handlePointClick = useCallback((point: object) => {
     const p = point as PointData;
@@ -183,8 +197,8 @@ export default function DppGlobalTrackerPage() {
         polygonStrokeColor={() => 'rgba(120,120,120,0.2)'}
         
         onGlobeReady={() => setTimeout(() => setGlobeReady(true), 200)} // Slight delay for full init
-        width={typeof window !== 'undefined' ? window.innerWidth : 600}
-        height={typeof window !== 'undefined' ? window.innerHeight - 64 : 400} // Adjust height if needed
+        width={viewportWidth}
+        height={viewportHeight} // Adjust height if needed
       />
       )}
 

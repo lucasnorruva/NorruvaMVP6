@@ -3,7 +3,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { History, CalendarDays } from "lucide-react";
+import { CalendarDays } from "lucide-react"; // Removed History from import
 import { Badge } from "@/components/ui/badge";
 import DocsPageLayout from '@/components/developer/DocsPageLayout'; // Import the new layout
 
@@ -69,7 +69,7 @@ export default function ApiChangelogPage() {
   return (
     <DocsPageLayout
       pageTitle="API Changelog"
-      pageIcon="History"
+      pageIcon="History" // Changed from {History}
       alertTitle="Stay Updated"
       alertDescription="This page logs updates, new features, improvements, and significant changes to the Norruva Digital Product Passport API. For major announcements, subscribe to our developer newsletter."
     >

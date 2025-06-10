@@ -1,4 +1,3 @@
-
 // --- File: page.tsx (CSRD Alignment Guide) ---
 "use client";
 
@@ -23,7 +22,7 @@ export default function CsrdAlignmentGuidePage() {
     {
       icon: BarChart3,
       title: "Double Materiality Assessment Support",
-      description: "Leverage aggregated DPP data to help identify and assess sustainability impacts, risks, and opportunities (IROs) related to your products, which is a core component of the CSRD's double materiality principle.",
+      description: "Leverage aggregated DPP data to help identify and assess sustainability impacts, risks, and opportunities (IROs) related to your products, a core component of the CSRD's double materiality principle.",
       details: [
         "Impact Materiality: DPPs can highlight products with high environmental footprints (e.g., high carbon emissions, use of critical raw materials).",
         "Financial Materiality: Product compliance data (or lack thereof) from DPPs can indicate potential financial risks (fines, market access restrictions) or opportunities (eco-labeled products).",
@@ -72,7 +71,7 @@ export default function CsrdAlignmentGuidePage() {
         <Info className="h-4 w-4" />
         <AlertTitle>Conceptual Guidance</AlertTitle>
         <AlertDescription>
-          This guide provides a high-level conceptual overview of how Digital Product Passports (DPPs) and the Norruva platform can support alignment with the Corporate Sustainability Reporting Directive (CSRD). It is not exhaustive and does not constitute legal or financial advice. Always consult with CSRD experts and refer to official ESRS documentation.
+          This guide provides a high-level overview of how Digital Product Passports (DPPs) and the Norruva platform can support CSRD alignment. It is not exhaustive and is not legal or financial advice. Always consult CSRD experts and official ESRS documentation.
         </AlertDescription>
       </Alert>
 

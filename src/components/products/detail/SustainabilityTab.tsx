@@ -48,7 +48,7 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
             <ul className="space-y-2 text-sm">
               {product.keySustainabilityPoints.map((point, index) => (
                 <li key={index} className="flex items-start">
-                  <CheckCircle className="h-4 w-4 mr-2 mt-0.5 text-green-500 flex-shrink-0" />
+                  <CheckCircle className="h-4 w-4 mr-2 mt-0.5 text-success flex-shrink-0" />
                   <span>{point}</span>
                 </li>
               ))}
@@ -88,7 +88,7 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center">
-            <Zap className="mr-2 h-5 w-5 text-yellow-500" /> Energy Efficiency
+            <Zap className="mr-2 h-5 w-5 text-warning" /> Energy Efficiency
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">

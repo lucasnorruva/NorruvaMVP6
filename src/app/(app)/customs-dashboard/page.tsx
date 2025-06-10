@@ -46,10 +46,10 @@ const MetricCardWidget: React.FC<{title: string, value: string | number, icon: R
 
   if (trendDirection === "up") {
     TrendIconComponent = ArrowUp;
-    trendColor = "text-green-500";
+    trendColor = "text-success";
   } else if (trendDirection === "down") {
     TrendIconComponent = ArrowDown;
-    trendColor = "text-red-500";
+    trendColor = "text-danger";
   }
 
   return (

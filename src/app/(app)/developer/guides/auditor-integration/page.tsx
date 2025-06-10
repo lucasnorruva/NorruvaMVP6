@@ -67,7 +67,7 @@ export default function AuditorIntegrationPage() {
       backLink="/developer/docs"
       backLinkText="Back to Docs Hub"
       alertTitle="Conceptual Guide"
-      alertDescription="This guide outlines conceptual integration points and workflows for auditors and verifiers interacting with the Norruva DPP platform. Specific features and API endpoints are illustrative."
+      alertDescription="This document conceptually outlines integration points and workflows for auditors and verifiers interacting with the Norruva DPP platform. Features and API endpoints are illustrative."
     >
       <Card className="shadow-lg">
         <CardHeader>
@@ -126,3 +126,4 @@ export default function AuditorIntegrationPage() {
     </DocsPageLayout>
   );
 }
+

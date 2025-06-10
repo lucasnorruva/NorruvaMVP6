@@ -15,7 +15,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
     // Render a simplified layout for the developer portal
     // RoleProvider is inherited from the root layout
     return (
-      <main className="flex-1 p-4 md:p-6 lg:p-8 bg-background text-foreground min-h-screen">
+      <main id="main-content" className="flex-1 p-4 md:p-6 lg:p-8 bg-background text-foreground min-h-screen">
         {children}
       </main>
     );
@@ -30,7 +30,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       </Sidebar>
       <SidebarInset>
         <AppHeader />
-        <main className="flex-1 p-4 md:p-6 lg:p-8">
+        <main id="main-content" className="flex-1 p-4 md:p-6 lg:p-8">
           {children}
         </main>
       </SidebarInset>

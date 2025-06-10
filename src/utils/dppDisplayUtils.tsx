@@ -46,11 +46,11 @@ export const getOverallComplianceDetails = (dpp: DigitalProductPassport): Compli
     return { text: "Non-Compliant", variant: "destructive", icon: iconElement, tooltipText: "One or more regulations are non-compliant." };
   }
   if (pendingCount > 0) {
-    const iconElement = <InfoIcon className="h-5 w-5 text-yellow-500" />;
+    const iconElement = <InfoIcon className="h-5 w-5 text-warning" />;
     return { text: "Pending", variant: "outline", icon: iconElement, tooltipText: "One or more regulations are pending." };
   }
   if (compliantCount === regulationsChecked.length && regulationsChecked.length > 0) {
-    const iconElement = <ShieldCheck className="h-5 w-5 text-green-500" />;
+    const iconElement = <ShieldCheck className="h-5 w-5 text-success" />;
     return { text: "Fully Compliant", variant: "default", icon: iconElement, tooltipText: "All tracked regulations compliant." };
   }
   const iconElementDefault = <ShieldQuestion className="h-5 w-5 text-muted-foreground" />;
@@ -64,13 +64,13 @@ export const getEbsiStatusDetails = (status?: EbsiVerificationDetails['status'])
   }
   switch (status) {
     case 'verified':
-      const verifiedIcon = <ShieldCheck className="h-4 w-4 text-green-500" />;
+      const verifiedIcon = <ShieldCheck className="h-4 w-4 text-success" />;
       return { text: "Verified", variant: "default", icon: verifiedIcon, tooltipText: "EBSI verification successful." };
     case 'pending_verification':
-      const pendingIcon = <InfoIcon className="h-4 w-4 text-yellow-500" />;
+      const pendingIcon = <InfoIcon className="h-4 w-4 text-warning" />;
       return { text: "Pending", variant: "outline", icon: pendingIcon, tooltipText: "EBSI verification pending." };
     case 'not_verified':
-      const notVerifiedIcon = <AlertCircle className="h-4 w-4 text-red-500" />;
+      const notVerifiedIcon = <AlertCircle className="h-4 w-4 text-danger" />;
       return { text: "Not Verified", variant: "destructive", icon: notVerifiedIcon, tooltipText: "EBSI verification failed." };
     case 'error':
       const errorIcon = <AlertTriangle className="h-4 w-4 text-red-700" />;
@@ -169,12 +169,12 @@ export const getStatusIcon = (status?: string): JSX.Element => {
     case 'verified':
     case 'synced successfully':
     case 'conformant': // Added from overall compliance logic
-      return <ShieldCheck className="h-5 w-5 text-green-500" />;
+      return <ShieldCheck className="h-5 w-5 text-success" />;
     case 'non-compliant':
     case 'non_conformant': // Added from overall compliance logic
     case 'error':
     case 'error during sync':
-      return <AlertTriangle className="h-5 w-5 text-red-500" />;
+      return <AlertTriangle className="h-5 w-5 text-danger" />;
     case 'pending':
     case 'pending review':
     case 'pending_review': // Ensure this is caught
@@ -184,7 +184,7 @@ export const getStatusIcon = (status?: string): JSX.Element => {
     case 'data incomplete':
     case 'data mismatch':
     case 'product not found in eprel':
-      return <InfoIcon className="h-5 w-5 text-yellow-500" />;
+      return <InfoIcon className="h-5 w-5 text-warning" />;
     case 'not applicable':
     case 'n/a':
     case 'not found':

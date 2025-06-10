@@ -67,11 +67,13 @@ export default function WebhooksManager({
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right space-x-1">
-                  <Button variant="ghost" size="icon" title="Edit Webhook" onClick={() => onEditWebhook(wh.id)}>
+                  <Button variant="ghost" size="icon" aria-label="Edit webhook" title="Edit Webhook" onClick={() => onEditWebhook(wh.id)}>
                     <Edit2 className="h-4 w-4" />
+                    <span className="sr-only">Edit webhook</span>
                   </Button>
-                  <Button variant="ghost" size="icon" title="Delete Webhook" onClick={() => onDeleteWebhook(wh.id)} className="text-destructive hover:text-destructive">
+                  <Button variant="ghost" size="icon" aria-label="Delete webhook" title="Delete Webhook" onClick={() => onDeleteWebhook(wh.id)} className="text-destructive hover:text-destructive">
                     <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Delete webhook</span>
                   </Button>
                 </TableCell>
               </TableRow>

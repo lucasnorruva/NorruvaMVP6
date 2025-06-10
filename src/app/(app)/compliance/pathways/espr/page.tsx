@@ -333,7 +333,7 @@ export default function EsprPathwayPage() {
                             title: "Mock ESPR Submission Successful!",
                             description: "Your ESPR Pathway data has been conceptually submitted. The wizard will now reset.",
                             duration: 7000,
-                            action: <CheckCircle className="text-green-500" />
+                            action: <CheckCircle className="text-success" />
                         });
                         setActiveStep(esprPathwaySteps[0].id);
                         // Reset form data if needed

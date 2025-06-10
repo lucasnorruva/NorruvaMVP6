@@ -4,7 +4,7 @@
 // --- File: page.tsx (Public Product Passport Viewer) ---
 // Description: Main page component for displaying the public view of a Digital Product Passport.
 
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -26,13 +26,11 @@ import { getAiHintForImage } from '@/utils/imageUtils'; // Import centralized ut
 
 // Removed manual iconMap
 
-type Props = {
-  params: { passportId: string }
-}
-
 const STORY_TRUNCATE_LENGTH = 250;
 
-export default function PublicPassportPage({ params }: Props) {
+export default function PublicPassportPage() {
+  const params = useParams();
+  const passportId = params.passportId as string;
   const [product, setProduct] = useState<PublicProductInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
@@ -40,7 +38,7 @@ export default function PublicPassportPage({ params }: Props) {
 
   useEffect(() => {
     // Simulate fetching product data
-    const fetchedProduct = MOCK_PUBLIC_PASSPORTS[params.passportId];
+    const fetchedProduct = MOCK_PUBLIC_PASSPORTS[passportId];
     if (fetchedProduct) {
       // Ensure customAttributes is always an array, even if undefined in mock
       setProduct({
@@ -49,7 +47,7 @@ export default function PublicPassportPage({ params }: Props) {
       });
     }
     setIsLoading(false);
-  }, [params.passportId]);
+  }, [passportId]);
 
   if (isLoading) {
     return (
@@ -107,7 +105,7 @@ export default function PublicPassportPage({ params }: Props) {
         </div>
       </header>
 
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <main id="main-content" className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="bg-card p-6 sm:p-8 rounded-xl shadow-xl">
           <div className="text-center mb-8">
             <h1 className="font-headline text-3xl md:text-4xl font-semibold text-primary mb-2">
@@ -267,7 +265,7 @@ export default function PublicPassportPage({ params }: Props) {
                           <div className="flex justify-between items-center">
                             <span className="font-medium">{cert.name}</span>
                             {cert.isVerified && (
-                                <ShieldCheck className="h-4 w-4 text-green-500" title="Verified Certification" />
+                                <ShieldCheck className="h-4 w-4 text-success" title="Verified Certification" />
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5">Authority: {cert.authority}</p>

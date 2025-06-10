@@ -54,7 +54,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 fill // Use fill for AspectRatio
                 className="object-contain" // object-contain to ensure full image is visible
                 data-ai-hint={aiHint}
-                priority={!imageDisplayUrl.startsWith("data:")} // Avoid priority for Data URIs
               />
             </AspectRatio>
           </CardHeader>
@@ -126,7 +125,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 <ul className="space-y-1.5 text-sm">
                   {product.keySustainabilityPoints.map((point, index) => (
                     <li key={index} className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500 flex-shrink-0" />
+                      <CheckCircle className="h-4 w-4 mr-2 text-success flex-shrink-0" />
                       {point}
                     </li>
                   ))}

@@ -80,13 +80,15 @@ export default function AppSidebarContent() {
       isActive = pathname.startsWith(href);
     }
 
-    return cn(
+    const className = cn(
       "w-full text-sm",
       isActive
         ? "bg-sidebar-primary text-sidebar-primary-foreground font-medium"
         : "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-normal text-sidebar-foreground/80",
       sidebarState === 'collapsed' && !isMobile ? "justify-center" : "justify-start"
     );
+
+    return { className, isActive };
   };
 
   const commonIconClass = cn("h-5 w-5", sidebarState === 'expanded' || isMobile ? "mr-3" : "mr-0");
@@ -102,43 +104,49 @@ export default function AppSidebarContent() {
       </SidebarHeader>
       <SidebarContent className="flex-1 py-2">
         <SidebarMenu className="px-2 space-y-1">
-          {navItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <Link href={item.href} passHref legacyBehavior>
-                <SidebarMenuButton
-                  className={commonButtonClass(item.href)}
-                  tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}
-                  asChild
-                >
-                  <a>
-                    <item.icon className={commonIconClass} />
-                    {(sidebarState === 'expanded' || isMobile) && item.label}
-                  </a>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-          ))}
+          {navItems.map((item) => {
+            const { className, isActive } = commonButtonClass(item.href);
+            return (
+              <SidebarMenuItem key={item.href}>
+                <Link href={item.href} passHref legacyBehavior>
+                  <SidebarMenuButton
+                    className={className}
+                    tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}
+                    asChild
+                  >
+                    <a aria-current={isActive ? 'page' : undefined}>
+                      <item.icon className={commonIconClass} />
+                      {(sidebarState === 'expanded' || isMobile) && item.label}
+                    </a>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarContent>
       <Separator className="bg-sidebar-border my-2" />
       <SidebarFooter className="p-2 border-t-0">
          <SidebarMenu className="px-2 space-y-1">
-           {secondaryNavItems.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <Link href={item.href} passHref legacyBehavior>
-                <SidebarMenuButton
-                  className={commonButtonClass(item.href)}
-                  tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}
-                  asChild
-                >
-                  <a>
-                    <item.icon className={commonIconClass} />
-                    {(sidebarState === 'expanded' || isMobile) && item.label}
-                  </a>
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-          ))}
+           {secondaryNavItems.map((item) => {
+            const { className, isActive } = commonButtonClass(item.href);
+            return (
+              <SidebarMenuItem key={item.href}>
+                <Link href={item.href} passHref legacyBehavior>
+                  <SidebarMenuButton
+                    className={className}
+                    tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}
+                    asChild
+                  >
+                    <a aria-current={isActive ? 'page' : undefined}>
+                      <item.icon className={commonIconClass} />
+                      {(sidebarState === 'expanded' || isMobile) && item.label}
+                    </a>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
       </SidebarFooter>
     </>

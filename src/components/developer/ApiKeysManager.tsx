@@ -84,24 +84,28 @@ export default function ApiKeysManager({
                   </Badge>
                 </TableCell>
                 <TableCell className="text-right space-x-2">
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    onClick={() => onCopyKey(apiKey.key)} 
-                    title="Copy Key" 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Copy API key"
+                    onClick={() => onCopyKey(apiKey.key)}
+                    title="Copy Key"
                     disabled={apiKey.status === 'Pending Approval' || apiKey.key.startsWith("N/A") || apiKey.status === 'Revoked'}
                   >
                     <Copy className="h-4 w-4" />
+                    <span className="sr-only">Copy API key</span>
                   </Button>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    title="Delete Key" 
-                    onClick={() => onDeleteApiKey(apiKey.id)} 
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Delete API key"
+                    title="Delete Key"
+                    onClick={() => onDeleteApiKey(apiKey.id)}
                     className="text-destructive hover:text-destructive"
                     disabled={apiKey.status === 'Revoked'} // Optionally disable delete for revoked keys
                   >
                     <Trash2 className="h-4 w-4" />
+                    <span className="sr-only">Delete API key</span>
                   </Button>
                 </TableCell>
               </TableRow>

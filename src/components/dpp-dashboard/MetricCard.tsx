@@ -27,10 +27,10 @@ export const MetricCard: React.FC<MetricCardProps> = ({
 
   if (trendDirection === "up") {
     TrendIcon = ArrowUpCircle;
-    trendColor = "text-green-500";
+    trendColor = "text-success";
   } else if (trendDirection === "down") {
     TrendIcon = ArrowDownCircle;
-    trendColor = "text-red-500";
+    trendColor = "text-danger";
   }
 
   return (

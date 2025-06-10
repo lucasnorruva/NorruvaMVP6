@@ -12,7 +12,7 @@ export default function DataPrivacyPage() {
       pageTitle="Data Privacy, Security & Compliance"
       pageIcon={VenetianMask}
       alertTitle="Conceptual Documentation"
-      alertDescription="This document outlines conceptual approaches to data privacy, security, and broader compliance within the Norruva DPP platform. Actual implementation details would require legal and technical review."
+      alertDescription="This document describes conceptual approaches to data privacy, security, and compliance within the Norruva DPP platform. Actual implementations would require thorough legal and technical reviews."
     >
       <Card className="shadow-lg">
         <CardHeader>
@@ -139,3 +139,4 @@ export default function DataPrivacyPage() {
     </DocsPageLayout>
   );
 }
+

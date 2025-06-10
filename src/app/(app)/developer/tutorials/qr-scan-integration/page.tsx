@@ -128,7 +128,7 @@ async function validateProductQr(qrIdentifier) {
   return (
     <DocsPageLayout
       pageTitle="Tutorial: Integrating DPP QR Scanning (Conceptual)"
-      pageIcon={QrCode}
+      pageIcon="QrCode"
       backLink="/developer/docs"
       backLinkText="Back to Docs Hub"
       alertTitle="Conceptual Tutorial"

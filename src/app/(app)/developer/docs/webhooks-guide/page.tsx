@@ -27,9 +27,9 @@ export default function WebhooksGuidePage() {
   return (
     <DocsPageLayout
       pageTitle="Webhooks Guide (Conceptual)"
-      pageIcon={Webhook}
+      pageIcon="Webhook" // Changed from {Webhook} to "Webhook"
       alertTitle="Conceptual Documentation"
-      alertDescription="This guide outlines how webhooks could conceptually function within the Norruva DPP platform to provide real-time event notifications. Specific implementation details may vary."
+      alertDescription="Conceptual guide on how webhooks could function for real-time event notifications in the Norruva DPP platform. Implementation details may vary." // Refined description
     >
       <Card className="shadow-lg">
         <CardHeader>
@@ -196,3 +196,4 @@ export default function WebhooksGuidePage() {
     </DocsPageLayout>
   );
 }
+

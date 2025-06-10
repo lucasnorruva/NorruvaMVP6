@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Building, Info, Users, FileText, Layers, CheckCircle, Rocket, HelpCircle, PlusCircle } from "lucide-react";
+import { Info, Users, FileText, Layers, CheckCircle, Rocket, HelpCircle, PlusCircle } from "lucide-react"; // Removed Building
 import DocsPageLayout from '@/components/developer/DocsPageLayout'; // Import the layout
 
 export default function ManufacturerOnboardingPage() {
@@ -62,7 +62,7 @@ export default function ManufacturerOnboardingPage() {
   return (
     <DocsPageLayout
       pageTitle="Manufacturer Onboarding Guide (Conceptual)"
-      pageIcon={Building}
+      pageIcon="Building" // Changed from {Building} to "Building"
       backLink="/developer/docs"
       backLinkText="Back to Docs Hub"
       alertTitle="Conceptual Guide"

@@ -63,7 +63,7 @@ async function validateProductQr(qrIdentifier) {
         <>
           <p className="text-sm mb-2">Choose a QR code scanning library suitable for your application's platform:</p>
           <ul className="list-disc list-inside space-y-1 text-xs text-muted-foreground">
-            <li><strong>Web Apps:</strong> Libraries like <code className="bg-muted px-1 rounded-sm">html5-qrcode-scanner</code> or <code className="bg-muted px-1 rounded-sm">react-qr-reader</code>.</li>
+            <li><strong>Web Apps:</strong> Libraries like <code className="bg-muted px-1 py-0.5 rounded-sm">html5-qrcode-scanner</code> or <code className="bg-muted px-1 py-0.5 rounded-sm">react-qr-reader</code>.</li>
             <li><strong>Mobile Apps (React Native):</strong> <code className="bg-muted px-1 rounded-sm">react-native-camera</code> or <code className="bg-muted px-1 rounded-sm">expo-camera</code> with barcode scanning capabilities.</li>
             <li><strong>Native Mobile (iOS/Android):</strong> Utilize built-in AVFoundation (iOS) or ML Kit Barcode Scanning (Android).</li>
           </ul>
@@ -132,7 +132,7 @@ async function validateProductQr(qrIdentifier) {
       backLink="/developer/docs"
       backLinkText="Back to Docs Hub"
       alertTitle="Conceptual Tutorial"
-      alertDescription="This tutorial outlines the steps for integrating QR scanning for DPPs. Code examples are illustrative and conceptual. You'll need to adapt them to your specific application stack."
+      alertDescription="This tutorial shows how to integrate QR scanning for DPPs. Code examples are illustrative and conceptual; adapt them for your specific application stack."
     >
       <div className="space-y-6">
         {steps.map((step, index) => (
@@ -152,3 +152,4 @@ async function validateProductQr(qrIdentifier) {
     </DocsPageLayout>
   );
 }
+

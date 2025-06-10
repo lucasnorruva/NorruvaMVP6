@@ -1,25 +1,26 @@
-import type { SVGProps } from 'react';
+import Image from 'next/image';
+import type { ComponentProps } from 'react';
+import { cn } from '@/lib/utils';
 
-export function Logo(props: SVGProps<SVGSVGElement>) {
+// Define props for the Logo component, extending NextImageProps but omitting src, alt, width, height
+interface LogoProps extends Omit<ComponentProps<typeof Image>, 'src' | 'alt' | 'width' | 'height'> {
+  // className is already part of ComponentProps via Omit
+}
+
+const LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/norruva.firebasestorage.app/o/Norruva%20Logo.png?alt=media&token=08d8ede9-1121-433b-bfa5-7ccb4497a09f";
+const LOGO_INTRINSIC_WIDTH = 1096; // Actual width of the logo image
+const LOGO_INTRINSIC_HEIGHT = 298; // Actual height of the logo image
+
+export function Logo({ className, ...props }: LogoProps) {
   return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      viewBox="0 0 180 40"
-      width="120"
-      height="40"
-      aria-label="Norruva Logo"
-      {...props}
-    >
-      <text
-        x="0"
-        y="30"
-        fontFamily="Space Grotesk, sans-serif"
-        fontSize="30"
-        fontWeight="bold"
-        fill="currentColor"
-      >
-        Norruva
-      </text>
-    </svg>
+    <Image
+      src={LOGO_URL}
+      alt="Norruva Logo"
+      width={LOGO_INTRINSIC_WIDTH}   // Provide intrinsic width for aspect ratio calculation
+      height={LOGO_INTRINSIC_HEIGHT} // Provide intrinsic height for aspect ratio calculation
+      className={cn(className)}      // Apply passed className for Tailwind sizing (e.g., h-8 w-auto)
+      priority                       // Logos are often LCP elements, consider priority loading
+      {...props}                     // Pass through any other valid Image props
+    />
   );
 }

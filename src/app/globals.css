@@ -3,7 +3,16 @@
 @tailwind utilities;
 
 body {
-  font-family: 'Inter', sans-serif; /* Updated default body font */
+  @apply font-body;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  @apply font-headline;
 }
 
 @layer base {
@@ -124,5 +133,16 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+@layer utilities {
+  .text-success {
+    color: hsl(var(--accent));
+  }
+  .text-warning {
+    color: hsl(var(--warning));
+  }
+  .text-danger {
+    color: hsl(var(--destructive));
   }
 }

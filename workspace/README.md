@@ -13,6 +13,7 @@ Welcome to the Norruva Digital Product Passport (DPP) concept application! This 
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Running the Development Server](#running-the-development-server)
+  - [Troubleshooting](#troubleshooting)
 - [Key Directory Structure](#key-directory-structure)
 - [Firebase Studio Context](#firebase-studio-context)
 
@@ -109,6 +110,12 @@ Links from other parts of the application, such as the "Products" listing page (
     This will start the Next.js application, usually on `http://localhost:9002` (as configured in `package.json`).
 
 Open `http://localhost:9002` in your browser to view the application.
+
+### Troubleshooting
+
+**401: The Workstation does not exist or your currently signed in account does not have access to it**
+
+Ensure your Google Cloud Workstation is running and that your account has the `workstations.workstations.use` permission (usually via the *Workstations User* role). Without this permission, the "View Public Passport" link cannot generate an access token.
 
 ## Key Directory Structure
 

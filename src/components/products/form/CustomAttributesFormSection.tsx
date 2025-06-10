@@ -107,15 +107,16 @@ export default function CustomAttributesFormSection({
                   <span className="font-medium text-sm text-primary">{attr.key}:</span>
                   <span className="text-sm text-foreground/90 ml-1.5">{attr.value}</span>
                 </div>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => internalHandleAddSuggestedAttribute(attr)} 
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => internalHandleAddSuggestedAttribute(attr)}
                   className="h-7 w-7 text-green-600 hover:text-green-700 hover:bg-green-500/10"
                   title={`Add attribute "${attr.key}"`}
                 >
                   <PlusCircle className="h-4.5 w-4.5" />
+                  <span className="sr-only">Add attribute {attr.key}</span>
                 </Button>
               </li>
             ))}
@@ -135,15 +136,16 @@ export default function CustomAttributesFormSection({
                   <span className="font-semibold text-primary">{attr.key}:</span>
                   <span className="text-foreground/90 ml-1.5">{attr.value}</span>
                 </div>
-                <Button 
-                  type="button" 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={() => handleRemoveCustomAttribute(attr.key)} 
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleRemoveCustomAttribute(attr.key)}
                   className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
                   title={`Remove ${attr.key}`}
                 >
                   <XCircle className="h-4.5 w-4.5" />
+                  <span className="sr-only">Remove attribute {attr.key}</span>
                 </Button>
               </li>
             ))}

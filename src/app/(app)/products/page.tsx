@@ -184,21 +184,20 @@ export default function ProductsPage() {
       }
     }
 
+    const getValue = (product: ProductWithCompleteness, key: SortableProductKeys) => {
+      if (key === 'category') {
+        return product.category || product.productCategory;
+      }
+      if (key === 'completenessScore') {
+        return product.completeness.score;
+      }
+      return product[key as keyof ProductWithCompleteness];
+    };
+
     if (sortConfig.key && sortConfig.direction) {
       tempProducts.sort((a, b) => {
-        let valA: any;
-        let valB: any;
-
-        if (sortConfig.key === 'category') {
-          valA = a.category || a.productCategory;
-          valB = b.category || b.productCategory;
-        } else if (sortConfig.key === 'completenessScore') {
-          valA = a.completeness.score;
-          valB = b.completeness.score;
-        } else {
-          valA = (a as any)[sortConfig.key!];
-          valB = (b as any)[sortConfig.key!];
-        }
+        let valA = getValue(a, sortConfig.key!);
+        let valB = getValue(b, sortConfig.key!);
 
         if (valA === undefined || valA === null) valA = (typeof valA === 'number') ? -Infinity : "";
         if (valB === undefined || valB === null) valB = (typeof valB === 'number') ? -Infinity : "";

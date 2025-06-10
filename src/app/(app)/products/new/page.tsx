@@ -166,7 +166,7 @@ export default function AddNewProductPage() {
         description: "Information has been extracted from your document. Please review and complete the details in the 'Manual Entry / Review' tab. Fields populated by AI are marked.",
         variant: "default",
         duration: 7000,
-        action: <CheckCircle2 className="text-green-500" />,
+        action: <CheckCircle2 className="text-success" />,
       });
       setActiveTab("manual");
     } catch (err) {
@@ -207,7 +207,7 @@ export default function AddNewProductPage() {
             ...productCoreData, 
           };
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
-          toast({ title: "Product Updated", description: `${productCoreData.productName} has been updated.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
+          toast({ title: "Product Updated", description: `${productCoreData.productName} has been updated.`, variant: "default", action: <CheckCircle2 className="text-success" /> });
           router.push(`/products/${editProductId}`);
         } else {
           throw new Error("Product not found for update.");
@@ -215,7 +215,7 @@ export default function AddNewProductPage() {
       } else {
         userProducts.push(productCoreData);
         localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
-        toast({ title: "Product Saved", description: `${productCoreData.productName} has been saved.`, variant: "default", action: <CheckCircle2 className="text-green-500" /> });
+        toast({ title: "Product Saved", description: `${productCoreData.productName} has been saved.`, variant: "default", action: <CheckCircle2 className="text-success" /> });
         router.push('/products');
       }
 

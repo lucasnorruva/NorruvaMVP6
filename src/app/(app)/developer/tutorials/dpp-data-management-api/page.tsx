@@ -4,7 +4,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { LayersIcon, Terminal, Settings, Workflow, ShieldCheck, Database, BarChart3, RefreshCw, AlertTriangle, KeyRound, Filter } from "lucide-react";
+import { Layers as LayersIcon, Terminal, Settings, Workflow, ShieldCheck, Database, BarChart3, RefreshCw, AlertTriangle, KeyRound, Filter } from "lucide-react";
 import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function DppDataManagementApiTutorialPage() {
@@ -91,7 +91,7 @@ export default function DppDataManagementApiTutorialPage() {
   return (
     <DocsPageLayout
       pageTitle="Tutorial: Best Practices for Managing DPP Data via API"
-      pageIcon={LayersIcon}
+      pageIcon="Layers"
       backLink="/developer/docs"
       backLinkText="Back to Docs Hub"
       alertTitle="Conceptual Tutorial"

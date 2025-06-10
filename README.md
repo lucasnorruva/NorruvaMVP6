@@ -14,6 +14,7 @@ Welcome to the Norruva Digital Product Passport (DPP) concept application! This 
   - [Installation](#installation)
   - [Running the Development Server](#running-the-development-server)
   - [Running Tests](#running-tests)
+  - [Troubleshooting](#troubleshooting)
 - [Key Directory Structure](#key-directory-structure)
 - [Firebase Studio Context](#firebase-studio-context)
 
@@ -123,7 +124,19 @@ Run the unit tests with:
 npm test
 ```
 
+
 Use `npm run test:watch` during development to re-run tests on file changes.
+
+### Troubleshooting
+
+**401: The Workstation does not exist or your currently signed in account does not have access to it**
+
+This error may appear when using the "View Public Passport" link in a Cloud Workstations environment. Verify that:
+
+1. The workstation `firebase-studio-1749131649534` (cluster `workstation-cluster-9`) exists and is running in project `510861787045`.
+2. Your Google account has the `workstations.workstations.use` IAM permission (e.g., via the *Workstations User* role) on that workstation.
+
+Without this permission Google Cloud cannot generate the access token required to open the application.
 
 ## Key Directory Structure
 

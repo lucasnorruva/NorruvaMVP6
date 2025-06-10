@@ -63,8 +63,9 @@ export default function SupplierList({ suppliers, onEditSupplier, onDeleteSuppli
               <TableCell className="text-right">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon">
+                    <Button variant="ghost" size="icon" aria-label="Supplier actions">
                       <MoreHorizontal className="h-4 w-4" />
+                      <span className="sr-only">Actions for {supplier.name}</span>
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">

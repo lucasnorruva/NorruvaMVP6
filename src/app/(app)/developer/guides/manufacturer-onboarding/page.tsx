@@ -66,7 +66,7 @@ export default function ManufacturerOnboardingPage() {
       backLink="/developer/docs"
       backLinkText="Back to Docs Hub"
       alertTitle="Conceptual Guide"
-      alertDescription="This guide outlines the conceptual steps for manufacturers to onboard onto the Norruva DPP platform. Specific features and workflows are for illustrative purposes."
+      alertDescription="This document conceptually outlines onboarding steps for manufacturers using the Norruva DPP platform. Features and workflows are illustrative."
     >
       <Card className="shadow-lg">
         <CardHeader>

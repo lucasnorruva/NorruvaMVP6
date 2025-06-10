@@ -107,7 +107,7 @@ export default function PublicPassportPage({ params }: Props) {
         </div>
       </header>
 
-      <main className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
+      <main id="main-content" className="flex-grow container mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
         <div className="bg-card p-6 sm:p-8 rounded-xl shadow-xl">
           <div className="text-center mb-8">
             <h1 className="font-headline text-3xl md:text-4xl font-semibold text-primary mb-2">

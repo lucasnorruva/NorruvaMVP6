@@ -267,7 +267,7 @@ export default function PublicPassportPage({ params }: Props) {
                           <div className="flex justify-between items-center">
                             <span className="font-medium">{cert.name}</span>
                             {cert.isVerified && (
-                                <ShieldCheck className="h-4 w-4 text-green-500" title="Verified Certification" />
+                                <ShieldCheck className="h-4 w-4 text-success" title="Verified Certification" />
                             )}
                           </div>
                           <p className="text-xs text-muted-foreground mt-0.5">Authority: {cert.authority}</p>

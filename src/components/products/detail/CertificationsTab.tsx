@@ -48,7 +48,7 @@ export default function CertificationsTab({ product }: CertificationsTabProps) {
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2">
               <h4 className="font-medium text-md text-foreground flex items-center">
                 {cert.isVerified ? (
-                  <ShieldCheck className="mr-2 h-5 w-5 text-green-500 flex-shrink-0" />
+                  <ShieldCheck className="mr-2 h-5 w-5 text-success flex-shrink-0" />
                 ) : (
                   <FileText className="mr-2 h-5 w-5 text-muted-foreground flex-shrink-0" />
                 )}

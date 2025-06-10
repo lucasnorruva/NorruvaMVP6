@@ -162,7 +162,7 @@ export default function SustainabilityPage() {
       <div className="grid md:grid-cols-2 gap-6">
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="font-headline flex items-center"><Zap className="mr-3 h-6 w-6 text-yellow-500" /> Energy Consumption</CardTitle>
+            <CardTitle className="font-headline flex items-center"><Zap className="mr-3 h-6 w-6 text-warning" /> Energy Consumption</CardTitle>
             <CardDescription>Overview of energy usage and efficiency metrics.</CardDescription>
           </CardHeader>
           <CardContent>
@@ -176,7 +176,7 @@ export default function SustainabilityPage() {
 
         <Card className="shadow-lg">
           <CardHeader>
-            <CardTitle className="font-headline flex items-center"><Leaf className="mr-3 h-6 w-6 text-green-500" /> Environmental Impact</CardTitle>
+            <CardTitle className="font-headline flex items-center"><Leaf className="mr-3 h-6 w-6 text-success" /> Environmental Impact</CardTitle>
             <CardDescription>Other key environmental impact metrics.</CardDescription>
           </CardHeader>
           <CardContent>

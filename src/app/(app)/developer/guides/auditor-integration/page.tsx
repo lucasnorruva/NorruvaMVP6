@@ -63,7 +63,7 @@ export default function AuditorIntegrationPage() {
   return (
     <DocsPageLayout
       pageTitle="Auditor & Verifier Integration Guide"
-      pageIcon={ShieldCheck}
+      pageIcon="ShieldCheck"
       backLink="/developer/docs"
       backLinkText="Back to Docs Hub"
       alertTitle="Conceptual Guide"

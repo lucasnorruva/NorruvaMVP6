@@ -24,8 +24,8 @@ export default function ProductCompletenessIndicator({ completenessData }: Produ
     <TooltipProvider>
       <Tooltip delayDuration={100}>
         <TooltipTrigger asChild>
-          <div className="flex items-center w-24 cursor-help">
-            <Progress value={completenessData.score} className="h-2 flex-grow [&>div]:bg-primary" />
+          <div className="flex items-center cursor-help"> {/* Removed w-24 */}
+            <Progress value={completenessData.score} className="h-2.5 flex-grow [&>div]:bg-primary" /> {/* Changed h-2 to h-2.5 */}
             <span className="text-xs text-muted-foreground ml-1.5">{completenessData.score}%</span>
           </div>
         </TooltipTrigger>
@@ -54,3 +54,4 @@ export default function ProductCompletenessIndicator({ completenessData }: Produ
     </TooltipProvider>
   );
 }
+

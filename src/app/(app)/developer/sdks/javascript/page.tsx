@@ -62,11 +62,11 @@ createNewDpp({
   return (
     <DocsPageLayout
       pageTitle="JavaScript SDK (Conceptual)"
-      pageIcon={FileCode}
+      pageIcon="FileCode"
       backLink="/developer#resources"
       backLinkText="Back to Developer Resources"
       alertTitle="Conceptual SDK Documentation"
-      alertDescription="This page describes a conceptual JavaScript SDK for interacting with the Norruva DPP API. The SDK @norruva/dpp-sdk is not yet published. All examples are for illustrative purposes."
+      alertDescription="This page describes a conceptual JavaScript SDK for the Norruva DPP API. The @norruva/dpp-sdk package is illustrative and not yet published."
     >
       <Card className="shadow-lg">
         <CardHeader>
@@ -150,3 +150,4 @@ createNewDpp({
     </DocsPageLayout>
   );
 }
+

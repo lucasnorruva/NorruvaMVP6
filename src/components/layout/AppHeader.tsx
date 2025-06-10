@@ -2,7 +2,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react'; // Added useState, useEffect
-import { SidebarTrigger, useSidebar } from "@/components/ui/sidebar";
+import { SidebarTrigger } from "@/components/ui/sidebar/Sidebar";
+import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, UserCircle, Users, LogOut, User, Settings as SettingsIcon, Bell } from "lucide-react";

@@ -62,7 +62,7 @@ export default function ErrorCodesPage() {
         <CardHeader>
           <CardTitle>General Error Response Structure</CardTitle>
           <CardDescription>
-            API errors are generally returned in a consistent JSON format to help you diagnose and handle issues programmatically.
+            API errors are returned in a consistent JSON format to help diagnose and handle issues.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

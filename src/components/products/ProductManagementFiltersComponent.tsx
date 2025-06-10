@@ -5,6 +5,8 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
+import { useState, useEffect } from "react";
+import useDebounce from "@/hooks/useDebounce";
 import { Filter, ListFilter, Search, Tag, ShieldAlert, CheckSquare, Link as LinkIcon, XCircle } from "lucide-react"; // Added XCircle
 import { Button } from "@/components/ui/button"; // Added Button import
 
@@ -39,9 +41,24 @@ export default function ProductManagementFiltersComponent({
   complianceOptions,
   categoryOptions,
 }: ProductManagementFiltersComponentProps) {
+  const [searchValue, setSearchValue] = useState(filters.searchQuery);
+  const debouncedSearch = useDebounce(searchValue, 300);
+
+  useEffect(() => {
+    setSearchValue(filters.searchQuery);
+  }, [filters.searchQuery]);
+
+  useEffect(() => {
+    onFilterChange({ ...filters, searchQuery: debouncedSearch });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [debouncedSearch]);
 
   const handleInputChange = (filterName: keyof ProductManagementFilterState, value: string) => {
-    onFilterChange({ ...filters, [filterName]: value });
+    if (filterName === 'searchQuery') {
+      setSearchValue(value);
+    } else {
+      onFilterChange({ ...filters, [filterName]: value });
+    }
   };
 
   const anchoringOptions = [
@@ -74,7 +91,7 @@ export default function ProductManagementFiltersComponent({
               id="search-query"
               type="text"
               placeholder="Enter search term..."
-              value={filters.searchQuery}
+              value={searchValue}
               onChange={(e) => handleInputChange('searchQuery', e.target.value)}
               className="w-full"
             />

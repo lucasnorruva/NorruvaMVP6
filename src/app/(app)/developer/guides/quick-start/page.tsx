@@ -4,7 +4,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Rocket, KeyRound, Send, Package, Info, Terminal, FileJson, ChevronRightCircle, Workflow } from "lucide-react";
+import { KeyRound, Send, Package, Info, Terminal, FileJson, ChevronRightCircle, Workflow } from "lucide-react";
 import Link from "next/link";
 import DocsPageLayout from '@/components/developer/DocsPageLayout'; // Import the layout
 
@@ -18,7 +18,7 @@ curl -X GET \\
   return (
     <DocsPageLayout
       pageTitle="Quick Start Guide"
-      pageIcon={Rocket}
+      pageIcon="Rocket" // Changed from {Rocket}
       backLink="/developer/docs"
       backLinkText="Back to Docs Hub"
       alertTitle="Welcome Developer!"

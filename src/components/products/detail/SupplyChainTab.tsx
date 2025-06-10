@@ -235,8 +235,9 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                     <div className="inline-block" tabIndex={!canManageLinks ? 0 : undefined}>
-                                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => handleOpenEditDialog(link)} title="Edit Link" disabled={!canManageLinks}>
+                                        <Button variant="ghost" size="icon" aria-label="Edit link" className="h-7 w-7" onClick={() => handleOpenEditDialog(link)} title="Edit Link" disabled={!canManageLinks}>
                                            <EditIcon className="h-4 w-4" />
+                                           <span className="sr-only">Edit link</span>
                                         </Button>
                                     </div>
                                 </TooltipTrigger>
@@ -251,8 +252,9 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
                             <Tooltip>
                                 <TooltipTrigger asChild>
                                      <div className="inline-block" tabIndex={!canManageLinks ? 0 : undefined}>
-                                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleUnlinkSupplier(link.supplierId, link.suppliedItem)} title="Unlink Supplier" disabled={!canManageLinks}>
+                                        <Button variant="ghost" size="icon" aria-label="Unlink supplier" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleUnlinkSupplier(link.supplierId, link.suppliedItem)} title="Unlink Supplier" disabled={!canManageLinks}>
                                           <Trash2 className="h-4 w-4" />
+                                          <span className="sr-only">Unlink supplier</span>
                                         </Button>
                                     </div>
                                 </TooltipTrigger>

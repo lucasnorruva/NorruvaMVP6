@@ -126,3 +126,14 @@ body {
     @apply bg-background text-foreground;
   }
 }
+@layer utilities {
+  .text-success {
+    color: hsl(var(--accent));
+  }
+  .text-warning {
+    color: hsl(var(--warning));
+  }
+  .text-danger {
+    color: hsl(var(--destructive));
+  }
+}

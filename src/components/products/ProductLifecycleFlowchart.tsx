@@ -82,9 +82,9 @@ const getStatusClasses = (status: LifecyclePhase['status'], isCurrent: boolean) 
 };
 
 const MetricStatusIcon = ({ status }: { status: Metric['status'] }) => {
-  if (status === 'compliant') return <CheckCircle className="h-4 w-4 text-green-500" />;
-  if (status === 'non_compliant') return <AlertCircle className="h-4 w-4 text-red-500" />;
-  if (status === 'pending_review') return <InfoIcon className="h-4 w-4 text-yellow-500" />;
+  if (status === 'compliant') return <CheckCircle className="h-4 w-4 text-success" />;
+  if (status === 'non_compliant') return <AlertCircle className="h-4 w-4 text-danger" />;
+  if (status === 'pending_review') return <InfoIcon className="h-4 w-4 text-warning" />;
   return <Minus className="h-4 w-4 text-muted-foreground" />;
 };
 
@@ -260,7 +260,7 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
                                      <span className="font-medium">{metric.name}:</span>
                                      <span>{metric.value}{metric.unit && ` ${metric.unit}`}
                                       {typeof metric.value === 'number' && metric.targetValue !== undefined && (
-                                        <span className={cn("ml-1 text-xs", metric.value <= metric.targetValue ? 'text-green-500' : 'text-red-500')}>
+                                        <span className={cn("ml-1 text-xs", metric.value <= metric.targetValue ? 'text-success' : 'text-danger')}>
                                           ({metric.value <= metric.targetValue ? <TrendingUp className="inline h-3 w-3"/> : <TrendingDown className="inline h-3 w-3"/>} vs {metric.targetValue}{metric.unit && ` ${metric.unit}`})
                                         </span>
                                       )}

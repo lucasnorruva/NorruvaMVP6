@@ -126,7 +126,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 <ul className="space-y-1.5 text-sm">
                   {product.keySustainabilityPoints.map((point, index) => (
                     <li key={index} className="flex items-center">
-                      <CheckCircle className="h-4 w-4 mr-2 text-green-500 flex-shrink-0" />
+                      <CheckCircle className="h-4 w-4 mr-2 text-success flex-shrink-0" />
                       {point}
                     </li>
                   ))}

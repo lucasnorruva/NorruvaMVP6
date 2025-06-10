@@ -9,7 +9,7 @@ export default function EbsiIntegrationOverviewPage() {
       pageTitle="EBSI Integration Overview"
       pageIcon={Share2}
       alertTitle="Conceptual Documentation"
-      alertDescription="This page outlines the conceptual approach to integrating with the European Blockchain Services Infrastructure (EBSI) for Digital Product Passports. Actual implementation details will vary."
+      alertDescription="This page outlines the conceptual approach for integrating with the European Blockchain Services Infrastructure (EBSI) for Digital Product Passports. Actual implementation details will vary based on specific project requirements and EBSI's evolving specifications."
     >
       <Card className="shadow-lg">
         <CardHeader>

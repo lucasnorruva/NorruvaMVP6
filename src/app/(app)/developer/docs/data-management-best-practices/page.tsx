@@ -1,4 +1,3 @@
-
 // --- File: page.tsx (Data Management Best Practices Docs) ---
 "use client";
 
@@ -14,7 +13,7 @@ export default function DataManagementBestPracticesPage() {
       pageTitle="Data Management Best Practices"
       pageIcon={Layers}
       alertTitle="Guidance Note"
-      alertDescription="This document provides guidance on best practices for managing Digital Product Passport (DPP) data. Effective data management is crucial for regulatory compliance, supply chain transparency, and building consumer trust."
+      alertDescription="This guide outlines best practices for managing Digital Product Passport (DPP) data, essential for compliance, transparency, and trust."
     >
       <Card className="shadow-lg">
         <CardHeader>

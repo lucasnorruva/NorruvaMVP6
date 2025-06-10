@@ -123,15 +123,17 @@ async function processEvent(event) {
       title: "Step 4: Implementing Business Logic",
       icon: Workflow,
       content: (
-        <p className="text-sm">
-          Based on the <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">eventType</code>, implement the desired automation in your system.
-          <br/><strong>Examples:</strong>
-        </p>
-        <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-4 mt-2">
-            <li><code className="bg-muted px-1 rounded-sm">dpp.status.updated</code>: Update the product status in your internal database, trigger inventory checks, or update marketing materials.</li>
-            <li><code className="bg-muted px-1 rounded-sm">compliance.status.updated</code>: Notify your compliance team, log the change for auditing, or automatically flag products for review.</li>
-            <li><code className="bg-muted px-1 rounded-sm">ebsi.verification.completed</code>: Update internal records with the verification outcome, potentially trigger workflows for verified products.</li>
-        </ul>
+        <>
+          <p className="text-sm">
+            Based on the <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">eventType</code>, implement the desired automation in your system.
+            <br/><strong>Examples:</strong>
+          </p>
+          <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-4 mt-2">
+              <li><code className="bg-muted px-1 rounded-sm">dpp.status.updated</code>: Update the product status in your internal database, trigger inventory checks, or update marketing materials.</li>
+              <li><code className="bg-muted px-1 rounded-sm">compliance.status.updated</code>: Notify your compliance team, log the change for auditing, or automatically flag products for review.</li>
+              <li><code className="bg-muted px-1 rounded-sm">ebsi.verification.completed</code>: Update internal records with the verification outcome, potentially trigger workflows for verified products.</li>
+          </ul>
+        </>
       )
     },
     {

@@ -64,20 +64,20 @@ const platformAnnouncements = [
 ];
 
 const DataFlowKPIs = [
-    { title: "DPP Creation Success Rate", value: "99.8%", icon: CheckCircle, color: "text-green-500", description: "Successful DPP initial creations via API." },
+    { title: "DPP Creation Success Rate", value: "99.8%", icon: CheckCircle, color: "text-success", description: "Successful DPP initial creations via API." },
     { title: "Average Data Ingestion Time", value: "1.2s", icon: Clock, color: "text-blue-500", description: "Time from API call to DPP visibility." },
     { title: "DPP Retrieval Speed (P95)", value: "250ms", icon: ZapIcon, color: "text-info", description: "95th percentile for public API GET /dpp/{id}." },
-    { title: "Webhook Delivery Success", value: "99.95%", icon: Send, color: "text-green-500", description: "Successful event notifications to subscribed endpoints." },
+    { title: "Webhook Delivery Success", value: "99.95%", icon: Send, color: "text-success", description: "Successful event notifications to subscribed endpoints." },
 ];
 
 const systemStatusData = [
-    { name: "DPP Core API", status: "Operational", icon: CheckCircle, color: "text-green-500" },
-    { name: "AI Services (Genkit Flows)", status: "Operational", icon: CheckCircle, color: "text-green-500" },
-    { name: "Data Extraction Service (Mock)", status: "Degraded Performance", icon: AlertTriangle, color: "text-yellow-500" },
-    { name: "EBSI Mock Interface", status: "Operational", icon: CheckCircle, color: "text-green-500" },
-    { name: "Developer Portal Site", status: "Operational", icon: CheckCircle, color: "text-green-500" },
+    { name: "DPP Core API", status: "Operational", icon: CheckCircle, color: "text-success" },
+    { name: "AI Services (Genkit Flows)", status: "Operational", icon: CheckCircle, color: "text-success" },
+    { name: "Data Extraction Service (Mock)", status: "Degraded Performance", icon: AlertTriangle, color: "text-warning" },
+    { name: "EBSI Mock Interface", status: "Operational", icon: CheckCircle, color: "text-success" },
+    { name: "Developer Portal Site", status: "Operational", icon: CheckCircle, color: "text-success" },
     { name: "Sandbox Environment API", status: "Under Maintenance", icon: Wrench, color: "text-blue-500" },
-    { name: "Documentation Site", status: "Operational", icon: CheckCircle, color: "text-green-500" },
+    { name: "Documentation Site", status: "Operational", icon: CheckCircle, color: "text-success" },
 ];
 
 const dashboardQuickActions = [
@@ -379,12 +379,12 @@ export default function DeveloperPortalPage() {
   const overallSystemStatus = useMemo(() => {
     const nonOperationalServices = systemStatusData.filter(s => s.status !== "Operational");
     if (nonOperationalServices.length === 0) {
-      return { text: "All Systems Operational", icon: CheckCircle, color: "text-green-500" };
+      return { text: "All Systems Operational", icon: CheckCircle, color: "text-success" };
     }
     if (nonOperationalServices.some(s => s.status === "Degraded Performance" || s.status === "Under Maintenance")) {
-      return { text: "Some Systems Impacted", icon: AlertTriangle, color: "text-yellow-500" };
+      return { text: "Some Systems Impacted", icon: AlertTriangle, color: "text-warning" };
     }
-    return { text: "Multiple Issues Detected", icon: ServerCrash, color: "text-red-500" };
+    return { text: "Multiple Issues Detected", icon: ServerCrash, color: "text-danger" };
   }, []);
 
   const handleRefreshStatus = () => {

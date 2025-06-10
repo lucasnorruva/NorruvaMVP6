@@ -40,7 +40,7 @@ export default function GdprPage() {
     toast({
       title: "Consent Settings Saved",
       description: "Your consent preferences have been updated successfully.",
-      action: <CheckCircle className="text-green-500" />,
+      action: <CheckCircle className="text-success" />,
     });
   };
 

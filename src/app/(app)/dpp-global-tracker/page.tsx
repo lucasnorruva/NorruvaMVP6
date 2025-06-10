@@ -65,7 +65,7 @@ const PointIcon = ({ type }: { type: PointData['type'] }) => {
   switch (type) {
     case 'port': return <Anchor className="h-4 w-4 mr-2 text-blue-500" />;
     case 'factory': return <Factory className="h-4 w-4 mr-2 text-orange-500" />;
-    case 'market': return <Store className="h-4 w-4 mr-2 text-green-500" />;
+    case 'market': return <Store className="h-4 w-4 mr-2 text-success" />;
     case 'dpp_registration': return <Zap className="h-4 w-4 mr-2 text-purple-500" />;
     default: return <MapPin className="h-4 w-4 mr-2 text-gray-500" />;
   }
@@ -73,7 +73,7 @@ const PointIcon = ({ type }: { type: PointData['type'] }) => {
 
 const ArcIcon = ({ status }: { status?: ArcData['status'] }) => {
     if (status === 'in_transit') return <Truck className="h-4 w-4 mr-2 text-blue-500" />;
-    if (status === 'delivered') return <CheckCircleIcon className="h-4 w-4 mr-2 text-green-500" />;
+    if (status === 'delivered') return <CheckCircleIcon className="h-4 w-4 mr-2 text-success" />;
     if (status === 'delayed') return <ClockIcon className="h-4 w-4 mr-2 text-orange-500" />;
     return <Plane className="h-4 w-4 mr-2 text-gray-500" />;
 };
@@ -224,7 +224,7 @@ export default function DppGlobalTrackerPage() {
                 <p className="capitalize"><strong className="text-muted-foreground text-xs">Status:</strong> {(selectedInfo.data as ArcData).status?.replace('_', ' ') || 'N/A'}</p>
                 <p className="text-xs"><strong className="text-muted-foreground text-xs">Route:</strong> {(mockPoints.find(p => p.lat === (selectedInfo.data as ArcData).startLat && p.lng === (selectedInfo.data as ArcData).startLng)?.name || 'Unknown Origin')} &rarr; {(mockPoints.find(p => p.lat === (selectedInfo.data as ArcData).endLat && p.lng === (selectedInfo.data as ArcData).endLng)?.name || 'Unknown Destination')}</p>
                 {(selectedInfo.data as ArcData).status === 'in_transit' && <p className="text-xs text-blue-500 dark:text-blue-400 mt-1">ETA: 3 days</p>}
-                {(selectedInfo.data as ArcData).status === 'delivered' && <p className="text-xs text-green-500 dark:text-green-400 mt-1">Delivered on Schedule.</p>}
+                {(selectedInfo.data as ArcData).status === 'delivered' && <p className="text-xs text-success mt-1">Delivered on Schedule.</p>}
                 {(selectedInfo.data as ArcData).status === 'delayed' && <p className="text-xs text-orange-500 dark:text-orange-400 mt-1">Delayed by 24h due to customs.</p>}
               </>
             )}
@@ -237,7 +237,7 @@ export default function DppGlobalTrackerPage() {
         <div className="mt-2 opacity-90 text-xs leading-tight flex justify-center items-center gap-x-3 gap-y-1 flex-wrap">
             <span className="inline-flex items-center"><Anchor className="h-3 w-3 mr-1 text-blue-500"/>Ports</span>
             <span className="inline-flex items-center"><Factory className="h-3 w-3 mr-1 text-orange-500"/>Factories</span>
-            <span className="inline-flex items-center"><Store className="h-3 w-3 mr-1 text-green-500"/>Markets</span>
+            <span className="inline-flex items-center"><Store className="h-3 w-3 mr-1 text-success"/>Markets</span>
             <span className="inline-flex items-center"><Zap className="h-3 w-3 mr-1 text-purple-500"/>DPP Hotspots</span>
         </div>
       </div>

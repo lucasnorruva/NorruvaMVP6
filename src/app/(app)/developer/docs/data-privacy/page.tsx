@@ -10,7 +10,7 @@ export default function DataPrivacyPage() {
   return (
     <DocsPageLayout
       pageTitle="Data Privacy, Security & Compliance"
-      pageIcon={VenetianMask}
+      pageIcon="VenetianMask"
       alertTitle="Conceptual Documentation"
       alertDescription="This document describes conceptual approaches to data privacy, security, and compliance within the Norruva DPP platform. Actual implementations would require thorough legal and technical reviews."
     >

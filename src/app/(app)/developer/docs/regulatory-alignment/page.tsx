@@ -17,7 +17,7 @@ export default function RegulatoryAlignmentPage() {
         <CardHeader>
           <CardTitle>Overview of Regulatory Support</CardTitle>
           <CardDescription>
-            The Norruva Digital Product Passport (DPP) platform is designed to facilitate compliance with evolving product regulations, particularly within the European Union.
+            The Norruva Digital Product Passport (DPP) platform is designed to help businesses align with key product regulations, primarily within the European Union.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -83,3 +83,4 @@ export default function RegulatoryAlignmentPage() {
     </DocsPageLayout>
   );
 }
+

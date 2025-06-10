@@ -155,7 +155,7 @@ async function processEvent(event) {
       backLink="/developer/docs"
       backLinkText="Back to Docs Hub"
       alertTitle="Conceptual Tutorial"
-      alertDescription="This tutorial outlines how to conceptually use webhooks for automation. Code examples are illustrative. Refer to the Webhooks Guide for detailed setup and security information."
+      alertDescription="This tutorial outlines conceptual steps for using webhooks for automation. Code examples are illustrative; always refer to the main Webhooks Guide for detailed setup and security information."
     >
       <div className="space-y-6">
         {steps.map((step, index) => (

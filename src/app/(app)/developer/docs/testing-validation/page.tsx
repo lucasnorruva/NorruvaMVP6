@@ -7,7 +7,7 @@ export default function TestingValidationPage() {
   return (
     <DocsPageLayout
       pageTitle="Testing and Validation (Conceptual)"
-      pageIcon={TestTube2}
+      pageIcon="TestTube2"
       alertTitle="Conceptual Documentation"
       alertDescription="This document outlines conceptual testing strategies for the Norruva DPP platform. Specific test cases and tools would be more detailed in a live system."
     >

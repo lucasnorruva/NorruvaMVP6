@@ -54,9 +54,9 @@ export default function ServiceStatusCard({
       </CardHeader>
       <CardContent className="space-y-3">
         <div className={cn("p-3 rounded-md flex items-center text-sm font-medium",
-          overallSystemStatus.color === "text-green-500" && "bg-green-500/10 border border-green-500/30",
-          overallSystemStatus.color === "text-yellow-500" && "bg-yellow-500/10 border border-yellow-500/30",
-          overallSystemStatus.color === "text-red-500" && "bg-red-500/10 border border-red-500/30"
+          overallSystemStatus.color === "text-success" && "bg-green-500/10 border border-green-500/30",
+          overallSystemStatus.color === "text-warning" && "bg-yellow-500/10 border border-yellow-500/30",
+          overallSystemStatus.color === "text-danger" && "bg-red-500/10 border border-red-500/30"
         )}>
           <OverallStatusIcon className={cn("h-5 w-5 mr-2", overallSystemStatus.color)} />
           Overall: {overallSystemStatus.text}

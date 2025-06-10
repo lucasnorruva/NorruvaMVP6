@@ -1,7 +1,7 @@
 
 // --- File: src/utils/imageUtils.ts ---
 // Description: Utility functions related to image handling and generation.
-"use client";
+
 
 interface ProductImageHintInfo {
   productName?: string | null;

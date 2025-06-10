@@ -1,7 +1,7 @@
 
 // --- File: dppDisplayUtils.tsx ---
 // Description: Utility functions for generating display details (text, icons, variants) for DPP compliance, EBSI status, and completeness.
-"use client"; 
+
 
 import React from "react"; 
 import type { DigitalProductPassport, EbsiVerificationDetails, DisplayableProduct, ProductComplianceSummary, SimpleLifecycleEvent } from "@/types/dpp";

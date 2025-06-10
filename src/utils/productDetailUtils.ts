@@ -1,7 +1,7 @@
 
 // --- File: src/utils/productDetailUtils.ts ---
 // Description: Utilities for fetching and preparing product details for display.
-"use client";
+
 
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY, MOCK_DPPS } from '@/types/dpp';
 import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification } from '@/types/dpp';

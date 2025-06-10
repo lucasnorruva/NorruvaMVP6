@@ -1,7 +1,7 @@
 
 // --- File: src/utils/apiPlaygroundUtils.ts ---
 // Description: Utility functions for the API Playground in the Developer Portal.
-"use client";
+
 
 export const generateMockCodeSnippet = (
   endpointKey: string,

@@ -4,7 +4,7 @@
 // --- File: page.tsx (Public Product Passport Viewer) ---
 // Description: Main page component for displaying the public view of a Digital Product Passport.
 
-import { notFound } from 'next/navigation';
+import { notFound, useParams } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -26,13 +26,11 @@ import { getAiHintForImage } from '@/utils/imageUtils'; // Import centralized ut
 
 // Removed manual iconMap
 
-type Props = {
-  params: { passportId: string }
-}
-
 const STORY_TRUNCATE_LENGTH = 250;
 
-export default function PublicPassportPage({ params }: Props) {
+export default function PublicPassportPage() {
+  const params = useParams();
+  const passportId = params.passportId as string;
   const [product, setProduct] = useState<PublicProductInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
@@ -40,7 +38,7 @@ export default function PublicPassportPage({ params }: Props) {
 
   useEffect(() => {
     // Simulate fetching product data
-    const fetchedProduct = MOCK_PUBLIC_PASSPORTS[params.passportId];
+    const fetchedProduct = MOCK_PUBLIC_PASSPORTS[passportId];
     if (fetchedProduct) {
       // Ensure customAttributes is always an array, even if undefined in mock
       setProduct({
@@ -49,7 +47,7 @@ export default function PublicPassportPage({ params }: Props) {
       });
     }
     setIsLoading(false);
-  }, [params.passportId]);
+  }, [passportId]);
 
   if (isLoading) {
     return (

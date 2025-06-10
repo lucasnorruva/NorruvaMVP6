@@ -1,7 +1,7 @@
 
 // --- File: aiFormHelpers.tsx ---
 // Description: Utility functions for handling AI-powered suggestions in product forms.
-"use client";
+
 
 import React from "react"; // Added React import for JSX
 import type { UseFormReturn } from "react-hook-form";

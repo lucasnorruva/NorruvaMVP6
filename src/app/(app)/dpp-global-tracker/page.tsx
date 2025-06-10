@@ -88,7 +88,7 @@ export default function DppGlobalTrackerPage() {
 
 
   useEffect(() => {
-    fetch('//unpkg.com/world-atlas/countries-110m.json')
+    fetch('https://unpkg.com/world-atlas/countries-110m.json')
       .then(res => res.json())
       .then((atlas: Topology) => {
         setCountries(atlas);
@@ -147,9 +147,9 @@ export default function DppGlobalTrackerPage() {
     <div className="relative h-[calc(100vh-4rem)] w-full overflow-hidden">
       <Globe
         ref={globeEl}
-        globeImageUrl="//unpkg.com/three-globe/example/img/earth-night.jpg"
-        bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
-        backgroundImageUrl="//unpkg.com/three-globe/example/img/night-sky.png"
+        globeImageUrl="https://unpkg.com/three-globe/example/img/earth-night.jpg"
+        bumpImageUrl="https://unpkg.com/three-globe/example/img/earth-topology.png"
+        backgroundImageUrl="https://unpkg.com/three-globe/example/img/night-sky.png"
         
         pointsData={mockPoints}
         pointLat="lat"

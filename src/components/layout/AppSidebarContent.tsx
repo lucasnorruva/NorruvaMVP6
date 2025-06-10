@@ -33,20 +33,23 @@ const navItems = [
   { href: "/dpp-live-dashboard", label: "Live DPPs", icon: LineChart },
   { href: "/products", label: "Products", icon: Package },
   { href: "/products/new", label: "Add Product", icon: ScanLine },
-  { href: "/suppliers", label: "Suppliers", icon: Users }, 
-  { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList },
-  { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
-  { href: "/compliance/pathways", label: "Compliance Pathways", icon: ListChecks },
-  { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
+  { href: "/suppliers", label: "Suppliers", icon: Users },
+  // Sustainability Group
   { href: "/sustainability", label: "Sustainability Reporting", icon: FileText },
   { href: "/sustainability/compare", label: "Compare Sustainability", icon: BarChartHorizontal },
+  // Compliance Group
+  { href: "/compliance/pathways", label: "Compliance Pathways", icon: ListChecks },
+  { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
+  { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
+  // Specialized Views
+  { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList },
   { href: "/dpp-global-tracker", label: "DPP Global Tracker", icon: Globe },
 ];
 
 const secondaryNavItems = [
   { href: "/developer", label: "Developer Portal", icon: Code2 },
-  { href: "/settings", label: "Settings", icon: Settings },
   { href: "/audit-log", label: "Audit Log", icon: ListChecks },
+  { href: "/settings", label: "Settings", icon: Settings },
 ];
 
 export default function AppSidebarContent() {

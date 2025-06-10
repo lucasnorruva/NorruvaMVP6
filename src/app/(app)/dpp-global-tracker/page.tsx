@@ -195,7 +195,7 @@ export default function DppGlobalTrackerPage() {
                 {(selectedInfo.data as PointData | ArcData).name}
               </CardTitle>
             </div>
-            <Button variant="ghost" size="icon" className="h-6 w-6 -mt-1 -mr-1" onClick={() => {
+            <Button aria-label="Close details" variant="ghost" size="icon" className="h-6 w-6 -mt-1 -mr-1" onClick={() => {
               setSelectedInfo({type: null, data: null});
               if (globeEl.current) globeEl.current.controls().autoRotate = true;
             }}>

@@ -91,13 +91,14 @@ export default function EsprPathwayPage() {
   const renderStepContent = (stepId: string) => {
     const currentStepDetails = esprPathwaySteps.find(s => s.id === stepId);
     const stepIndex = esprPathwaySteps.findIndex(s => s.id === stepId);
+    const StepIcon = currentStepDetails?.icon;
 
     switch (stepId) {
       case "step1": // Product Categorization & Scope
         return (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><currentStepDetails!.icon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
+              <CardTitle className="flex items-center"><StepIcon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
               <CardDescription>{currentStepDetails!.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -120,7 +121,7 @@ export default function EsprPathwayPage() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><currentStepDetails!.icon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
+              <CardTitle className="flex items-center"><StepIcon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
               <CardDescription>{currentStepDetails!.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -151,7 +152,7 @@ export default function EsprPathwayPage() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><currentStepDetails!.icon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
+              <CardTitle className="flex items-center"><StepIcon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
               <CardDescription>{currentStepDetails!.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -170,7 +171,7 @@ export default function EsprPathwayPage() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><currentStepDetails!.icon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
+              <CardTitle className="flex items-center"><StepIcon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
               <CardDescription>{currentStepDetails!.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -193,7 +194,7 @@ export default function EsprPathwayPage() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><currentStepDetails!.icon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
+              <CardTitle className="flex items-center"><StepIcon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
               <CardDescription>{currentStepDetails!.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -225,7 +226,7 @@ export default function EsprPathwayPage() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><currentStepDetails!.icon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
+              <CardTitle className="flex items-center"><StepIcon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
               <CardDescription>{currentStepDetails!.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -244,7 +245,7 @@ export default function EsprPathwayPage() {
         return (
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center"><currentStepDetails!.icon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
+              <CardTitle className="flex items-center"><StepIcon className="mr-2 h-5 w-5 text-primary" />{currentStepDetails!.title}</CardTitle>
               <CardDescription>{currentStepDetails!.description}</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">

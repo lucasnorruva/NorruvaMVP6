@@ -72,7 +72,8 @@ export function useDPPLiveData() {
         else if (sortConfig.key === 'metadata.last_updated') valB = new Date(b.metadata.last_updated).getTime();
         else if (sortConfig.key === 'ebsiVerification.status') valB = b.ebsiVerification?.status;
         // Ensure valB is assigned if not covered by the specific 'else if' blocks for valA
-        else if (!valB) {
+        // Only assign if valB is actually undefined to allow falsy but valid values like 0
+        else if (valB === undefined) {
              valB = b[sortConfig.key as keyof DigitalProductPassport];
         }
 

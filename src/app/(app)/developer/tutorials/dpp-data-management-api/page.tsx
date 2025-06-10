@@ -95,7 +95,7 @@ export default function DppDataManagementApiTutorialPage() {
       backLink="/developer/docs"
       backLinkText="Back to Docs Hub"
       alertTitle="Conceptual Tutorial"
-      alertDescription="This tutorial provides conceptual best practices for interacting with the Norruva DPP API. Specific API behaviors and features are illustrative."
+      alertDescription="This tutorial outlines conceptual best practices for interacting with the Norruva DPP API. Specific API behaviors and features are illustrative and subject to change."
     >
       <div className="space-y-6">
         {sections.map((section, index) => (

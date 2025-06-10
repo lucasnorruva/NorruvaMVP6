@@ -1,4 +1,3 @@
-
 // --- File: page.tsx (DPP Live Dashboard) ---
 // Description: Main page component for the Digital Product Passport Live Dashboard.
 "use client";
@@ -146,7 +145,7 @@ export default function DPPLiveDashboardPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="font-headline">Digital Product Passports</CardTitle>
-          <CardDescription>Overview of all managed DPPs. Click ID for public view, or Actions for more options.</CardDescription>
+          <CardDescription>Explore and manage all active Digital Product Passports. Click any ID for public view, or use Actions for more options.</CardDescription>
         </CardHeader>
         <CardContent>
           <DPPTable 

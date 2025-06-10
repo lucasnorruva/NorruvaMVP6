@@ -91,6 +91,11 @@ Links from other parts of the application, such as the "Products" listing page (
     # or
     yarn install
     ```
+3.  Copy the example environment file and configure the values:
+    ```bash
+    cp .env.example .env
+    # then edit .env and add your API keys and other settings
+    ```
 
 ### Running the Development Server
 

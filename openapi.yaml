@@ -488,6 +488,43 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp/{productId}/credential:
+    get:
+      operationId: getDppCredential
+      summary: Retrieve Verifiable Credential for a DPP
+      description: Returns a verifiable credential (VC) representation of the Digital Product Passport for the specified product.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DppCredential'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/dpp/verify/{productId}:
     post:
       operationId: verifyDppById
@@ -1421,6 +1458,31 @@ paths:
           nullable: true
         verificationMethod:
           type: string
+          nullable: true
+    DppCredential:
+      type: object
+      properties:
+        "@context":
+          type: array
+          items:
+            type: string
+        id:
+          type: string
+        type:
+          type: array
+          items:
+            type: string
+        issuer:
+          type: string
+        issuanceDate:
+          type: string
+          format: date-time
+        credentialSubject:
+          type: object
+          additionalProperties: true
+        proof:
+          type: object
+          additionalProperties: true
           nullable: true
     CustomAttribute:
       type: object

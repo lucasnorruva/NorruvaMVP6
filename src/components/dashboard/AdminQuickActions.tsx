@@ -26,16 +26,13 @@ export const AdminQuickActions = () => {
       </CardHeader>
       <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {quickActions.map((action, index) => (
-          <Link key={action.label} href={action.href} passHref legacyBehavior>
-            <a className="block">
-              <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
-                <action.icon className={`mr-3 h-5 w-5 ${index === 0 ? 'text-info' : 'text-primary'} group-hover:text-accent transition-colors flex-shrink-0`} />
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
-                  {/* Subtext removed as per previous request */}
-                </div>
-              </Button>
-            </a>
+          <Link key={action.label} href={action.href} asChild>
+            <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
+              <action.icon className={`mr-3 h-5 w-5 ${index === 0 ? 'text-info' : 'text-primary'} group-hover:text-accent transition-colors flex-shrink-0`} />
+              <div className="flex-1 min-w-0">
+                <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
+              </div>
+            </Button>
           </Link>
         ))}
       </CardContent>

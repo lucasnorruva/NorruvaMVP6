@@ -3,11 +3,22 @@
 // Description: Utility functions for the API Playground in the Developer Portal.
 
 
+interface ApiPlaygroundParams {
+  productId?: string;
+  productIdPath?: string;
+  status?: string;
+  category?: string;
+  searchQuery?: string;
+  blockchainAnchored?: string;
+  fileType?: string;
+  sourceDescription?: string;
+}
+
 export const generateMockCodeSnippet = (
   endpointKey: string,
   method: string,
   language: string,
-  params: any,
+  params: ApiPlaygroundParams,
   body: string | null,
   currentEnv: string
 ): string => {

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -76,23 +77,19 @@ export default function DashboardPage() {
           {currentRole.charAt(0).toUpperCase() + currentRole.slice(1)} Dashboard
         </h1>
         {currentRole === 'manufacturer' && (
-           <Link href="/products/new" passHref legacyBehavior>
-            <a>
+           <Link href="/products/new" asChild>
              <Button variant="secondary">
                <PlusCircle className="mr-2 h-5 w-5" />
                Add New Product
              </Button>
-            </a>
            </Link>
         )}
          {currentRole === 'admin' && (
-           <Link href="/products/new" passHref legacyBehavior>
-             <a>
+           <Link href="/products/new" asChild>
              <Button variant="default">
                <PlusCircle className="mr-2 h-5 w-5" />
                Platform Product Setup
              </Button>
-            </a>
            </Link>
         )}
       </div>

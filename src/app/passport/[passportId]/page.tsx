@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import * as LucideIcons from 'lucide-react'; // Import all icons as LucideIcons
 import {
   Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint,
-  ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot
+  ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode
 } from 'lucide-react'; // Keep specific imports for direct use or if iconMap was very selective
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react';

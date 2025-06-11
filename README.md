@@ -69,7 +69,7 @@ As of the current version, the following key areas and features have been protot
 - **Supply Chain Management:**
     - Managing a list of suppliers.
     - Linking suppliers to products (viewable on the product detail page's "Supply Chain" tab).
-- **Developer Portal:** Mock portal with API key management, interactive playground, and conceptual documentation.
+- **Developer Portal:** Mock portal with API key management, interactive playground, and conceptual documentation. The OpenAPI specification is available at `/openapi.yaml`.
 - **Settings Page:** Basic user profile, notifications, and organization settings.
 
 ## Performance Considerations
@@ -104,6 +104,12 @@ Links from other parts of the application, such as the "Products" listing page (
     ```bash
     cp .env.example .env
     # then edit .env and add your API keys and other settings
+    ```
+4.  Copy the API specification into the `public` folder (required for the
+    Developer Portal). This runs automatically before `npm run dev` or
+    `npm run build` but can be invoked manually:
+    ```bash
+    npm run copy:openapi
     ```
 
 ### Running the Development Server
@@ -158,6 +164,7 @@ Without this permission Google Cloud cannot generate the access token required t
 - `src/lib/`: Utility functions.
 - `src/contexts/`: React context providers.
 - `src/types/`: TypeScript type definitions.
+- `openapi.yaml`: Authoritative API specification copied to `public/openapi.yaml` during development and build.
 
 ## Firebase Studio Context
 

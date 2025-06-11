@@ -112,17 +112,18 @@ curl -X PUT https://api.example.com/api/v1/dpp/{productId} \
 
 ### Transferring Ownership
 
-Use the `PATCH /api/v1/dpp/extend/{productId}` endpoint with a `chainOfCustodyUpdate` payload:
+Use the `POST /api/v1/dpp/transfer-ownership/{productId}` endpoint:
 
 ```bash
-curl -X PATCH https://api.example.com/api/v1/dpp/extend/{productId} \
+curl -X POST https://api.example.com/api/v1/dpp/transfer-ownership/{productId} \
   -H 'Authorization: Bearer <API_KEY>' \
   -H 'Content-Type: application/json' \
   -d '{
-        "chainOfCustodyUpdate": {
-          "newOwnerDid": "did:example:new-owner",
-          "transferTimestamp": "2024-01-01T12:00:00Z"
-        }
+        "newOwner": {
+          "name": "New Owner Inc.",
+          "did": "did:example:new-owner"
+        },
+        "transferTimestamp": "2024-01-01T12:00:00Z"
       }'
 ```
 

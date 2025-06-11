@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 const EBSI_EXPLORER_BASE_URL = "https://mock-ebsi-explorer.example.com/tx/";
-const MOCK_API_KEY = "SANDBOX_KEY_123";
+const MOCK_API_KEY = "SANDBOX_KEY_123"; // Ensure this key is in VALID_API_KEYS in .env
 
 const getEbsiStatusBadge = (status?: "verified" | "pending_verification" | "not_verified" | "error" | string) => {
   switch (status?.toLowerCase()) {
@@ -98,19 +98,20 @@ export default function BlockchainPage() {
 
   const [fetchedCredential, setFetchedCredential] = useState<any | null>(null);
 
-  // State for Token Operations
   const [mintContractAddress, setMintContractAddress] = useState("0xABCDEF123456");
   const [mintRecipientAddress, setMintRecipientAddress] = useState("0x1234567890");
   const [mintMetadataUri, setMintMetadataUri] = useState("ipfs://sample-metadata-uri");
-  const [mintResponse, setMintResponse] = useState<MintTokenResponse | null>(null);
+  const [mintResponse, setMintResponse] = useState<string | null>(null);
+  const [isMintingToken, setIsMintingToken] = useState(false);
 
   const [updateTokenId, setUpdateTokenId] = useState("");
   const [updateMetadataUri, setUpdateMetadataUri] = useState("ipfs://new-metadata-uri");
-  const [updateTokenResponse, setUpdateTokenResponse] = useState<UpdateTokenMetadataResponse | null>(null);
+  const [updateTokenResponse, setUpdateTokenResponse] = useState<string | null>(null);
+  const [isUpdatingTokenMeta, setIsUpdatingTokenMeta] = useState(false);
 
   const [statusTokenId, setStatusTokenId] = useState("");
-  const [statusTokenResponse, setStatusTokenResponse] = useState<TokenStatusResponse | null>(null);
-
+  const [statusTokenResponse, setStatusTokenResponse] = useState<string | null>(null);
+  const [isGettingTokenStatus, setIsGettingTokenStatus] = useState(false);
 
   useEffect(() => {
     setIsLoading(true);
@@ -213,7 +214,7 @@ export default function BlockchainPage() {
         toast({ title: "No Product Selected", description: "Please select a product to transfer ownership.", variant: "destructive" });
         return;
     }
-    if (!transferName || !transferTime) { // DID is optional as per README example body
+    if (!transferName || !transferTime) { 
         toast({ title: "Validation Error", description: "Please fill in new owner name and transfer timestamp.", variant: "destructive" });
         return;
     }
@@ -257,59 +258,83 @@ export default function BlockchainPage() {
   const handleMintToken = async (e: FormEvent) => {
     e.preventDefault();
     if (!selected) return;
-    setIsActionLoading("mintToken");
+    setIsMintingToken(true);
     setMintResponse(null);
-    const res = await fetch(`/api/v1/token/mint/${selected.id}`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
-      body: JSON.stringify({ contractAddress: mintContractAddress, recipientAddress: mintRecipientAddress, metadataUri: mintMetadataUri }),
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setMintResponse(data);
-      toast({ title: "Token Mint Initiated (Mock)", description: `Token for ${selected.id} minted. Tx: ${data.transactionHash}` });
-    } else {
-      handleApiError(res, "Minting Token");
+    try {
+      const res = await fetch(`/api/v1/token/mint/${selected.id}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
+        body: JSON.stringify({ contractAddress: mintContractAddress, recipientAddress: mintRecipientAddress, metadataUri: mintMetadataUri }),
+      });
+      const data = await res.json();
+      setMintResponse(JSON.stringify(data, null, 2));
+      if (res.ok) {
+        toast({ title: "Token Mint Initiated (Mock)", description: `Token for ${selected.id} minted. Tx: ${data.transactionHash}` });
+      } else {
+        handleApiError(res, "Minting Token");
+      }
+    } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "An unknown error occurred";
+        setMintResponse(JSON.stringify({ error: "Client-side error", message: errorMsg }, null, 2));
+        toast({ title: "Minting Token Failed", description: errorMsg, variant: "destructive" });
     }
-    setIsActionLoading(false);
+    setIsMintingToken(false);
   };
 
   const handleUpdateTokenMetadata = async (e: FormEvent) => {
     e.preventDefault();
-    if (!updateTokenId) return;
-    setIsActionLoading("updateTokenMeta");
-    setUpdateTokenResponse(null);
-    const res = await fetch(`/api/v1/token/metadata/${updateTokenId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
-      body: JSON.stringify({ metadataUri: updateMetadataUri, contractAddress: "0xUpdatedContractIfDifferent" }), // Optional contractAddress
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setUpdateTokenResponse(data);
-      toast({ title: "Token Metadata Update Initiated (Mock)", description: `Metadata for token ${updateTokenId} updated. Tx: ${data.transactionHash}` });
-    } else {
-      handleApiError(res, "Updating Token Metadata");
+    if (!updateTokenId) {
+        toast({ title: "Token ID Required", description: "Please enter a Token ID to update metadata.", variant: "destructive" });
+        return;
     }
-    setIsActionLoading(false);
+    setIsUpdatingTokenMeta(true);
+    setUpdateTokenResponse(null);
+    try {
+        const res = await fetch(`/api/v1/token/metadata/${updateTokenId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
+        body: JSON.stringify({ metadataUri: updateMetadataUri, contractAddress: "0xUpdatedContractIfDifferent" }),
+        });
+        const data = await res.json();
+        setUpdateTokenResponse(JSON.stringify(data, null, 2));
+        if (res.ok) {
+        toast({ title: "Token Metadata Update Initiated (Mock)", description: `Metadata for token ${updateTokenId} updated. Tx: ${data.transactionHash}` });
+        } else {
+        handleApiError(res, "Updating Token Metadata");
+        }
+    } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "An unknown error occurred";
+        setUpdateTokenResponse(JSON.stringify({ error: "Client-side error", message: errorMsg }, null, 2));
+        toast({ title: "Updating Token Metadata Failed", description: errorMsg, variant: "destructive" });
+    }
+    setIsUpdatingTokenMeta(false);
   };
   
   const handleGetTokenStatus = async (e: FormEvent) => {
     e.preventDefault();
-    if (!statusTokenId) return;
-    setIsActionLoading("getTokenStatus");
-    setStatusTokenResponse(null);
-    const res = await fetch(`/api/v1/token/status/${statusTokenId}`, {
-      headers: { Authorization: `Bearer ${MOCK_API_KEY}` },
-    });
-    const data = await res.json();
-    if (res.ok) {
-      setStatusTokenResponse(data);
-      toast({ title: "Token Status Retrieved (Mock)", description: `Status for token ${statusTokenId} displayed.` });
-    } else {
-      handleApiError(res, "Getting Token Status");
+    if (!statusTokenId) {
+        toast({ title: "Token ID Required", description: "Please enter a Token ID to get its status.", variant: "destructive" });
+        return;
     }
-    setIsActionLoading(false);
+    setIsGettingTokenStatus(true);
+    setStatusTokenResponse(null);
+    try {
+        const res = await fetch(`/api/v1/token/status/${statusTokenId}`, {
+        headers: { Authorization: `Bearer ${MOCK_API_KEY}` },
+        });
+        const data = await res.json();
+        setStatusTokenResponse(JSON.stringify(data, null, 2));
+        if (res.ok) {
+        toast({ title: "Token Status Retrieved (Mock)", description: `Status for token ${statusTokenId} displayed.` });
+        } else {
+        handleApiError(res, "Getting Token Status");
+        }
+    } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "An unknown error occurred";
+        setStatusTokenResponse(JSON.stringify({ error: "Client-side error", message: errorMsg }, null, 2));
+        toast({ title: "Getting Token Status Failed", description: errorMsg, variant: "destructive" });
+    }
+    setIsGettingTokenStatus(false);
   };
 
 
@@ -510,30 +535,30 @@ export default function BlockchainPage() {
                                         <Input value={mintContractAddress} onChange={e => setMintContractAddress(e.target.value)} placeholder="Contract Address (e.g., 0x...)" />
                                         <Input value={mintRecipientAddress} onChange={e => setMintRecipientAddress(e.target.value)} placeholder="Recipient Address (e.g., 0x...)" />
                                         <Input value={mintMetadataUri} onChange={e => setMintMetadataUri(e.target.value)} placeholder="Metadata URI (e.g., ipfs://...)" />
-                                        <Button type="submit" size="sm" disabled={isActionLoading === "mintToken"}>
-                                            {isActionLoading === "mintToken" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                                        <Button type="submit" size="sm" disabled={isMintingToken}>
+                                            {isMintingToken ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
                                             Mint Token
                                         </Button>
-                                        {mintResponse && <pre className="mt-2 p-2 bg-muted text-xs rounded overflow-x-auto"><code>{JSON.stringify(mintResponse, null, 2)}</code></pre>}
+                                        {mintResponse && <pre className="mt-2 p-2 bg-muted text-xs rounded overflow-x-auto max-h-40"><code>{mintResponse}</code></pre>}
                                     </form>
                                     <form onSubmit={handleUpdateTokenMetadata} className="space-y-3 p-3 border rounded-md">
                                         <h4 className="font-medium text-sm">Update Token Metadata</h4>
                                         <Input value={updateTokenId} onChange={e => setUpdateTokenId(e.target.value)} placeholder="Token ID (e.g., 123)" />
                                         <Input value={updateMetadataUri} onChange={e => setUpdateMetadataUri(e.target.value)} placeholder="New Metadata URI (e.g., ipfs://...)" />
-                                        <Button type="submit" size="sm" disabled={isActionLoading === "updateTokenMeta"}>
-                                            {isActionLoading === "updateTokenMeta" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Edit className="mr-2 h-4 w-4" />}
+                                        <Button type="submit" size="sm" disabled={isUpdatingTokenMeta}>
+                                            {isUpdatingTokenMeta ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Edit className="mr-2 h-4 w-4" />}
                                             Update Metadata
                                         </Button>
-                                        {updateTokenResponse && <pre className="mt-2 p-2 bg-muted text-xs rounded overflow-x-auto"><code>{JSON.stringify(updateTokenResponse, null, 2)}</code></pre>}
+                                        {updateTokenResponse && <pre className="mt-2 p-2 bg-muted text-xs rounded overflow-x-auto max-h-40"><code>{updateTokenResponse}</code></pre>}
                                     </form>
                                     <form onSubmit={handleGetTokenStatus} className="space-y-3 p-3 border rounded-md">
                                         <h4 className="font-medium text-sm">Get Token Status</h4>
                                         <Input value={statusTokenId} onChange={e => setStatusTokenId(e.target.value)} placeholder="Token ID (e.g., 123)" />
-                                        <Button type="submit" size="sm" disabled={isActionLoading === "getTokenStatus"}>
-                                            {isActionLoading === "getTokenStatus" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <InfoIcon className="mr-2 h-4 w-4" />}
+                                        <Button type="submit" size="sm" disabled={isGettingTokenStatus}>
+                                            {isGettingTokenStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <InfoIcon className="mr-2 h-4 w-4" />}
                                             Get Status
                                         </Button>
-                                        {statusTokenResponse && <pre className="mt-2 p-2 bg-muted text-xs rounded overflow-x-auto"><code>{JSON.stringify(statusTokenResponse, null, 2)}</code></pre>}
+                                        {statusTokenResponse && <pre className="mt-2 p-2 bg-muted text-xs rounded overflow-x-auto max-h-60"><code>{statusTokenResponse}</code></pre>}
                                     </form>
                                 </CardContent>
                             </Card>
@@ -558,5 +583,3 @@ export default function BlockchainPage() {
     </div>
   );
 }
-
-    

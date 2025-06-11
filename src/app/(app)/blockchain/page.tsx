@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Fingerprint, ShieldCheck, InfoIcon as InfoIconLucide, AlertCircle, Anchor, Link2, Edit, UploadCloud, KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, PlusCircle } from "lucide-react";
+import { Fingerprint, ShieldCheck, InfoIcon as InfoIconLucide, AlertCircle, Anchor, Link2, Edit, UploadCloud, KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, PlusCircle, CalendarDays, Sigma, Layers3, Tag } from "lucide-react";
 import { CardDescription } from "@/components/ui/card";
 import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
@@ -132,6 +132,8 @@ export default function BlockchainPage() {
   const [statusTokenId, setStatusTokenId] = useState("");
   const [statusTokenResponse, setStatusTokenResponse] = useState<string | null>(null);
   const [isGettingTokenStatus, setIsGettingTokenStatus] = useState(false);
+  const [parsedTokenStatus, setParsedTokenStatus] = useState<TokenStatusResponse | null>(null);
+
 
   const handleApiError = useCallback(async (response: Response, action: string) => {
     let errorData;
@@ -152,31 +154,30 @@ export default function BlockchainPage() {
     fetch(`/api/v1/dpp?blockchainAnchored=${filter}`, {
         headers: { Authorization: `Bearer ${MOCK_API_KEY}` } 
     })
-      .then(async res => { // Make this async to await res.json() inside
+      .then(async res => {
         if (!res.ok) {
-           // No need to await handleApiError as it doesn't return a promise that needs to be awaited here
-           handleApiError(res, "Fetching DPPs");
-           // Return a consistent error structure if needed by downstream logic, or throw
-           return { data: [], error: { message: (await res.json()).error?.message || "Error fetching DPPs" }};
+           const errorBody = await res.json();
+           toast({title: "Error fetching DPPs", description: errorBody?.error?.message || `Status: ${res.status}`, variant: "destructive"});
+           setDpps([]); 
+           return { data: [], error: { message: errorBody?.error?.message || `Error fetching DPPs: ${res.status}` }};
         }
         return res.json();
       })
       .then(data => {
-        if(data.error?.message) { // Check if data.error and data.error.message exist
-             toast({title: "Error fetching DPPs", description: data.error.message, variant: "destructive"});
-             setDpps(data.data || []); // Set DPPs even if there's an error in the payload, might contain partial data
+        if(data.error?.message) {
+             setDpps(data.data || []);
         } else {
           setDpps(data.data || []);
         }
       })
-      .catch(err => { // Catch network errors or errors from res.json() if not caught before
-        toast({title: "Fetching DPPs Failed", description: err.message, variant: "destructive"});
+      .catch(err => {
+        toast({title: "Fetching DPPs Failed", description: err.message || "Network error or failed to parse response.", variant: "destructive"});
         setDpps([]);
       })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [filter, toast, handleApiError]); // Removed dpps.length from dependencies
+  }, [filter, toast]);
 
   const handleSelectProduct = (dpp: DigitalProductPassport | null) => {
     setSelected(dpp);
@@ -191,6 +192,7 @@ export default function BlockchainPage() {
     setMintResponse(null);
     setUpdateTokenResponse(null);
     setStatusTokenResponse(null);
+    setParsedTokenStatus(null);
   };
 
   const updateDppLocally = (updated: DigitalProductPassport) => {
@@ -218,7 +220,7 @@ export default function BlockchainPage() {
       body: JSON.stringify({ platform: anchorPlatform }),
     });
     if (res.ok) {
-      const data = await res.json();
+      const data: DigitalProductPassport = await res.json();
       updateDppLocally(data);
       toast({ title: "DPP Anchored", description: `Product ${selected.productName} successfully anchored to ${anchorPlatform}. Mock contract, token ID, and tx hash also set.` });
     } else {
@@ -241,7 +243,7 @@ export default function BlockchainPage() {
       body: JSON.stringify(custodyStep),
     });
     if (res.ok) {
-      const data = await res.json();
+      const data: DigitalProductPassport = await res.json();
       updateDppLocally(data);
       setCustodyStep({ stepName: "", actorDid: "", timestamp: "", location: "", transactionHash: "" });
       toast({ title: "Custody Updated", description: `New custody step added to ${selected.productName}.` });
@@ -269,7 +271,7 @@ export default function BlockchainPage() {
       body: JSON.stringify({ newOwner: {name: transferName, did: transferDid || undefined }, transferTimestamp: transferTime }),
     });
     if (res.ok) {
-      const data = await res.json();
+      const data: DigitalProductPassport = await res.json();
       updateDppLocally(data);
       setTransferName("");
       setTransferDid("");
@@ -311,8 +313,8 @@ export default function BlockchainPage() {
       });
       const data: MintTokenResponse = await res.json();
       setMintResponse(JSON.stringify(data, null, 2));
-      if (res.ok && data.tokenId) {
-        toast({ title: "Token Mint Initiated (Mock)", description: `Token for ${selected.productName} minted. Tx: ${data.transactionHash}` });
+      if (res.ok && data.tokenId && selected) {
+        toast({ title: "Token Mint Initiated (Mock)", description: `Token ${data.tokenId} for ${selected.productName} minted. Tx: ${data.transactionHash}` });
         const updatedSelectedDpp: DigitalProductPassport = {
             ...selected,
             blockchainIdentifiers: {
@@ -322,7 +324,6 @@ export default function BlockchainPage() {
             }
         };
         updateDppLocally(updatedSelectedDpp);
-        // Auto-populate after successful minting
         setUpdateTokenId(data.tokenId);
         setStatusTokenId(data.tokenId);
       } else {
@@ -373,6 +374,7 @@ export default function BlockchainPage() {
     }
     setIsGettingTokenStatus(true);
     setStatusTokenResponse(null);
+    setParsedTokenStatus(null);
     try {
         const res = await fetch(`/api/v1/token/status/${statusTokenId}`, {
         headers: { Authorization: `Bearer ${MOCK_API_KEY}` },
@@ -380,9 +382,10 @@ export default function BlockchainPage() {
         const data: TokenStatusResponse = await res.json();
         setStatusTokenResponse(JSON.stringify(data, null, 2));
         if (res.ok) {
-        toast({ title: "Token Status Retrieved (Mock)", description: `Status for token ${statusTokenId} displayed.` });
+          setParsedTokenStatus(data);
+          toast({ title: "Token Status Retrieved (Mock)", description: `Status for token ${statusTokenId} displayed.` });
         } else {
-        handleApiError(res, "Getting Token Status");
+          handleApiError(res, "Getting Token Status");
         }
     } catch (error) {
         const errorMsg = error instanceof Error ? error.message : "An unknown error occurred";
@@ -418,17 +421,17 @@ export default function BlockchainPage() {
         </CardHeader>
         <CardContent className="text-sm text-foreground/90 space-y-2">
           <p>
-           This page provides conceptual tools to manage on-chain aspects of your Digital Product Passports (DPPs). You can simulate actions such as:
+           This page provides tools to manage on-chain aspects of your Digital Product Passports (DPPs). You can simulate:
           </p>
           <ul className="list-disc list-inside pl-4 space-y-1">
             <li><strong>Anchoring DPPs:</strong> Recording DPP data hashes and key identifiers on a mock blockchain.</li>
             <li><strong>Updating Chain of Custody:</strong> Documenting product transfers and lifecycle events.</li>
-            <li><strong>Transferring Ownership:</strong> Modifying DPP ownership records (conceptually).</li>
+            <li><strong>Transferring Ownership:</strong> Modifying DPP ownership records.</li>
             <li><strong>Managing Verifiable Credentials:</strong> Viewing and retrieving product-related VCs.</li>
             <li><strong>DPP Token Operations:</strong> Conceptual minting, metadata updates, and status checks for DPP tokens.</li>
           </ul>
           <p className="mt-2">
-            These operations are based on the conceptual API endpoints. For technical details, refer to the 
+            These operations interact with mock API endpoints. For technical details, refer to the 
             <a href="/openapi.yaml" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium ml-1">
               OpenAPI Specification <ExternalLink className="inline h-3.5 w-3.5 ml-0.5" />
             </a>.
@@ -611,7 +614,10 @@ export default function BlockchainPage() {
                             </div>
 
                             <Card className="bg-background mt-6">
-                                <CardHeader><CardTitle className="text-md flex items-center"><KeyRound className="mr-2 h-4 w-4 text-info"/>DPP Token Operations (Conceptual)</CardTitle></CardHeader>
+                                <CardHeader>
+                                  <CardTitle className="text-md flex items-center"><KeyRound className="mr-2 h-4 w-4 text-info"/>DPP Token Operations (Conceptual)</CardTitle>
+                                  <CardDescription className="text-xs">These operations are conceptual and simulate interactions with smart contracts. For details on the underlying smart contract design, refer to the project's <Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline">blockchain architecture documentation</Link>.</CardDescription>
+                                </CardHeader>
                                 <CardContent className="space-y-6">
                                     <form onSubmit={handleMintToken} className="space-y-3 p-3 border rounded-md">
                                         <h4 className="font-medium text-sm">Mint Token for Product: {dpp.productName}</h4>
@@ -641,7 +647,16 @@ export default function BlockchainPage() {
                                             {isGettingTokenStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <InfoIconLucide className="mr-2 h-4 w-4" />}
                                             {isGettingTokenStatus ? "Fetching..." : "Get Status"}
                                         </Button>
-                                        {renderApiResult("Token Status", statusTokenResponse)}
+                                        {parsedTokenStatus && (
+                                          <div className="mt-2 space-y-1 p-2 text-xs border rounded bg-muted/50">
+                                            <p><strong>Owner:</strong> <span className="font-mono">{parsedTokenStatus.ownerAddress}</span></p>
+                                            <p><strong>Status:</strong> <Badge variant={parsedTokenStatus.status === 'active' || parsedTokenStatus.status === 'minted' ? 'default' : 'secondary'} className="capitalize">{parsedTokenStatus.status}</Badge></p>
+                                            {parsedTokenStatus.metadataUri && <p><strong>Metadata URI:</strong> <span className="font-mono break-all">{parsedTokenStatus.metadataUri}</span></p>}
+                                            <p><strong>Minted At:</strong> {new Date(parsedTokenStatus.mintedAt).toLocaleString()}</p>
+                                            {parsedTokenStatus.lastTransactionHash && <p><strong>Last Tx:</strong> <span className="font-mono break-all">{parsedTokenStatus.lastTransactionHash}</span></p>}
+                                          </div>
+                                        )}
+                                        {renderApiResult("Token Status Raw", statusTokenResponse)}
                                     </form>
                                 </CardContent>
                             </Card>
@@ -666,4 +681,3 @@ export default function BlockchainPage() {
     </div>
   );
 }
-

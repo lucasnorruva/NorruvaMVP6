@@ -1,12 +1,12 @@
 
-import type { DigitalProductPassport } from '@/types/dpp';
+import type { DigitalProductPassport, EbsiVerificationDetails } from '@/types/dpp'; // Added EbsiVerificationDetails
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
   {
     id: "DPP001",
     productName: "EcoSmart Refrigerator X500",
     category: "Appliances",
-    manufacturer: { name: "GreenTech Appliances"},
+    manufacturer: { name: "GreenTech Appliances", did: "did:ebsi:zyxts12345"},
     modelNumber: "X500-ECO",
     sku: "SKU-X500",
     nfcTagId: "NFC123456",
@@ -38,10 +38,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     ebsiVerification: { 
       status: "verified", 
-      verificationId: "EBSI_TX_ABC123", 
+      verificationId: "EBSI_TX_ABC123",
+      issuerDid: "did:ebsi:zIssuerXYZ789",
+      schema: "EBSIProductComplianceSchema_v1.2",
+      issuanceDate: "2024-07-24T10:00:00Z",
       lastChecked: "2024-07-25T00:00:00Z"
-    },
-    blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef"},
+    } as EbsiVerificationDetails, // Added type assertion
+    blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef", contractAddress: "0xMOCK_CONTRACT_FOR_DPP001", tokenId: "MOCK_TOKENID_FOR_DPP001_mock1"},
     consumerScans: 1250,
     lifecycleEvents: [
       {id: "evt1", type: "Manufactured", timestamp: "2024-01-15T00:00:00Z", transactionHash: "0xabc...def", responsibleParty: "GreenTech Appliances"}
@@ -118,9 +121,9 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eu_espr: { status: "pending" },
       battery_regulation: { status: "not_applicable" },
     },
-    ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-20T00:00:00Z"},
+    ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-20T00:00:00Z"} as EbsiVerificationDetails,
     consumerScans: 300,
-    blockchainIdentifiers: { platform: "MockChain" },
+    blockchainIdentifiers: { platform: "MockChain" }, // No anchorTransactionHash here
     certifications: [
       {id: "cert3", name: "GOTS", issuer: "Control Union", issueDate: "2024-02-20", expiryDate: "2025-02-19", documentUrl: "#gots", standard: "Global Organic Textile Standard 6.0"},
     ],
@@ -186,7 +189,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       ]
     },
     supplyChainLinks: [],
-    ebsiVerification: { status: "not_verified", lastChecked: "2024-07-23T00:00:00Z"},
+    ebsiVerification: { status: "not_verified", lastChecked: "2024-07-23T00:00:00Z"} as EbsiVerificationDetails,
   },
   {
     id: "DPP004",
@@ -216,7 +219,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       ]
     },
     supplyChainLinks: [],
-    ebsiVerification: { status: "error", lastChecked: "2024-07-19T00:00:00Z", message: "Connection timeout to EBSI node."},
+    ebsiVerification: { status: "error", lastChecked: "2024-07-19T00:00:00Z", message: "Connection timeout to EBSI node."} as EbsiVerificationDetails,
   },
   {
     id: "DPP005",
@@ -245,7 +248,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       },
       eu_espr: { status: "pending" },
     },
-    ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-29T00:00:00Z"},
+    ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-29T00:00:00Z"} as EbsiVerificationDetails,
     consumerScans: 50,
     certifications: [
       {id: "cert_bat_01", name: "UN 38.3 Transport Test", issuer: "TestCert Ltd.", issueDate: "2024-07-01", documentUrl: "#", transactionHash: "0xcertAnchorBat1", standard: "UN Manual of Tests and Criteria, Part III, subsection 38.3"}
@@ -269,3 +272,4 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
 ];
 
     
+```

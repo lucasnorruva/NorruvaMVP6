@@ -1,3 +1,4 @@
+
 // --- File: Product.ts ---
 // Description: Product related type definitions and mock data.
 
@@ -335,3 +336,30 @@ export interface AnchorResult {
   platform?: string;
 }
 
+// Token Operation Response Types
+export interface MintTokenResponse {
+  tokenId: string;
+  contractAddress: string;
+  transactionHash: string;
+  message?: string;
+}
+
+export interface UpdateTokenMetadataResponse {
+  tokenId: string;
+  contractAddress: string;
+  transactionHash: string;
+  message?: string;
+}
+
+export interface TokenStatusResponse {
+  tokenId: string;
+  contractAddress: string;
+  ownerAddress: string;
+  mintedAt: string; // ISO date string
+  metadataUri?: string | null;
+  lastTransactionHash?: string | null;
+  status: string; // e.g., "minted", "transferred", "active"
+  message?: string;
+}
+
+```

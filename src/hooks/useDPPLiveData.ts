@@ -7,6 +7,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { DigitalProductPassport, DashboardFiltersState, SortConfig, SortableKeys } from '@/types/dpp';
 import { MOCK_DPPS } from '@/types/dpp'; // Assuming MOCK_DPPS are still needed for base data
+import { getSortValue } from '@/utils/sortUtils';
 import { useToast } from '@/hooks/use-toast';
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -59,31 +60,16 @@ export function useDPPLiveData() {
 
     if (sortConfig.key && sortConfig.direction) {
       filtered.sort((a, b) => {
-        let valA: any, valB: any;
-        if (sortConfig.key === 'metadata.status') valA = a.metadata.status;
-        else if (sortConfig.key === 'metadata.last_updated') valA = new Date(a.metadata.last_updated).getTime();
-        else if (sortConfig.key === 'ebsiVerification.status') valA = a.ebsiVerification?.status;
-        else {
-             valA = a[sortConfig.key as keyof DigitalProductPassport];
-             valB = b[sortConfig.key as keyof DigitalProductPassport];
-        }
-        
-        if (sortConfig.key === 'metadata.status') valB = b.metadata.status;
-        else if (sortConfig.key === 'metadata.last_updated') valB = new Date(b.metadata.last_updated).getTime();
-        else if (sortConfig.key === 'ebsiVerification.status') valB = b.ebsiVerification?.status;
-        // Ensure valB is assigned if not covered by the specific 'else if' blocks for valA
-        // Only assign if valB is actually undefined to allow falsy but valid values like 0
-        else if (valB === undefined) {
-             valB = b[sortConfig.key as keyof DigitalProductPassport];
-        }
+        let valA: any = getSortValue(a, sortConfig.key!);
+        let valB: any = getSortValue(b, sortConfig.key!);
 
         if (typeof valA === 'string' && typeof valB === 'string') {
           valA = valA.toLowerCase();
           valB = valB.toLowerCase();
         }
-        
-        const valAExists = valA !== undefined && valA !== null && valA !== "";
-        const valBExists = valB !== undefined && valB !== null && valB !== "";
+
+        const valAExists = valA !== undefined && valA !== null && valA !== '';
+        const valBExists = valB !== undefined && valB !== null && valB !== '';
 
         if (!valAExists && valBExists) return sortConfig.direction === 'ascending' ? 1 : -1;
         if (valAExists && !valBExists) return sortConfig.direction === 'ascending' ? -1 : 1;

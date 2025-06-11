@@ -5,7 +5,7 @@ import type { SimpleProductDetail } from "@/types/dpp";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { Package, Tag, Building, CheckCircle, AlertTriangle, Info, ShieldCheck, ShieldAlert, ShieldQuestion } from "lucide-react";
+import { Package, Tag, Building, CheckCircle, AlertTriangle, Info, ShieldCheck, Barcode } from "lucide-react"; // Added Barcode
 import { getStatusIcon as getComplianceStatusIcon, getStatusBadgeVariant as getComplianceBadgeVariant, getStatusBadgeClasses as getComplianceBadgeClasses } from "@/utils/dppDisplayUtils";
 import React from "react";
 
@@ -97,10 +97,15 @@ export default function ProductHeader({ product }: ProductHeaderProps) {
                     Manufacturer: <span className="font-medium text-foreground/90 ml-1">{product.manufacturer}</span>
                 </div>
             )}
+             {product.gtin && (
+                <div className="flex items-center">
+                    <Barcode className="h-4 w-4 mr-1.5 text-primary/80" />
+                    GTIN: <span className="font-medium text-foreground/90 ml-1">{product.gtin}</span>
+                </div>
+            )}
         </div>
       </CardHeader>
     </Card>
   );
 }
-
     

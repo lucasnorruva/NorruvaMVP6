@@ -11,7 +11,8 @@ import { PlusCircle, Users } from "lucide-react";
 import { useRole } from "@/contexts/RoleContext";
 import { useToast } from "@/hooks/use-toast";
 import type { Supplier } from "@/types/dpp";
-import { MOCK_SUPPLIERS, USER_SUPPLIERS_LOCAL_STORAGE_KEY } from "@/types/dpp";
+import { USER_SUPPLIERS_LOCAL_STORAGE_KEY } from "@/types/dpp";
+import { MOCK_SUPPLIERS } from "@/data";
 import SupplierList from "@/components/suppliers/SupplierList";
 import AddSupplierForm, { type SupplierFormData } from "@/components/suppliers/AddSupplierForm";
 

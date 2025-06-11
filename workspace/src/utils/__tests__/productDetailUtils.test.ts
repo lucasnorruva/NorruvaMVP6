@@ -1,7 +1,8 @@
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+
 import { fetchProductDetails } from '../productDetailUtils';
-import { MOCK_DPPS, USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
+import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
+import { MOCK_DPPS } from '@/data';
 import type { StoredUserProduct, DigitalProductPassport } from '@/types/dpp';
 
 // Mock localStorage
@@ -21,7 +22,7 @@ const localStorageMock = (() => {
   };
 })();
 
-vi.stubGlobal('localStorage', localStorageMock);
+(global as any).localStorage = localStorageMock;
 
 
 describe('fetchProductDetails', () => {

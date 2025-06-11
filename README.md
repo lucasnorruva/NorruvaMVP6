@@ -69,7 +69,7 @@ As of the current version, the following key areas and features have been protot
 - **Supply Chain Management:**
     - Managing a list of suppliers.
     - Linking suppliers to products (viewable on the product detail page's "Supply Chain" tab).
-- **Developer Portal:** Mock portal with API key management, interactive playground, and conceptual documentation. The OpenAPI specification is available at `/openapi.yaml`.
+- **Developer Portal:** Mock portal with API key management, interactive playground, and conceptual documentation. The canonical OpenAPI specification lives in `openapi.yaml` and is served at `/openapi.yaml` after being copied to `public/openapi.yaml` during the build process.
 - **Settings Page:** Basic user profile, notifications, and organization settings.
 
 ## Performance Considerations
@@ -105,9 +105,7 @@ Links from other parts of the application, such as the "Products" listing page (
     cp .env.example .env
     # then edit .env and add your API keys and other settings
     ```
-4.  Copy the API specification into the `public` folder (required for the
-    Developer Portal). This runs automatically before `npm run dev` or
-    `npm run build` but can be invoked manually:
+4.  Copy the canonical API specification (`openapi.yaml`) into the `public` folder (required for the Developer Portal). This runs automatically before `npm run dev` or `npm run build` but can be invoked manually:
     ```bash
     npm run copy:openapi
     ```
@@ -164,7 +162,7 @@ Without this permission Google Cloud cannot generate the access token required t
 - `src/lib/`: Utility functions.
 - `src/contexts/`: React context providers.
 - `src/types/`: TypeScript type definitions.
-- `openapi.yaml`: Authoritative API specification copied to `public/openapi.yaml` during development and build.
+- `openapi.yaml`: Canonical API specification. The build process copies this file to `public/openapi.yaml` so it is served at `/openapi.yaml`.
 
 ## Firebase Studio Context
 

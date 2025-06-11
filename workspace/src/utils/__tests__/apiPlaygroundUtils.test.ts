@@ -1,5 +1,5 @@
 
-import { describe, it, expect } from 'vitest';
+
 import { generateMockCodeSnippet } from '../apiPlaygroundUtils';
 
 describe('generateMockCodeSnippet', () => {

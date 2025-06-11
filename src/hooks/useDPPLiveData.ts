@@ -6,7 +6,7 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import type { DigitalProductPassport, DashboardFiltersState, SortConfig, SortableKeys } from '@/types/dpp';
-import { MOCK_DPPS } from '@/types/dpp'; // Assuming MOCK_DPPS are still needed for base data
+import { MOCK_DPPS } from '@/data';
 import { getSortValue } from '@/utils/sortUtils';
 import { useToast } from '@/hooks/use-toast';
 

@@ -3,7 +3,7 @@
 // Description: Utility functions for generating display details (text, icons, variants) for DPP compliance, EBSI status, and completeness.
 
 
-import React from "react"; 
+import React from "react";
 import type { DigitalProductPassport, EbsiVerificationDetails, DisplayableProduct, ProductComplianceSummary, SimpleLifecycleEvent } from "@/types/dpp";
 import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertCircle, AlertTriangle, CheckCircle2, RefreshCw, Loader2 } from 'lucide-react';
 import { cn } from "@/lib/utils";
@@ -16,6 +16,47 @@ interface ComplianceDetails {
 }
 
 interface EbsiStatusDisplayDetails extends ComplianceDetails {}
+
+// Configuration for DPP completeness checks
+const BASE_ESSENTIAL_FIELDS_CONFIG: Array<{
+  key: keyof DisplayableProduct | string;
+  label: string;
+  check?: (p: DisplayableProduct) => boolean;
+  categoryScope?: string[];
+}> = [
+  { key: 'productName', label: 'Product Name' },
+  { key: 'gtin', label: 'GTIN' },
+  { key: 'category', label: 'Category', check: p => !!(p.category || p.productCategory) },
+  { key: 'manufacturer', label: 'Manufacturer' },
+  { key: 'modelNumber', label: 'Model Number' },
+  { key: 'description', label: 'Description', check: p => !!(p.description || p.productDescription) },
+  { key: 'imageUrl', label: 'Image URL', check: (p) => !!p.imageUrl && !p.imageUrl.includes('placehold.co') && !p.imageUrl.includes('?text=') },
+  { key: 'materials', label: 'Materials Info', check: p => !!p.materials && p.materials.trim() !== '' },
+  { key: 'sustainabilityClaims', label: 'Sustainability Claims', check: p => !!p.sustainabilityClaims && p.sustainabilityClaims.trim() !== '' },
+  { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] },
+  { key: 'specifications', label: 'Specifications', check: (p) => {
+      if (typeof p.specifications === 'string') return !!p.specifications && p.specifications.trim() !== '' && p.specifications.trim() !== '{}';
+      if (typeof p.specifications === 'object' && p.specifications !== null) return Object.keys(p.specifications).length > 0;
+      return false;
+    }
+  },
+  { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 },
+  { key: 'complianceSummary.overallStatus', label: 'Overall Compliance Status', check: (p) => p.complianceSummary?.overallStatus !== undefined && p.complianceSummary.overallStatus.toLowerCase() !== 'n/a' },
+  { key: 'complianceSummary.eprel.status', label: 'EPREL Status', check: (p) => p.complianceSummary?.eprel?.status !== undefined && p.complianceSummary.eprel.status.toLowerCase() !== 'n/a' && !p.complianceSummary.eprel.status.toLowerCase().includes('not found')},
+  { key: 'complianceSummary.ebsi.status', label: 'EBSI Status', check: (p) => p.complianceSummary?.ebsi?.status !== undefined && p.complianceSummary.ebsi.status.toLowerCase() !== 'n/a' && p.complianceSummary.ebsi.status.toLowerCase() !== 'not verified' && p.complianceSummary.ebsi.status.toLowerCase() !== 'error' },
+  { key: 'complianceSummary.specificRegulations', label: 'Specific Regulations Count', check: (p) => (p.complianceSummary?.specificRegulations || []).length > 0 },
+];
+
+const BATTERY_FIELDS_CONFIG: Array<{
+  key: keyof DisplayableProduct | string;
+  label: string;
+  check?: (p: DisplayableProduct) => boolean;
+}> = [
+  { key: 'batteryChemistry', label: 'Battery Chemistry' },
+  { key: 'stateOfHealth', label: 'Battery State of Health (SoH)', check: p => typeof p.stateOfHealth === 'number' && p.stateOfHealth !== null },
+  { key: 'carbonFootprintManufacturing', label: 'Battery Mfg. Carbon Footprint', check: p => typeof p.carbonFootprintManufacturing === 'number' && p.carbonFootprintManufacturing !== null },
+  { key: 'recycledContentPercentage', label: 'Battery Recycled Content', check: p => typeof p.recycledContentPercentage === 'number' && p.recycledContentPercentage !== null },
+];
 
 export const getOverallComplianceDetails = (dpp: DigitalProductPassport): ComplianceDetails => {
   let compliantCount = 0;
@@ -82,38 +123,13 @@ export const getEbsiStatusDetails = (status?: EbsiVerificationDetails['status'])
 };
 
 export const calculateDppCompletenessForList = (product: DisplayableProduct): { score: number; filledFields: number; totalFields: number; missingFields: string[] } => {
-  const essentialFieldsConfig: Array<{ key: keyof DisplayableProduct | string; label: string; check?: (p: DisplayableProduct) => boolean; categoryScope?: string[] }> = [
-    { key: 'productName', label: 'Product Name' },
-    { key: 'gtin', label: 'GTIN' },
-    { key: 'category', label: 'Category', check: p => !!(p.category || p.productCategory) },
-    { key: 'manufacturer', label: 'Manufacturer' },
-    { key: 'modelNumber', label: 'Model Number' },
-    { key: 'description', label: 'Description', check: p => !!(p.description || p.productDescription) },
-    { key: 'imageUrl', label: 'Image URL', check: (p) => !!p.imageUrl && !p.imageUrl.includes('placehold.co') && !p.imageUrl.includes('?text=') },
-    { key: 'materials', label: 'Materials Info', check: p => !!p.materials && p.materials.trim() !== '' },
-    { key: 'sustainabilityClaims', label: 'Sustainability Claims', check: p => !!p.sustainabilityClaims && p.sustainabilityClaims.trim() !== '' },
-    { key: 'energyLabel', label: 'Energy Label', categoryScope: ['Appliances', 'Electronics'] },
-    { key: 'specifications', label: 'Specifications', check: (p) => {
-        if (typeof p.specifications === 'string') return !!p.specifications && p.specifications.trim() !== '' && p.specifications.trim() !== '{}';
-        if (typeof p.specifications === 'object' && p.specifications !== null) return Object.keys(p.specifications).length > 0;
-        return false;
-      }
-    },
-    { key: 'lifecycleEvents', label: 'Lifecycle Events', check: (p) => (p.lifecycleEvents || []).length > 0 },
-    { key: 'complianceSummary.overallStatus', label: 'Overall Compliance Status', check: (p) => p.complianceSummary?.overallStatus !== undefined && p.complianceSummary.overallStatus.toLowerCase() !== 'n/a' },
-    { key: 'complianceSummary.eprel.status', label: 'EPREL Status', check: (p) => p.complianceSummary?.eprel?.status !== undefined && p.complianceSummary.eprel.status.toLowerCase() !== 'n/a' && !p.complianceSummary.eprel.status.toLowerCase().includes('not found')},
-    { key: 'complianceSummary.ebsi.status', label: 'EBSI Status', check: (p) => p.complianceSummary?.ebsi?.status !== undefined && p.complianceSummary.ebsi.status.toLowerCase() !== 'n/a' && p.complianceSummary.ebsi.status.toLowerCase() !== 'not verified' && p.complianceSummary.ebsi.status.toLowerCase() !== 'error' },
-    { key: 'complianceSummary.specificRegulations', label: 'Specific Regulations Count', check: (p) => (p.complianceSummary?.specificRegulations || []).length > 0 },
-  ];
+  let essentialFieldsConfig = [...BASE_ESSENTIAL_FIELDS_CONFIG];
 
   const currentCategory = product.category || product.productCategory;
   const isBatteryRelevantCategory = currentCategory?.toLowerCase().includes('electronics') || currentCategory?.toLowerCase().includes('automotive') || currentCategory?.toLowerCase().includes('battery');
 
   if (isBatteryRelevantCategory || product.batteryChemistry) {
-    essentialFieldsConfig.push({ key: 'batteryChemistry', label: 'Battery Chemistry' });
-    essentialFieldsConfig.push({ key: 'stateOfHealth', label: 'Battery State of Health (SoH)', check: p => typeof p.stateOfHealth === 'number' && p.stateOfHealth !== null});
-    essentialFieldsConfig.push({ key: 'carbonFootprintManufacturing', label: 'Battery Mfg. Carbon Footprint', check: p => typeof p.carbonFootprintManufacturing === 'number' && p.carbonFootprintManufacturing !== null });
-    essentialFieldsConfig.push({ key: 'recycledContentPercentage', label: 'Battery Recycled Content', check: p => typeof p.recycledContentPercentage === 'number' && p.recycledContentPercentage !== null});
+    essentialFieldsConfig = [...essentialFieldsConfig, ...BATTERY_FIELDS_CONFIG];
   }
 
   let filledCount = 0;

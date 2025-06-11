@@ -23,19 +23,22 @@ const Globe = dynamic(() => import('react-globe.gl'), {
 });
 
 // List of EU country ISO A3 codes (adjust as needed for accuracy)
+// This list represents EU member states as of a certain point in time.
 const EU_COUNTRY_CODES = new Set([
   'AUT', 'BEL', 'BGR', 'HRV', 'CYP', 'CZE', 'DNK', 'EST', 'FIN', 'FRA', 'DEU', 
   'GRC', 'HUN', 'IRL', 'ITA', 'LVA', 'LTU', 'LUX', 'MLT', 'NLD', 'POL', 
   'PRT', 'ROU', 'SVK', 'SVN', 'ESP', 'SWE'
 ]);
 
+// Define properties expected from the TopoJSON file for each country feature
 interface CountryProperties extends GeoJsonProperties {
-  NAME: string; // Official name
-  NAME_LONG: string; // Long name
-  ISO_A3: string; // ISO Alpha-3 code
-  // Add other properties from your topojson file if needed
+  NAME: string; 
+  NAME_LONG: string; 
+  ISO_A3: string; 
+  // Add other properties if your TopoJSON file has more that you might use
 }
 
+// Type for a GeoJSON feature with our custom properties
 type CountryFeature = Feature<Geometry, CountryProperties>;
 
 export default function GlobeV2Page() {
@@ -44,24 +47,25 @@ export default function GlobeV2Page() {
   const [hoverD, setHoverD] = useState<CountryFeature | null>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [globeReady, setGlobeReady] = useState(false);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  // Approximate header height (adjust if your header height is different or dynamic)
+  const HEADER_HEIGHT = 64; // 4rem = 64px
 
   // Effect to set initial dimensions and handle window resize
   useEffect(() => {
     const updateDimensions = () => {
-      // Adjust height calculation based on your app's header/footer height if any
-      // Assuming a header height of roughly 64px (4rem)
-      const headerHeight = document.querySelector('header')?.offsetHeight || 64;
-      setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight - headerHeight, 
-      });
+      if (typeof window !== 'undefined') {
+        setDimensions({
+          width: window.innerWidth, // Globe will be inside a padded main, so this will be effectively content width
+          height: window.innerHeight - HEADER_HEIGHT, 
+        });
+      }
     };
 
-    if (typeof window !== 'undefined') {
-      updateDimensions(); // Set initial dimensions
-      window.addEventListener('resize', updateDimensions);
-      return () => window.removeEventListener('resize', updateDimensions);
-    }
+    updateDimensions(); // Set initial dimensions
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
   // Effect to fetch country polygon data
@@ -71,6 +75,7 @@ export default function GlobeV2Page() {
       .then((atlas: Topology) => {
         const countries = atlas.objects.countries;
         if (countries) {
+          // Convert TopoJSON to GeoJSON features
           const geoJsonCountries = feature(atlas, countries) as FeatureCollection<Geometry, CountryProperties>;
           setLandPolygons(geoJsonCountries.features);
         } else {
@@ -81,86 +86,104 @@ export default function GlobeV2Page() {
       .catch(err => {
         console.error("Error fetching or processing country polygons:", err);
         setLandPolygons([]);
+      })
+      .finally(() => {
+        setDataLoaded(true);
       });
   }, []);
 
-  // Function to determine if a country is in the EU
+  // Function to determine if a country is in the EU based on its ISO A3 code
   const isEU = useCallback((isoA3: string | undefined) => {
-    return !!isoA3 && EU_COUNTRY_CODES.has(isoA3);
+    return !!isoA3 && EU_COUNTRY_CODES.has(isoA3.toUpperCase());
   }, []);
 
-  // Globe material for oceans
+  // Globe material for oceans (light blue)
   const globeMaterial = useMemo(() => new MeshPhongMaterial({
-    color: '#a9d5e5', // Light blue for oceans (e.g., #ADD8E6, #B0E0E6) closer to #a9d5e5 from image
+    color: '#a9d5e5', // Light blue for oceans, as per user guidance image
     transparent: true,
     opacity: 1,
   }), []);
 
-  // Initial globe setup
+  // Initial globe setup (camera, controls) once the globe is ready
   useEffect(() => {
     if (globeEl.current && globeReady) {
       const controls = globeEl.current.controls();
       if (controls) {
         controls.autoRotate = true;
-        controls.autoRotateSpeed = 0.3;
-        controls.enableZoom = true; // Allow zooming
-        controls.minDistance = 200; // Prevent zooming too close
-        controls.maxDistance = 800; // Prevent zooming too far
+        controls.autoRotateSpeed = 0.3; // Slow rotation
+        controls.enableZoom = true;    // Allow zooming
+        controls.minDistance = 150;   // Prevent zooming too close
+        controls.maxDistance = 1000;   // Prevent zooming too far out
       }
       // Set initial camera position (latitude, longitude, altitude)
+      // Altitude 2.5 for a reasonably zoomed-out view
       globeEl.current.pointOfView({ lat: 20, lng: 0, altitude: 2.5 }, 1000);
     }
   }, [globeReady]);
   
-  // Performance optimization: memoize polygon colors
+  // Memoized polygon cap color logic for performance
   const getPolygonCapColor = useCallback((feat: object) => {
     const properties = (feat as CountryFeature).properties;
-    return isEU(properties?.ISO_A3) ? '#002D62' : '#CCCCCC'; // Dark blue for EU, Light grey for others
+    // EU countries: dark blue, others: light grey
+    return isEU(properties?.ISO_A3) ? '#002D62' : '#CCCCCC'; 
   }, [isEU]);
 
+  // Show loader if dimensions are not set or data is not loaded yet
+  if (dimensions.width === 0 || dimensions.height === 0 || !dataLoaded) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-var(--header-height,4rem))] w-full bg-white">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="ml-4 text-lg text-muted-foreground">Preparing Global Tracker...</p>
+      </div>
+    );
+  }
 
   return (
-    <div style={{ width: '100%', height: '100%', position: 'relative', background: 'white' }}>
-      {typeof window !== 'undefined' && dimensions.width > 0 && dimensions.height > 0 && landPolygons.length > 0 && (
+    // The parent div for the globe, styled to fill the available content area
+    // The page's root div should be styled to take up viewport height minus header
+    <div style={{ width: '100%', height: `calc(100vh - ${HEADER_HEIGHT}px)`, position: 'relative', background: 'white' }}>
+      {/* Conditionally render Globe only when window is defined and dimensions are set */}
+      {typeof window !== 'undefined' && dimensions.width > 0 && dimensions.height > 0 && (
         <Globe
           ref={globeEl}
-          // Globe imagery and material
-          globeImageUrl={null} // No texture for the globe itself if using material color
+          // Globe appearance
+          globeImageUrl={null} // No texture for the globe itself; using material color for oceans
           globeMaterial={globeMaterial} // Custom material for ocean color
           
-          // Background and atmosphere
+          // Scene background and atmosphere
           backgroundColor="rgba(255, 255, 255, 1)" // White background for the scene
-          showAtmosphere={false} // Disable atmosphere
+          showAtmosphere={false} // Atmosphere disabled as requested
           
-          // Polygon data for countries
+          // Country polygon data and styling
           polygonsData={landPolygons}
-          polygonCapColor={getPolygonCapColor}
+          polygonCapColor={getPolygonCapColor} // Dynamic color for EU vs non-EU countries
           polygonSideColor={() => 'rgba(0, 0, 0, 0.05)'} // Subtle side color for depth
           polygonStrokeColor={() => '#000000'} // Black borders between countries
-          polygonAltitude={0.008} // Slight altitude to prevent z-fighting with globe surface and make borders visible
+          polygonAltitude={0.008} // Slight altitude to make borders pop and prevent z-fighting
           
           // Interactivity
-          onPolygonHover={setHoverD as (feature: object | null) => void}
-          polygonLabel={({ properties }: object) => {
+          onPolygonHover={setHoverD as (feature: object | null) => void} // Update hover state
+          polygonLabel={({ properties }: object) => { // Tooltip label on hover
             const p = properties as CountryProperties;
             return `<div style="background: rgba(40,40,40,0.8); color: white; padding: 5px 8px; border-radius: 4px; font-size: 12px;"><b>${p?.NAME_LONG || p?.NAME || 'Country'}</b></div>`;
           }}
           polygonsTransitionDuration={100} // Smooth transition for hover effects
 
-          // Dimensions and readiness
+          // Dimensions and readiness callback
           width={dimensions.width}
           height={dimensions.height}
-          onGlobeReady={() => setGlobeReady(true)}
+          onGlobeReady={() => setGlobeReady(true)} // Signal that the globe instance is ready
 
-          // Controls configuration (can be further customized in useEffect)
-          enablePointerInteraction={true}
+          // Pointer interactions (zoom, pan)
+          enablePointerInteraction={true} // Allow user interaction with the globe
         />
       )}
-      {/* Info overlay */}
+      {/* Informational overlay at the bottom */}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 p-3 bg-black/60 text-white rounded-lg backdrop-blur-sm shadow-lg text-center text-xs md:text-sm max-w-[90%] md:max-w-md">
         <Info className="inline h-4 w-4 mr-1.5 align-middle text-blue-300" />
-        DPP Global Tracker v2. EU countries in dark blue, others in light grey. Hover for country names.
+        DPP Global Tracker v2. EU countries in dark blue. Hover for country names.
       </div>
     </div>
   );
 }
+

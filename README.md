@@ -1,3 +1,4 @@
+
 # Norruva Digital Product Passport (DPP) - Concept Application
 
 Welcome to the Norruva Digital Product Passport (DPP) concept application! This project is a Next.js-based platform designed to explore and prototype features for managing Digital Product Passports, aligning with EU regulations and leveraging AI for enhanced functionality.

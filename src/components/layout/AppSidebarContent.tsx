@@ -108,7 +108,7 @@ export default function AppSidebarContent() {
             const { className, isActive } = commonButtonClass(item.href);
             return (
               <SidebarMenuItem key={item.href}>
-                <Link href={item.href} passHref legacyBehavior>
+                <Link href={item.href}>
                   <SidebarMenuButton
                     className={className}
                     tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}
@@ -132,7 +132,7 @@ export default function AppSidebarContent() {
             const { className, isActive } = commonButtonClass(item.href);
             return (
               <SidebarMenuItem key={item.href}>
-                <Link href={item.href} passHref legacyBehavior>
+                <Link href={item.href}>
                   <SidebarMenuButton
                     className={className}
                     tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}

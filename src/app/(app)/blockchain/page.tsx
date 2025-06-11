@@ -152,31 +152,31 @@ export default function BlockchainPage() {
     fetch(`/api/v1/dpp?blockchainAnchored=${filter}`, {
         headers: { Authorization: `Bearer ${MOCK_API_KEY}` } 
     })
-      .then(res => {
+      .then(async res => { // Make this async to await res.json() inside
         if (!res.ok) {
+           // No need to await handleApiError as it doesn't return a promise that needs to be awaited here
            handleApiError(res, "Fetching DPPs");
-           return { data: [], error: { message: "Error fetching"}};
+           // Return a consistent error structure if needed by downstream logic, or throw
+           return { data: [], error: { message: (await res.json()).error?.message || "Error fetching DPPs" }};
         }
         return res.json();
       })
       .then(data => {
-        if(data.error && data.error.message) { // Check if error message exists
-          if(!dpps.length) { 
+        if(data.error?.message) { // Check if data.error and data.error.message exist
              toast({title: "Error fetching DPPs", description: data.error.message, variant: "destructive"});
-          }
-          setDpps(data.data || []);
+             setDpps(data.data || []); // Set DPPs even if there's an error in the payload, might contain partial data
         } else {
           setDpps(data.data || []);
         }
       })
-      .catch(err => {
-        toast({title: "Error fetching DPPs", description: err.message, variant: "destructive"});
+      .catch(err => { // Catch network errors or errors from res.json() if not caught before
+        toast({title: "Fetching DPPs Failed", description: err.message, variant: "destructive"});
         setDpps([]);
       })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [filter, toast, handleApiError, dpps.length]);
+  }, [filter, toast, handleApiError]); // Removed dpps.length from dependencies
 
   const handleSelectProduct = (dpp: DigitalProductPassport | null) => {
     setSelected(dpp);

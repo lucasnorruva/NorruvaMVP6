@@ -3,6 +3,7 @@ import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
 import { RoleProvider } from '@/contexts/RoleContext'; // Import RoleProvider
 import { SkipToContent } from '@/components/layout/SkipToContent'
+import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 
 export const metadata: Metadata = {
   title: 'Norruva Digital Product Passport',
@@ -29,6 +30,7 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased">
         <SkipToContent />
+        <ServiceWorkerRegister />
         <RoleProvider> {/* RoleProvider now wraps all children at the root level */}
           {children}
         </RoleProvider>

@@ -35,7 +35,7 @@ export default function AuthenticationPage() {
           <section>
             <h3 className="font-semibold text-lg mb-2">Obtaining API Keys</h3>
             <p>
-              API keys can be generated and managed through the <Link href="/developer#api-keys" className="text-primary hover:underline">API Keys section</Link> of the Developer Portal.
+              API keys can be generated and managed through the <Link href="/developer#api_keys" className="text-primary hover:underline">API Keys section</Link> of the Developer Portal.
               You will typically have access to Sandbox keys for testing and Production keys for live applications.
             </p>
           </section>

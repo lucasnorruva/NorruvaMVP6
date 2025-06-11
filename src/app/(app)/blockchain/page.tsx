@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Fingerprint, ShieldCheck, InfoIcon as InfoIconLucide, AlertCircle, Anchor, Link2, Edit, UploadCloud, KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package } from "lucide-react";
+import { Fingerprint, ShieldCheck, InfoIcon as InfoIconLucide, AlertCircle, Anchor, Link2, Edit, UploadCloud, KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, PlusCircle } from "lucide-react";
 import { CardDescription } from "@/components/ui/card";
 import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
@@ -108,7 +108,7 @@ export default function BlockchainPage() {
   const [selected, setSelected] = useState<DigitalProductPassport | null>(null);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isActionLoading, setIsActionLoading] = useState<string | boolean>(false);
+  const [isActionLoading, setIsActionLoading] = useState<string | boolean>(false); // Use string to specify action type for multiple buttons
 
   const [anchorPlatform, setAnchorPlatform] = useState("EBSI");
   const [custodyStep, setCustodyStep] = useState({ stepName: "", actorDid: "", timestamp: "", location: "", transactionHash: "" });
@@ -133,6 +133,20 @@ export default function BlockchainPage() {
   const [statusTokenResponse, setStatusTokenResponse] = useState<string | null>(null);
   const [isGettingTokenStatus, setIsGettingTokenStatus] = useState(false);
 
+  const handleApiError = useCallback(async (response: Response, action: string) => {
+    let errorData;
+    try {
+      errorData = await response.json();
+    } catch (e) {
+      errorData = { error: { message: "Failed to parse error response." } };
+    }
+    toast({
+      title: `${action} Failed`,
+      description: `${errorData?.error?.message || `An unexpected error occurred during ${action.toLowerCase()}.`} (Status: ${response.status})`,
+      variant: "destructive",
+    });
+  }, [toast]);
+
   useEffect(() => {
     setIsLoading(true);
     fetch(`/api/v1/dpp?blockchainAnchored=${filter}`, {
@@ -140,26 +154,31 @@ export default function BlockchainPage() {
     })
       .then(res => {
         if (!res.ok) {
-          throw new Error(`API Error: ${res.status}`);
+           handleApiError(res, "Fetching DPPs"); // Use centralized error handler
+           return { data: [], error: { message: "Error fetching"}}; // Return structure indicating error
         }
         return res.json();
       })
       .then(data => {
         if(data.error) {
-          toast({title: "Error fetching DPPs", description: data.error.message, variant: "destructive"});
-          setDpps([]);
+          // Error already handled by handleApiError if status was not ok,
+          // but this catches errors in successful responses with error bodies
+          if(!dpps.length) { // Avoid duplicate toasts if data was already fetched
+             toast({title: "Error fetching DPPs", description: data.error.message, variant: "destructive"});
+          }
+          setDpps(data.data || []); // Still set data, might be partial or empty
         } else {
           setDpps(data.data || []);
         }
       })
-      .catch(err => {
+      .catch(err => { // Network errors or other fetch issues
         toast({title: "Error fetching DPPs", description: err.message, variant: "destructive"});
         setDpps([]);
       })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [filter, toast]);
+  }, [filter, toast, handleApiError, dpps.length]); // Added dpps.length to dependencies to prevent re-toast on filter change if initial load failed
 
   const handleSelectProduct = (dpp: DigitalProductPassport | null) => {
     setSelected(dpp);
@@ -186,20 +205,6 @@ export default function BlockchainPage() {
       }
     }
   };
-
-  const handleApiError = useCallback(async (response: Response, action: string) => {
-    let errorData;
-    try {
-      errorData = await response.json();
-    } catch (e) {
-      errorData = { error: { message: "Failed to parse error response." } };
-    }
-    toast({
-      title: `${action} Failed`,
-      description: `${errorData?.error?.message || `An unexpected error occurred during ${action.toLowerCase()}.`} (Status: ${response.status})`,
-      variant: "destructive",
-    });
-  }, [toast]);
 
   const handleAnchor = async (e: FormEvent) => {
     e.preventDefault();
@@ -310,17 +315,15 @@ export default function BlockchainPage() {
       setMintResponse(JSON.stringify(data, null, 2));
       if (res.ok && data.tokenId) {
         toast({ title: "Token Mint Initiated (Mock)", description: `Token for ${selected.productName} minted. Tx: ${data.transactionHash}` });
-        // Update selected product's state with the new tokenId
         const updatedSelectedDpp: DigitalProductPassport = {
             ...selected,
             blockchainIdentifiers: {
-                ...selected.blockchainIdentifiers,
+                ...(selected.blockchainIdentifiers || {}),
                 tokenId: data.tokenId,
-                // Optionally update contractAddress if it changed or was set by minting
                 contractAddress: data.contractAddress || selected.blockchainIdentifiers?.contractAddress, 
             }
         };
-        updateDpp(updatedSelectedDpp); // This will also re-set selected and pre-fill token ID fields
+        updateDpp(updatedSelectedDpp);
       } else {
         handleApiError(res, "Minting Token");
       }
@@ -344,7 +347,7 @@ export default function BlockchainPage() {
         const res = await fetch(`/api/v1/token/metadata/${updateTokenId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
-        body: JSON.stringify({ metadataUri: updateMetadataUri, contractAddress: "0xUpdatedContractIfDifferent" }), // Example additional param
+        body: JSON.stringify({ metadataUri: updateMetadataUri, contractAddress: "0xUpdatedContractIfDifferent" }),
         });
         const data: UpdateTokenMetadataResponse = await res.json();
         setUpdateTokenResponse(JSON.stringify(data, null, 2));
@@ -398,7 +401,7 @@ export default function BlockchainPage() {
             </pre>
         </details>
     );
-};
+  };
 
 
   return (
@@ -409,7 +412,7 @@ export default function BlockchainPage() {
         <CardHeader>
           <CardTitle className="font-headline text-xl flex items-center">
             <InfoIconLucide className="mr-3 h-6 w-6 text-primary" />
-            About This Page
+            About Blockchain Management
           </CardTitle>
         </CardHeader>
         <CardContent className="text-sm text-foreground/90 space-y-2">
@@ -503,8 +506,8 @@ export default function BlockchainPage() {
                                             </TooltipTrigger>
                                             <TooltipContent className="max-w-xs">
                                             <p className="text-xs">
-                                                Blockchain anchoring (e.g., transaction hash, contract address, token ID) provides an immutable record of the DPP's data integrity. 
-                                                EBSI (European Blockchain Services Infrastructure) verification can enhance trust using verifiable credentials.
+                                                Blockchain anchoring provides an immutable record of the DPP's data integrity. 
+                                                EBSI (European Blockchain Services Infrastructure) verification enhances trust using verifiable credentials.
                                             </p>
                                             </TooltipContent>
                                         </Tooltip>
@@ -583,9 +586,9 @@ export default function BlockchainPage() {
                                       {isActionLoading === "fetchCredential" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4"/>}
                                        {isActionLoading === "fetchCredential" ? "Fetching..." : "Get Specific Credential"}
                                     </Button>
-                                    {renderApiResult("Fetched Credential", fetchedCredential)}
+                                    {renderApiResult("Fetched Credential", JSON.stringify(fetchedCredential, null, 2))}
                                     <p className="text-xs text-muted-foreground mt-2">
-                                      This action fetches a mock Verifiable Credential JSON for the DPP. In a real system, VCs might be stored off-chain and referenced, or embedded.
+                                      This action fetches a mock Verifiable Credential JSON for the DPP.
                                     </p>
                                   </CardContent>
                                 </Card>
@@ -662,8 +665,3 @@ export default function BlockchainPage() {
     </div>
   );
 }
-
-
-    
-
-    

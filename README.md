@@ -234,7 +234,7 @@ All `/api/v1/*` endpoints expect an API key using the `Authorization` header wit
 curl -H 'Authorization: Bearer SANDBOX_KEY_123' http://localhost:9002/api/v1/dpp
 ```
 
-Valid keys are configured via the `VALID_API_KEYS` environment variable. The `.env.example` file defines two sample keys:
+Valid keys are configured via the `VALID_API_KEYS` environment variable. This should be a comma-separated list of keys. The values are loaded at runtime by `src/config/auth.ts` as the `API_KEYS` array. The `.env.example` file defines two sample keys:
 
 ```bash
 VALID_API_KEYS=SANDBOX_KEY_123,PROD_KEY_456

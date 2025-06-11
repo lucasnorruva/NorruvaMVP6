@@ -106,7 +106,9 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
         try {
           machine.transition(nextStates[0]);
           // eslint-disable-next-line no-console
-          console.log('Lifecycle advanced to', machine.getCurrentState());
+          if (process.env.NODE_ENV !== 'production') {
+            console.log('Lifecycle advanced to', machine.getCurrentState());
+          }
         } catch (err) {
           // eslint-disable-next-line no-console
           console.error('Lifecycle transition failed:', err);

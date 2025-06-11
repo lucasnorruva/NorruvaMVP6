@@ -7,7 +7,10 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     category: "Appliances",
     manufacturer: { name: "GreenTech Appliances"},
     modelNumber: "X500-ECO",
-    metadata: { 
+    sku: "SKU-X500",
+    nfcTagId: "NFC123456",
+    rfidTagId: "RFID654321",
+    metadata: {
       created_at: "2024-01-01T10:00:00Z", 
       last_updated: "2024-07-30T10:00:00Z",
       status: "published", 

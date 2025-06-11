@@ -59,7 +59,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           </CardHeader>
         </Card>
 
-        {(product.gtin || product.modelNumber) && (
+        {(product.gtin || product.modelNumber || product.sku || product.nfcTagId || product.rfidTagId) && (
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center">
@@ -68,14 +68,20 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="text-sm space-y-1.5">
+              {product.sku && (
+                <p><strong className="text-muted-foreground">SKU:</strong> {product.sku}</p>
+              )}
               {product.gtin && (
                 <p><strong className="text-muted-foreground">GTIN:</strong> {product.gtin}</p>
               )}
               {product.modelNumber && (
                 <p><strong className="text-muted-foreground">Model:</strong> {product.modelNumber}</p>
               )}
-              {!product.gtin && !product.modelNumber && (
-                <p className="text-muted-foreground">No identifiers provided.</p>
+              {product.nfcTagId && (
+                <p><strong className="text-muted-foreground">NFC Tag ID:</strong> {product.nfcTagId}</p>
+              )}
+              {product.rfidTagId && (
+                <p><strong className="text-muted-foreground">RFID Tag ID:</strong> {product.rfidTagId}</p>
               )}
             </CardContent>
           </Card>

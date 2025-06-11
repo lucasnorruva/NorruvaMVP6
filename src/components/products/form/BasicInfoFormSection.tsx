@@ -85,6 +85,9 @@ export default function BasicInfoFormSection({
         )}
       />
       <FormField control={form.control} name="gtin" render={({ field }) => ( <FormItem> <FormLabel>GTIN</FormLabel> <FormControl><Input placeholder="e.g., 01234567890123" {...field} /></FormControl> <FormMessage /> </FormItem> )}/>
+      <FormField control={form.control} name="sku" render={({ field }) => (<FormItem><FormLabel>SKU</FormLabel><FormControl><Input placeholder="e.g., SKU123" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+      <FormField control={form.control} name="nfcTagId" render={({ field }) => (<FormItem><FormLabel>NFC Tag ID</FormLabel><FormControl><Input placeholder="e.g., NFC-ABC123" {...field} /></FormControl><FormMessage /></FormItem>)}/>
+      <FormField control={form.control} name="rfidTagId" render={({ field }) => (<FormItem><FormLabel>RFID Tag ID</FormLabel><FormControl><Input placeholder="e.g., RFID-XYZ789" {...field} /></FormControl><FormMessage /></FormItem>)}/>
       <FormField
         control={form.control}
         name="productCategory"

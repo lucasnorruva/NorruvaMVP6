@@ -44,6 +44,8 @@ export default function GlobeV2Page() {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [globeReady, setGlobeReady] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [countryStats, setCountryStats] = useState<Record<string, number>>({});
+  const [maxCount, setMaxCount] = useState(0);
 
   // Approximate header height (adjust if your header height is different or dynamic)
   const HEADER_HEIGHT = 64; // Example: 4rem = 64px
@@ -82,10 +84,46 @@ export default function GlobeV2Page() {
       });
   }, []);
 
+  // Fetch statistics for DPP counts by country
+  useEffect(() => {
+    fetch('/api/v1/dpp/country-stats')
+      .then((res) => res.json())
+      .then((data: Record<string, number>) => {
+        setCountryStats(data);
+        const counts = Object.values(data);
+        setMaxCount(counts.length > 0 ? Math.max(...counts) : 0);
+      })
+      .catch((err) => {
+        console.error('Error fetching country stats:', err);
+        setCountryStats({});
+        setMaxCount(0);
+      });
+  }, []);
+
   // Function to determine if a country is in the EU based on its ISO A3 code
   const isEU = useCallback((isoA3: string | undefined) => {
     return !!isoA3 && EU_COUNTRY_CODES.has(isoA3.toUpperCase());
   }, []);
+
+  const LIGHT_BLUE = '#bfdbff';
+  const DARK_BLUE = '#002D62';
+
+  const hexToRgb = (hex: string) => {
+    const m = hex.replace('#', '').match(/.{1,2}/g);
+    return m ? m.map((x) => parseInt(x, 16)) : [0, 0, 0];
+  };
+
+  const rgbToHex = (rgb: number[]) =>
+    '#' + rgb.map((x) => x.toString(16).padStart(2, '0')).join('');
+
+  const interpolateColor = (c1: string, c2: string, factor: number) => {
+    const rgb1 = hexToRgb(c1);
+    const rgb2 = hexToRgb(c2);
+    const result = rgb1.map((c, i) =>
+      Math.round(c + (rgb2[i] - c) * Math.min(Math.max(factor, 0), 1))
+    );
+    return rgbToHex(result as number[]);
+  };
 
   // Globe material for oceans (light blue)
   const globeMaterial = useMemo(() => new MeshPhongMaterial({
@@ -111,11 +149,19 @@ export default function GlobeV2Page() {
   }, [globeReady]);
   
   // Memoized polygon cap color logic for performance
-  const getPolygonCapColor = useCallback((feat: object) => {
-    const properties = (feat as CountryFeature).properties;
-    const iso = properties?.ADM0_A3 || properties?.ISO_A3;
-    return isEU(iso) ? '#002D62' : '#CCCCCC'; // Dark blue for EU, light grey for others
-  }, [isEU]);
+  const getPolygonCapColor = useCallback(
+    (feat: object) => {
+      const properties = (feat as CountryFeature).properties;
+      const iso = properties?.ADM0_A3 || properties?.ISO_A3;
+      if (isEU(iso)) {
+        const count = countryStats[iso ?? ''] ?? 0;
+        const intensity = maxCount > 0 ? count / maxCount : 0;
+        return interpolateColor(LIGHT_BLUE, DARK_BLUE, intensity);
+      }
+      return '#CCCCCC';
+    },
+    [isEU, countryStats, maxCount]
+  );
 
   // Show loader if dimensions are not set or data is not loaded yet
   if (dimensions.width === 0 || dimensions.height === 0 || !dataLoaded) {
@@ -156,6 +202,11 @@ export default function GlobeV2Page() {
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 p-3 bg-black/60 text-white rounded-lg backdrop-blur-sm shadow-lg text-center text-xs md:text-sm max-w-[90%] md:max-w-md">
         <Info className="inline h-4 w-4 mr-1.5 align-middle text-blue-300" />
         DPP Global Tracker v2. EU countries in dark blue. Hover for country names.
+      </div>
+      <div className="absolute bottom-4 right-4 p-2 bg-black/60 text-white rounded-lg backdrop-blur-sm shadow-lg flex items-center text-xs">
+        <span className="mr-2">Fewer</span>
+        <div className="h-2 w-16 bg-gradient-to-r from-[#bfdbff] to-[#002D62] mx-1 rounded-sm" />
+        <span className="ml-2">More</span>
       </div>
     </div>
   );

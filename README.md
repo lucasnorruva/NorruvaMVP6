@@ -144,6 +144,32 @@ curl -H 'Authorization: Bearer <API_KEY>' \
   https://api.example.com/api/v1/dpp/{productId}/credential
 ```
 
+### Checking Batch Import Job Status
+
+After submitting a batch import using `POST /api/v1/dpp/import` the response includes a `jobId` that can be polled for progress:
+
+```bash
+curl -H 'Authorization: Bearer <API_KEY>' \
+  https://api.example.com/api/v1/dpp/import/jobs/{jobId}
+```
+
+Example successful response:
+
+```json
+{
+  "jobId": "mock_import_job_123456",
+  "status": "PendingProcessing",
+  "message": "Job is queued."
+}
+```
+
+If the job ID is unknown a 404 error is returned:
+
+```json
+{
+  "error": { "code": 404, "message": "Job with ID UNKNOWN not found." }
+}
+```
 
 ## Getting Started
 

@@ -795,6 +795,51 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp/import/jobs/{jobId}:
+    get:
+      operationId: getImportJobStatus
+      summary: Retrieve Batch Import Job Status
+      description: Returns the current status of a batch import job.
+      parameters:
+        - name: jobId
+          in: path
+          required: true
+          description: Identifier of the import job.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Current status information.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  jobId:
+                    type: string
+                  status:
+                    type: string
+                    enum: ["PendingProcessing", "Completed", "Failed"]
+                  message:
+                    type: string
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Job not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/dpp/graph/{productId}:
     get:
       operationId: getDppGraphData

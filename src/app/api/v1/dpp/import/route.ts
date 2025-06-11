@@ -5,6 +5,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { validateApiKey } from '@/middleware/apiKeyAuth';
+import { MOCK_IMPORT_JOBS } from '@/data';
 
 interface ImportDppRequestBody {
   fileType?: string; // e.g., "csv", "json", "api"
@@ -48,6 +49,12 @@ export async function POST(request: NextRequest) {
   const mockProductsProcessed = Math.floor(Math.random() * 100) + 10; // Simulate some number of products
 
   const responseMessage = `Mock import request for fileType '${fileType}' received successfully.${sourceDescription ? ` Source: ${sourceDescription}.` : ''} In a real system, ${mockProductsProcessed} products would be queued for processing.`;
+
+  MOCK_IMPORT_JOBS.set(mockJobId, {
+    jobId: mockJobId,
+    status: 'PendingProcessing',
+    message: 'Job is queued.'
+  });
 
   return NextResponse.json({
     message: responseMessage,

@@ -18,6 +18,7 @@ import {
   BarChartHorizontal,
   ClipboardList,
   Globe,
+  Globe2, // Added Globe2
   Users
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
@@ -44,6 +45,7 @@ const navItems = [
   // Specialized Views
   { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList },
   { href: "/dpp-global-tracker", label: "DPP Global Tracker", icon: Globe },
+  { href: "/dpp-global-tracker-v2", label: "DPP Global Tracker v2", icon: Globe2 }, // New Item
 ];
 
 const secondaryNavItems = [
@@ -148,5 +150,3 @@ export default function AppSidebarContent() {
     </>
   );
 }
-
-    

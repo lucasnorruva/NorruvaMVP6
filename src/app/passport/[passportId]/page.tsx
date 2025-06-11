@@ -154,6 +154,23 @@ export default function PublicPassportPage() {
                 </CardContent>
               </Card>
 
+              {(product.gtin || product.modelNumber || product.sku || product.nfcTagId || product.rfidTagId) && (
+                <Card className="border-accent/50">
+                  <CardHeader>
+                    <CardTitle className="text-xl text-accent flex items-center">
+                      <Barcode className="mr-2 h-6 w-6" /> Identifiers
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-1 text-sm">
+                    {product.sku && (<p><strong className="text-muted-foreground">SKU:</strong> {product.sku}</p>)}
+                    {product.gtin && (<p><strong className="text-muted-foreground">GTIN:</strong> {product.gtin}</p>)}
+                    {product.modelNumber && (<p><strong className="text-muted-foreground">Model:</strong> {product.modelNumber}</p>)}
+                    {product.nfcTagId && (<p><strong className="text-muted-foreground">NFC Tag ID:</strong> {product.nfcTagId}</p>)}
+                    {product.rfidTagId && (<p><strong className="text-muted-foreground">RFID Tag ID:</strong> {product.rfidTagId}</p>)}
+                  </CardContent>
+                </Card>
+              )}
+
               <Card className="border-accent/50">
                 <CardHeader>
                   <CardTitle className="text-xl text-accent flex items-center">

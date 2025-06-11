@@ -720,6 +720,46 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/qr/generate/{productId}:
+    get:
+      operationId: generateQrCode
+      summary: Generate QR Code for a Product
+      description: Returns a QR code image that links to the product's public passport.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+            example: DPP001
+      responses:
+        '200':
+          description: PNG image of the QR code.
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+              example: iVBORw0KGgoAAA
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/qr/validate:
     post:
       operationId: validateQrCode
@@ -802,8 +842,40 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-components:
-  schemas:
+  /api/v1/qr/{productId}:
+    get:
+      operationId: getQrCode
+      summary: Generate QR Code for Product
+      description: Returns a QR code image linking to the public passport for the specified product.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: QR code image
+          content:
+            image/png:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  components:
+    schemas:
     ErrorResponse:
       type: object
       properties:

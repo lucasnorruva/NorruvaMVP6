@@ -60,7 +60,9 @@
     "tailwindcss-animate": "^1.0.7",
     "three": "^0.168.0",
     "topojson-client": "^3.1.0",
-    "zod": "^3.24.2"
+    "zod": "^3.24.2",
+    "react-qr-code": "^2.0.7",
+    "qrcode": "^1.5.3"
   },
   "devDependencies": {
     "@types/jest": "^29.5.7",

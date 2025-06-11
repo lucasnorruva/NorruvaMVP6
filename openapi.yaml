@@ -317,6 +317,63 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp/custody/{productId}:
+    patch:
+      operationId: updateCustody
+      summary: Update chain of custody
+      description: Appends a new custodian entry to the DPP traceability information.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the DPP to update.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                did:
+                  type: string
+                  description: Decentralized identifier of the new custodian.
+                timestamp:
+                  type: string
+                  format: date-time
+                  description: Time of the custody transfer.
+                location:
+                  type: string
+                  nullable: true
+              required:
+                - did
+                - timestamp
+      responses:
+        '200':
+          description: Returns the updated DPP
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalProductPassport'
+        '400':
+          description: Invalid input data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/dpp/{productId}/lifecycle-events:
     post:
       operationId: addDppLifecycleEvent
@@ -1379,22 +1436,24 @@ paths:
           type: array
           nullable: true
           items:
-            type: object
-            properties:
-              stepName:
-                type: string
-              actorDid:
-                type: string
-                nullable: true
-              timestamp:
-                type: string
-                format: date-time
-              location:
-                type: string
-                nullable: true
-              transactionHash:
-                type: string
-                nullable: true
+            $ref: '#/components/schemas/SupplyChainStep'
+    SupplyChainStep:
+      type: object
+      properties:
+        stepName:
+          type: string
+        actorDid:
+          type: string
+          nullable: true
+        timestamp:
+          type: string
+          format: date-time
+        location:
+          type: string
+          nullable: true
+        transactionHash:
+          type: string
+          nullable: true
     VerifiableCredentialReference:
       type: object
       properties:

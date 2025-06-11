@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState, FormEvent } from "react";
@@ -203,8 +204,8 @@ export default function BlockchainPage() {
                           <div>
                             <h4 className="font-medium mb-2">Chain of Custody</h4>
                             <ul className="space-y-1 text-sm">
-                              {dpp.traceability?.supplyChainSteps?.length ? (
-                                dpp.traceability.supplyChainSteps.map((step, idx) => (
+                                {dpp.traceability?.supplyChainSteps?.length ? (
+                                  (dpp.traceability.supplyChainSteps || []).map((step, idx) => (
                                   <li key={idx} className="border-b last:border-b-0 pb-1">
                                     <span className="font-medium">{step.stepName}</span> - {new Date(step.timestamp).toLocaleString()} ({step.actorDid})
                                   </li>

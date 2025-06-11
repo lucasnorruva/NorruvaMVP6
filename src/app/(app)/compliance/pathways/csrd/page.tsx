@@ -5,9 +5,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useSearchParams } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, BookOpen, Info, Layers, BarChart3, Cpu, Link as LinkIcon } from "lucide-react";
 
 export default function CsrdAlignmentGuidePage() {
+  const searchParams = useSearchParams();
+  const countryParam = searchParams.get('country');
+  const country = countryParam ? decodeURIComponent(countryParam) : null;
   const csrdSections = [
     {
       icon: Layers,
@@ -59,6 +64,9 @@ export default function CsrdAlignmentGuidePage() {
           <BookOpen className="mr-3 h-7 w-7 text-primary" />
           CSRD Alignment Guide (Conceptual)
         </h1>
+        {country && (
+          <Badge variant="outline" className="ml-3">Guidance for {country}</Badge>
+        )}
         <Button variant="outline" asChild>
           <Link href="/compliance/pathways">
             <ArrowLeft className="mr-2 h-4 w-4" />

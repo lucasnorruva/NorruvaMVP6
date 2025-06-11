@@ -2,8 +2,10 @@
 "use client";
 
 import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { ArrowRight, BookOpen, BatteryCharging, Recycle, ShieldAlert, Construction, Database } from 'lucide-react'; // Added Database icon
 
 interface Pathway {
@@ -50,7 +52,21 @@ const pathways: Pathway[] = [
   },
 ];
 
+const EU_COUNTRIES = [
+  'austria','belgium','bulgaria','croatia','cyprus','czechia','czech republic','denmark','estonia',
+  'finland','france','germany','greece','hungary','ireland','italy','latvia','lithuania',
+  'luxembourg','malta','netherlands','poland','portugal','romania','slovakia','slovenia',
+  'spain','sweden','eu'
+];
+
+const isEUCountry = (country: string | null) =>
+  country ? EU_COUNTRIES.includes(country.toLowerCase()) : false;
+
 export default function CompliancePathwaysPage() {
+  const searchParams = useSearchParams();
+  const countryParam = searchParams.get('country');
+  const country = countryParam ? decodeURIComponent(countryParam) : null;
+  const highlightEU = isEUCountry(country);
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -59,6 +75,11 @@ export default function CompliancePathwaysPage() {
         <p className="mt-3 text-lg text-muted-foreground max-w-2xl mx-auto">
           Step-by-step guidance, tools, and resources to help you meet specific EU regulations and standards for your Digital Product Passports.
         </p>
+        {highlightEU && country && (
+          <p className="mt-2">
+            <Badge variant="outline">Guidance for {country}</Badge>
+          </p>
+        )}
       </div>
 
       <Card className="shadow-xl">
@@ -78,8 +99,13 @@ export default function CompliancePathwaysPage() {
       <div>
         <h2 className="text-2xl font-semibold mb-6 text-center font-headline">Available & Upcoming Pathways</h2>
         <div className="grid md:grid-cols-2 gap-6">
-          {pathways.map((pathway) => (
-            <Card key={pathway.id} className={`shadow-lg flex flex-col ${pathway.status === 'coming_soon' ? 'opacity-70' : ''}`}>
+          {pathways.map((pathway) => {
+            const linkHref = country ? `${pathway.href}?country=${encodeURIComponent(country)}` : pathway.href;
+            return (
+            <Card
+              key={pathway.id}
+              className={`shadow-lg flex flex-col ${pathway.status === 'coming_soon' ? 'opacity-70' : ''} ${highlightEU ? 'ring-2 ring-primary' : ''}`}
+            >
               <CardHeader className="flex-shrink-0">
                 <div className="flex items-start justify-between">
                   <pathway.icon className="h-10 w-10 text-primary mb-3 flex-shrink-0" />
@@ -96,7 +122,7 @@ export default function CompliancePathwaysPage() {
               </CardContent>
               <div className="p-6 pt-0 mt-auto">
                 {pathway.status === 'active' ? (
-                  <Link href={pathway.href} passHref>
+                  <Link href={linkHref} passHref>
                     <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                       Start Pathway <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
@@ -108,7 +134,8 @@ export default function CompliancePathwaysPage() {
                 )}
               </div>
             </Card>
-          ))}
+            );
+          })}
         </div>
       </div>
 

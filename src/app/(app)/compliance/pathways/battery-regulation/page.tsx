@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { CheckCircle, Recycle, Handshake, PackageCheck, SearchCheck } from 'lucide-react';
 import BatteryRegulationStep, { WizardStep } from '@/components/compliance/BatteryRegulationStep';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 const euBatteryRegulationSteps: WizardStep[] = [
   { id: 'step1', title: 'General Information', description: 'Provide basic details about the battery product.' },
@@ -22,6 +23,9 @@ const euBatteryRegulationSteps: WizardStep[] = [
 
 export default function BatteryRegulationPathwayPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const countryParam = searchParams.get('country');
+  const country = countryParam ? decodeURIComponent(countryParam) : null;
   const [activeStep, setActiveStep] = useState<string>(euBatteryRegulationSteps[0].id);
   const [formData, setFormData] = useState<Record<string, any>>({
     step1_batteryModel: '',
@@ -108,6 +112,9 @@ export default function BatteryRegulationPathwayPage() {
         <CardHeader>
           <CardTitle className="text-2xl font-headline text-primary">EU Battery Regulation Compliance Pathway</CardTitle>
           <CardDescription>Follow these steps to prepare your Digital Battery Passport information.</CardDescription>
+          {country && (
+            <p className="mt-2 text-sm"><Badge variant="outline">Guidance for {country}</Badge></p>
+          )}
         </CardHeader>
         <CardContent>
           <div className="mb-6 p-4 border rounded-lg bg-muted/50">

@@ -6,9 +6,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useSearchParams } from 'next/navigation';
+import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ShieldAlert, Database, Info, Layers, ListChecks, ExternalLink, UploadCloud } from "lucide-react";
 
 export default function ScipNotificationHelperPage() {
+  const searchParams = useSearchParams();
+  const countryParam = searchParams.get('country');
+  const country = countryParam ? decodeURIComponent(countryParam) : null;
   const scipSections = [
     {
       icon: Layers,
@@ -52,6 +57,9 @@ export default function ScipNotificationHelperPage() {
           <ShieldAlert className="mr-3 h-7 w-7 text-primary" />
           SCIP Database Notification Helper (Conceptual)
         </h1>
+        {country && (
+          <Badge variant="outline" className="ml-3">Guidance for {country}</Badge>
+        )}
         <Button variant="outline" asChild>
           <Link href="/compliance/pathways">
             <ArrowLeft className="mr-2 h-4 w-4" />

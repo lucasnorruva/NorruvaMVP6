@@ -336,18 +336,23 @@ paths:
             schema:
               type: object
               properties:
-                did:
+                stepName:
                   type: string
-                  description: Decentralized identifier of the new custodian.
+                actorDid:
+                  type: string
+                  description: Decentralized identifier of the actor.
                 timestamp:
                   type: string
                   format: date-time
-                  description: Time of the custody transfer.
                 location:
                   type: string
                   nullable: true
+                transactionHash:
+                  type: string
+                  nullable: true
               required:
-                - did
+                - stepName
+                - actorDid
                 - timestamp
       responses:
         '200':

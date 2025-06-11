@@ -1,8 +1,6 @@
-
-import type {NextConfig} from 'next';
+import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
-  /* config options here */
   typescript: {
     ignoreBuildErrors: false,
   },
@@ -21,10 +19,13 @@ const nextConfig: NextConfig = {
         protocol: 'https',
         hostname: 'firebasestorage.googleapis.com',
         port: '',
-        pathname: '/v0/b/norruva.firebasestorage.app/o/**', // Allows images from your Firebase Storage bucket
+        pathname: '/v0/b/norruva.firebasestorage.app/o/**',
       },
     ],
   },
+  allowedDevOrigins: [
+    'https://9003-firebase-studio-1749131649534.cluster-axf5tvtfjjfekvhwxwkkkzsk2y.cloudworkstations.dev',
+  ],
 };
 
 export default nextConfig;

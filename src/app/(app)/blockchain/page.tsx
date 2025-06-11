@@ -1,7 +1,7 @@
 
 "use client";
 
-import React, { useEffect, useState, FormEvent, useCallback } from "react";
+import React, { useEffect, useState, FormEvent, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -19,7 +19,7 @@ import { cn } from '@/lib/utils';
 
 const EBSI_EXPLORER_BASE_URL = "https://mock-ebsi-explorer.example.com/tx/";
 const TOKEN_EXPLORER_BASE_URL = "https://mock-token-explorer.example.com/tx/";
-const MOCK_API_KEY = "SANDBOX_KEY_123"; 
+const MOCK_API_KEY = "SANDBOX_KEY_123";
 
 const getEbsiStatusBadge = (status?: "verified" | "pending_verification" | "not_verified" | "error" | string) => {
   switch (status?.toLowerCase()) {
@@ -105,9 +105,9 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
 
 const getTokenStatusVisuals = (status: string) => {
   const s = status.toLowerCase();
-  if (s.includes("minted") || s.includes("active")) return { icon: CheckCircleLucide, color: "text-success", badge: "default" as const };
+  if (s.includes("minted") || s.includes("active")) return { icon: CheckCircleLucide, color: "text-green-600", badge: "default" as const };
   if (s.includes("transferred")) return { icon: Send, color: "text-blue-500", badge: "outline" as const };
-  if (s.includes("burned") || s.includes("locked")) return { icon: AlertCircle, color: "text-destructive", badge: "destructive" as const };
+  if (s.includes("burned") || s.includes("locked")) return { icon: AlertCircle, color: "text-red-600", badge: "destructive" as const };
   return { icon: InfoIconLucide, color: "text-muted-foreground", badge: "secondary" as const };
 };
 
@@ -159,14 +159,14 @@ export default function BlockchainPage() {
     });
   }, [toast]);
 
-  useEffect(() => {
+ useEffect(() => {
     setIsLoading(true);
     fetch(`/api/v1/dpp?blockchainAnchored=${filter}`, {
-        headers: { Authorization: `Bearer ${MOCK_API_KEY}` } 
+        headers: { Authorization: `Bearer ${MOCK_API_KEY}` }
     })
       .then(async res => {
         if (!res.ok) {
-           const errorBody = await res.json();
+           const errorBody = await res.json().catch(() => ({ error: { message: "Failed to parse error response." }}));
            toast({title: "Error fetching DPPs", description: errorBody?.error?.message || `Status: ${res.status}`, variant: "destructive"});
            setDpps([]); 
            return { data: [], error: { message: errorBody?.error?.message || `Error fetching DPPs: ${res.status}` }};
@@ -174,10 +174,14 @@ export default function BlockchainPage() {
         return res.json();
       })
       .then(data => {
-        if(data.error?.message) {
+        if(data && data.error && data.error.message) {
              setDpps(data.data || []);
+        } else if (data && Array.isArray(data.data)) {
+          setDpps(data.data);
         } else {
-          setDpps(data.data || []);
+          console.error("Unexpected data structure received for DPPs:", data);
+          toast({title: "Data Error", description: "Received unexpected data format for DPPs.", variant: "destructive"});
+          setDpps([]);
         }
       })
       .catch(err => {
@@ -322,7 +326,7 @@ export default function BlockchainPage() {
         body: JSON.stringify({ contractAddress: mintContractAddress, recipientAddress: mintRecipientAddress, metadataUri: mintMetadataUri }),
       });
       const data: MintTokenResponse = await res.json();
-      setMintResponse(data); // Store the full response object
+      setMintResponse(data); 
       if (res.ok && data.tokenId && selected) {
         toast({ title: "Token Mint Initiated (Mock)", description: `Token ${data.tokenId} for ${selected.productName} minted. Tx: ${data.transactionHash}` });
         const updatedSelectedDpp: DigitalProductPassport = {
@@ -333,7 +337,7 @@ export default function BlockchainPage() {
                 contractAddress: data.contractAddress || selected.blockchainIdentifiers?.contractAddress, 
             }
         };
-        updateDppLocally(updatedSelectedDpp); // This updates the selected state
+        updateDppLocally(updatedSelectedDpp);
       } else {
         handleApiError(res, "Minting Token");
       }
@@ -357,7 +361,7 @@ export default function BlockchainPage() {
         const res = await fetch(`/api/v1/token/metadata/${updateTokenId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
-        body: JSON.stringify({ metadataUri: updateMetadataUri, contractAddress: "0xUpdatedContractIfDifferent" }),
+        body: JSON.stringify({ metadataUri: updateMetadataUri, contractAddress: selected?.blockchainIdentifiers?.contractAddress || "0xUpdatedContractIfDifferent" }),
         });
         const data: UpdateTokenMetadataResponse = await res.json();
         setUpdateTokenResponse(data);
@@ -388,9 +392,9 @@ export default function BlockchainPage() {
         headers: { Authorization: `Bearer ${MOCK_API_KEY}` },
         });
         const data: TokenStatusResponse = await res.json();
-        setStatusTokenResponse(JSON.stringify(data, null, 2)); // Keep raw for details view
+        setStatusTokenResponse(JSON.stringify(data, null, 2));
         if (res.ok) {
-          setParsedTokenStatus(data); // Store parsed for direct display
+          setParsedTokenStatus(data); 
           toast({ title: "Token Status Retrieved (Mock)", description: `Status for token ${statusTokenId} displayed.` });
         } else {
           handleApiError(res, "Getting Token Status");
@@ -506,7 +510,7 @@ export default function BlockchainPage() {
                       <TableRow>
                         <TableCell colSpan={4} className="py-4">
                           <div className="p-4 border rounded-md space-y-6 bg-card">
-                             <h3 className="text-lg font-semibold text-primary mb-2">Managing: {selected.productName} ({selected.id})</h3>
+                            <h3 className="text-lg font-semibold text-primary mb-2">Managing: {selected.productName} ({selected.id})</h3>
                             <div className="grid md:grid-cols-2 gap-6">
                                 <Card className="bg-background">
                                     <CardHeader>
@@ -626,7 +630,7 @@ export default function BlockchainPage() {
                             <Card className="bg-background mt-6">
                                 <CardHeader>
                                   <CardTitle className="text-md flex items-center"><KeyRound className="mr-2 h-4 w-4 text-info"/>DPP Token Operations (Conceptual)</CardTitle>
-                                  <CardDescription className="text-xs">These operations are conceptual and simulate interactions with smart contracts. For details on the underlying smart contract design, refer to the project's <a href="/developer/docs/ebsi-integration" className="text-primary hover:underline">blockchain architecture documentation</a>.</CardDescription>
+                                  <CardDescription className="text-xs">These operations are conceptual and simulate interactions with smart contracts. For details on the underlying smart contract design, refer to the project's <Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline">blockchain architecture documentation</Link>.</CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     <form onSubmit={handleMintToken} className="space-y-3 p-3 border rounded-md">

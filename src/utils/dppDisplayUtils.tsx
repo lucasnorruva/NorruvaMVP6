@@ -178,77 +178,78 @@ export const calculateDppCompletenessForList = (product: DisplayableProduct): { 
 
 
 // Utility functions for status display (moved from ComplianceTab)
+
+interface StatusDisplayConfig {
+  icon: JSX.Element;
+  variant: "default" | "destructive" | "outline" | "secondary";
+  classes: string;
+}
+
+const successDisplay: StatusDisplayConfig = {
+  icon: <ShieldCheck className="h-5 w-5 text-success" />,
+  variant: "default",
+  classes: "bg-green-100 text-green-700 border-green-300",
+};
+
+const errorDisplay: StatusDisplayConfig = {
+  icon: <AlertTriangle className="h-5 w-5 text-danger" />,
+  variant: "destructive",
+  classes: "bg-red-100 text-red-700 border-red-300",
+};
+
+const pendingDisplay: StatusDisplayConfig = {
+  icon: <InfoIcon className="h-5 w-5 text-warning" />,
+  variant: "outline",
+  classes: "bg-yellow-100 text-yellow-700 border-yellow-300",
+};
+
+const defaultDisplay: StatusDisplayConfig = {
+  icon: <InfoIcon className="h-5 w-5 text-muted-foreground" />,
+  variant: "secondary",
+  classes: "bg-muted text-muted-foreground",
+};
+
+const STATUS_DISPLAY_MAP: Record<string, StatusDisplayConfig> = {
+  compliant: successDisplay,
+  registered: successDisplay,
+  verified: successDisplay,
+  "synced successfully": successDisplay,
+  conformant: successDisplay,
+
+  "non-compliant": errorDisplay,
+  non_conformant: errorDisplay,
+  error: errorDisplay,
+  "error during sync": errorDisplay,
+
+  pending: pendingDisplay,
+  "pending review": pendingDisplay,
+  pending_review: pendingDisplay,
+  pending_assessment: pendingDisplay,
+  pending_verification: pendingDisplay,
+  "in progress": pendingDisplay,
+  "data incomplete": pendingDisplay,
+  "data mismatch": pendingDisplay,
+  "product not found in eprel": pendingDisplay,
+
+  "not applicable": defaultDisplay,
+  "n/a": defaultDisplay,
+  "not found": defaultDisplay,
+  "not verified": defaultDisplay,
+  default: defaultDisplay,
+};
+
 export const getStatusIcon = (status?: string): JSX.Element => {
-  switch (status?.toLowerCase()) {
-    case 'compliant':
-    case 'registered':
-    case 'verified':
-    case 'synced successfully':
-    case 'conformant': // Added from overall compliance logic
-      return <ShieldCheck className="h-5 w-5 text-success" />;
-    case 'non-compliant':
-    case 'non_conformant': // Added from overall compliance logic
-    case 'error':
-    case 'error during sync':
-      return <AlertTriangle className="h-5 w-5 text-danger" />;
-    case 'pending':
-    case 'pending review':
-    case 'pending_review': // Ensure this is caught
-    case 'pending_assessment': // Added
-    case 'pending_verification': // Added
-    case 'in progress':
-    case 'data incomplete':
-    case 'data mismatch':
-    case 'product not found in eprel':
-      return <InfoIcon className="h-5 w-5 text-warning" />;
-    case 'not applicable':
-    case 'n/a':
-    case 'not found':
-    case 'not verified':
-    default:
-      return <InfoIcon className="h-5 w-5 text-muted-foreground" />;
-  }
+  const key = status?.toLowerCase() ?? 'default';
+  return STATUS_DISPLAY_MAP[key]?.icon ?? STATUS_DISPLAY_MAP.default.icon;
 };
 
 export const getStatusBadgeVariant = (status?: string): "default" | "destructive" | "outline" | "secondary" => {
-  switch (status?.toLowerCase()) {
-    case 'compliant':
-    case 'registered':
-    case 'verified':
-    case 'synced successfully':
-    case 'conformant':
-      return "default";
-    case 'non-compliant':
-    case 'non_conformant':
-    case 'error':
-    case 'error during sync':
-      return "destructive";
-    case 'pending':
-    case 'pending review':
-    case 'pending_review':
-    case 'pending_assessment':
-    case 'pending_verification':
-    case 'in progress':
-    case 'data incomplete':
-    case 'data mismatch':
-    case 'product not found in eprel':
-      return "outline";
-    case 'not applicable':
-    case 'n/a':
-    case 'not found':
-    case 'not verified':
-    default:
-      return "secondary";
-  }
+  const key = status?.toLowerCase() ?? 'default';
+  return STATUS_DISPLAY_MAP[key]?.variant ?? STATUS_DISPLAY_MAP.default.variant;
 };
 
 export const getStatusBadgeClasses = (status?: string): string => {
-    switch (status?.toLowerCase()) {
-        case 'compliant': case 'registered': case 'verified': case 'synced successfully': case 'conformant': return "bg-green-100 text-green-700 border-green-300";
-        case 'non-compliant': case 'non_conformant': case 'error': case 'error during sync': return "bg-red-100 text-red-700 border-red-300";
-        case 'pending': case 'pending review': case 'pending_review': case 'pending_assessment': case 'pending_verification': case 'in progress': case 'data incomplete': case 'data mismatch': case 'product not found in eprel': return "bg-yellow-100 text-yellow-700 border-yellow-300";
-        case 'not applicable': case 'n/a': case 'not found': case 'not verified':
-        default: return "bg-muted text-muted-foreground";
-    }
+  const key = status?.toLowerCase() ?? 'default';
+  return STATUS_DISPLAY_MAP[key]?.classes ?? STATUS_DISPLAY_MAP.default.classes;
 };
 

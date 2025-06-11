@@ -39,11 +39,11 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ebsiVerification: {
       status: "verified",
       verificationId: "EBSI_TX_ABC123",
-      issuerDid: "did:ebsi:zIssuerXYZ789",
-      schema: "EBSIProductComplianceSchema_v1.2",
-      issuanceDate: "2024-07-24T10:00:00Z",
+      issuerDid: "did:ebsi:zIssuerXYZ789", // Added
+      schema: "EBSIProductComplianceSchema_v1.2", // Added
+      issuanceDate: "2024-07-24T10:00:00Z", // Added
       lastChecked: "2024-07-25T00:00:00Z"
-    } as EbsiVerificationDetails, // Added type assertion
+    } as EbsiVerificationDetails,
     blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef", contractAddress: "0xMOCK_CONTRACT_FOR_DPP001", tokenId: "MOCK_TOKENID_FOR_DPP001_mock1"},
     consumerScans: 1250,
     lifecycleEvents: [

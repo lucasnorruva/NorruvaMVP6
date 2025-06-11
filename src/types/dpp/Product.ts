@@ -342,6 +342,7 @@ export interface MintTokenResponse {
   contractAddress: string;
   transactionHash: string;
   message?: string;
+  error?: string; // For client-side errors or API-returned errors
 }
 
 export interface UpdateTokenMetadataResponse {
@@ -349,6 +350,7 @@ export interface UpdateTokenMetadataResponse {
   contractAddress: string;
   transactionHash: string;
   message?: string;
+  error?: string; // For client-side errors or API-returned errors
 }
 
 export interface TokenStatusResponse {
@@ -361,5 +363,3 @@ export interface TokenStatusResponse {
   status: string; // e.g., "minted", "transferred", "active"
   message?: string;
 }
-
-```

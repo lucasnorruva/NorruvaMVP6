@@ -18,7 +18,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { cn } from '@/lib/utils';
 
 const EBSI_EXPLORER_BASE_URL = "https://mock-ebsi-explorer.example.com/tx/";
-const MOCK_API_KEY = "SANDBOX_KEY_123";
+const MOCK_API_KEY = "SANDBOX_KEY_123"; // Ensure this matches a key in your .env if needed for backend routes
 
 const getEbsiStatusBadge = (status?: "verified" | "pending_verification" | "not_verified" | "error" | string) => {
   switch (status?.toLowerCase()) {
@@ -108,7 +108,7 @@ export default function BlockchainPage() {
   const [selected, setSelected] = useState<DigitalProductPassport | null>(null);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isActionLoading, setIsActionLoading] = useState<string | boolean>(false); // Use string to specify action type for multiple buttons
+  const [isActionLoading, setIsActionLoading] = useState<string | boolean>(false);
 
   const [anchorPlatform, setAnchorPlatform] = useState("EBSI");
   const [custodyStep, setCustodyStep] = useState({ stepName: "", actorDid: "", timestamp: "", location: "", transactionHash: "" });
@@ -150,35 +150,33 @@ export default function BlockchainPage() {
   useEffect(() => {
     setIsLoading(true);
     fetch(`/api/v1/dpp?blockchainAnchored=${filter}`, {
-        headers: { Authorization: `Bearer ${MOCK_API_KEY}` }
+        headers: { Authorization: `Bearer ${MOCK_API_KEY}` } // Added Authorization header
     })
       .then(res => {
         if (!res.ok) {
-           handleApiError(res, "Fetching DPPs"); // Use centralized error handler
-           return { data: [], error: { message: "Error fetching"}}; // Return structure indicating error
+           handleApiError(res, "Fetching DPPs");
+           return { data: [], error: { message: "Error fetching"}};
         }
         return res.json();
       })
       .then(data => {
         if(data.error) {
-          // Error already handled by handleApiError if status was not ok,
-          // but this catches errors in successful responses with error bodies
-          if(!dpps.length) { // Avoid duplicate toasts if data was already fetched
+          if(!dpps.length) { 
              toast({title: "Error fetching DPPs", description: data.error.message, variant: "destructive"});
           }
-          setDpps(data.data || []); // Still set data, might be partial or empty
+          setDpps(data.data || []);
         } else {
           setDpps(data.data || []);
         }
       })
-      .catch(err => { // Network errors or other fetch issues
+      .catch(err => {
         toast({title: "Error fetching DPPs", description: err.message, variant: "destructive"});
         setDpps([]);
       })
       .finally(() => {
         setIsLoading(false);
       });
-  }, [filter, toast, handleApiError, dpps.length]); // Added dpps.length to dependencies to prevent re-toast on filter change if initial load failed
+  }, [filter, toast, handleApiError, dpps.length]);
 
   const handleSelectProduct = (dpp: DigitalProductPassport | null) => {
     setSelected(dpp);
@@ -324,6 +322,9 @@ export default function BlockchainPage() {
             }
         };
         updateDpp(updatedSelectedDpp);
+        // Auto-populate after successful minting
+        setUpdateTokenId(data.tokenId);
+        setStatusTokenId(data.tokenId);
       } else {
         handleApiError(res, "Minting Token");
       }
@@ -665,3 +666,4 @@ export default function BlockchainPage() {
     </div>
   );
 }
+

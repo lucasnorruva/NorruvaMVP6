@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { describe, it, expect } from 'vitest';
+
 import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses, getOverallComplianceDetails, getEbsiStatusDetails } from '../dppDisplayUtils';
 import type { DigitalProductPassport, EbsiVerificationDetails } from '@/types/dpp'; // Ensure types are imported
 import { ShieldCheck, ShieldAlert, ShieldQuestion, Info as InfoIcon, AlertTriangle } from 'lucide-react';

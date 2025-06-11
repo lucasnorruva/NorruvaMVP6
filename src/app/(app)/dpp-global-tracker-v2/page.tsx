@@ -6,8 +6,7 @@ import dynamic from 'next/dynamic';
 import type { GlobeMethods } from 'react-globe.gl';
 import type { Feature as GeoJsonFeature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 import { MeshPhongMaterial } from 'three';
-import { Loader2, Info, AlertTriangle } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { Loader2, Info } from 'lucide-react';
 
 // Dynamically import Globe for client-side rendering
 const Globe = dynamic(() => import('react-globe.gl'), { 
@@ -45,10 +44,6 @@ export default function GlobeV2Page() {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [globeReady, setGlobeReady] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
-  const [loadError, setLoadError] = useState(false);
-  const [countryStats, setCountryStats] = useState<Record<string, number>>({});
-  const [maxCount, setMaxCount] = useState(0);
-
 
   // Approximate header height (adjust if your header height is different or dynamic)
   const HEADER_HEIGHT = 64; // Example: 4rem = 64px
@@ -71,7 +66,9 @@ export default function GlobeV2Page() {
 
   // Effect to fetch country polygon data
   useEffect(() => {
-    fetch('/data/ne_110m_admin_0_countries.geojson')
+    fetch(
+      'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson'
+    )
       .then((res) => res.json())
       .then((geoJson: FeatureCollection<Geometry, CountryProperties>) => {
         setLandPolygons(geoJson.features);
@@ -79,46 +76,9 @@ export default function GlobeV2Page() {
       .catch((err) => {
         console.error('Error fetching or processing country polygons:', err);
         setLandPolygons([]);
-        setLoadError(true);
       })
       .finally(() => {
         setDataLoaded(true);
-      });
-  }, []);
-
-  // Mapping from ISO-2 to ISO-3 codes for EU countries
-  const ISO2_TO_ISO3: Record<string, string> = {
-    AT: 'AUT', BE: 'BEL', BG: 'BGR', HR: 'HRV', CY: 'CYP', CZ: 'CZE',
-    DK: 'DNK', EE: 'EST', FI: 'FIN', FR: 'FRA', DE: 'DEU', GR: 'GRC',
-    HU: 'HUN', IE: 'IRL', IT: 'ITA', LV: 'LVA', LT: 'LTU', LU: 'LUX',
-    MT: 'MLT', NL: 'NLD', PL: 'POL', PT: 'PRT', RO: 'ROU', SK: 'SVK',
-    SI: 'SVN', ES: 'ESP', SE: 'SWE'
-  };
-
-  // Fetch statistics for DPP counts by country
-  useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_API_KEY;
-    fetch('/api/v1/dpp/country-stats', {
-      headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : undefined,
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        return res.json();
-      })
-      .then((data: Array<{ countryCode: string; count: number }>) => {
-        const stats: Record<string, number> = {};
-        data.forEach(({ countryCode, count }) => {
-          const iso3 = ISO2_TO_ISO3[countryCode.toUpperCase()] || countryCode;
-          stats[iso3] = count;
-        });
-        setCountryStats(stats);
-        const counts = Object.values(stats);
-        setMaxCount(counts.length > 0 ? Math.max(...counts) : 0);
-      })
-      .catch((err) => {
-        console.error('Error fetching country stats:', err);
-        setCountryStats({});
-        setMaxCount(0);
       });
   }, []);
 
@@ -126,18 +86,6 @@ export default function GlobeV2Page() {
   const isEU = useCallback((isoA3: string | undefined) => {
     return !!isoA3 && EU_COUNTRY_CODES.has(isoA3.toUpperCase());
   }, []);
-
-  const LIGHT_BLUE = '#bfdbff';
-  const DARK_BLUE = '#002D62';
-
-  const hexToRgb = (hex: string) => {
-    const m = hex.replace('#', '').match(/.{1,2}/g);
-    return m ? m.map((x) => parseInt(x, 16)) : [0, 0, 0];
-  };
-
-  const rgbToHex = (rgb: number[]) =>
-    '#' + rgb.map((x) => x.toString(16).padStart(2, '0')).join('');
-
 
   // Globe material for oceans (light blue)
   const globeMaterial = useMemo(() => new MeshPhongMaterial({
@@ -179,16 +127,6 @@ export default function GlobeV2Page() {
     );
   }
 
-  if (loadError) {
-    return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-var(--header-height,4rem))] w-full bg-white space-y-4">
-        <AlertTriangle className="h-12 w-12 text-destructive" />
-        <p className="text-lg text-destructive">Failed to load globe data.</p>
-        <Button variant="outline" onClick={fetchLandPolygons}>Retry</Button>
-      </div>
-    );
-  }
-
   return (
     <div style={{ width: '100%', height: `calc(100vh - ${HEADER_HEIGHT}px)`, position: 'relative', background: 'white' }}>
       {typeof window !== 'undefined' && dimensions.width > 0 && dimensions.height > 0 && (
@@ -215,6 +153,10 @@ export default function GlobeV2Page() {
           enablePointerInteraction={true}
         />
       )}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs p-2 rounded-md shadow-lg pointer-events-none">
+        <Info className="inline h-3 w-3 mr-1" />
+        EU Countries: Dark Blue | Other Countries: Light Grey. Globe auto-rotates.
+      </div>
     </div>
   );
 }

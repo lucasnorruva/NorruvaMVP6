@@ -14,6 +14,8 @@ import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenRe
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
+
 const EBSI_EXPLORER_BASE_URL = "https://mock-ebsi-explorer.example.com/tx/";
 const MOCK_API_KEY = "SANDBOX_KEY_123"; // Ensure this key is in VALID_API_KEYS in .env
 
@@ -351,17 +353,20 @@ export default function BlockchainPage() {
         </CardHeader>
         <CardContent className="text-sm text-foreground/90 space-y-2">
           <p>
-            This page allows you to manage blockchain-related aspects of your Digital Product Passports. Here, you can:
+            This page provides tools to conceptually manage the on-chain aspects of your Digital Product Passports (DPPs). You can simulate actions such as:
           </p>
           <ul className="list-disc list-inside pl-4 space-y-1">
-            <li><strong>Anchor DPPs:</strong> Create immutable records of your DPPs on a blockchain (e.g., EBSI).</li>
-            <li><strong>Update Chain of Custody:</strong> Record the transfer of custody as products move.</li>
-            <li><strong>Transfer Ownership:</strong> Update the ownership details associated with a DPP.</li>
-            <li><strong>Manage Verifiable Credentials:</strong> View and retrieve verifiable data for digital wallets or other systems.</li>
-            <li><strong>Interact with DPP Tokens:</strong> Perform conceptual operations like minting, updating metadata, and checking status for blockchain tokens representing DPPs.</li>
+            <li><strong>Anchoring DPPs:</strong> Recording DPP data or its hash on a blockchain.</li>
+            <li><strong>Updating Chain of Custody:</strong> Documenting product transfers.</li>
+            <li><strong>Transferring Ownership:</strong> Modifying DPP ownership records.</li>
+            <li><strong>Managing Verifiable Credentials:</strong> Viewing and retrieving product-related VCs.</li>
+            <li><strong>DPP Token Operations:</strong> Conceptual minting, metadata updates, and status checks for DPP tokens.</li>
           </ul>
           <p className="mt-2">
-            These actions align with the blockchain integration concepts outlined in the project documentation. All operations are simulated for this demo.
+            These operations are based on the conceptual API endpoints. For technical details, refer to the 
+            <a href="/openapi.yaml" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium ml-1">
+              OpenAPI Specification <ExternalLink className="inline h-3.5 w-3.5 ml-0.5" />
+            </a>.
           </p>
         </CardContent>
       </Card>
@@ -424,7 +429,23 @@ export default function BlockchainPage() {
                         <TableCell colSpan={4} className="py-4">
                           <div className="p-4 border rounded-md space-y-6 bg-card">
                             <div className="mb-6">
-                              <h3 className="flex items-center mb-2 font-semibold text-lg text-primary"><Fingerprint className="h-5 w-5 mr-2" />Blockchain & EBSI Details</h3>
+                              <h3 className="flex items-center mb-2 font-semibold text-lg text-primary">
+                                <Fingerprint className="h-5 w-5 mr-2" />
+                                Blockchain & EBSI Details
+                                <TooltipProvider delayDuration={100}>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <HelpCircle className="h-4 w-4 ml-2 text-muted-foreground cursor-help" />
+                                    </TooltipTrigger>
+                                    <TooltipContent className="max-w-xs">
+                                      <p className="text-xs">
+                                        Blockchain anchoring provides an immutable record of the DPP's existence and integrity. 
+                                        EBSI (European Blockchain Services Infrastructure) verification further enhances trust and interoperability using verifiable credentials.
+                                      </p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </h3>
                               <BlockchainStatus product={dpp} />
                             </div>
 
@@ -583,3 +604,7 @@ export default function BlockchainPage() {
     </div>
   );
 }
+
+    
+    
+    

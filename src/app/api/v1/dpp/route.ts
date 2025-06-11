@@ -25,8 +25,9 @@ interface CreateDppRequestBody {
 }
 
 export async function POST(request: NextRequest) {
-  const auth = validateApiKey(request);
-  if (auth) return auth;
+  const authError = validateApiKey(request);
+  if (authError) return authError;
+
   let requestBody: CreateDppRequestBody;
   try {
     requestBody = await request.json();
@@ -50,12 +51,6 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: { code: 400, message: "Field 'category' is required and must be a non-empty string." } }, { status: 400 });
   }
 
-  // Simulate API key authentication (conceptual)
-  // const authHeader = request.headers.get('Authorization');
-  // if (!authHeader || !authHeader.startsWith('Bearer ')) {
-  //   return NextResponse.json({ error: { code: 401, message: 'API key missing or invalid.' } }, { status: 401 });
-  // }
-
   const newProductId = `DPP_API_${Date.now().toString().slice(-5)}`;
   const now = new Date().toISOString();
 
@@ -69,8 +64,8 @@ export async function POST(request: NextRequest) {
     metadata: {
       created_at: now,
       last_updated: now,
-      status: 'draft', // Default status for new DPPs
-      dppStandardVersion: "CIRPASS v1.0 Draft", // Default version
+      status: 'draft',
+      dppStandardVersion: "CIRPASS v1.0 Draft",
     },
     productDetails: {
       description: productDetails?.description || undefined,
@@ -95,28 +90,20 @@ export async function POST(request: NextRequest) {
     consumerScans: 0,
   };
 
-  // Actually add the new DPP to the in-memory array
   MOCK_DPPS.push(newDpp);
-
-  // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 250));
-
   return NextResponse.json(newDpp, { status: 201 });
 }
 
 export async function GET(request: NextRequest) {
-  const auth = validateApiKey(request);
-  if (auth) return auth;
-  const { searchParams } = new URL(request.url);
+  const authError = validateApiKey(request);
+  if (authError) return authError;
 
+  const { searchParams } = new URL(request.url);
   const status = searchParams.get('status') as DashboardFiltersState['status'] | null;
-  const category = searchParams.get('category') as DashboardFiltersState['category'] | null;
+  const categoryParam = searchParams.get('category') as DashboardFiltersState['category'] | null;
   const searchQuery = searchParams.get('searchQuery') as DashboardFiltersState['searchQuery'] | null;
   const blockchainAnchored = searchParams.get('blockchainAnchored') as DashboardFiltersState['blockchainAnchored'] | null;
-  // Add limit and offset for conceptual pagination if needed later
-  // const limit = searchParams.get('limit') ? parseInt(searchParams.get('limit')!, 10) : undefined;
-  // const offset = searchParams.get('offset') ? parseInt(searchParams.get('offset')!, 10) : undefined;
-
 
   let filteredDPPs: DigitalProductPassport[] = [...MOCK_DPPS];
 
@@ -134,8 +121,8 @@ export async function GET(request: NextRequest) {
     filteredDPPs = filteredDPPs.filter(dpp => dpp.metadata.status === status);
   }
 
-  if (category && category !== 'all') {
-    filteredDPPs = filteredDPPs.filter(dpp => dpp.category === category);
+  if (categoryParam && categoryParam !== 'all') {
+    filteredDPPs = filteredDPPs.filter(dpp => dpp.category === categoryParam);
   }
   
   if (blockchainAnchored) {
@@ -146,18 +133,16 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 300));
 
   return NextResponse.json({
     data: filteredDPPs,
     filtersApplied: {
       status,
-      category,
+      category: categoryParam,
       searchQuery,
       blockchainAnchored,
     },
     totalCount: filteredDPPs.length,
   });
 }
-

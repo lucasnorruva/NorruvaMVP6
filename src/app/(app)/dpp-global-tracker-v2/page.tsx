@@ -66,9 +66,7 @@ export default function GlobeV2Page() {
 
   // Effect to fetch country polygon data
   useEffect(() => {
-    fetch(
-      'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson'
-    )
+    fetch('/data/ne_110m_admin_0_countries.geojson')
       .then((res) => res.json())
       .then((geoJson: FeatureCollection<Geometry, CountryProperties>) => {
         setLandPolygons(geoJson.features);

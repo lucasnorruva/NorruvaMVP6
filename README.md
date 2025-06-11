@@ -251,7 +251,8 @@ npm test
 ```
 
 The suite now includes API route tests located in `src/app/api/__tests__`. These
-cover common success and failure cases for the DPP and QR validation endpoints.
+cover common success and failure cases for several endpoints including DPP
+creation, QR validation, anchoring, and ownership transfer.
 
 
 Use `npm run test:watch` during development to re-run tests on file changes.

@@ -24,6 +24,32 @@ export interface EbsiVerificationDetails {
   message?: string;
 }
 
+export interface ScipNotificationDetails {
+  status: 'Notified' | 'Pending Notification' | 'Not Required' | 'Error' | 'N/A' | string;
+  notificationId?: string;
+  svhcListVersion?: string;
+  submittingLegalEntity?: string;
+  articleName?: string;
+  primaryArticleId?: string;
+  safeUseInstructionsLink?: string;
+  lastChecked: string; // ISO Date string
+}
+
+export interface EuCustomsDataDetails {
+  status: 'Verified' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'N/A' | string;
+  declarationId?: string;
+  hsCode?: string;
+  countryOfOrigin?: string; // ISO 3166-1 Alpha-2
+  netWeightKg?: number;
+  grossWeightKg?: number;
+  customsValuation?: {
+    value: number;
+    currency: string; // ISO 4217
+  };
+  lastChecked: string; // ISO Date string
+}
+
+
 export interface ComplianceDetailItem {
   regulationName: string;
   status: 'Compliant' | 'Non-Compliant' | 'Pending' | 'Not Applicable' | 'In Progress' | 'Data Incomplete' | 'Registered' | 'Verified' | 'Notified' | 'Pending Notification' | 'Not Required' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'Conformant' | 'Non-Conformant' | 'Pending Assessment' | 'Error' | 'Data Mismatch' | 'Product Not Found in EPREL' | 'Synced Successfully' | string; // Made string more open
@@ -47,16 +73,8 @@ export interface ProductComplianceSummary {
     transactionUrl?: string;
     lastChecked: string; // ISO Date string
   };
-  scip?: { // SCIP API integration
-    status: 'Notified' | 'Pending Notification' | 'Not Required' | 'Error' | 'N/A' | string;
-    notificationId?: string;
-    lastChecked: string; // ISO Date string
-  };
-  euCustomsData?: { // EU Customs Data Model integration
-    status: 'Verified' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'N/A' | string;
-    declarationId?: string;
-    lastChecked: string; // ISO Date string
-  };
+  scip?: ScipNotificationDetails;
+  euCustomsData?: EuCustomsDataDetails;
   specificRegulations?: ComplianceDetailItem[];
 }
 
@@ -83,3 +101,6 @@ export interface PublicCertification {
   transactionHash?: string;
 }
 
+
+
+    

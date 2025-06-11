@@ -1319,911 +1319,975 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
   components:
     schemas:
-    ErrorResponse:
-      type: object
-      properties:
-        error:
-          type: object
-          properties:
-            code:
-              type: integer
-            message:
-              type: string
-    DppStatusResponse:
-      type: object
-      properties:
-        productId:
-          type: string
-          description: The unique identifier of the product.
-        status:
-          type: string
-          description: The current status of the Digital Product Passport.
-          enum: ["draft", "published", "archived", "pending_review", "revoked", "flagged"]
-    DppGraphNode:
-      type: object
-      properties:
-        id: { type: string }
-        label: { type: string }
-        type: { type: string, enum: ["product", "manufacturer", "supplier", "lifecycle_event", "component"] }
-        data: { type: object, additionalProperties: true, nullable: true }
-    DppGraphEdge:
-      type: object
-      properties:
-        id: { type: string }
-        source: { type: string, description: "ID of the source node" }
-        target: { type: string, description: "ID of the target node" }
-        label: { type: string, description: "Description of the relationship" }
-        data: { type: object, additionalProperties: true, nullable: true }
-    DppGraphResponse:
-      type: object
-      properties:
-        nodes:
-          type: array
-          items:
-            $ref: '#/components/schemas/DppGraphNode'
-        edges:
-          type: array
-          items:
-            $ref: '#/components/schemas/DppGraphEdge'
-    DocumentReference:
-      type: object
-      properties:
-        name:
-          type: string
-          description: The name of the document.
-        url:
-          type: string
-          format: url
-          description: A URL pointing to the document.
-        type:
-          type: string
-          description: The type of document (e.g., "User Manual", "Safety Certificate").
-        addedTimestamp:
-          type: string
-          format: date-time
-          description: Timestamp when the document reference was added.
-    HistoryEntry: 
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-          description: Timestamp of the historical event.
-        actionType:
-          type: string
-          description: Type of action performed (e.g., "DPP Created", "Lifecycle Event: Shipped").
-        details:
-          type: string
-          nullable: true
-          description: Additional details about the event.
-        changedBy:
-          type: string
-          description: User or system that made the change.
-        version:
-          type: integer
-          nullable: true
-          description: Conceptual version number of the DPP after this change.
-    DigitalProductPassport:
-      type: object
-      properties:
-        id:
-          type: string
-        version:
-          type: integer
-          nullable: true
-        productName:
-          type: string
-        category:
-          type: string
-        gtin:
-          type: string
-          nullable: true
-        modelNumber:
-          type: string
-          nullable: true
-        manufacturer:
-          type: object
-          nullable: true
-          properties:
-            name:
-              type: string
-            did:
-              type: string
-              nullable: true
-            address:
-              type: string
-              nullable: true
-            eori: # Added for EORI System conceptual integration
-              type: string
-              nullable: true
-              description: Economic Operators Registration and Identification number.
-        metadata:
-          type: object
-          properties:
-            created_at:
-              type: string
-              format: date-time
-              nullable: true
-            last_updated:
-              type: string
-              format: date-time
-            status:
-              type: string
-              enum:
-                - draft
-                - published
-                - archived
-                - pending_review
-                - revoked
-                - flagged
-            dppStandardVersion:
-              type: string
-              nullable: true
-            dataSchemaVersion:
-              type: string
-              nullable: true
-        blockchainIdentifiers:
-          type: object
-          nullable: true
-          properties:
-            platform:
-              type: string
-              nullable: true
-            contractAddress:
-              type: string
-              nullable: true
-            tokenId:
-              type: string
-              nullable: true
-            anchorTransactionHash:
-              type: string
-              nullable: true
-        productDetails:
-          type: object
-          nullable: true
-          properties:
-            description:
-              type: string
-              nullable: true
-            imageUrl:
-              type: string
-              nullable: true
-            imageHint:
-              type: string
-              nullable: true
-            materials:
-              type: array
-              nullable: true
-              items:
+      ErrorResponse:
+        type: object
+        properties:
+          error:
+            type: object
+            properties:
+              code:
+                type: integer
+              message:
+                type: string
+      DppStatusResponse:
+        type: object
+        properties:
+          productId:
+            type: string
+            description: The unique identifier of the product.
+          status:
+            type: string
+            description: The current status of the Digital Product Passport.
+            enum: ["draft", "published", "archived", "pending_review", "revoked", "flagged"]
+      DppGraphNode:
+        type: object
+        properties:
+          id: { type: string }
+          label: { type: string }
+          type: { type: string, enum: ["product", "manufacturer", "supplier", "lifecycle_event", "component"] }
+          data: { type: object, additionalProperties: true, nullable: true }
+      DppGraphEdge:
+        type: object
+        properties:
+          id: { type: string }
+          source: { type: string, description: "ID of the source node" }
+          target: { type: string, description: "ID of the target node" }
+          label: { type: string, description: "Description of the relationship" }
+          data: { type: object, additionalProperties: true, nullable: true }
+      DppGraphResponse:
+        type: object
+        properties:
+          nodes:
+            type: array
+            items:
+              $ref: '#/components/schemas/DppGraphNode'
+          edges:
+            type: array
+            items:
+              $ref: '#/components/schemas/DppGraphEdge'
+      DocumentReference:
+        type: object
+        properties:
+          name:
+            type: string
+            description: The name of the document.
+          url:
+            type: string
+            format: url
+            description: A URL pointing to the document.
+          type:
+            type: string
+            description: The type of document (e.g., "User Manual", "Safety Certificate").
+          addedTimestamp:
+            type: string
+            format: date-time
+            description: Timestamp when the document reference was added.
+      HistoryEntry: 
+        type: object
+        properties:
+          timestamp:
+            type: string
+            format: date-time
+            description: Timestamp of the historical event.
+          actionType:
+            type: string
+            description: Type of action performed (e.g., "DPP Created", "Lifecycle Event: Shipped").
+          details:
+            type: string
+            nullable: true
+            description: Additional details about the event.
+          changedBy:
+            type: string
+            description: User or system that made the change.
+          version:
+            type: integer
+            nullable: true
+            description: Conceptual version number of the DPP after this change.
+      DigitalProductPassport:
+        type: object
+        properties:
+          id:
+            type: string
+          version:
+            type: integer
+            nullable: true
+          productName:
+            type: string
+          category:
+            type: string
+          gtin:
+            type: string
+            nullable: true
+          modelNumber:
+            type: string
+            nullable: true
+          manufacturer:
+            type: object
+            nullable: true
+            properties:
+              name:
+                type: string
+              did:
+                type: string
+                nullable: true
+              address:
+                type: string
+                nullable: true
+              eori: # Added for EORI System conceptual integration
+                type: string
+                nullable: true
+                description: Economic Operators Registration and Identification number.
+          metadata:
+            type: object
+            properties:
+              created_at:
+                type: string
+                format: date-time
+                nullable: true
+              last_updated:
+                type: string
+                format: date-time
+              status:
+                type: string
+                enum:
+                  - draft
+                  - published
+                  - archived
+                  - pending_review
+                  - revoked
+                  - flagged
+              dppStandardVersion:
+                type: string
+                nullable: true
+              dataSchemaVersion:
+                type: string
+                nullable: true
+          blockchainIdentifiers:
+            type: object
+            nullable: true
+            properties:
+              platform:
+                type: string
+                nullable: true
+              contractAddress:
+                type: string
+                nullable: true
+              tokenId:
+                type: string
+                nullable: true
+              anchorTransactionHash:
+                type: string
+                nullable: true
+          productDetails:
+            type: object
+            nullable: true
+            properties:
+              description:
+                type: string
+                nullable: true
+              imageUrl:
+                type: string
+                nullable: true
+              imageHint:
+                type: string
+                nullable: true
+              materials:
+                type: array
+                nullable: true
+                items:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    percentage:
+                      type: number
+                      nullable: true
+                    origin:
+                      type: string
+                      nullable: true
+                    isRecycled:
+                      type: boolean
+                      nullable: true
+                    recycledContentPercentage:
+                       type: number
+                       nullable: true
+              sustainabilityClaims:
+                type: array
+                nullable: true
+                items:
+                  type: object
+                  properties:
+                    claim:
+                      type: string
+                    evidenceVcId:
+                      type: string
+                      nullable: true
+                    verificationDetails:
+                      type: string
+                      nullable: true
+              energyLabel:
+                type: string
+                nullable: true
+              repairabilityScore:
                 type: object
+                nullable: true
                 properties:
-                  name:
-                    type: string
-                  percentage:
+                  value:
                     type: number
-                    nullable: true
-                  origin:
+                  scale:
+                    type: number
+                  reportUrl:
                     type: string
                     nullable: true
-                  isRecycled:
-                    type: boolean
+                  vcId:
+                    type: string
+                    nullable: true
+              recyclabilityInformation:
+                type: object
+                nullable: true
+                properties:
+                  instructionsUrl:
+                    type: string
                     nullable: true
                   recycledContentPercentage:
-                     type: number
-                     nullable: true
-            sustainabilityClaims:
-              type: array
-              nullable: true
-              items:
+                    type: number
+                    nullable: true
+                  designForRecycling:
+                    type: boolean
+                    nullable: true
+                  vcId:
+                    type: string
+                    nullable: true
+              specifications: 
+                type: string
+                description: "A JSON string representing key-value technical specifications."
+                example: "{\"color\": \"blue\", \"weight\": \"250g\"}"
+                nullable: true
+              customAttributes:
+                type: array
+                nullable: true
+                items:
+                  $ref: '#/components/schemas/CustomAttribute'
+          lifecycleEvents:
+            type: array
+            nullable: true
+            items:
+              $ref: '#/components/schemas/LifecycleEvent'
+          certifications:
+            type: array
+            nullable: true
+            items:
+              $ref: '#/components/schemas/Certification'
+          documents: 
+            type: array
+            nullable: true
+            items:
+              $ref: '#/components/schemas/DocumentReference'
+          traceability:
+            $ref: '#/components/schemas/TraceabilityInfo'
+            nullable: true
+          compliance:
+            type: object
+            properties:
+              eprel:
                 type: object
+                nullable: true
                 properties:
-                  claim:
-                    type: string
-                  evidenceVcId:
+                  id:
                     type: string
                     nullable: true
-                  verificationDetails:
+                  status:
+                    type: string
+                  url:
                     type: string
                     nullable: true
-            energyLabel:
-              type: string
-              nullable: true
-            repairabilityScore:
-              type: object
-              nullable: true
-              properties:
-                value:
-                  type: number
-                scale:
-                  type: number
-                reportUrl:
-                  type: string
-                  nullable: true
-                vcId:
-                  type: string
-                  nullable: true
-            recyclabilityInformation:
-              type: object
-              nullable: true
-              properties:
-                instructionsUrl:
-                  type: string
-                  nullable: true
-                recycledContentPercentage:
-                  type: number
-                  nullable: true
-                designForRecycling:
-                  type: boolean
-                  nullable: true
-                vcId:
-                  type: string
-                  nullable: true
-            specifications: 
-              type: string
-              description: "A JSON string representing key-value technical specifications."
-              example: "{\"color\": \"blue\", \"weight\": \"250g\"}"
-              nullable: true
-            customAttributes:
-              type: array
-              nullable: true
-              items:
-                $ref: '#/components/schemas/CustomAttribute'
-        lifecycleEvents:
-          type: array
-          nullable: true
-          items:
-            $ref: '#/components/schemas/LifecycleEvent'
-        certifications:
-          type: array
-          nullable: true
-          items:
-            $ref: '#/components/schemas/Certification'
-        documents: 
-          type: array
-          nullable: true
-          items:
-            $ref: '#/components/schemas/DocumentReference'
-        traceability:
-          $ref: '#/components/schemas/TraceabilityInfo'
-          nullable: true
-        compliance:
-          type: object
-          properties:
-            eprel:
-              type: object
-              nullable: true
-              properties:
-                id:
-                  type: string
-                  nullable: true
-                status:
-                  type: string
-                url:
-                  type: string
-                  nullable: true
-                lastChecked:
-                  type: string
-                  format: date-time
-            esprConformity:
-              type: object
-              nullable: true
-              properties:
-                assessmentId:
-                  type: string
-                  nullable: true
-                status:
-                  type: string
-                  enum:
-                    - conformant
-                    - non_conformant
-                    - pending_assessment
-                assessmentDate:
-                  type: string
-                  format: date-time
-                  nullable: true
-                vcId:
-                  type: string
-                  nullable: true
-            eu_espr:
-              type: object
-              nullable: true
-              properties:
-                status:
-                  type: string
-                  enum:
-                    - compliant
-                    - non_compliant
-                    - pending
-                reportUrl:
-                  type: string
-                  nullable: true
-                vcId:
-                  type: string
-                  nullable: true
-            us_scope3:
-              type: object
-              nullable: true
-              properties:
-                status:
-                  type: string
-                  enum:
-                    - compliant
-                    - non_compliant
-                    - pending
-                reportUrl:
-                  type: string
-                  nullable: true
-                vcId:
-                  type: string
-                  nullable: true
-            battery_regulation:
-              type: object
-              nullable: true
-              properties:
-                status:
-                  type: string
-                  enum:
-                    - compliant
-                    - non_compliant
-                    - pending
-                    - not_applicable
-                batteryPassportId:
-                  type: string
-                  nullable: true
-                carbonFootprint:
-                  type: object
-                  nullable: true
-                  properties:
-                    value:
-                      type: number
-                    unit:
-                      type: string
-                    calculationMethod:
-                      type: string
-                      nullable: true
-                    vcId:
-                      type: string
-                      nullable: true
-                recycledContent:
-                  type: array
-                  nullable: true
-                  items:
+                  lastChecked:
+                    type: string
+                    format: date-time
+              esprConformity:
+                type: object
+                nullable: true
+                properties:
+                  assessmentId:
+                    type: string
+                    nullable: true
+                  status:
+                    type: string
+                    enum:
+                      - conformant
+                      - non_conformant
+                      - pending_assessment
+                  assessmentDate:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  vcId:
+                    type: string
+                    nullable: true
+              eu_espr:
+                type: object
+                nullable: true
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - compliant
+                      - non_compliant
+                      - pending
+                  reportUrl:
+                    type: string
+                    nullable: true
+                  vcId:
+                    type: string
+                    nullable: true
+              us_scope3:
+                type: object
+                nullable: true
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - compliant
+                      - non_compliant
+                      - pending
+                  reportUrl:
+                    type: string
+                    nullable: true
+                  vcId:
+                    type: string
+                    nullable: true
+              battery_regulation:
+                type: object
+                nullable: true
+                properties:
+                  status:
+                    type: string
+                    enum:
+                      - compliant
+                      - non_compliant
+                      - pending
+                      - not_applicable
+                  batteryPassportId:
+                    type: string
+                    nullable: true
+                  carbonFootprint:
                     type: object
+                    nullable: true
                     properties:
-                      material:
-                        type: string
-                      percentage:
+                      value:
                         type: number
+                      unit:
+                        type: string
+                      calculationMethod:
+                        type: string
+                        nullable: true
                       vcId:
                         type: string
                         nullable: true
-                stateOfHealth:
+                  recycledContent:
+                    type: array
+                    nullable: true
+                    items:
+                      type: object
+                      properties:
+                        material:
+                          type: string
+                        percentage:
+                          type: number
+                        vcId:
+                          type: string
+                          nullable: true
+                  stateOfHealth:
+                    type: object
+                    nullable: true
+                    properties:
+                      value:
+                        type: number
+                      unit:
+                        type: string
+                      measurementDate:
+                        type: string
+                        format: date-time
+                      vcId:
+                        type: string
+                        nullable: true
+                  vcId:
+                    type: string
+                    nullable: true
+              scipNotification: # Added for SCIP API conceptual integration
+                type: object
+                nullable: true
+                properties:
+                  status:
+                    type: string
+                    enum: ['Notified', 'Pending Notification', 'Not Required', 'Error']
+                  notificationId:
+                    type: string
+                    nullable: true
+                    description: SCIP database notification number.
+                  svhcListVersion: # New
+                    type: string
+                    nullable: true
+                    description: Version of the ECHA Candidate List used for assessment.
+                  submittingLegalEntity: # New
+                    type: string
+                    nullable: true
+                    description: Name or identifier of the legal entity that submitted the notification.
+                  articleName: # New
+                    type: string
+                    nullable: true
+                    description: Name of the article as notified to SCIP.
+                  primaryArticleId: # New
+                    type: string
+                    nullable: true
+                    description: Primary identifier of the article (e.g., EAN, TARIC code).
+                  safeUseInstructionsLink: # New
+                    type: string
+                    format: url
+                    nullable: true
+                    description: Link to safe use instructions, if SVHCs are present.
+                  lastChecked:
+                    type: string
+                    format: date-time
+              euCustomsData: # Added for EU Customs Data Model conceptual integration
+                type: object
+                nullable: true
+                properties:
+                  status:
+                    type: string
+                    enum: ['Verified', 'Pending Documents', 'Mismatch', 'Cleared']
+                  declarationId:
+                    type: string
+                    nullable: true
+                    description: Customs declaration reference number.
+                  hsCode: # New Harmonized System code
+                    type: string
+                    nullable: true
+                    description: Harmonized System (HS) code for customs classification.
+                  countryOfOrigin: # New
+                    type: string
+                    format: "ISO3166-1-Alpha-2"
+                    nullable: true
+                    description: ISO 3166-1 alpha-2 country code of origin.
+                  netWeightKg: # New
+                    type: number
+                    format: float
+                    nullable: true
+                    description: Net weight of the product in kilograms.
+                  grossWeightKg: # New
+                    type: number
+                    format: float
+                    nullable: true
+                    description: Gross weight of the product in kilograms.
+                  customsValuation: # New
+                    type: object
+                    nullable: true
+                    properties:
+                      value:
+                        type: number
+                        format: float
+                      currency:
+                        type: string
+                        format: "ISO4217" # e.g., EUR, USD
+                  lastChecked:
+                    type: string
+                    format: date-time
+          ebsiVerification:
+            type: object
+            nullable: true
+            properties:
+              status:
+                type: string
+                enum:
+                  - verified
+                  - pending_verification
+                  - not_verified
+                  - error
+              verificationId:
+                type: string
+                nullable: true
+              lastChecked:
+                type: string
+                format: date-time
+              message:
+                type: string
+                nullable: true
+              issuerDid:
+                type: string
+                nullable: true
+                description: DID of the EBSI credential issuer.
+              schema:
+                type: string
+                nullable: true
+                description: Schema of the EBSI verifiable credential.
+              issuanceDate:
+                type: string
+                format: date-time
+                nullable: true
+          verifiableCredentials:
+            type: array
+            nullable: true
+            items:
+              $ref: '#/components/schemas/VerifiableCredentialReference'
+          consumerScans:
+            type: integer
+            nullable: true
+          dataController:
+            type: string
+            nullable: true
+          accessControlPolicyUrl:
+            type: string
+            format: url
+            nullable: true
+          privacyPolicyUrl:
+            type: string
+            format: url
+            nullable: true
+          supplyChainLinks:
+            type: array
+            nullable: true
+            items:
+              $ref: '#/components/schemas/ProductSupplyChainLink'
+      LifecycleEvent:
+        type: object
+        properties:
+          id:
+            type: string
+          type:
+            type: string
+          timestamp:
+            type: string
+            format: date-time
+          location:
+            type: string
+            nullable: true
+          responsibleParty:
+            type: string
+            nullable: true
+          data:
+            type: object
+            additionalProperties: true
+            nullable: true
+          transactionHash:
+            type: string
+            nullable: true
+          vcId:
+            type: string
+            nullable: true
+      Certification:
+        type: object
+        properties:
+          id:
+            type: string
+          name:
+            type: string
+          issuer:
+            type: string
+          issueDate:
+            type: string
+            format: date
+          expiryDate:
+            type: string
+            format: date
+            nullable: true
+          vcId:
+            type: string
+            nullable: true
+          documentUrl:
+            type: string
+            format: url
+            nullable: true
+          standard:
+            type: string
+            nullable: true
+          transactionHash:
+            type: string
+            nullable: true
+      TraceabilityInfo:
+        type: object
+        properties:
+          batchId:
+            type: string
+            nullable: true
+          originCountry:
+            type: string
+            nullable: true
+          supplyChainSteps:
+            type: array
+            nullable: true
+            items:
+              $ref: '#/components/schemas/SupplyChainStep'
+      SupplyChainStep:
+        type: object
+        properties:
+          stepName:
+            type: string
+          actorDid:
+            type: string
+            nullable: true
+          timestamp:
+            type: string
+            format: date-time
+          location:
+            type: string
+            nullable: true
+          transactionHash:
+            type: string
+            nullable: true
+      VerifiableCredentialReference:
+        type: object
+        properties:
+          id:
+            type: string
+          type:
+            type: array
+            items:
+              type: string
+          name:
+            type: string
+            nullable: true
+          issuer:
+            type: string
+          issuanceDate:
+            type: string
+            format: date-time
+          credentialSubject:
+            type: object
+            additionalProperties: true
+          proof:
+            type: object
+            additionalProperties: true
+            nullable: true
+          verificationMethod:
+            type: string
+            nullable: true
+      DppCredential:
+        type: object
+        properties:
+          "@context":
+            type: array
+            items:
+              type: string
+          id:
+            type: string
+          type:
+            type: array
+            items:
+              type: string
+          issuer:
+            type: string
+          issuanceDate:
+            type: string
+            format: date-time
+          credentialSubject:
+            type: object
+            additionalProperties: true
+          proof:
+            type: object
+            additionalProperties: true
+            nullable: true
+      CustomAttribute:
+        type: object
+        properties:
+          key:
+            type: string
+          value:
+            type: string
+      ProductSupplyChainLink:
+        type: object
+        properties:
+          supplierId:
+            type: string
+          suppliedItem:
+            type: string
+          notes:
+            type: string
+            nullable: true
+      CreateDppRequestBody:
+        type: object
+        required:
+          - productName
+          - category
+        properties:
+          productName:
+            type: string
+          category:
+            type: string
+          gtin:
+            type: string
+            nullable: true
+          manufacturerName:
+            type: string
+            nullable: true
+          modelNumber:
+            type: string
+            nullable: true
+          productDetails:
+            type: object
+            nullable: true
+            properties:
+              description:
+                type: string
+                nullable: true
+              materials:
+                type: array
+                nullable: true
+                items:
                   type: object
-                  nullable: true
                   properties:
-                    value:
+                    name:
+                      type: string
+                    percentage:
                       type: number
-                    unit:
+                      nullable: true
+                    isRecycled:
+                      type: boolean
+                      nullable: true
+              energyLabel:
+                type: string
+                nullable: true
+              specifications:
+                type: string
+                description: "A JSON string representing key-value technical specifications."
+                example: "{\"color\": \"blue\"}"
+                nullable: true
+              customAttributes:
+                type: array
+                nullable: true
+                items:
+                  $ref: '#/components/schemas/CustomAttribute'
+              imageUrl:
+                type: string
+                format: url
+                nullable: true
+              imageHint:
+                type: string
+                nullable: true
+      UpdateDppRequestBody:
+        type: object
+        properties:
+          productName:
+            type: string
+            nullable: true
+          category:
+            type: string
+            nullable: true
+          gtin:
+            type: string
+            nullable: true
+          manufacturerName:
+            type: string
+            nullable: true
+          modelNumber:
+            type: string
+            nullable: true
+          metadata:
+            type: object
+            nullable: true
+            properties:
+              status:
+                type: string
+                enum:
+                  - draft
+                  - published
+                  - archived
+                  - pending_review
+                  - revoked
+                  - flagged
+                nullable: true
+              dppStandardVersion:
+                type: string
+                nullable: true
+          productDetails:
+            type: object
+            nullable: true
+            properties:
+              description:
+                type: string
+                nullable: true
+              materials:
+                type: array
+                nullable: true
+                items:
+                  type: object
+                  properties:
+                    name:
                       type: string
-                    measurementDate:
+                    percentage:
+                      type: number
+                      nullable: true
+                    isRecycled:
+                      type: boolean
+                      nullable: true
+              sustainabilityClaims:
+                type: array
+                nullable: true
+                items:
+                  type: object
+                  properties:
+                    claim:
                       type: string
-                      format: date-time
-                    vcId:
+                    verificationDetails:
                       type: string
                       nullable: true
-                vcId:
-                  type: string
-                  nullable: true
-            scipNotification: # Added for SCIP API conceptual integration
-              type: object
-              nullable: true
-              properties:
-                status:
-                  type: string
-                  enum: ['Notified', 'Pending Notification', 'Not Required', 'Error']
-                notificationId:
-                  type: string
-                  nullable: true
-                  description: SCIP database notification number.
-                lastChecked:
-                  type: string
-                  format: date-time
-            euCustomsData: # Added for EU Customs Data Model conceptual integration
-              type: object
-              nullable: true
-              properties:
-                status:
-                  type: string
-                  enum: ['Verified', 'Pending Documents', 'Mismatch', 'Cleared']
-                declarationId:
-                  type: string
-                  nullable: true
-                  description: Customs declaration reference number.
-                lastChecked:
-                  type: string
-                  format: date-time
-        ebsiVerification:
-          type: object
-          nullable: true
-          properties:
-            status:
-              type: string
-              enum:
-                - verified
-                - pending_verification
-                - not_verified
-                - error
-            verificationId:
-              type: string
-              nullable: true
-            lastChecked:
-              type: string
-              format: date-time
-            message:
-              type: string
-              nullable: true
-            issuerDid:
-              type: string
-              nullable: true
-              description: DID of the EBSI credential issuer.
-            schema:
-              type: string
-              nullable: true
-              description: Schema of the EBSI verifiable credential.
-            issuanceDate:
-              type: string
-              format: date-time
-              nullable: true
-        verifiableCredentials:
-          type: array
-          nullable: true
-          items:
-            $ref: '#/components/schemas/VerifiableCredentialReference'
-        consumerScans:
-          type: integer
-          nullable: true
-        dataController:
-          type: string
-          nullable: true
-        accessControlPolicyUrl:
-          type: string
-          format: url
-          nullable: true
-        privacyPolicyUrl:
-          type: string
-          format: url
-          nullable: true
-        supplyChainLinks:
-          type: array
-          nullable: true
-          items:
-            $ref: '#/components/schemas/ProductSupplyChainLink'
-    LifecycleEvent:
-      type: object
-      properties:
-        id:
-          type: string
-        type:
-          type: string
-        timestamp:
-          type: string
-          format: date-time
-        location:
-          type: string
-          nullable: true
-        responsibleParty:
-          type: string
-          nullable: true
-        data:
-          type: object
-          additionalProperties: true
-          nullable: true
-        transactionHash:
-          type: string
-          nullable: true
-        vcId:
-          type: string
-          nullable: true
-    Certification:
-      type: object
-      properties:
-        id:
-          type: string
-        name:
-          type: string
-        issuer:
-          type: string
-        issueDate:
-          type: string
-          format: date
-        expiryDate:
-          type: string
-          format: date
-          nullable: true
-        vcId:
-          type: string
-          nullable: true
-        documentUrl:
-          type: string
-          format: url
-          nullable: true
-        standard:
-          type: string
-          nullable: true
-        transactionHash:
-          type: string
-          nullable: true
-    TraceabilityInfo:
-      type: object
-      properties:
-        batchId:
-          type: string
-          nullable: true
-        originCountry:
-          type: string
-          nullable: true
-        supplyChainSteps:
-          type: array
-          nullable: true
-          items:
-            $ref: '#/components/schemas/SupplyChainStep'
-    SupplyChainStep:
-      type: object
-      properties:
-        stepName:
-          type: string
-        actorDid:
-          type: string
-          nullable: true
-        timestamp:
-          type: string
-          format: date-time
-        location:
-          type: string
-          nullable: true
-        transactionHash:
-          type: string
-          nullable: true
-    VerifiableCredentialReference:
-      type: object
-      properties:
-        id:
-          type: string
-        type:
-          type: array
-          items:
-            type: string
-        name:
-          type: string
-          nullable: true
-        issuer:
-          type: string
-        issuanceDate:
-          type: string
-          format: date-time
-        credentialSubject:
-          type: object
-          additionalProperties: true
-        proof:
-          type: object
-          additionalProperties: true
-          nullable: true
-        verificationMethod:
-          type: string
-          nullable: true
-    DppCredential:
-      type: object
-      properties:
-        "@context":
-          type: array
-          items:
-            type: string
-        id:
-          type: string
-        type:
-          type: array
-          items:
-            type: string
-        issuer:
-          type: string
-        issuanceDate:
-          type: string
-          format: date-time
-        credentialSubject:
-          type: object
-          additionalProperties: true
-        proof:
-          type: object
-          additionalProperties: true
-          nullable: true
-    CustomAttribute:
-      type: object
-      properties:
-        key:
-          type: string
-        value:
-          type: string
-    ProductSupplyChainLink:
-      type: object
-      properties:
-        supplierId:
-          type: string
-        suppliedItem:
-          type: string
-        notes:
-          type: string
-          nullable: true
-    CreateDppRequestBody:
-      type: object
-      required:
-        - productName
-        - category
-      properties:
-        productName:
-          type: string
-        category:
-          type: string
-        gtin:
-          type: string
-          nullable: true
-        manufacturerName:
-          type: string
-          nullable: true
-        modelNumber:
-          type: string
-          nullable: true
-        productDetails:
-          type: object
-          nullable: true
-          properties:
-            description:
-              type: string
-              nullable: true
-            materials:
-              type: array
-              nullable: true
-              items:
+              energyLabel:
+                type: string
+                nullable: true
+              specifications:
+                type: string
+                description: "A JSON string representing key-value technical specifications."
+                nullable: true
+              customAttributes:
+                type: array
+                nullable: true
+                items:
+                  $ref: '#/components/schemas/CustomAttribute'
+              imageUrl:
+                type: string
+                format: url
+                nullable: true
+              imageHint:
+                type: string
+                nullable: true
+          compliance: # Allow full update of compliance object
+            type: object 
+            nullable: true
+            properties:
+              eprel:
                 type: object
+                nullable: true
                 properties:
-                  name:
-                    type: string
-                  percentage:
-                    type: number
-                    nullable: true
-                  isRecycled:
-                    type: boolean
-                    nullable: true
-            energyLabel:
-              type: string
-              nullable: true
-            specifications:
-              type: string
-              description: "A JSON string representing key-value technical specifications."
-              example: "{\"color\": \"blue\"}"
-              nullable: true
-            customAttributes:
-              type: array
-              nullable: true
-              items:
-                $ref: '#/components/schemas/CustomAttribute'
-            imageUrl:
-              type: string
-              format: url
-              nullable: true
-            imageHint:
-              type: string
-              nullable: true
-    UpdateDppRequestBody:
-      type: object
-      properties:
-        productName:
-          type: string
-          nullable: true
-        category:
-          type: string
-          nullable: true
-        gtin:
-          type: string
-          nullable: true
-        manufacturerName:
-          type: string
-          nullable: true
-        modelNumber:
-          type: string
-          nullable: true
-        metadata:
-          type: object
-          nullable: true
-          properties:
-            status:
-              type: string
-              enum:
-                - draft
-                - published
-                - archived
-                - pending_review
-                - revoked
-                - flagged
-              nullable: true
-            dppStandardVersion:
-              type: string
-              nullable: true
-        productDetails:
-          type: object
-          nullable: true
-          properties:
-            description:
-              type: string
-              nullable: true
-            materials:
-              type: array
-              nullable: true
-              items:
+                  id: { type: string, nullable: true }
+                  status: { type: string, nullable: true }
+                  url: { type: string, nullable: true }
+                  lastChecked: { type: string, format: "date-time", nullable: true }
+              esprConformity:
                 type: object
+                nullable: true
                 properties:
-                  name:
-                    type: string
-                  percentage:
-                    type: number
-                    nullable: true
-                  isRecycled:
-                    type: boolean
-                    nullable: true
-            sustainabilityClaims:
-              type: array
-              nullable: true
-              items:
+                  assessmentId: { type: string, nullable: true }
+                  status: { type: string, enum: ['conformant', 'non_conformant', 'pending_assessment'], nullable: true }
+                  assessmentDate: { type: string, format: "date-time", nullable: true }
+                  vcId: { type: string, nullable: true }
+              scipNotification:
                 type: object
+                nullable: true
                 properties:
-                  claim:
-                    type: string
-                  verificationDetails:
-                    type: string
-                    nullable: true
-            energyLabel:
-              type: string
-              nullable: true
-            specifications:
-              type: string
-              description: "A JSON string representing key-value technical specifications."
-              nullable: true
-            customAttributes:
-              type: array
-              nullable: true
-              items:
-                $ref: '#/components/schemas/CustomAttribute'
-            imageUrl:
-              type: string
-              format: url
-              nullable: true
-            imageHint:
-              type: string
-              nullable: true
-        compliance: # Allow full update of compliance object
-          type: object 
-          nullable: true
-          properties:
-            eprel:
-              type: object
-              nullable: true
-              properties:
-                id: { type: string, nullable: true }
-                status: { type: string, nullable: true }
-                url: { type: string, nullable: true }
-                lastChecked: { type: string, format: "date-time", nullable: true }
-            esprConformity:
-              type: object
-              nullable: true
-              properties:
-                assessmentId: { type: string, nullable: true }
-                status: { type: string, enum: ['conformant', 'non_conformant', 'pending_assessment'], nullable: true }
-                assessmentDate: { type: string, format: "date-time", nullable: true }
-                vcId: { type: string, nullable: true }
-            scipNotification:
-              type: object
-              nullable: true
-              properties:
-                status: { type: string, enum: ['Notified', 'Pending Notification', 'Not Required', 'Error'], nullable: true }
-                notificationId: { type: string, nullable: true }
-                lastChecked: { type: string, format: "date-time", nullable: true }
-            euCustomsData:
-              type: object
-              nullable: true
-              properties:
-                status: { type: string, enum: ['Verified', 'Pending Documents', 'Mismatch', 'Cleared'], nullable: true }
-                declarationId: { type: string, nullable: true }
-                lastChecked: { type: string, format: "date-time", nullable: true }
-            # Other compliance fields like battery_regulation, eu_espr can be included here if they need to be fully updatable
-        ebsiVerification:
-          type: object
-          nullable: true
-          properties:
-            status:
-              type: string
-              enum:
-                - verified
-                - pending_verification
-                - not_verified
-                - error
-              nullable: true
-            verificationId:
-              type: string
-              nullable: true
-            message:
-              type: string
-              nullable: true
-        documents:
-          type: array
-          nullable: true
-          items:
-            $ref: '#/components/schemas/DocumentReference'
-    MintTokenRequest:
-      type: object
-      required:
-        - contractAddress
-        - recipientAddress
-      properties:
-        contractAddress:
-          type: string
-          description: Smart contract address used for minting.
-        recipientAddress:
-          type: string
-          description: Blockchain address receiving the token.
-        metadataUri:
-          type: string
-          nullable: true
-          description: URI for the off-chain metadata.
-    MintTokenResponse:
-      type: object
-      properties:
-        tokenId:
-          type: string
-        contractAddress:
-          type: string
-        transactionHash:
-          type: string
-    UpdateTokenMetadataRequest:
-      type: object
-      required:
-        - metadataUri
-      properties:
-        metadataUri:
-          type: string
-          description: New metadata URI for the token.
-        contractAddress:
-          type: string
-          nullable: true
-          description: Contract address if different from default.
-    UpdateTokenMetadataResponse:
-      type: object
-      properties:
-        tokenId:
-          type: string
-        contractAddress:
-          type: string
-        transactionHash:
-          type: string
-    TokenStatusResponse:
-      type: object
-      properties:
-        tokenId:
-          type: string
-        contractAddress:
-          type: string
-        ownerAddress:
-          type: string
-        mintedAt:
-          type: string
-          format: date-time
-        metadataUri:
-          type: string
-          nullable: true
-        lastTransactionHash:
-          type: string
-          nullable: true
-        status:
-          type: string
-          description: Current on-chain status of the token.
+                  status: { type: string, enum: ['Notified', 'Pending Notification', 'Not Required', 'Error'], nullable: true }
+                  notificationId: { type: string, nullable: true }
+                  svhcListVersion: { type: string, nullable: true }
+                  submittingLegalEntity: { type: string, nullable: true }
+                  articleName: { type: string, nullable: true }
+                  primaryArticleId: { type: string, nullable: true }
+                  safeUseInstructionsLink: { type: string, format: url, nullable: true }
+                  lastChecked: { type: string, format: "date-time", nullable: true }
+              euCustomsData:
+                type: object
+                nullable: true
+                properties:
+                  status: { type: string, enum: ['Verified', 'Pending Documents', 'Mismatch', 'Cleared'], nullable: true }
+                  declarationId: { type: string, nullable: true }
+                  hsCode: { type: string, nullable: true }
+                  countryOfOrigin: { type: string, format: "ISO3166-1-Alpha-2", nullable: true }
+                  netWeightKg: { type: number, format: float, nullable: true }
+                  grossWeightKg: { type: number, format: float, nullable: true }
+                  customsValuation: { 
+                    type: object, 
+                    nullable: true, 
+                    properties: { value: {type: "number", format: "float"}, currency: {type: "string", format: "ISO4217"} } 
+                  }
+                  lastChecked: { type: string, format: "date-time", nullable: true }
+              # Other compliance fields like battery_regulation, eu_espr can be included here if they need to be fully updatable
+          ebsiVerification:
+            type: object
+            nullable: true
+            properties:
+              status:
+                type: string
+                enum:
+                  - verified
+                  - pending_verification
+                  - not_verified
+                  - error
+                nullable: true
+              verificationId:
+                type: string
+                nullable: true
+              message:
+                type: string
+                nullable: true
+          documents:
+            type: array
+            nullable: true
+            items:
+              $ref: '#/components/schemas/DocumentReference'
+      MintTokenRequest:
+        type: object
+        required:
+          - contractAddress
+          - recipientAddress
+        properties:
+          contractAddress:
+            type: string
+            description: Smart contract address used for minting.
+          recipientAddress:
+            type: string
+            description: Blockchain address receiving the token.
+          metadataUri:
+            type: string
+            nullable: true
+            description: URI for the off-chain metadata.
+      MintTokenResponse:
+        type: object
+        properties:
+          tokenId:
+            type: string
+          contractAddress:
+            type: string
+          transactionHash:
+            type: string
+      UpdateTokenMetadataRequest:
+        type: object
+        required:
+          - metadataUri
+        properties:
+          metadataUri:
+            type: string
+            description: New metadata URI for the token.
+          contractAddress:
+            type: string
+            nullable: true
+            description: Contract address if different from default.
+      UpdateTokenMetadataResponse:
+        type: object
+        properties:
+          tokenId:
+            type: string
+          contractAddress:
+            type: string
+          transactionHash:
+            type: string
+      TokenStatusResponse:
+        type: object
+        properties:
+          tokenId:
+            type: string
+          contractAddress:
+            type: string
+          ownerAddress:
+            type: string
+          mintedAt:
+            type: string
+            format: date-time
+          metadataUri:
+            type: string
+            nullable: true
+          lastTransactionHash:
+            type: string
+            nullable: true
+          status:
+            type: string
+            description: Current on-chain status of the token.
 security:
   - ApiKeyAuth: []
 components:
@@ -2241,3 +2305,6 @@ components:
 
 
 
+
+
+    

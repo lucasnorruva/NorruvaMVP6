@@ -9,6 +9,9 @@
 - EPREL Database Connectivity: Integrate with the EPREL (EU Product Database for Energy Labelling) to automate energy label generation and synchronize product data with real-time updates.
 - CSRD Reporting: Provide automated sustainability reporting in compliance with the Corporate Sustainability Reporting Directive (CSRD), including scope 1, 2, and 3 emissions and other environmental impact metrics.
 - Dual-Scale Architecture: Employ a hybrid multi-tenant architecture to scale seamlessly from SMEs to large enterprises, ensuring both cost-efficiency and high performance.
+- Blockchain Anchoring: Record DPP metadata on chain (e.g., EBSI) for tamper-evident tracking.
+- Ownership Transfer: Update chain of custody via API when a product changes hands.
+- Wallet Credential Retrieval: Expose verifiable credentials compatible with digital wallets.
 
 ## Style Guidelines:
 

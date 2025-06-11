@@ -10,6 +10,7 @@ Welcome to the Norruva Digital Product Passport (DPP) concept application! This 
 - [Core Features (Conceptual)](#core-features-conceptual)
 - [Current Implemented Features](#current-implemented-features)
 - [Product Detail Page](#product-detail-page)
+- [Blockchain Anchoring & Ownership](#blockchain-anchoring--ownership)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -83,6 +84,55 @@ profiling should be done with realistic datasets.
 The individual **Product Detail Page** (accessed via `/products/[productId]`) has been refactored and is now fully functional. It provides a comprehensive tabbed view of product information, including overview, sustainability, compliance, lifecycle, and supply chain details.
 
 Links from other parts of the application, such as the "Products" listing page (`/products`) and the "DPP Live Dashboard" (`/dpp-live-dashboard`), that lead to this internal detail view are active and direct users to the relevant product's detailed information. The "Products" listing page (`/products`) and the "Add New Product" page (`/products/new`) are also fully functional for managing the product list and creating/editing entries.
+
+## Blockchain Anchoring & Ownership
+
+These conceptual features outline how a Digital Product Passport can be anchored on-chain, transferred to a new owner, and retrieved as a verifiable credential for wallet applications.
+
+### Anchoring a DPP to a Blockchain
+
+Send a `PUT` request to update the DPP with blockchain identifiers and the transaction hash used to anchor the data:
+
+```bash
+curl -X PUT https://api.example.com/api/v1/dpp/{productId} \
+  -H 'Authorization: Bearer <API_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "blockchainIdentifiers": {
+          "platform": "EBSI",
+          "contractAddress": "0x123...",
+          "tokenId": "1"
+        },
+        "anchorTransactionHash": "0xabc..."
+      }'
+```
+
+### Transferring Ownership
+
+Use the `PATCH /api/v1/dpp/extend/{productId}` endpoint with a `chainOfCustodyUpdate` payload:
+
+```bash
+curl -X PATCH https://api.example.com/api/v1/dpp/extend/{productId} \
+  -H 'Authorization: Bearer <API_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "chainOfCustodyUpdate": {
+          "newOwnerDid": "did:example:new-owner",
+          "transferTimestamp": "2024-01-01T12:00:00Z"
+        }
+      }'
+```
+
+### Retrieving a Verifiable Credential
+
+Fetch the DPP to obtain associated verifiable credentials that can be imported into digital wallets:
+
+```bash
+curl -H 'Authorization: Bearer <API_KEY>' \
+  https://api.example.com/api/v1/dpp/{productId}
+```
+
+The `verifiableCredentials` array in the response contains credential objects that wallets can verify. These calls can also be executed via the in-app API playground under **Developer Portal → API Reference**.
 
 ## Getting Started
 

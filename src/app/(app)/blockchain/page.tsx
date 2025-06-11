@@ -100,6 +100,7 @@ export default function BlockchainPage() {
 
   useEffect(() => {
     setIsLoading(true);
+    console.log('Fetching DPPs with filter:', filter);
     // TODO: Add loading state indicator while fetching DPPs
     fetch(`/api/v1/dpp?blockchainAnchored=${filter}`, {
 
@@ -150,7 +151,6 @@ export default function BlockchainPage() {
  setIsLoading(false);
  return;
     }
-    setIsLoading(true);
     // TODO: Add loading state indicator for this action
     const res = await fetch(`/api/v1/dpp/anchor/${selected.id}`, {
       method: "POST",
@@ -165,7 +165,7 @@ export default function BlockchainPage() {
     } else {
       handleApiError(res, "Anchoring DPP");
     };
-    ;
+
     setIsLoading(false);
   };
 
@@ -177,8 +177,6 @@ export default function BlockchainPage() {
  setIsLoading(false);
  return;
     }
-    setIsLoading(true);
-
     // TODO: Add loading state indicator for this action
     const res = await fetch(`/api/v1/dpp/custody/${selected.id}`, {
       method: "PATCH",
@@ -192,7 +190,7 @@ export default function BlockchainPage() {
       toast({ title: "Custody Updated", description: `New custody step added to ${selected.id}.` });
     } else {
       handleApiError(res, "Updating Custody");;
-    };
+    }
     ;
     setIsLoading(false);
   };
@@ -200,7 +198,6 @@ export default function BlockchainPage() {
   const handleTransfer = async (e: FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    if (!transferName || !transferDid || !transferTime) {
  toast({ title: "Validation Error", description: "Please fill in new owner name, DID, and transfer timestamp.", variant: "destructive" });
  setIsLoading(false);
  return;
@@ -219,13 +216,12 @@ export default function BlockchainPage() {
       setTransferDid("");
       setTransferTime("");
       toast({ title: "Ownership Transferred", description: `Ownership of ${selected.id} transferred to ${transferName}.` });
-    } else {;
-    };
-    ;
-    setIsLoading(false);
+    } else {
       handleApiError(res, "Transferring Ownership");
     }
+    setIsLoading(false);
   };
+
 
   const fetchCredential = async (productId: string) => {
     const res = await fetch(`/api/v1/dpp/${productId}/credential`, {
@@ -246,46 +242,6 @@ export default function BlockchainPage() {
       handleApiError(res, "Fetching Credential");
     }
   };
-
-function setFilter(arg0: any): void {
-  throw new Error("Function not implemented.");
-}
-
-function setSelected(arg0: any): void {
-  throw new Error("Function not implemented.");
-}
-
-function handleAnchor(event: FormEvent<HTMLFormElement>): void {
-  throw new Error("Function not implemented.");
-}
-
-function setAnchorPlatform(value: string): void {
-  throw new Error("Function not implemented.");
-}
-
-function handleAddCustody(event: FormEvent<HTMLFormElement>): void {
-  throw new Error("Function not implemented.");
-}
-
-function setCustodyStep(arg0: any): void {
-  throw new Error("Function not implemented.");
-}
-
-function handleTransfer(event: FormEvent<HTMLFormElement>): void {
-  throw new Error("Function not implemented.");
-}
-
-function setTransferName(value: string): void {
-  throw new Error("Function not implemented.");
-}
-
-function setTransferDid(value: string): void {
-  throw new Error("Function not implemented.");
-}
-
-function setTransferTime(value: string): void {
-  throw new Error("Function not implemented.");
-}
 
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8">
@@ -437,13 +393,4 @@ function setTransferTime(value: string): void {
       </Card>
     </div>
   );
-
-
-function toast(arg0: { title: string; description: string; }) {
-  throw new Error("Function not implemented.");
-}
-
-function handleApiError(res: Response, arg1: string) {
-  throw new Error("Function not implemented.");
-}
 

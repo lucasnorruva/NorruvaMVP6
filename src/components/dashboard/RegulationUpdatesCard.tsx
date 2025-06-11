@@ -1,8 +1,9 @@
+
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Info } from "lucide-react";
+import { Info, ExternalLink } from "lucide-react"; // Added ExternalLink
 import Link from "next/link";
 
 interface RegulationUpdate {
@@ -40,12 +41,11 @@ export const RegulationUpdatesCard = () => (
               </p>
               <p className="text-sm text-foreground/90 mt-1.5">{update.summary}</p>
               {update.link && (
-                <Link href={update.link} passHref legacyBehavior>
-                  <a target="_blank" rel="noopener noreferrer">
-                    <Button variant="link" size="sm" className="p-0 h-auto mt-1 text-primary">
-                      Learn More
-                    </Button>
-                  </a>
+                <Link href={update.link} target="_blank" rel="noopener noreferrer" asChild>
+                  <Button variant="link" size="sm" className="p-0 h-auto mt-1 text-primary">
+                    Learn More
+                    <ExternalLink className="ml-1 h-3 w-3" />
+                  </Button>
                 </Link>
               )}
             </li>

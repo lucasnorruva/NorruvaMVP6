@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter, useSearchParams } from 'next/navigation'; // Import useRouter and useSearchParams
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from '@/components/ui/checkbox';
 import { Lightbulb, CheckCircle, Loader2, Info, Recycle, Package, Wrench, FileText as FileTextIcon, SearchCheck, ExternalLink } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 interface WizardStep {
   id: string;
@@ -32,6 +33,9 @@ const esprPathwaySteps: WizardStep[] = [
 
 export default function EsprPathwayPage() {
   const router = useRouter(); // Initialize router
+  const searchParams = useSearchParams();
+  const countryParam = searchParams.get('country');
+  const country = countryParam ? decodeURIComponent(countryParam) : null;
   const [activeStep, setActiveStep] = useState<string>(esprPathwaySteps[0].id);
   const [formData, setFormData] = useState<Record<string, any>>({
     step1_productCategory: "",
@@ -290,6 +294,9 @@ export default function EsprPathwayPage() {
         <CardHeader>
           <CardTitle className="text-2xl font-headline text-primary">EU ESPR Compliance Pathway</CardTitle>
           <CardDescription>Navigate the Ecodesign for Sustainable Products Regulation requirements step-by-step.</CardDescription>
+          {country && (
+            <p className="mt-2 text-sm"><Badge variant="outline">Guidance for {country}</Badge></p>
+          )}
         </CardHeader>
         <CardContent>
             <div className="mb-6 p-4 border rounded-lg bg-muted/50">

@@ -1,10 +1,11 @@
+
 "use client";
 
 import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Eye } from "lucide-react";
-import { MOCK_DPPS } from "@/types/dpp"; // Assuming this mock data is suitable for now
+import { MOCK_DPPS } from "@/data"; // Corrected import path
 import type { DigitalProductPassport } from "@/types/dpp";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";

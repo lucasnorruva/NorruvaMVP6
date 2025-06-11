@@ -1,6 +1,6 @@
 
 import { BookText } from "lucide-react";
-import { MOCK_DPPS } from "@/types/dpp";
+import { MOCK_DPPS } from "@/data";
 import DocsPageLayout from '@/components/developer/DocsPageLayout';
 import ApiReferenceIntro from '@/components/developer/docs/ApiReferenceIntro';
 import ApiReferenceDppEndpoints from '@/components/developer/docs/ApiReferenceDppEndpoints';

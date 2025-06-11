@@ -4,7 +4,8 @@
 "use client";
 
 import type { SimpleProductDetail, ProductSupplyChainLink, Supplier } from "@/types/dpp";
-import { MOCK_SUPPLIERS, USER_SUPPLIERS_LOCAL_STORAGE_KEY } from "@/types/dpp";
+import { USER_SUPPLIERS_LOCAL_STORAGE_KEY } from "@/types/dpp";
+import { MOCK_SUPPLIERS } from "@/data";
 import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";

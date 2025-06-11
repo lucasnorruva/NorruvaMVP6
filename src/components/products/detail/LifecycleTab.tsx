@@ -9,10 +9,15 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import * as LucideIcons from "lucide-react"; // Import all icons
-import React, { useState } from "react"; // Import useState
+import React, { useState, useRef } from "react"; // Import useState
 import { useToast } from "@/hooks/use-toast";
 import { checkProductCompliance } from "@/ai/flows/check-product-compliance-flow";
 import { Loader2 } from "lucide-react";
+import {
+  DppLifecycleStateMachine,
+  DppLifecycleState,
+  ALLOWED_TRANSITIONS,
+} from '@/utils/dppLifecycleStateMachine';
 
 interface LifecycleTabProps {
   product: SimpleProductDetail;
@@ -56,6 +61,9 @@ const getIconComponent = (iconName?: keyof typeof LucideIcons): React.ElementTyp
 export default function LifecycleTab({ product }: LifecycleTabProps) {
   const { toast } = useToast();
   const [isLoadingComplianceCheck, setIsLoadingComplianceCheck] = useState<string | null>(null);
+  const lifecycleMachineRef = useRef<DppLifecycleStateMachine>(
+    new DppLifecycleStateMachine(DppLifecycleState.DESIGN)
+  );
 
   const handleAdvanceStage = async (targetEvent: SimpleLifecycleEvent, currentIndex: number) => {
     if (!product.lifecycleEvents) return;
@@ -90,6 +98,20 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
         currentLifecycleStageName: currentLifecycleStageName,
         newLifecycleStageName: targetEvent.eventName,
       });
+
+      // Advance the local lifecycle state using the state machine
+      const machine = lifecycleMachineRef.current;
+      const nextStates = ALLOWED_TRANSITIONS[machine.getCurrentState()];
+      if (nextStates.length > 0) {
+        try {
+          machine.transition(nextStates[0]);
+          // eslint-disable-next-line no-console
+          console.log('Lifecycle advanced to', machine.getCurrentState());
+        } catch (err) {
+          // eslint-disable-next-line no-console
+          console.error('Lifecycle transition failed:', err);
+        }
+      }
 
       toast({
         title: `Compliance Check: Advancing to ${targetEvent.eventName}`,

@@ -17,9 +17,9 @@ import {
   ListChecks,
   BarChartHorizontal,
   ClipboardList,
-  Globe2, 
+  Globe2,
   Users,
-  Fingerprint // Added Fingerprint icon
+  Fingerprint
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import { SidebarHeader, SidebarContent, SidebarFooter } from "@/components/ui/sidebar/Sidebar";
@@ -43,9 +43,9 @@ const navItems = [
   { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
   // Specialized Views
+  { href: "/blockchain", label: "Blockchain Management", icon: Fingerprint },
   { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList },
   { href: "/dpp-global-tracker-v2", label: "DPP Global Tracker v2", icon: Globe2 },
-  { href: "/blockchain", label: "Blockchain Management", icon: Fingerprint }, // New Item
 ];
 
 const secondaryNavItems = [

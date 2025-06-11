@@ -4,7 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { MOCK_DPPS } from '@/types/dpp';
+import { MOCK_DPPS } from '@/data';
 
 // Request body is currently not used for this endpoint as productId comes from path.
 // interface VerifyDppRequestBody {

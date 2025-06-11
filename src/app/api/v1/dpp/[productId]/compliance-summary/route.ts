@@ -4,7 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { MOCK_DPPS } from '@/types/dpp';
+import { MOCK_DPPS } from '@/data';
 import type { DigitalProductPassport } from '@/types/dpp';
 
 // Simplified function to determine overall status, similar to getOverallComplianceDetails

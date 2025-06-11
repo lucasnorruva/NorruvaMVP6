@@ -4,7 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { MOCK_DPPS, MOCK_SUPPLIERS } from '@/types/dpp'; // Assuming MOCK_SUPPLIERS is available
+import { MOCK_DPPS, MOCK_SUPPLIERS } from '@/data';
 import type { DigitalProductPassport, Supplier } from '@/types/dpp';
 
 interface GraphNode {

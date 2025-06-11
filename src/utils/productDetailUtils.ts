@@ -3,7 +3,8 @@
 // Description: Utilities for fetching and preparing product details for display.
 
 
-import { USER_PRODUCTS_LOCAL_STORAGE_KEY, MOCK_DPPS } from '@/types/dpp';
+import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
+import { MOCK_DPPS } from '@/data';
 import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification } from '@/types/dpp';
 import { getOverallComplianceDetails } from '@/utils/dppDisplayUtils';
 

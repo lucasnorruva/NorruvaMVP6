@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+
 import { getAiHintForImage } from '../imageUtils';
 
 describe('getAiHintForImage', () => {

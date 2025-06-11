@@ -1,7 +1,9 @@
+
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { MOCK_DPPS } from '@/data';
 import type { DigitalProductPassport } from '@/types/dpp';
+import { validateApiKey } from '@/middleware/apiKeyAuth';
 
 interface AnchorDppRequestBody {
   platform: string;
@@ -12,6 +14,8 @@ export async function POST(
   { params }: { params: { productId: string } }
 ) {
   const productId = params.productId;
+  const auth = validateApiKey(request);
+  if (auth) return auth;
   let requestBody: AnchorDppRequestBody;
 
   try {
@@ -33,6 +37,8 @@ export async function POST(
   }
 
   const anchorHash = `0xmockAnchor${Date.now().toString(16)}`;
+  const mockContractAddress = `0xMOCK_CONTRACT_FOR_${productId}`;
+  const mockTokenId = `MOCK_TOKENID_FOR_${productId}_${Date.now().toString(36).slice(-4)}`;
 
   const updated: DigitalProductPassport = {
     ...MOCK_DPPS[index],
@@ -40,6 +46,8 @@ export async function POST(
       ...(MOCK_DPPS[index].blockchainIdentifiers || {}),
       platform: requestBody.platform,
       anchorTransactionHash: anchorHash,
+      contractAddress: mockContractAddress,
+      tokenId: mockTokenId,
     },
     metadata: {
       ...MOCK_DPPS[index].metadata,

@@ -14,10 +14,10 @@ import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenRe
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 
 const EBSI_EXPLORER_BASE_URL = "https://mock-ebsi-explorer.example.com/tx/";
-const MOCK_API_KEY = "SANDBOX_KEY_123"; // Ensure this key is in VALID_API_KEYS in .env
+const MOCK_API_KEY = "SANDBOX_KEY_123"; 
 
 const getEbsiStatusBadge = (status?: "verified" | "pending_verification" | "not_verified" | "error" | string) => {
   switch (status?.toLowerCase()) {
@@ -38,46 +38,63 @@ const getEbsiStatusBadge = (status?: "verified" | "pending_verification" | "not_
 function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
   return (
     <div className="space-y-3 p-4 border rounded-md bg-muted/30">
-      {product.blockchainIdentifiers?.anchorTransactionHash ? (
-        <>
-          <div className="flex flex-col mb-1">
-            <span className="text-xs text-muted-foreground">Product Record Hash:</span>
-            <span className="font-mono text-xs break-all text-foreground/90" title={product.blockchainIdentifiers.anchorTransactionHash!}>
-              {product.blockchainIdentifiers.anchorTransactionHash}
-            </span>
-          </div>
-          <div className="flex flex-col mb-2">
-            <span className="text-xs text-muted-foreground">EBSI Explorer:</span>
-            <a href={`${EBSI_EXPLORER_BASE_URL}${product.blockchainIdentifiers.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">
-              View on EBSI Explorer
-            </a>
-          </div>
-          {product.ebsiVerification?.verificationId && (
-            <div className="flex flex-col mb-1">
-              <span className="text-xs text-muted-foreground">EBSI Verification ID:</span>
-              <span className="font-mono text-xs text-foreground/90 break-all">
-                {product.ebsiVerification.verificationId}
-              </span>
-            </div>
-          )}
-          {product.ebsiVerification?.issuerDid && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">EBSI Issuer DID:</span><span className="font-mono text-xs text-foreground/90 break-all">{product.ebsiVerification.issuerDid}</span></div>)}
-          {product.ebsiVerification?.schema && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">EBSI Schema:</span><span className="font-mono text-xs text-foreground/90 break-all">{product.ebsiVerification.schema}</span></div>)}
-          {product.ebsiVerification?.issuanceDate && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">EBSI Issuance Date:</span><span className="font-mono text-xs text-foreground/90 break-all">{new Date(product.ebsiVerification.issuanceDate).toLocaleString()}</span></div>)}
-        </>
-      ) : null}
       {product.blockchainIdentifiers?.platform && (
         <div className="flex flex-col mb-1">
           <span className="text-xs text-muted-foreground">Platform:</span>
           <span className="text-foreground/90">{product.blockchainIdentifiers.platform}</span>
         </div>
       )}
-      {product.ebsiVerification?.status && (
+      {product.blockchainIdentifiers?.contractAddress && (
+        <div className="flex flex-col mb-1">
+          <span className="text-xs text-muted-foreground">Contract Address:</span>
+          <span className="font-mono text-xs break-all text-foreground/90">
+            {product.blockchainIdentifiers.contractAddress}
+          </span>
+        </div>
+      )}
+       {product.blockchainIdentifiers?.tokenId && (
+        <div className="flex flex-col mb-1">
+          <span className="text-xs text-muted-foreground">Token ID:</span>
+          <span className="font-mono text-xs break-all text-foreground/90">
+            {product.blockchainIdentifiers.tokenId}
+          </span>
+        </div>
+      )}
+      {product.blockchainIdentifiers?.anchorTransactionHash ? (
+        <>
+          <div className="flex flex-col mb-1">
+            <span className="text-xs text-muted-foreground">Anchor Transaction Hash:</span>
+            <span className="font-mono text-xs break-all text-foreground/90" title={product.blockchainIdentifiers.anchorTransactionHash!}>
+              {product.blockchainIdentifiers.anchorTransactionHash}
+            </span>
+          </div>
+          <div className="flex flex-col mb-2">
+            <span className="text-xs text-muted-foreground">EBSI Explorer (Conceptual):</span>
+            <a href={`${EBSI_EXPLORER_BASE_URL}${product.blockchainIdentifiers.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs">
+              View on Mock Explorer <ExternalLink className="inline h-3 w-3 ml-0.5" />
+            </a>
+          </div>
+        </>
+      ) : null}
+       {product.ebsiVerification?.status && (
         <div className="flex flex-col mb-1">
           <span className="text-xs text-muted-foreground">EBSI Verification Status:</span>
           <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiVerification.status)}</div>
         </div>
       )}
-      {!product.blockchainIdentifiers?.anchorTransactionHash && !product.ebsiVerification?.status && (
+      {product.ebsiVerification?.verificationId && (
+        <div className="flex flex-col mb-1">
+          <span className="text-xs text-muted-foreground">EBSI Verification ID:</span>
+          <span className="font-mono text-xs text-foreground/90 break-all">
+            {product.ebsiVerification.verificationId}
+          </span>
+        </div>
+      )}
+      {product.ebsiVerification?.issuerDid && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">EBSI Issuer DID:</span><span className="font-mono text-xs text-foreground/90 break-all">{product.ebsiVerification.issuerDid}</span></div>)}
+      {product.ebsiVerification?.schema && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">EBSI Schema:</span><span className="font-mono text-xs text-foreground/90 break-all">{product.ebsiVerification.schema}</span></div>)}
+      {product.ebsiVerification?.issuanceDate && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">EBSI Issuance Date:</span><span className="font-mono text-xs text-foreground/90 break-all">{new Date(product.ebsiVerification.issuanceDate).toLocaleString()}</span></div>)}
+      
+      {!product.blockchainIdentifiers?.anchorTransactionHash && !product.ebsiVerification?.status && !product.blockchainIdentifiers?.platform && (
         <p className="text-muted-foreground text-sm">No specific blockchain or EBSI verification details available for this product.</p>
       )}
     </div>
@@ -92,7 +109,7 @@ export default function BlockchainPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [isActionLoading, setIsActionLoading] = useState<string | boolean>(false);
 
-  const [anchorPlatform, setAnchorPlatform] = useState("");
+  const [anchorPlatform, setAnchorPlatform] = useState("EBSI");
   const [custodyStep, setCustodyStep] = useState({ stepName: "", actorDid: "", timestamp: "", location: "", transactionHash: "" });
   const [transferName, setTransferName] = useState("");
   const [transferDid, setTransferDid] = useState("");
@@ -178,8 +195,8 @@ export default function BlockchainPage() {
     if (res.ok) {
       const data = await res.json();
       updateDpp(data);
-      setAnchorPlatform("");
-      toast({ title: "DPP Anchored", description: `Product ${selected.id} successfully anchored to ${anchorPlatform}.` });
+      // setAnchorPlatform(""); // Keep platform for subsequent anchors if desired
+      toast({ title: "DPP Anchored", description: `Product ${selected.id} successfully anchored to ${anchorPlatform}. Mock contract address and token ID also set.` });
     } else {
       handleApiError(res, "Anchoring DPP");
     }
@@ -353,12 +370,12 @@ export default function BlockchainPage() {
         </CardHeader>
         <CardContent className="text-sm text-foreground/90 space-y-2">
           <p>
-            This page provides tools to conceptually manage the on-chain aspects of your Digital Product Passports (DPPs). You can simulate actions such as:
+            This page provides conceptual tools to manage on-chain aspects of your Digital Product Passports (DPPs). You can simulate actions such as:
           </p>
           <ul className="list-disc list-inside pl-4 space-y-1">
-            <li><strong>Anchoring DPPs:</strong> Recording DPP data or its hash on a blockchain.</li>
-            <li><strong>Updating Chain of Custody:</strong> Documenting product transfers.</li>
-            <li><strong>Transferring Ownership:</strong> Modifying DPP ownership records.</li>
+            <li><strong>Anchoring DPPs:</strong> Recording DPP data hashes and key identifiers on a mock blockchain.</li>
+            <li><strong>Updating Chain of Custody:</strong> Documenting product transfers and lifecycle events.</li>
+            <li><strong>Transferring Ownership:</strong> Modifying DPP ownership records (conceptually).</li>
             <li><strong>Managing Verifiable Credentials:</strong> Viewing and retrieving product-related VCs.</li>
             <li><strong>DPP Token Operations:</strong> Conceptual minting, metadata updates, and status checks for DPP tokens.</li>
           </ul>
@@ -439,8 +456,8 @@ export default function BlockchainPage() {
                                     </TooltipTrigger>
                                     <TooltipContent className="max-w-xs">
                                       <p className="text-xs">
-                                        Blockchain anchoring provides an immutable record of the DPP's existence and integrity. 
-                                        EBSI (European Blockchain Services Infrastructure) verification further enhances trust and interoperability using verifiable credentials.
+                                        Blockchain anchoring (e.g., transaction hash, contract address, token ID) provides an immutable record of the DPP's data integrity. 
+                                        EBSI (European Blockchain Services Infrastructure) verification can enhance trust using verifiable credentials.
                                       </p>
                                     </TooltipContent>
                                   </Tooltip>
@@ -604,7 +621,3 @@ export default function BlockchainPage() {
     </div>
   );
 }
-
-    
-    
-    

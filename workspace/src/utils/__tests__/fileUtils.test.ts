@@ -1,15 +1,15 @@
 
-import { describe, it, expect, vi } from 'vitest';
+
 import { fileToDataUri } from '../fileUtils';
 
 // Mock FileReader
 const mockFileReader = {
-  readAsDataURL: vi.fn(),
-  onload: vi.fn(),
-  onerror: vi.fn(),
+  readAsDataURL: jest.fn(),
+  onload: jest.fn(),
+  onerror: jest.fn(),
   result: '',
 };
-vi.stubGlobal('FileReader', vi.fn(() => mockFileReader));
+(global as any).FileReader = jest.fn(() => mockFileReader);
 
 // Mock File
 const createMockFile = (name = 'test.png', type = 'image/png', content = ['content']) => {
@@ -23,7 +23,7 @@ describe('fileToDataUri', () => {
     const mockDataUri = 'data:image/png;base64,Y29udGVudA=='; // "content" base64 encoded
 
     // Simulate successful load
-    mockFileReader.readAsDataURL = vi.fn((file) => {
+    mockFileReader.readAsDataURL = jest.fn((file) => {
       expect(file).toBe(mockFile);
       mockFileReader.result = mockDataUri;
       // Call onload directly as if the event triggered
@@ -45,7 +45,7 @@ describe('fileToDataUri', () => {
     const mockError = new Error('File read failed');
 
     // Simulate error
-    mockFileReader.readAsDataURL = vi.fn((file) => {
+    mockFileReader.readAsDataURL = jest.fn((file) => {
       expect(file).toBe(mockFile);
       // Call onerror directly as if the event triggered
       if (typeof mockFileReader.onerror === 'function') {

@@ -1670,20 +1670,28 @@ paths:
                   batteryPassportId:
                     type: string
                     nullable: true
+                    description: Unique identifier for the battery passport itself.
                   carbonFootprint:
                     type: object
                     nullable: true
                     properties:
                       value:
                         type: number
+                        description: "Carbon footprint value."
                       unit:
                         type: string
+                        description: "Unit of the carbon footprint (e.g., kg CO2e/kWh)."
                       calculationMethod:
                         type: string
                         nullable: true
+                        description: "Methodology used for calculation (e.g., PEFCR, ISO 14067)."
                       vcId:
                         type: string
                         nullable: true
+                        description: "Verifiable Credential ID for the carbon footprint data."
+                    required:
+                      - value
+                      - unit
                   recycledContent:
                     type: array
                     nullable: true
@@ -1692,28 +1700,43 @@ paths:
                       properties:
                         material:
                           type: string
+                          description: "Specific material (e.g., Cobalt, Lithium, Nickel, Lead)."
                         percentage:
                           type: number
+                          description: "Percentage of recycled content for this material."
                         vcId:
                           type: string
                           nullable: true
+                          description: "Verifiable Credential ID for this recycled content claim."
+                      required:
+                        - material
+                        - percentage
                   stateOfHealth:
                     type: object
                     nullable: true
                     properties:
                       value:
                         type: number
+                        description: "State of Health value, typically a percentage."
                       unit:
                         type: string
+                        description: "Unit for State of Health (e.g., '%')."
                       measurementDate:
                         type: string
                         format: date-time
+                        description: "Date when the State of Health was measured."
                       vcId:
                         type: string
                         nullable: true
+                        description: "Verifiable Credential ID for the State of Health data."
+                    required:
+                      - value
+                      - unit
+                      - measurementDate
                   vcId:
                     type: string
                     nullable: true
+                    description: "Overall Verifiable Credential ID for the battery regulation compliance."
               scipNotification:
                 type: object
                 nullable: true
@@ -2198,7 +2221,31 @@ paths:
                     properties: { value: {type: "number", format: "float"}, currency: {type: "string", format: "ISO4217"} } 
                   }
                   lastChecked: { type: string, format: "date-time", nullable: true }
-              # Other compliance fields like battery_regulation, eu_espr can be included here if they need to be fully updatable
+              battery_regulation: # Allow full update of battery_regulation
+                type: object
+                nullable: true
+                properties:
+                  status: { type: string, enum: ['compliant', 'non_compliant', 'pending', 'not_applicable'], nullable: true }
+                  batteryPassportId: { type: string, nullable: true }
+                  carbonFootprint: { 
+                    type: object, 
+                    nullable: true, 
+                    properties: { value: {type: "number"}, unit: {type: "string"}, calculationMethod: {type: "string", nullable: true}, vcId: {type: "string", nullable: true}} 
+                  }
+                  recycledContent: {
+                    type: array,
+                    nullable: true,
+                    items: {
+                      type: object,
+                      properties: { material: {type: "string"}, percentage: {type: "number"}, vcId: {type: "string", nullable: true}}
+                    }
+                  }
+                  stateOfHealth: {
+                    type: object,
+                    nullable: true,
+                    properties: { value: {type: "number"}, unit: {type: "string"}, measurementDate: {type: "string", format: "date-time"}, vcId: {type: "string", nullable: true}}
+                  }
+                  vcId: { type: string, nullable: true }
           ebsiVerification:
             type: object
             nullable: true

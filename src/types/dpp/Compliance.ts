@@ -38,15 +38,44 @@ export interface ScipNotificationDetails {
 export interface EuCustomsDataDetails {
   status: 'Verified' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'N/A' | string;
   declarationId?: string;
-  hsCode?: string; // New: Harmonized System code
-  countryOfOrigin?: string; // New: ISO 3166-1 Alpha-2
-  netWeightKg?: number; // New
-  grossWeightKg?: number; // New
-  customsValuation?: { // New
+  hsCode?: string;
+  countryOfOrigin?: string;
+  netWeightKg?: number;
+  grossWeightKg?: number;
+  customsValuation?: {
     value: number;
-    currency: string; // ISO 4217
+    currency: string;
   };
   lastChecked: string; // ISO Date string
+}
+
+export interface CarbonFootprintData {
+  value: number;
+  unit: string;
+  calculationMethod?: string;
+  vcId?: string;
+}
+
+export interface RecycledContentData {
+  material: string;
+  percentage: number;
+  vcId?: string;
+}
+
+export interface StateOfHealthData {
+  value: number;
+  unit: string;
+  measurementDate: string; // ISO Date string
+  vcId?: string;
+}
+
+export interface BatteryRegulationDetails {
+  status: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable' | string;
+  batteryPassportId?: string;
+  carbonFootprint?: CarbonFootprintData;
+  recycledContent?: RecycledContentData[];
+  stateOfHealth?: StateOfHealthData;
+  vcId?: string;
 }
 
 
@@ -73,8 +102,9 @@ export interface ProductComplianceSummary {
     transactionUrl?: string;
     lastChecked: string; // ISO Date string
   };
-  scip?: ScipNotificationDetails; // Added
-  euCustomsData?: EuCustomsDataDetails; // Added
+  scip?: ScipNotificationDetails; 
+  euCustomsData?: EuCustomsDataDetails; 
+  battery?: BatteryRegulationDetails; // Added for explicit battery data
   specificRegulations?: ComplianceDetailItem[];
 }
 
@@ -106,3 +136,4 @@ export interface PublicCertification {
     
 
     
+

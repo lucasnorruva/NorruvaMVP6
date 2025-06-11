@@ -1,5 +1,5 @@
 
-import type { DigitalProductPassport, EbsiVerificationDetails } from '@/types/dpp'; // Added EbsiVerificationDetails
+import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails } from '@/types/dpp'; // Added EbsiVerificationDetails
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
   {
@@ -48,7 +48,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       euCustomsData: { 
         status: 'Verified', 
         declarationId: 'CUST_DECL_XYZ789', 
-        hsCode: "84181020", // Example HS code for refrigerators
+        hsCode: "84181020", 
         countryOfOrigin: "DE",
         netWeightKg: 75.5,
         grossWeightKg: 80.2,
@@ -140,10 +140,10 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eprel: { status: "Not Applicable", lastChecked: "2024-07-25T00:00:00Z" },
       eu_espr: { status: "pending" },
       battery_regulation: { status: "not_applicable" },
-      scipNotification: { status: 'Not Required', lastChecked: "2024-07-25T00:00:00Z" }, // Textiles less likely to have complex SVHCs
+      scipNotification: { status: 'Not Required', lastChecked: "2024-07-25T00:00:00Z" }, 
       euCustomsData: { 
         status: 'Pending Documents', 
-        hsCode: "61091000", // Example HS code for cotton t-shirts
+        hsCode: "61091000", 
         countryOfOrigin: "IN",
         netWeightKg: 0.15,
         grossWeightKg: 0.2,
@@ -153,7 +153,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-20T00:00:00Z"} as EbsiVerificationDetails,
     consumerScans: 300,
-    blockchainIdentifiers: { platform: "MockChain" }, // No anchorTransactionHash here
+    blockchainIdentifiers: { platform: "MockChain" }, 
     certifications: [
       {id: "cert3", name: "GOTS", issuer: "Control Union", issueDate: "2024-02-20", expiryDate: "2025-02-19", documentUrl: "#gots", standard: "Global Organic Textile Standard 6.0"},
     ],
@@ -214,7 +214,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       euCustomsData: { 
         status: 'Cleared', 
         declarationId: 'CUST_IMP_DEF456', 
-        hsCode: "39269097", // Example HS for plastic articles
+        hsCode: "39269097", 
         countryOfOrigin: "CN",
         netWeightKg: 0.05,
         grossWeightKg: 0.08,
@@ -256,7 +256,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       euCustomsData: { 
         status: 'Verified', 
         declarationId: 'CUST_SOFA_777', 
-        hsCode: "94016100", // Example HS for upholstered seats with wooden frames
+        hsCode: "94016100", 
         countryOfOrigin: "PL",
         netWeightKg: 45.0,
         grossWeightKg: 50.0,
@@ -290,32 +290,45 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     modelNumber: "PV-EVB-75KWH",
     metadata: { last_updated: "2024-07-29T08:00:00Z", status: "pending_review", created_at: "2024-05-01T10:00:00Z" },
     productDetails: {
-      description: "A high-performance EV battery module.",
+      description: "A high-performance EV battery module designed for long range and fast charging. Contains NMC 811 chemistry for optimal energy density.",
       imageUrl: "https://placehold.co/600x400.png",
-      imageHint: "ev battery module",
-      specifications: JSON.stringify({ "Capacity (kWh)": "75", "Voltage (V)": "400", "Weight (kg)": "450", "Chemistry": "NMC 811" }, null, 2),
+      imageHint: "ev battery module electric car",
+      materials: [
+        { name: "Nickel", percentage: 60, origin: "Various", isRecycled: true, recycledContentPercentage: 15 },
+        { name: "Manganese", percentage: 10, origin: "Various" },
+        { name: "Cobalt", percentage: 10, origin: "Various", isRecycled: true, recycledContentPercentage: 10 },
+        { name: "Lithium", percentage: 5, origin: "Australia", isRecycled: true, recycledContentPercentage: 5 },
+        { name: "Graphite (Anode)", percentage: 10, origin: "China" },
+        { name: "Aluminum (Casing)", percentage: 5, origin: "Various", isRecycled: true, recycledContentPercentage: 50 },
+      ],
+      specifications: JSON.stringify({ "Capacity (kWh)": "75", "Nominal Voltage (V)": "400", "Weight (kg)": "450", "Chemistry": "NMC 811", "Cycle Life (80% DoD)": "3000" }, null, 2),
       customAttributes: [
-        {key: "Cycle Life", value: "3000 cycles @ 80% DoD"},
-        {key: "Charging Time (0-80%)", value: "45 minutes (DC Fast Charge)"}
+        {key: "Charging Time (0-80%)", value: "30 minutes (DC Fast Charge @ 150kW)"},
+        {key: "Energy Density (Wh/kg)", value: "167"},
+        {key: "Thermal Management", value: "Liquid Cooled"}
       ]
     },
     compliance: {
-      eprel: { status: "Data Mismatch", lastChecked: "2024-07-28T00:00:00Z", id: "EPREL_OLD_ID" },
+      eprel: { status: "Not Applicable", lastChecked: "2024-07-28T00:00:00Z" }, // EPREL not typically for EV batteries directly
       battery_regulation: {
         status: "pending",
-        carbonFootprint: { value: 120, unit: "kg CO2e/kWh" },
-        recycledContent: [{ material: "Cobalt", percentage: 15 }],
-        stateOfHealth: {value: 98, unit: '%', measurementDate: "2024-07-15T00:00:00Z"},
-      },
-      eu_espr: { status: "pending" },
+        batteryPassportId: "BATT-ID-PV-EVB-75KWH-SN001",
+        carbonFootprint: { value: 85.5, unit: "kg CO2e/kWh", calculationMethod: "PEFCR for Batteries v1.2", vcId: "vc:cf:dpp005" },
+        recycledContent: [
+          { material: "Cobalt", percentage: 12, vcId: "vc:rc:cobalt:dpp005" },
+          { material: "Lithium", percentage: 4, vcId: "vc:rc:lithium:dpp005" },
+          { material: "Nickel", percentage: 10, vcId: "vc:rc:nickel:dpp005" }
+        ],
+        stateOfHealth: {value: 100, unit: '%', measurementDate: "2024-07-15T00:00:00Z", vcId: "vc:soh:dpp005"},
+        vcId: "vc:battreg:overall:dpp005"
+      } as BatteryRegulationDetails,
+      eu_espr: { status: "pending" }, // General ESPR requirements might apply to EV components
       scipNotification: { 
-        status: 'Notified', 
-        notificationId: 'SCIP-REF-DPP005-E5F6',
+        status: 'Pending Notification', 
         svhcListVersion: '2024/01 (24.0.1)',
         submittingLegalEntity: 'PowerVolt Inc.',
-        articleName: 'EV Battery Cell Housing',
-        primaryArticleId: 'PV-EVB-CELL-HSG',
-        safeUseInstructionsLink: 'https://powervolt.com/sui/PV-EVB-CELL.pdf',
+        articleName: 'EV Battery Module Assembly',
+        primaryArticleId: 'PV-EVB-75KWH-ASSY',
         lastChecked: "2024-07-27T00:00:00Z" 
       },
       euCustomsData: { 
@@ -331,23 +344,35 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-29T00:00:00Z"} as EbsiVerificationDetails,
     consumerScans: 50,
     certifications: [
-      {id: "cert_bat_01", name: "UN 38.3 Transport Test", issuer: "TestCert Ltd.", issueDate: "2024-07-01", documentUrl: "#", transactionHash: "0xcertAnchorBat1", standard: "UN Manual of Tests and Criteria, Part III, subsection 38.3"}
+      {id: "cert_bat_01", name: "UN 38.3 Transport Test", issuer: "TestCert Ltd.", issueDate: "2024-07-01", documentUrl: "#", transactionHash: "0xcertAnchorBat1", standard: "UN Manual of Tests and Criteria, Part III, subsection 38.3"},
+      {id: "cert_bat_02", name: "ISO 26262 (ASIL D)", issuer: "AutomotiveSafetyCert", issueDate: "2024-06-15", documentUrl: "#", standard: "ISO 26262-Road vehicles Functional safety", vcId: "vc:iso26262:dpp005"}
     ],
-    documents: [],
+    documents: [
+        { name: "Battery Safety Data Sheet (SDS)", url: "#sds_pv_evb_75kwh.pdf", type: "Safety Data Sheet", addedTimestamp: "2024-05-10T00:00:00Z" },
+        { name: "Technical Specification Sheet", url: "#techspec_pv_evb_75kwh.pdf", type: "Technical Specification", addedTimestamp: "2024-05-10T00:00:00Z" },
+    ],
     traceability: {
       originCountry: "US",
       supplyChainSteps: [
         {
-          stepName: 'Manufactured',
-          actorDid: 'did:example:powervolt',
+          stepName: 'Cell Manufacturing',
+          actorDid: 'did:example:cellmaker',
           timestamp: '2024-05-10T00:00:00Z',
-          location: 'Factory E',
-          transactionHash: '0xstep5'
+          location: 'Nevada, US',
+          transactionHash: '0xcellmfg_tx_hash'
+        },
+        {
+          stepName: 'Module Assembly',
+          actorDid: 'did:example:powervolt',
+          timestamp: '2024-06-01T00:00:00Z',
+          location: 'Michigan, US',
+          transactionHash: '0xmoduleassy_tx_hash'
         }
       ]
     },
-    blockchainIdentifiers: { platform: "BatteryChain", anchorTransactionHash: "0xevBatteryAnchorHash555AAA"},
+    blockchainIdentifiers: { platform: "PowerChain Ledger", anchorTransactionHash: "0xevBatteryAnchorHash555AAA", contractAddress: "0xEV_BATTERY_REGISTRY", tokenId: "TOKEN_PV_EVB_75KWH_SN001"},
     supplyChainLinks: []
   },
 ];
     
+

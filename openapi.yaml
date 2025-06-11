@@ -490,6 +490,12 @@ paths:
                   esprStatus:
                     type: string
                     nullable: true
+                  scipStatus:
+                    type: string
+                    nullable: true
+                  customsDataStatus:
+                    type: string
+                    nullable: true
                   lastChecked:
                     type: string
                     format: date-time
@@ -532,6 +538,20 @@ paths:
                         nullable: true
                         properties:
                           status: { type: string }
+                      scipNotification:
+                        type: object
+                        nullable: true
+                        properties:
+                          status: { type: string }
+                          notificationId: { type: string, nullable: true }
+                          lastChecked: { type: string, format: "date-time" }
+                      euCustomsData:
+                        type: object
+                        nullable: true
+                        properties:
+                          status: { type: string }
+                          declarationId: { type: string, nullable: true }
+                          lastChecked: { type: string, format: "date-time" }
         '401':
           description: API key missing or invalid.
           content:
@@ -1413,6 +1433,10 @@ paths:
             address:
               type: string
               nullable: true
+            eori: # Added for EORI System conceptual integration
+              type: string
+              nullable: true
+              description: Economic Operators Registration and Identification number.
         metadata:
           type: object
           properties:
@@ -1690,6 +1714,34 @@ paths:
                 vcId:
                   type: string
                   nullable: true
+            scipNotification: # Added for SCIP API conceptual integration
+              type: object
+              nullable: true
+              properties:
+                status:
+                  type: string
+                  enum: ['Notified', 'Pending Notification', 'Not Required', 'Error']
+                notificationId:
+                  type: string
+                  nullable: true
+                  description: SCIP database notification number.
+                lastChecked:
+                  type: string
+                  format: date-time
+            euCustomsData: # Added for EU Customs Data Model conceptual integration
+              type: object
+              nullable: true
+              properties:
+                status:
+                  type: string
+                  enum: ['Verified', 'Pending Documents', 'Mismatch', 'Cleared']
+                declarationId:
+                  type: string
+                  nullable: true
+                  description: Customs declaration reference number.
+                lastChecked:
+                  type: string
+                  format: date-time
         ebsiVerification:
           type: object
           nullable: true
@@ -1709,6 +1761,18 @@ paths:
               format: date-time
             message:
               type: string
+              nullable: true
+            issuerDid:
+              type: string
+              nullable: true
+              description: DID of the EBSI credential issuer.
+            schema:
+              type: string
+              nullable: true
+              description: Schema of the EBSI verifiable credential.
+            issuanceDate:
+              type: string
+              format: date-time
               nullable: true
         verifiableCredentials:
           type: array
@@ -2035,7 +2099,7 @@ paths:
             imageHint:
               type: string
               nullable: true
-        compliance:
+        compliance: # Allow full update of compliance object
           type: object 
           nullable: true
           properties:
@@ -2043,19 +2107,33 @@ paths:
               type: object
               nullable: true
               properties:
-                id:
-                  type: string
-                  nullable: true
-                status:
-                  type: string
-                  nullable: true
-                url:
-                  type: string
-                  nullable: true
-                lastChecked:
-                  type: string
-                  format: date-time
-                  nullable: true
+                id: { type: string, nullable: true }
+                status: { type: string, nullable: true }
+                url: { type: string, nullable: true }
+                lastChecked: { type: string, format: "date-time", nullable: true }
+            esprConformity:
+              type: object
+              nullable: true
+              properties:
+                assessmentId: { type: string, nullable: true }
+                status: { type: string, enum: ['conformant', 'non_conformant', 'pending_assessment'], nullable: true }
+                assessmentDate: { type: string, format: "date-time", nullable: true }
+                vcId: { type: string, nullable: true }
+            scipNotification:
+              type: object
+              nullable: true
+              properties:
+                status: { type: string, enum: ['Notified', 'Pending Notification', 'Not Required', 'Error'], nullable: true }
+                notificationId: { type: string, nullable: true }
+                lastChecked: { type: string, format: "date-time", nullable: true }
+            euCustomsData:
+              type: object
+              nullable: true
+              properties:
+                status: { type: string, enum: ['Verified', 'Pending Documents', 'Mismatch', 'Cleared'], nullable: true }
+                declarationId: { type: string, nullable: true }
+                lastChecked: { type: string, format: "date-time", nullable: true }
+            # Other compliance fields like battery_regulation, eu_espr can be included here if they need to be fully updatable
         ebsiVerification:
           type: object
           nullable: true
@@ -2160,5 +2238,6 @@ components:
     
 
     
+
 
 

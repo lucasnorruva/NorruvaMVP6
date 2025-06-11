@@ -8,7 +8,7 @@ import ProductComplianceHeader from "./ProductComplianceHeader";
 import ComplianceDetailItemDisplay, { type ComplianceDetailItemProps } from "./ComplianceDetailItemDisplay"; // Import the new component and its props type
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, Fingerprint } from "lucide-react";
+import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, Fingerprint, Database, Anchor } from "lucide-react"; // Added Database, Anchor
 import Link from "next/link";
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -80,18 +80,44 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
       url: summary.ebsi.transactionUrl,
     });
   }
+  
+  if (summary.scip) {
+    allComplianceItems.push({
+      title: "ECHA SCIP Notification",
+      icon: Database, // Example icon for SCIP
+      status: summary.scip.status,
+      lastChecked: summary.scip.lastChecked,
+      verificationId: summary.scip.notificationId, // Using verificationId to display SCIP ID
+      // url: if SCIP has a public URL per notification, add here
+    });
+  }
+
+  if (summary.euCustomsData) {
+    allComplianceItems.push({
+      title: "EU Customs Data",
+      icon: Anchor, // Example icon for Customs
+      status: summary.euCustomsData.status,
+      lastChecked: summary.euCustomsData.lastChecked,
+      verificationId: summary.euCustomsData.declarationId, // Using verificationId for declaration ID
+      // url: if customs declarations have public URLs, add here
+    });
+  }
+
 
   if (summary.specificRegulations) {
     summary.specificRegulations.forEach(reg => {
-      allComplianceItems.push({
-        title: reg.regulationName,
-        icon: ListChecks,
-        status: reg.status,
-        lastChecked: reg.lastChecked,
-        id: reg.verificationId, // Use verificationId from SpecificComplianceDetailItemFromDPP as 'id' for ComplianceDetailItemProps
-        url: reg.detailsUrl,
-        notes: reg.notes,
-      });
+      // Avoid duplicating items already handled above by checking regulationName
+      if (!["EPREL Energy Label", "EBSI Blockchain Verification", "ECHA SCIP Notification", "EU Customs Data"].includes(reg.regulationName)) {
+        allComplianceItems.push({
+          title: reg.regulationName,
+          icon: ListChecks,
+          status: reg.status,
+          lastChecked: reg.lastChecked,
+          verificationId: reg.verificationId, // Use verificationId from SpecificComplianceDetailItemFromDPP
+          url: reg.detailsUrl,
+          notes: reg.notes,
+        });
+      }
     });
   }
   
@@ -121,3 +147,4 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     </div>
   );
 }
+

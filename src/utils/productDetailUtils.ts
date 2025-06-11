@@ -16,19 +16,29 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             case 'archived': return 'Archived';
             case 'pending_review': return 'Pending';
             case 'draft': return 'Draft';
-            case 'revoked': return 'Archived';
+            case 'revoked': return 'Archived'; // Consider revoked as archived for simple view
+            case 'flagged': return 'Flagged'; // Added Flagged status
             default: return 'Draft';
         }
     };
 
     const specificRegulations: ComplianceDetailItem[] = [];
+    if (dpp.compliance.eprel) {
+        specificRegulations.push({
+            regulationName: "EPREL Database",
+            status: dpp.compliance.eprel.status as ComplianceDetailItem['status'],
+            verificationId: dpp.compliance.eprel.id,
+            detailsUrl: dpp.compliance.eprel.url,
+            lastChecked: dpp.compliance.eprel.lastChecked,
+        });
+    }
     if (dpp.compliance.eu_espr) {
         specificRegulations.push({
             regulationName: "EU ESPR",
             status: dpp.compliance.eu_espr.status as ComplianceDetailItem['status'],
             detailsUrl: dpp.compliance.eu_espr.reportUrl,
             verificationId: dpp.compliance.eu_espr.vcId,
-            lastChecked: dpp.metadata.last_updated,
+            lastChecked: dpp.metadata.last_updated, // Fallback, better if eu_espr has its own lastChecked
         });
     }
     if (dpp.compliance.esprConformity) {
@@ -45,7 +55,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             status: dpp.compliance.us_scope3.status as ComplianceDetailItem['status'],
             detailsUrl: dpp.compliance.us_scope3.reportUrl,
             verificationId: dpp.compliance.us_scope3.vcId,
-            lastChecked: dpp.metadata.last_updated,
+            lastChecked: dpp.metadata.last_updated, // Fallback
         });
     }
     if (dpp.compliance.battery_regulation) {
@@ -60,10 +70,27 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             regulationName: "EU Battery Regulation",
             status: br.status as ComplianceDetailItem['status'],
             verificationId: br.batteryPassportId || br.vcId,
-            lastChecked: dpp.metadata.last_updated,
+            lastChecked: dpp.metadata.last_updated, // Fallback
             notes: notesValue,
         });
     }
+    if (dpp.compliance.scipNotification) {
+        specificRegulations.push({
+            regulationName: "ECHA SCIP Notification",
+            status: dpp.compliance.scipNotification.status as ComplianceDetailItem['status'],
+            verificationId: dpp.compliance.scipNotification.notificationId,
+            lastChecked: dpp.compliance.scipNotification.lastChecked,
+        });
+    }
+    if (dpp.compliance.euCustomsData) {
+        specificRegulations.push({
+            regulationName: "EU Customs Data",
+            status: dpp.compliance.euCustomsData.status as ComplianceDetailItem['status'],
+            verificationId: dpp.compliance.euCustomsData.declarationId,
+            lastChecked: dpp.compliance.euCustomsData.lastChecked,
+        });
+    }
+
 
     const complianceOverallStatusDetails = getOverallComplianceDetails(dpp);
     const keyCompliancePointsPopulated: string[] = [];
@@ -77,7 +104,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
     }
     let specificRegCount = 0;
     specificRegulations.forEach(reg => {
-        if (specificRegCount < 2 && reg.status && reg.status.toLowerCase() !== 'n/a' && reg.status.toLowerCase() !== 'not applicable') {
+        if (specificRegCount < 2 && reg.status && reg.status.toLowerCase() !== 'n/a' && reg.status.toLowerCase() !== 'not applicable' && reg.status.toLowerCase() !== 'not required') {
             const regStatusText = reg.status.replace(/_/g, ' ');
             const capitalizedRegStatus = regStatusText.charAt(0).toUpperCase() + regStatusText.slice(1);
             keyCompliancePointsPopulated.push(`${reg.regulationName}: ${capitalizedRegStatus}`);
@@ -87,6 +114,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
     if (keyCompliancePointsPopulated.length === 0 && specificRegulations.length > 0) {
         keyCompliancePointsPopulated.push("Review Compliance tab for regulation details.");
     }
+
 
     const customAttributes = dpp.productDetails?.customAttributes || [];
     const mappedCertifications: SimpleCertification[] = dpp.certifications?.map(cert => ({
@@ -131,6 +159,16 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
                 status: dpp.ebsiVerification.status,
                 verificationId: dpp.ebsiVerification.verificationId,
                 lastChecked: dpp.ebsiVerification.lastChecked,
+            } : { status: 'N/A', lastChecked: new Date().toISOString() },
+            scip: dpp.compliance.scipNotification ? {
+                status: dpp.compliance.scipNotification.status,
+                notificationId: dpp.compliance.scipNotification.notificationId,
+                lastChecked: dpp.compliance.scipNotification.lastChecked,
+            } : { status: 'N/A', lastChecked: new Date().toISOString() },
+            euCustomsData: dpp.compliance.euCustomsData ? {
+                status: dpp.compliance.euCustomsData.status,
+                declarationId: dpp.compliance.euCustomsData.declarationId,
+                lastChecked: dpp.compliance.euCustomsData.lastChecked,
             } : { status: 'N/A', lastChecked: new Date().toISOString() },
             specificRegulations: specificRegulations,
         },
@@ -215,8 +253,10 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             specifications: userProductData.specifications, // Pass as string
             customAttributes: parsedCustomAttributes, // Pass as array
           },
-          compliance: {
+          compliance: { // Reconstruct compliance object for user products
             eprel: userProductData.complianceSummary?.eprel,
+            scipNotification: userProductData.complianceSummary?.scip,
+            euCustomsData: userProductData.complianceSummary?.euCustomsData,
             battery_regulation: userProductData.complianceSummary?.specificRegulations?.find(r => r.regulationName === "EU Battery Regulation")
               ? {
                   status: userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.status as DigitalProductPassport['compliance']['battery_regulation']['status'],

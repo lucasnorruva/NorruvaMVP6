@@ -55,6 +55,9 @@ export interface DigitalProductPassport {
   category: string;
   gtin?: string;
   modelNumber?: string;
+  sku?: string;
+  nfcTagId?: string;
+  rfidTagId?: string;
   manufacturer?: {
     name: string;
     did?: string;
@@ -151,6 +154,9 @@ export interface SimpleProductDetail {
   manufacturer?: string;
   gtin?: string;
   modelNumber?: string;
+  sku?: string;
+  nfcTagId?: string;
+  rfidTagId?: string;
   description?: string;
   imageUrl?: string;
   imageHint?: string;
@@ -176,6 +182,9 @@ export interface StoredUserProduct {
   productDescription?: string;
   manufacturer?: string;
   modelNumber?: string;
+  sku?: string;
+  nfcTagId?: string;
+  rfidTagId?: string;
   materials?: string;
   sustainabilityClaims?: string;
   specifications?: string; // JSON string
@@ -258,6 +267,9 @@ export interface PublicProductInfo {
   complianceSummary: string;
   category: string;
   modelNumber: string;
+  sku?: string;
+  nfcTagId?: string;
+  rfidTagId?: string;
   anchorTransactionHash?: string;
   blockchainPlatform?: string;
   ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error';

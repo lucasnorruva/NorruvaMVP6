@@ -66,7 +66,7 @@ export default function AddNewProductPage() {
   const [aiExtractionAppliedSuccessfully, setAiExtractionAppliedSuccessfully] = useState(false);
 
   const defaultFormState: Partial<InitialProductFormData> = {
-    productName: "", gtin: "", productDescription: "", manufacturer: "", modelNumber: "",
+    productName: "", gtin: "", sku: "", nfcTagId: "", rfidTagId: "", productDescription: "", manufacturer: "", modelNumber: "",
     materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
     imageUrl: "", imageHint: "", imageUrlOrigin: undefined,
     batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined,

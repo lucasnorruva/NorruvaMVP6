@@ -134,6 +134,16 @@ curl -H 'Authorization: Bearer <API_KEY>' \
 
 The `verifiableCredentials` array in the response contains credential objects that wallets can verify. These calls can also be executed via the in-app API playground under **Developer Portal → API Reference**.
 
+### Fetching the Credential Directly
+
+Use the dedicated endpoint to retrieve a single verifiable credential JSON:
+
+```bash
+curl -H 'Authorization: Bearer <API_KEY>' \
+  https://api.example.com/api/v1/dpp/{productId}/credential
+```
+
+
 ## Getting Started
 
 ### Prerequisites

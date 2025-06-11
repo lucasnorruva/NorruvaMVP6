@@ -41,6 +41,7 @@ export default function GlobeV2Page() {
   const globeEl = useRef<GlobeMethods | undefined>(undefined);
   const [landPolygons, setLandPolygons] = useState<CountryFeature[]>([]);
   const [hoverD, setHoverD] = useState<CountryFeature | null>(null); // State for hovered country data
+  const [tooltipPos, setTooltipPos] = useState({ x: 0, y: 0 });
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [globeReady, setGlobeReady] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -172,11 +173,15 @@ export default function GlobeV2Page() {
   }
 
   return (
-    <div style={{ width: '100%', height: `calc(100vh - ${HEADER_HEIGHT}px)`, position: 'relative', background: 'white' }}>
+    <div
+      style={{ width: '100%', height: `calc(100vh - ${HEADER_HEIGHT}px)`, position: 'relative', background: 'white' }}
+      onMouseMove={(e) => setTooltipPos({ x: e.clientX, y: e.clientY })}
+      onMouseLeave={() => setHoverD(null)}
+    >
       {typeof window !== 'undefined' && dimensions.width > 0 && dimensions.height > 0 && (
         <Globe
           ref={globeEl}
-          globeImageUrl={null} 
+          globeImageUrl={null}
           globeMaterial={globeMaterial}
           backgroundColor="rgba(255, 255, 255, 1)" 
           showAtmosphere={false} 
@@ -184,18 +189,22 @@ export default function GlobeV2Page() {
           polygonCapColor={getPolygonCapColor} 
           polygonSideColor={() => 'rgba(0, 0, 0, 0.05)'} 
           polygonStrokeColor={() => '#000000'} // Black borders
-          polygonAltitude={0.008} 
+          polygonAltitude={0.008}
           onPolygonHover={setHoverD as (feature: object | null) => void}
-          polygonLabel={({ properties }: object) => {
-            const p = properties as CountryProperties;
-            return `<div style="background: rgba(40,40,40,0.8); color: white; padding: 5px 8px; border-radius: 4px; font-size: 12px;"><b>${p?.ADMIN || p?.NAME_LONG || 'Country'}</b></div>`;
-          }}
           polygonsTransitionDuration={100}
           width={dimensions.width}
           height={dimensions.height}
           onGlobeReady={() => setGlobeReady(true)}
           enablePointerInteraction={true}
         />
+      )}
+      {hoverD && (
+        <div
+          className="fixed z-20 pointer-events-none bg-black/70 text-white text-xs px-2 py-1 rounded"
+          style={{ top: tooltipPos.y + 10, left: tooltipPos.x + 10 }}
+        >
+          {hoverD.properties.ADMIN}
+        </div>
       )}
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 p-3 bg-black/60 text-white rounded-lg backdrop-blur-sm shadow-lg text-center text-xs md:text-sm max-w-[90%] md:max-w-md">
         <Info className="inline h-4 w-4 mr-1.5 align-middle text-blue-300" />

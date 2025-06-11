@@ -12,6 +12,7 @@ Welcome to the Norruva Digital Product Passport (DPP) concept application! This 
 - [Product Detail Page](#product-detail-page)
 - [Blockchain Anchoring & Ownership](#blockchain-anchoring--ownership)
 - [Advanced Blockchain Architecture](#advanced-blockchain-architecture)
+- [Smart Contract Development](#smart-contract-development)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -298,6 +299,33 @@ Without this permission Google Cloud cannot generate the access token required t
 ## Advanced Blockchain Architecture
 
 Detailed smart contract design and DAO governance specifications are documented in [docs/blockchain-architecture.md](docs/blockchain-architecture.md).
+
+## Smart Contract Development
+
+Solidity contracts live in the `contracts/` directory. The project includes **Hardhat** and **Foundry** configurations for local development and upgrades.
+
+### Common Commands
+
+```bash
+# Compile the contracts
+npm run compile:contracts
+
+# Execute the Hardhat test suite
+npm run test:contracts
+
+# Deploy the proxy to a network (requires ALCHEMY_API_KEY and PRIVATE_KEY)
+npm run deploy:contracts
+
+# Upgrade an existing proxy (set PROXY_ADDRESS in `.env`)
+npm run upgrade:contracts
+```
+
+If Foundry is installed you can also run:
+
+```bash
+forge build
+forge test
+```
 
 ## Firebase Studio Context
 

@@ -3,14 +3,14 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import type { GlobeMethods } from 'react-globe.gl';
 import type { Feature as GeoJsonFeature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 import { MeshPhongMaterial } from 'three';
-import { Loader2, Info } from 'lucide-react';
-import { useSearchParams } from 'next/navigation';
+import { Loader2, Info, X } from 'lucide-react'; // Added X icon
 import { Button } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; // Added Card components
 
 // Dynamically import Globe for client-side rendering
 const Globe = dynamic(() => import('react-globe.gl'), { 
@@ -39,14 +39,14 @@ interface CountryProperties extends GeoJsonProperties {
 }
 
 // Type for a GeoJSON feature with our custom properties
-type CountryFeature = GeoJsonFeature<Geometry, CountryProperties>; // Use aliased GeoJsonFeature
+type CountryFeature = GeoJsonFeature<Geometry, CountryProperties>;
 
 export default function GlobeV2Page() {
   const globeEl = useRef<GlobeMethods | undefined>(undefined);
   const router = useRouter();
   const searchParams = useSearchParams();
   const [landPolygons, setLandPolygons] = useState<CountryFeature[]>([]);
-  const [hoverD, setHoverD] = useState<CountryFeature | null>(null); // State for hovered country data
+  const [hoverD, setHoverD] = useState<CountryFeature | null>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [globeReady, setGlobeReady] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
@@ -56,12 +56,18 @@ export default function GlobeV2Page() {
   const [selectedProduct, setSelectedProduct] = useState<string | null>(null); 
 
   const [countryFilter, setCountryFilter] = useState<'all' | 'eu' | 'supplyChain'>('all');
-  const [clickedCountryData, setClickedCountryData] = useState<CountryFeature | null>(null);
+  const [clickedCountryInfo, setClickedCountryInfo] = useState<CountryProperties | null>(null); // For the info card
   const [filteredLandPolygons, setFilteredLandPolygons] = useState<CountryFeature[]>([]);
 
   const HEADER_HEIGHT = 64; 
 
   const productIdFromQuery = searchParams.get('productId');
+
+  useEffect(() => {
+    if (productIdFromQuery) {
+      setSelectedProduct(productIdFromQuery);
+    }
+  }, [productIdFromQuery]);
 
   // Effect to set initial dimensions and handle window resize
   useEffect(() => {
@@ -78,7 +84,9 @@ export default function GlobeV2Page() {
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  const handlePolygonClick = useCallback((feat: object) => { setClickedCountryData(feat as CountryFeature); }, [setClickedCountryData]);
+  const handlePolygonClick = useCallback((feat: object) => { 
+    setClickedCountryInfo((feat as CountryFeature).properties);
+  }, []);
 
   // Mock country coordinates for arcs
   const mockCountryCoordinates: { [key: string]: { lat: number; lng: number } } = useMemo(() => ({
@@ -92,8 +100,8 @@ export default function GlobeV2Page() {
     'Japan': { lat: 36.2048, lng: 138.2529 },
     'United Kingdom': { lat: 55.3781, lng: -3.4360 },
     'Canada': { lat: 56.1304, lng: -106.3468 },
-    'India': { lat: 20.5937, lng: 78.9629 }, // Added India for PROD002
-    'Netherlands': { lat: 52.1326, lng: 5.2913 }, // Added Netherlands for PROD002
+    'India': { lat: 20.5937, lng: 78.9629 },
+    'Netherlands': { lat: 52.1326, lng: 5.2913 },
   }), []);
 
   // Effect to fetch country polygon data
@@ -113,26 +121,28 @@ export default function GlobeV2Page() {
       });
   }, []);
 
-  // Fetch supply chain graph data when productIdFromQuery changes
+  // Fetch supply chain graph data when productIdFromQuery (or selectedProduct) changes
   useEffect(() => {
-    if (!productIdFromQuery) {
+    const currentProductId = productIdFromQuery || selectedProduct;
+    if (!currentProductId) {
         setHighlightedCountries([]);
         setArcsData([]);
+        setClickedCountryInfo(null); // Clear country info when product changes
         return;
     }
 
-    fetch(`/api/v1/dpp/graph/${productIdFromQuery}`)
+    fetch(`/api/v1/dpp/graph/${currentProductId}`)
       .then(res => {
           if (!res.ok) {
-              console.error(`Failed to fetch graph data for ${productIdFromQuery}: ${res.status}`);
-              // Potentially show a toast message to the user here
-              return null; // Or throw new Error to be caught by .catch
+              console.error(`Failed to fetch graph data for ${currentProductId}: ${res.status}`);
+              return null;
           }
           return res.json();
       })
       .then((graph) => {
         if (!graph || !graph.nodes) {
             setHighlightedCountries([]);
+            setArcsData([]);
             return;
         }
         const countries = new Set<string>();
@@ -146,13 +156,25 @@ export default function GlobeV2Page() {
           }
         });
         setHighlightedCountries(Array.from(countries));
+        
+        // Conceptual: Adjust globe view based on supply chain
+        if (globeEl.current) {
+          if (countries.has('China') || countries.has('Japan') || countries.has('India')) {
+            globeEl.current.pointOfView({ lat: 20, lng: 90, altitude: 2.5 }, 1000);
+          } else if (countries.has('United States') || countries.has('Canada')) {
+            globeEl.current.pointOfView({ lat: 45, lng: -90, altitude: 2.5 }, 1000);
+          } else { // Default to Europe if mostly EU or others
+            globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.0 }, 1000);
+          }
+        }
+
       })
       .catch((err) => {
         console.error('Error fetching product graph:', err);
         setHighlightedCountries([]);
         setArcsData([]);
       });
-  }, [productIdFromQuery]);
+  }, [productIdFromQuery, selectedProduct]); // Depend on selectedProduct as well
 
   // Effect to generate arc data when highlightedCountries changes
   useEffect(() => {
@@ -163,7 +185,7 @@ export default function GlobeV2Page() {
 
       if (!startCountryCoords || !endCountryCoords) {
         console.warn(`Missing coordinates for arc between ${highlightedCountries[index-1]} and ${countryName}`);
-        return null; // Skip arc if coordinates are missing
+        return null;
       }
 
       return {
@@ -171,42 +193,35 @@ export default function GlobeV2Page() {
         startLng: startCountryCoords.lng,
         endLat: endCountryCoords.lat,
         endLng: endCountryCoords.lng,
-        color: '#FFFF00' // Yellow arcs for now
+        color: '#FFFF00' 
       };
     }).filter(arc => arc !== null); 
-    setArcsData(arcs as any[]); // Cast as any[] as filter(Boolean) typing can be tricky
+    setArcsData(arcs as any[]);
   }, [highlightedCountries, mockCountryCoordinates]);
 
-
-  // Function to determine if a country is in the EU based on its ISO A3 code
   const isEU = useCallback((isoA3: string | undefined) => {
     return !!isoA3 && EU_COUNTRY_CODES.has(isoA3.toUpperCase());
   }, []);
   
-  // Effect to filter land polygons based on selected filter and data
   useEffect(() => {
     if (!landPolygons.length) return;
-
     let filtered = landPolygons;
     if (countryFilter === 'eu') {
       filtered = landPolygons.filter(feat => isEU(feat.properties?.ADM0_A3 || feat.properties?.ISO_A3));
-    } else if (countryFilter === 'supplyChain') {
+    } else if (countryFilter === 'supplyChain' && productIdFromQuery) { // Only filter supply chain if a product is selected
       filtered = landPolygons.filter(feat =>
         highlightedCountries.includes(feat.properties?.ADMIN || feat.properties?.NAME_LONG || '')
       );
     }
     setFilteredLandPolygons(filtered);
-  }, [countryFilter, landPolygons, highlightedCountries, isEU]);
+  }, [countryFilter, landPolygons, highlightedCountries, isEU, productIdFromQuery]);
 
-
-  // Globe material for oceans (light blue)
   const globeMaterial = useMemo(() => new MeshPhongMaterial({
     color: '#a9d5e5', 
     transparent: true,
     opacity: 1,
   }), []);
 
-  // Effect to set initial globe setup (camera, controls) once the globe is ready
   useEffect(() => {
     if (globeEl.current && globeReady) {
       const controls = globeEl.current.controls();
@@ -217,23 +232,29 @@ export default function GlobeV2Page() {
         controls.minDistance = 150;   
         controls.maxDistance = 1000;  
       }
-      globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.0 }, 1000);
+      if (!productIdFromQuery) { // Only set initial view if no product is focused
+        globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.0 }, 1000);
+      }
     }
-  }, [globeReady, isAutoRotating]); // Added isAutoRotating dependency
+  }, [globeReady, isAutoRotating, productIdFromQuery]);
   
-  // Memoized polygon cap color logic for performance
   const getPolygonCapColor = useCallback((feat: object) => {
     const properties = (feat as CountryFeature).properties;
     const iso = properties?.ADM0_A3 || properties?.ISO_A3;
     const name = properties?.ADMIN;
+
+    if (clickedCountryInfo && (clickedCountryInfo.ADM0_A3 === iso || clickedCountryInfo.ADMIN === name) ) {
+        return '#ff4500'; // Bright orange for clicked country
+    }
+    if (hoverD && (hoverD.properties.ADM0_A3 === iso || hoverD.properties.ADMIN === name)) {
+        return '#ffa500'; // Lighter orange for hovered country
+    }
     if (name && highlightedCountries.includes(name)) {
-      return '#f97316'; // orange highlight for supply chain countries
+      return '#f97316'; // Existing orange for supply chain
     }
     return isEU(iso) ? '#002D62' : '#CCCCCC'; 
-  }, [isEU, highlightedCountries]);
+  }, [isEU, highlightedCountries, clickedCountryInfo, hoverD]);
 
-
-  // Show loader if dimensions are not set or data is not loaded yet
   if (dimensions.width === 0 || dimensions.height === 0 || !dataLoaded) {
     return (
       <div className="flex items-center justify-center h-[calc(100vh-var(--header-height,4rem))] w-full bg-white">
@@ -269,7 +290,7 @@ export default function GlobeV2Page() {
             polygonsData={filteredLandPolygons}
             polygonCapColor={getPolygonCapColor}
             polygonSideColor={() => 'rgba(0, 0, 0, 0.05)'}
-            polygonStrokeColor={() => '#000000'} // Black borders
+            polygonStrokeColor={() => '#000000'}
             polygonAltitude={0.008}
             onPolygonHover={setHoverD as (feature: GeoJsonFeature | null) => void}
             onPolygonClick={handlePolygonClick} 
@@ -314,7 +335,7 @@ export default function GlobeV2Page() {
           <SelectContent>
             <SelectItem value="all">All Countries</SelectItem>
             <SelectItem value="eu">EU Countries</SelectItem>
-            <SelectItem value="supplyChain">Supply Chain</SelectItem>
+            <SelectItem value="supplyChain" disabled={!productIdFromQuery}>Supply Chain</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -322,45 +343,60 @@ export default function GlobeV2Page() {
       <div className="absolute top-4 left-4 z-10">
        <Select
          onValueChange={(value) => {
-            setSelectedProduct(value);
-            // When selection changes, update the URL to reflect the new productId for graph data
+            setSelectedProduct(value === 'select-placeholder' ? null : value);
+            setClickedCountryInfo(null); // Clear country info when product changes
             if (value && value !== 'select-placeholder') {
-                 router.push(`/dpp-global-tracker-v2?productId=${value}`);
+                 router.push(`/dpp-global-tracker-v2?productId=${value}`, { scroll: false });
             } else {
-                 router.push(`/dpp-global-tracker-v2`); // Clear productId if placeholder selected
+                 router.push(`/dpp-global-tracker-v2`, { scroll: false });
             }
          }}
-         value={productIdFromQuery || selectedProduct || 'select-placeholder'}
+         value={selectedProduct || 'select-placeholder'}
        >
         <SelectTrigger className="w-[200px]">
           <SelectValue placeholder="Select a Product" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="select-placeholder" disabled>Select a Product</SelectItem>
+          <SelectItem value="select-placeholder">Select a Product</SelectItem>
           <SelectItem value="PROD001">EcoFriendly Refrigerator X2000</SelectItem>
           <SelectItem value="PROD002">Smart LED Bulb (4-Pack)</SelectItem>
+          {/* Add more mock products here if needed */}
         </SelectContent>
       </Select>
     </div>
         
-        {clickedCountryData && (
-        <div className="absolute top-4 right-4 z-10 w-80 bg-white p-4 rounded-md shadow-lg">
-          <div className="flex justify-between items-center mb-2">
-            <h3 className="text-lg font-semibold">Details for {clickedCountryData.properties?.ADMIN || 'Selected Country'}</h3>
-            <Button variant="ghost" size="icon" onClick={() => setClickedCountryData(null)}>
-              X
+      {clickedCountryInfo && (
+        <Card className="absolute top-16 right-4 z-20 w-72 shadow-xl bg-card">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-md font-semibold">{clickedCountryInfo.ADMIN || 'Selected Country'}</CardTitle>
+            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setClickedCountryInfo(null)}>
+              <X className="h-4 w-4" />
             </Button>
-          </div>
-          <div>
-            <p className="text-sm text-muted-foreground">ISO A3: {clickedCountryData.properties?.ADM0_A3 || clickedCountryData.properties?.ISO_A3}</p>
-          </div>
-        </div>
+          </CardHeader>
+          <CardContent className="text-xs space-y-1">
+            <p><strong className="text-muted-foreground">ISO A3:</strong> {clickedCountryInfo.ADM0_A3 || clickedCountryInfo.ISO_A3 || 'N/A'}</p>
+            <p><strong className="text-muted-foreground">DPPs Originating:</strong> {Math.floor(Math.random() * 50)} (Mock)</p>
+            <p><strong className="text-muted-foreground">DPPs Transiting:</strong> {Math.floor(Math.random() * 20)} (Mock)</p>
+            {isEU(clickedCountryInfo.ADM0_A3 || clickedCountryInfo.ISO_A3) && <p className="text-green-600 font-medium">EU Member State</p>}
+            {highlightedCountries.includes(clickedCountryInfo.ADMIN || '') && <p className="text-orange-600 font-medium">Part of Current Supply Chain</p>}
+            <Button variant="link" size="sm" className="p-0 h-auto text-primary mt-2" disabled>
+              View DPPs from {clickedCountryInfo.ADMIN?.substring(0,15) || 'Country'}... (Conceptual)
+            </Button>
+          </CardContent>
+        </Card>
       )}
+
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs p-2 rounded-md shadow-lg pointer-events-none">
         <Info className="inline h-3 w-3 mr-1" />
-        EU Countries: Dark Blue | Other Countries: Light Grey. Globe auto-rotates.
+        {countryFilter === 'all' ? 'EU: Dark Blue | Non-EU: Grey.' : 
+         countryFilter === 'eu' ? 'Displaying EU Countries.' : 
+         countryFilter === 'supplyChain' && productIdFromQuery ? `Displaying Supply Chain for ${selectedProduct}.` :
+         'Select a product to view its supply chain.'
+        }
+        {productIdFromQuery && highlightedCountries.length > 0 && ` Supply Chain: Orange.`}
       </div>
     </div>
   </>
   );
 }
+

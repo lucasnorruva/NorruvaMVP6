@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { Package, Tag, Building, CheckCircle, AlertTriangle, Info, ShieldCheck, ShieldAlert, ShieldQuestion } from "lucide-react";
 import { getStatusIcon as getComplianceStatusIcon, getStatusBadgeVariant as getComplianceBadgeVariant, getStatusBadgeClasses as getComplianceBadgeClasses } from "@/utils/dppDisplayUtils";
 import React from "react";
+import QrCodeGenerator from "@/components/qr/QrCodeGenerator";
 
 interface ProductHeaderProps {
   product: SimpleProductDetail;
@@ -98,6 +99,7 @@ export default function ProductHeader({ product }: ProductHeaderProps) {
                 </div>
             )}
         </div>
+        <QrCodeGenerator productId={product.id} />
       </CardHeader>
     </Card>
   );

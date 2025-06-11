@@ -78,16 +78,18 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         specificRegulations.push({
             regulationName: "ECHA SCIP Notification",
             status: dpp.compliance.scipNotification.status as ComplianceDetailItem['status'],
-            verificationId: dpp.compliance.scipNotification.notificationId,
+            verificationId: dpp.compliance.scipNotification.notificationId, // Use notificationId as verificationId
             lastChecked: dpp.compliance.scipNotification.lastChecked,
+            notes: `Article: ${dpp.compliance.scipNotification.articleName || 'N/A'}. SVHC List Ver: ${dpp.compliance.scipNotification.svhcListVersion || 'N/A'}`
         });
     }
     if (dpp.compliance.euCustomsData) {
         specificRegulations.push({
             regulationName: "EU Customs Data",
             status: dpp.compliance.euCustomsData.status as ComplianceDetailItem['status'],
-            verificationId: dpp.compliance.euCustomsData.declarationId,
+            verificationId: dpp.compliance.euCustomsData.declarationId, // Use declarationId as verificationId
             lastChecked: dpp.compliance.euCustomsData.lastChecked,
+            notes: `HS Code: ${dpp.compliance.euCustomsData.hsCode || 'N/A'}. Origin: ${dpp.compliance.euCustomsData.countryOfOrigin || 'N/A'}.`
         });
     }
 
@@ -160,12 +162,12 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
                 verificationId: dpp.ebsiVerification.verificationId,
                 lastChecked: dpp.ebsiVerification.lastChecked,
             } : { status: 'N/A', lastChecked: new Date().toISOString() },
-            scip: dpp.compliance.scipNotification ? {
+            scip: dpp.compliance.scipNotification ? { // Map SCIP data
                 status: dpp.compliance.scipNotification.status,
                 notificationId: dpp.compliance.scipNotification.notificationId,
                 lastChecked: dpp.compliance.scipNotification.lastChecked,
             } : { status: 'N/A', lastChecked: new Date().toISOString() },
-            euCustomsData: dpp.compliance.euCustomsData ? {
+            euCustomsData: dpp.compliance.euCustomsData ? { // Map EU Customs data
                 status: dpp.compliance.euCustomsData.status,
                 declarationId: dpp.compliance.euCustomsData.declarationId,
                 lastChecked: dpp.compliance.euCustomsData.lastChecked,

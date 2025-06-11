@@ -806,6 +806,70 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+      '500':
+        description: Internal server error.
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp/transfer-ownership/{productId}:
+    post:
+      operationId: transferDppOwnership
+      summary: Transfer Ownership of a Digital Product Passport
+      description: Updates ownership information for the specified DPP.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                newOwner:
+                  type: object
+                  properties:
+                    name:
+                      type: string
+                    did:
+                      type: string
+                      nullable: true
+                transferTimestamp:
+                  type: string
+                  format: date-time
+              required:
+                - newOwner
+                - transferTimestamp
+      responses:
+        '200':
+          description: Ownership transferred successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalProductPassport'
+        '400':
+          description: Invalid input data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
         '500':
           description: Internal server error.
           content:

@@ -1140,6 +1140,37 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp/country-counts:
+    get:
+      operationId: getDppCountsByCountry
+      summary: Retrieve DPP counts by country
+      description: Returns the number of Digital Product Passports for each country.
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    countryCode:
+                      type: string
+                    count:
+                      type: integer
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   components:
     schemas:
     ErrorResponse:

@@ -36,7 +36,10 @@ export default function GdprPage() {
 
   const handleSaveConsent = () => {
     // Simulate saving settings
-    console.log("Saving consent settings:", consentSettings);
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.log("Saving consent settings:", consentSettings);
+    }
     toast({
       title: "Consent Settings Saved",
       description: "Your consent preferences have been updated successfully.",

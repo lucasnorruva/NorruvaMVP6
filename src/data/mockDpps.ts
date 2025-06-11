@@ -270,6 +270,3 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     supplyChainLinks: []
   },
 ];
-
-    
-```

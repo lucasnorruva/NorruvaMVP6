@@ -6,6 +6,7 @@ import ApiReferenceIntro from '@/components/developer/docs/ApiReferenceIntro';
 import ApiReferenceDppEndpoints from '@/components/developer/docs/ApiReferenceDppEndpoints';
 import ApiReferenceQrEndpoints from '@/components/developer/docs/ApiReferenceQrEndpoints';
 import ApiReferenceComplianceEndpoints from '@/components/developer/docs/ApiReferenceComplianceEndpoints';
+import ApiReferenceTokenEndpoints from '@/components/developer/docs/ApiReferenceTokenEndpoints';
 
 export default function ApiReferencePage() {
   const exampleDppResponse = JSON.stringify(MOCK_DPPS[0], null, 2);
@@ -41,6 +42,39 @@ export default function ApiReferencePage() {
     }
   };
   const exampleQrValidationResponse = JSON.stringify(qrValidationResponseExample, null, 2);
+
+  const mintTokenRequest = JSON.stringify({
+    contractAddress: "0xABCDEF123456",
+    recipientAddress: "0x1234567890",
+    metadataUri: "ipfs://sample-metadata"
+  }, null, 2);
+
+  const mintTokenResponse = JSON.stringify({
+    tokenId: "1",
+    contractAddress: "0xABCDEF123456",
+    transactionHash: "0xMINTTX123"
+  }, null, 2);
+
+  const updateTokenRequest = JSON.stringify({
+    metadataUri: "ipfs://updated-metadata",
+    contractAddress: "0xABCDEF123456"
+  }, null, 2);
+
+  const updateTokenResponse = JSON.stringify({
+    tokenId: "1",
+    contractAddress: "0xABCDEF123456",
+    transactionHash: "0xUPDATETX456"
+  }, null, 2);
+
+  const tokenStatusResponse = JSON.stringify({
+    tokenId: "1",
+    contractAddress: "0xABCDEF123456",
+    ownerAddress: "0x1234567890",
+    mintedAt: new Date().toISOString(),
+    metadataUri: "ipfs://sample-metadata",
+    lastTransactionHash: "0xUPDATETX456",
+    status: "minted"
+  }, null, 2);
 
   const error401 = JSON.stringify({ error: { code: 401, message: "API key missing or invalid." } }, null, 2);
   const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }, { status: 404 }); 
@@ -271,6 +305,16 @@ export default function ApiReferencePage() {
         error400_update_dpp={error400_update_dpp}
         error400_patch_dpp={error400_patch_dpp}
         error400_lifecycle_event={error400_lifecycle_event}
+      />
+      <ApiReferenceTokenEndpoints
+        mintRequest={mintTokenRequest}
+        mintResponse={mintTokenResponse}
+        updateRequest={updateTokenRequest}
+        updateResponse={updateTokenResponse}
+        statusResponse={tokenStatusResponse}
+        error401={error401}
+        error404={error404}
+        error500={error500}
       />
       <ApiReferenceQrEndpoints
         exampleQrValidationResponse={exampleQrValidationResponse}

@@ -6,7 +6,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { validateApiKey } from '@/middleware/apiKeyAuth';
 import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport, DocumentReference } from '@/types/dpp';
+import type { DigitalProductPassport, DocumentReference, SupplyChainStep } from '@/types/dpp';
 
 interface ExtendDppRequestBody {
   documentReference?: {
@@ -14,7 +14,10 @@ interface ExtendDppRequestBody {
     documentUrl: string;
     documentType: string;
   };
-  // chainOfCustodyUpdate could be added here in the future
+  chainOfCustodyUpdate?: {
+    newOwnerDid: string;
+    transferTimestamp: string;
+  };
 }
 
 export async function PATCH(
@@ -74,18 +77,34 @@ export async function PATCH(
     return NextResponse.json(productToUpdate);
   }
 
-  // Placeholder for other extend actions, e.g., chainOfCustodyUpdate
+  // Append custody information if provided
   if (requestBody.chainOfCustodyUpdate) {
-    // Mock: Log that chain of custody update was received, but don't implement fully
-    if (process.env.NODE_ENV !== 'production') {
-      // eslint-disable-next-line no-console
-      console.log(
-        `Chain of custody update received for ${productId}:`,
-        requestBody.chainOfCustodyUpdate,
+    const { newOwnerDid, transferTimestamp } = requestBody.chainOfCustodyUpdate;
+    if (!newOwnerDid || !transferTimestamp) {
+      return NextResponse.json(
+        { error: { code: 400, message: "Fields 'newOwnerDid' and 'transferTimestamp' are required." } },
+        { status: 400 },
       );
     }
+
+    if (!productToUpdate.traceability) {
+      productToUpdate.traceability = {};
+    }
+    if (!productToUpdate.traceability.supplyChainSteps) {
+      productToUpdate.traceability.supplyChainSteps = [];
+    }
+
+    const newStep: SupplyChainStep = {
+      stepName: 'Ownership Transfer',
+      actorDid: newOwnerDid,
+      timestamp: transferTimestamp,
+    };
+
+    productToUpdate.traceability.supplyChainSteps.push(newStep);
     productToUpdate.metadata.last_updated = new Date().toISOString();
+
     MOCK_DPPS[productIndex] = productToUpdate;
+
     return NextResponse.json(productToUpdate);
   }
 

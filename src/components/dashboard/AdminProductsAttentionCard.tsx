@@ -5,15 +5,18 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { AlertTriangle, Eye } from "lucide-react";
-import { MOCK_DPPS } from "@/data"; // Corrected import path
+import { MOCK_DPPS } from "@/data"; 
 import type { DigitalProductPassport } from "@/types/dpp";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
 // Filter mock DPPs for those needing attention
-const productsNeedingAttention: DigitalProductPassport[] = MOCK_DPPS.filter(
+const productsNeedingAttentionList: DigitalProductPassport[] = MOCK_DPPS.filter(
   (dpp) => dpp.metadata.status === 'pending_review' || dpp.metadata.status === 'flagged'
-).slice(0, 3); // Show a few examples
+);
+const displayLimit = 3;
+const displayedProducts = productsNeedingAttentionList.slice(0, displayLimit);
+const remainingCount = productsNeedingAttentionList.length - displayedProducts.length;
 
 export default function AdminProductsAttentionCard() {
   return (
@@ -28,10 +31,10 @@ export default function AdminProductsAttentionCard() {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {productsNeedingAttention.length > 0 ? (
+        {displayedProducts.length > 0 ? (
           <ul className="space-y-3">
-            {productsNeedingAttention.map((product) => (
-              <li key={product.id} className="flex items-center justify-between p-3 border rounded-md bg-muted/50">
+            {displayedProducts.map((product) => (
+              <li key={product.id} className="flex items-center justify-between p-3 border rounded-md bg-muted/30">
                 <div>
                   <Link href={`/products/${product.id}`} className="font-medium text-primary hover:underline">
                     {product.productName} ({product.id})
@@ -52,8 +55,10 @@ export default function AdminProductsAttentionCard() {
                 </Badge>
               </li>
             ))}
-            {MOCK_DPPS.filter(dpp => dpp.metadata.status === 'pending_review' || dpp.metadata.status === 'flagged').length > 3 && (
-                 <p className="text-xs text-muted-foreground text-center mt-3">And more...</p>
+            {remainingCount > 0 && (
+                 <p className="text-xs text-muted-foreground text-center mt-3">
+                   ...and {remainingCount} more product(s) requiring attention.
+                 </p>
             )}
           </ul>
         ) : (

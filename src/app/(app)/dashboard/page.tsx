@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, FileText, Settings, Package, ShieldCheck } from "lucide-react"; // Added FileText, Settings, Package, ShieldCheck
+import { PlusCircle, FileText, Settings, Package, ShieldCheck, UserPlus, Edit3, Zap } from "lucide-react"; // Added more icons
 import Link from "next/link";
 import { useRole } from "@/contexts/RoleContext";
 
@@ -17,6 +17,7 @@ import { RetailerDashboard } from "@/components/dashboard/RetailerDashboard";
 import { RecyclerDashboard } from "@/components/dashboard/RecyclerDashboard";
 import { VerifierDashboard } from "@/components/dashboard/VerifierDashboard";
 import AdminProductsAttentionCard from "@/components/dashboard/AdminProductsAttentionCard";
+import AdminDataManagementKpisCard from "@/components/dashboard/AdminDataManagementKpisCard"; // Import new card
 
 export default function DashboardPage() {
   const { currentRole } = useRole();
@@ -32,23 +33,25 @@ export default function DashboardPage() {
               <Card className="shadow-lg lg:col-span-1">
                 <CardHeader>
                   <CardTitle className="font-headline">Recent Platform Activity</CardTitle>
-                  <CardDescription>Overview of system-wide updates.</CardDescription>
+                  <CardDescription>Conceptual overview of system-wide updates.</CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <ul className="space-y-3">
+                  <ul className="space-y-3 text-sm max-h-72 overflow-y-auto">
                     {[
-                      {text: "New Manufacturer 'EcoGoods Inc.' onboarded.", time: "1 hour ago", icon: PlusCircle},
-                      {text: "Regulation Module 'EU Battery Reg v1.1' deployed.", time: "3 hours ago", icon: FileText},
-                      {text: "System maintenance scheduled for Sunday 2 AM.", time: "1 day ago", icon: Settings },
-                      {text: "Product PROD002 updated with new battery data.", time: "2 days ago", icon: Package},
-                      {text: "Verifier 'CertifyAll' completed 5 audits.", time: "3 days ago", icon: ShieldCheck}
+                      {text: "New Manufacturer 'SolarSolutions GmbH' onboarded.", time: "15m ago", icon: UserPlus, color: "text-green-600"},
+                      {text: "Product PROD005 status changed to 'Published'.", time: "45m ago", icon: Edit3, color: "text-blue-500"},
+                      {text: "AI Model 'DataExtractor v2.1' training completed.", time: "1h ago", icon: Zap, color: "text-purple-500"},
+                      {text: "Regulation Module 'EU Battery Reg v1.1.2' updated.", time: "3h ago", icon: FileText, color: "text-orange-500"},
+                      {text: "System maintenance scheduled for Sunday 2 AM UTC.", time: "Yesterday", icon: Settings, color: "text-gray-500" },
+                      {text: "Product 'PROD001' EBSI verification successful.", time: "Yesterday", icon: ShieldCheck, color: "text-green-600"},
+                      {text: "Supplier 'ComponentPro' added new material specs.", time: "2 days ago", icon: Package, color: "text-teal-500"}
                     ].map(activity => (
-                      <li key={activity.text} className="flex items-center justify-between text-sm p-2 rounded-md hover:bg-muted/50">
+                      <li key={activity.text} className="flex items-center justify-between p-2.5 rounded-md hover:bg-muted/30 transition-colors border-b last:border-b-0">
                         <div className="flex items-center">
-                          <activity.icon className="h-4 w-4 mr-2 text-primary" />
-                          <span>{activity.text}</span>
+                          <activity.icon className={`h-4 w-4 mr-2.5 flex-shrink-0 ${activity.color}`} />
+                          <span className="text-foreground/90">{activity.text}</span>
                         </div>
-                        <span className="text-muted-foreground text-xs">{activity.time}</span>
+                        <span className="text-muted-foreground text-xs whitespace-nowrap pl-2">{activity.time}</span>
                       </li>
                     ))}
                   </ul>
@@ -56,7 +59,10 @@ export default function DashboardPage() {
               </Card>
               <PlatformHealthStatsCard />
             </div>
-            <AdminProductsAttentionCard />
+            <div className="grid gap-6 md:grid-cols-2">
+              <AdminProductsAttentionCard />
+              <AdminDataManagementKpisCard />
+            </div>
             <RegulationUpdatesCard />
           </div>
         );
@@ -102,4 +108,3 @@ export default function DashboardPage() {
     </div>
   );
 }
-

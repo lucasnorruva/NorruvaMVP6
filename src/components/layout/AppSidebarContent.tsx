@@ -17,7 +17,7 @@ import {
   ListChecks,
   BarChartHorizontal,
   ClipboardList,
-  Globe2, // Removed Globe icon, kept Globe2
+  Globe2, 
   Users
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
@@ -43,7 +43,6 @@ const navItems = [
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
   // Specialized Views
   { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList },
-  // { href: "/dpp-global-tracker", label: "DPP Global Tracker", icon: Globe }, // Removed old tracker
   { href: "/dpp-global-tracker-v2", label: "DPP Global Tracker v2", icon: Globe2 },
 ];
 
@@ -96,11 +95,16 @@ export default function AppSidebarContent() {
 
   return (
     <>
-      <SidebarHeader className="border-b border-sidebar-border h-16 flex items-center px-4">
+      <SidebarHeader className="border-b border-sidebar-border h-auto py-4 flex flex-col items-start px-4">
         {(sidebarState === 'expanded' || isMobile) && (
-          <Link href="/dashboard" className="flex items-center gap-2 text-primary hover:opacity-80">
-            <Logo className="h-8 w-auto" />
-          </Link>
+          <>
+            <Link href="/dashboard" className="flex items-center gap-2 text-primary hover:opacity-80">
+              <Logo className="h-8 w-auto" />
+            </Link>
+            <p className="text-xs text-sidebar-foreground/70 mt-1.5 ml-0.5">
+              Verified Product Trust, Powered at Scale
+            </p>
+          </>
         )}
       </SidebarHeader>
       <SidebarContent className="flex-1 py-2">

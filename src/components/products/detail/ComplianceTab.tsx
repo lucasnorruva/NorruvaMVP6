@@ -30,6 +30,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
 
   const allComplianceItems: ComplianceDetailItemProps[] = [];
 
+  // Handle EPREL explicitly
   if (summary.eprel) {
     const eprelSyncButton = (
       <TooltipProvider delayDuration={100}>
@@ -70,6 +71,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     });
   }
 
+  // Handle EBSI explicitly
   if (summary.ebsi) {
     allComplianceItems.push({
       title: "EBSI Blockchain Verification",
@@ -81,43 +83,47 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     });
   }
   
+  // Handle SCIP explicitly
   if (summary.scip) {
     allComplianceItems.push({
       title: "ECHA SCIP Notification",
-      icon: Database, // Example icon for SCIP
+      icon: Database,
       status: summary.scip.status,
       lastChecked: summary.scip.lastChecked,
-      verificationId: summary.scip.notificationId, // Using verificationId to display SCIP ID
-      // url: if SCIP has a public URL per notification, add here
+      id: summary.scip.notificationId, // Use notificationId as the primary ID for display
+      notes: `Article: ${summary.scip.articleName || 'N/A'}. SVHC List Ver: ${summary.scip.svhcListVersion || 'N/A'}`,
+      url: summary.scip.safeUseInstructionsLink,
     });
   }
 
+  // Handle EU Customs Data explicitly
   if (summary.euCustomsData) {
     allComplianceItems.push({
       title: "EU Customs Data",
-      icon: Anchor, // Example icon for Customs
+      icon: Anchor,
       status: summary.euCustomsData.status,
       lastChecked: summary.euCustomsData.lastChecked,
-      verificationId: summary.euCustomsData.declarationId, // Using verificationId for declaration ID
-      // url: if customs declarations have public URLs, add here
+      id: summary.euCustomsData.declarationId, // Use declarationId as the primary ID
+      notes: `HS Code: ${summary.euCustomsData.hsCode || 'N/A'}. Origin: ${summary.euCustomsData.countryOfOrigin || 'N/A'}. Net Wt: ${summary.euCustomsData.netWeightKg || 'N/A'}kg. Value: ${summary.euCustomsData.customsValuation?.value || 'N/A'} ${summary.euCustomsData.customsValuation?.currency || ''}`.trim(),
     });
   }
 
-
+  // Handle other specific regulations
   if (summary.specificRegulations) {
     summary.specificRegulations.forEach(reg => {
-      // Avoid duplicating items already handled above by checking regulationName
-      if (!["EPREL Energy Label", "EBSI Blockchain Verification", "ECHA SCIP Notification", "EU Customs Data"].includes(reg.regulationName)) {
-        allComplianceItems.push({
-          title: reg.regulationName,
-          icon: ListChecks,
-          status: reg.status,
-          lastChecked: reg.lastChecked,
-          verificationId: reg.verificationId, // Use verificationId from SpecificComplianceDetailItemFromDPP
-          url: reg.detailsUrl,
-          notes: reg.notes,
-        });
-      }
+      // Ensure these are regulations NOT already covered by explicit handling above
+      // This logic assumes that specificRegulations in SimpleProductDetail 
+      // is now populated by productDetailUtils.ts *only* with items
+      // that are NOT eprel, ebsi, scip, or euCustomsData.
+      allComplianceItems.push({
+        title: reg.regulationName,
+        icon: ListChecks, // Default icon for other regulations
+        status: reg.status,
+        lastChecked: reg.lastChecked,
+        id: reg.verificationId, // Using id for consistency, was verificationId in ComplianceDetailItem
+        url: reg.detailsUrl,
+        notes: reg.notes,
+      });
     });
   }
   

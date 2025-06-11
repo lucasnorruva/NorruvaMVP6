@@ -5,7 +5,7 @@
 
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
 import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification } from '@/types/dpp';
+import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification, ScipNotificationDetails, EuCustomsDataDetails } from '@/types/dpp';
 import { getOverallComplianceDetails } from '@/utils/dppDisplayUtils';
 
 // Helper function to map DigitalProductPassport to SimpleProductDetail
@@ -23,15 +23,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
     };
 
     const specificRegulations: ComplianceDetailItem[] = [];
-    if (dpp.compliance.eprel) {
-        specificRegulations.push({
-            regulationName: "EPREL Database",
-            status: dpp.compliance.eprel.status as ComplianceDetailItem['status'],
-            verificationId: dpp.compliance.eprel.id,
-            detailsUrl: dpp.compliance.eprel.url,
-            lastChecked: dpp.compliance.eprel.lastChecked,
-        });
-    }
+    
+    // EU ESPR and US Scope 3 are examples of 'other' regulations now
     if (dpp.compliance.eu_espr) {
         specificRegulations.push({
             regulationName: "EU ESPR",
@@ -72,24 +65,6 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             verificationId: br.batteryPassportId || br.vcId,
             lastChecked: dpp.metadata.last_updated, // Fallback
             notes: notesValue,
-        });
-    }
-    if (dpp.compliance.scipNotification) {
-        specificRegulations.push({
-            regulationName: "ECHA SCIP Notification",
-            status: dpp.compliance.scipNotification.status as ComplianceDetailItem['status'],
-            verificationId: dpp.compliance.scipNotification.notificationId, // Use notificationId as verificationId
-            lastChecked: dpp.compliance.scipNotification.lastChecked,
-            notes: `Article: ${dpp.compliance.scipNotification.articleName || 'N/A'}. SVHC List Ver: ${dpp.compliance.scipNotification.svhcListVersion || 'N/A'}`
-        });
-    }
-    if (dpp.compliance.euCustomsData) {
-        specificRegulations.push({
-            regulationName: "EU Customs Data",
-            status: dpp.compliance.euCustomsData.status as ComplianceDetailItem['status'],
-            verificationId: dpp.compliance.euCustomsData.declarationId, // Use declarationId as verificationId
-            lastChecked: dpp.compliance.euCustomsData.lastChecked,
-            notes: `HS Code: ${dpp.compliance.euCustomsData.hsCode || 'N/A'}. Origin: ${dpp.compliance.euCustomsData.countryOfOrigin || 'N/A'}.`
         });
     }
 
@@ -162,16 +137,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
                 verificationId: dpp.ebsiVerification.verificationId,
                 lastChecked: dpp.ebsiVerification.lastChecked,
             } : { status: 'N/A', lastChecked: new Date().toISOString() },
-            scip: dpp.compliance.scipNotification ? { // Map SCIP data
-                status: dpp.compliance.scipNotification.status,
-                notificationId: dpp.compliance.scipNotification.notificationId,
-                lastChecked: dpp.compliance.scipNotification.lastChecked,
-            } : { status: 'N/A', lastChecked: new Date().toISOString() },
-            euCustomsData: dpp.compliance.euCustomsData ? { // Map EU Customs data
-                status: dpp.compliance.euCustomsData.status,
-                declarationId: dpp.compliance.euCustomsData.declarationId,
-                lastChecked: dpp.compliance.euCustomsData.lastChecked,
-            } : { status: 'N/A', lastChecked: new Date().toISOString() },
+            scip: dpp.compliance.scipNotification, // Directly map the full object
+            euCustomsData: dpp.compliance.euCustomsData, // Directly map the full object
             specificRegulations: specificRegulations,
         },
         lifecycleEvents: dpp.lifecycleEvents?.map(event => ({
@@ -229,6 +196,10 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             vcId: sc.vcId,
             transactionHash: sc.transactionHash,
         })) || [];
+        
+        // Ensure complianceSummary exists and has scip and euCustomsData
+        const complianceSummaryFromStorage = userProductData.complianceSummary || { overallStatus: 'N/A' };
+
 
         foundDpp = {
           id: userProductData.id,
@@ -243,7 +214,7 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           metadata: {
             status: (userProductData.status?.toLowerCase() as DigitalProductPassport['metadata']['status']) || 'draft',
             last_updated: userProductData.lastUpdated || new Date().toISOString(),
-            created_at: userProductData.lastUpdated || new Date().toISOString(),
+            created_at: userProductData.lastUpdated || new Date().toISOString(), // Or a dedicated created_at if available
           },
           productDetails: {
             description: userProductData.productDescription,
@@ -256,9 +227,9 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             customAttributes: parsedCustomAttributes, // Pass as array
           },
           compliance: { // Reconstruct compliance object for user products
-            eprel: userProductData.complianceSummary?.eprel,
-            scipNotification: userProductData.complianceSummary?.scip,
-            euCustomsData: userProductData.complianceSummary?.euCustomsData,
+            eprel: complianceSummaryFromStorage.eprel,
+            scipNotification: complianceSummaryFromStorage.scip, // Assign from mapped structure
+            euCustomsData: complianceSummaryFromStorage.euCustomsData, // Assign from mapped structure
             battery_regulation: userProductData.complianceSummary?.specificRegulations?.find(r => r.regulationName === "EU Battery Regulation")
               ? {
                   status: userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.status as DigitalProductPassport['compliance']['battery_regulation']['status'],
@@ -269,10 +240,10 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
                 }
               : { status: 'not_applicable' }
           },
-          ebsiVerification: userProductData.complianceSummary?.ebsi ? {
-            status: userProductData.complianceSummary.ebsi.status as EbsiVerificationDetails['status'],
-            verificationId: userProductData.complianceSummary.ebsi.verificationId,
-            lastChecked: userProductData.complianceSummary.ebsi.lastChecked,
+          ebsiVerification: complianceSummaryFromStorage.ebsi ? {
+            status: complianceSummaryFromStorage.ebsi.status as EbsiVerificationDetails['status'],
+            verificationId: complianceSummaryFromStorage.ebsi.verificationId,
+            lastChecked: complianceSummaryFromStorage.ebsi.lastChecked,
           } : undefined,
           lifecycleEvents: userProductData.lifecycleEvents?.map(e => ({
               id: e.id,

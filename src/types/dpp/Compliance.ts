@@ -73,8 +73,8 @@ export interface ProductComplianceSummary {
     transactionUrl?: string;
     lastChecked: string; // ISO Date string
   };
-  scip?: ScipNotificationDetails;
-  euCustomsData?: EuCustomsDataDetails;
+  scip?: ScipNotificationDetails; // Added
+  euCustomsData?: EuCustomsDataDetails; // Added
   specificRegulations?: ComplianceDetailItem[];
 }
 

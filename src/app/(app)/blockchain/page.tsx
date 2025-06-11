@@ -160,9 +160,30 @@ export default function BlockchainPage() {
       });
   }, [filter, toast]);
 
+  const handleSelectProduct = (dpp: DigitalProductPassport | null) => {
+    setSelected(dpp);
+    if (dpp && dpp.blockchainIdentifiers?.tokenId) {
+      setUpdateTokenId(dpp.blockchainIdentifiers.tokenId);
+      setStatusTokenId(dpp.blockchainIdentifiers.tokenId);
+    } else {
+      setUpdateTokenId("");
+      setStatusTokenId("");
+    }
+    setFetchedCredential(null);
+    setMintResponse(null);
+    setUpdateTokenResponse(null);
+    setStatusTokenResponse(null);
+  };
+
   const updateDpp = (updated: DigitalProductPassport) => {
     setDpps(prev => prev.map(d => (d.id === updated.id ? updated : d)));
-    if (selected && selected.id === updated.id) setSelected(updated);
+    if (selected && selected.id === updated.id) {
+      setSelected(updated); // Update selected product details
+      if (updated.blockchainIdentifiers?.tokenId) { // And prefill token IDs if now available
+          setUpdateTokenId(updated.blockchainIdentifiers.tokenId);
+          setStatusTokenId(updated.blockchainIdentifiers.tokenId);
+      }
+    }
   };
 
   const handleApiError = useCallback(async (response: Response, action: string) => {
@@ -195,7 +216,6 @@ export default function BlockchainPage() {
     if (res.ok) {
       const data = await res.json();
       updateDpp(data);
-      // setAnchorPlatform(""); // Keep platform for subsequent anchors if desired
       toast({ title: "DPP Anchored", description: `Product ${selected.id} successfully anchored to ${anchorPlatform}. Mock contract address and token ID also set.` });
     } else {
       handleApiError(res, "Anchoring DPP");
@@ -289,6 +309,15 @@ export default function BlockchainPage() {
       setMintResponse(JSON.stringify(data, null, 2));
       if (res.ok) {
         toast({ title: "Token Mint Initiated (Mock)", description: `Token for ${selected.id} minted. Tx: ${data.transactionHash}` });
+        // Conceptually, update the selected DPP with the new token ID from the response
+        const updatedSelectedDpp = {
+            ...selected,
+            blockchainIdentifiers: {
+                ...selected.blockchainIdentifiers,
+                tokenId: data.tokenId // Assuming the mint response returns the tokenId
+            }
+        };
+        updateDpp(updatedSelectedDpp);
       } else {
         handleApiError(res, "Minting Token");
       }
@@ -436,7 +465,7 @@ export default function BlockchainPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="outline" size="sm" onClick={() => { setSelected(selected?.id === dpp.id ? null : dpp); setFetchedCredential(null); setMintResponse(null); setUpdateTokenResponse(null); setStatusTokenResponse(null); }}>
+                        <Button variant="outline" size="sm" onClick={() => handleSelectProduct(selected?.id === dpp.id ? null : dpp)}>
                           {selected?.id === dpp.id ? "Hide Details" : "Manage"}
                         </Button>
                       </TableCell>
@@ -621,3 +650,6 @@ export default function BlockchainPage() {
     </div>
   );
 }
+
+
+    

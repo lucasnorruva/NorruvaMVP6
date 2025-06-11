@@ -29,7 +29,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 import ApiKeysManager, { type ApiKey } from '@/components/developer/ApiKeysManager';
 import WebhooksManager, { type WebhookEntry } from '@/components/developer/WebhooksManager';
-import ApiPlaygroundEndpointCard from '@/components/developer/ApiPlaygroundEndpointCard';
+import DeveloperEndpointCard from '@/components/developer/DeveloperEndpointCard';
 import { cn } from '@/lib/utils';
 import { generateMockCodeSnippet } from '@/utils/apiPlaygroundUtils'; // Import the refactored function
 import ResourcesTab from '@/components/developer/ResourcesTab';
@@ -369,6 +369,327 @@ export default function DeveloperPortalPage() {
 
   const codeSampleLanguages = ["cURL", "JavaScript", "Python"];
 
+  const endpointConfigs = [
+    {
+      id: 'get-product',
+      section: 'core',
+      title: 'GET /api/v1/dpp/{productId}',
+      description: 'Retrieve details for a specific product by its ID.',
+      onSendRequest: handleMockGetProductDetails,
+      isLoading: isGetProductLoading,
+      response: getProductResponse,
+      codeSnippet: getProductCodeSnippet,
+      snippetLanguage: getProductSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setGetProductSnippetLang(lang); updateSnippet('getProduct','GET',lang,{ productId: getProductId },null,setGetProductCodeSnippet); },
+      children: (
+        <div>
+          <Label htmlFor="productIdInput-get">Product ID (Path Parameter)</Label>
+          <Input id="productIdInput-get" value={getProductId} onChange={(e) => setGetProductId(e.target.value)} placeholder="e.g., DPP001" />
+        </div>
+      )
+    },
+    {
+      id: 'list-dpps',
+      section: 'core',
+      title: 'GET /api/v1/dpp',
+      description: 'Retrieve a list of available Digital Product Passports with filtering.',
+      onSendRequest: handleMockListProducts,
+      isLoading: isListProductsLoading,
+      response: listProductsResponse,
+      codeSnippet: listDppsCodeSnippet,
+      snippetLanguage: listDppsSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setListDppsSnippetLang(lang); updateSnippet('listDpps','GET',lang,listDppFilters,null,setListDppsCodeSnippet); },
+      children: (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <Label htmlFor="list-dpp-search">Search Query (ID, Name, GTIN, Manufacturer)</Label>
+            <Input id="list-dpp-search" value={listDppFilters.searchQuery} onChange={(e) => setListDppFilters(prev => ({...prev, searchQuery: e.target.value}))} placeholder="e.g., EcoSmart, DPP001" />
+          </div>
+          <div>
+            <Label htmlFor="list-dpp-category">Category</Label>
+            <Input id="list-dpp-category" value={listDppFilters.category === 'all' ? '' : listDppFilters.category} onChange={(e) => setListDppFilters(prev => ({...prev, category: e.target.value || 'all'}))} placeholder="e.g., Appliances (or 'all')" />
+          </div>
+          <div>
+            <Label htmlFor="list-dpp-status">Status</Label>
+            <Select value={listDppFilters.status} onValueChange={(value) => setListDppFilters(prev => ({...prev, status: value}))}>
+              <SelectTrigger id="list-dpp-status"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {['all','draft','published','archived','pending_review','revoked','flagged'].map(s => <SelectItem key={`listStatus-${s}`} value={s}>{s.charAt(0).toUpperCase() + s.slice(1).replace('_',' ')}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label htmlFor="list-dpp-anchored">Blockchain Anchored</Label>
+            <Select value={listDppFilters.blockchainAnchored} onValueChange={(value) => setListDppFilters(prev => ({...prev, blockchainAnchored: value}))}>
+              <SelectTrigger id="list-dpp-anchored"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All</SelectItem>
+                <SelectItem value="anchored">Anchored</SelectItem>
+                <SelectItem value="not_anchored">Not Anchored</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )
+    },
+    {
+      id: 'create-dpp',
+      section: 'core',
+      title: 'POST /api/v1/dpp',
+      description: 'Create a new Digital Product Passport.',
+      onSendRequest: handleMockPostDpp,
+      isLoading: isPostDppLoading,
+      response: postDppResponse,
+      codeSnippet: createDppCodeSnippet,
+      snippetLanguage: createDppSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setCreateDppSnippetLang(lang); updateSnippet('createDpp','POST',lang,{},postDppBody,setCreateDppCodeSnippet); },
+      children: (
+        <div>
+          <Label htmlFor="postDppBody">Request Body (JSON)</Label>
+          <Textarea id="postDppBody" value={postDppBody} onChange={(e) => setPostDppBody(e.target.value)} rows={5} className="font-mono text-xs" />
+          <p className="text-xs text-muted-foreground mt-1">Example required fields: productName, category. See API Reference for full schema.</p>
+        </div>
+      )
+    },
+    {
+      id: 'update-dpp',
+      section: 'core',
+      title: 'PUT /api/v1/dpp/{productId}',
+      description: 'Update an existing Digital Product Passport.',
+      onSendRequest: handleMockPutProduct,
+      isLoading: isPutProductLoading,
+      response: putProductResponse,
+      codeSnippet: updateDppCodeSnippet,
+      snippetLanguage: updateDppSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setUpdateDppSnippetLang(lang); updateSnippet('updateDpp','PUT',lang,{productId: putProductId},putProductBody,setUpdateDppCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="productIdInput-put">Product ID (Path Parameter)</Label>
+            <Input id="productIdInput-put" value={putProductId} onChange={(e) => setPutProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="putProductBody">Request Body (JSON)</Label>
+            <Textarea id="putProductBody" value={putProductBody} onChange={(e) => setPutProductBody(e.target.value)} rows={4} className="font-mono text-xs" />
+            <p className="text-xs text-muted-foreground mt-1">Send partial or full updates. See API Reference for updatable fields.</p>
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'patch-dpp-extend',
+      section: 'core',
+      title: 'PATCH /api/v1/dpp/extend/{productId}',
+      description: 'Extend a DPP by adding document references or other modular data.',
+      onSendRequest: handleMockPatchDppExtend,
+      isLoading: isPatchDppExtendLoading,
+      response: patchDppExtendResponse,
+      codeSnippet: patchDppExtendCodeSnippet,
+      snippetLanguage: patchDppExtendSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setPatchDppExtendSnippetLang(lang); updateSnippet('patchDppExtend','PATCH',lang,{productId: patchDppExtendProductId},patchDppExtendBody,setPatchDppExtendCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="productIdInput-patch">Product ID (Path Parameter)</Label>
+            <Input id="productIdInput-patch" value={patchDppExtendProductId} onChange={(e) => setPatchDppExtendProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="patchDppExtendBody">Request Body (JSON)</Label>
+            <Textarea id="patchDppExtendBody" value={patchDppExtendBody} onChange={(e) => setPatchDppExtendBody(e.target.value)} rows={4} className="font-mono text-xs" />
+            <p className="text-xs text-muted-foreground mt-1">Example: Add a document reference. See API Reference.</p>
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'delete-dpp',
+      section: 'core',
+      title: 'DELETE /api/v1/dpp/{productId}',
+      description: 'Archive a Digital Product Passport.',
+      onSendRequest: handleMockDeleteProduct,
+      isLoading: isDeleteProductLoading,
+      response: deleteProductResponse,
+      codeSnippet: deleteDppCodeSnippet,
+      snippetLanguage: deleteDppSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setDeleteDppSnippetLang(lang); updateSnippet('deleteDpp','DELETE',lang,{productId: deleteProductId},null,setDeleteDppCodeSnippet); },
+      children: (
+        <div>
+          <Label htmlFor="productIdInput-delete">Product ID (Path Parameter)</Label>
+          <Input id="productIdInput-delete" value={deleteProductId} onChange={(e) => setDeleteProductId(e.target.value)} placeholder="e.g., PROD002" />
+        </div>
+      )
+    },
+    {
+      id: 'get-status',
+      section: 'utility',
+      title: 'GET /api/v1/dpp/status/{productId}',
+      description: 'Retrieve the current status of a specific DPP.',
+      onSendRequest: handleMockGetStatus,
+      isLoading: isGetStatusLoading,
+      response: getStatusResponse,
+      codeSnippet: getStatusCodeSnippet,
+      snippetLanguage: getStatusSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setGetStatusSnippetLang(lang); updateSnippet('getDppStatus','GET',lang,{ productId: getStatusProductId },null,setGetStatusCodeSnippet); },
+      children: (
+        <div>
+          <Label htmlFor="productIdInput-get-status">Product ID (Path Parameter)</Label>
+          <Input id="productIdInput-get-status" value={getStatusProductId} onChange={(e) => setGetStatusProductId(e.target.value)} placeholder="e.g., DPP001" />
+        </div>
+      )
+    },
+    {
+      id: 'qr-validate',
+      section: 'utility',
+      title: 'POST /api/v1/qr/validate',
+      description: 'Validate a QR identifier and retrieve a DPP summary.',
+      onSendRequest: handleMockPostQrValidate,
+      isLoading: isPostQrValidateLoading,
+      response: postQrValidateResponse,
+      codeSnippet: qrValidateCodeSnippet,
+      snippetLanguage: qrValidateSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setQrValidateSnippetLang(lang); updateSnippet('qrValidate','POST',lang,{},postQrValidateBody,setQrValidateCodeSnippet); },
+      children: (
+        <div>
+          <Label htmlFor="postQrValidateBody">Request Body (JSON)</Label>
+          <Textarea id="postQrValidateBody" value={postQrValidateBody} onChange={(e) => setPostQrValidateBody(e.target.value)} rows={3} className="font-mono text-xs" />
+        </div>
+      )
+    },
+    {
+      id: 'post-lifecycle-event',
+      section: 'utility',
+      title: 'POST /api/v1/dpp/{productId}/lifecycle-events',
+      description: 'Add a new lifecycle event to a specific DPP.',
+      onSendRequest: handleMockPostLifecycleEvent,
+      isLoading: isPostLifecycleEventLoading,
+      response: postLifecycleEventResponse,
+      codeSnippet: addLifecycleEventCodeSnippet,
+      snippetLanguage: addLifecycleEventSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setAddLifecycleEventSnippetLang(lang); updateSnippet('addLifecycleEvent','POST',lang,{productId: postLifecycleEventProductId},postLifecycleEventBody,setAddLifecycleEventCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="productIdInput-post-event">Product ID (Path Parameter)</Label>
+            <Input id="productIdInput-post-event" value={postLifecycleEventProductId} onChange={(e) => setPostLifecycleEventProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="postLifecycleEventBody">Request Body (JSON)</Label>
+            <Textarea id="postLifecycleEventBody" value={postLifecycleEventBody} onChange={(e) => setPostLifecycleEventBody(e.target.value)} rows={5} className="font-mono text-xs" />
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'get-compliance-summary',
+      section: 'utility',
+      title: 'GET /api/v1/dpp/{productId}/compliance-summary',
+      description: 'Retrieve a compliance summary for a specific product.',
+      onSendRequest: handleMockGetComplianceSummary,
+      isLoading: isGetComplianceLoading,
+      response: getComplianceResponse,
+      codeSnippet: getComplianceSummaryCodeSnippet,
+      snippetLanguage: getComplianceSummarySnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setGetComplianceSummarySnippetLang(lang); updateSnippet('getComplianceSummary','GET',lang,{productId: getComplianceProductId},null,setGetComplianceSummaryCodeSnippet); },
+      children: (
+        <div>
+          <Label htmlFor="productIdInput-get-compliance">Product ID (Path Parameter)</Label>
+          <Input id="productIdInput-get-compliance" value={getComplianceProductId} onChange={(e) => setGetComplianceProductId(e.target.value)} placeholder="e.g., DPP001" />
+        </div>
+      )
+    },
+    {
+      id: 'verify-dpp',
+      section: 'utility',
+      title: 'POST /api/v1/dpp/verify/{productId}',
+      description: 'Perform compliance and authenticity checks on a DPP.',
+      onSendRequest: handleMockPostVerify,
+      isLoading: isPostVerifyLoading,
+      response: postVerifyResponse,
+      codeSnippet: verifyDppCodeSnippet,
+      snippetLanguage: verifyDppSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setVerifyDppSnippetLang(lang); updateSnippet('verifyDpp','POST',lang,{productIdPath: postVerifyProductIdPath},null,setVerifyDppCodeSnippet); },
+      children: (
+        <div>
+          <Label htmlFor="productIdInput-verify-path">Product ID (Path Parameter)</Label>
+          <Input id="productIdInput-verify-path" value={postVerifyProductIdPath} onChange={(e) => setPostVerifyProductIdPath(e.target.value)} placeholder="e.g., DPP001" />
+          <p className="text-xs text-muted-foreground mt-1">No request body needed for this mock endpoint.</p>
+        </div>
+      )
+    },
+    {
+      id: 'get-history',
+      section: 'utility',
+      title: 'GET /api/v1/dpp/history/{productId}',
+      description: 'Retrieve the audit trail / history for a specific DPP.',
+      onSendRequest: handleMockGetHistory,
+      isLoading: isGetHistoryLoading,
+      response: getHistoryResponse,
+      codeSnippet: getDppHistoryCodeSnippet,
+      snippetLanguage: getDppHistorySnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setGetDppHistorySnippetLang(lang); updateSnippet('getDppHistory','GET',lang,{productId: getHistoryProductId},null,setGetDppHistoryCodeSnippet); },
+      children: (
+        <div>
+          <Label htmlFor="historyProductIdInput">Product ID (Path Parameter)</Label>
+          <Input id="historyProductIdInput" value={getHistoryProductId} onChange={(e) => setGetHistoryProductId(e.target.value)} placeholder="e.g., DPP001" />
+        </div>
+      )
+    },
+    {
+      id: 'import-dpps',
+      section: 'utility',
+      title: 'POST /api/v1/dpp/import',
+      description: 'Batch import Digital Product Passports (CSV, JSON, etc.).',
+      onSendRequest: handleMockPostImport,
+      isLoading: isPostImportLoading,
+      response: postImportResponse,
+      codeSnippet: importDppsCodeSnippet,
+      snippetLanguage: importDppsSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setImportDppsSnippetLang(lang); updateSnippet('importDpps','POST',lang,{fileType: postImportFileType, sourceDescription: postImportSourceDescription}, JSON.stringify({fileType: postImportFileType, data: 'mock_base64_data', sourceDescription: postImportSourceDescription}), setImportDppsCodeSnippet); },
+      children: (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="importFileType">File Type</Label>
+              <Select value={postImportFileType} onValueChange={setPostImportFileType}>
+                <SelectTrigger id="importFileType">
+                  <SelectValue placeholder="Select file type" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="csv">CSV</SelectItem>
+                  <SelectItem value="json">JSON</SelectItem>
+                  <SelectItem value="api">API (Simulate direct data feed)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="importSourceDescription">Source Description (Optional)</Label>
+              <Input id="importSourceDescription" value={postImportSourceDescription} onChange={(e) => setPostImportSourceDescription(e.target.value)} placeholder="e.g., Q3 Supplier Data Upload" />
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">For this mock, 'data' field is simulated. See API Reference.</p>
+        </>
+      )
+    },
+    {
+      id: 'get-graph',
+      section: 'utility',
+      title: 'GET /api/v1/dpp/graph/{productId}',
+      description: 'Retrieve data for supply chain visualization.',
+      onSendRequest: handleMockGetGraph,
+      isLoading: isGetGraphLoading,
+      response: getGraphResponse,
+      codeSnippet: getDppGraphCodeSnippet,
+      snippetLanguage: getDppGraphSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setGetDppGraphSnippetLang(lang); updateSnippet('getDppGraph','GET',lang,{productId: getGraphProductId},null,setGetDppGraphCodeSnippet); },
+      children: (
+        <div>
+          <Label htmlFor="graphProductIdInput">Product ID (Path Parameter)</Label>
+          <Input id="graphProductIdInput" value={getGraphProductId} onChange={(e) => setGetGraphProductId(e.target.value)} placeholder="e.g., DPP001" />
+        </div>
+      )
+    }
+  ] as const;
+
   const getUsageMetric = useCallback((metricType: 'calls' | 'errorRate') => {
     if (currentEnvironment === 'sandbox') {
         return metricType === 'calls' ? '1,234' : '0.2%';
@@ -522,306 +843,22 @@ export default function DeveloperPortalPage() {
                 <AccordionItem value="dpp-core">
                   <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline">DPP Core Management Endpoints</AccordionTrigger>
                   <AccordionContent className="pt-4 space-y-6">
-                    <ApiPlaygroundEndpointCard
-                      title="GET /api/v1/dpp/{productId}"
-                      description="Retrieve details for a specific product by its ID."
-                      onSendRequest={handleMockGetProductDetails}
-                      isLoading={isGetProductLoading}
-                      response={getProductResponse}
-                      codeSnippet={getProductCodeSnippet}
-                      snippetLanguage={getProductSnippetLang}
-                      onSnippetLanguageChange={(lang) => {setGetProductSnippetLang(lang); updateSnippet("getProduct", "GET", lang, { productId: getProductId }, null, setGetProductCodeSnippet);}}
-                      codeSampleLanguages={codeSampleLanguages}
-                    >
-                      <div>
-                        <Label htmlFor="productIdInput-get">Product ID (Path Parameter)</Label>
-                        <Input id="productIdInput-get" value={getProductId} onChange={(e) => setGetProductId(e.target.value)} placeholder="e.g., DPP001" />
-                      </div>
-                    </ApiPlaygroundEndpointCard>
-
-                    <ApiPlaygroundEndpointCard
-                      title="GET /api/v1/dpp"
-                      description="Retrieve a list of available Digital Product Passports with filtering."
-                      onSendRequest={handleMockListProducts}
-                      isLoading={isListProductsLoading}
-                      response={listProductsResponse}
-                      codeSnippet={listDppsCodeSnippet}
-                      snippetLanguage={listDppsSnippetLang}
-                      onSnippetLanguageChange={(lang) => {setListDppsSnippetLang(lang); updateSnippet("listDpps", "GET", lang, listDppFilters, null, setListDppsCodeSnippet);}}
-                      codeSampleLanguages={codeSampleLanguages}
-                    >
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                          <Label htmlFor="list-dpp-search">Search Query (ID, Name, GTIN, Manufacturer)</Label>
-                          <Input id="list-dpp-search" value={listDppFilters.searchQuery} onChange={(e) => setListDppFilters(prev => ({...prev, searchQuery: e.target.value}))} placeholder="e.g., EcoSmart, DPP001" />
-                        </div>
-                        <div>
-                          <Label htmlFor="list-dpp-category">Category</Label>
-                          <Input id="list-dpp-category" value={listDppFilters.category === 'all' ? '' : listDppFilters.category} onChange={(e) => setListDppFilters(prev => ({...prev, category: e.target.value || 'all'}))} placeholder="e.g., Appliances (or 'all')" />
-                        </div>
-                        <div>
-                          <Label htmlFor="list-dpp-status">Status</Label>
-                          <Select value={listDppFilters.status} onValueChange={(value) => setListDppFilters(prev => ({...prev, status: value}))}>
-                            <SelectTrigger id="list-dpp-status"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              {['all', 'draft', 'published', 'archived', 'pending_review', 'revoked', 'flagged'].map(s => <SelectItem key={`listStatus-${s}`} value={s}>{s.charAt(0).toUpperCase() + s.slice(1).replace('_', ' ')}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div>
-                          <Label htmlFor="list-dpp-anchored">Blockchain Anchored</Label>
-                           <Select value={listDppFilters.blockchainAnchored} onValueChange={(value) => setListDppFilters(prev => ({...prev, blockchainAnchored: value}))}>
-                            <SelectTrigger id="list-dpp-anchored"><SelectValue /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="all">All</SelectItem>
-                              <SelectItem value="anchored">Anchored</SelectItem>
-                              <SelectItem value="not_anchored">Not Anchored</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    </ApiPlaygroundEndpointCard>
-
-                    <ApiPlaygroundEndpointCard
-                      title="POST /api/v1/dpp"
-                      description="Create a new Digital Product Passport."
-                      onSendRequest={handleMockPostDpp}
-                      isLoading={isPostDppLoading}
-                      response={postDppResponse}
-                      codeSnippet={createDppCodeSnippet}
-                      snippetLanguage={createDppSnippetLang}
-                      onSnippetLanguageChange={(lang) => {setCreateDppSnippetLang(lang); updateSnippet("createDpp", "POST", lang, {}, postDppBody, setCreateDppCodeSnippet);}}
-                      codeSampleLanguages={codeSampleLanguages}
-                    >
-                      <div>
-                        <Label htmlFor="postDppBody">Request Body (JSON)</Label>
-                        <Textarea id="postDppBody" value={postDppBody} onChange={(e) => setPostDppBody(e.target.value)} rows={5} className="font-mono text-xs"/>
-                        <p className="text-xs text-muted-foreground mt-1">Example required fields: productName, category. See API Reference for full schema.</p>
-                      </div>
-                    </ApiPlaygroundEndpointCard>
-
-                    <ApiPlaygroundEndpointCard
-                        title="PUT /api/v1/dpp/{productId}"
-                        description="Update an existing Digital Product Passport."
-                        onSendRequest={handleMockPutProduct}
-                        isLoading={isPutProductLoading}
-                        response={putProductResponse}
-                        codeSnippet={updateDppCodeSnippet}
-                        snippetLanguage={updateDppSnippetLang}
-                        onSnippetLanguageChange={(lang) => {setUpdateDppSnippetLang(lang); updateSnippet("updateDpp", "PUT", lang, {productId: putProductId}, putProductBody, setUpdateDppCodeSnippet);}}
-                        codeSampleLanguages={codeSampleLanguages}
-                    >
-                        <div>
-                            <Label htmlFor="productIdInput-put">Product ID (Path Parameter)</Label>
-                            <Input id="productIdInput-put" value={putProductId} onChange={(e) => setPutProductId(e.target.value)} placeholder="e.g., DPP001"/>
-                        </div>
-                        <div className="mt-2">
-                            <Label htmlFor="putProductBody">Request Body (JSON)</Label>
-                            <Textarea id="putProductBody" value={putProductBody} onChange={(e) => setPutProductBody(e.target.value)} rows={4} className="font-mono text-xs"/>
-                            <p className="text-xs text-muted-foreground mt-1">Send partial or full updates. See API Reference for updatable fields.</p>
-                        </div>
-                    </ApiPlaygroundEndpointCard>
-
-                    <ApiPlaygroundEndpointCard
-                        title="PATCH /api/v1/dpp/extend/{productId}"
-                        description="Extend a DPP by adding document references or other modular data."
-                        onSendRequest={handleMockPatchDppExtend}
-                        isLoading={isPatchDppExtendLoading}
-                        response={patchDppExtendResponse}
-                        codeSnippet={patchDppExtendCodeSnippet}
-                        snippetLanguage={patchDppExtendSnippetLang}
-                        onSnippetLanguageChange={(lang) => {setPatchDppExtendSnippetLang(lang); updateSnippet("patchDppExtend", "PATCH", lang, {productId: patchDppExtendProductId}, patchDppExtendBody, setPatchDppExtendCodeSnippet);}}
-                        codeSampleLanguages={codeSampleLanguages}
-                    >
-                        <div>
-                            <Label htmlFor="productIdInput-patch">Product ID (Path Parameter)</Label>
-                            <Input id="productIdInput-patch" value={patchDppExtendProductId} onChange={(e) => setPatchDppExtendProductId(e.target.value)} placeholder="e.g., DPP001"/>
-                        </div>
-                        <div className="mt-2">
-                            <Label htmlFor="patchDppExtendBody">Request Body (JSON)</Label>
-                            <Textarea id="patchDppExtendBody" value={patchDppExtendBody} onChange={(e) => setPatchDppExtendBody(e.target.value)} rows={4} className="font-mono text-xs"/>
-                            <p className="text-xs text-muted-foreground mt-1">Example: Add a document reference. See API Reference.</p>
-                        </div>
-                    </ApiPlaygroundEndpointCard>
-
-                    <ApiPlaygroundEndpointCard
-                        title="DELETE /api/v1/dpp/{productId}"
-                        description="Archive a Digital Product Passport."
-                        onSendRequest={handleMockDeleteProduct}
-                        isLoading={isDeleteProductLoading}
-                        response={deleteProductResponse}
-                        codeSnippet={deleteDppCodeSnippet}
-                        snippetLanguage={deleteDppSnippetLang}
-                        onSnippetLanguageChange={(lang) => {setDeleteDppSnippetLang(lang); updateSnippet("deleteDpp", "DELETE", lang, {productId: deleteProductId}, null, setDeleteDppCodeSnippet);}}
-                        codeSampleLanguages={codeSampleLanguages}
-                    >
-                        <div>
-                            <Label htmlFor="productIdInput-delete">Product ID (Path Parameter)</Label>
-                            <Input id="productIdInput-delete" value={deleteProductId} onChange={(e) => setDeleteProductId(e.target.value)} placeholder="e.g., PROD002"/>
-                        </div>
-                    </ApiPlaygroundEndpointCard>
+                    {endpointConfigs.filter(e => e.section === 'core').map(ep => (
+                      <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
+                        {ep.children}
+                      </DeveloperEndpointCard>
+                    ))}
                   </AccordionContent>
                 </AccordionItem>
 
                 <AccordionItem value="dpp-utility">
                   <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline">DPP Utility & Advanced Endpoints</AccordionTrigger>
                   <AccordionContent className="pt-4 space-y-6">
-                    <ApiPlaygroundEndpointCard
-                        title="GET /api/v1/dpp/status/{productId}"
-                        description="Retrieve the current status of a specific DPP."
-                        onSendRequest={handleMockGetStatus}
-                        isLoading={isGetStatusLoading}
-                        response={getStatusResponse}
-                        codeSnippet={getStatusCodeSnippet}
-                        snippetLanguage={getStatusSnippetLang}
-                        onSnippetLanguageChange={(lang) => {setGetStatusSnippetLang(lang); updateSnippet("getDppStatus", "GET", lang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet);}}
-                        codeSampleLanguages={codeSampleLanguages}
-                    >
-                        <div>
-                            <Label htmlFor="productIdInput-get-status">Product ID (Path Parameter)</Label>
-                            <Input id="productIdInput-get-status" value={getStatusProductId} onChange={(e) => setGetStatusProductId(e.target.value)} placeholder="e.g., DPP001" />
-                        </div>
-                    </ApiPlaygroundEndpointCard>
-                    
-                    <ApiPlaygroundEndpointCard
-                        title="POST /api/v1/qr/validate"
-                        description="Validate a QR identifier and retrieve a DPP summary."
-                        onSendRequest={handleMockPostQrValidate}
-                        isLoading={isPostQrValidateLoading}
-                        response={postQrValidateResponse}
-                        codeSnippet={qrValidateCodeSnippet}
-                        snippetLanguage={qrValidateSnippetLang}
-                        onSnippetLanguageChange={(lang) => {setQrValidateSnippetLang(lang); updateSnippet("qrValidate", "POST", lang, {}, postQrValidateBody, setQrValidateCodeSnippet);}}
-                        codeSampleLanguages={codeSampleLanguages}
-                    >
-                        <div>
-                            <Label htmlFor="postQrValidateBody">Request Body (JSON)</Label>
-                            <Textarea id="postQrValidateBody" value={postQrValidateBody} onChange={(e) => setPostQrValidateBody(e.target.value)} rows={3} className="font-mono text-xs"/>
-                        </div>
-                    </ApiPlaygroundEndpointCard>
-
-                    <ApiPlaygroundEndpointCard
-                        title="POST /api/v1/dpp/{productId}/lifecycle-events"
-                        description="Add a new lifecycle event to a specific DPP."
-                        onSendRequest={handleMockPostLifecycleEvent}
-                        isLoading={isPostLifecycleEventLoading}
-                        response={postLifecycleEventResponse}
-                        codeSnippet={addLifecycleEventCodeSnippet}
-                        snippetLanguage={addLifecycleEventSnippetLang}
-                        onSnippetLanguageChange={(lang) => {setAddLifecycleEventSnippetLang(lang); updateSnippet("addLifecycleEvent", "POST", lang, {productId: postLifecycleEventProductId}, postLifecycleEventBody, setAddLifecycleEventCodeSnippet);}}
-                        codeSampleLanguages={codeSampleLanguages}
-                    >
-                        <div>
-                            <Label htmlFor="productIdInput-post-event">Product ID (Path Parameter)</Label>
-                            <Input id="productIdInput-post-event" value={postLifecycleEventProductId} onChange={(e) => setPostLifecycleEventProductId(e.target.value)} placeholder="e.g., DPP001"/>
-                        </div>
-                        <div className="mt-2">
-                            <Label htmlFor="postLifecycleEventBody">Request Body (JSON)</Label>
-                            <Textarea id="postLifecycleEventBody" value={postLifecycleEventBody} onChange={(e) => setPostLifecycleEventBody(e.target.value)} rows={5} className="font-mono text-xs"/>
-                        </div>
-                    </ApiPlaygroundEndpointCard>
-
-                    <ApiPlaygroundEndpointCard
-                        title="GET /api/v1/dpp/{productId}/compliance-summary"
-                        description="Retrieve a compliance summary for a specific product."
-                        onSendRequest={handleMockGetComplianceSummary}
-                        isLoading={isGetComplianceLoading}
-                        response={getComplianceResponse}
-                        codeSnippet={getComplianceSummaryCodeSnippet}
-                        snippetLanguage={getComplianceSummarySnippetLang}
-                        onSnippetLanguageChange={(lang) => {setGetComplianceSummarySnippetLang(lang); updateSnippet("getComplianceSummary", "GET", lang, {productId: getComplianceProductId}, null, setGetComplianceSummaryCodeSnippet);}}
-                        codeSampleLanguages={codeSampleLanguages}
-                    >
-                        <div>
-                            <Label htmlFor="productIdInput-get-compliance">Product ID (Path Parameter)</Label>
-                            <Input id="productIdInput-get-compliance" value={getComplianceProductId} onChange={(e) => setGetComplianceProductId(e.target.value)} placeholder="e.g., DPP001" />
-                        </div>
-                    </ApiPlaygroundEndpointCard>
-
-                    <ApiPlaygroundEndpointCard
-                        title="POST /api/v1/dpp/verify/{productId}"
-                        description="Perform compliance and authenticity checks on a DPP."
-                        onSendRequest={handleMockPostVerify}
-                        isLoading={isPostVerifyLoading}
-                        response={postVerifyResponse}
-                        codeSnippet={verifyDppCodeSnippet}
-                        snippetLanguage={verifyDppSnippetLang}
-                        onSnippetLanguageChange={(lang) => {setVerifyDppSnippetLang(lang); updateSnippet("verifyDpp", "POST", lang, {productIdPath: postVerifyProductIdPath}, null, setVerifyDppCodeSnippet);}}
-                        codeSampleLanguages={codeSampleLanguages}
-                    >
-                        <div>
-                            <Label htmlFor="productIdInput-verify-path">Product ID (Path Parameter)</Label>
-                            <Input id="productIdInput-verify-path" value={postVerifyProductIdPath} onChange={(e) => setPostVerifyProductIdPath(e.target.value)} placeholder="e.g., DPP001"/>
-                            <p className="text-xs text-muted-foreground mt-1">No request body needed for this mock endpoint.</p>
-                        </div>
-                    </ApiPlaygroundEndpointCard>
-
-                    <ApiPlaygroundEndpointCard
-                      title="GET /api/v1/dpp/history/{productId}"
-                      description="Retrieve the audit trail / history for a specific DPP."
-                      onSendRequest={handleMockGetHistory}
-                      isLoading={isGetHistoryLoading}
-                      response={getHistoryResponse}
-                      codeSnippet={getDppHistoryCodeSnippet}
-                      snippetLanguage={getDppHistorySnippetLang}
-                      onSnippetLanguageChange={(lang) => {setGetDppHistorySnippetLang(lang); updateSnippet("getDppHistory", "GET", lang, {productId: getHistoryProductId}, null, setGetDppHistoryCodeSnippet);}}
-                      codeSampleLanguages={codeSampleLanguages}
-                    >
-                      <div>
-                        <Label htmlFor="historyProductIdInput">Product ID (Path Parameter)</Label>
-                        <Input id="historyProductIdInput" value={getHistoryProductId} onChange={(e) => setGetHistoryProductId(e.target.value)} placeholder="e.g., DPP001" />
-                      </div>
-                    </ApiPlaygroundEndpointCard>
-
-                    <ApiPlaygroundEndpointCard
-                        title="POST /api/v1/dpp/import"
-                        description="Batch import Digital Product Passports (CSV, JSON, etc.)."
-                        onSendRequest={handleMockPostImport}
-                        isLoading={isPostImportLoading}
-                        response={postImportResponse}
-                        codeSnippet={importDppsCodeSnippet}
-                        snippetLanguage={importDppsSnippetLang}
-                        onSnippetLanguageChange={(lang) => {setImportDppsSnippetLang(lang); updateSnippet("importDpps", "POST", lang, {fileType: postImportFileType, sourceDescription: postImportSourceDescription}, JSON.stringify({fileType: postImportFileType, data: "mock_base64_data", sourceDescription: postImportSourceDescription}), setImportDppsCodeSnippet);}}
-                        codeSampleLanguages={codeSampleLanguages}
-                    >
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                              <Label htmlFor="importFileType">File Type</Label>
-                              <Select value={postImportFileType} onValueChange={setPostImportFileType}>
-                                <SelectTrigger id="importFileType">
-                                  <SelectValue placeholder="Select file type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="csv">CSV</SelectItem>
-                                  <SelectItem value="json">JSON</SelectItem>
-                                  <SelectItem value="api">API (Simulate direct data feed)</SelectItem>
-                                </SelectContent>
-                              </Select>
-                            </div>
-                             <div>
-                              <Label htmlFor="importSourceDescription">Source Description (Optional)</Label>
-                              <Input id="importSourceDescription" value={postImportSourceDescription} onChange={(e) => setPostImportSourceDescription(e.target.value)} placeholder="e.g., Q3 Supplier Data Upload"/>
-                            </div>
-                        </div>
-                        <p className="text-xs text-muted-foreground mt-1">For this mock, 'data' field is simulated. See API Reference.</p>
-                    </ApiPlaygroundEndpointCard>
-
-                    <ApiPlaygroundEndpointCard
-                        title="GET /api/v1/dpp/graph/{productId}"
-                        description="Retrieve data for supply chain visualization."
-                        onSendRequest={handleMockGetGraph}
-                        isLoading={isGetGraphLoading}
-                        response={getGraphResponse}
-                        codeSnippet={getDppGraphCodeSnippet}
-                        snippetLanguage={getDppGraphSnippetLang}
-                        onSnippetLanguageChange={(lang) => {setGetDppGraphSnippetLang(lang); updateSnippet("getDppGraph", "GET", lang, {productId: getGraphProductId}, null, setGetDppGraphCodeSnippet);}}
-                        codeSampleLanguages={codeSampleLanguages}
-                    >
-                      <div>
-                        <Label htmlFor="graphProductIdInput">Product ID (Path Parameter)</Label>
-                        <Input id="graphProductIdInput" value={getGraphProductId} onChange={(e) => setGetGraphProductId(e.target.value)} placeholder="e.g., DPP001" />
-                      </div>
-                    </ApiPlaygroundEndpointCard>
+                    {endpointConfigs.filter(e => e.section === 'utility').map(ep => (
+                      <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
+                        {ep.children}
+                      </DeveloperEndpointCard>
+                    ))}
                   </AccordionContent>
                 </AccordionItem>
               </Accordion>

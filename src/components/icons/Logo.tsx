@@ -8,7 +8,7 @@ interface LogoProps extends Omit<ComponentProps<typeof Image>, 'src' | 'alt' | '
   // className is already part of ComponentProps via Omit
 }
 
-const LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/norruva.firebasestorage.app/o/NORRUVA%20Logo%20on%20Transparent%20Background.png?alt=media&token=a17d8c3a-c18a-4ae2-9935-56dbcfc96dd5";
+const LOGO_URL = "https://firebasestorage.googleapis.com/v0/b/norruva.firebasestorage.app/o/Norruva%20Logo.png?alt=media&token=08d8ede9-1121-433b-bfa5-7ccb4497a09f";
 const LOGO_INTRINSIC_WIDTH = 1096; // Assuming intrinsic width is similar, can be adjusted if needed
 const LOGO_INTRINSIC_HEIGHT = 298; // Assuming intrinsic height is similar, can be adjusted if needed
 

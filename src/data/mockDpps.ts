@@ -45,7 +45,16 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         safeUseInstructionsLink: 'https://greentech.com/sds/X500-CTRL-ASSY-SUI.pdf',
         lastChecked: "2024-07-29T00:00:00Z" 
       },
-      euCustomsData: { status: 'Verified', declarationId: 'CUST_DECL_XYZ789', lastChecked: "2024-07-28T00:00:00Z" },
+      euCustomsData: { 
+        status: 'Verified', 
+        declarationId: 'CUST_DECL_XYZ789', 
+        hsCode: "84181020", // Example HS code for refrigerators
+        countryOfOrigin: "DE",
+        netWeightKg: 75.5,
+        grossWeightKg: 80.2,
+        customsValuation: { value: 450.00, currency: "EUR" },
+        lastChecked: "2024-07-28T00:00:00Z" 
+      },
     },
     ebsiVerification: {
       status: "verified",
@@ -132,7 +141,15 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eu_espr: { status: "pending" },
       battery_regulation: { status: "not_applicable" },
       scipNotification: { status: 'Not Required', lastChecked: "2024-07-25T00:00:00Z" }, // Textiles less likely to have complex SVHCs
-      euCustomsData: { status: 'Pending Documents', lastChecked: "2024-07-25T00:00:00Z" },
+      euCustomsData: { 
+        status: 'Pending Documents', 
+        hsCode: "61091000", // Example HS code for cotton t-shirts
+        countryOfOrigin: "IN",
+        netWeightKg: 0.15,
+        grossWeightKg: 0.2,
+        customsValuation: { value: 8.50, currency: "USD" },
+        lastChecked: "2024-07-25T00:00:00Z" 
+      },
     },
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-20T00:00:00Z"} as EbsiVerificationDetails,
     consumerScans: 300,
@@ -194,7 +211,16 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         safeUseInstructionsLink: 'https://recaseit.com/sui/RC-POLY-IP15.pdf',
         lastChecked: "2024-07-21T00:00:00Z" 
       },
-      euCustomsData: { status: 'Cleared', declarationId: 'CUST_IMP_DEF456', lastChecked: "2024-07-20T00:00:00Z" },
+      euCustomsData: { 
+        status: 'Cleared', 
+        declarationId: 'CUST_IMP_DEF456', 
+        hsCode: "39269097", // Example HS for plastic articles
+        countryOfOrigin: "CN",
+        netWeightKg: 0.05,
+        grossWeightKg: 0.08,
+        customsValuation: { value: 3.50, currency: "EUR" },
+        lastChecked: "2024-07-20T00:00:00Z" 
+      },
     },
     consumerScans: 2100,
      productDetails: { description: "A recycled phone case."},
@@ -227,7 +253,16 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eu_espr: { status: "compliant" },
       battery_regulation: { status: "not_applicable" },
       scipNotification: { status: 'Pending Notification', svhcListVersion: '2024/01 (24.0.1)', submittingLegalEntity: 'Comfy Living Designs', articleName: 'Sofa Frame Connector', primaryArticleId: 'CL-MODSOFA-CONN01', lastChecked: "2024-07-19T00:00:00Z" },
-      euCustomsData: { status: 'Verified', declarationId: 'CUST_SOFA_777', lastChecked: "2024-07-18T00:00:00Z" }
+      euCustomsData: { 
+        status: 'Verified', 
+        declarationId: 'CUST_SOFA_777', 
+        hsCode: "94016100", // Example HS for upholstered seats with wooden frames
+        countryOfOrigin: "PL",
+        netWeightKg: 45.0,
+        grossWeightKg: 50.0,
+        customsValuation: { value: 350.00, currency: "EUR" },
+        lastChecked: "2024-07-18T00:00:00Z" 
+      }
     },
     consumerScans: 850,
     productDetails: { description: "A modular sofa."},
@@ -283,7 +318,15 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         safeUseInstructionsLink: 'https://powervolt.com/sui/PV-EVB-CELL.pdf',
         lastChecked: "2024-07-27T00:00:00Z" 
       },
-      euCustomsData: { status: 'Pending Documents', lastChecked: "2024-07-29T00:00:00Z" },
+      euCustomsData: { 
+        status: 'Pending Documents', 
+        hsCode: "85076000", // Example HS for lithium-ion batteries
+        countryOfOrigin: "US",
+        netWeightKg: 450.0,
+        grossWeightKg: 465.0,
+        customsValuation: { value: 8500.00, currency: "USD" },
+        lastChecked: "2024-07-29T00:00:00Z" 
+      },
     },
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-29T00:00:00Z"} as EbsiVerificationDetails,
     consumerScans: 50,

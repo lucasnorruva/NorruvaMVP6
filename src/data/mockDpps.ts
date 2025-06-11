@@ -35,7 +35,16 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" },
       esprConformity: { status: "conformant", assessmentId: "ESPR_ASSESS_001", assessmentDate: "2024-01-01" },
       battery_regulation: { status: "not_applicable" },
-      scipNotification: { status: 'Not Required', lastChecked: "2024-07-29T00:00:00Z" },
+      scipNotification: { 
+        status: 'Notified', 
+        notificationId: 'SCIP-REF-DPP001-1A2B',
+        svhcListVersion: '2024/01 (24.0.1)',
+        submittingLegalEntity: 'GreenTech Appliances GmbH',
+        articleName: 'Refrigerator Control Panel Assembly X500',
+        primaryArticleId: 'X500-CTRL-ASSY',
+        safeUseInstructionsLink: 'https://greentech.com/sds/X500-CTRL-ASSY-SUI.pdf',
+        lastChecked: "2024-07-29T00:00:00Z" 
+      },
       euCustomsData: { status: 'Verified', declarationId: 'CUST_DECL_XYZ789', lastChecked: "2024-07-28T00:00:00Z" },
     },
     ebsiVerification: {
@@ -122,7 +131,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eprel: { status: "Not Applicable", lastChecked: "2024-07-25T00:00:00Z" },
       eu_espr: { status: "pending" },
       battery_regulation: { status: "not_applicable" },
-      scipNotification: { status: 'Not Required', lastChecked: "2024-07-25T00:00:00Z" },
+      scipNotification: { status: 'Not Required', lastChecked: "2024-07-25T00:00:00Z" }, // Textiles less likely to have complex SVHCs
       euCustomsData: { status: 'Pending Documents', lastChecked: "2024-07-25T00:00:00Z" },
     },
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-20T00:00:00Z"} as EbsiVerificationDetails,
@@ -175,7 +184,16 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eu_espr: { status: "compliant" },
       us_scope3: { status: "compliant" },
       battery_regulation: { status: "not_applicable" },
-      scipNotification: { status: 'Notified', notificationId: 'SCIPN12345', lastChecked: "2024-07-21T00:00:00Z" },
+      scipNotification: { 
+        status: 'Notified', 
+        notificationId: 'SCIP-REF-DPP003-C3D4',
+        svhcListVersion: '2023/06 (23.1.0)',
+        submittingLegalEntity: 'ReCase It B.V.',
+        articleName: 'Phone Case Housing (Recycled Polymer)',
+        primaryArticleId: 'RC-POLY-IP15-HOUSING',
+        safeUseInstructionsLink: 'https://recaseit.com/sui/RC-POLY-IP15.pdf',
+        lastChecked: "2024-07-21T00:00:00Z" 
+      },
       euCustomsData: { status: 'Cleared', declarationId: 'CUST_IMP_DEF456', lastChecked: "2024-07-20T00:00:00Z" },
     },
     consumerScans: 2100,
@@ -208,7 +226,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eprel: { status: "Not Applicable", lastChecked: "2024-07-20T00:00:00Z" },
       eu_espr: { status: "compliant" },
       battery_regulation: { status: "not_applicable" },
-      scipNotification: { status: 'Pending Notification', lastChecked: "2024-07-19T00:00:00Z" },
+      scipNotification: { status: 'Pending Notification', svhcListVersion: '2024/01 (24.0.1)', submittingLegalEntity: 'Comfy Living Designs', articleName: 'Sofa Frame Connector', primaryArticleId: 'CL-MODSOFA-CONN01', lastChecked: "2024-07-19T00:00:00Z" },
+      euCustomsData: { status: 'Verified', declarationId: 'CUST_SOFA_777', lastChecked: "2024-07-18T00:00:00Z" }
     },
     consumerScans: 850,
     productDetails: { description: "A modular sofa."},
@@ -254,7 +273,16 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         stateOfHealth: {value: 98, unit: '%', measurementDate: "2024-07-15T00:00:00Z"},
       },
       eu_espr: { status: "pending" },
-      scipNotification: { status: 'Notified', notificationId: 'SCIPN54321', lastChecked: "2024-07-27T00:00:00Z" },
+      scipNotification: { 
+        status: 'Notified', 
+        notificationId: 'SCIP-REF-DPP005-E5F6',
+        svhcListVersion: '2024/01 (24.0.1)',
+        submittingLegalEntity: 'PowerVolt Inc.',
+        articleName: 'EV Battery Cell Housing',
+        primaryArticleId: 'PV-EVB-CELL-HSG',
+        safeUseInstructionsLink: 'https://powervolt.com/sui/PV-EVB-CELL.pdf',
+        lastChecked: "2024-07-27T00:00:00Z" 
+      },
       euCustomsData: { status: 'Pending Documents', lastChecked: "2024-07-29T00:00:00Z" },
     },
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-07-29T00:00:00Z"} as EbsiVerificationDetails,

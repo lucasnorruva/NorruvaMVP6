@@ -232,6 +232,15 @@ This will start the Next.js application, usually on `http://localhost:9002` (as 
 
 Open `http://localhost:9002` in your browser to view the application.
 
+### Installing as a PWA
+
+The application includes a service worker and web app manifest. When running in
+development (`npm run dev`) or production, you can install it like a native app:
+
+1. Open the site in Chrome or another PWA-compatible browser.
+2. Click the browser's **Install** icon or choose **Add to Home Screen**.
+3. Launch the app from your home screen to use it in standalone mode.
+
 ### Running Tests
 
 Run the unit tests with:

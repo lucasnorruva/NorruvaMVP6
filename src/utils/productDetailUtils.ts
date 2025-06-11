@@ -5,7 +5,7 @@
 
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
 import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification, ScipNotificationDetails, EuCustomsDataDetails } from '@/types/dpp';
+import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification, ScipNotificationDetails, EuCustomsDataDetails, BatteryRegulationDetails } from '@/types/dpp';
 import { getOverallComplianceDetails } from '@/utils/dppDisplayUtils';
 
 // Helper function to map DigitalProductPassport to SimpleProductDetail
@@ -51,23 +51,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             lastChecked: dpp.metadata.last_updated, // Fallback
         });
     }
-    if (dpp.compliance.battery_regulation) {
-        const br = dpp.compliance.battery_regulation;
-        let notesValue = "CF: N/A";
-        if (br.carbonFootprint) {
-            const cfValue = br.carbonFootprint.value !== null && br.carbonFootprint.value !== undefined ? br.carbonFootprint.value.toString() : 'N/A';
-            const cfUnit = br.carbonFootprint.unit || '';
-            notesValue = `CF: ${cfValue} ${cfUnit}`.trim();
-        }
-        specificRegulations.push({
-            regulationName: "EU Battery Regulation",
-            status: br.status as ComplianceDetailItem['status'],
-            verificationId: br.batteryPassportId || br.vcId,
-            lastChecked: dpp.metadata.last_updated, // Fallback
-            notes: notesValue,
-        });
-    }
-
+    // Battery Regulation is now handled by its own dedicated field in complianceSummary,
+    // so it's not added to specificRegulations here.
 
     const complianceOverallStatusDetails = getOverallComplianceDetails(dpp);
     const keyCompliancePointsPopulated: string[] = [];
@@ -79,16 +64,22 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         const capitalizedEbsiStatus = ebsiStatusText.charAt(0).toUpperCase() + ebsiStatusText.slice(1);
         keyCompliancePointsPopulated.push(`EBSI Status: ${capitalizedEbsiStatus}`);
     }
-    let specificRegCount = 0;
+    if (dpp.compliance.battery_regulation?.status && dpp.compliance.battery_regulation.status.toLowerCase() !== 'not_applicable' && dpp.compliance.battery_regulation.status.toLowerCase() !== 'n/a' && keyCompliancePointsPopulated.length < 3) {
+        const batteryStatusText = dpp.compliance.battery_regulation.status.replace(/_/g, ' ');
+        const capitalizedBatteryStatus = batteryStatusText.charAt(0).toUpperCase() + batteryStatusText.slice(1);
+        keyCompliancePointsPopulated.push(`Battery Reg: ${capitalizedBatteryStatus}`);
+    }
+    
+    let specificRegCountForPoints = 0;
     specificRegulations.forEach(reg => {
-        if (specificRegCount < 2 && reg.status && reg.status.toLowerCase() !== 'n/a' && reg.status.toLowerCase() !== 'not applicable' && reg.status.toLowerCase() !== 'not required') {
+        if (keyCompliancePointsPopulated.length < 3 && reg.status && reg.status.toLowerCase() !== 'n/a' && reg.status.toLowerCase() !== 'not applicable' && reg.status.toLowerCase() !== 'not required') {
             const regStatusText = reg.status.replace(/_/g, ' ');
             const capitalizedRegStatus = regStatusText.charAt(0).toUpperCase() + regStatusText.slice(1);
             keyCompliancePointsPopulated.push(`${reg.regulationName}: ${capitalizedRegStatus}`);
-            specificRegCount++;
+            specificRegCountForPoints++;
         }
     });
-    if (keyCompliancePointsPopulated.length === 0 && specificRegulations.length > 0) {
+    if (keyCompliancePointsPopulated.length === 0 && (specificRegulations.length > 0 || dpp.compliance.battery_regulation)) {
         keyCompliancePointsPopulated.push("Review Compliance tab for regulation details.");
     }
 
@@ -137,8 +128,9 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
                 verificationId: dpp.ebsiVerification.verificationId,
                 lastChecked: dpp.ebsiVerification.lastChecked,
             } : { status: 'N/A', lastChecked: new Date().toISOString() },
-            scip: dpp.compliance.scipNotification, // Directly map the full object
-            euCustomsData: dpp.compliance.euCustomsData, // Directly map the full object
+            scip: dpp.compliance.scipNotification, 
+            euCustomsData: dpp.compliance.euCustomsData, 
+            battery: dpp.compliance.battery_regulation, // Map full battery_regulation object
             specificRegulations: specificRegulations,
         },
         lifecycleEvents: dpp.lifecycleEvents?.map(event => ({
@@ -197,7 +189,6 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             transactionHash: sc.transactionHash,
         })) || [];
         
-        // Ensure complianceSummary exists and has scip and euCustomsData
         const complianceSummaryFromStorage = userProductData.complianceSummary || { overallStatus: 'N/A' };
 
 
@@ -226,19 +217,11 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             specifications: userProductData.specifications, // Pass as string
             customAttributes: parsedCustomAttributes, // Pass as array
           },
-          compliance: { // Reconstruct compliance object for user products
+          compliance: { 
             eprel: complianceSummaryFromStorage.eprel,
-            scipNotification: complianceSummaryFromStorage.scip, // Assign from mapped structure
-            euCustomsData: complianceSummaryFromStorage.euCustomsData, // Assign from mapped structure
-            battery_regulation: userProductData.complianceSummary?.specificRegulations?.find(r => r.regulationName === "EU Battery Regulation")
-              ? {
-                  status: userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.status as DigitalProductPassport['compliance']['battery_regulation']['status'],
-                  carbonFootprint: {
-                    value: parseFloat(userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.notes?.split("CF:")[1]?.split(" ")[1] || '0') || 0,
-                    unit: userProductData.complianceSummary.specificRegulations.find(r => r.regulationName === "EU Battery Regulation")!.notes?.split("CF:")[1]?.split(" ")[2] || ''
-                  }
-                }
-              : { status: 'not_applicable' }
+            scipNotification: complianceSummaryFromStorage.scip, 
+            euCustomsData: complianceSummaryFromStorage.euCustomsData,
+            battery_regulation: complianceSummaryFromStorage.battery, // Directly assign from storage if structure matches
           },
           ebsiVerification: complianceSummaryFromStorage.ebsi ? {
             status: complianceSummaryFromStorage.ebsi.status as EbsiVerificationDetails['status'],

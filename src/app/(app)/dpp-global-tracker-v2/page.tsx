@@ -348,7 +348,6 @@ export default function GlobeV2Page() {
           </div>
         </div>
       )}
-
       <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/70 text-white text-xs p-2 rounded-md shadow-lg pointer-events-none">
         <Info className="inline h-3 w-3 mr-1" />
         EU Countries: Dark Blue | Other Countries: Light Grey. Globe auto-rotates.

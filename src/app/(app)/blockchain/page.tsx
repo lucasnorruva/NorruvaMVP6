@@ -98,37 +98,40 @@ export default function BlockchainPage() {
   const [transferDid, setTransferDid] = useState("");
   const [transferTime, setTransferTime] = useState("");
 
-  useEffect(() => {
-    setIsLoading(true);
-    console.log('Fetching DPPs with filter:', filter);
-    // TODO: Add loading state indicator while fetching DPPs
-    fetch(`/api/v1/dpp?blockchainAnchored=${filter}`, {
+  // Temporarily comment out useEffect to fetch DPPs as a debugging step for SyntaxError
+  // useEffect(() => {
+  //   setIsLoading(true);
+  //   console.log('Fetching DPPs with filter:', filter);
+  //   // TODO: Add loading state indicator while fetching DPPs
+  //   fetch(`/api/v1/dpp?blockchainAnchored=${filter}`, {
 
-        headers: { Authorization: `Bearer ${MOCK_API_KEY}` }
-    })
-      .then(res => res.json())
-      .then(data => {
-        if(data.error) {
-          toast({title: "Error fetching DPPs", description: data.error.message, variant: "destructive"});
-          setDpps([]);
-        } else {
-          setDpps(data.data || []);
-        }
-      })
-      .catch(err => {
-        toast({title: "Error fetching DPPs", description: err.message, variant: "destructive"});
-        setDpps([]);
-      })
-      .finally(() => {
-        setIsLoading(false);
-      });;
-  }, [filter, toast]);
+  //       headers: { Authorization: `Bearer ${MOCK_API_KEY}` }
+  //   })
+  //     .then(res => res.json())
+  //     .then(data => {
+  //       if(data.error) {
+  //         toast({title: "Error fetching DPPs", description: data.error.message, variant: "destructive"});
+  //         setDpps([]);
+  //       } else {
+  //         setDpps(data.data || []);
+  //       }
+  //     })
+  //     .catch(err => {
+  //       toast({title: "Error fetching DPPs", description: err.message, variant: "destructive"});
+  //       setDpps([]);
+  //     })
+  //     .finally(() => {
+  //       setIsLoading(false);
+  //     });;
+  // }, [filter, toast]);
 
   const updateDpp = (updated: DigitalProductPassport) => {
     setDpps(prev => prev.map(d => (d.id === updated.id ? updated : d)));
     if (selected && selected.id === updated.id) setSelected(updated);
   };
 
+  // Temporarily comment out handleApiError function as a debugging step for SyntaxError
+  /*
   const handleApiError = async (response: Response, action: string) => {
     let errorData;
     try {
@@ -141,7 +144,7 @@ export default function BlockchainPage() {
       description: `${errorData?.error?.message || `An unexpected error occurred during ${action.toLowerCase()}.`} (Status: ${response.status})`,
       variant: "destructive",
     });
-  };
+  };*/
 
   const handleAnchor = async (e: FormEvent) => {
     e.preventDefault();

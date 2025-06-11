@@ -1,0 +1,32 @@
+# Basic subgraph.yaml for TheGraph
+
+specVersion: 0.0.5
+schema:
+  file: ./schema.graphql # You would define your schema here
+
+dataSources:
+  - kind: ethereum/contract
+    name: DPPToken
+    network: {{network}} # e.g., sepolia, mainnet
+    source:
+      address: "{{DPP_TOKEN_ADDRESS}}" # Replace with the actual deployed DPPToken proxy address or load from config
+      abi: DPPToken # Your DPPToken contract ABI name
+      startBlock: {{startBlock}} # Optional: Start indexing from a specific block
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.6
+      language: wasm/assemblyscript
+      entities:
+        - Passport
+      abis:
+        - name: DPPToken
+          file: ./abis/DPPToken.json # Path to your DPPToken contract ABI file
+      eventHandlers:
+        - event: PassportMinted(indexed uint256,indexed address,string)
+          handler: handlePassportMinted # Function in your mapping file to handle this event
+        - event: StatusUpdated(indexed uint256,uint8,uint8) # Assuming Status enum is uint8
+          handler: handleStatusUpdated # Function in your mapping file to handle this event
+        # Add other event handlers as needed (CustodyTransferred, MetadataUpdated)
+      file: ./src/mapping.ts # Path to your AssemblyScript mapping file
+
+# Add other data sources if you have more contracts to index (e.g., NORUToken, DPPGovernor)

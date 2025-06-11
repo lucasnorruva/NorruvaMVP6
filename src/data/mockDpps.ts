@@ -54,6 +54,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       { name: "Warranty Card", url: "#warranty.pdf", type: "Warranty", addedTimestamp: "2024-01-15T00:00:00Z" },
     ],
     traceability: {
+    originCountry: "DE",
       supplyChainSteps: [
         {
           stepName: 'Manufactured',
@@ -97,6 +98,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ],
     documents: [],
     traceability: {
+    originCountry: "IN",
       supplyChainSteps: [
         {
           stepName: 'Manufactured',
@@ -129,6 +131,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
      blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0x789polymerAnchorHash000333"},
     documents: [],
     traceability: {
+      originCountry: "CN",
       supplyChainSteps: [
         {
           stepName: 'Manufactured',
@@ -158,6 +161,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     productDetails: { description: "A modular sofa."},
     documents: [],
     traceability: {
+      originCountry: "SE",
       supplyChainSteps: [
         {
           stepName: 'Manufactured',
@@ -205,6 +209,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ],
     documents: [],
     traceability: {
+      originCountry: "US",
       supplyChainSteps: [
         {
           stepName: 'Manufactured',

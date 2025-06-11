@@ -1,20 +1,20 @@
 
 "use client";
 
-import React, { useEffect, useState, FormEvent, useCallback } from "react"; // Added useCallback
+import React, { useEffect, useState, FormEvent, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Fingerprint, ShieldCheck, InfoIcon, AlertCircle, Anchor, Link2, Edit, UploadCloud, KeyRound, FileText, Send, Loader2 } from "lucide-react"; // Added Loader2
+import { Fingerprint, ShieldCheck, InfoIcon, AlertCircle, Anchor, Link2, Edit, UploadCloud, KeyRound, FileText, Send, Loader2 } from "lucide-react";
 import { CardDescription } from "@/components/ui/card";
 import type { DigitalProductPassport } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 const EBSI_EXPLORER_BASE_URL = "https://mock-ebsi-explorer.example.com/tx/";
-const MOCK_API_KEY = "SANDBOX_KEY_123"; // Use a key known from .env.example or tests
+const MOCK_API_KEY = "SANDBOX_KEY_123";
 
 const getEbsiStatusBadge = (status?: "verified" | "pending" | "not_verified" | "error" | string) => {
   switch (status?.toLowerCase()) {
@@ -35,7 +35,6 @@ const getEbsiStatusBadge = (status?: "verified" | "pending" | "not_verified" | "
 function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
   return (
     <div className="space-y-3 p-4 border rounded-md bg-muted/30">
-      {/* TODO: Provide more detailed EBSI anchoring status visualization (e.g., transaction progress) */}
       {product.blockchainIdentifiers?.anchorTransactionHash ? (
         <>
           <div className="flex flex-col mb-1">
@@ -44,35 +43,32 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
               {product.blockchainIdentifiers.anchorTransactionHash}
             </span>
           </div>
- {/* Added EBSI Explorer Link block for clarity */}
-          <div className="flex flex-col mb-2"> {/* Increased bottom margin */}
+          <div className="flex flex-col mb-2">
             <span className="text-xs text-muted-foreground">EBSI Explorer:</span>
             <a href={`${EBSI_EXPLORER_BASE_URL}${product.blockchainIdentifiers.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline text-xs">
               View on EBSI Explorer
             </a>
           </div>
- {/* Display EBSI Verification ID */}
- {product.ebsiVerification?.verificationId && (
+          {product.ebsiVerification?.verificationId && (
             <div className="flex flex-col mb-1">
               <span className="text-xs text-muted-foreground">EBSI Verification ID:</span>
               <span className="font-mono text-xs text-foreground/90 break-all">
                 {product.ebsiVerification.verificationId}
               </span>
             </div>
- )}
- {/* Display EBSI Issuer DID, Schema, and Issuance Date if available */}
+          )}
           {product.ebsiVerification?.issuerDid && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">EBSI Issuer DID:</span><span className="font-mono text-xs text-foreground/90 break-all">{product.ebsiVerification.issuerDid}</span></div>)}
           {product.ebsiVerification?.schema && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">EBSI Schema:</span><span className="font-mono text-xs text-foreground/90 break-all">{product.ebsiVerification.schema}</span></div>)}
           {product.ebsiVerification?.issuanceDate && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">EBSI Issuance Date:</span><span className="font-mono text-xs text-foreground/90 break-all">{new Date(product.ebsiVerification.issuanceDate).toLocaleString()}</span></div>)}
- </>
-      ) : null /* Render nothing if no anchor hash */ }
+        </>
+      ) : null}
       {product.blockchainIdentifiers?.platform && (
         <div className="flex flex-col mb-1">
           <span className="text-xs text-muted-foreground">Platform:</span>
           <span className="text-foreground/90">{product.blockchainIdentifiers.platform}</span>
         </div>
       )}
- {product.ebsiVerification?.status && (
+      {product.ebsiVerification?.status && (
         <div className="flex flex-col mb-1">
           <span className="text-xs text-muted-foreground">EBSI Verification Status:</span>
           <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiVerification.status as any)}</div>
@@ -90,9 +86,8 @@ export default function BlockchainPage() {
   const [dpps, setDpps] = useState<DigitalProductPassport[]>([]);
   const [selected, setSelected] = useState<DigitalProductPassport | null>(null);
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false); // General loading for page/table
-  const [isActionLoading, setIsActionLoading] = useState(false); // Specific loading for form actions
-
+  const [isLoading, setIsLoading] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState(false);
 
   const [anchorPlatform, setAnchorPlatform] = useState("");
   const [custodyStep, setCustodyStep] = useState({ stepName: "", actorDid: "", timestamp: "", location: "", transactionHash: "" });
@@ -100,10 +95,8 @@ export default function BlockchainPage() {
   const [transferDid, setTransferDid] = useState("");
   const [transferTime, setTransferTime] = useState("");
 
-  
   useEffect(() => {
     setIsLoading(true);
-    // console.log('Fetching DPPs with filter:', filter);
     fetch(`/api/v1/dpp?blockchainAnchored=${filter}`, {
         headers: { Authorization: `Bearer ${MOCK_API_KEY}` }
     })
@@ -199,12 +192,12 @@ export default function BlockchainPage() {
 
   const handleTransfer = async (e: FormEvent) => {
     e.preventDefault();
-    if (!transferName || !transferDid || !transferTime) {
-        toast({ title: "Validation Error", description: "Please fill in new owner name, DID, and transfer timestamp.", variant: "destructive" });
-        return;
-    }
     if (!selected) {
         toast({ title: "No Product Selected", description: "Please select a product to transfer ownership.", variant: "destructive" });
+        return;
+    }
+    if (!transferName || !transferDid || !transferTime) {
+        toast({ title: "Validation Error", description: "Please fill in new owner name, DID, and transfer timestamp.", variant: "destructive" });
         return;
     }
     
@@ -227,7 +220,6 @@ export default function BlockchainPage() {
     setIsActionLoading(false);
   };
 
-
   const fetchCredential = async (productId: string) => {
     setIsActionLoading(true);
     const res = await fetch(`/api/v1/dpp/${productId}/credential`, {
@@ -235,12 +227,10 @@ export default function BlockchainPage() {
     });
     if (res.ok) {
       const data = await res.json();
-      // Displaying credential in an alert for simplicity; a modal or dedicated view is better for real use.
       alert(
         "Verifiable Credential (Mock):\n\n" +
         JSON.stringify(data, null, 2)
       );
-
       toast({ title: "Credential Retrieved", description: "Verifiable credential data fetched (displayed in alert)." });
     } else {
       handleApiError(res, "Fetching Credential");
@@ -251,6 +241,29 @@ export default function BlockchainPage() {
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8">
       <h1 className="text-3xl font-headline font-semibold">Blockchain Management</h1>
+
+      <Card className="shadow-md bg-muted/30 border-primary/10">
+        <CardHeader>
+          <CardTitle className="font-headline text-xl flex items-center">
+            <InfoIcon className="mr-3 h-6 w-6 text-primary" />
+            About Blockchain Management
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-foreground/90 space-y-2">
+          <p>
+            This page allows you to manage blockchain-related aspects of your Digital Product Passports. Here, you can:
+          </p>
+          <ul className="list-disc list-inside pl-4 space-y-1">
+            <li><strong>Anchor DPPs:</strong> Create immutable records of your DPPs on a blockchain (e.g., EBSI).</li>
+            <li><strong>Update Chain of Custody:</strong> Record the transfer of custody as products move.</li>
+            <li><strong>Transfer Ownership:</strong> Update the ownership details associated with a DPP.</li>
+            <li><strong>Retrieve Verifiable Credentials:</strong> Access verifiable data for digital wallets or other systems.</li>
+          </ul>
+          <p className="mt-2">
+            These actions align with the blockchain integration concepts outlined in the project documentation.
+          </p>
+        </CardContent>
+      </Card>
 
       <div className="max-w-xs">
         <Select value={filter} onValueChange={v => setFilter(v as any)}>
@@ -307,7 +320,7 @@ export default function BlockchainPage() {
                     </TableRow>
                     {selected?.id === dpp.id && (
                       <TableRow>
-                        <TableCell colSpan={4} className="py-4"> {/* Added padding here */}
+                        <TableCell colSpan={4} className="py-4">
                           <div className="p-4 border rounded-md space-y-6 bg-card">
                             <div className="mb-6">
                               <h3 className="flex items-center mb-2 font-semibold text-lg text-primary"><Fingerprint className="h-5 w-5 mr-2" />Blockchain & EBSI Details</h3>
@@ -360,13 +373,12 @@ export default function BlockchainPage() {
                               </CardContent>
                             </Card>
                             
-                            {/* Placeholder for Verifiable Credentials Section */}
-                              <div className="p-4 border rounded-md space-y-3 bg-muted/30">
+                            <div className="p-4 border rounded-md space-y-3 bg-muted/30">
                               <h3 className="flex items-center mb-2 font-semibold text-lg text-primary"><FileText className="h-5 w-5 mr-2" />Verifiable Credentials</h3>
                               <p className="text-muted-foreground text-sm">Placeholder for Verifiable Credentials List. Will display VC type, issuer, issuance date, etc.</p>
                               <p className="text-muted-foreground text-sm">Placeholder for VC Revocation Status.</p>
                               <Badge variant="secondary">Revocation Status: Placeholder</Badge>
-                              </div>
+                            </div>
 
                             <div className="grid md:grid-cols-2 gap-4">
                               <Card className="bg-background">
@@ -415,3 +427,5 @@ export default function BlockchainPage() {
     </div>
   );
 }
+
+    

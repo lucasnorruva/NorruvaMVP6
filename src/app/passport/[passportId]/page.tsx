@@ -20,7 +20,7 @@ import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useRole } from '@/contexts/RoleContext';
 import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification, CustomAttribute } from '@/types/dpp';
-import { MOCK_PUBLIC_PASSPORTS } from '@/types/dpp';
+import { MOCK_PUBLIC_PASSPORTS } from '@/data';
 import RoleSpecificCard from '@/components/passport/RoleSpecificCard';
 import { getAiHintForImage } from '@/utils/imageUtils'; // Import centralized utility
 

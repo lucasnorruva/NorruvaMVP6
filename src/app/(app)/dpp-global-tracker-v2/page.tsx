@@ -3,10 +3,12 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import type { GlobeMethods } from 'react-globe.gl';
 import type { Feature as GeoJsonFeature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 import { MeshPhongMaterial } from 'three';
 import { Loader2, Info } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 // Dynamically import Globe for client-side rendering
 const Globe = dynamic(() => import('react-globe.gl'), { 
@@ -39,11 +41,24 @@ type CountryFeature = GeoJsonFeature<Geometry, CountryProperties>; // Use aliase
 
 export default function GlobeV2Page() {
   const globeEl = useRef<GlobeMethods | undefined>(undefined);
+  const router = useRouter();
   const [landPolygons, setLandPolygons] = useState<CountryFeature[]>([]);
   const [hoverD, setHoverD] = useState<CountryFeature | null>(null); // State for hovered country data
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [globeReady, setGlobeReady] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [highlightedCountries, setHighlightedCountries] = useState<string[]>([]);
+
+  const searchParams = useSearchParams();
+  const productId = searchParams.get('productId');
+
+  const handlePolygonClick = useCallback((feat: object) => {
+    const properties = (feat as CountryFeature).properties;
+    const iso = properties?.ADM0_A3 || properties?.ISO_A3;
+    if (iso) {
+      router.push(`/customs-dashboard?country=${iso}`);
+    }
+  }, [router]);
 
   // Approximate header height (adjust if your header height is different or dynamic)
   const HEADER_HEIGHT = 64; // Example: 4rem = 64px
@@ -82,6 +97,32 @@ export default function GlobeV2Page() {
       });
   }, []);
 
+  // Fetch supply chain graph data when a productId is provided
+  useEffect(() => {
+    if (!productId) return;
+
+    fetch(`/api/v1/dpp/graph/${productId}`)
+      .then(res => res.json())
+      .then((graph) => {
+        const countries = new Set<string>();
+        if (graph?.nodes) {
+          graph.nodes.forEach((node: any) => {
+            if (node.type === 'supplier' || node.type === 'manufacturer') {
+              const loc: string | undefined = node.data?.location;
+              if (loc) {
+                const country = loc.split(',').pop()?.trim();
+                if (country) countries.add(country);
+              }
+            }
+          });
+        }
+        setHighlightedCountries(Array.from(countries));
+      })
+      .catch((err) => {
+        console.error('Error fetching product graph:', err);
+      });
+  }, [productId]);
+
   // Function to determine if a country is in the EU based on its ISO A3 code
   const isEU = useCallback((isoA3: string | undefined) => {
     return !!isoA3 && EU_COUNTRY_CODES.has(isoA3.toUpperCase());
@@ -114,8 +155,12 @@ export default function GlobeV2Page() {
   const getPolygonCapColor = useCallback((feat: object) => {
     const properties = (feat as CountryFeature).properties;
     const iso = properties?.ADM0_A3 || properties?.ISO_A3;
+    const name = properties?.ADMIN;
+    if (highlightedCountries.includes(name)) {
+      return '#f97316'; // orange highlight for supply chain countries
+    }
     return isEU(iso) ? '#002D62' : '#CCCCCC'; // Dark blue for EU, light grey for others
-  }, [isEU]);
+  }, [isEU, highlightedCountries]);
 
   // Show loader if dimensions are not set or data is not loaded yet
   if (dimensions.width === 0 || dimensions.height === 0 || !dataLoaded) {
@@ -140,8 +185,9 @@ export default function GlobeV2Page() {
           polygonCapColor={getPolygonCapColor} 
           polygonSideColor={() => 'rgba(0, 0, 0, 0.05)'} 
           polygonStrokeColor={() => '#000000'} // Black borders
-          polygonAltitude={0.008} 
+          polygonAltitude={0.008}
           onPolygonHover={setHoverD as (feature: object | null) => void}
+          onPolygonClick={handlePolygonClick}
           polygonLabel={({ properties }: object) => {
             const p = properties as CountryProperties;
             return `<div style="background: rgba(40,40,40,0.8); color: white; padding: 5px 8px; border-radius: 4px; font-size: 12px;"><b>${p?.ADMIN || p?.NAME_LONG || 'Country'}</b></div>`;

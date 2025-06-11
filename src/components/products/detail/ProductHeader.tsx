@@ -4,6 +4,8 @@
 import type { SimpleProductDetail } from "@/types/dpp";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { Package, Tag, Building, CheckCircle, AlertTriangle, Info, ShieldCheck, Barcode } from "lucide-react"; // Added Barcode
 import { getStatusIcon as getComplianceStatusIcon, getStatusBadgeVariant as getComplianceBadgeVariant, getStatusBadgeClasses as getComplianceBadgeClasses } from "@/utils/dppDisplayUtils";
@@ -106,6 +108,13 @@ export default function ProductHeader({ product }: ProductHeaderProps) {
             )}
         </div>
         <QrCodeGenerator productId={product.id} />
+        <div className="mt-4 flex justify-center">
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/dpp-global-tracker-v2?productId=${product.id}`}>
+              View on Global Tracker
+            </Link>
+          </Button>
+        </div>
       </CardHeader>
     </Card>
   );

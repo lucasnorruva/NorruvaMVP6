@@ -1140,9 +1140,9 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-  /api/v1/dpp/country-counts:
+  /api/v1/dpp/country-stats:
     get:
-      operationId: getDppCountsByCountry
+      operationId: getDppCountryStats
       summary: Retrieve DPP counts by country
       description: Returns the number of Digital Product Passports for each country.
       responses:

@@ -61,7 +61,7 @@ export default function ScipNotificationHelperPage() {
           <Badge variant="outline" className="ml-3">Guidance for {country}</Badge>
         )}
         <Button variant="outline" asChild>
-          <Link href="/compliance/pathways">
+          <Link href={country ? `/compliance/pathways?country=${encodeURIComponent(country)}` : '/compliance/pathways'}>
             <ArrowLeft className="mr-2 h-4 w-4" />
             Back to Compliance Pathways
           </Link>

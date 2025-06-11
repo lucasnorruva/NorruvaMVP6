@@ -3,6 +3,7 @@
 
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { isEuCountry } from '@/lib/euCountryCodes';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +16,7 @@ interface Pathway {
   icon: React.ElementType;
   href: string;
   status: 'active' | 'coming_soon';
+  euSpecific?: boolean;
 }
 
 const pathways: Pathway[] = [
@@ -25,6 +27,7 @@ const pathways: Pathway[] = [
     icon: BatteryCharging,
     href: '/compliance/pathways/battery-regulation',
     status: 'active',
+    euSpecific: true,
   },
   {
     id: 'espr',
@@ -33,6 +36,7 @@ const pathways: Pathway[] = [
     icon: Recycle,
     href: '/compliance/pathways/espr',
     status: 'active',
+    euSpecific: true,
   },
   {
     id: 'csrd',
@@ -41,6 +45,7 @@ const pathways: Pathway[] = [
     icon: BookOpen,
     href: '/compliance/pathways/csrd',
     status: 'active',
+    euSpecific: true,
   },
   {
     id: 'scip',
@@ -49,24 +54,15 @@ const pathways: Pathway[] = [
     icon: Database, // Updated icon to Database
     href: '/compliance/pathways/scip', // Updated href
     status: 'active', // Updated status
+    euSpecific: true,
   },
 ];
-
-const EU_COUNTRIES = [
-  'austria','belgium','bulgaria','croatia','cyprus','czechia','czech republic','denmark','estonia',
-  'finland','france','germany','greece','hungary','ireland','italy','latvia','lithuania',
-  'luxembourg','malta','netherlands','poland','portugal','romania','slovakia','slovenia',
-  'spain','sweden','eu'
-];
-
-const isEUCountry = (country: string | null) =>
-  country ? EU_COUNTRIES.includes(country.toLowerCase()) : false;
 
 export default function CompliancePathwaysPage() {
   const searchParams = useSearchParams();
   const countryParam = searchParams.get('country');
   const country = countryParam ? decodeURIComponent(countryParam) : null;
-  const highlightEU = isEUCountry(country);
+  const highlightEU = isEuCountry(country);
   return (
     <div className="space-y-8">
       <div className="text-center">
@@ -104,7 +100,7 @@ export default function CompliancePathwaysPage() {
             return (
             <Card
               key={pathway.id}
-              className={`shadow-lg flex flex-col ${pathway.status === 'coming_soon' ? 'opacity-70' : ''} ${highlightEU ? 'ring-2 ring-primary' : ''}`}
+              className={`shadow-lg flex flex-col ${pathway.status === 'coming_soon' ? 'opacity-70' : ''} ${highlightEU && pathway.euSpecific ? 'ring-2 ring-primary' : ''}`}
             >
               <CardHeader className="flex-shrink-0">
                 <div className="flex items-start justify-between">

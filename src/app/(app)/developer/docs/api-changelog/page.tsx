@@ -3,9 +3,10 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { CalendarDays } from "lucide-react"; // Removed History from import
+import { CalendarDays, History as HistoryIcon } from "lucide-react"; // Updated import for HistoryIcon
 import { Badge } from "@/components/ui/badge";
 import DocsPageLayout from '@/components/developer/DocsPageLayout'; // Import the new layout
+import { cn } from "@/lib/utils"; // Import cn for utility classes
 
 const mockChangelogEntries = [
   {
@@ -52,7 +53,7 @@ const mockChangelogEntries = [
 
 
 export default function ApiChangelogPage() {
-  const getBadgeVariant = (type: string) => {
+  const getBadgeVariant = (type: string): "default" | "destructive" | "outline" | "secondary" => {
     if (type.toLowerCase() === "feature" || type.toLowerCase() === "initial release") return "default";
     if (type.toLowerCase() === "improvement") return "outline";
     if (type.toLowerCase() === "fix" || type.toLowerCase() === "security") return "destructive";
@@ -69,7 +70,7 @@ export default function ApiChangelogPage() {
   return (
     <DocsPageLayout
       pageTitle="API Changelog"
-      pageIcon="History" // Changed from {History}
+      pageIcon="History" // Using the string name "History" for the icon
       alertTitle="Stay Updated"
       alertDescription="This page logs updates, new features, improvements, and significant changes to the Norruva Digital Product Passport API. For major announcements, subscribe to our developer newsletter."
     >
@@ -88,7 +89,7 @@ export default function ApiChangelogPage() {
                   Version {entry.version}
                 </h3>
                 <div className="flex items-center gap-3 mt-1 sm:mt-0">
-                  <Badge variant={getBadgeVariant(entry.type)} className={getBadgeClass(entry.type)}>
+                  <Badge variant={getBadgeVariant(entry.type)} className={cn(getBadgeClass(entry.type))}>
                     {entry.type}
                   </Badge>
                   <span className="text-sm text-muted-foreground flex items-center">

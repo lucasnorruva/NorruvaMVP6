@@ -12,10 +12,10 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     nfcTagId: "NFC123456",
     rfidTagId: "RFID654321",
     metadata: {
-      created_at: "2024-01-01T10:00:00Z", 
+      created_at: "2024-01-01T10:00:00Z",
       last_updated: "2024-07-30T10:00:00Z",
-      status: "published", 
-      dppStandardVersion: "CIRPASS v0.9 Draft" 
+      status: "published",
+      dppStandardVersion: "CIRPASS v0.9 Draft"
     },
     productDetails: {
       description: "An eco friendly fridge.",
@@ -32,12 +32,12 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       ],
     },
     compliance: {
-      eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" }, 
+      eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" },
       esprConformity: { status: "conformant", assessmentId: "ESPR_ASSESS_001", assessmentDate: "2024-01-01" },
       battery_regulation: { status: "not_applicable" },
     },
-    ebsiVerification: { 
-      status: "verified", 
+    ebsiVerification: {
+      status: "verified",
       verificationId: "EBSI_TX_ABC123",
       issuerDid: "did:ebsi:zIssuerXYZ789",
       schema: "EBSIProductComplianceSchema_v1.2",

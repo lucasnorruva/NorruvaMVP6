@@ -1,12 +1,15 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import QRCode from 'qrcode';
+import { validateApiKey } from '@/middleware/apiKeyAuth';
 
 export async function GET(
   request: NextRequest,
   { params }: { params: { productId: string } }
 ) {
   const { productId } = params;
+  const auth = validateApiKey(request);
+  if (auth) return auth;
   try {
     const dataUrl = await QRCode.toDataURL(`/passport/${productId}`);
     const base64 = dataUrl.split(',')[1];

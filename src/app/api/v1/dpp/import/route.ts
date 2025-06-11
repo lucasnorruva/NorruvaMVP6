@@ -4,6 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { validateApiKey } from '@/middleware/apiKeyAuth';
 
 interface ImportDppRequestBody {
   fileType?: string; // e.g., "csv", "json", "api"
@@ -12,6 +13,8 @@ interface ImportDppRequestBody {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = validateApiKey(request);
+  if (auth) return auth;
   let requestBody: ImportDppRequestBody;
 
   try {

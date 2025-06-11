@@ -5,6 +5,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { MOCK_DPPS } from '@/data';
+import { validateApiKey } from '@/middleware/apiKeyAuth';
 
 // Request body is currently not used for this endpoint as productId comes from path.
 // interface VerifyDppRequestBody {
@@ -28,6 +29,9 @@ export async function POST(
   if (!productId || typeof productId !== 'string' || productId.trim() === '') {
     return NextResponse.json({ error: { code: 400, message: "Path parameter 'productId' is required and must be a non-empty string." } }, { status: 400 });
   }
+
+  const auth = validateApiKey(request);
+  if (auth) return auth;
   
   // Conceptual API key authentication - skipped for mock
   // const authHeader = request.headers.get('Authorization');

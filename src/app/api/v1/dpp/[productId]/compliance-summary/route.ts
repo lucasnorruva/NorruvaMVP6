@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { MOCK_DPPS } from '@/data';
 import type { DigitalProductPassport } from '@/types/dpp';
+import { validateApiKey } from '@/middleware/apiKeyAuth';
 
 // Simplified function to determine overall status, similar to getOverallComplianceDetails
 const calculateOverallStatus = (dpp: DigitalProductPassport): string => {
@@ -39,6 +40,8 @@ export async function GET(
   { params }: { params: { productId: string } }
 ) {
   const productId = params.productId;
+  const auth = validateApiKey(request);
+  if (auth) return auth;
 
   // Conceptual API key authentication - skipped for mock
   // const authHeader = request.headers.get('Authorization');

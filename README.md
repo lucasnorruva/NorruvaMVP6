@@ -15,7 +15,8 @@ Welcome to the Norruva Digital Product Passport (DPP) concept application! This 
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Running the Development Server](#running-the-development-server)
-  - [Running Tests](#running-tests)
+- [Running Tests](#running-tests)
+  - [Authentication](#authentication)
   - [Troubleshooting](#troubleshooting)
 - [Key Directory Structure](#key-directory-structure)
 - [Firebase Studio Context](#firebase-studio-context)
@@ -198,6 +199,20 @@ npm test
 
 
 Use `npm run test:watch` during development to re-run tests on file changes.
+
+### Authentication
+
+All `/api/v1/*` endpoints expect an API key using the `Authorization` header with the `Bearer` scheme. Example:
+
+```bash
+curl -H 'Authorization: Bearer SANDBOX_KEY_123' http://localhost:9002/api/v1/dpp
+```
+
+Valid keys are configured via the `VALID_API_KEYS` environment variable. The `.env.example` file defines two sample keys:
+
+```bash
+VALID_API_KEYS=SANDBOX_KEY_123,PROD_KEY_456
+```
 
 ### Troubleshooting
 

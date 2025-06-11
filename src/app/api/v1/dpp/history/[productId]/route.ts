@@ -4,6 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { validateApiKey } from '@/middleware/apiKeyAuth';
 import { MOCK_DPPS } from '@/data';
 import type { DigitalProductPassport, LifecycleEvent, Certification, EbsiVerificationDetails, HistoryEntry } from '@/types/dpp';
 
@@ -12,6 +13,8 @@ export async function GET(
   { params }: { params: { productId: string } }
 ) {
   const productId = params.productId;
+  const auth = validateApiKey(request);
+  if (auth) return auth;
 
   const product = MOCK_DPPS.find(dpp => dpp.id === productId);
 

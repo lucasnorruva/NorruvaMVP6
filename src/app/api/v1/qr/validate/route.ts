@@ -6,12 +6,15 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { MOCK_DPPS } from '@/data';
 import type { DigitalProductPassport } from '@/types/dpp';
+import { validateApiKey } from '@/middleware/apiKeyAuth';
 
 interface QrValidateRequestBody {
   qrIdentifier?: string;
 }
 
 export async function POST(request: NextRequest) {
+  const auth = validateApiKey(request);
+  if (auth) return auth;
   let requestBody: QrValidateRequestBody;
   try {
     requestBody = await request.json();

@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { MOCK_DPPS } from '@/data';
 import type { DigitalProductPassport, CustomAttribute } from '@/types/dpp';
+import { validateApiKey } from '@/middleware/apiKeyAuth';
 
 interface UpdateDppRequestBody {
   productName?: string;
@@ -26,6 +27,8 @@ export async function GET(
   { params }: { params: { productId: string } }
 ) {
   const productId = params.productId;
+  const auth = validateApiKey(request);
+  if (auth) return auth;
 
   // Conceptually, API key authentication would happen here.
   // For this mock, we'll skip actual validation.
@@ -51,6 +54,8 @@ export async function PUT(
   { params }: { params: { productId: string } }
 ) {
   const productId = params.productId;
+  const auth = validateApiKey(request);
+  if (auth) return auth;
   let requestBody: UpdateDppRequestBody;
 
   try {
@@ -119,6 +124,8 @@ export async function DELETE(
   { params }: { params: { productId: string } }
 ) {
   const productId = params.productId;
+  const auth = validateApiKey(request);
+  if (auth) return auth;
 
   // Conceptual API key authentication
   // const authHeader = request.headers.get('Authorization');

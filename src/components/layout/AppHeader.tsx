@@ -75,7 +75,7 @@ const generateMockNotifications = (role: UserRole): AppNotification[] => {
 
 
 export default function AppHeader() {
-  const { isMobile, state: sidebarState } = useSidebar();
+  const { isMobile } = useSidebar(); // Removed sidebarState usage for logo visibility
   const { currentRole, setCurrentRole, availableRoles } = useRole();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
@@ -90,7 +90,7 @@ export default function AppHeader() {
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b border-border bg-card px-4 backdrop-blur-md md:px-6">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2"> {/* Container for left-aligned items */}
         {isMobile ? (
           <Sheet>
             <SheetTrigger asChild>
@@ -100,18 +100,21 @@ export default function AppHeader() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0 bg-sidebar text-sidebar-foreground w-[--sidebar-width-mobile]">
-              <AppSidebarContent />
+              <AppSidebarContent /> {/* This contains its own logo when sheet is open */}
             </SheetContent>
           </Sheet>
         ) : (
-          <SidebarTrigger className="hidden md:flex" />
-        )}
-        {!isMobile && sidebarState === 'collapsed' && (
-          <Logo className="h-8 w-auto text-primary" />
+          // For non-mobile, always show sidebar trigger and then the logo
+          <>
+            <SidebarTrigger className="hidden md:flex" />
+            <Link href="/dashboard" className="flex items-center text-primary">
+              <Logo className="h-8 w-auto" />
+            </Link>
+          </>
         )}
       </div>
 
-      <div className="flex items-center gap-3 md:gap-4">
+      <div className="flex items-center gap-3 md:gap-4"> {/* Container for right-aligned items */}
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-muted-foreground" />
           <Select value={currentRole} onValueChange={(value) => setCurrentRole(value as UserRole)}>

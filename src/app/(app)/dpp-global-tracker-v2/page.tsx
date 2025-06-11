@@ -4,9 +4,7 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
 import type { GlobeMethods } from 'react-globe.gl';
-import { feature } from 'topojson-client';
-import type { Objects, Topology } from 'topojson-specification';
-import type { Feature as GeoJsonFeature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson'; // Renamed Feature to GeoJsonFeature
+import type { Feature as GeoJsonFeature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 import { MeshPhongMaterial } from 'three';
 import { Loader2, Info } from 'lucide-react';
 
@@ -30,9 +28,10 @@ const EU_COUNTRY_CODES = new Set([
 
 // Define properties expected from the TopoJSON file for each country feature
 interface CountryProperties extends GeoJsonProperties {
-  NAME: string; 
-  NAME_LONG: string; 
-  ISO_A3: string; 
+  ADMIN: string; // country name
+  ADM0_A3: string; // ISO A3 code
+  NAME_LONG?: string; // optional long name
+  ISO_A3?: string; // optional ISO code variant
 }
 
 // Type for a GeoJSON feature with our custom properties
@@ -67,20 +66,15 @@ export default function GlobeV2Page() {
 
   // Effect to fetch country polygon data
   useEffect(() => {
-    fetch('https://unpkg.com/world-atlas/countries-110m.json')
-      .then(res => res.json())
-      .then((atlas: Topology) => {
-        const countries = atlas.objects.countries;
-        if (countries) {
-          const geoJsonCountries = feature(atlas, countries) as FeatureCollection<Geometry, CountryProperties>;
-          setLandPolygons(geoJsonCountries.features);
-        } else {
-          console.error("Countries object not found in topology data.");
-          setLandPolygons([]);
-        }
+    fetch(
+      'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson'
+    )
+      .then((res) => res.json())
+      .then((geoJson: FeatureCollection<Geometry, CountryProperties>) => {
+        setLandPolygons(geoJson.features);
       })
-      .catch(err => {
-        console.error("Error fetching or processing country polygons:", err);
+      .catch((err) => {
+        console.error('Error fetching or processing country polygons:', err);
         setLandPolygons([]);
       })
       .finally(() => {
@@ -119,7 +113,8 @@ export default function GlobeV2Page() {
   // Memoized polygon cap color logic for performance
   const getPolygonCapColor = useCallback((feat: object) => {
     const properties = (feat as CountryFeature).properties;
-    return isEU(properties?.ISO_A3) ? '#002D62' : '#CCCCCC'; // Dark blue for EU, light grey for others
+    const iso = properties?.ADM0_A3 || properties?.ISO_A3;
+    return isEU(iso) ? '#002D62' : '#CCCCCC'; // Dark blue for EU, light grey for others
   }, [isEU]);
 
   // Show loader if dimensions are not set or data is not loaded yet
@@ -147,9 +142,9 @@ export default function GlobeV2Page() {
           polygonStrokeColor={() => '#000000'} // Black borders
           polygonAltitude={0.008} 
           onPolygonHover={setHoverD as (feature: object | null) => void}
-          polygonLabel={({ properties }: object) => { 
+          polygonLabel={({ properties }: object) => {
             const p = properties as CountryProperties;
-            return `<div style="background: rgba(40,40,40,0.8); color: white; padding: 5px 8px; border-radius: 4px; font-size: 12px;"><b>${p?.NAME_LONG || p?.NAME || 'Country'}</b></div>`;
+            return `<div style="background: rgba(40,40,40,0.8); color: white; padding: 5px 8px; border-radius: 4px; font-size: 12px;"><b>${p?.ADMIN || p?.NAME_LONG || 'Country'}</b></div>`;
           }}
           polygonsTransitionDuration={100}
           width={dimensions.width}

@@ -3,6 +3,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import dynamic from 'next/dynamic';
+import { useRouter } from 'next/navigation';
 import type { GlobeMethods } from 'react-globe.gl';
 import type { Feature as GeoJsonFeature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 import { MeshPhongMaterial } from 'three';
@@ -39,11 +40,20 @@ type CountryFeature = GeoJsonFeature<Geometry, CountryProperties>; // Use aliase
 
 export default function GlobeV2Page() {
   const globeEl = useRef<GlobeMethods | undefined>(undefined);
+  const router = useRouter();
   const [landPolygons, setLandPolygons] = useState<CountryFeature[]>([]);
   const [hoverD, setHoverD] = useState<CountryFeature | null>(null); // State for hovered country data
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [globeReady, setGlobeReady] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+
+  const handlePolygonClick = useCallback((feat: object) => {
+    const properties = (feat as CountryFeature).properties;
+    const iso = properties?.ADM0_A3 || properties?.ISO_A3;
+    if (iso) {
+      router.push(`/customs-dashboard?country=${iso}`);
+    }
+  }, [router]);
 
   // Approximate header height (adjust if your header height is different or dynamic)
   const HEADER_HEIGHT = 64; // Example: 4rem = 64px
@@ -140,8 +150,9 @@ export default function GlobeV2Page() {
           polygonCapColor={getPolygonCapColor} 
           polygonSideColor={() => 'rgba(0, 0, 0, 0.05)'} 
           polygonStrokeColor={() => '#000000'} // Black borders
-          polygonAltitude={0.008} 
+          polygonAltitude={0.008}
           onPolygonHover={setHoverD as (feature: object | null) => void}
+          onPolygonClick={handlePolygonClick}
           polygonLabel={({ properties }: object) => {
             const p = properties as CountryProperties;
             return `<div style="background: rgba(40,40,40,0.8); color: white; padding: 5px 8px; border-radius: 4px; font-size: 12px;"><b>${p?.ADMIN || p?.NAME_LONG || 'Country'}</b></div>`;

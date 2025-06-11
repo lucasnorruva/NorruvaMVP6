@@ -578,6 +578,61 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  /api/v1/dpp/anchor/{productId}:
+    post:
+      operationId: anchorDpp
+      summary: Anchor a Digital Product Passport
+      description: Creates a blockchain anchor for the specified DPP.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product to anchor.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                platform:
+                  type: string
+                  description: Blockchain or anchoring platform name.
+              required:
+                - platform
+      responses:
+        '200':
+          description: DPP anchored successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DigitalProductPassport'
+        '400':
+          description: Invalid input data.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/dpp/history/{productId}:
     get:
       operationId: getDppHistoryById

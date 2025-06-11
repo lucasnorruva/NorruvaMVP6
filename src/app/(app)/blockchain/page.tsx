@@ -437,7 +437,7 @@ function setTransferTime(value: string): void {
       </Card>
     </div>
   );
-}
+
 
 function toast(arg0: { title: string; description: string; }) {
   throw new Error("Function not implemented.");

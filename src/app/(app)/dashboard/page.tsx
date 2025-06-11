@@ -16,6 +16,7 @@ import { SupplierDashboard } from "@/components/dashboard/SupplierDashboard";
 import { RetailerDashboard } from "@/components/dashboard/RetailerDashboard";
 import { RecyclerDashboard } from "@/components/dashboard/RecyclerDashboard";
 import { VerifierDashboard } from "@/components/dashboard/VerifierDashboard";
+import AdminProductsAttentionCard from "@/components/dashboard/AdminProductsAttentionCard";
 
 export default function DashboardPage() {
   const { currentRole } = useRole();
@@ -36,15 +37,18 @@ export default function DashboardPage() {
                 <CardContent>
                   <ul className="space-y-3">
                     {[
-                      {text: "New Manufacturer 'EcoGoods Inc.' onboarded.", time: "1 hour ago"},
-                      {text: "Regulation Module 'EU Battery Reg v1.1' deployed.", time: "3 hours ago"},
-                      {text: "System maintenance scheduled for Sunday 2 AM.", time: "1 day ago"},
-                      {text: "Product PROD002 updated with new battery data.", time: "2 days ago"},
-                      {text: "Verifier 'CertifyAll' completed 5 audits.", time: "3 days ago"}
+                      {text: "New Manufacturer 'EcoGoods Inc.' onboarded.", time: "1 hour ago", icon: PlusCircle},
+                      {text: "Regulation Module 'EU Battery Reg v1.1' deployed.", time: "3 hours ago", icon: FileText},
+                      {text: "System maintenance scheduled for Sunday 2 AM.", time: "1 day ago", icon: Settings },
+                      {text: "Product PROD002 updated with new battery data.", time: "2 days ago", icon: Package},
+                      {text: "Verifier 'CertifyAll' completed 5 audits.", time: "3 days ago", icon: ShieldCheck}
                     ].map(activity => (
-                      <li key={activity.text} className="flex items-center justify-between text-sm">
-                        <span>{activity.text}</span>
-                        <span className="text-muted-foreground">{activity.time}</span>
+                      <li key={activity.text} className="flex items-center justify-between text-sm p-2 rounded-md hover:bg-muted/50">
+                        <div className="flex items-center">
+                          <activity.icon className="h-4 w-4 mr-2 text-primary" />
+                          <span>{activity.text}</span>
+                        </div>
+                        <span className="text-muted-foreground text-xs">{activity.time}</span>
                       </li>
                     ))}
                   </ul>
@@ -52,6 +56,7 @@ export default function DashboardPage() {
               </Card>
               <PlatformHealthStatsCard />
             </div>
+            <AdminProductsAttentionCard />
             <RegulationUpdatesCard />
           </div>
         );
@@ -77,20 +82,20 @@ export default function DashboardPage() {
           {currentRole.charAt(0).toUpperCase() + currentRole.slice(1)} Dashboard
         </h1>
         {currentRole === 'manufacturer' && (
-           <Link href="/products/new" asChild>
-             <Button variant="secondary">
-               <PlusCircle className="mr-2 h-5 w-5" />
-               Add New Product
-             </Button>
-           </Link>
+          <Button asChild variant="secondary">
+            <Link href="/products/new">
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Add New Product
+            </Link>
+          </Button>
         )}
-         {currentRole === 'admin' && (
-           <Link href="/products/new" asChild>
-             <Button variant="default">
-               <PlusCircle className="mr-2 h-5 w-5" />
-               Platform Product Setup
-             </Button>
-           </Link>
+        {currentRole === 'admin' && (
+          <Button asChild variant="default">
+            <Link href="/products/new">
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Platform Product Setup
+            </Link>
+          </Button>
         )}
       </div>
       {renderDashboardContent()}

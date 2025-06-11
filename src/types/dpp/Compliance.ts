@@ -16,6 +16,9 @@ export interface Certification {
 export interface EbsiVerificationDetails {
   status: 'verified' | 'pending_verification' | 'not_verified' | 'error';
   verificationId?: string;
+  issuerDid?: string;
+  schema?: string;
+  issuanceDate?: string;
   lastChecked: string;
   message?: string;
 }

@@ -7,16 +7,18 @@ import type { Certification, EbsiVerificationDetails, SimpleCertification, Produ
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
 
+export interface SupplyChainStep {
+  stepName: string;
+  actorDid?: string;
+  timestamp: string;
+  location?: string;
+  transactionHash?: string;
+}
+
 export interface TraceabilityInfo {
   batchId?: string;
   originCountry?: string;
-  supplyChainSteps?: Array<{
-    stepName: string;
-    actorDid?: string;
-    timestamp: string;
-    location?: string;
-    transactionHash?: string;
-  }>;
+  supplyChainSteps?: SupplyChainStep[];
 }
 
 export interface VerifiableCredentialReference {

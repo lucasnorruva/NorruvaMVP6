@@ -8,6 +8,7 @@ import type { GlobeMethods } from 'react-globe.gl';
 import type { Feature as GeoJsonFeature, FeatureCollection, Geometry, GeoJsonProperties } from 'geojson';
 import { MeshPhongMaterial } from 'three';
 import { Loader2, Info } from 'lucide-react';
+import { useSearchParams } from 'next/navigation';
 
 // Dynamically import Globe for client-side rendering
 const Globe = dynamic(() => import('react-globe.gl'), { 
@@ -46,6 +47,10 @@ export default function GlobeV2Page() {
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [globeReady, setGlobeReady] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [highlightedCountries, setHighlightedCountries] = useState<string[]>([]);
+
+  const searchParams = useSearchParams();
+  const productId = searchParams.get('productId');
 
   const handlePolygonClick = useCallback((feat: object) => {
     const properties = (feat as CountryFeature).properties;
@@ -92,6 +97,32 @@ export default function GlobeV2Page() {
       });
   }, []);
 
+  // Fetch supply chain graph data when a productId is provided
+  useEffect(() => {
+    if (!productId) return;
+
+    fetch(`/api/v1/dpp/graph/${productId}`)
+      .then(res => res.json())
+      .then((graph) => {
+        const countries = new Set<string>();
+        if (graph?.nodes) {
+          graph.nodes.forEach((node: any) => {
+            if (node.type === 'supplier' || node.type === 'manufacturer') {
+              const loc: string | undefined = node.data?.location;
+              if (loc) {
+                const country = loc.split(',').pop()?.trim();
+                if (country) countries.add(country);
+              }
+            }
+          });
+        }
+        setHighlightedCountries(Array.from(countries));
+      })
+      .catch((err) => {
+        console.error('Error fetching product graph:', err);
+      });
+  }, [productId]);
+
   // Function to determine if a country is in the EU based on its ISO A3 code
   const isEU = useCallback((isoA3: string | undefined) => {
     return !!isoA3 && EU_COUNTRY_CODES.has(isoA3.toUpperCase());
@@ -124,8 +155,12 @@ export default function GlobeV2Page() {
   const getPolygonCapColor = useCallback((feat: object) => {
     const properties = (feat as CountryFeature).properties;
     const iso = properties?.ADM0_A3 || properties?.ISO_A3;
+    const name = properties?.ADMIN;
+    if (highlightedCountries.includes(name)) {
+      return '#f97316'; // orange highlight for supply chain countries
+    }
     return isEU(iso) ? '#002D62' : '#CCCCCC'; // Dark blue for EU, light grey for others
-  }, [isEU]);
+  }, [isEU, highlightedCountries]);
 
   // Show loader if dimensions are not set or data is not loaded yet
   if (dimensions.width === 0 || dimensions.height === 0 || !dataLoaded) {

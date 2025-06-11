@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { API_KEYS } from '@/config/auth';
 
 export function validateApiKey(request: NextRequest): NextResponse | undefined {
   const authHeader = request.headers.get('Authorization');
@@ -6,9 +7,7 @@ export function validateApiKey(request: NextRequest): NextResponse | undefined {
     return NextResponse.json({ error: { code: 401, message: 'API key missing or invalid.' } }, { status: 401 });
   }
   const providedKey = authHeader.slice('Bearer '.length).trim();
-  const validKeysEnv = process.env.VALID_API_KEYS || '';
-  const validKeys = validKeysEnv.split(',').map(k => k.trim()).filter(Boolean);
-  if (!validKeys.includes(providedKey)) {
+  if (!API_KEYS.includes(providedKey)) {
     return NextResponse.json({ error: { code: 401, message: 'API key missing or invalid.' } }, { status: 401 });
   }
   return undefined;

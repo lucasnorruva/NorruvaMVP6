@@ -9,6 +9,7 @@ import Link from "next/link";
 import { useSearchParams } from 'next/navigation';
 import { Badge } from '@/components/ui/badge';
 import { ArrowLeft, ShieldAlert, Database, Info, Layers, ListChecks, ExternalLink, UploadCloud } from "lucide-react";
+import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function ScipNotificationHelperPage() {
   const searchParams = useSearchParams();
@@ -51,31 +52,14 @@ export default function ScipNotificationHelperPage() {
   ];
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-headline font-semibold flex items-center">
-          <ShieldAlert className="mr-3 h-7 w-7 text-primary" />
-          SCIP Database Notification Helper (Conceptual)
-        </h1>
-        {country && (
-          <Badge variant="outline" className="ml-3">Guidance for {country}</Badge>
-        )}
-        <Button variant="outline" asChild>
-          <Link href={country ? `/compliance/pathways?country=${encodeURIComponent(country)}` : '/compliance/pathways'}>
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to Compliance Pathways
-          </Link>
-        </Button>
-      </div>
-
-      <Alert>
-        <Info className="h-4 w-4" />
-        <AlertTitle>Conceptual Guidance & Disclaimer</AlertTitle>
-        <AlertDescription>
-          This guide provides a conceptual overview of how the Norruva platform could assist with SCIP database notifications. It is not exhaustive and does not constitute legal or regulatory advice. Companies are solely responsible for ensuring compliance with SCIP notification obligations. Always refer to official ECHA documentation and guidance.
-        </AlertDescription>
-      </Alert>
-
+    <DocsPageLayout
+        pageTitle="SCIP Database Notification Helper"
+        pageIcon="Database"
+        backLink={country ? `/compliance/pathways?country=${encodeURIComponent(country)}` : '/compliance/pathways'}
+        backLinkText="Back to Compliance Pathways"
+        alertTitle="Conceptual Guidance & Disclaimer"
+        alertDescription="This guide provides a conceptual overview of how the Norruva platform could assist with SCIP database notifications. It is not exhaustive and does not constitute legal or regulatory advice. Companies are solely responsible for ensuring compliance with SCIP notification obligations. Always refer to official ECHA documentation and guidance."
+    >
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center"><Database className="mr-2 h-5 w-5 text-primary"/>Introduction to SCIP Notifications</CardTitle>
@@ -134,7 +118,6 @@ export default function ScipNotificationHelperPage() {
             </ul>
         </CardContent>
       </Card>
-    </div>
+    </DocsPageLayout>
   );
 }
-

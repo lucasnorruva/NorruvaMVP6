@@ -4,6 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { validateApiKey } from '@/middleware/apiKeyAuth';
 import { MOCK_DPPS, MOCK_SUPPLIERS } from '@/data';
 import type { DigitalProductPassport, Supplier } from '@/types/dpp';
 
@@ -32,6 +33,8 @@ export async function GET(
   { params }: { params: { productId: string } }
 ) {
   const productId = params.productId;
+  const auth = validateApiKey(request);
+  if (auth) return auth;
 
   // Conceptual API key authentication - skipped for mock
   // const authHeader = request.headers.get('Authorization');

@@ -4,6 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { validateApiKey } from '@/middleware/apiKeyAuth';
 import { MOCK_DPPS } from '@/data';
 import type { DigitalProductPassport, DocumentReference } from '@/types/dpp';
 
@@ -21,6 +22,8 @@ export async function PATCH(
   { params }: { params: { productId: string } }
 ) {
   const productId = params.productId;
+  const auth = validateApiKey(request);
+  if (auth) return auth;
   let requestBody: ExtendDppRequestBody;
 
   try {

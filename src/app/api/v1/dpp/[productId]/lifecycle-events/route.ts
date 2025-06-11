@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { MOCK_DPPS } from '@/data';
 import type { LifecycleEvent } from '@/types/dpp';
+import { validateApiKey } from '@/middleware/apiKeyAuth';
 
 interface AddLifecycleEventRequestBody {
   eventType?: string; // Matches 'type' in LifecycleEvent but using a clearer name for request
@@ -20,6 +21,8 @@ export async function POST(
   { params }: { params: { productId: string } }
 ) {
   const productId = params.productId;
+  const auth = validateApiKey(request);
+  if (auth) return auth;
   let requestBody: AddLifecycleEventRequestBody;
 
   try {

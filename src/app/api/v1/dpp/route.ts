@@ -4,6 +4,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { validateApiKey } from '@/middleware/apiKeyAuth';
 import { MOCK_DPPS } from '@/data';
 import type { DigitalProductPassport, CustomAttribute, DashboardFiltersState } from '@/types/dpp';
 
@@ -24,6 +25,8 @@ interface CreateDppRequestBody {
 }
 
 export async function POST(request: NextRequest) {
+  const auth = validateApiKey(request);
+  if (auth) return auth;
   let requestBody: CreateDppRequestBody;
   try {
     requestBody = await request.json();
@@ -102,6 +105,8 @@ export async function POST(request: NextRequest) {
 }
 
 export async function GET(request: NextRequest) {
+  const auth = validateApiKey(request);
+  if (auth) return auth;
   const { searchParams } = new URL(request.url);
 
   const status = searchParams.get('status') as DashboardFiltersState['status'] | null;

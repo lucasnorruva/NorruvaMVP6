@@ -355,5 +355,3 @@ export default function GlobeV2Page() {
       </div>
     </div>
   );
-}
-    </>

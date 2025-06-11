@@ -13,7 +13,8 @@ import {
     Fingerprint, ShieldCheck, Info as InfoIconLucide, AlertCircle, Anchor, Link2, Edit, UploadCloud, 
     KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, 
     PlusCircle, CalendarDays, Sigma, Layers3, Tag, CheckCircle as CheckCircleLucide, 
-    Server as ServerIcon, Link as LinkIconPath, FileCog, BookOpen, CircleDot, Clock, Share2, Users, Factory, Truck, ShoppingCart, Recycle as RecycleIconLucide, Upload, MessageSquare
+    Server as ServerIcon, Link as LinkIconPath, FileCog, BookOpen, CircleDot, Clock, Share2, Users, Factory, Truck, ShoppingCart, Recycle as RecycleIconLucide, Upload, MessageSquare,
+    FileEdit, MessageSquareWarning, ListCollapse
 } from "lucide-react";
 import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
@@ -24,8 +25,10 @@ import { cn } from '@/lib/utils';
 import { Separator } from "@/components/ui/separator";
 
 const EBSI_EXPLORER_BASE_URL = "https://mock-ebsi-explorer.example.com/tx/";
-const TOKEN_EXPLORER_BASE_URL = "https://mock-token-explorer.example.com/tx/";
+const TOKEN_EXPLORER_BASE_URL = "https://mock-token-explorer.example.com/token/"; // General token explorer
+const TX_EXPLORER_BASE_URL = "https://mock-token-explorer.example.com/tx/"; // For transactions
 const MOCK_API_KEY = "SANDBOX_KEY_123";
+const MOCK_TRANSACTION_DELAY = 1500; // ms
 
 const getEbsiStatusBadge = (status?: "verified" | "pending_verification" | "not_verified" | "error" | string) => {
   let Icon = InfoIconLucide;
@@ -72,21 +75,29 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
         <div>
           <h4 className="text-sm font-semibold text-primary mb-1.5 flex items-center"><LinkIconPath className="h-4 w-4 mr-1.5"/>Blockchain Identifiers</h4>
           {product.blockchainIdentifiers?.platform && (
+            <TooltipProvider delayDuration={100}><Tooltip><TooltipTrigger className="text-left w-full">
             <div className="flex items-center gap-1 mb-0.5"><Layers3 className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Platform:</span><span className="text-foreground/90">{product.blockchainIdentifiers.platform}</span></div>
+            </TooltipTrigger><TooltipContent><p>The blockchain network or platform used.</p></TooltipContent></Tooltip></TooltipProvider>
           )}
           {product.blockchainIdentifiers?.contractAddress && (
+            <TooltipProvider delayDuration={100}><Tooltip><TooltipTrigger className="text-left w-full">
             <div className="flex items-center gap-1 mb-0.5"><FileCog className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Contract:</span><span className="font-mono break-all text-foreground/90">{product.blockchainIdentifiers.contractAddress}</span></div>
+            </TooltipTrigger><TooltipContent><p>Address of the smart contract managing this DPP or token.</p></TooltipContent></Tooltip></TooltipProvider>
           )}
            {product.blockchainIdentifiers?.tokenId && (
+            <TooltipProvider delayDuration={100}><Tooltip><TooltipTrigger className="text-left w-full">
             <div className="flex items-center gap-1 mb-0.5"><Tag className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Token ID:</span><span className="font-mono break-all text-foreground/90">{product.blockchainIdentifiers.tokenId}</span></div>
+            </TooltipTrigger><TooltipContent><p>Unique identifier of the NFT representing this DPP.</p></TooltipContent></Tooltip></TooltipProvider>
           )}
           {product.blockchainIdentifiers?.anchorTransactionHash && (
             <>
+              <TooltipProvider delayDuration={100}><Tooltip><TooltipTrigger className="text-left w-full">
               <div className="flex items-center gap-1 mb-0.5"><Anchor className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Anchor Tx:</span><span className="font-mono break-all text-foreground/90" title={product.blockchainIdentifiers.anchorTransactionHash!}>{product.blockchainIdentifiers.anchorTransactionHash.substring(0,10)}...{product.blockchainIdentifiers.anchorTransactionHash.slice(-8)}</span></div>
+              </TooltipTrigger><TooltipContent><p>Transaction hash proving the DPP data was anchored on-chain.</p></TooltipContent></Tooltip></TooltipProvider>
               <div className="flex items-center gap-1">
                 <ExternalLink className="h-3.5 w-3.5 text-muted-foreground"/>
                 <span className="text-muted-foreground">Explorer:</span>
-                <Link href={`${TOKEN_EXPLORER_BASE_URL}${product.blockchainIdentifiers.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                <Link href={`${TX_EXPLORER_BASE_URL}${product.blockchainIdentifiers.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
                     View on Mock Explorer <ExternalLink className="inline h-3 w-3 ml-0.5" />
                 </Link>
               </div>
@@ -104,8 +115,16 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
             {product.ebsiVerification?.verificationId && (
               <div className="flex items-center gap-1 mb-0.5"><Fingerprint className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Verification ID:</span><span className="font-mono text-foreground/90 break-all">{product.ebsiVerification.verificationId}</span></div>
             )}
-            {product.ebsiVerification?.issuerDid && (<div className="flex items-center gap-1 mb-0.5"><Users className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Issuer DID:</span><span className="font-mono text-foreground/90 break-all">{product.ebsiVerification.issuerDid}</span></div>)}
-            {product.ebsiVerification?.schema && (<div className="flex items-center gap-1 mb-0.5"><FileJson className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Schema:</span><span className="font-mono text-foreground/90 break-all">{product.ebsiVerification.schema}</span></div>)}
+            {product.ebsiVerification?.issuerDid && (
+            <TooltipProvider delayDuration={100}><Tooltip><TooltipTrigger className="text-left w-full">
+            <div className="flex items-center gap-1 mb-0.5"><Users className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Issuer DID:</span><span className="font-mono text-foreground/90 break-all">{product.ebsiVerification.issuerDid}</span></div>
+            </TooltipTrigger><TooltipContent><p>Decentralized Identifier of the entity that issued the EBSI Verifiable Credential.</p></TooltipContent></Tooltip></TooltipProvider>
+            )}
+            {product.ebsiVerification?.schema && (
+            <TooltipProvider delayDuration={100}><Tooltip><TooltipTrigger className="text-left w-full">
+            <div className="flex items-center gap-1 mb-0.5"><FileJson className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Schema:</span><span className="font-mono text-foreground/90 break-all">{product.ebsiVerification.schema}</span></div>
+            </TooltipTrigger><TooltipContent><p>The schema or type definition of the Verifiable Credential.</p></TooltipContent></Tooltip></TooltipProvider>
+            )}
             {product.ebsiVerification?.issuanceDate && (<div className="flex items-center gap-1 mb-0.5"><CalendarDays className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Issued:</span><span className="font-mono text-foreground/90 break-all">{new Date(product.ebsiVerification.issuanceDate).toLocaleString()}</span></div>)}
         </div>
       )}
@@ -145,19 +164,23 @@ export default function BlockchainPage() {
 
   const [mintContractAddress, setMintContractAddress] = useState("0xMOCK_DPP_TOKEN_CONTRACT");
   const [mintRecipientAddress, setMintRecipientAddress] = useState("0xRECIPIENT_MOCK_ADDRESS");
-  const [mintMetadataUri, setMintMetadataUri] = useState("ipfs://bafybeigdyrzt5sfp7udm7hu76uh7y26nf3efuylqabf3oclgtqy55fbzdi");
+  const [mintMetadataUri, setMintMetadataUri] = useState(""); // Initially empty
   const [mintResponse, setMintResponse] = useState<MintTokenResponse | null>(null);
-  const [isMintingToken, setIsMintingToken] = useState(false);
-
+  
   const [updateTokenId, setUpdateTokenId] = useState("");
   const [updateMetadataUri, setUpdateMetadataUri] = useState("ipfs://new-mock-metadata-cid");
   const [updateTokenResponse, setUpdateTokenResponse] = useState<UpdateTokenMetadataResponse | null>(null);
-  const [isUpdatingTokenMeta, setIsUpdatingTokenMeta] = useState(false);
 
   const [statusTokenId, setStatusTokenId] = useState("");
   const [statusTokenResponse, setStatusTokenResponse] = useState<string | null>(null); 
-  const [isGettingTokenStatus, setIsGettingTokenStatus] = useState(false);
   const [parsedTokenStatus, setParsedTokenStatus] = useState<TokenStatusResponse | null>(null); 
+
+  const [viewTokenId, setViewTokenId] = useState("");
+  const [viewTokenMetadataResponse, setViewTokenMetadataResponse] = useState<string | null>(null);
+  const [isViewingTokenMetadata, setIsViewingTokenMetadata] = useState(false);
+
+  const [onChainStatusUpdate, setOnChainStatusUpdate] = useState<string>("active");
+  const [criticalEventLog, setCriticalEventLog] = useState<string>("");
 
 
   const handleApiError = useCallback(async (response: Response, action: string) => {
@@ -211,27 +234,35 @@ export default function BlockchainPage() {
 
   const handleSelectProduct = (dpp: DigitalProductPassport | null) => {
     setSelected(dpp);
-    if (dpp && dpp.blockchainIdentifiers?.tokenId) {
-      setUpdateTokenId(dpp.blockchainIdentifiers.tokenId);
-      setStatusTokenId(dpp.blockchainIdentifiers.tokenId);
+    if (dpp) {
+      const tokenId = dpp.blockchainIdentifiers?.tokenId;
+      setUpdateTokenId(tokenId || "");
+      setStatusTokenId(tokenId || "");
+      setViewTokenId(tokenId || "");
+      setMintMetadataUri(tokenId ? `ipfs://dpp_metadata_for_${tokenId}` : `ipfs://dpp_metadata_for_${dpp.id}`);
     } else {
       setUpdateTokenId("");
       setStatusTokenId("");
+      setViewTokenId("");
+      setMintMetadataUri("");
     }
     setFetchedCredential(null);
     setMintResponse(null);
     setUpdateTokenResponse(null);
     setStatusTokenResponse(null);
     setParsedTokenStatus(null);
+    setViewTokenMetadataResponse(null);
   };
 
   const updateDppLocally = (updated: DigitalProductPassport) => {
     setDpps(prev => prev.map(d => (d.id === updated.id ? updated : d)));
     if (selected && selected.id === updated.id) {
       setSelected(updated); 
-      if (updated.blockchainIdentifiers?.tokenId) { 
-          setUpdateTokenId(updated.blockchainIdentifiers.tokenId);
-          setStatusTokenId(updated.blockchainIdentifiers.tokenId);
+      const tokenId = updated.blockchainIdentifiers?.tokenId;
+      if (tokenId) { 
+          setUpdateTokenId(tokenId);
+          setStatusTokenId(tokenId);
+          setViewTokenId(tokenId);
       }
     }
   };
@@ -244,6 +275,7 @@ export default function BlockchainPage() {
         return;
     }
     setIsActionLoading("anchor");
+    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
     const res = await fetch(`/api/v1/dpp/anchor/${selected.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
@@ -267,6 +299,7 @@ export default function BlockchainPage() {
         return;
     }
     setIsActionLoading("custody");
+    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
     const res = await fetch(`/api/v1/dpp/custody/${selected.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
@@ -295,6 +328,7 @@ export default function BlockchainPage() {
     }
     
     setIsActionLoading("transfer");
+    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
     const res = await fetch(`/api/v1/dpp/transfer-ownership/${selected.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
@@ -316,6 +350,7 @@ export default function BlockchainPage() {
   const fetchAndDisplayCredential = async (productId: string) => {
     setIsActionLoading("fetchCredential");
     setFetchedCredential(null);
+    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY / 2));
     const res = await fetch(`/api/v1/dpp/${productId}/credential`, {
         headers: { Authorization: `Bearer ${MOCK_API_KEY}` }
     });
@@ -333,8 +368,9 @@ export default function BlockchainPage() {
   const handleMintToken = async (e: FormEvent) => {
     e.preventDefault();
     if (!selected) return;
-    setIsMintingToken(true);
+    setIsActionLoading("mintToken");
     setMintResponse(null);
+    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
     try {
       const res = await fetch(`/api/v1/token/mint/${selected.id}`, {
         method: "POST",
@@ -362,7 +398,7 @@ export default function BlockchainPage() {
         setMintResponse({ error: "Client-side error", message: errorMsg } as any);
         toast({ title: "Minting Token Failed", description: errorMsg, variant: "destructive" });
     }
-    setIsMintingToken(false);
+    setIsActionLoading(false);
   };
 
   const handleUpdateTokenMetadata = async (e: FormEvent) => {
@@ -371,8 +407,9 @@ export default function BlockchainPage() {
         toast({ title: "Token ID Required", description: "Please enter a Token ID to update metadata.", variant: "destructive" });
         return;
     }
-    setIsUpdatingTokenMeta(true);
+    setIsActionLoading("updateTokenMeta");
     setUpdateTokenResponse(null);
+    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
     try {
         const res = await fetch(`/api/v1/token/metadata/${updateTokenId}`, {
         method: "PATCH",
@@ -391,7 +428,7 @@ export default function BlockchainPage() {
         setUpdateTokenResponse({ error: "Client-side error", message: errorMsg } as any);
         toast({ title: "Updating Token Metadata Failed", description: errorMsg, variant: "destructive" });
     }
-    setIsUpdatingTokenMeta(false);
+    setIsActionLoading(false);
   };
   
   const handleGetTokenStatus = async (e: FormEvent) => {
@@ -400,9 +437,10 @@ export default function BlockchainPage() {
         toast({ title: "Token ID Required", description: "Please enter a Token ID to get its status.", variant: "destructive" });
         return;
     }
-    setIsGettingTokenStatus(true);
+    setIsActionLoading("gettingTokenStatus");
     setStatusTokenResponse(null);
     setParsedTokenStatus(null);
+    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY / 2));
     try {
         const res = await fetch(`/api/v1/token/status/${statusTokenId}`, {
         headers: { Authorization: `Bearer ${MOCK_API_KEY}` },
@@ -420,8 +458,72 @@ export default function BlockchainPage() {
         setStatusTokenResponse(JSON.stringify({ error: "Client-side error", message: errorMsg }, null, 2));
         toast({ title: "Getting Token Status Failed", description: errorMsg, variant: "destructive" });
     }
-    setIsGettingTokenStatus(false);
+    setIsActionLoading(false);
   };
+
+  const handleViewTokenMetadata = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!viewTokenId && !parsedTokenStatus?.metadataUri) {
+      toast({ title: "Token ID or URI Required", description: "Please ensure a Token ID is entered or Get Token Status was run.", variant: "destructive" });
+      return;
+    }
+    setIsViewingTokenMetadata(true);
+    setViewTokenMetadataResponse(null);
+    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY / 2));
+
+    const metadataUriToFetch = parsedTokenStatus?.metadataUri || `ipfs://dpp_metadata_for_${viewTokenId || selected?.id}`;
+    
+    // Mock fetching metadata
+    const mockMetadata = {
+      name: `DPP Token for ${selected?.productName || viewTokenId || 'Product'}`,
+      description: `Verifiable Digital Product Passport for ${selected?.productName || 'Unknown Product'}. Category: ${selected?.category || 'N/A'}.`,
+      image: selected?.productDetails?.imageUrl || "https://placehold.co/300x300.png?text=DPP+NFT",
+      external_url: selected ? `https://norruva.example.com/passport/${selected.id}` : "https://norruva.example.com",
+      attributes: [
+        { trait_type: "Product ID", value: selected?.id || viewTokenId },
+        { trait_type: "Category", value: selected?.category || "N/A" },
+        { trait_type: "Manufacturer", value: selected?.manufacturer?.name || "N/A" },
+        { trait_type: "GTIN", value: selected?.gtin || "N/A" },
+        { trait_type: "DPP Standard Version", value: selected?.metadata?.dppStandardVersion || "N/A" },
+        ...(selected?.productDetails?.customAttributes || []).map(attr => ({ trait_type: attr.key, value: attr.value }))
+      ]
+    };
+    setViewTokenMetadataResponse(JSON.stringify(mockMetadata, null, 2));
+    toast({ title: "Token Metadata Fetched (Mock)", description: `Displaying conceptual off-chain metadata for token URI: ${metadataUriToFetch}` });
+    setIsViewingTokenMetadata(false);
+  };
+
+  const handleUpdateOnChainStatus = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!selected) return;
+    setIsActionLoading("updateOnChainStatus");
+    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
+    // In a real app, this would call a smart contract function.
+    const mockTxHash = `0xstatus_update_tx_${Date.now().toString(16)}`;
+    toast({
+      title: "On-Chain Status Update (Mock)",
+      description: `Conceptual transaction to update DPP status for ${selected.productName} to '${onChainStatusUpdate}' submitted. Tx: ${mockTxHash}`
+    });
+    setIsActionLoading(false);
+  };
+
+  const handleLogCriticalEvent = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!selected || !criticalEventLog.trim()) {
+      toast({ title: "Missing Info", description: "Please select a product and enter an event description.", variant: "destructive" });
+      return;
+    }
+    setIsActionLoading("logCriticalEvent");
+    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
+    const mockTxHash = `0xevent_log_tx_${Date.now().toString(16)}`;
+    toast({
+      title: "Critical Event Logged (Mock)",
+      description: `Event "${criticalEventLog.substring(0,30)}..." conceptually logged on-chain for ${selected.productName}. Tx: ${mockTxHash}`
+    });
+    setCriticalEventLog("");
+    setIsActionLoading(false);
+  };
+
 
   const renderApiResult = (title: string, responseString: string | null | object, isErrorResponse?: boolean) => {
     if (!responseString) return null;
@@ -491,6 +593,7 @@ export default function BlockchainPage() {
             <li><strong>Transferring Ownership:</strong> Modifying DPP ownership records.</li>
             <li><strong>Managing Verifiable Credentials:</strong> Viewing and retrieving product-related VCs.</li>
             <li><strong>DPP Token Operations:</strong> Conceptual minting, metadata updates, and status checks for DPP tokens.</li>
+            <li><strong>Smart Contract Actions:</strong> Conceptual interactions for on-chain status updates and event logging.</li>
           </ul>
           <p className="mt-2">
             These operations interact with mock API endpoints. For technical details, refer to the 
@@ -566,19 +669,6 @@ export default function BlockchainPage() {
                                     <CardTitle className="text-md flex items-center">
                                         <Fingerprint className="h-5 w-5 mr-2 text-info" />
                                         Blockchain & EBSI Details
-                                        <TooltipProvider delayDuration={100}>
-                                        <Tooltip>
-                                            <TooltipTrigger asChild>
-                                            <HelpCircle className="h-4 w-4 ml-2 text-muted-foreground cursor-help" />
-                                            </TooltipTrigger>
-                                            <TooltipContent className="max-w-xs">
-                                            <p className="text-xs">
-                                                Blockchain anchoring provides an immutable record of the DPP's data integrity. 
-                                                EBSI (European Blockchain Services Infrastructure) verification enhances trust using verifiable credentials.
-                                            </p>
-                                            </TooltipContent>
-                                        </Tooltip>
-                                        </TooltipProvider>
                                     </CardTitle>
                                     </CardHeader>
                                     <CardContent>
@@ -586,16 +676,16 @@ export default function BlockchainPage() {
                                     </CardContent>
                                 </Card>
 
-                                {selected.blockchainIdentifiers?.anchorTransactionHash ? (
+                                {dpp.blockchainIdentifiers?.anchorTransactionHash ? (
                                   <Card className="bg-background">
                                     <CardHeader><CardTitle className="text-md flex items-center"><Anchor className="mr-2 h-4 w-4 text-green-600"/>DPP Anchoring Status</CardTitle></CardHeader>
                                     <CardContent className="space-y-1.5 text-sm">
                                       <p className="font-medium text-green-700">Product is Anchored.</p>
-                                      {selected.blockchainIdentifiers.platform && <p><strong className="text-muted-foreground">Platform:</strong> {selected.blockchainIdentifiers.platform}</p>}
-                                      {selected.blockchainIdentifiers.contractAddress && <p><strong className="text-muted-foreground">Contract:</strong> <span className="font-mono text-xs break-all">{selected.blockchainIdentifiers.contractAddress}</span></p>}
-                                      {selected.blockchainIdentifiers.tokenId && <p><strong className="text-muted-foreground">Token ID:</strong> <span className="font-mono text-xs break-all">{selected.blockchainIdentifiers.tokenId}</span></p>}
-                                      <p><strong className="text-muted-foreground">Tx Hash:</strong> <span className="font-mono text-xs break-all">{selected.blockchainIdentifiers.anchorTransactionHash}</span></p>
-                                      <Link href={`${TOKEN_EXPLORER_BASE_URL}${selected.blockchainIdentifiers.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs inline-flex items-center">
+                                      {dpp.blockchainIdentifiers.platform && <p><strong className="text-muted-foreground">Platform:</strong> {dpp.blockchainIdentifiers.platform}</p>}
+                                      {dpp.blockchainIdentifiers.contractAddress && <p><strong className="text-muted-foreground">Contract:</strong> <span className="font-mono text-xs break-all">{dpp.blockchainIdentifiers.contractAddress}</span></p>}
+                                      {dpp.blockchainIdentifiers.tokenId && <p><strong className="text-muted-foreground">Token ID:</strong> <span className="font-mono text-xs break-all">{dpp.blockchainIdentifiers.tokenId}</span></p>}
+                                      <p><strong className="text-muted-foreground">Tx Hash:</strong> <span className="font-mono text-xs break-all">{dpp.blockchainIdentifiers.anchorTransactionHash}</span></p>
+                                      <Link href={`${TX_EXPLORER_BASE_URL}${dpp.blockchainIdentifiers.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs inline-flex items-center">
                                         View on Mock Explorer <ExternalLink className="inline h-3 w-3 ml-1" />
                                       </Link>
                                     </CardContent>
@@ -643,7 +733,7 @@ export default function BlockchainPage() {
                                         <Input placeholder="Tx Hash (Optional)" value={custodyStep.transactionHash} onChange={e => setCustodyStep({ ...custodyStep, transactionHash: e.target.value })} />
                                         <Button type="submit" size="sm" className="sm:col-start-3 md:col-start-auto" disabled={isActionLoading === "custody"}>
                                             {isActionLoading === "custody" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4"/>}
-                                            {isActionLoading === "custody" ? "Adding Step..." : "Add Custody Step"}
+                                            {isActionLoading === "custody" ? "Processing..." : "Add Custody Step"}
                                         </Button>
                                       </div>
                                     </form>
@@ -685,85 +775,147 @@ export default function BlockchainPage() {
                                         <Input type="datetime-local" value={transferTime} onChange={e => setTransferTime(e.target.value)} />
                                         <Button type="submit" size="sm" className="w-full" disabled={isActionLoading === "transfer"}>
                                             {isActionLoading === "transfer" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                                            {isActionLoading === "transfer" ? "Transferring..." : "Transfer Ownership"}
+                                            {isActionLoading === "transfer" ? "Processing..." : "Transfer Ownership"}
                                         </Button>
                                       </form>
                                     </CardContent>
                                 </Card>
                             </div>
 
-                            <Card className="bg-background mt-6">
-                                <CardHeader>
-                                  <CardTitle className="text-md flex items-center"><KeyRound className="mr-2 h-4 w-4 text-info"/>DPP Token Operations (Conceptual)</CardTitle>
-                                  <CardDescription className="text-xs">
-                                      These operations simulate interactions with smart contracts. 
-                                      For details on the underlying design, refer to the project's 
-                                      <Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline ml-1">blockchain architecture documentation</Link>.
-                                  </CardDescription>
-                                </CardHeader>
-                                <CardContent className="space-y-6">
-                                    <form onSubmit={handleMintToken} className="space-y-3 p-3 border rounded-md">
-                                        <h4 className="font-medium text-sm flex items-center"><PlayCircle className="h-4 w-4 mr-1.5 text-primary"/>Mint Token for Product: {dpp.productName}</h4>
-                                        <p className="text-xs text-muted-foreground">Simulates creating a unique blockchain token (e.g., ERC-721 NFT) representing this DPP.</p>
-                                        <Input value={mintContractAddress} onChange={e => setMintContractAddress(e.target.value)} placeholder="Contract Address (e.g., 0x...)" />
-                                        <Input value={mintRecipientAddress} onChange={e => setMintRecipientAddress(e.target.value)} placeholder="Recipient Address (e.g., 0x...)" />
-                                        <Input value={mintMetadataUri} onChange={e => setMintMetadataUri(e.target.value)} placeholder="Metadata URI (e.g., ipfs://...)" />
-                                        <Button type="submit" size="sm" disabled={isMintingToken}>
-                                            {isMintingToken ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlayCircle className="mr-2 h-4 w-4" />}
-                                            {isMintingToken ? "Minting..." : "Mint Token"}
-                                        </Button>
-                                         {mintResponse?.transactionHash && (
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                Tx Hash: <Link href={`${TOKEN_EXPLORER_BASE_URL}${mintResponse.transactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{mintResponse.transactionHash} <ExternalLink className="inline h-3 w-3 ml-0.5"/></Link>
-                                            </p>
-                                        )}
-                                        {renderApiResult("Mint Token", mintResponse, !!(mintResponse && mintResponse.error))}
-                                    </form>
-                                    <form onSubmit={handleUpdateTokenMetadata} className="space-y-3 p-3 border rounded-md">
-                                        <h4 className="font-medium text-sm flex items-center"><Edit className="h-4 w-4 mr-1.5 text-primary"/>Update Token Metadata</h4>
-                                        <p className="text-xs text-muted-foreground">Simulates updating the on-chain metadata URI (e.g., tokenURI) for an existing token.</p>
-                                        <Input value={updateTokenId} onChange={e => setUpdateTokenId(e.target.value)} placeholder={selected?.blockchainIdentifiers?.tokenId ? `Token ID (e.g., ${selected.blockchainIdentifiers.tokenId})` : "Enter Token ID"} />
-                                        <Input value={updateMetadataUri} onChange={e => setUpdateMetadataUri(e.target.value)} placeholder="New Metadata URI (e.g., ipfs://...)" />
-                                        <Button type="submit" size="sm" disabled={isUpdatingTokenMeta}>
-                                            {isUpdatingTokenMeta ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Edit className="mr-2 h-4 w-4" />}
-                                            {isUpdatingTokenMeta ? "Updating..." : "Update Metadata"}
-                                        </Button>
-                                        {updateTokenResponse?.transactionHash && (
-                                            <p className="text-xs text-muted-foreground mt-1">
-                                                Tx Hash: <Link href={`${TOKEN_EXPLORER_BASE_URL}${updateTokenResponse.transactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{updateTokenResponse.transactionHash} <ExternalLink className="inline h-3 w-3 ml-0.5"/></Link>
-                                            </p>
-                                        )}
-                                        {renderApiResult("Update Token Metadata", updateTokenResponse, !!(updateTokenResponse && updateTokenResponse.error))}
-                                    </form>
-                                    <form onSubmit={handleGetTokenStatus} className="space-y-3 p-3 border rounded-md">
-                                        <h4 className="font-medium text-sm flex items-center"><CircleDot className="h-4 w-4 mr-1.5 text-primary"/>Get Token Status</h4>
-                                        <p className="text-xs text-muted-foreground">Simulates fetching the current on-chain status of a token.</p>
-                                        <Input value={statusTokenId} onChange={e => setStatusTokenId(e.target.value)} placeholder={selected?.blockchainIdentifiers?.tokenId ? `Token ID (e.g., ${selected.blockchainIdentifiers.tokenId})` : "Enter Token ID"} />
-                                        <Button type="submit" size="sm" disabled={isGettingTokenStatus}>
-                                            {isGettingTokenStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <InfoIconLucide className="mr-2 h-4 w-4" />}
-                                            {isGettingTokenStatus ? "Fetching..." : "Get Status"}
-                                        </Button>
-                                        {parsedTokenStatus && (
-                                          <div className="mt-2 space-y-1.5 p-3 text-xs border rounded bg-muted/30">
-                                            <div className="flex items-center justify-between">
-                                                <strong className="text-muted-foreground">Owner:</strong> <span className="font-mono text-foreground/90 break-all">{parsedTokenStatus.ownerAddress}</span>
-                                            </div>
-                                            <div className="flex items-center justify-between">
-                                                <strong className="text-muted-foreground">Status:</strong>
-                                                <Badge variant={getTokenStatusVisuals(parsedTokenStatus.status).badge} className={cn("capitalize", getTokenStatusVisuals(parsedTokenStatus.status).color)}>
-                                                  {React.createElement(getTokenStatusVisuals(parsedTokenStatus.status).icon, {className: "mr-1.5 h-3.5 w-3.5"})}
-                                                  {parsedTokenStatus.status}
-                                                </Badge>
-                                            </div>
-                                            {parsedTokenStatus.metadataUri && <div className="flex items-center justify-between"><strong className="text-muted-foreground">Metadata URI:</strong> <Link href={parsedTokenStatus.metadataUri} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{parsedTokenStatus.metadataUri} <ExternalLink className="inline h-3 w-3 ml-0.5"/></Link></div>}
-                                            <div className="flex items-center justify-between"><strong className="text-muted-foreground">Minted At:</strong> <span className="text-foreground/90">{new Date(parsedTokenStatus.mintedAt).toLocaleString()}</span></div>
-                                            {parsedTokenStatus.lastTransactionHash && <div className="flex items-center justify-between"><strong className="text-muted-foreground">Last Tx:</strong> <Link href={`${TOKEN_EXPLORER_BASE_URL}${parsedTokenStatus.lastTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{parsedTokenStatus.lastTransactionHash} <ExternalLink className="inline h-3 w-3 ml-0.5"/></Link></div>}
-                                          </div>
-                                        )}
-                                        {renderApiResult("Token Status Raw", statusTokenResponse)}
-                                    </form>
-                                </CardContent>
+                            {/* Conceptual Smart Contract Actions */}
+                            <Card className="bg-background mt-6 md:col-span-2">
+                              <CardHeader>
+                                <CardTitle className="text-md flex items-center"><ListCollapse className="mr-2 h-4 w-4 text-info"/>Conceptual Smart Contract Actions</CardTitle>
+                                <CardDescription className="text-xs">Simulate direct interactions with a DPP smart contract.</CardDescription>
+                              </CardHeader>
+                              <CardContent className="grid sm:grid-cols-2 gap-6">
+                                <form onSubmit={handleUpdateOnChainStatus} className="space-y-3 p-3 border rounded-md">
+                                  <h4 className="font-medium text-sm flex items-center"><Sigma className="h-4 w-4 mr-1.5 text-primary"/>Update On-Chain DPP Status</h4>
+                                  <p className="text-xs text-muted-foreground">Simulate updating the product's status on the blockchain (e.g., after recall).</p>
+                                  <Select value={onChainStatusUpdate} onValueChange={setOnChainStatusUpdate}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="active">Active</SelectItem>
+                                      <SelectItem value="recalled">Recalled</SelectItem>
+                                      <SelectItem value="flagged_for_review">Flagged for Review</SelectItem>
+                                      <SelectItem value="archived">Archived (End of Life)</SelectItem>
+                                    </SelectContent>
+                                  </Select>
+                                  <Button type="submit" size="sm" disabled={isActionLoading === "updateOnChainStatus"}>
+                                    {isActionLoading === "updateOnChainStatus" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sigma className="mr-2 h-4 w-4" />}
+                                    {isActionLoading === "updateOnChainStatus" ? "Submitting..." : "Update Mock Status"}
+                                  </Button>
+                                </form>
+                                <form onSubmit={handleLogCriticalEvent} className="space-y-3 p-3 border rounded-md">
+                                  <h4 className="font-medium text-sm flex items-center"><MessageSquareWarning className="h-4 w-4 mr-1.5 text-primary"/>Log Critical Event On-Chain</h4>
+                                  <p className="text-xs text-muted-foreground">Simulate recording a critical event (e.g., major defect, safety recall details).</p>
+                                  <Textarea value={criticalEventLog} onChange={e => setCriticalEventLog(e.target.value)} placeholder="Enter event description..." rows={2} />
+                                  <Button type="submit" size="sm" disabled={isActionLoading === "logCriticalEvent"}>
+                                    {isActionLoading === "logCriticalEvent" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquareWarning className="mr-2 h-4 w-4" />}
+                                    {isActionLoading === "logCriticalEvent" ? "Submitting..." : "Log Mock Event"}
+                                  </Button>
+                                </form>
+                              </CardContent>
                             </Card>
+
+
+                            {/* Restructured DPP Token Operations */}
+                            <div className="md:col-span-2 mt-6">
+                                <h3 className="text-xl font-semibold text-foreground mb-3 flex items-center">
+                                    <KeyRound className="mr-2 h-5 w-5 text-primary" /> DPP Token Operations (Conceptual)
+                                </h3>
+                                <p className="text-sm text-muted-foreground mb-4">
+                                These operations simulate interactions with smart contracts related to DPP tokens. For details on the
+                                underlying design, refer to the project's{" "}
+                                <Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline">
+                                    blockchain architecture documentation
+                                </Link>.
+                                </p>
+                                <div className="grid md:grid-cols-2 gap-6">
+                                    <Card className="bg-background">
+                                        <CardHeader>
+                                            <CardTitle className="text-md flex items-center"><PlusCircle className="h-4 w-4 mr-1.5 text-primary"/>Mint Token</CardTitle>
+                                            <CardDescription className="text-xs">Simulates creating a unique blockchain token (e.g., ERC-721 NFT) representing this DPP.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <form onSubmit={handleMintToken} className="space-y-3">
+                                                <Input value={mintContractAddress} onChange={e => setMintContractAddress(e.target.value)} placeholder="Contract Address (e.g., 0x...)" />
+                                                <Input value={mintRecipientAddress} onChange={e => setMintRecipientAddress(e.target.value)} placeholder="Recipient Address (e.g., 0x...)" />
+                                                <Input value={mintMetadataUri} onChange={e => setMintMetadataUri(e.target.value)} placeholder="Metadata URI (e.g., ipfs://...)" />
+                                                <Button type="submit" size="sm" disabled={isActionLoading === "mintToken" || !selected}>
+                                                    {isActionLoading === "mintToken" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <PlusCircle className="mr-2 h-4 w-4" />}
+                                                    {isActionLoading === "mintToken" ? "Processing..." : "Mint Token"}
+                                                </Button>
+                                                {mintResponse?.transactionHash && (
+                                                    <p className="text-xs text-muted-foreground mt-1"> Tx Hash: <Link href={`${TX_EXPLORER_BASE_URL}${mintResponse.transactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{mintResponse.transactionHash} <ExternalLink className="inline h-3 w-3 ml-0.5"/></Link></p>
+                                                )}
+                                                {renderApiResult("Mint Token", mintResponse, !!(mintResponse && mintResponse.error))}
+                                            </form>
+                                        </CardContent>
+                                    </Card>
+                                    <Card className="bg-background">
+                                        <CardHeader>
+                                            <CardTitle className="text-md flex items-center"><FileEdit className="h-4 w-4 mr-1.5 text-primary"/>Update Token Metadata</CardTitle>
+                                            <CardDescription className="text-xs">Simulates updating the on-chain metadata URI (e.g., tokenURI) for an existing token.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <form onSubmit={handleUpdateTokenMetadata} className="space-y-3">
+                                                <Input value={updateTokenId} onChange={e => setUpdateTokenId(e.target.value)} placeholder={selected?.blockchainIdentifiers?.tokenId ? `Token ID (e.g., ${selected.blockchainIdentifiers.tokenId})` : "Enter Token ID"} />
+                                                <Input value={updateMetadataUri} onChange={e => setUpdateMetadataUri(e.target.value)} placeholder="New Metadata URI (e.g., ipfs://...)" />
+                                                <Button type="submit" size="sm" disabled={isActionLoading === "updateTokenMeta" || !updateTokenId}>
+                                                    {isActionLoading === "updateTokenMeta" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileEdit className="mr-2 h-4 w-4" />}
+                                                    {isActionLoading === "updateTokenMeta" ? "Processing..." : "Update Metadata"}
+                                                </Button>
+                                                {updateTokenResponse?.transactionHash && (
+                                                     <p className="text-xs text-muted-foreground mt-1">Tx Hash: <Link href={`${TX_EXPLORER_BASE_URL}${updateTokenResponse.transactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{updateTokenResponse.transactionHash} <ExternalLink className="inline h-3 w-3 ml-0.5"/></Link></p>
+                                                )}
+                                                {renderApiResult("Update Token Metadata", updateTokenResponse, !!(updateTokenResponse && updateTokenResponse.error))}
+                                            </form>
+                                        </CardContent>
+                                    </Card>
+                                    <Card className="bg-background">
+                                        <CardHeader>
+                                            <CardTitle className="text-md flex items-center"><InfoIconLucide className="h-4 w-4 mr-1.5 text-primary"/>Get Token Status</CardTitle>
+                                            <CardDescription className="text-xs">Simulates fetching the current on-chain status of a token.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <form onSubmit={handleGetTokenStatus} className="space-y-3">
+                                                <Input value={statusTokenId} onChange={e => setStatusTokenId(e.target.value)} placeholder={selected?.blockchainIdentifiers?.tokenId ? `Token ID (e.g., ${selected.blockchainIdentifiers.tokenId})` : "Enter Token ID"} />
+                                                <Button type="submit" size="sm" disabled={isActionLoading === "gettingTokenStatus" || !statusTokenId}>
+                                                    {isActionLoading === "gettingTokenStatus" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <InfoIconLucide className="mr-2 h-4 w-4" />}
+                                                    {isActionLoading === "gettingTokenStatus" ? "Fetching..." : "Get Status"}
+                                                </Button>
+                                                {parsedTokenStatus && (
+                                                <div className="mt-2 space-y-1.5 p-3 text-xs border rounded bg-muted/30">
+                                                    <div className="flex items-center justify-between"><strong className="text-muted-foreground">Owner:</strong> <span className="font-mono text-foreground/90 break-all">{parsedTokenStatus.ownerAddress}</span></div>
+                                                    <div className="flex items-center justify-between"><strong className="text-muted-foreground">Status:</strong><Badge variant={getTokenStatusVisuals(parsedTokenStatus.status).badge} className={cn("capitalize", getTokenStatusVisuals(parsedTokenStatus.status).color)}>{React.createElement(getTokenStatusVisuals(parsedTokenStatus.status).icon, {className: "mr-1.5 h-3.5 w-3.5"})}{parsedTokenStatus.status}</Badge></div>
+                                                    {parsedTokenStatus.metadataUri && <div className="flex items-center justify-between"><strong className="text-muted-foreground">Metadata URI:</strong> <Link href={parsedTokenStatus.metadataUri} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{parsedTokenStatus.metadataUri} <ExternalLink className="inline h-3 w-3 ml-0.5"/></Link></div>}
+                                                    <div className="flex items-center justify-between"><strong className="text-muted-foreground">Minted At:</strong> <span className="text-foreground/90">{new Date(parsedTokenStatus.mintedAt).toLocaleString()}</span></div>
+                                                    {parsedTokenStatus.lastTransactionHash && <div className="flex items-center justify-between"><strong className="text-muted-foreground">Last Tx:</strong> <Link href={`${TX_EXPLORER_BASE_URL}${parsedTokenStatus.lastTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{parsedTokenStatus.lastTransactionHash} <ExternalLink className="inline h-3 w-3 ml-0.5"/></Link></div>}
+                                                </div>
+                                                )}
+                                                {renderApiResult("Token Status Raw", statusTokenResponse)}
+                                            </form>
+                                        </CardContent>
+                                    </Card>
+                                    <Card className="bg-background">
+                                        <CardHeader>
+                                            <CardTitle className="text-md flex items-center"><FileJson className="h-4 w-4 mr-1.5 text-primary"/>View Off-Chain Token Metadata</CardTitle>
+                                            <CardDescription className="text-xs">Simulates fetching and displaying the JSON metadata linked by the token's URI (e.g., from IPFS).</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <form onSubmit={handleViewTokenMetadata} className="space-y-3">
+                                                <Input value={viewTokenId} onChange={e => setViewTokenId(e.target.value)} placeholder={selected?.blockchainIdentifiers?.tokenId || parsedTokenStatus?.tokenId || "Enter Token ID or Get Status"} />
+                                                <Button type="submit" size="sm" disabled={isViewingTokenMetadata || (!viewTokenId && !parsedTokenStatus?.metadataUri)}>
+                                                    {isViewingTokenMetadata ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileJson className="mr-2 h-4 w-4" />}
+                                                    {isViewingTokenMetadata ? "Fetching..." : "View Metadata"}
+                                                </Button>
+                                                {renderApiResult("Off-Chain Token Metadata", viewTokenMetadataResponse)}
+                                            </form>
+                                        </CardContent>
+                                    </Card>
+                                </div>
+                            </div>
                           </div>
                         </TableCell>
                       </TableRow>

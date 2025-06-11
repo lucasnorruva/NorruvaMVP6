@@ -8,7 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Fingerprint, ShieldCheck, InfoIcon as InfoIconLucide, AlertCircle, Anchor, Link2, Edit, UploadCloud, KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, PlusCircle, CalendarDays, Sigma, Layers3, Tag, CheckCircle as CheckCircleLucide, Server as ServerIcon, Link as LinkIconPath } from "lucide-react";
+import { 
+    Fingerprint, ShieldCheck, InfoIcon as InfoIconLucide, AlertCircle, Anchor, Link2, Edit, UploadCloud, 
+    KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, 
+    PlusCircle, CalendarDays, Sigma, Layers3, Tag, CheckCircle as CheckCircleLucide, 
+    Server as ServerIcon, Link as LinkIconPath, FileCog, BookOpen, CircleDot, Clock, Share2
+} from "lucide-react";
 import { CardDescription } from "@/components/ui/card";
 import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
@@ -16,9 +21,10 @@ import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
+import { Separator } from "@/components/ui/separator";
 
 const EBSI_EXPLORER_BASE_URL = "https://mock-ebsi-explorer.example.com/tx/";
-const TOKEN_EXPLORER_BASE_URL = "https://mock-token-explorer.example.com/tx/";
+const TOKEN_EXPLORER_BASE_URL = "https://mock-token-explorer.example.com/tx/"; // Conceptual token explorer
 const MOCK_API_KEY = "SANDBOX_KEY_123";
 
 const getEbsiStatusBadge = (status?: "verified" | "pending_verification" | "not_verified" | "error" | string) => {
@@ -38,65 +44,48 @@ const getEbsiStatusBadge = (status?: "verified" | "pending_verification" | "not_
 };
 
 function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
+  const hasBlockchainInfo = product.blockchainIdentifiers?.platform || product.blockchainIdentifiers?.contractAddress || product.blockchainIdentifiers?.tokenId || product.blockchainIdentifiers?.anchorTransactionHash;
+  const hasEbsiInfo = product.ebsiVerification?.status || product.ebsiVerification?.verificationId || product.ebsiVerification?.issuerDid || product.ebsiVerification?.schema || product.ebsiVerification?.issuanceDate;
+
   return (
     <div className="space-y-3 p-4 border rounded-md bg-muted/30 text-xs">
-      {product.blockchainIdentifiers?.platform && (
-        <div className="flex flex-col mb-1">
-          <span className="text-muted-foreground">Platform:</span>
-          <span className="text-foreground/90">{product.blockchainIdentifiers.platform}</span>
+      {hasBlockchainInfo && (
+        <div className="mb-3">
+          <h4 className="text-sm font-semibold text-primary mb-1.5 flex items-center"><LinkIconPath className="h-4 w-4 mr-1.5"/>Blockchain Identifiers</h4>
+          {product.blockchainIdentifiers?.platform && (
+            <div className="flex flex-col mb-1"><span className="text-muted-foreground">Platform:</span><span className="text-foreground/90">{product.blockchainIdentifiers.platform}</span></div>
+          )}
+          {product.blockchainIdentifiers?.contractAddress && (
+            <div className="flex flex-col mb-1"><span className="text-muted-foreground">Contract Address:</span><span className="font-mono break-all text-foreground/90">{product.blockchainIdentifiers.contractAddress}</span></div>
+          )}
+           {product.blockchainIdentifiers?.tokenId && (
+            <div className="flex flex-col mb-1"><span className="text-muted-foreground">Token ID:</span><span className="font-mono break-all text-foreground/90">{product.blockchainIdentifiers.tokenId}</span></div>
+          )}
+          {product.blockchainIdentifiers?.anchorTransactionHash ? (
+            <>
+              <div className="flex flex-col mb-1"><span className="text-muted-foreground">Anchor Tx Hash:</span><span className="font-mono break-all text-foreground/90" title={product.blockchainIdentifiers.anchorTransactionHash!}>{product.blockchainIdentifiers.anchorTransactionHash}</span></div>
+              <div className="flex flex-col"><span className="text-muted-foreground">Conceptual Explorer:</span><a href={`${EBSI_EXPLORER_BASE_URL}${product.blockchainIdentifiers.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View on Mock Explorer <ExternalLink className="inline h-3 w-3 ml-0.5" /></a></div>
+            </>
+          ) : null}
         </div>
       )}
-      {product.blockchainIdentifiers?.contractAddress && (
-        <div className="flex flex-col mb-1">
-          <span className="text-muted-foreground">Contract Address:</span>
-          <span className="font-mono break-all text-foreground/90">
-            {product.blockchainIdentifiers.contractAddress}
-          </span>
-        </div>
-      )}
-       {product.blockchainIdentifiers?.tokenId && (
-        <div className="flex flex-col mb-1">
-          <span className="text-muted-foreground">Token ID:</span>
-          <span className="font-mono break-all text-foreground/90">
-            {product.blockchainIdentifiers.tokenId}
-          </span>
-        </div>
-      )}
-      {product.blockchainIdentifiers?.anchorTransactionHash ? (
-        <>
-          <div className="flex flex-col mb-1">
-            <span className="text-muted-foreground">Anchor Transaction Hash:</span>
-            <span className="font-mono break-all text-foreground/90" title={product.blockchainIdentifiers.anchorTransactionHash!}>
-              {product.blockchainIdentifiers.anchorTransactionHash}
-            </span>
-          </div>
-          <div className="flex flex-col mb-2">
-            <span className="text-muted-foreground">EBSI Explorer (Conceptual):</span>
-            <a href={`${EBSI_EXPLORER_BASE_URL}${product.blockchainIdentifiers.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
-              View on Mock Explorer <ExternalLink className="inline h-3 w-3 ml-0.5" />
-            </a>
-          </div>
-        </>
-      ) : null}
-       {product.ebsiVerification?.status && (
-        <div className="flex flex-col mb-1">
-          <span className="text-muted-foreground">EBSI Verification Status:</span>
-          <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiVerification.status)}</div>
-        </div>
-      )}
-      {product.ebsiVerification?.verificationId && (
-        <div className="flex flex-col mb-1">
-          <span className="text-muted-foreground">EBSI Verification ID:</span>
-          <span className="font-mono text-foreground/90 break-all">
-            {product.ebsiVerification.verificationId}
-          </span>
-        </div>
-      )}
-      {product.ebsiVerification?.issuerDid && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">EBSI Issuer DID:</span><span className="font-mono text-xs text-foreground/90 break-all">{product.ebsiVerification.issuerDid}</span></div>)}
-      {product.ebsiVerification?.schema && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">EBSI Schema:</span><span className="font-mono text-xs text-foreground/90 break-all">{product.ebsiVerification.schema}</span></div>)}
-      {product.ebsiVerification?.issuanceDate && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">EBSI Issuance Date:</span><span className="font-mono text-xs text-foreground/90 break-all">{new Date(product.ebsiVerification.issuanceDate).toLocaleString()}</span></div>)}
       
-      {!product.blockchainIdentifiers?.anchorTransactionHash && !product.ebsiVerification?.status && !product.blockchainIdentifiers?.platform && (
+      {hasEbsiInfo && (
+        <div className="mt-2 pt-2 border-t border-border/30">
+            <h4 className="text-sm font-semibold text-primary mb-1.5 flex items-center"><ShieldCheck className="h-4 w-4 mr-1.5"/>EBSI Verification</h4>
+            {product.ebsiVerification?.status && (
+              <div className="flex flex-col mb-1"><span className="text-muted-foreground">Status:</span><div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiVerification.status)}</div></div>
+            )}
+            {product.ebsiVerification?.verificationId && (
+              <div className="flex flex-col mb-1"><span className="text-muted-foreground">Verification ID:</span><span className="font-mono text-foreground/90 break-all">{product.ebsiVerification.verificationId}</span></div>
+            )}
+            {product.ebsiVerification?.issuerDid && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">Issuer DID:</span><span className="font-mono text-xs text-foreground/90 break-all">{product.ebsiVerification.issuerDid}</span></div>)}
+            {product.ebsiVerification?.schema && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">Schema:</span><span className="font-mono text-xs text-foreground/90 break-all">{product.ebsiVerification.schema}</span></div>)}
+            {product.ebsiVerification?.issuanceDate && (<div className="flex flex-col mb-1"><span className="text-xs text-muted-foreground">Issuance Date:</span><span className="font-mono text-xs text-foreground/90 break-all">{new Date(product.ebsiVerification.issuanceDate).toLocaleString()}</span></div>)}
+        </div>
+      )}
+      
+      {!hasBlockchainInfo && !hasEbsiInfo && (
         <p className="text-muted-foreground text-sm">No specific blockchain or EBSI verification details available for this product.</p>
       )}
     </div>
@@ -162,7 +151,7 @@ export default function BlockchainPage() {
  useEffect(() => {
     setIsLoading(true);
     fetch(`/api/v1/dpp?blockchainAnchored=${filter}`, {
-        headers: { Authorization: `Bearer ${MOCK_API_KEY}` }
+        headers: { Authorization: `Bearer ${MOCK_API_KEY}` } // Ensure API key is sent
     })
       .then(async res => {
         if (!res.ok) {
@@ -175,6 +164,7 @@ export default function BlockchainPage() {
       })
       .then(data => {
         if(data && data.error && data.error.message) {
+             // Error message handled by the !res.ok block, this ensures dpps is set to empty array on error.
              setDpps(data.data || []);
         } else if (data && Array.isArray(data.data)) {
           setDpps(data.data);
@@ -191,7 +181,7 @@ export default function BlockchainPage() {
       .finally(() => {
         setIsLoading(false);
       });
-  }, [filter, toast]);
+  }, [filter, toast]); // Removed dpps.length from dependencies
 
   const handleSelectProduct = (dpp: DigitalProductPassport | null) => {
     setSelected(dpp);
@@ -407,14 +397,48 @@ export default function BlockchainPage() {
     setIsGettingTokenStatus(false);
   };
 
-  const renderApiResult = (title: string, responseString: string | null | object) => {
+  const renderApiResult = (title: string, responseString: string | null | object, isErrorResponse?: boolean) => {
     if (!responseString) return null;
-    const displayString = typeof responseString === 'string' ? responseString : JSON.stringify(responseString, null, 2);
+    let displayString: string;
+    let parsedContent: any = null;
+
+    if (typeof responseString === 'string') {
+        displayString = responseString;
+        try {
+            parsedContent = JSON.parse(displayString);
+        } catch (e) { /* ignore parsing error for raw string display */ }
+    } else {
+        displayString = JSON.stringify(responseString, null, 2);
+        parsedContent = responseString;
+    }
+    
+    // Check if it's a credential response to parse specific fields
+    if (title.includes("Credential") && parsedContent && parsedContent['@context'] && !isErrorResponse) {
+        return (
+            <details className="mt-2 text-xs">
+                <summary className="cursor-pointer text-muted-foreground hover:text-foreground">View Parsed & Raw Credential Response</summary>
+                <div className="mt-1 p-3 border rounded-md bg-muted/30 space-y-1.5">
+                    <div className="font-medium">Credential Details:</div>
+                    {parsedContent.id && <div><strong>ID:</strong> <span className="font-mono break-all">{parsedContent.id}</span></div>}
+                    {parsedContent.type && Array.isArray(parsedContent.type) && <div><strong>Type:</strong> {parsedContent.type.join(', ')}</div>}
+                    {parsedContent.issuer && <div><strong>Issuer:</strong> <span className="font-mono break-all">{parsedContent.issuer}</span></div>}
+                    {parsedContent.issuanceDate && <div><strong>Issuance Date:</strong> {new Date(parsedContent.issuanceDate).toLocaleString()}</div>}
+                    {parsedContent.credentialSubject && (
+                        <div><strong>Subject:</strong> <span className="font-mono break-all text-xs">{JSON.stringify(parsedContent.credentialSubject, null, 1).substring(0,150)}...</span></div>
+                    )}
+                </div>
+                <pre className="mt-2 p-2 bg-muted/50 text-muted-foreground rounded overflow-x-auto max-h-60">
+                    <code suppressHydrationWarning>{displayString}</code>
+                </pre>
+            </details>
+        );
+    }
+
     return (
         <details className="mt-2 text-xs">
             <summary className="cursor-pointer text-muted-foreground hover:text-foreground">View Mock {title} Response (Raw JSON)</summary>
             <pre className="mt-1 p-2 bg-muted/50 text-muted-foreground rounded overflow-x-auto max-h-60">
-                <code>{displayString}</code>
+                <code suppressHydrationWarning>{displayString}</code>
             </pre>
         </details>
     );
@@ -537,13 +561,25 @@ export default function BlockchainPage() {
                                     </CardContent>
                                 </Card>
 
-                                {!dpp.blockchainIdentifiers?.anchorTransactionHash && (
+                                {selected.blockchainIdentifiers?.anchorTransactionHash ? (
+                                  <Card className="bg-background">
+                                    <CardHeader><CardTitle className="text-md flex items-center"><Anchor className="mr-2 h-4 w-4 text-green-600"/>DPP Anchoring Status</CardTitle></CardHeader>
+                                    <CardContent className="space-y-1.5">
+                                      <p className="text-sm font-medium text-green-700">Product is Anchored.</p>
+                                      <p className="text-xs"><strong className="text-muted-foreground">Platform:</strong> {selected.blockchainIdentifiers.platform}</p>
+                                      <p className="text-xs"><strong className="text-muted-foreground">Tx Hash:</strong> <span className="font-mono break-all">{selected.blockchainIdentifiers.anchorTransactionHash}</span></p>
+                                      <a href={`${EBSI_EXPLORER_BASE_URL}${selected.blockchainIdentifiers.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline text-xs inline-flex items-center">
+                                        View on Mock Explorer <ExternalLink className="inline h-3 w-3 ml-1" />
+                                      </a>
+                                    </CardContent>
+                                  </Card>
+                                ) : (
                                   <Card className="bg-background">
                                     <CardHeader><CardTitle className="text-md flex items-center"><Anchor className="mr-2 h-4 w-4 text-info"/>Anchor DPP on Blockchain</CardTitle></CardHeader>
                                     <CardContent>
                                       <form onSubmit={handleAnchor} className="flex flex-wrap gap-2 items-end">
                                         <Input value={anchorPlatform} onChange={e => setAnchorPlatform(e.target.value)} placeholder="Blockchain Platform (e.g., EBSI)" className="flex-grow sm:flex-grow-0 sm:w-60" />
-                                        <Button type="submit" size="sm" disabled={isActionLoading === "anchor"}>
+                                        <Button type="submit" size="sm" disabled={isActionLoading === "anchor" || !anchorPlatform.trim()}>
                                             {isActionLoading === "anchor" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Anchor className="mr-2 h-4 w-4"/>}
                                             {isActionLoading === "anchor" ? "Anchoring..." : "Anchor Product"}
                                         </Button>
@@ -556,15 +592,19 @@ export default function BlockchainPage() {
                                   <CardHeader><CardTitle className="text-md flex items-center"><Edit className="mr-2 h-4 w-4 text-info"/>Update Chain of Custody</CardTitle></CardHeader>
                                   <CardContent>
                                     <h4 className="font-medium mb-2 text-sm">Current Steps:</h4>
-                                    <ul className="space-y-1 text-xs mb-3 max-h-32 overflow-y-auto border p-2 rounded-md bg-muted/30">
+                                    <ul className="space-y-2 text-xs mb-3 max-h-32 overflow-y-auto border p-2 rounded-md bg-muted/30">
                                         {dpp.traceability?.supplyChainSteps?.length ? (
                                           (dpp.traceability.supplyChainSteps || []).map((step, idx) => (
-                                          <li key={idx} className="border-b last:border-b-0 pb-1">
-                                            <span className="font-semibold">{step.stepName}</span> - {new Date(step.timestamp).toLocaleString()} <br/> <span className="text-muted-foreground">Actor: {step.actorDid || 'N/A'}, Location: {step.location || 'N/A'} Tx: {step.transactionHash || 'N/A'}</span>
+                                          <li key={idx} className="p-1.5 border-b last:border-b-0 bg-background/50 rounded-sm">
+                                            <div className="font-semibold">{step.stepName}</div>
+                                            <div className="text-muted-foreground">Timestamp: {new Date(step.timestamp).toLocaleString()}</div>
+                                            <div className="text-muted-foreground">Actor DID: <span className="font-mono break-all">{step.actorDid || 'N/A'}</span></div>
+                                            {step.location && <div className="text-muted-foreground">Location: {step.location}</div>}
+                                            {step.transactionHash && <div className="text-muted-foreground">Tx Hash: <span className="font-mono break-all">{step.transactionHash}</span></div>}
                                           </li>
                                         ))
                                       ) : (
-                                        <li className="text-muted-foreground">No steps recorded</li>
+                                        <li className="text-muted-foreground text-center py-2">No custody steps recorded.</li>
                                       )}
                                     </ul>
                                     <form onSubmit={handleAddCustody} className="mt-2 space-y-3">
@@ -586,13 +626,14 @@ export default function BlockchainPage() {
                                 <Card className="bg-background">
                                   <CardHeader><CardTitle className="text-md flex items-center"><FileText className="mr-2 h-4 w-4 text-info"/>Verifiable Credentials</CardTitle></CardHeader>
                                   <CardContent>
+                                     <h4 className="font-medium mb-1.5 text-sm">Linked VCs:</h4>
                                     {dpp.verifiableCredentials && dpp.verifiableCredentials.length > 0 ? (
                                       <ul className="space-y-2 text-xs mb-3 max-h-40 overflow-y-auto border p-2 rounded-md bg-muted/30">
                                         {dpp.verifiableCredentials.map((vc, idx) => (
-                                          <li key={idx} className="border-b last:border-b-0 pb-1">
+                                          <li key={idx} className="border-b last:border-b-0 pb-1.5 p-1.5 bg-background/50 rounded-sm">
                                             <p className="font-semibold">{vc.name || vc.type.join(', ')}</p>
-                                            <p>ID: <span className="font-mono">{vc.id}</span></p>
-                                            <p>Issuer: <span className="font-mono">{vc.issuer}</span></p>
+                                            <p className="truncate" title={vc.id}>ID: <span className="font-mono">{vc.id}</span></p>
+                                            <p>Issuer: <span className="font-mono break-all">{vc.issuer}</span></p>
                                             <p>Issued: {new Date(vc.issuanceDate).toLocaleDateString()}</p>
                                           </li>
                                         ))}
@@ -604,7 +645,7 @@ export default function BlockchainPage() {
                                       {isActionLoading === "fetchCredential" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4"/>}
                                        {isActionLoading === "fetchCredential" ? "Fetching..." : "Get Specific Credential"}
                                     </Button>
-                                    {renderApiResult("Fetched Credential", fetchedCredential)}
+                                    {renderApiResult("Fetched Credential", fetchedCredential, !!(fetchedCredential && fetchedCredential.error))}
                                     <p className="text-xs text-muted-foreground mt-2">
                                       This action fetches a mock Verifiable Credential JSON for the DPP.
                                     </p>
@@ -630,11 +671,16 @@ export default function BlockchainPage() {
                             <Card className="bg-background mt-6">
                                 <CardHeader>
                                   <CardTitle className="text-md flex items-center"><KeyRound className="mr-2 h-4 w-4 text-info"/>DPP Token Operations (Conceptual)</CardTitle>
-                                  <CardDescription className="text-xs">These operations are conceptual and simulate interactions with smart contracts. For details on the underlying smart contract design, refer to the project's <Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline">blockchain architecture documentation</Link>.</CardDescription>
+                                  <CardDescription className="text-xs">
+                                      These operations are conceptual and simulate interactions with smart contracts. 
+                                      For details on the underlying smart contract design, refer to the project's 
+                                      <Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline ml-1">blockchain architecture documentation</Link>.
+                                  </CardDescription>
                                 </CardHeader>
                                 <CardContent className="space-y-6">
                                     <form onSubmit={handleMintToken} className="space-y-3 p-3 border rounded-md">
-                                        <h4 className="font-medium text-sm">Mint Token for Product: {dpp.productName}</h4>
+                                        <h4 className="font-medium text-sm flex items-center"><PlayCircle className="h-4 w-4 mr-1.5 text-primary"/>Mint Token for Product: {dpp.productName}</h4>
+                                        <p className="text-xs text-muted-foreground">This simulates creating a unique blockchain token (e.g., ERC-721 NFT) representing this DPP.</p>
                                         <Input value={mintContractAddress} onChange={e => setMintContractAddress(e.target.value)} placeholder="Contract Address (e.g., 0x...)" />
                                         <Input value={mintRecipientAddress} onChange={e => setMintRecipientAddress(e.target.value)} placeholder="Recipient Address (e.g., 0x...)" />
                                         <Input value={mintMetadataUri} onChange={e => setMintMetadataUri(e.target.value)} placeholder="Metadata URI (e.g., ipfs://...)" />
@@ -644,13 +690,14 @@ export default function BlockchainPage() {
                                         </Button>
                                          {mintResponse?.transactionHash && (
                                             <p className="text-xs text-muted-foreground mt-1">
-                                                Tx Hash: <a href={`${TOKEN_EXPLORER_BASE_URL}${mintResponse.transactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{mintResponse.transactionHash}</a>
+                                                Tx Hash: <a href={`${TOKEN_EXPLORER_BASE_URL}${mintResponse.transactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{mintResponse.transactionHash} <ExternalLink className="inline h-3 w-3 ml-0.5"/></a>
                                             </p>
                                         )}
-                                        {renderApiResult("Mint Token", mintResponse)}
+                                        {renderApiResult("Mint Token", mintResponse, !!(mintResponse && mintResponse.error))}
                                     </form>
                                     <form onSubmit={handleUpdateTokenMetadata} className="space-y-3 p-3 border rounded-md">
-                                        <h4 className="font-medium text-sm">Update Token Metadata</h4>
+                                        <h4 className="font-medium text-sm flex items-center"><Edit className="h-4 w-4 mr-1.5 text-primary"/>Update Token Metadata</h4>
+                                        <p className="text-xs text-muted-foreground">Simulates updating the on-chain metadata URI (e.g., tokenURI) for an existing token.</p>
                                         <Input value={updateTokenId} onChange={e => setUpdateTokenId(e.target.value)} placeholder="Token ID (auto-filled if product selected & tokenized)" />
                                         <Input value={updateMetadataUri} onChange={e => setUpdateMetadataUri(e.target.value)} placeholder="New Metadata URI (e.g., ipfs://...)" />
                                         <Button type="submit" size="sm" disabled={isUpdatingTokenMeta}>
@@ -659,20 +706,21 @@ export default function BlockchainPage() {
                                         </Button>
                                         {updateTokenResponse?.transactionHash && (
                                             <p className="text-xs text-muted-foreground mt-1">
-                                                Tx Hash: <a href={`${TOKEN_EXPLORER_BASE_URL}${updateTokenResponse.transactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{updateTokenResponse.transactionHash}</a>
+                                                Tx Hash: <a href={`${TOKEN_EXPLORER_BASE_URL}${updateTokenResponse.transactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{updateTokenResponse.transactionHash} <ExternalLink className="inline h-3 w-3 ml-0.5"/></a>
                                             </p>
                                         )}
-                                        {renderApiResult("Update Token Metadata", updateTokenResponse)}
+                                        {renderApiResult("Update Token Metadata", updateTokenResponse, !!(updateTokenResponse && updateTokenResponse.error))}
                                     </form>
                                     <form onSubmit={handleGetTokenStatus} className="space-y-3 p-3 border rounded-md">
-                                        <h4 className="font-medium text-sm">Get Token Status</h4>
+                                        <h4 className="font-medium text-sm flex items-center"><CircleDot className="h-4 w-4 mr-1.5 text-primary"/>Get Token Status</h4>
+                                        <p className="text-xs text-muted-foreground">Simulates fetching the current on-chain status of a token.</p>
                                         <Input value={statusTokenId} onChange={e => setStatusTokenId(e.target.value)} placeholder="Token ID (auto-filled if product selected & tokenized)" />
                                         <Button type="submit" size="sm" disabled={isGettingTokenStatus}>
                                             {isGettingTokenStatus ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <InfoIconLucide className="mr-2 h-4 w-4" />}
                                             {isGettingTokenStatus ? "Fetching..." : "Get Status"}
                                         </Button>
                                         {parsedTokenStatus && (
-                                          <div className="mt-2 space-y-1 p-3 text-xs border rounded bg-muted/30">
+                                          <div className="mt-2 space-y-1.5 p-3 text-xs border rounded bg-muted/30">
                                             <div className="flex items-center justify-between">
                                                 <strong className="text-muted-foreground">Owner:</strong> <span className="font-mono text-foreground/90 break-all">{parsedTokenStatus.ownerAddress}</span>
                                             </div>
@@ -683,7 +731,7 @@ export default function BlockchainPage() {
                                                   {parsedTokenStatus.status}
                                                 </Badge>
                                             </div>
-                                            {parsedTokenStatus.metadataUri && <div className="flex items-center justify-between"><strong className="text-muted-foreground">Metadata URI:</strong> <span className="font-mono text-foreground/90 break-all">{parsedTokenStatus.metadataUri}</span></div>}
+                                            {parsedTokenStatus.metadataUri && <div className="flex items-center justify-between"><strong className="text-muted-foreground">Metadata URI:</strong> <a href={parsedTokenStatus.metadataUri} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{parsedTokenStatus.metadataUri} <ExternalLink className="inline h-3 w-3 ml-0.5"/></a></div>}
                                             <div className="flex items-center justify-between"><strong className="text-muted-foreground">Minted At:</strong> <span className="text-foreground/90">{new Date(parsedTokenStatus.mintedAt).toLocaleString()}</span></div>
                                             {parsedTokenStatus.lastTransactionHash && <div className="flex items-center justify-between"><strong className="text-muted-foreground">Last Tx:</strong> <a href={`${TOKEN_EXPLORER_BASE_URL}${parsedTokenStatus.lastTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-mono break-all">{parsedTokenStatus.lastTransactionHash} <ExternalLink className="inline h-3 w-3 ml-0.5"/></a></div>}
                                           </div>
@@ -713,3 +761,4 @@ export default function BlockchainPage() {
     </div>
   );
 }
+

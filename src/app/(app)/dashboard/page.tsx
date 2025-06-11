@@ -3,7 +3,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react";
+import { PlusCircle, FileText, Settings, Package, ShieldCheck } from "lucide-react"; // Added FileText, Settings, Package, ShieldCheck
 import Link from "next/link";
 import { useRole } from "@/contexts/RoleContext";
 

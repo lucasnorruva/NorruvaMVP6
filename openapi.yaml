@@ -1153,7 +1153,7 @@ paths:
                   qrCode:
                     type: string
                     description: Data URL for a PNG image.
-                    example: data:image/png;base64,iVBORw0KGgoAAA
+                    example: data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAPoAAAD6CAYAAAB...
         '401':
           description: API key missing or invalid.
           content:
@@ -1433,7 +1433,7 @@ paths:
               address:
                 type: string
                 nullable: true
-              eori: # Added for EORI System conceptual integration
+              eori: 
                 type: string
                 nullable: true
                 description: Economic Operators Registration and Identification number.
@@ -1714,34 +1714,34 @@ paths:
                   vcId:
                     type: string
                     nullable: true
-              scipNotification: # Added for SCIP API conceptual integration
+              scipNotification:
                 type: object
                 nullable: true
                 properties:
                   status:
                     type: string
-                    enum: ['Notified', 'Pending Notification', 'Not Required', 'Error']
+                    enum: ['Notified', 'Pending Notification', 'Not Required', 'Error', 'N/A']
                   notificationId:
                     type: string
                     nullable: true
                     description: SCIP database notification number.
-                  svhcListVersion: # New
+                  svhcListVersion:
                     type: string
                     nullable: true
                     description: Version of the ECHA Candidate List used for assessment.
-                  submittingLegalEntity: # New
+                  submittingLegalEntity:
                     type: string
                     nullable: true
                     description: Name or identifier of the legal entity that submitted the notification.
-                  articleName: # New
+                  articleName:
                     type: string
                     nullable: true
                     description: Name of the article as notified to SCIP.
-                  primaryArticleId: # New
+                  primaryArticleId:
                     type: string
                     nullable: true
                     description: Primary identifier of the article (e.g., EAN, TARIC code).
-                  safeUseInstructionsLink: # New
+                  safeUseInstructionsLink:
                     type: string
                     format: url
                     nullable: true
@@ -1749,37 +1749,37 @@ paths:
                   lastChecked:
                     type: string
                     format: date-time
-              euCustomsData: # Added for EU Customs Data Model conceptual integration
+              euCustomsData:
                 type: object
                 nullable: true
                 properties:
                   status:
                     type: string
-                    enum: ['Verified', 'Pending Documents', 'Mismatch', 'Cleared']
+                    enum: ['Verified', 'Pending Documents', 'Mismatch', 'Cleared', 'N/A']
                   declarationId:
                     type: string
                     nullable: true
                     description: Customs declaration reference number.
-                  hsCode: # New Harmonized System code
+                  hsCode:
                     type: string
                     nullable: true
                     description: Harmonized System (HS) code for customs classification.
-                  countryOfOrigin: # New
+                  countryOfOrigin:
                     type: string
                     format: "ISO3166-1-Alpha-2"
                     nullable: true
                     description: ISO 3166-1 alpha-2 country code of origin.
-                  netWeightKg: # New
+                  netWeightKg:
                     type: number
                     format: float
                     nullable: true
                     description: Net weight of the product in kilograms.
-                  grossWeightKg: # New
+                  grossWeightKg:
                     type: number
                     format: float
                     nullable: true
                     description: Gross weight of the product in kilograms.
-                  customsValuation: # New
+                  customsValuation:
                     type: object
                     nullable: true
                     properties:
@@ -1803,6 +1803,7 @@ paths:
                   - pending_verification
                   - not_verified
                   - error
+                  - N/A # Added N/A as a possible status
               verificationId:
                 type: string
                 nullable: true
@@ -2173,7 +2174,7 @@ paths:
                 type: object
                 nullable: true
                 properties:
-                  status: { type: string, enum: ['Notified', 'Pending Notification', 'Not Required', 'Error'], nullable: true }
+                  status: { type: string, enum: ['Notified', 'Pending Notification', 'Not Required', 'Error', 'N/A'], nullable: true }
                   notificationId: { type: string, nullable: true }
                   svhcListVersion: { type: string, nullable: true }
                   submittingLegalEntity: { type: string, nullable: true }
@@ -2185,7 +2186,7 @@ paths:
                 type: object
                 nullable: true
                 properties:
-                  status: { type: string, enum: ['Verified', 'Pending Documents', 'Mismatch', 'Cleared'], nullable: true }
+                  status: { type: string, enum: ['Verified', 'Pending Documents', 'Mismatch', 'Cleared', 'N/A'], nullable: true }
                   declarationId: { type: string, nullable: true }
                   hsCode: { type: string, nullable: true }
                   countryOfOrigin: { type: string, format: "ISO3166-1-Alpha-2", nullable: true }
@@ -2209,6 +2210,7 @@ paths:
                   - pending_verification
                   - not_verified
                   - error
+                  - N/A
                 nullable: true
               verificationId:
                 type: string
@@ -2306,5 +2308,7 @@ components:
 
 
 
+
+    
 
     

@@ -38,11 +38,11 @@ export interface ScipNotificationDetails {
 export interface EuCustomsDataDetails {
   status: 'Verified' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'N/A' | string;
   declarationId?: string;
-  hsCode?: string;
-  countryOfOrigin?: string; // ISO 3166-1 Alpha-2
-  netWeightKg?: number;
-  grossWeightKg?: number;
-  customsValuation?: {
+  hsCode?: string; // New: Harmonized System code
+  countryOfOrigin?: string; // New: ISO 3166-1 Alpha-2
+  netWeightKg?: number; // New
+  grossWeightKg?: number; // New
+  customsValuation?: { // New
     value: number;
     currency: string; // ISO 4217
   };
@@ -102,5 +102,7 @@ export interface PublicCertification {
 }
 
 
+
+    
 
     

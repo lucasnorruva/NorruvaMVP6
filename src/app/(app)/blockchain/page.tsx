@@ -8,15 +8,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Fingerprint, ShieldCheck, InfoIcon, AlertCircle, Anchor, Link2, Edit, UploadCloud, KeyRound, FileText, Send, Loader2 } from "lucide-react";
+import { Fingerprint, ShieldCheck, InfoIcon, AlertCircle, Anchor, Link2, Edit, UploadCloud, KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson } from "lucide-react";
 import { CardDescription } from "@/components/ui/card";
-import type { DigitalProductPassport } from "@/types/dpp";
+import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 const EBSI_EXPLORER_BASE_URL = "https://mock-ebsi-explorer.example.com/tx/";
 const MOCK_API_KEY = "SANDBOX_KEY_123";
 
-const getEbsiStatusBadge = (status?: "verified" | "pending" | "not_verified" | "error" | string) => {
+const getEbsiStatusBadge = (status?: "verified" | "pending_verification" | "not_verified" | "error" | string) => {
   switch (status?.toLowerCase()) {
     case "verified":
       return <Badge variant="default" className="bg-green-500/20 text-green-700 border-green-500/30"><ShieldCheck className="mr-1.5 h-3.5 w-3.5" />Verified</Badge>;
@@ -71,7 +72,7 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
       {product.ebsiVerification?.status && (
         <div className="flex flex-col mb-1">
           <span className="text-xs text-muted-foreground">EBSI Verification Status:</span>
-          <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiVerification.status as any)}</div>
+          <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiVerification.status)}</div>
         </div>
       )}
       {!product.blockchainIdentifiers?.anchorTransactionHash && !product.ebsiVerification?.status && (
@@ -87,13 +88,29 @@ export default function BlockchainPage() {
   const [selected, setSelected] = useState<DigitalProductPassport | null>(null);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [isActionLoading, setIsActionLoading] = useState(false);
+  const [isActionLoading, setIsActionLoading] = useState<string | boolean>(false);
 
   const [anchorPlatform, setAnchorPlatform] = useState("");
   const [custodyStep, setCustodyStep] = useState({ stepName: "", actorDid: "", timestamp: "", location: "", transactionHash: "" });
   const [transferName, setTransferName] = useState("");
   const [transferDid, setTransferDid] = useState("");
   const [transferTime, setTransferTime] = useState("");
+
+  const [fetchedCredential, setFetchedCredential] = useState<any | null>(null);
+
+  // State for Token Operations
+  const [mintContractAddress, setMintContractAddress] = useState("0xABCDEF123456");
+  const [mintRecipientAddress, setMintRecipientAddress] = useState("0x1234567890");
+  const [mintMetadataUri, setMintMetadataUri] = useState("ipfs://sample-metadata-uri");
+  const [mintResponse, setMintResponse] = useState<MintTokenResponse | null>(null);
+
+  const [updateTokenId, setUpdateTokenId] = useState("");
+  const [updateMetadataUri, setUpdateMetadataUri] = useState("ipfs://new-metadata-uri");
+  const [updateTokenResponse, setUpdateTokenResponse] = useState<UpdateTokenMetadataResponse | null>(null);
+
+  const [statusTokenId, setStatusTokenId] = useState("");
+  const [statusTokenResponse, setStatusTokenResponse] = useState<TokenStatusResponse | null>(null);
+
 
   useEffect(() => {
     setIsLoading(true);
@@ -149,7 +166,7 @@ export default function BlockchainPage() {
         toast({ title: "Validation Error", description: "Please enter a blockchain platform.", variant: "destructive" });
         return;
     }
-    setIsActionLoading(true);
+    setIsActionLoading("anchor");
     const res = await fetch(`/api/v1/dpp/anchor/${selected.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
@@ -173,7 +190,7 @@ export default function BlockchainPage() {
         toast({ title: "Validation Error", description: "Please fill in step name, actor DID, and timestamp.", variant: "destructive" });
         return;
     }
-    setIsActionLoading(true);
+    setIsActionLoading("custody");
     const res = await fetch(`/api/v1/dpp/custody/${selected.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
@@ -196,16 +213,16 @@ export default function BlockchainPage() {
         toast({ title: "No Product Selected", description: "Please select a product to transfer ownership.", variant: "destructive" });
         return;
     }
-    if (!transferName || !transferDid || !transferTime) {
-        toast({ title: "Validation Error", description: "Please fill in new owner name, DID, and transfer timestamp.", variant: "destructive" });
+    if (!transferName || !transferTime) { // DID is optional as per README example body
+        toast({ title: "Validation Error", description: "Please fill in new owner name and transfer timestamp.", variant: "destructive" });
         return;
     }
     
-    setIsActionLoading(true);
+    setIsActionLoading("transfer");
     const res = await fetch(`/api/v1/dpp/transfer-ownership/${selected.id}`, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
-      body: JSON.stringify({ newOwner: {name: transferName, did: transferDid }, transferTimestamp: transferTime }),
+      body: JSON.stringify({ newOwner: {name: transferName, did: transferDid || undefined }, transferTimestamp: transferTime }),
     });
     if (res.ok) {
       const data = await res.json();
@@ -220,23 +237,81 @@ export default function BlockchainPage() {
     setIsActionLoading(false);
   };
 
-  const fetchCredential = async (productId: string) => {
-    setIsActionLoading(true);
+  const fetchAndDisplayCredential = async (productId: string) => {
+    setIsActionLoading("fetchCredential");
+    setFetchedCredential(null);
     const res = await fetch(`/api/v1/dpp/${productId}/credential`, {
         headers: { Authorization: `Bearer ${MOCK_API_KEY}` }
     });
     if (res.ok) {
       const data = await res.json();
-      alert(
-        "Verifiable Credential (Mock):\n\n" +
-        JSON.stringify(data, null, 2)
-      );
-      toast({ title: "Credential Retrieved", description: "Verifiable credential data fetched (displayed in alert)." });
+      setFetchedCredential(data);
+      toast({ title: "Credential Retrieved", description: "Verifiable credential data fetched and displayed." });
     } else {
       handleApiError(res, "Fetching Credential");
+      setFetchedCredential({ error: "Failed to fetch credential." });
     }
     setIsActionLoading(false);
   };
+
+  const handleMintToken = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!selected) return;
+    setIsActionLoading("mintToken");
+    setMintResponse(null);
+    const res = await fetch(`/api/v1/token/mint/${selected.id}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
+      body: JSON.stringify({ contractAddress: mintContractAddress, recipientAddress: mintRecipientAddress, metadataUri: mintMetadataUri }),
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setMintResponse(data);
+      toast({ title: "Token Mint Initiated (Mock)", description: `Token for ${selected.id} minted. Tx: ${data.transactionHash}` });
+    } else {
+      handleApiError(res, "Minting Token");
+    }
+    setIsActionLoading(false);
+  };
+
+  const handleUpdateTokenMetadata = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!updateTokenId) return;
+    setIsActionLoading("updateTokenMeta");
+    setUpdateTokenResponse(null);
+    const res = await fetch(`/api/v1/token/metadata/${updateTokenId}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
+      body: JSON.stringify({ metadataUri: updateMetadataUri, contractAddress: "0xUpdatedContractIfDifferent" }), // Optional contractAddress
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setUpdateTokenResponse(data);
+      toast({ title: "Token Metadata Update Initiated (Mock)", description: `Metadata for token ${updateTokenId} updated. Tx: ${data.transactionHash}` });
+    } else {
+      handleApiError(res, "Updating Token Metadata");
+    }
+    setIsActionLoading(false);
+  };
+  
+  const handleGetTokenStatus = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!statusTokenId) return;
+    setIsActionLoading("getTokenStatus");
+    setStatusTokenResponse(null);
+    const res = await fetch(`/api/v1/token/status/${statusTokenId}`, {
+      headers: { Authorization: `Bearer ${MOCK_API_KEY}` },
+    });
+    const data = await res.json();
+    if (res.ok) {
+      setStatusTokenResponse(data);
+      toast({ title: "Token Status Retrieved (Mock)", description: `Status for token ${statusTokenId} displayed.` });
+    } else {
+      handleApiError(res, "Getting Token Status");
+    }
+    setIsActionLoading(false);
+  };
+
 
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8">
@@ -257,10 +332,11 @@ export default function BlockchainPage() {
             <li><strong>Anchor DPPs:</strong> Create immutable records of your DPPs on a blockchain (e.g., EBSI).</li>
             <li><strong>Update Chain of Custody:</strong> Record the transfer of custody as products move.</li>
             <li><strong>Transfer Ownership:</strong> Update the ownership details associated with a DPP.</li>
-            <li><strong>Retrieve Verifiable Credentials:</strong> Access verifiable data for digital wallets or other systems.</li>
+            <li><strong>Manage Verifiable Credentials:</strong> View and retrieve verifiable data for digital wallets or other systems.</li>
+            <li><strong>Interact with DPP Tokens:</strong> Perform conceptual operations like minting, updating metadata, and checking status for blockchain tokens representing DPPs.</li>
           </ul>
           <p className="mt-2">
-            These actions align with the blockchain integration concepts outlined in the project documentation.
+            These actions align with the blockchain integration concepts outlined in the project documentation. All operations are simulated for this demo.
           </p>
         </CardContent>
       </Card>
@@ -313,7 +389,7 @@ export default function BlockchainPage() {
                         )}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button variant="outline" size="sm" onClick={() => setSelected(selected?.id === dpp.id ? null : dpp)}>
+                        <Button variant="outline" size="sm" onClick={() => { setSelected(selected?.id === dpp.id ? null : dpp); setFetchedCredential(null); setMintResponse(null); setUpdateTokenResponse(null); setStatusTokenResponse(null); }}>
                           {selected?.id === dpp.id ? "Hide Details" : "Manage"}
                         </Button>
                       </TableCell>
@@ -333,8 +409,8 @@ export default function BlockchainPage() {
                                 <CardContent>
                                   <form onSubmit={handleAnchor} className="flex flex-wrap gap-2 items-end">
                                     <Input value={anchorPlatform} onChange={e => setAnchorPlatform(e.target.value)} placeholder="Blockchain Platform (e.g., EBSI)" className="flex-grow sm:flex-grow-0 sm:w-60" />
-                                    <Button type="submit" size="sm" disabled={isActionLoading}>
-                                        {isActionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    <Button type="submit" size="sm" disabled={isActionLoading === "anchor"}>
+                                        {isActionLoading === "anchor" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                         Anchor Product
                                     </Button>
                                   </form>
@@ -364,8 +440,8 @@ export default function BlockchainPage() {
                                     <Input type="datetime-local" value={custodyStep.timestamp} onChange={e => setCustodyStep({ ...custodyStep, timestamp: e.target.value })} />
                                     <Input placeholder="Location (Optional)" value={custodyStep.location} onChange={e => setCustodyStep({ ...custodyStep, location: e.target.value })} />
                                     <Input placeholder="Tx Hash (Optional)" value={custodyStep.transactionHash} onChange={e => setCustodyStep({ ...custodyStep, transactionHash: e.target.value })} />
-                                    <Button type="submit" size="sm" className="sm:col-start-3 md:col-start-auto" disabled={isActionLoading}>
-                                        {isActionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    <Button type="submit" size="sm" className="sm:col-start-3 md:col-start-auto" disabled={isActionLoading === "custody"}>
+                                        {isActionLoading === "custody" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                         Add Custody Step
                                     </Button>
                                   </div>
@@ -373,39 +449,94 @@ export default function BlockchainPage() {
                               </CardContent>
                             </Card>
                             
-                            <div className="p-4 border rounded-md space-y-3 bg-muted/30">
-                              <h3 className="flex items-center mb-2 font-semibold text-lg text-primary"><FileText className="h-5 w-5 mr-2" />Verifiable Credentials</h3>
-                              <p className="text-muted-foreground text-sm">Placeholder for Verifiable Credentials List. Will display VC type, issuer, issuance date, etc.</p>
-                              <p className="text-muted-foreground text-sm">Placeholder for VC Revocation Status.</p>
-                              <Badge variant="secondary">Revocation Status: Placeholder</Badge>
-                            </div>
+                            <Card className="bg-background">
+                              <CardHeader><CardTitle className="text-md flex items-center"><FileText className="mr-2 h-4 w-4 text-info"/>Verifiable Credentials</CardTitle></CardHeader>
+                              <CardContent>
+                                {dpp.verifiableCredentials && dpp.verifiableCredentials.length > 0 ? (
+                                  <ul className="space-y-2 text-xs mb-3 max-h-40 overflow-y-auto border p-2 rounded-md bg-muted/30">
+                                    {dpp.verifiableCredentials.map((vc, idx) => (
+                                      <li key={idx} className="border-b last:border-b-0 pb-1">
+                                        <p className="font-semibold">{vc.name || vc.type.join(', ')}</p>
+                                        <p>ID: <span className="font-mono">{vc.id}</span></p>
+                                        <p>Issuer: <span className="font-mono">{vc.issuer}</span></p>
+                                        <p>Issued: {new Date(vc.issuanceDate).toLocaleDateString()}</p>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                ) : (
+                                  <p className="text-xs text-muted-foreground mb-2">No verifiable credentials directly linked to this DPP in the main record.</p>
+                                )}
+                                <Button size="sm" variant="secondary" onClick={() => fetchAndDisplayCredential(dpp.id)} className="w-full sm:w-auto" disabled={isActionLoading === "fetchCredential"}>
+                                  {isActionLoading === "fetchCredential" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4"/>}
+                                   Get Specific Credential for DPP
+                                </Button>
+                                {fetchedCredential && (
+                                  <Alert className="mt-3 text-xs bg-muted/50">
+                                    <FileJson className="h-4 w-4" />
+                                    <AlertTitle>Fetched Credential Detail:</AlertTitle>
+                                    <AlertDescription>
+                                      <pre className="mt-1 p-2 bg-black/80 text-white rounded-md text-[0.7rem] overflow-x-auto max-h-60">
+                                        <code>{JSON.stringify(fetchedCredential, null, 2)}</code>
+                                      </pre>
+                                    </AlertDescription>
+                                  </Alert>
+                                )}
+                                <p className="text-xs text-muted-foreground mt-2">
+                                  This action fetches a mock Verifiable Credential JSON for the DPP. In a real system, VCs might be stored off-chain and referenced, or embedded.
+                                </p>
+                              </CardContent>
+                            </Card>
 
-                            <div className="grid md:grid-cols-2 gap-4">
-                              <Card className="bg-background">
+                            <Card className="bg-background mt-6">
                                 <CardHeader><CardTitle className="text-md flex items-center"><UploadCloud className="mr-2 h-4 w-4 text-info"/>Transfer Ownership</CardTitle></CardHeader>
                                 <CardContent>
                                   <form onSubmit={handleTransfer} className="space-y-3">
                                     <Input placeholder="New Owner Name" value={transferName} onChange={e => setTransferName(e.target.value)} />
-                                    <Input placeholder="New Owner DID" value={transferDid} onChange={e => setTransferDid(e.target.value)} />
+                                    <Input placeholder="New Owner DID (Optional)" value={transferDid} onChange={e => setTransferDid(e.target.value)} />
                                     <Input type="datetime-local" value={transferTime} onChange={e => setTransferTime(e.target.value)} />
-                                    <Button type="submit" size="sm" className="w-full" disabled={isActionLoading}>
-                                        {isActionLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                    <Button type="submit" size="sm" className="w-full" disabled={isActionLoading === "transfer"}>
+                                        {isActionLoading === "transfer" && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                                         Transfer Ownership
                                     </Button>
                                   </form>
                                 </CardContent>
-                              </Card>
-                              <Card className="bg-background">
-                                <CardHeader><CardTitle className="text-md flex items-center"><FileText className="mr-2 h-4 w-4 text-info"/>Verifiable Credential</CardTitle></CardHeader>
-                                <CardContent>
-                                  <p className="text-xs text-muted-foreground mb-2">Retrieve a mock verifiable credential for this DPP.</p>
-                                  <Button size="sm" variant="secondary" onClick={() => fetchCredential(dpp.id)} className="w-full" disabled={isActionLoading}>
-                                    {isActionLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4"/>}
-                                     Get Credential
-                                  </Button>
+                            </Card>
+
+                            <Card className="bg-background mt-6">
+                                <CardHeader><CardTitle className="text-md flex items-center"><KeyRound className="mr-2 h-4 w-4 text-info"/>DPP Token Operations (Conceptual)</CardTitle></CardHeader>
+                                <CardContent className="space-y-6">
+                                    <form onSubmit={handleMintToken} className="space-y-3 p-3 border rounded-md">
+                                        <h4 className="font-medium text-sm">Mint Token for Product: {dpp.id}</h4>
+                                        <Input value={mintContractAddress} onChange={e => setMintContractAddress(e.target.value)} placeholder="Contract Address (e.g., 0x...)" />
+                                        <Input value={mintRecipientAddress} onChange={e => setMintRecipientAddress(e.target.value)} placeholder="Recipient Address (e.g., 0x...)" />
+                                        <Input value={mintMetadataUri} onChange={e => setMintMetadataUri(e.target.value)} placeholder="Metadata URI (e.g., ipfs://...)" />
+                                        <Button type="submit" size="sm" disabled={isActionLoading === "mintToken"}>
+                                            {isActionLoading === "mintToken" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                                            Mint Token
+                                        </Button>
+                                        {mintResponse && <pre className="mt-2 p-2 bg-muted text-xs rounded overflow-x-auto"><code>{JSON.stringify(mintResponse, null, 2)}</code></pre>}
+                                    </form>
+                                    <form onSubmit={handleUpdateTokenMetadata} className="space-y-3 p-3 border rounded-md">
+                                        <h4 className="font-medium text-sm">Update Token Metadata</h4>
+                                        <Input value={updateTokenId} onChange={e => setUpdateTokenId(e.target.value)} placeholder="Token ID (e.g., 123)" />
+                                        <Input value={updateMetadataUri} onChange={e => setUpdateMetadataUri(e.target.value)} placeholder="New Metadata URI (e.g., ipfs://...)" />
+                                        <Button type="submit" size="sm" disabled={isActionLoading === "updateTokenMeta"}>
+                                            {isActionLoading === "updateTokenMeta" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Edit className="mr-2 h-4 w-4" />}
+                                            Update Metadata
+                                        </Button>
+                                        {updateTokenResponse && <pre className="mt-2 p-2 bg-muted text-xs rounded overflow-x-auto"><code>{JSON.stringify(updateTokenResponse, null, 2)}</code></pre>}
+                                    </form>
+                                    <form onSubmit={handleGetTokenStatus} className="space-y-3 p-3 border rounded-md">
+                                        <h4 className="font-medium text-sm">Get Token Status</h4>
+                                        <Input value={statusTokenId} onChange={e => setStatusTokenId(e.target.value)} placeholder="Token ID (e.g., 123)" />
+                                        <Button type="submit" size="sm" disabled={isActionLoading === "getTokenStatus"}>
+                                            {isActionLoading === "getTokenStatus" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <InfoIcon className="mr-2 h-4 w-4" />}
+                                            Get Status
+                                        </Button>
+                                        {statusTokenResponse && <pre className="mt-2 p-2 bg-muted text-xs rounded overflow-x-auto"><code>{JSON.stringify(statusTokenResponse, null, 2)}</code></pre>}
+                                    </form>
                                 </CardContent>
-                              </Card>
-                            </div>
+                            </Card>
                           </div>
                         </TableCell>
                       </TableRow>

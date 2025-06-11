@@ -1,3 +1,4 @@
+
 import type { DigitalProductPassport } from '@/types/dpp';
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
@@ -49,6 +50,33 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       {id: "cert1", name: "Energy Star", issuer: "EPA", issueDate: "2024-01-01T11:00:00Z", documentUrl: "#", transactionHash: "0xcertAnchor1", standard: "Energy Star Program Requirements for Refrigerators v6.0"},
       {id: "cert2", name: "ISO 14001", issuer: "TUV Rheinland", issueDate: "2024-01-20T00:00:00Z", expiryDate: "2026-11-14", documentUrl: "#iso14001", vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015"}
     ],
+    verifiableCredentials: [
+        {
+            id: "urn:uuid:cred-energy-star-dpp001",
+            type: ["VerifiableCredential", "EnergyStarCertification"],
+            name: "Energy Star Certificate VC",
+            issuer: "did:ebsi:zEnergyStarIssuer",
+            issuanceDate: "2024-01-01T11:00:00Z",
+            credentialSubject: {
+                productId: "DPP001",
+                certificationStandard: "Energy Star Program Requirements for Refrigerators v6.0",
+                certificationStatus: "Active"
+            }
+        },
+        {
+            id: "urn:uuid:cred-iso14001-dpp001",
+            type: ["VerifiableCredential", "ISOComplianceCredential"],
+            name: "ISO 14001 Compliance VC",
+            issuer: "did:ebsi:zTuvRheinland",
+            issuanceDate: "2024-01-20T00:00:00Z",
+            credentialSubject: {
+                productId: "DPP001",
+                standard: "ISO 14001:2015",
+                complianceStatus: "Conformant",
+                expiryDate: "2026-11-14"
+            }
+        }
+    ],
     documents: [
       { name: "User Manual v1.2", url: "#manual_v1.2.pdf", type: "User Manual", addedTimestamp: "2024-01-15T00:00:00Z" },
       { name: "Warranty Card", url: "#warranty.pdf", type: "Warranty", addedTimestamp: "2024-01-15T00:00:00Z" },
@@ -95,6 +123,21 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     blockchainIdentifiers: { platform: "MockChain" },
     certifications: [
       {id: "cert3", name: "GOTS", issuer: "Control Union", issueDate: "2024-02-20", expiryDate: "2025-02-19", documentUrl: "#gots", standard: "Global Organic Textile Standard 6.0"},
+    ],
+    verifiableCredentials: [
+      {
+          id: "urn:uuid:cred-gots-dpp002",
+          type: ["VerifiableCredential", "GOTSCertification"],
+          name: "GOTS Certificate VC",
+          issuer: "did:ebsi:zControlUnion",
+          issuanceDate: "2024-02-20T00:00:00Z",
+          credentialSubject: {
+              productId: "DPP002",
+              standard: "Global Organic Textile Standard 6.0",
+              certificationStatus: "Active",
+              scope: "Organic Cotton T-Shirt"
+          }
+      }
     ],
     documents: [],
     traceability: {
@@ -224,3 +267,5 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     supplyChainLinks: []
   },
 ];
+
+    

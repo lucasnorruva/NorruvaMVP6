@@ -1,6 +1,6 @@
 
 // --- File: src/utils/__tests__/aiFormHelpers.test.tsx ---
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+
 import type { UseFormReturn } from 'react-hook-form';
 import type { ProductFormData } from '@/components/products/ProductForm';
 import type { ToastInput } from '@/hooks/use-toast';
@@ -13,32 +13,32 @@ import {
 } from '../aiFormHelpers';
 
 // Mock AI Flow functions
-vi.mock('@/ai/flows/generate-product-name-flow', () => ({
-  generateProductName: vi.fn(),
+jest.mock('@/ai/flows/generate-product-name-flow', () => ({
+  generateProductName: jest.fn(),
 }));
-vi.mock('@/ai/flows/generate-product-image-flow', () => ({
-  generateProductImage: vi.fn(),
+jest.mock('@/ai/flows/generate-product-image-flow', () => ({
+  generateProductImage: jest.fn(),
 }));
 // Add mocks for other AI flows as needed for other helper functions
 
 // Helper to create a mock form object
 const createMockForm = (): Partial<UseFormReturn<ProductFormData>> => ({
-  getValues: vi.fn(),
-  setValue: vi.fn(),
+  getValues: jest.fn(),
+  setValue: jest.fn(),
 });
 
 // Mock toast function
-const mockToast = vi.fn();
-const mockSetLoadingState = vi.fn();
+const mockToast = jest.fn();
+const mockSetLoadingState = jest.fn();
 
 describe('aiFormHelpers', () => {
   let mockForm: Partial<UseFormReturn<ProductFormData>>;
 
   beforeEach(() => {
-    vi.clearAllMocks();
+    jest.clearAllMocks();
     mockForm = createMockForm();
     // Default mock implementations
-    (mockForm.getValues as vi.Mock).mockReturnValue({
+    (mockForm.getValues as jest.Mock).mockReturnValue({
       productDescription: 'A great test product',
       productCategory: 'Testing',
       productName: 'Test Product Name', // For image generation
@@ -51,7 +51,7 @@ describe('aiFormHelpers', () => {
 
     it('should call generateProductName and update form on success', async () => {
       const suggestedName = 'AI Suggested Name';
-      (generateProductName as vi.Mock).mockResolvedValue({ productName: suggestedName });
+      (generateProductName as jest.Mock).mockResolvedValue({ productName: suggestedName });
 
       const result = await handleSuggestNameAI(
         mockForm as UseFormReturn<ProductFormData>,
@@ -74,7 +74,7 @@ describe('aiFormHelpers', () => {
     });
 
     it('should show error toast if input is insufficient', async () => {
-      (mockForm.getValues as vi.Mock).mockReturnValue({}); // No description or category
+      (mockForm.getValues as jest.Mock).mockReturnValue({}); // No description or category
 
       const result = await handleSuggestNameAI(
         mockForm as UseFormReturn<ProductFormData>,
@@ -94,7 +94,7 @@ describe('aiFormHelpers', () => {
 
     it('should show error toast if AI flow fails', async () => {
       const errorMessage = 'AI service unavailable';
-      (generateProductName as vi.Mock).mockRejectedValue(new Error(errorMessage));
+      (generateProductName as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
       const result = await handleSuggestNameAI(
         mockForm as UseFormReturn<ProductFormData>,
@@ -117,7 +117,7 @@ describe('aiFormHelpers', () => {
 
     it('should call generateProductImage and return image URL on success', async () => {
       const imageUrl = 'data:image/png;base64,mockimage';
-      (generateProductImage as vi.Mock).mockResolvedValue({ imageUrl });
+      (generateProductImage as jest.Mock).mockResolvedValue({ imageUrl });
 
       const result = await handleGenerateImageAI(
         mockForm as UseFormReturn<ProductFormData>,
@@ -141,7 +141,7 @@ describe('aiFormHelpers', () => {
     });
 
     it('should show error toast if product name is missing', async () => {
-      (mockForm.getValues as vi.Mock).mockReturnValue({ productCategory: 'Testing' }); // No productName
+      (mockForm.getValues as jest.Mock).mockReturnValue({ productCategory: 'Testing' }); // No productName
 
       const result = await handleGenerateImageAI(
         mockForm as UseFormReturn<ProductFormData>,
@@ -161,7 +161,7 @@ describe('aiFormHelpers', () => {
 
     it('should show error toast if AI image generation fails', async () => {
       const errorMessage = 'Image generation service error';
-      (generateProductImage as vi.Mock).mockRejectedValue(new Error(errorMessage));
+      (generateProductImage as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
       const result = await handleGenerateImageAI(
         mockForm as UseFormReturn<ProductFormData>,

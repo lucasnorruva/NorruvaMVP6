@@ -983,6 +983,132 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/token/mint/{productId}:
+    post:
+      operationId: mintDppToken
+      summary: Mint DPP Token
+      description: Mints a blockchain token representing the specified Digital Product Passport.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MintTokenRequest'
+      responses:
+        '201':
+          description: Token minted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MintTokenResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/token/metadata/{tokenId}:
+    patch:
+      operationId: updateTokenMetadata
+      summary: Update Token Metadata
+      description: Updates on-chain metadata URI for a minted DPP token.
+      parameters:
+        - name: tokenId
+          in: path
+          required: true
+          description: The blockchain token ID.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTokenMetadataRequest'
+      responses:
+        '200':
+          description: Metadata updated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateTokenMetadataResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Token not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/token/status/{tokenId}:
+    get:
+      operationId: getTokenStatus
+      summary: Retrieve Token On-Chain Status
+      description: Retrieves on-chain information for a DPP token.
+      parameters:
+        - name: tokenId
+          in: path
+          required: true
+          description: The blockchain token ID.
+          schema:
+            type: string
+      responses:
+        '200':
+          description: On-chain status information.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenStatusResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Token not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
   /api/v1/qr/generate/{productId}:
     get:
       operationId: generateQrCode
@@ -1953,6 +2079,73 @@ paths:
           nullable: true
           items:
             $ref: '#/components/schemas/DocumentReference'
+    MintTokenRequest:
+      type: object
+      required:
+        - contractAddress
+        - recipientAddress
+      properties:
+        contractAddress:
+          type: string
+          description: Smart contract address used for minting.
+        recipientAddress:
+          type: string
+          description: Blockchain address receiving the token.
+        metadataUri:
+          type: string
+          nullable: true
+          description: URI for the off-chain metadata.
+    MintTokenResponse:
+      type: object
+      properties:
+        tokenId:
+          type: string
+        contractAddress:
+          type: string
+        transactionHash:
+          type: string
+    UpdateTokenMetadataRequest:
+      type: object
+      required:
+        - metadataUri
+      properties:
+        metadataUri:
+          type: string
+          description: New metadata URI for the token.
+        contractAddress:
+          type: string
+          nullable: true
+          description: Contract address if different from default.
+    UpdateTokenMetadataResponse:
+      type: object
+      properties:
+        tokenId:
+          type: string
+        contractAddress:
+          type: string
+        transactionHash:
+          type: string
+    TokenStatusResponse:
+      type: object
+      properties:
+        tokenId:
+          type: string
+        contractAddress:
+          type: string
+        ownerAddress:
+          type: string
+        mintedAt:
+          type: string
+          format: date-time
+        metadataUri:
+          type: string
+          nullable: true
+        lastTransactionHash:
+          type: string
+          nullable: true
+        status:
+          type: string
+          description: Current on-chain status of the token.
 security:
   - ApiKeyAuth: []
 components:

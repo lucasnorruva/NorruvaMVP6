@@ -77,7 +77,13 @@ export async function PATCH(
   // Placeholder for other extend actions, e.g., chainOfCustodyUpdate
   if (requestBody.chainOfCustodyUpdate) {
     // Mock: Log that chain of custody update was received, but don't implement fully
-    console.log(`Chain of custody update received for ${productId}:`, requestBody.chainOfCustodyUpdate);
+    if (process.env.NODE_ENV !== 'production') {
+      // eslint-disable-next-line no-console
+      console.log(
+        `Chain of custody update received for ${productId}:`,
+        requestBody.chainOfCustodyUpdate,
+      );
+    }
     productToUpdate.metadata.last_updated = new Date().toISOString();
     MOCK_DPPS[productIndex] = productToUpdate;
     return NextResponse.json(productToUpdate);

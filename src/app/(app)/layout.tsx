@@ -10,16 +10,24 @@ import AppSidebarContent from "@/components/layout/AppSidebarContent";
 
 // Runtime patch to strip asChild from DOM elements
 if (typeof window !== 'undefined' && React.createElement) {
-  const originalCreateElement = React.createElement;
-  // @ts-ignore
-  React.createElement = function(type: string | React.ComponentType<any>, props: any, ...children: ReactNode[]) {
-    if (props && props.asChild && typeof type === 'string') {
-      // console.log(`Stripping asChild prop from DOM element of type: ${type}`);
+  type CreateElementFn = typeof React.createElement;
+  type AnyComponent = React.ComponentType<Record<string, unknown>>;
+
+  const originalCreateElement: CreateElementFn = React.createElement;
+
+  const patchedCreateElement = (
+    type: string | AnyComponent,
+    props: Record<string, unknown> | null,
+    ...children: ReactNode[]
+  ): ReturnType<CreateElementFn> => {
+    if (props && 'asChild' in props && typeof type === 'string') {
       const { asChild, ...cleanProps } = props;
       return originalCreateElement(type, cleanProps, ...children);
     }
     return originalCreateElement(type, props, ...children);
   };
+
+  React.createElement = patchedCreateElement as unknown as CreateElementFn;
   // console.log('Firebase Studio asChild prop runtime patch applied to React.createElement');
 }
 

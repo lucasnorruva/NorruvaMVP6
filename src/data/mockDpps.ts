@@ -53,6 +53,17 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       { name: "User Manual v1.2", url: "#manual_v1.2.pdf", type: "User Manual", addedTimestamp: "2024-01-15T00:00:00Z" },
       { name: "Warranty Card", url: "#warranty.pdf", type: "Warranty", addedTimestamp: "2024-01-15T00:00:00Z" },
     ],
+    traceability: {
+      supplyChainSteps: [
+        {
+          stepName: 'Manufactured',
+          actorDid: 'did:example:greentech',
+          timestamp: '2024-01-15T00:00:00Z',
+          location: 'Factory A',
+          transactionHash: '0xstep1'
+        }
+      ]
+    },
     supplyChainLinks: [
       { supplierId: "SUP001", suppliedItem: "Compressor Unit XJ-500", notes: "Primary compressor supplier for EU market. Audited for ethical sourcing." },
       { supplierId: "SUP002", suppliedItem: "Recycled Steel Panels (70%)", notes: "Certified post-consumer recycled content." }
@@ -85,6 +96,17 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       {id: "cert3", name: "GOTS", issuer: "Control Union", issueDate: "2024-02-20", expiryDate: "2025-02-19", documentUrl: "#gots", standard: "Global Organic Textile Standard 6.0"},
     ],
     documents: [],
+    traceability: {
+      supplyChainSteps: [
+        {
+          stepName: 'Manufactured',
+          actorDid: 'did:example:ecothreads',
+          timestamp: '2024-03-05T00:00:00Z',
+          location: 'Factory B',
+          transactionHash: '0xstep2'
+        }
+      ]
+    },
     supplyChainLinks: [
        { supplierId: "SUP003", suppliedItem: "Organic Cotton Yarn", notes: "GOTS Certified Supplier for all global production." }
     ]
@@ -105,9 +127,20 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     consumerScans: 2100,
      productDetails: { description: "A recycled phone case."},
      blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0x789polymerAnchorHash000333"},
-     documents: [],
-     supplyChainLinks: [],
-     ebsiVerification: { status: "not_verified", lastChecked: "2024-07-23T00:00:00Z"},
+    documents: [],
+    traceability: {
+      supplyChainSteps: [
+        {
+          stepName: 'Manufactured',
+          actorDid: 'did:example:recaseit',
+          timestamp: '2024-04-15T00:00:00Z',
+          location: 'Factory C',
+          transactionHash: '0xstep3'
+        }
+      ]
+    },
+    supplyChainLinks: [],
+    ebsiVerification: { status: "not_verified", lastChecked: "2024-07-23T00:00:00Z"},
   },
   {
     id: "DPP004",
@@ -124,6 +157,17 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     consumerScans: 850,
     productDetails: { description: "A modular sofa."},
     documents: [],
+    traceability: {
+      supplyChainSteps: [
+        {
+          stepName: 'Manufactured',
+          actorDid: 'did:example:comfyliving',
+          timestamp: '2023-12-10T00:00:00Z',
+          location: 'Factory D',
+          transactionHash: '0xstep4'
+        }
+      ]
+    },
     supplyChainLinks: [],
     ebsiVerification: { status: "error", lastChecked: "2024-07-19T00:00:00Z", message: "Connection timeout to EBSI node."},
   },
@@ -160,6 +204,17 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       {id: "cert_bat_01", name: "UN 38.3 Transport Test", issuer: "TestCert Ltd.", issueDate: "2024-07-01", documentUrl: "#", transactionHash: "0xcertAnchorBat1", standard: "UN Manual of Tests and Criteria, Part III, subsection 38.3"}
     ],
     documents: [],
+    traceability: {
+      supplyChainSteps: [
+        {
+          stepName: 'Manufactured',
+          actorDid: 'did:example:powervolt',
+          timestamp: '2024-05-10T00:00:00Z',
+          location: 'Factory E',
+          transactionHash: '0xstep5'
+        }
+      ]
+    },
     blockchainIdentifiers: { platform: "BatteryChain", anchorTransactionHash: "0xevBatteryAnchorHash555AAA"},
     supplyChainLinks: []
   },

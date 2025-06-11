@@ -124,6 +124,23 @@ curl -X PATCH https://api.example.com/api/v1/dpp/extend/{productId} \
       }'
 ```
 
+### Updating Chain of Custody
+
+Append a new supply chain step using `PATCH /api/v1/dpp/custody/{productId}`:
+
+```bash
+curl -X PATCH https://api.example.com/api/v1/dpp/custody/{productId} \
+  -H 'Authorization: Bearer <API_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "stepName": "Handed to Distributor",
+        "actorDid": "did:example:distributor",
+        "timestamp": "2024-08-01T12:00:00Z",
+        "location": "Warehouse Z",
+        "transactionHash": "0xabc123"
+      }'
+```
+
 ### Retrieving a Verifiable Credential
 
 Fetch the DPP to obtain associated verifiable credentials that can be imported into digital wallets:

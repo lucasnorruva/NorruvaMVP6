@@ -46,6 +46,9 @@ export default function GlobeV2Page() {
   const [globeReady, setGlobeReady] = useState(false);
   const [dataLoaded, setDataLoaded] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const [countryStats, setCountryStats] = useState<Record<string, number>>({});
+  const [maxCount, setMaxCount] = useState(0);
+
 
   // Approximate header height (adjust if your header height is different or dynamic)
   const HEADER_HEIGHT = 64; // Example: 4rem = 64px
@@ -66,13 +69,9 @@ export default function GlobeV2Page() {
     return () => window.removeEventListener('resize', updateDimensions);
   }, []);
 
-  // Function to fetch country polygon data
-  const fetchLandPolygons = useCallback(() => {
-    setDataLoaded(false);
-    setLoadError(false);
-    fetch(
-      'https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson'
-    )
+  // Effect to fetch country polygon data
+  useEffect(() => {
+    fetch('/data/ne_110m_admin_0_countries.geojson')
       .then((res) => res.json())
       .then((geoJson: FeatureCollection<Geometry, CountryProperties>) => {
         setLandPolygons(geoJson.features);
@@ -87,15 +86,58 @@ export default function GlobeV2Page() {
       });
   }, []);
 
-  // Fetch country data on mount
+  // Mapping from ISO-2 to ISO-3 codes for EU countries
+  const ISO2_TO_ISO3: Record<string, string> = {
+    AT: 'AUT', BE: 'BEL', BG: 'BGR', HR: 'HRV', CY: 'CYP', CZ: 'CZE',
+    DK: 'DNK', EE: 'EST', FI: 'FIN', FR: 'FRA', DE: 'DEU', GR: 'GRC',
+    HU: 'HUN', IE: 'IRL', IT: 'ITA', LV: 'LVA', LT: 'LTU', LU: 'LUX',
+    MT: 'MLT', NL: 'NLD', PL: 'POL', PT: 'PRT', RO: 'ROU', SK: 'SVK',
+    SI: 'SVN', ES: 'ESP', SE: 'SWE'
+  };
+
+  // Fetch statistics for DPP counts by country
   useEffect(() => {
-    fetchLandPolygons();
-  }, [fetchLandPolygons]);
+    const apiKey = process.env.NEXT_PUBLIC_API_KEY;
+    fetch('/api/v1/dpp/country-stats', {
+      headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : undefined,
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        return res.json();
+      })
+      .then((data: Array<{ countryCode: string; count: number }>) => {
+        const stats: Record<string, number> = {};
+        data.forEach(({ countryCode, count }) => {
+          const iso3 = ISO2_TO_ISO3[countryCode.toUpperCase()] || countryCode;
+          stats[iso3] = count;
+        });
+        setCountryStats(stats);
+        const counts = Object.values(stats);
+        setMaxCount(counts.length > 0 ? Math.max(...counts) : 0);
+      })
+      .catch((err) => {
+        console.error('Error fetching country stats:', err);
+        setCountryStats({});
+        setMaxCount(0);
+      });
+  }, []);
 
   // Function to determine if a country is in the EU based on its ISO A3 code
   const isEU = useCallback((isoA3: string | undefined) => {
     return !!isoA3 && EU_COUNTRY_CODES.has(isoA3.toUpperCase());
   }, []);
+
+  const LIGHT_BLUE = '#bfdbff';
+  const DARK_BLUE = '#002D62';
+
+  const hexToRgb = (hex: string) => {
+    const m = hex.replace('#', '').match(/.{1,2}/g);
+    return m ? m.map((x) => parseInt(x, 16)) : [0, 0, 0];
+  };
+
+  const rgbToHex = (rgb: number[]) =>
+    '#' + rgb.map((x) => x.toString(16).padStart(2, '0')).join('');
+
 
   // Globe material for oceans (light blue)
   const globeMaterial = useMemo(() => new MeshPhongMaterial({

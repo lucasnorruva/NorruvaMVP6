@@ -7,9 +7,11 @@ import { MOCK_DPPS } from '@/data';
 import type { SupplyChainStep, DigitalProductPassport } from '@/types/dpp';
 
 interface CustodyUpdateRequestBody {
-  did: string;
+  stepName: string;
+  actorDid: string;
   timestamp: string;
   location?: string;
+  transactionHash?: string;
 }
 
 export async function PATCH(
@@ -25,9 +27,9 @@ export async function PATCH(
     return NextResponse.json({ error: { code: 400, message: 'Invalid JSON payload.' } }, { status: 400 });
   }
 
-  const { did, timestamp, location } = requestBody;
-  if (!did || !timestamp) {
-    return NextResponse.json({ error: { code: 400, message: "Fields 'did' and 'timestamp' are required." } }, { status: 400 });
+  const { stepName, actorDid, timestamp, location, transactionHash } = requestBody;
+  if (!stepName || !actorDid || !timestamp) {
+    return NextResponse.json({ error: { code: 400, message: "Fields 'stepName', 'actorDid' and 'timestamp' are required." } }, { status: 400 });
   }
 
   const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
@@ -47,10 +49,11 @@ export async function PATCH(
   }
 
   const newStep: SupplyChainStep = {
-    stepName: 'Custody Update',
-    actorDid: did,
+    stepName,
+    actorDid,
     timestamp,
-    ...(location && { location }),
+    location: location || '',
+    transactionHash: transactionHash || '',
   };
 
   product.traceability.supplyChainSteps.push(newStep);

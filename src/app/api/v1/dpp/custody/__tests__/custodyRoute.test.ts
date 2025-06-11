@@ -7,9 +7,11 @@ describe('custody PATCH route', () => {
     const initialLength = MOCK_DPPS[0].traceability?.supplyChainSteps?.length || 0;
 
     const body = {
-      did: 'did:example:newCustodian',
+      stepName: 'Custody Transfer',
+      actorDid: 'did:example:newCustodian',
       timestamp: '2024-08-01T12:00:00Z',
-      location: 'Warehouse Z'
+      location: 'Warehouse Z',
+      transactionHash: '0xnewhash'
     };
 
     const mockRequest = { json: jest.fn().mockResolvedValue(body) } as any;
@@ -19,9 +21,10 @@ describe('custody PATCH route', () => {
 
     expect(data.traceability.supplyChainSteps.length).toBe(initialLength + 1);
     const added = data.traceability.supplyChainSteps[initialLength];
-    expect(added.actorDid).toBe(body.did);
+    expect(added.actorDid).toBe(body.actorDid);
     expect(added.timestamp).toBe(body.timestamp);
     expect(added.location).toBe(body.location);
+    expect(added.transactionHash).toBe(body.transactionHash);
 
     expect(MOCK_DPPS[0].traceability?.supplyChainSteps?.length).toBe(initialLength + 1);
   });

@@ -124,6 +124,23 @@ curl -X PATCH https://api.example.com/api/v1/dpp/extend/{productId} \
       }'
 ```
 
+### Updating Chain of Custody
+
+Append a new supply chain step using `PATCH /api/v1/dpp/custody/{productId}`:
+
+```bash
+curl -X PATCH https://api.example.com/api/v1/dpp/custody/{productId} \
+  -H 'Authorization: Bearer <API_KEY>' \
+  -H 'Content-Type: application/json' \
+  -d '{
+        "stepName": "Handed to Distributor",
+        "actorDid": "did:example:distributor",
+        "timestamp": "2024-08-01T12:00:00Z",
+        "location": "Warehouse Z",
+        "transactionHash": "0xabc123"
+      }'
+```
+
 ### Retrieving a Verifiable Credential
 
 Fetch the DPP to obtain associated verifiable credentials that can be imported into digital wallets:
@@ -144,6 +161,32 @@ curl -H 'Authorization: Bearer <API_KEY>' \
   https://api.example.com/api/v1/dpp/{productId}/credential
 ```
 
+### Checking Batch Import Job Status
+
+After submitting a batch import using `POST /api/v1/dpp/import` the response includes a `jobId` that can be polled for progress:
+
+```bash
+curl -H 'Authorization: Bearer <API_KEY>' \
+  https://api.example.com/api/v1/dpp/import/jobs/{jobId}
+```
+
+Example successful response:
+
+```json
+{
+  "jobId": "mock_import_job_123456",
+  "status": "PendingProcessing",
+  "message": "Job is queued."
+}
+```
+
+If the job ID is unknown a 404 error is returned:
+
+```json
+{
+  "error": { "code": 404, "message": "Job with ID UNKNOWN not found." }
+}
+```
 
 ## Getting Started
 
@@ -189,6 +232,15 @@ This will start the Next.js application, usually on `http://localhost:9002` (as 
 
 Open `http://localhost:9002` in your browser to view the application.
 
+### Installing as a PWA
+
+The application includes a service worker and web app manifest. When running in
+development (`npm run dev`) or production, you can install it like a native app:
+
+1. Open the site in Chrome or another PWA-compatible browser.
+2. Click the browser's **Install** icon or choose **Add to Home Screen**.
+3. Launch the app from your home screen to use it in standalone mode.
+
 ### Running Tests
 
 Run the unit tests with:
@@ -196,6 +248,9 @@ Run the unit tests with:
 ```bash
 npm test
 ```
+
+The suite now includes API route tests located in `src/app/api/__tests__`. These
+cover common success and failure cases for the DPP and QR validation endpoints.
 
 
 Use `npm run test:watch` during development to re-run tests on file changes.
@@ -208,7 +263,7 @@ All `/api/v1/*` endpoints expect an API key using the `Authorization` header wit
 curl -H 'Authorization: Bearer SANDBOX_KEY_123' http://localhost:9002/api/v1/dpp
 ```
 
-Valid keys are configured via the `VALID_API_KEYS` environment variable. The `.env.example` file defines two sample keys:
+Valid keys are configured via the `VALID_API_KEYS` environment variable. This should be a comma-separated list of keys. The values are loaded at runtime by `src/config/auth.ts` as the `API_KEYS` array. The `.env.example` file defines two sample keys:
 
 ```bash
 VALID_API_KEYS=SANDBOX_KEY_123,PROD_KEY_456

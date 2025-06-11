@@ -17,8 +17,7 @@ import {
   ListChecks,
   BarChartHorizontal,
   ClipboardList,
-  Globe,
-  Globe2, // Added Globe2
+  Globe2, // Removed Globe icon, kept Globe2
   Users
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
@@ -44,8 +43,8 @@ const navItems = [
   { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
   // Specialized Views
   { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList },
-  { href: "/dpp-global-tracker", label: "DPP Global Tracker", icon: Globe },
-  { href: "/dpp-global-tracker-v2", label: "DPP Global Tracker v2", icon: Globe2 }, // New Item
+  // { href: "/dpp-global-tracker", label: "DPP Global Tracker", icon: Globe }, // Removed old tracker
+  { href: "/dpp-global-tracker-v2", label: "DPP Global Tracker v2", icon: Globe2 },
 ];
 
 const secondaryNavItems = [

@@ -18,7 +18,7 @@ import {
   BarChartHorizontal,
   ClipboardList,
   Globe,
-  Users 
+  Users
 } from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import { SidebarHeader, SidebarContent, SidebarFooter } from "@/components/ui/sidebar/Sidebar";
@@ -108,16 +108,14 @@ export default function AppSidebarContent() {
             const { className, isActive } = commonButtonClass(item.href);
             return (
               <SidebarMenuItem key={item.href}>
-                <Link href={item.href}>
+                <Link href={item.href} asChild>
                   <SidebarMenuButton
                     className={className}
                     tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}
-                    asChild
+                    aria-current={isActive ? 'page' : undefined}
                   >
-                    <a aria-current={isActive ? 'page' : undefined}>
-                      <item.icon className={commonIconClass} />
-                      {(sidebarState === 'expanded' || isMobile) && item.label}
-                    </a>
+                    <item.icon className={commonIconClass} />
+                    {(sidebarState === 'expanded' || isMobile) && item.label}
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
@@ -132,16 +130,14 @@ export default function AppSidebarContent() {
             const { className, isActive } = commonButtonClass(item.href);
             return (
               <SidebarMenuItem key={item.href}>
-                <Link href={item.href}>
+                <Link href={item.href} asChild>
                   <SidebarMenuButton
                     className={className}
                     tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}
-                    asChild
+                    aria-current={isActive ? 'page' : undefined}
                   >
-                    <a aria-current={isActive ? 'page' : undefined}>
-                      <item.icon className={commonIconClass} />
-                      {(sidebarState === 'expanded' || isMobile) && item.label}
-                    </a>
+                    <item.icon className={commonIconClass} />
+                    {(sidebarState === 'expanded' || isMobile) && item.label}
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
@@ -152,3 +148,5 @@ export default function AppSidebarContent() {
     </>
   );
 }
+
+    

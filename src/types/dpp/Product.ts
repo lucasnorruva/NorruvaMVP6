@@ -327,3 +327,9 @@ export interface DisplayableProduct {
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
 }
 
+export interface AnchorResult {
+  productId: string;
+  anchorTransactionHash: string;
+  platform?: string;
+}
+

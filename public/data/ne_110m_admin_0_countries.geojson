@@ -1,0 +1,31 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "ADMIN": "Fake Country 1",
+        "ADM0_A3": "FCK",
+        "NAME_LONG": "Fake Country 1",
+        "ISO_A3": "FCK"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[0,0],[0,10],[10,10],[10,0],[0,0]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "ADMIN": "Fake Country 2",
+        "ADM0_A3": "FC2",
+        "NAME_LONG": "Fake Country 2",
+        "ISO_A3": "FC2"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[-10,-10],[-10,0],[0,0],[0,-10],[-10,-10]]]
+      }
+    }
+  ]
+}

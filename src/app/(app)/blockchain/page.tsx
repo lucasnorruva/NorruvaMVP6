@@ -18,7 +18,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { cn } from '@/lib/utils';
 
 const EBSI_EXPLORER_BASE_URL = "https://mock-ebsi-explorer.example.com/tx/";
-const MOCK_API_KEY = "SANDBOX_KEY_123"; // Ensure this matches a key in your .env if needed for backend routes
+const MOCK_API_KEY = "SANDBOX_KEY_123"; 
 
 const getEbsiStatusBadge = (status?: "verified" | "pending_verification" | "not_verified" | "error" | string) => {
   switch (status?.toLowerCase()) {
@@ -150,7 +150,7 @@ export default function BlockchainPage() {
   useEffect(() => {
     setIsLoading(true);
     fetch(`/api/v1/dpp?blockchainAnchored=${filter}`, {
-        headers: { Authorization: `Bearer ${MOCK_API_KEY}` } // Added Authorization header
+        headers: { Authorization: `Bearer ${MOCK_API_KEY}` } 
     })
       .then(res => {
         if (!res.ok) {
@@ -160,7 +160,7 @@ export default function BlockchainPage() {
         return res.json();
       })
       .then(data => {
-        if(data.error) {
+        if(data.error && data.error.message) { // Check if error message exists
           if(!dpps.length) { 
              toast({title: "Error fetching DPPs", description: data.error.message, variant: "destructive"});
           }
@@ -193,7 +193,7 @@ export default function BlockchainPage() {
     setStatusTokenResponse(null);
   };
 
-  const updateDpp = (updated: DigitalProductPassport) => {
+  const updateDppLocally = (updated: DigitalProductPassport) => {
     setDpps(prev => prev.map(d => (d.id === updated.id ? updated : d)));
     if (selected && selected.id === updated.id) {
       setSelected(updated); 
@@ -219,7 +219,7 @@ export default function BlockchainPage() {
     });
     if (res.ok) {
       const data = await res.json();
-      updateDpp(data);
+      updateDppLocally(data);
       toast({ title: "DPP Anchored", description: `Product ${selected.productName} successfully anchored to ${anchorPlatform}. Mock contract, token ID, and tx hash also set.` });
     } else {
       handleApiError(res, "Anchoring DPP");
@@ -242,7 +242,7 @@ export default function BlockchainPage() {
     });
     if (res.ok) {
       const data = await res.json();
-      updateDpp(data);
+      updateDppLocally(data);
       setCustodyStep({ stepName: "", actorDid: "", timestamp: "", location: "", transactionHash: "" });
       toast({ title: "Custody Updated", description: `New custody step added to ${selected.productName}.` });
     } else {
@@ -270,7 +270,7 @@ export default function BlockchainPage() {
     });
     if (res.ok) {
       const data = await res.json();
-      updateDpp(data);
+      updateDppLocally(data);
       setTransferName("");
       setTransferDid("");
       setTransferTime("");
@@ -321,7 +321,7 @@ export default function BlockchainPage() {
                 contractAddress: data.contractAddress || selected.blockchainIdentifiers?.contractAddress, 
             }
         };
-        updateDpp(updatedSelectedDpp);
+        updateDppLocally(updatedSelectedDpp);
         // Auto-populate after successful minting
         setUpdateTokenId(data.tokenId);
         setStatusTokenId(data.tokenId);
@@ -418,7 +418,7 @@ export default function BlockchainPage() {
         </CardHeader>
         <CardContent className="text-sm text-foreground/90 space-y-2">
           <p>
-            This page provides conceptual tools to manage on-chain aspects of your Digital Product Passports (DPPs). You can simulate actions such as:
+           This page provides conceptual tools to manage on-chain aspects of your Digital Product Passports (DPPs). You can simulate actions such as:
           </p>
           <ul className="list-disc list-inside pl-4 space-y-1">
             <li><strong>Anchoring DPPs:</strong> Recording DPP data hashes and key identifiers on a mock blockchain.</li>

@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { BarChart3, AlertTriangle, ShieldCheck, Package, CheckCircle, Clock, Truck, Ship, Plane, ScanLine, FileText, CalendarDays, Anchor, Warehouse, ArrowUp, ArrowDown, MinusCircle } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
+import { useSearchParams } from 'next/navigation';
 
 const mockTransitProducts = [
   { id: "PROD789", name: "Smart Thermostat G3", stage: "Approaching EU Border (Hamburg)", eta: "2024-08-10", dppStatus: "Compliant", transport: "Ship", origin: "Shanghai, CN", destination: "Munich, DE" },
@@ -73,9 +74,35 @@ const MetricCardWidget: React.FC<{title: string, value: string | number, icon: R
 };
 
 export default function CustomsDashboardPage() {
+  const searchParams = useSearchParams();
+  const countryParam = searchParams.get('country');
+  const country = countryParam ? decodeURIComponent(countryParam) : null;
+
+  const filteredProducts = country
+    ? mockTransitProducts.filter(p =>
+        p.origin.toLowerCase().includes(country.toLowerCase()) ||
+        p.destination.toLowerCase().includes(country.toLowerCase())
+      )
+    : mockTransitProducts;
+
+  const filteredAlerts = country
+    ? mockCustomsAlerts.filter(alert => {
+        const prod = mockTransitProducts.find(p => p.id === alert.productId);
+        return prod
+          ? prod.origin.toLowerCase().includes(country.toLowerCase()) ||
+              prod.destination.toLowerCase().includes(country.toLowerCase())
+          : false;
+      })
+    : mockCustomsAlerts;
+
   return (
     <div className="space-y-8">
       <h1 className="text-3xl font-headline font-semibold">Customs & Compliance Dashboard</h1>
+      {country && (
+        <p className="text-sm text-muted-foreground">
+          Filtered by country: <Badge className="ml-1" variant="outline">{country}</Badge>
+        </p>
+      )}
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
         <MetricCardWidget title="Shipments in Transit (EU)" value="132" icon={Truck} description="Active customs entries" trend="+5 from last hour" trendDirection="up" />
@@ -103,7 +130,7 @@ export default function CustomsDashboardPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockTransitProducts.map((product) => {
+              {filteredProducts.map((product) => {
                 const etaDate = new Date(product.eta);
                 const today = new Date();
                 today.setHours(0, 0, 0, 0); 
@@ -241,18 +268,18 @@ export default function CustomsDashboardPage() {
                 <CardTitle className="font-headline flex items-center">
                     <AlertTriangle className="mr-2 h-5 w-5 text-destructive"/>
                     Customs Inspection Alerts
-                    {mockCustomsAlerts.length > 0 && (
+                    {filteredAlerts.length > 0 && (
                         <Badge variant="destructive" className="ml-2">
-                            {mockCustomsAlerts.length}
+                            {filteredAlerts.length}
                         </Badge>
                     )}
                 </CardTitle>
                 <CardDescription>Products currently flagged or requiring attention at customs.</CardDescription>
             </CardHeader>
             <CardContent>
-                {mockCustomsAlerts.length > 0 ? (
+                {filteredAlerts.length > 0 ? (
                 <ul className="space-y-3 max-h-[200px] overflow-y-auto">
-                    {mockCustomsAlerts.map((alert) => (
+                    {filteredAlerts.map((alert) => (
                     <li key={alert.id} className="p-3 border rounded-md bg-background hover:bg-muted/30">
                         <div className="flex justify-between items-start mb-1">
                             <p className="font-medium text-sm text-foreground">Product ID: {alert.productId}</p>

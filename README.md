@@ -11,6 +11,7 @@ Welcome to the Norruva Digital Product Passport (DPP) concept application! This 
 - [Current Implemented Features](#current-implemented-features)
 - [Product Detail Page](#product-detail-page)
 - [Blockchain Anchoring & Ownership](#blockchain-anchoring--ownership)
+- [Advanced Blockchain Architecture](#advanced-blockchain-architecture)
 - [Getting Started](#getting-started)
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
@@ -293,6 +294,10 @@ Without this permission Google Cloud cannot generate the access token required t
 - `src/contexts/`: React context providers.
 - `src/types/`: TypeScript type definitions.
 - `openapi.yaml`: Canonical API specification. The build process copies this file to `public/openapi.yaml` so it is served at `/openapi.yaml`.
+
+## Advanced Blockchain Architecture
+
+Detailed smart contract design and DAO governance specifications are documented in [docs/blockchain-architecture.md](docs/blockchain-architecture.md).
 
 ## Firebase Studio Context
 

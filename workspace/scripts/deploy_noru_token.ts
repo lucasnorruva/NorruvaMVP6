@@ -8,10 +8,12 @@ async function main() {
   const NORUTokenFactory = await ethers.getContractFactory("NORUToken");
   console.log("Deploying NORUToken proxy...");
 
+  const tokenName = "Norruva Governance Token";
+  const tokenSymbol = "NORU";
   // Initial supply: 1,000,000 tokens (with 18 decimals)
-  const initialSupply = ethers.parseUnits("1000000", 18); // 1 million tokens
+  const initialSupply = ethers.parseUnits("1000000", 18); 
 
-  const noruToken = await upgrades.deployProxy(NORUTokenFactory, ["Norruva Governance Token", "NORU", deployer.address, initialSupply], {
+  const noruToken = await upgrades.deployProxy(NORUTokenFactory, [tokenName, tokenSymbol, deployer.address, initialSupply], {
     initializer: "initialize",
     kind: "uups",
   });

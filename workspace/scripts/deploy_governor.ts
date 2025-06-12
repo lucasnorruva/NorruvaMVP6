@@ -13,14 +13,14 @@ async function main() {
   const TIMELOCK_CONTROLLER_ADDRESS = process.env.TIMELOCK_CONTROLLER_ADDRESS;
   const GOVERNOR_NAME = "Norruva DPP DAO Governor";
 
-  if (!NORU_TOKEN_ADDRESS || NORU_TOKEN_ADDRESS === "YOUR_DEPLOYED_NORU_TOKEN_ADDRESS") {
-    console.error("ERROR: NORU_TOKEN_ADDRESS is not set or is a placeholder in .env file or environment.");
-    console.log("Please deploy NORUToken first and set its address in .env or pass it.");
+  if (!NORU_TOKEN_ADDRESS || NORU_TOKEN_ADDRESS === "YOUR_DEPLOYED_NORU_TOKEN_ADDRESS" || NORU_TOKEN_ADDRESS.trim() === "") {
+    console.error("ERROR: NORU_TOKEN_ADDRESS is not set correctly in .env file or environment.");
+    console.log("Please deploy NORUToken first and set its address.");
     process.exit(1);
   }
-  if (!TIMELOCK_CONTROLLER_ADDRESS || TIMELOCK_CONTROLLER_ADDRESS === "YOUR_DEPLOYED_TIMELOCK_CONTROLLER_ADDRESS") {
-    console.error("ERROR: TIMELOCK_CONTROLLER_ADDRESS is not set or is a placeholder in .env file or environment.");
-    console.log("Please deploy TimelockController first and set its address in .env or pass it.");
+  if (!TIMELOCK_CONTROLLER_ADDRESS || TIMELOCK_CONTROLLER_ADDRESS === "YOUR_DEPLOYED_TIMELOCK_CONTROLLER_ADDRESS" || TIMELOCK_CONTROLLER_ADDRESS.trim() === "") {
+    console.error("ERROR: TIMELOCK_CONTROLLER_ADDRESS is not set correctly in .env file or environment.");
+    console.log("Please deploy TimelockController first and set its address.");
     process.exit(1);
   }
 
@@ -29,8 +29,8 @@ async function main() {
 
   const DPPGovernorFactory = await ethers.getContractFactory("DPPGovernor");
   console.log("Deploying DPPGovernor proxy...");
-  // Assuming DPPGovernor's initialize function signature is:
-  // initialize(address _token, address _timelock, string memory _name)
+  // Ensure the initializer arguments match DPPGovernor.sol:
+  // initialize(IVotes _token, TimelockControllerUpgradeable _timelock, string memory _name)
   const governor = await upgrades.deployProxy(DPPGovernorFactory, [NORU_TOKEN_ADDRESS, TIMELOCK_CONTROLLER_ADDRESS, GOVERNOR_NAME], {
     initializer: "initialize",
     kind: "uups",
@@ -45,14 +45,13 @@ async function main() {
 
   // --- Configure TimelockController roles ---
   console.log("\nConfiguring TimelockController roles...");
-  // Assuming TimelockControllerUpgradeable ABI is available or compatible with a standard OpenZeppelin one.
-  // If you have a specific ABI, you might need to load it here.
-  // For this example, we'll assume the contract instance can call these standard functions.
+  // Note: ABI for TimelockControllerUpgradeable is implicitly available via Hardhat's OpenZeppelin Upgrades plugin
+  // if the contract is part of the project or dependencies.
   const timelockController = await ethers.getContractAt("TimelockControllerUpgradeable", TIMELOCK_CONTROLLER_ADDRESS);
 
   const PROPOSER_ROLE = await timelockController.PROPOSER_ROLE();
   const EXECUTOR_ROLE = await timelockController.EXECUTOR_ROLE();
-  const CANCELLER_ROLE = await timelockController.CANCELLER_ROLE(); // New: CANCELLER_ROLE for Governor
+  const CANCELLER_ROLE = await timelockController.CANCELLER_ROLE();
   const TIMELOCK_ADMIN_ROLE = await timelockController.TIMELOCK_ADMIN_ROLE();
 
   console.log(`Granting PROPOSER_ROLE to Governor (${governorAddress}) on TimelockController...`);
@@ -66,24 +65,31 @@ async function main() {
   console.log("CANCELLER_ROLE granted to Governor.");
 
   console.log(`Granting EXECUTOR_ROLE to address(0) (anyone) on TimelockController...`);
-  // According to OpenZeppelin Governor, EXECUTOR_ROLE should be granted to address(0) 
-  // if you want anyone to be able to execute a passed proposal.
-  // Or, grant it to the governor if only the governor should execute.
   tx = await timelockController.connect(deployer).grantRole(EXECUTOR_ROLE, ethers.ZeroAddress); 
   await tx.wait();
-  console.log("EXECUTOR_ROLE granted to address(0). (Any account can execute passed proposals)");
+  console.log("EXECUTOR_ROLE granted to address(0).");
   
-  // The deployer (owner) should renounce the TIMELOCK_ADMIN_ROLE so that only the Timelock itself controls it
-  // (or the DAO through proposals if the Governor is made the admin).
+  // Grant TIMELOCK_ADMIN_ROLE to the Governor to give it full control over the Timelock.
+  const governorHasAdminRole = await timelockController.hasRole(TIMELOCK_ADMIN_ROLE, governorAddress);
+  if (!governorHasAdminRole) {
+      console.log(`Granting TIMELOCK_ADMIN_ROLE to Governor (${governorAddress}) on TimelockController...`);
+      tx = await timelockController.connect(deployer).grantRole(TIMELOCK_ADMIN_ROLE, governorAddress);
+      await tx.wait();
+      console.log("TIMELOCK_ADMIN_ROLE granted to Governor.");
+  } else {
+      console.log(`Governor (${governorAddress}) already has TIMELOCK_ADMIN_ROLE.`);
+  }
+
+  // The deployer (owner) should renounce the TIMELOCK_ADMIN_ROLE if they hold it,
+  // and it wasn't the Governor itself (which we just granted).
   const deployerIsAdmin = await timelockController.hasRole(TIMELOCK_ADMIN_ROLE, deployer.address);
   if (deployerIsAdmin) {
-    console.log(`Deployer (${deployer.address}) currently has TIMELOCK_ADMIN_ROLE. Renouncing...`);
+    console.log(`Deployer (${deployer.address}) still has TIMELOCK_ADMIN_ROLE. Renouncing...`);
     tx = await timelockController.connect(deployer).renounceRole(TIMELOCK_ADMIN_ROLE, deployer.address);
     await tx.wait();
-    console.log("Deployer renounced TIMELOCK_ADMIN_ROLE. The TimelockController is now admin-less (or managed by another previously assigned admin).");
-    console.log("For full DAO control, the Governor contract itself might need to be granted TIMELOCK_ADMIN_ROLE, and then only the DAO can change Timelock parameters.");
+    console.log("Deployer renounced TIMELOCK_ADMIN_ROLE. The TimelockController is now managed by the Governor.");
   } else {
-    console.log(`Deployer (${deployer.address}) does not have TIMELOCK_ADMIN_ROLE. No renouncement needed from deployer.`);
+    console.log(`Deployer (${deployer.address}) does not hold TIMELOCK_ADMIN_ROLE directly. Check other admins if necessary.`);
   }
 
   console.log("\nTimelockController roles configured for DPPGovernor.");

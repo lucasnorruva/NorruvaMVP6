@@ -33,8 +33,8 @@ export async function POST(
     return NextResponse.json({ error: { code: 400, message: "Missing required fields: contractAddress, recipientAddress" } }, { status: 400 });
   }
 
-  const product = MOCK_DPPS.find(dpp => dpp.id === productId);
-  if (!product) {
+  const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
+  if (productIndex === -1) {
     return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found.` } }, { status: 404 });
   }
 
@@ -44,17 +44,14 @@ export async function POST(
   const mockTokenId = Math.floor(Math.random() * 100000).toString();
   const mockTransactionHash = `0xmint_tx_mock_${Date.now().toString(16)}`;
 
-  // Conceptually update the product's blockchainIdentifiers in MOCK_DPPS
-  const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
-  if (productIndex !== -1) {
-    MOCK_DPPS[productIndex].blockchainIdentifiers = {
-      ...(MOCK_DPPS[productIndex].blockchainIdentifiers || {}),
-      tokenId: mockTokenId,
-      contractAddress: contractAddress,
-      // platform might already exist or be set during anchoring
-    };
-    MOCK_DPPS[productIndex].metadata.last_updated = new Date().toISOString();
-  }
+  // Update the product's blockchainIdentifiers in MOCK_DPPS
+  MOCK_DPPS[productIndex].blockchainIdentifiers = {
+    ...(MOCK_DPPS[productIndex].blockchainIdentifiers || {}),
+    tokenId: mockTokenId,
+    contractAddress: contractAddress,
+    platform: MOCK_DPPS[productIndex].blockchainIdentifiers?.platform || "MockChain", // Preserve or set default platform
+  };
+  MOCK_DPPS[productIndex].metadata.last_updated = new Date().toISOString();
 
 
   return NextResponse.json({
@@ -64,3 +61,4 @@ export async function POST(
     message: `Mock token ${mockTokenId} minted for product ${productId} to ${recipientAddress}. Metadata: ${metadataUri || 'N/A'}`,
   }, { status: 201 });
 }
+

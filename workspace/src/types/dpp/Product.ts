@@ -75,7 +75,7 @@ export interface DigitalProductPassport {
     dppStandardVersion?: string;
     dataSchemaVersion?: string;
     onChainStatus?: string; 
-    onChainLifecycleStage?: string; // New field for conceptual on-chain lifecycle stage
+    onChainLifecycleStage?: string; 
   };
 
   blockchainIdentifiers?: {
@@ -213,7 +213,7 @@ export interface SimpleProductDetail {
   ebsiStatus?: EbsiVerificationDetails['status']; 
   ebsiVerificationId?: string; 
   onChainStatus?: string; 
-  onChainLifecycleStage?: string; // New field for conceptual on-chain lifecycle stage
+  onChainLifecycleStage?: string; 
 }
 
 export interface StoredUserProduct {
@@ -271,7 +271,7 @@ export interface StoredUserProduct {
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; 
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; 
   onChainStatus?: string; 
-  onChainLifecycleStage?: string; // New field for conceptual on-chain lifecycle stage
+  onChainLifecycleStage?: string; 
 }
 
 export interface RichMockProduct {
@@ -307,7 +307,7 @@ export interface RichMockProduct {
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
   onChainStatus?: string; 
-  onChainLifecycleStage?: string; // New field for conceptual on-chain lifecycle stage
+  onChainLifecycleStage?: string; 
 }
 
 export interface PublicProductInfo {
@@ -341,7 +341,7 @@ export interface PublicProductInfo {
   contractAddress?: string; 
   tokenId?: string;         
   onChainStatus?: string; 
-  onChainLifecycleStage?: string; // New field for conceptual on-chain lifecycle stage
+  onChainLifecycleStage?: string; 
 }
 
 export interface Supplier {
@@ -392,7 +392,7 @@ export interface DisplayableProduct {
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
   onChainStatus?: string; 
-  onChainLifecycleStage?: string; // New field for conceptual on-chain lifecycle stage
+  onChainLifecycleStage?: string; 
 }
 
 export interface AnchorResult {

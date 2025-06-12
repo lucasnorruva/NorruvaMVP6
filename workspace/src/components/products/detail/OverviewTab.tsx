@@ -6,11 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog } from "lucide-react"; // Added Database, Anchor, Layers3, FileCog
+import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn } from "lucide-react"; // Added Sigma, LayersIconShadcn
 import { getAiHintForImage } from "@/utils/imageUtils";
-import NextLink from "next/link"; // Renamed to avoid conflict with LinkIcon
-import { getEbsiStatusBadge } from "@/utils/dppDisplayUtils"; // Assuming this utility exists for EBSI badge
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // For tooltips
+import NextLink from "next/link"; 
+import { getEbsiStatusBadge } from "@/utils/dppDisplayUtils"; 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 
 interface OverviewTabProps {
   product: SimpleProductDetail;
@@ -124,6 +124,72 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             </CardContent>
           </Card>
         )}
+        
+        {/* Combined Blockchain & EBSI Card */}
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center">
+              <Fingerprint className="mr-2 h-5 w-5 text-primary" /> Blockchain & EBSI Details
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            {product.blockchainPlatform && (
+              <p><strong className="text-muted-foreground flex items-center"><Layers3 className="mr-1.5 h-4 w-4 text-teal-600"/>Platform:</strong> {product.blockchainPlatform}</p>
+            )}
+            {product.contractAddress && (
+              <p><strong className="text-muted-foreground flex items-center"><FileCog className="mr-1.5 h-4 w-4 text-teal-600"/>Contract Address:</strong> 
+                <TooltipProvider><Tooltip><TooltipTrigger asChild>
+                   <span className="font-mono text-xs break-all ml-1">{product.contractAddress}</span>
+                </TooltipTrigger><TooltipContent><p>{product.contractAddress}</p></TooltipContent></Tooltip></TooltipProvider>
+              </p>
+            )}
+            {product.tokenId && (
+              <p><strong className="text-muted-foreground flex items-center"><Tag className="mr-1.5 h-4 w-4 text-teal-600"/>Token ID:</strong> 
+                 <TooltipProvider><Tooltip><TooltipTrigger asChild>
+                   <span className="font-mono text-xs break-all ml-1">{product.tokenId}</span>
+                 </TooltipTrigger><TooltipContent><p>{product.tokenId}</p></TooltipContent></Tooltip></TooltipProvider>
+              </p>
+            )}
+            {product.anchorTransactionHash && (
+              <div>
+                <strong className="text-muted-foreground flex items-center"><Anchor className="mr-1.5 h-4 w-4 text-teal-600"/>Anchor Tx Hash:</strong> 
+                <TooltipProvider><Tooltip><TooltipTrigger asChild>
+                   <span className="font-mono text-xs break-all">{product.anchorTransactionHash}</span>
+                </TooltipTrigger><TooltipContent><p>{product.anchorTransactionHash}</p></TooltipContent></Tooltip></TooltipProvider>
+                <NextLink href={`https://mock-token-explorer.example.com/tx/${product.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs ml-2">
+                  View Anchor Tx <ExternalLink className="ml-1 h-3 w-3" />
+                </NextLink>
+              </div>
+            )}
+             {(product.contractAddress && product.tokenId) && (
+                <NextLink href={`https://mock-token-explorer.example.com/token/${product.contractAddress}/${product.tokenId}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs mt-1">
+                  View Token on Mock Explorer <ExternalLink className="ml-1 h-3 w-3" />
+                </NextLink>
+              )}
+             {product.ebsiStatus && (
+              <div className="mt-2 pt-2 border-t border-border/50">
+                <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
+                <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiStatus)}</div>
+                {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
+                   <TooltipProvider><Tooltip><TooltipTrigger asChild>
+                    <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
+                  </TooltipTrigger><TooltipContent><p>{product.ebsiVerificationId}</p></TooltipContent></Tooltip></TooltipProvider>
+                )}
+              </div>
+            )}
+            {(product.onChainStatus || product.onChainLifecycleStage) && (
+                <div className="mt-2 pt-2 border-t border-border/50">
+                  <h4 className="font-medium text-sm text-muted-foreground mb-1">Conceptual On-Chain State:</h4>
+                  {product.onChainStatus && <p><strong className="text-muted-foreground flex items-center"><Sigma className="mr-1.5 h-4 w-4 text-purple-600"/>Status:</strong> <span className="font-semibold capitalize text-foreground/90">{product.onChainStatus.replace(/_/g, ' ')}</span></p>}
+                  {product.onChainLifecycleStage && <p className="mt-1"><strong className="text-muted-foreground flex items-center"><LayersIconShadcn className="mr-1.5 h-4 w-4 text-purple-600"/>Lifecycle Stage:</strong> <span className="font-semibold capitalize text-foreground/90">{product.onChainLifecycleStage.replace(/([A-Z])/g, ' $1').trim()}</span></p>}
+                </div>
+            )}
+            {!(product.blockchainPlatform || product.contractAddress || product.tokenId || product.anchorTransactionHash || product.ebsiStatus || product.onChainStatus || product.onChainLifecycleStage) && (
+              <p className="text-muted-foreground">No specific blockchain or EBSI details available.</p>
+            )}
+          </CardContent>
+        </Card>
+
 
       </div>
 
@@ -230,64 +296,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               </dl>
             ) : (
               <p className="text-sm text-muted-foreground">No additional attributes provided.</p>
-            )}
-          </CardContent>
-        </Card>
-
-        {/* Enhanced Blockchain & EBSI Section */}
-        <Card className="shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold flex items-center">
-              <Fingerprint className="mr-2 h-5 w-5 text-primary" /> Blockchain & EBSI Details
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            {product.blockchainPlatform && (
-              <p><strong className="text-muted-foreground flex items-center"><Layers3 className="mr-1.5 h-4 w-4 text-teal-600"/>Platform:</strong> {product.blockchainPlatform}</p>
-            )}
-            {product.contractAddress && (
-              <p><strong className="text-muted-foreground flex items-center"><FileCog className="mr-1.5 h-4 w-4 text-teal-600"/>Contract Address:</strong> 
-                <TooltipProvider><Tooltip><TooltipTrigger asChild>
-                   <span className="font-mono text-xs break-all ml-1">{product.contractAddress}</span>
-                </TooltipTrigger><TooltipContent><p>{product.contractAddress}</p></TooltipContent></Tooltip></TooltipProvider>
-              </p>
-            )}
-            {product.tokenId && (
-              <p><strong className="text-muted-foreground flex items-center"><Tag className="mr-1.5 h-4 w-4 text-teal-600"/>Token ID:</strong> 
-                 <TooltipProvider><Tooltip><TooltipTrigger asChild>
-                   <span className="font-mono text-xs break-all ml-1">{product.tokenId}</span>
-                 </TooltipTrigger><TooltipContent><p>{product.tokenId}</p></TooltipContent></Tooltip></TooltipProvider>
-              </p>
-            )}
-            {product.anchorTransactionHash && (
-              <div>
-                <strong className="text-muted-foreground flex items-center"><Anchor className="mr-1.5 h-4 w-4 text-teal-600"/>Anchor Tx Hash:</strong> 
-                <TooltipProvider><Tooltip><TooltipTrigger asChild>
-                   <span className="font-mono text-xs break-all">{product.anchorTransactionHash}</span>
-                </TooltipTrigger><TooltipContent><p>{product.anchorTransactionHash}</p></TooltipContent></Tooltip></TooltipProvider>
-                <NextLink href={`https://mock-token-explorer.example.com/tx/${product.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs ml-2">
-                  View Anchor Tx <ExternalLink className="ml-1 h-3 w-3" />
-                </NextLink>
-              </div>
-            )}
-            {product.contractAddress && product.tokenId && (
-              <NextLink href={`https://mock-token-explorer.example.com/token/${product.contractAddress}/${product.tokenId}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs mt-1">
-                View Token on Mock Explorer <ExternalLink className="ml-1 h-3 w-3" />
-              </NextLink>
-            )}
-             {product.ebsiStatus && (
-              <div className="mt-2 pt-2 border-t border-border/50">
-                <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
-                <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiStatus)}</div>
-                {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
-                   <TooltipProvider><Tooltip><TooltipTrigger asChild>
-                    <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
-                  </TooltipTrigger><TooltipContent><p>{product.ebsiVerificationId}</p></TooltipContent></Tooltip></TooltipProvider>
-                )}
-              </div>
-            )}
-            {!(product.blockchainPlatform || product.contractAddress || product.tokenId || product.anchorTransactionHash || product.ebsiStatus) && (
-              <p className="text-muted-foreground">No specific blockchain or EBSI details available.</p>
             )}
           </CardContent>
         </Card>

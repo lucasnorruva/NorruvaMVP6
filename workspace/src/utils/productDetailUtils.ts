@@ -158,6 +158,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         anchorTransactionHash: dpp.blockchainIdentifiers?.anchorTransactionHash,
         ebsiStatus: dpp.ebsiVerification?.status, 
         ebsiVerificationId: dpp.ebsiVerification?.verificationId, 
+        onChainStatus: dpp.metadata.onChainStatus,
+        onChainLifecycleStage: dpp.metadata.onChainLifecycleStage,
     };
 }
 
@@ -212,6 +214,8 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             status: (userProductData.status?.toLowerCase() as DigitalProductPassport['metadata']['status']) || 'draft',
             last_updated: userProductData.lastUpdated || new Date().toISOString(),
             created_at: userProductData.lastUpdated || new Date().toISOString(), // Or a dedicated created_at if available
+            onChainStatus: userProductData.onChainStatus,
+            onChainLifecycleStage: userProductData.onChainLifecycleStage,
           },
           productDetails: {
             description: userProductData.productDescription,

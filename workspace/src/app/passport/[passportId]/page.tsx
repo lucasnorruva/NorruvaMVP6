@@ -14,7 +14,7 @@ import * as LucideIcons from 'lucide-react'; // Import all icons as LucideIcons
 import {
   Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint,
   ServerIcon as ServerIconLucide, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
-  KeyRound, FileLock, Anchor, Layers3, FileCog, Tag // Added Anchor, Layers3, FileCog, Tag
+  KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, Sigma, Layers as LayersIconShadcn // Added Sigma, LayersIconShadcn
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react';
@@ -154,7 +154,7 @@ export default function PublicPassportPage() {
                 </CardContent>
               </Card>
 
-              {(product.sku || product.nfcTagId || product.rfidTagId) && ( // GTIN and ModelNumber are now in header
+              {(product.sku || product.nfcTagId || product.rfidTagId) && ( 
                 <Card className="border-accent/50">
                   <CardHeader>
                     <CardTitle className="text-xl text-accent flex items-center">
@@ -342,16 +342,16 @@ export default function PublicPassportPage() {
                     )}
                     {product.tokenId && (
                         <p><strong className="text-muted-foreground flex items-center"><Tag className="mr-1.5 h-4 w-4 text-teal-600"/>Token ID:</strong> 
-                            <TooltipProvider><Tooltip><TooltipTrigger asChild>
-                            <span className="font-mono text-xs break-all ml-1">{product.tokenId}</span>
-                            </TooltipTrigger><TooltipContent><p>{product.tokenId}</p></TooltipContent></Tooltip></TooltipProvider>
+                             <TooltipProvider><Tooltip><TooltipTrigger asChild>
+                               <span className="font-mono text-xs break-all ml-1">{product.tokenId}</span>
+                             </TooltipTrigger><TooltipContent><p>{product.tokenId}</p></TooltipContent></Tooltip></TooltipProvider>
                         </p>
                     )}
                     {product.anchorTransactionHash && (
                         <div>
                             <strong className="text-muted-foreground flex items-center"><Anchor className="mr-1.5 h-4 w-4 text-teal-600"/>Anchor Tx Hash:</strong> 
                             <TooltipProvider><Tooltip><TooltipTrigger asChild>
-                            <span className="font-mono text-xs break-all">{product.anchorTransactionHash}</span>
+                               <span className="font-mono text-xs break-all">{product.anchorTransactionHash}</span>
                             </TooltipTrigger><TooltipContent><p>{product.anchorTransactionHash}</p></TooltipContent></Tooltip></TooltipProvider>
                             <Link href={`https://mock-token-explorer.example.com/tx/${product.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs ml-2">
                             View Anchor Tx <ExternalLink className="ml-1 h-3 w-3" />
@@ -368,14 +368,21 @@ export default function PublicPassportPage() {
                             <strong className="text-muted-foreground flex items-center"><LucideIcons.Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
                             <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiStatus)}</div>
                             {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
-                                <TooltipProvider><Tooltip><TooltipTrigger asChild>
+                               <TooltipProvider><Tooltip><TooltipTrigger asChild>
                                 <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
-                                </TooltipTrigger><TooltipContent><p>{product.ebsiVerificationId}</p></TooltipContent></Tooltip></TooltipProvider>
+                              </TooltipTrigger><TooltipContent><p>{product.ebsiVerificationId}</p></TooltipContent></Tooltip></TooltipProvider>
                             )}
                         </div>
                     )}
-                    {(!product.blockchainPlatform && !product.contractAddress && !product.tokenId && !product.anchorTransactionHash && !product.ebsiStatus) && (
-                        <p className="text-muted-foreground">No specific blockchain or EBSI verification details available for this product.</p>
+                    {(product.onChainStatus || product.onChainLifecycleStage) && (
+                        <div className="mt-2 pt-2 border-t border-border/50">
+                          <h4 className="font-medium text-sm text-muted-foreground mb-1">Conceptual On-Chain State:</h4>
+                          {product.onChainStatus && <p><strong className="text-muted-foreground flex items-center"><Sigma className="mr-1.5 h-4 w-4 text-purple-600"/>Status:</strong> <span className="font-semibold capitalize text-foreground/90">{product.onChainStatus.replace(/_/g, ' ')}</span></p>}
+                          {product.onChainLifecycleStage && <p className="mt-1"><strong className="text-muted-foreground flex items-center"><LayersIconShadcn className="mr-1.5 h-4 w-4 text-purple-600"/>Lifecycle Stage:</strong> <span className="font-semibold capitalize text-foreground/90">{product.onChainLifecycleStage.replace(/([A-Z])/g, ' $1').trim()}</span></p>}
+                        </div>
+                    )}
+                    {(!product.blockchainPlatform && !product.contractAddress && !product.tokenId && !product.anchorTransactionHash && !product.ebsiStatus && !product.onChainStatus && !product.onChainLifecycleStage) && (
+                        <p className="text-muted-foreground">No specific blockchain, EBSI, or on-chain state details available for this product.</p>
                     )}
                     </CardContent>
                 </Card>
@@ -455,3 +462,5 @@ export default function PublicPassportPage() {
     </div>
   );
 }
+
+    

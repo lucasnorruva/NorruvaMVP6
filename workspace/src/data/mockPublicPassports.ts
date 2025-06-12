@@ -27,10 +27,12 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     rfidTagId: "RFID654321",
     anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef",
     blockchainPlatform: "MockChain (Ethereum L1)",
-    contractAddress: "0xMOCK_CONTRACT_FOR_DPP001", // Added
-    tokenId: "MOCK_TOKENID_FOR_DPP001_mock1",   // Added
+    contractAddress: "0xMOCK_CONTRACT_FOR_DPP001", 
+    tokenId: "MOCK_TOKENID_FOR_DPP001_mock1",   
     ebsiStatus: 'verified',
     ebsiVerificationId: "EBSI-VC-XYZ-00123",
+    onChainStatus: "Active", // Added
+    onChainLifecycleStage: "InUse", // Added
     lifecycleHighlights: [
       { stage: "Manufacturing", date: "Jan 2024", details: "Produced in our green-certified facility in Germany.", isEbsiVerified: true, iconName: "Factory" },
       { stage: "Shipped", date: "Feb 2024", details: "Transported via low-emission logistics partners to EU distribution centers.", isEbsiVerified: false, iconName: "Truck" },
@@ -78,9 +80,12 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     complianceSummary: "Complies with EU energy efficiency and hazardous substance directives. EBSI verification pending.",
     category: "Electronics",
     modelNumber: "BS-LED-S04",
-    // This product is NOT anchored, so no anchorTransactionHash, contractAddress, or tokenId
-    blockchainPlatform: "MockChain (Polygon Layer 2)", // Platform can still be specified if known for future use
+    blockchainPlatform: "MockChain (Polygon Layer 2)",
+    contractAddress: "0xSomeOtherContract", 
+    tokenId: "TOKEN_TSHIRT_002",
     ebsiStatus: 'pending',
+    onChainStatus: "Pending Activation", // Added
+    onChainLifecycleStage: "Manufacturing", // Added
     lifecycleHighlights: [
       { stage: "Manufactured", date: "2024-03-01", details: "Batch #LEDB456 produced in Shenzhen SmartPlant facility.", isEbsiVerified: true, iconName: "Factory" },
       { stage: "Imported to EU", date: "2024-03-15", details: "Cleared customs at Rotterdam Port, Netherlands. Ready for EU distribution.", isEbsiVerified: false, iconName: "Anchor" },
@@ -117,10 +122,12 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     category: "Furniture",
     modelNumber: "CWC-001",
     ebsiStatus: 'not_verified',
-    anchorTransactionHash: "0xuserProductAnchorHash123", // Example for user product
+    anchorTransactionHash: "0xuserProductAnchorHash123", 
     blockchainPlatform: "UserMockNet",
     contractAddress: "0xUserProductContract",
     tokenId: "UP_TOKEN_123",
+    onChainStatus: "Draft", // Added
+    onChainLifecycleStage: "Design", // Added
     certifications: [], 
     documents: [],
     customAttributes: [
@@ -137,3 +144,5 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     },
   }
 };
+
+    

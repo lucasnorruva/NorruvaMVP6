@@ -7,7 +7,7 @@ async function main() {
 
   const DPPTokenFactory = await ethers.getContractFactory("DPPToken");
   console.log("Deploying DPPToken proxy...");
-  // Updated initializer arguments: name, symbol, defaultAdmin
+  // Ensured initializer arguments are consistent: name, symbol, defaultAdmin
   const dppToken = await upgrades.deployProxy(DPPTokenFactory, ["Norruva DPP Token", "NDPP", deployer.address], {
     initializer: "initialize",
     kind: "uups",

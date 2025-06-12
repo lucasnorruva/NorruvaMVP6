@@ -15,11 +15,24 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Layers, Link2, Trash2, Edit3 as EditIcon, PlusCircle } from "lucide-react";
+import { Layers, Link2, Trash2, Edit3 as EditIcon, PlusCircle, Eye, VenetianMask, Loader2, AlertTriangle, ExternalLink as ExternalLinkIcon } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useRole } from "@/contexts/RoleContext";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import Link from "next/link";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+
+// Conceptual type for mock attestation data from the private API
+interface MockAttestation {
+  attestationId: string;
+  componentId: string;
+  attestationType: string;
+  attestationStatement: string;
+  issuanceDate: string;
+  expiryDate?: string;
+  evidence?: Array<{ type: string; documentId?: string; vcId?: string }>;
+}
+
 
 interface SupplyChainTabProps {
   product: SimpleProductDetail;
@@ -45,6 +58,11 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
   const [editingSupplierName, setEditingSupplierName] = useState<string>("");
   const [editSuppliedItem, setEditSuppliedItem] = useState("");
   const [editLinkNotes, setEditLinkNotes] = useState("");
+
+  const [attestations, setAttestations] = useState<Record<string, MockAttestation[]>>({});
+  const [loadingAttestations, setLoadingAttestations] = useState<Record<string, boolean>>({});
+  const [errorAttestations, setErrorAttestations] = useState<Record<string, string | null>>({});
+
 
   useEffect(() => {
     setIsClient(true);
@@ -123,7 +141,6 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
       return;
     }
     const updatedLinks = currentLinkedSuppliers.map(link =>
-      // Compare based on original supplierId and originally suppliedItem to identify the link
       link.supplierId === editingLink.supplierId && link.suppliedItem === editingLink.suppliedItem
         ? { ...link, suppliedItem: editSuppliedItem.trim(), notes: editLinkNotes.trim() }
         : link
@@ -133,6 +150,34 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
     setIsEditDialogOpen(false);
     setEditingLink(null);
   };
+
+  const handleFetchAttestations = async (supplierId: string) => {
+    setLoadingAttestations(prev => ({ ...prev, [supplierId]: true }));
+    setErrorAttestations(prev => ({ ...prev, [supplierId]: null }));
+    try {
+      // Use a mock API key; in a real app, this would be securely managed
+      const MOCK_API_KEY = "SANDBOX_KEY_123"; 
+      const response = await fetch(`/api/v1/private/dpp/${product.id}/supplier/${supplierId}/attestations`, {
+        headers: {
+          'Authorization': `Bearer ${MOCK_API_KEY}`
+        }
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: { message: "Failed to parse error."}}));
+        throw new Error(errorData.error?.message || `Failed to fetch attestations: ${response.status}`);
+      }
+      const data: MockAttestation[] = await response.json();
+      setAttestations(prev => ({ ...prev, [supplierId]: data }));
+      toast({ title: "Attestations Loaded (Mock)", description: `Simulated private attestations for supplier ${supplierId} loaded.` });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Unknown error fetching attestations.";
+      setErrorAttestations(prev => ({ ...prev, [supplierId]: message }));
+      toast({ title: "Error Loading Attestations", description: message, variant: "destructive" });
+    } finally {
+      setLoadingAttestations(prev => ({ ...prev, [supplierId]: false }));
+    }
+  };
+
 
   if (!isClient) {
     return <p className="text-muted-foreground p-4">Loading supply chain information...</p>;
@@ -146,7 +191,7 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
           <CardTitle className="text-lg font-semibold flex items-center">
             <Layers className="mr-2 h-5 w-5 text-primary" /> Product Supply Chain
           </CardTitle>
-          <CardDescription>Overview of suppliers and components linked to this product.</CardDescription>
+          <CardDescription>Overview of suppliers and components linked to this product. Attestations are mock private data.</CardDescription>
         </div>
         
         <Dialog open={isLinkDialogOpen} onOpenChange={setIsLinkDialogOpen}>
@@ -214,64 +259,108 @@ export default function SupplyChainTab({ product, onSupplyChainLinksChange }: Su
       </CardHeader>
       <CardContent>
         {currentLinkedSuppliers.length > 0 ? (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Supplier Name</TableHead>
-                <TableHead>Supplied Item/Component</TableHead>
-                <TableHead>Notes</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {currentLinkedSuppliers.map((link, index) => {
-                const supplier = availableSuppliers.find(s => s.id === link.supplierId);
-                return (
-                  <TableRow key={`${link.supplierId}-${link.suppliedItem}-${index}`}>
-                    <TableCell>{supplier?.name || link.supplierId}</TableCell>
-                    <TableCell>{link.suppliedItem}</TableCell>
-                    <TableCell className="text-xs text-muted-foreground max-w-xs truncate">{link.notes || '-'}</TableCell>
-                    <TableCell className="text-right space-x-1">
-                        <TooltipProvider delayDuration={100}>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <div className="inline-block" tabIndex={!canManageLinks ? 0 : undefined}>
-                                        <Button variant="ghost" size="icon" aria-label="Edit link" className="h-7 w-7" onClick={() => handleOpenEditDialog(link)} title="Edit Link" disabled={!canManageLinks}>
-                                           <EditIcon className="h-4 w-4" />
-                                           <span className="sr-only">Edit link</span>
-                                        </Button>
-                                    </div>
-                                </TooltipTrigger>
-                                {!canManageLinks && (
-                                    <TooltipContent>
-                                       <p>{getDisabledTooltipText()}</p>
-                                    </TooltipContent>
-                                )}
-                            </Tooltip>
-                        </TooltipProvider>
-                        <TooltipProvider delayDuration={100}>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                     <div className="inline-block" tabIndex={!canManageLinks ? 0 : undefined}>
-                                        <Button variant="ghost" size="icon" aria-label="Unlink supplier" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleUnlinkSupplier(link.supplierId, link.suppliedItem)} title="Unlink Supplier" disabled={!canManageLinks}>
-                                          <Trash2 className="h-4 w-4" />
-                                          <span className="sr-only">Unlink supplier</span>
-                                        </Button>
-                                    </div>
-                                </TooltipTrigger>
-                                {!canManageLinks && (
-                                    <TooltipContent>
-                                        <p>{getDisabledTooltipText()}</p>
-                                    </TooltipContent>
-                                )}
-                            </Tooltip>
-                        </TooltipProvider>
-                    </TableCell>
-                  </TableRow>
-                );
-              })}
-            </TableBody>
-          </Table>
+          <div className="space-y-3">
+            {currentLinkedSuppliers.map((link, index) => {
+              const supplier = availableSuppliers.find(s => s.id === link.supplierId);
+              const supplierAttestations = attestations[link.supplierId] || [];
+              const isLoadingSupplierAttestations = loadingAttestations[link.supplierId];
+              const errorSupplierAttestations = errorAttestations[link.supplierId];
+
+              return (
+                <Card key={`${link.supplierId}-${link.suppliedItem}-${index}`} className="bg-muted/30">
+                  <CardHeader className="p-3">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-md">{supplier?.name || link.supplierId}</CardTitle>
+                        <CardDescription className="text-xs">Supplies: {link.suppliedItem}</CardDescription>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                          <TooltipProvider delayDuration={100}>
+                              <Tooltip>
+                                  <TooltipTrigger asChild>
+                                      <div className="inline-block" tabIndex={!canManageLinks ? 0 : undefined}>
+                                          <Button variant="ghost" size="icon" aria-label="Edit link" className="h-7 w-7" onClick={() => handleOpenEditDialog(link)} title="Edit Link" disabled={!canManageLinks}>
+                                             <EditIcon className="h-4 w-4" />
+                                             <span className="sr-only">Edit link</span>
+                                          </Button>
+                                      </div>
+                                  </TooltipTrigger>
+                                  {!canManageLinks && (
+                                      <TooltipContent>
+                                         <p>{getDisabledTooltipText()}</p>
+                                      </TooltipContent>
+                                  )}
+                              </Tooltip>
+                          </TooltipProvider>
+                          <TooltipProvider delayDuration={100}>
+                              <Tooltip>
+                                  <TooltipTrigger asChild>
+                                       <div className="inline-block" tabIndex={!canManageLinks ? 0 : undefined}>
+                                          <Button variant="ghost" size="icon" aria-label="Unlink supplier" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleUnlinkSupplier(link.supplierId, link.suppliedItem)} title="Unlink Supplier" disabled={!canManageLinks}>
+                                            <Trash2 className="h-4 w-4" />
+                                            <span className="sr-only">Unlink supplier</span>
+                                          </Button>
+                                      </div>
+                                  </TooltipTrigger>
+                                  {!canManageLinks && (
+                                      <TooltipContent>
+                                          <p>{getDisabledTooltipText()}</p>
+                                      </TooltipContent>
+                                  )}
+                              </Tooltip>
+                          </TooltipProvider>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent className="p-3 pt-0 text-xs">
+                    {link.notes && <p className="text-muted-foreground mb-2">Notes: {link.notes}</p>}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="text-xs"
+                      onClick={() => handleFetchAttestations(link.supplierId)}
+                      disabled={isLoadingSupplierAttestations}
+                    >
+                      {isLoadingSupplierAttestations ? <Loader2 className="h-3 w-3 mr-1.5 animate-spin"/> : <VenetianMask className="h-3 w-3 mr-1.5" />}
+                      {isLoadingSupplierAttestations ? "Loading..." : "View Private Attestations (Mock)"}
+                    </Button>
+
+                    {errorSupplierAttestations && (
+                        <div className="mt-2 p-2 bg-destructive/10 text-destructive rounded-md text-xs flex items-center">
+                           <AlertTriangle className="h-4 w-4 mr-2"/> {errorSupplierAttestations}
+                        </div>
+                    )}
+
+                    {supplierAttestations.length > 0 && !errorSupplierAttestations && (
+                      <Accordion type="single" collapsible className="w-full mt-2">
+                        <AccordionItem value={`item-${link.supplierId}`} className="border-t">
+                          <AccordionTrigger className="text-xs py-2 hover:no-underline text-primary">
+                            Show/Hide {supplierAttestations.length} Private Attestation(s)
+                          </AccordionTrigger>
+                          <AccordionContent className="pt-1 pb-2">
+                            <div className="space-y-2 max-h-48 overflow-y-auto p-2 bg-background rounded-md border">
+                              {supplierAttestations.map(att => (
+                                <div key={att.attestationId} className="p-1.5 border-b last:border-b-0">
+                                  <p className="font-medium text-foreground/90">{att.attestationType} ({att.componentId})</p>
+                                  <p className="text-muted-foreground text-[0.7rem]">{att.attestationStatement}</p>
+                                  <p className="text-muted-foreground text-[0.7rem]">Issued: {new Date(att.issuanceDate).toLocaleDateString()} {att.expiryDate ? `- Expires: ${new Date(att.expiryDate).toLocaleDateString()}` : ''}</p>
+                                  {att.evidence && att.evidence.map((ev, idx) => (
+                                    <p key={idx} className="text-muted-foreground text-[0.7rem] pl-2">
+                                      &bull; Evidence: {ev.type} {ev.documentId ? `(${ev.documentId})` : ''} {ev.vcId ? `(VC: ${ev.vcId.substring(0,15)}...)` : ''}
+                                    </p>
+                                  ))}
+                                </div>
+                              ))}
+                            </div>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    )}
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
         ) : (
           <div className="text-center text-muted-foreground py-6">
             <Link2 className="mx-auto h-10 w-10 mb-2 opacity-50" />

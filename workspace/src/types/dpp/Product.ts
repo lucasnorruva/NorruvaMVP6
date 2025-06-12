@@ -155,7 +155,7 @@ export interface DigitalProductPassport {
     };
     eu_espr?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
     us_scope3?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
-    battery_regulation?: BatteryRegulationDetails;
+    battery_regulation?: BatteryRegulationDetails; // Using imported type
     scipNotification?: ScipNotificationDetails;
     euCustomsData?: EuCustomsDataDetails;
   };
@@ -223,6 +223,7 @@ export interface SimpleProductDetail {
   onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
+  batteryRegulation?: BatteryRegulationDetails; // Added for detailed battery info
   lastUpdated?: string; 
 }
 
@@ -348,6 +349,7 @@ export interface PublicProductInfo {
   onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
+  batteryRegulation?: BatteryRegulationDetails; // Added for detailed battery info
 }
 
 export interface Supplier {
@@ -400,6 +402,7 @@ export interface DisplayableProduct {
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
+  batteryRegulation?: BatteryRegulationDetails; // Added for detailed battery info
 }
 
 export interface AnchorResult {
@@ -442,7 +445,7 @@ export interface TransitProduct {
   name: string;
   stage: string;
   eta: string; 
-  dppStatus: ProductComplianceSummary['overallStatus'];
+  dppStatus: ProductComplianceSummary['overallStatus']; // Changed to use overallStatus type
   transport: "Ship" | "Truck" | "Plane";
   origin: string; 
   destination: string; 

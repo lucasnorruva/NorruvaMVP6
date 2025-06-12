@@ -160,6 +160,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         onChainLifecycleStage: dpp.metadata.onChainLifecycleStage,
         textileInformation: dpp.textileInformation, 
         constructionProductInformation: dpp.constructionProductInformation, 
+        batteryRegulation: dpp.compliance.battery_regulation, // Directly map full battery_regulation
         lastUpdated: dpp.metadata.last_updated,
     };
 }
@@ -232,7 +233,7 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             scipNotification: userProductData.complianceData?.scipNotification, 
             euCustomsData: userProductData.complianceData?.euCustomsData,
             battery_regulation: userProductData.complianceData?.battery_regulation, 
-            esprConformity: userProductData.complianceData?.esprConformity, // Added
+            esprConformity: userProductData.complianceData?.esprConformity, 
           },
           ebsiVerification: complianceSummaryFromStorage.ebsi ? {
             status: complianceSummaryFromStorage.ebsi.status as EbsiVerificationDetails['status'],

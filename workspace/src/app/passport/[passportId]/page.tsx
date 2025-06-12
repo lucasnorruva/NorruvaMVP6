@@ -14,13 +14,14 @@ import * as LucideIcons from 'lucide-react'; // Import all icons as LucideIcons
 import {
   Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint,
   ServerIcon as ServerIconLucide, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
-  KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, Sigma, Layers as LayersIconShadcn, Shirt, Construction // Added Shirt, Construction
+  KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, Sigma, Layers as LayersIconShadcn, Shirt, Construction,
+  BatteryCharging, Thermometer, Weight, Hash, CalendarDays as CalendarIcon, FileText as FileTextIcon // Added BatteryCharging, Thermometer, Weight, Hash, CalendarIcon, FileTextIcon
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { useRole } from '@/contexts/RoleContext';
-import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification, CustomAttribute } from '@/types/dpp';
+import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification, CustomAttribute, BatteryRegulationDetails, RecycledContentData } from '@/types/dpp';
 import { MOCK_PUBLIC_PASSPORTS } from '@/data';
 import RoleSpecificCard from '@/components/passport/RoleSpecificCard';
 import { getAiHintForImage } from '@/utils/imageUtils';
@@ -370,6 +371,51 @@ export default function PublicPassportPage() {
                   </CardContent>
                 </Card>
               </div>
+            )}
+
+            {product.batteryRegulation && product.batteryRegulation.status !== 'not_applicable' && (
+                <div className="mt-8 pt-6 border-t border-border">
+                    <Card className="border-0 shadow-none">
+                        <CardHeader className="px-0 pt-0 pb-4">
+                            <CardTitle className="text-xl text-primary flex items-center"><BatteryCharging className="mr-2 h-6 w-6" />EU Battery Regulation Details</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-3 text-sm px-0 pb-0">
+                            <p><strong className="text-muted-foreground flex items-center"><InfoIcon className="mr-1.5 h-4 w-4 text-blue-500" />Status:</strong> <Badge variant="outline" className="capitalize">{product.batteryRegulation.status?.replace('_', ' ') || 'N/A'}</Badge></p>
+                            {product.batteryRegulation.batteryChemistry && <p><strong className="text-muted-foreground flex items-center"><Thermometer className="mr-1.5 h-4 w-4 text-blue-500" />Chemistry:</strong> {product.batteryRegulation.batteryChemistry}</p>}
+                            {product.batteryRegulation.batteryPassportId && <p><strong className="text-muted-foreground flex items-center"><Barcode className="mr-1.5 h-4 w-4 text-blue-500" />Passport ID:</strong> <span className="font-mono">{product.batteryRegulation.batteryPassportId}</span></p>}
+                            
+                            {product.batteryRegulation.carbonFootprint && (product.batteryRegulation.carbonFootprint.value !== null && product.batteryRegulation.carbonFootprint.value !== undefined) && (
+                                <div className="mt-2 pt-2 border-t border-border/30">
+                                    <strong className="text-muted-foreground flex items-center"><Zap className="mr-1.5 h-4 w-4 text-orange-500" />Carbon Footprint:</strong>
+                                    <p className="pl-5">Value: {product.batteryRegulation.carbonFootprint.value} {product.batteryRegulation.carbonFootprint.unit || ''}</p>
+                                    {product.batteryRegulation.carbonFootprint.calculationMethod && <p className="pl-5">Method: {product.batteryRegulation.carbonFootprint.calculationMethod}</p>}
+                                    {product.batteryRegulation.carbonFootprint.vcId && <p className="pl-5">VC ID: <span className="font-mono text-xs">{product.batteryRegulation.carbonFootprint.vcId}</span></p>}
+                                </div>
+                            )}
+
+                            {product.batteryRegulation.recycledContent && product.batteryRegulation.recycledContent.length > 0 && (
+                                <div className="mt-2 pt-2 border-t border-border/30">
+                                    <strong className="text-muted-foreground flex items-center"><Recycle className="mr-1.5 h-4 w-4 text-green-600" />Recycled Content:</strong>
+                                    <ul className="list-disc list-inside ml-5">
+                                        {product.batteryRegulation.recycledContent.map((rc, idx) => (
+                                            <li key={idx}>{rc.material}: {rc.percentage ?? 'N/A'}% {rc.vcId && <span className="text-xs text-muted-foreground">(VC: {rc.vcId.substring(0,10)}...)</span>}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {product.batteryRegulation.stateOfHealth && (product.batteryRegulation.stateOfHealth.value !== null && product.batteryRegulation.stateOfHealth.value !== undefined) && (
+                                <div className="mt-2 pt-2 border-t border-border/30">
+                                    <strong className="text-muted-foreground flex items-center"><Heart className="mr-1.5 h-4 w-4 text-red-500" />State of Health:</strong>
+                                    <p className="pl-5">Value: {product.batteryRegulation.stateOfHealth.value}{product.batteryRegulation.stateOfHealth.unit || '%'}</p>
+                                    {product.batteryRegulation.stateOfHealth.measurementDate && <p className="pl-5">Measured: {new Date(product.batteryRegulation.stateOfHealth.measurementDate).toLocaleDateString()}</p>}
+                                    {product.batteryRegulation.stateOfHealth.vcId && <p className="pl-5">VC ID: <span className="font-mono text-xs">{product.batteryRegulation.stateOfHealth.vcId}</span></p>}
+                                </div>
+                            )}
+                             {product.batteryRegulation.vcId && <p className="mt-2 pt-2 border-t border-border/30"><strong className="text-muted-foreground flex items-center"><FileTextIcon className="mr-1.5 h-4 w-4 text-purple-500" />Overall Battery VC ID:</strong> <span className="font-mono text-xs">{product.batteryRegulation.vcId}</span></p>}
+                        </CardContent>
+                    </Card>
+                </div>
             )}
             
             <div className="mt-8 pt-6 border-t border-border">

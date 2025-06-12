@@ -2,73 +2,125 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts-upgradeable/governance/GovernorUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorSettingsUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorCountingSimpleUpgradeable.sol";
-import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorTimelockControlUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesUpgradeable.sol";
+import "@openzeppelin/contracts-upgradeable/governance/extensions/GovernorVotesQuorumFractionUpgradeable.sol";
 import "@openzeppelin/contracts-upgradeable/proxy/utils/Initializable.sol";
+import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 
 /**
  * @title DPPGovernor
- * @dev A conceptual governance contract for the Digital Product Passport system.
- * It uses NORUToken for voting and integrates with a TimelockController.
- * This is a basic implementation for demonstration and local testing.
+ * @dev A UUPS upgradeable governor contract for the Norruva DPP platform.
+ * It uses an ERC20Votes token (NORUToken) for voting and a TimelockController
+ * for enforcing a delay on proposal execution.
  */
 contract DPPGovernor is
     Initializable,
     GovernorUpgradeable,
-    GovernorSettingsUpgradeable,
-    GovernorCountingSimpleUpgradeable,
+    GovernorTimelockControlUpgradeable,
     GovernorVotesUpgradeable,
-    GovernorTimelockControlUpgradeable
+    GovernorVotesQuorumFractionUpgradeable,
+    UUPSUpgradeable
 {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
         _disableInitializers();
     }
 
+    /**
+     * @dev Initializes the Governor contract.
+     * @param _token The address of the ERC20Votes token (NORUToken).
+     * @param _timelock The address of the TimelockController contract.
+     * @param _name The name of the Governor.
+     */
     function initialize(
-        IVotesUpgradeable _token,
+        IVotes _token,
         TimelockControllerUpgradeable _timelock,
-        string memory _name,
-        uint256 _initialVotingDelay,      // How many blocks after proposal until voting starts
-        uint256 _initialVotingPeriod,     // How many blocks voting lasts
-        uint256 _initialProposalThreshold // Minimum number of votes an account must have to create a proposal
+        string memory _name
     ) public initializer {
         __Governor_init(_name);
-        __GovernorSettings_init(_initialVotingDelay, _initialVotingPeriod, _initialProposalThreshold);
-        __GovernorVotes_init(_token);
         __GovernorTimelockControl_init(_timelock);
-        // GovernorCountingSimple is implicitly initialized by GovernorUpgradeable
+        __GovernorVotes_init(_token);
+        __GovernorVotesQuorumFraction_init(4); // Default quorum: 4%
+        __UUPSUpgradeable_init();
+
+        // Grant DEFAULT_ADMIN_ROLE to this contract (Governor) itself to manage its own upgrades
+        // This role is typically controlled by the DAO via proposals through the Timelock.
+        _grantRole(DEFAULT_ADMIN_ROLE, address(this));
     }
 
-    // --- Override required functions ---
+    // --- Standard Governor Settings Overrides ---
 
-    function votingDelay() public view override(IGovernorUpgradeable, GovernorSettingsUpgradeable) returns (uint256) {
-        return super.votingDelay();
+    /**
+     * @dev See {IGovernor-votingDelay}.
+     * Sets the voting delay to 1 block.
+     */
+    function votingDelay() public view virtual override returns (uint256) {
+        return 1; // 1 block
     }
 
-    function votingPeriod() public view override(IGovernorUpgradeable, GovernorSettingsUpgradeable) returns (uint256) {
-        return super.votingPeriod();
+    /**
+     * @dev See {IGovernor-votingPeriod}.
+     * Sets the voting period to ~1 day (assuming 12s block time).
+     * 7200 blocks = 7200 * 12s = 86400s = 24 hours = 1 day
+     */
+    function votingPeriod() public view virtual override returns (uint256) {
+        return 7200; // ~1 day
     }
 
-    function proposalThreshold() public view override(IGovernorUpgradeable, GovernorSettingsUpgradeable) returns (uint256) {
-        return super.proposalThreshold();
+    /**
+     * @dev See {IGovernor-proposalThreshold}.
+     * Sets the proposal threshold to 0, allowing anyone with voting power to propose.
+     */
+    function proposalThreshold() public view virtual override returns (uint256) {
+        return 0;
+    }
+
+    /**
+     * @dev See {IGovernor-quorum}.
+     * Uses the quorum fraction defined by GovernorVotesQuorumFractionUpgradeable.
+     */
+    function quorum(uint256 blockNumber)
+        public
+        view
+        virtual
+        override(IGovernorUpgradeable, GovernorVotesQuorumFractionUpgradeable)
+        returns (uint256)
+    {
+        return super.quorum(blockNumber);
+    }
+
+    // --- UUPS Upgradeability ---
+
+    /**
+     * @dev Authorizes an upgrade to a new implementation.
+     * Restricted to an account with DEFAULT_ADMIN_ROLE (which is the Governor itself).
+     */
+    function _authorizeUpgrade(address newImplementation)
+        internal
+        virtual
+        override
+        onlyRole(DEFAULT_ADMIN_ROLE)
+    {}
+
+    // --- Interface Support ---
+
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        virtual
+        override(GovernorUpgradeable, AccessControlEnumerableUpgradeable, GovernorTimelockControlUpgradeable)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
     }
 
     // The following functions are overrides required by Solidity.
 
-    function quorum(uint256 blockNumber) public view virtual override(IGovernorUpgradeable, GovernorVotesUpgradeable) returns (uint256) {
-        // Conceptual quorum: 4% of total supply of NORUToken.
-        // In a real scenario, IVotesUpgradeable token.getPastTotalSupply(blockNumber) would be used.
-        // For this mock, we might need a simpler placeholder or assume token has fixed supply known at deployment.
-        // For now, returning a fixed conceptual value.
-        return 4 * 10**18; // Example: 4 NORU if decimals are 18 and total supply is 100 NORU
-    }
-
     function state(uint256 proposalId)
         public
         view
+        virtual
         override(IGovernorUpgradeable, GovernorTimelockControlUpgradeable)
         returns (ProposalState)
     {
@@ -80,20 +132,18 @@ contract DPPGovernor is
         uint256[] memory values,
         bytes[] memory calldatas,
         string memory description
-    ) public override(GovernorUpgradeable, IGovernorUpgradeable) returns (uint256) {
+    ) public virtual override(GovernorUpgradeable, IGovernorUpgradeable) returns (uint256) {
         return super.propose(targets, values, calldatas, description);
     }
 
     function _execute(
-        uint256 /*proposalId*/,
-        address[] memory /*targets*/,
-        uint256[] memory /*values*/,
-        bytes[] memory /*calldatas*/,
-        bytes32 /*descriptionHash*/
-    ) internal override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) {
-        // This is where execution logic for proposals would go.
-        // For this conceptual contract, we can just emit an event or do nothing.
-        emit ProposalExecuted(proposalId);
+        uint256 proposalId,
+        address[] memory targets,
+        uint256[] memory values,
+        bytes[] memory calldatas,
+        bytes32 descriptionHash
+    ) internal virtual override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) {
+        super._execute(proposalId, targets, values, calldatas, descriptionHash);
     }
 
     function _cancel(
@@ -101,28 +151,17 @@ contract DPPGovernor is
         uint256[] memory values,
         bytes[] memory calldatas,
         bytes32 descriptionHash
-    ) internal override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (uint256) {
+    ) internal virtual override(GovernorUpgradeable, GovernorTimelockControlUpgradeable) returns (uint256) {
         return super._cancel(targets, values, calldatas, descriptionHash);
     }
 
     function _executor()
         internal
         view
+        virtual
         override(GovernorUpgradeable, GovernorTimelockControlUpgradeable)
         returns (address)
     {
         return super._executor();
     }
-
-    function supportsInterface(bytes4 interfaceId)
-        public
-        view
-        override(GovernorUpgradeable, AccessControlEnumerableUpgradeable, GovernorTimelockControlUpgradeable)
-        returns (bool)
-    {
-        return super.supportsInterface(interfaceId);
-    }
-
-    // Event to signify conceptual execution
-    event ProposalExecuted(uint256 proposalId);
 }

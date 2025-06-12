@@ -327,6 +327,10 @@ export default function BlockchainPage() {
         setNftTokenId(updated.ownershipNftLink.tokenId);
         setNftChainName(updated.ownershipNftLink.chainName || "");
       }
+      // Update Auth VC Product ID if it was part of the update
+      if (updated.authenticationVcId) {
+        setAuthVcProductId(updated.id); 
+      }
     }
   };
 
@@ -630,7 +634,7 @@ export default function BlockchainPage() {
       const res = await fetch(`/api/v1/dpp/${authVcProductId}/issue-auth-vc`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
-        body: JSON.stringify({}), // Empty body for this mock
+        body: JSON.stringify({}), 
       });
       const data = await res.json();
       if (res.ok) {
@@ -653,7 +657,7 @@ export default function BlockchainPage() {
       return;
     }
     setIsActionLoading("linkNft");
-    const payload: OwnershipNftLink & { registryUrl?: string } = {
+    const payload: OwnershipNftLink & { registryUrl?: string | null } = { // Allow registryUrl to be null from state
         contractAddress: nftContractAddress,
         tokenId: nftTokenId,
         ...(nftRegistryUrl && { registryUrl: nftRegistryUrl }),

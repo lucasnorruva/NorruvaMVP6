@@ -169,7 +169,7 @@ export interface DashboardFiltersState {
   blockchainAnchored?: 'all' | 'anchored' | 'not_anchored';
 }
 
-export type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status';
+export type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status' | 'metadata.onChainStatus';
 
 export interface SortConfig {
   key: SortableKeys | null;
@@ -270,8 +270,7 @@ export interface StoredUserProduct {
   authenticationVcId?: string; 
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; 
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; 
-  onChainStatus?: string; 
-  onChainLifecycleStage?: string; 
+  metadata?: Partial<DigitalProductPassport['metadata']>; // Ensure metadata can be stored
 }
 
 export interface RichMockProduct {
@@ -306,8 +305,7 @@ export interface RichMockProduct {
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
-  onChainStatus?: string; 
-  onChainLifecycleStage?: string; 
+  metadata?: Partial<DigitalProductPassport['metadata']>; // Ensure metadata can be stored
 }
 
 export interface PublicProductInfo {
@@ -391,8 +389,7 @@ export interface DisplayableProduct {
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
-  onChainStatus?: string; 
-  onChainLifecycleStage?: string; 
+  metadata?: Partial<DigitalProductPassport['metadata']>; // For metadata fields like onChainStatus
 }
 
 export interface AnchorResult {
@@ -428,3 +425,5 @@ export interface TokenStatusResponse {
   status: string; // e.g., "minted", "transferred", "active"
   message?: string;
 }
+
+    

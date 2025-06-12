@@ -63,7 +63,7 @@ export const getOverallComplianceDetails = (dpp: DigitalProductPassport): Compli
   let pendingCount = 0;
   let nonCompliantCount = 0;
   const regulationsChecked = Object.values(dpp.compliance).filter(
-    (reg): reg is { status: string } => typeof reg === 'object' && reg !== null && 'status' in reg
+    (reg): reg is { status: string } => typeof reg === 'object' && reg !== null && 'status' in reg && typeof reg.status === 'string'
   );
 
   if (regulationsChecked.length === 0) {
@@ -77,9 +77,13 @@ export const getOverallComplianceDetails = (dpp: DigitalProductPassport): Compli
 
   regulationsChecked.forEach(reg => {
     const status = reg.status?.toLowerCase();
-    if (status === 'compliant' || status === 'registered' || status === 'conformant' || status === 'synced successfully') compliantCount++;
-    else if (status === 'pending' || status === 'pending_review' || status === 'pending_assessment' || status === 'pending_verification' || status === 'in progress' || status === 'data incomplete') pendingCount++;
-    else if (status === 'non_compliant' || status === 'non_conformant' || status === 'error' || status === 'data mismatch' || status === 'product not found in eprel') nonCompliantCount++;
+    // Compliant statuses
+    if (['compliant', 'registered', 'conformant', 'synced successfully', 'verified', 'cleared', 'notified'].includes(status)) compliantCount++;
+    // Pending statuses
+    else if (['pending', 'pending_review', 'pending_assessment', 'pending_verification', 'in progress', 'data incomplete', 'pending notification', 'pending documents'].includes(status)) pendingCount++;
+    // Non-compliant statuses
+    else if (['non_compliant', 'non_conformant', 'error', 'data mismatch', 'product not found in eprel', 'mismatch'].includes(status)) nonCompliantCount++;
+    // Neutral statuses like 'N/A', 'Not Applicable', 'Not Required' are ignored for this calculation
   });
 
   if (nonCompliantCount > 0) {
@@ -90,9 +94,13 @@ export const getOverallComplianceDetails = (dpp: DigitalProductPassport): Compli
     const iconElement = <InfoIcon className="h-5 w-5 text-warning" />;
     return { text: "Pending", variant: "outline", icon: iconElement, tooltipText: "One or more regulations are pending." };
   }
-  if (compliantCount === regulationsChecked.length && regulationsChecked.length > 0) {
+  if (compliantCount === regulationsChecked.filter(r => !['n/a', 'not applicable', 'not required'].includes(r.status.toLowerCase())).length && compliantCount > 0) {
     const iconElement = <ShieldCheck className="h-5 w-5 text-success" />;
     return { text: "Fully Compliant", variant: "default", icon: iconElement, tooltipText: "All tracked regulations compliant." };
+  }
+  if (compliantCount > 0 && (pendingCount > 0 || nonCompliantCount === 0)) {
+    const iconElement = <ShieldCheck className="h-5 w-5 text-success" />; // Or InfoIcon if we want to be more conservative
+    return { text: "Partially Compliant", variant: "default", icon: iconElement, tooltipText: "Some regulations are compliant, others may be pending or N/A." };
   }
   const iconElementDefault = <ShieldQuestion className="h-5 w-5 text-muted-foreground" />;
   return { text: "Review Needed", variant: "outline", icon: iconElementDefault, tooltipText: "Compliance status requires review." };
@@ -215,11 +223,14 @@ const STATUS_DISPLAY_MAP: Record<string, StatusDisplayConfig> = {
   verified: successDisplay,
   "synced successfully": successDisplay,
   conformant: successDisplay,
+  cleared: successDisplay,
+  notified: successDisplay,
 
   "non-compliant": errorDisplay,
   non_conformant: errorDisplay,
   error: errorDisplay,
   "error during sync": errorDisplay,
+  mismatch: errorDisplay,
 
   pending: pendingDisplay,
   "pending review": pendingDisplay,
@@ -228,28 +239,32 @@ const STATUS_DISPLAY_MAP: Record<string, StatusDisplayConfig> = {
   pending_verification: pendingDisplay,
   "in progress": pendingDisplay,
   "data incomplete": pendingDisplay,
-  "data mismatch": pendingDisplay,
+  "data mismatch": pendingDisplay, // This was in errorDisplay, but can also mean pending action
   "product not found in eprel": pendingDisplay,
+  "pending notification": pendingDisplay,
+  "pending documents": pendingDisplay,
+
 
   "not applicable": defaultDisplay,
   "n/a": defaultDisplay,
   "not found": defaultDisplay,
   "not verified": defaultDisplay,
+  "not required": defaultDisplay,
   default: defaultDisplay,
 };
 
 export const getStatusIcon = (status?: string): JSX.Element => {
-  const key = status?.toLowerCase() ?? 'default';
+  const key = status?.toLowerCase().trim() ?? 'default';
   return STATUS_DISPLAY_MAP[key]?.icon ?? STATUS_DISPLAY_MAP.default.icon;
 };
 
 export const getStatusBadgeVariant = (status?: string): "default" | "destructive" | "outline" | "secondary" => {
-  const key = status?.toLowerCase() ?? 'default';
+  const key = status?.toLowerCase().trim() ?? 'default';
   return STATUS_DISPLAY_MAP[key]?.variant ?? STATUS_DISPLAY_MAP.default.variant;
 };
 
 export const getStatusBadgeClasses = (status?: string): string => {
-  const key = status?.toLowerCase() ?? 'default';
+  const key = status?.toLowerCase().trim() ?? 'default';
   return STATUS_DISPLAY_MAP[key]?.classes ?? STATUS_DISPLAY_MAP.default.classes;
 };
 

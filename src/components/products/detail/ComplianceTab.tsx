@@ -85,51 +85,71 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
   
   // Handle SCIP explicitly
   if (summary.scip) {
+    const scipNotesParts = [];
+    if (summary.scip.articleName) scipNotesParts.push(`Article: ${summary.scip.articleName}`);
+    if (summary.scip.svhcListVersion) scipNotesParts.push(`SVHC List Ver: ${summary.scip.svhcListVersion}`);
+    if (summary.scip.submittingLegalEntity) scipNotesParts.push(`Submitter: ${summary.scip.submittingLegalEntity}`);
+
     allComplianceItems.push({
       title: "ECHA SCIP Notification",
       icon: Database,
-      status: summary.scip.status,
-      lastChecked: summary.scip.lastChecked,
-      id: summary.scip.notificationId, // Use notificationId as the primary ID for display
-      notes: `Article: ${summary.scip.articleName || 'N/A'}. SVHC List Ver: ${summary.scip.svhcListVersion || 'N/A'}`,
+      status: summary.scip.status || "N/A",
+      lastChecked: summary.scip.lastChecked || product.lastUpdated,
+      id: summary.scip.notificationId,
+      notes: scipNotesParts.join(' | ') || "Details not fully specified.",
       url: summary.scip.safeUseInstructionsLink,
     });
   }
 
   // Handle EU Customs Data explicitly
   if (summary.euCustomsData) {
+    const customsNotesParts = [];
+    if (summary.euCustomsData.hsCode) customsNotesParts.push(`HS Code: ${summary.euCustomsData.hsCode}`);
+    if (summary.euCustomsData.countryOfOrigin) customsNotesParts.push(`Origin: ${summary.euCustomsData.countryOfOrigin}`);
+    if (summary.euCustomsData.netWeightKg !== undefined && summary.euCustomsData.netWeightKg !== null) customsNotesParts.push(`Net Wt: ${summary.euCustomsData.netWeightKg}kg`);
+    if (summary.euCustomsData.customsValuation?.value !== undefined && summary.euCustomsData.customsValuation.value !== null) {
+        customsNotesParts.push(`Value: ${summary.euCustomsData.customsValuation.value} ${summary.euCustomsData.customsValuation.currency || ''}`);
+    }
+    
     allComplianceItems.push({
       title: "EU Customs Data",
       icon: Anchor,
-      status: summary.euCustomsData.status,
-      lastChecked: summary.euCustomsData.lastChecked,
-      id: summary.euCustomsData.declarationId, // Use declarationId as the primary ID
-      notes: `HS Code: ${summary.euCustomsData.hsCode || 'N/A'}. Origin: ${summary.euCustomsData.countryOfOrigin || 'N/A'}. Net Wt: ${summary.euCustomsData.netWeightKg || 'N/A'}kg. Value: ${summary.euCustomsData.customsValuation?.value || 'N/A'} ${summary.euCustomsData.customsValuation?.currency || ''}`.trim(),
+      status: summary.euCustomsData.status || "N/A",
+      lastChecked: summary.euCustomsData.lastChecked || product.lastUpdated,
+      id: summary.euCustomsData.declarationId,
+      notes: customsNotesParts.join(' | ') || "Details not fully specified.",
     });
   }
 
   // Handle Battery Regulation explicitly
   if (summary.battery) {
-    const batteryNotes: string[] = [];
-    if (summary.battery.carbonFootprint) {
-      batteryNotes.push(`CF: ${summary.battery.carbonFootprint.value} ${summary.battery.carbonFootprint.unit}`);
+    const batteryNotesParts: string[] = [];
+    if (summary.battery.batteryChemistry) batteryNotesParts.push(`Chemistry: ${summary.battery.batteryChemistry}`);
+    if (summary.battery.carbonFootprint?.value !== undefined && summary.battery.carbonFootprint.value !== null) {
+      batteryNotesParts.push(`CF: ${summary.battery.carbonFootprint.value} ${summary.battery.carbonFootprint.unit || ''}`);
     }
-    if (summary.battery.stateOfHealth) {
-      batteryNotes.push(`SoH: ${summary.battery.stateOfHealth.value}${summary.battery.stateOfHealth.unit}`);
+    if (summary.battery.stateOfHealth?.value !== undefined && summary.battery.stateOfHealth.value !== null) {
+      batteryNotesParts.push(`SoH: ${summary.battery.stateOfHealth.value}${summary.battery.stateOfHealth.unit || '%'}`);
     }
     if (summary.battery.recycledContent && summary.battery.recycledContent.length > 0) {
-      const mainRecycled = summary.battery.recycledContent[0];
-      batteryNotes.push(`Recycled ${mainRecycled.material}: ${mainRecycled.percentage}%`);
+      const mainRecycled = summary.battery.recycledContent.find(rc => rc.material && rc.percentage !== undefined && rc.percentage !== null);
+      if (mainRecycled) {
+        batteryNotesParts.push(`Recycled ${mainRecycled.material}: ${mainRecycled.percentage}%`);
+      } else if (summary.battery.recycledContent.length > 0) {
+        batteryNotesParts.push(`${summary.battery.recycledContent.length} recycled material(s) declared.`);
+      }
     }
+    if (summary.battery.vcId) batteryNotesParts.push(`Main VC: ${summary.battery.vcId.substring(0,15)}...`);
+
 
     allComplianceItems.push({
       title: "EU Battery Regulation",
       icon: BatteryCharging,
-      status: summary.battery.status,
-      lastChecked: product.lastUpdated, // Using product's last update date as general proxy for battery details
+      status: summary.battery.status || "N/A",
+      lastChecked: product.lastUpdated, 
       id: summary.battery.batteryPassportId,
-      url: summary.battery.vcId ? `#vc-${summary.battery.vcId}` : undefined, // Conceptual link to VC
-      notes: batteryNotes.join(' | ') || "Detailed battery passport information available.",
+      url: summary.battery.vcId ? `#vc-${summary.battery.vcId}` : undefined, 
+      notes: batteryNotesParts.join(' | ') || "Detailed battery passport information available.",
     });
   }
 
@@ -174,4 +194,3 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     </div>
   );
 }
-

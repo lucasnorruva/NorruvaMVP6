@@ -2622,6 +2622,34 @@ components:
         constructionProductInformation:
           $ref: '#/components/schemas/ConstructionProductInformation'
           nullable: true
+        compliance: # Added compliance section
+          type: object
+          nullable: true
+          properties:
+            eprel:
+              type: object
+              nullable: true
+              properties:
+                id: { type: string, nullable: true }
+                status: { type: string, nullable: true }
+                url: { type: string, format: url, nullable: true }
+            esprConformity:
+              type: object
+              nullable: true
+              properties:
+                assessmentId: { type: string, nullable: true }
+                status: { type: string, enum: ['conformant', 'non_conformant', 'pending_assessment'], nullable: true }
+                assessmentDate: { type: string, format: "date-time", nullable: true }
+                vcId: { type: string, nullable: true }
+            scipNotification:
+              $ref: '#/components/schemas/ScipNotificationDetails'
+              nullable: true
+            euCustomsData:
+              $ref: '#/components/schemas/EuCustomsDataDetails'
+              nullable: true
+            battery_regulation:
+              $ref: '#/components/schemas/BatteryRegulationDetails'
+              nullable: true
     UpdateDppRequestBody:
       type: object
       properties:
@@ -2727,15 +2755,15 @@ components:
           nullable: true
           properties:
             eprel:
-              type: object
+              type: object # Kept eprel simple as it was
               nullable: true
               properties:
                 id: { type: string, nullable: true }
                 status: { type: string, nullable: true }
-                url: { type: string, nullable: true }
+                url: { type: string, format: url, nullable: true } # Corrected format
                 lastChecked: { type: string, format: "date-time", nullable: true }
             esprConformity:
-              type: object
+              type: object # Kept esprConformity simple
               nullable: true
               properties:
                 assessmentId: { type: string, nullable: true }
@@ -2743,13 +2771,13 @@ components:
                 assessmentDate: { type: string, format: "date-time", nullable: true }
                 vcId: { type: string, nullable: true }
             scipNotification:
-              $ref: '#/components/schemas/ScipNotificationDetails'
+              $ref: '#/components/schemas/ScipNotificationDetails' # Using $ref
               nullable: true
             euCustomsData:
-              $ref: '#/components/schemas/EuCustomsDataDetails'
+              $ref: '#/components/schemas/EuCustomsDataDetails' # Using $ref
               nullable: true
             battery_regulation: 
-              $ref: '#/components/schemas/BatteryRegulationDetails'
+              $ref: '#/components/schemas/BatteryRegulationDetails' # Using $ref
               nullable: true
         ebsiVerification:
           type: object
@@ -3254,3 +3282,5 @@ components:
       name: Authorization
       description: API key for authentication. Provide as 'Bearer YOUR_API_KEY'.
 
+
+    

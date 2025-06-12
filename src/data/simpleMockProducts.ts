@@ -83,3 +83,4 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
   }
 ];
 
+    

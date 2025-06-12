@@ -256,6 +256,8 @@ export interface StoredUserProduct {
     battery_regulation?: Partial<DigitalProductPassport['compliance']['battery_regulation']>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
+  authenticationVcId?: string; // Add new fields
+  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; // Add new fields
 }
 
 export interface RichMockProduct {
@@ -404,3 +406,5 @@ export interface TokenStatusResponse {
   status: string; // e.g., "minted", "transferred", "active"
   message?: string;
 }
+
+    

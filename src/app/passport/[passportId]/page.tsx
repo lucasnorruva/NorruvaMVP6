@@ -14,7 +14,7 @@ import * as LucideIcons from 'lucide-react'; // Import all icons as LucideIcons
 import {
   Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint,
   ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
-  KeyRound, FileLock // Added KeyRound and FileLock for new section
+  KeyRound, FileLock 
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react';
@@ -440,3 +440,5 @@ export default function PublicPassportPage() {
     </div>
   );
 }
+
+    

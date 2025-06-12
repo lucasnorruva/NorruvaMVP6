@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon } from "lucide-react"; // Added Fingerprint, Link as LinkIcon
+import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon, KeyRound, ExternalLink } from "lucide-react"; // Added KeyRound, ExternalLink
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; // Renamed to avoid conflict with LinkIcon
 
@@ -95,15 +95,15 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center">
-                <Fingerprint className="mr-2 h-5 w-5 text-primary" />
+                <KeyRound className="mr-2 h-5 w-5 text-primary" /> {/* Changed Icon */}
                 Authenticity & Ownership
               </CardTitle>
             </CardHeader>
             <CardContent className="text-sm space-y-2">
               {product.authenticationVcId && (
                 <div>
-                  <strong className="text-muted-foreground">Authenticity VC ID:</strong>
-                  <p className="font-mono text-xs break-all text-foreground/90">{product.authenticationVcId}</p>
+                  <strong className="text-muted-foreground flex items-center"><Fingerprint className="mr-1.5 h-4 w-4 text-indigo-500"/>Authenticity VC ID:</strong>
+                  <p className="font-mono text-xs break-all text-foreground/90 mt-0.5">{product.authenticationVcId}</p>
                 </div>
               )}
               {product.ownershipNftLink && (
@@ -114,7 +114,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                   {product.ownershipNftLink.chainName && <p>Chain: <span className="text-foreground/90">{product.ownershipNftLink.chainName}</span></p>}
                   {product.ownershipNftLink.registryUrl && (
                     <NextLink href={product.ownershipNftLink.registryUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs mt-1">
-                      View on Registry <LinkIcon className="ml-1 h-3 w-3" />
+                      View on Registry <ExternalLink className="ml-1 h-3 w-3" />
                     </NextLink>
                   )}
                 </div>
@@ -235,3 +235,5 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
+
+    

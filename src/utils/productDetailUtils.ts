@@ -68,13 +68,11 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         keyCompliancePointsPopulated.push(`Battery Reg: ${capitalizedBatteryStatus}`);
     }
     
-    let specificRegCountForPoints = 0;
     specificRegulations.forEach(reg => {
         if (keyCompliancePointsPopulated.length < 3 && reg.status && reg.status.toLowerCase() !== 'n/a' && reg.status.toLowerCase() !== 'not applicable' && reg.status.toLowerCase() !== 'not required') {
             const regStatusText = reg.status.replace(/_/g, ' ');
             const capitalizedRegStatus = regStatusText.charAt(0).toUpperCase() + regStatusText.slice(1);
             keyCompliancePointsPopulated.push(`${reg.regulationName}: ${capitalizedRegStatus}`);
-            specificRegCountForPoints++;
         }
     });
     if (keyCompliancePointsPopulated.length === 0 && (specificRegulations.length > 0 || dpp.compliance.battery_regulation)) {
@@ -237,10 +235,8 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           })),
           certifications: certificationsForUserProd,
           supplyChainLinks: userProductData.supplyChainLinks || [],
-          // authenticationVcId and ownershipNftLink should ideally be part of StoredUserProduct if they are user-editable
-          // For now, assuming they are not directly in StoredUserProduct
-          authenticationVcId: undefined, 
-          ownershipNftLink: undefined,
+          authenticationVcId: userProductData.authenticationVcId, // Map from StoredUserProduct
+          ownershipNftLink: userProductData.ownershipNftLink, // Map from StoredUserProduct
         } as DigitalProductPassport;
       }
     }
@@ -253,4 +249,6 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
   }
   return null;
 }
+    
+
     

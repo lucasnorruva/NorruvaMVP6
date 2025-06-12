@@ -63,3 +63,4 @@ export default function QuickActionsCard({ actions, onTabChange }: QuickActionsC
     </Card>
   );
 }
+

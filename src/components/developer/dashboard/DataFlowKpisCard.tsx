@@ -61,3 +61,4 @@ export default function DataFlowKpisCard({ kpis }: DataFlowKpisCardProps) {
     </Card>
   );
 }
+

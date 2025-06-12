@@ -221,7 +221,6 @@ export default function BlockchainPage() {
   const [onChainLifecycleStage, setOnChainLifecycleStage] = useState<string>("Manufacturing");
   const [vcIdToRegister, setVcIdToRegister] = useState<string>("");
   const [vcHashToRegister, setVcHashToRegister] = useState<string>("");
-  const [isUpdatingLifecycleStageLoading, setIsUpdatingLifecycleStageLoading] = useState(false);
   const [isRegisteringVcHashLoading, setIsRegisteringVcHashLoading] = useState(false);
 
   const [authVcProductId, setAuthVcProductId] = useState<string>("");
@@ -301,7 +300,7 @@ export default function BlockchainPage() {
       setNftTokenId(dpp.ownershipNftLink?.tokenId || tokenId || "");
       setNftChainName(dpp.ownershipNftLink?.chainName || dpp.blockchainIdentifiers?.platform || "");
       setOnChainStatusUpdate(dpp.metadata.onChainStatus || "active");
-      setOnChainLifecycleStage(dpp.metadata.onChainLifecycleStage || "Manufacturing"); // Pre-fill lifecycle stage
+      setOnChainLifecycleStage(dpp.metadata.onChainLifecycleStage || "Manufacturing"); 
 
     } else {
       setUpdateTokenId("");
@@ -315,7 +314,7 @@ export default function BlockchainPage() {
       setNftTokenId("");
       setNftChainName("");
       setOnChainStatusUpdate("active");
-      setOnChainLifecycleStage("Manufacturing"); // Reset lifecycle stage
+      setOnChainLifecycleStage("Manufacturing"); 
     }
     setFetchedCredential(null);
     setMintResponse(null);
@@ -347,7 +346,7 @@ export default function BlockchainPage() {
       if (updated.metadata.onChainStatus) {
         setOnChainStatusUpdate(updated.metadata.onChainStatus);
       }
-      if (updated.metadata.onChainLifecycleStage) { // Update local state for lifecycle stage
+      if (updated.metadata.onChainLifecycleStage) { 
         setOnChainLifecycleStage(updated.metadata.onChainLifecycleStage);
       }
     }
@@ -663,14 +662,24 @@ export default function BlockchainPage() {
       return;
     }
     setIsRegisteringVcHashLoading(true);
-    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
-    const mockTxHash = `0xvc_hash_register_tx_${Date.now().toString(16)}`;
-    toast({
-      title: "VC Hash Registered (Mock)",
-      description: `VC Hash for ID '${vcIdToRegister}' conceptually registered on-chain for ${selected.productName}. Hash: ${vcHashToRegister.substring(0,10)}... Tx: ${mockTxHash}`
+    const res = await fetch(`/api/v1/dpp/${selected.id}/register-vc-hash`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${MOCK_API_KEY}` },
+      body: JSON.stringify({ vcId: vcIdToRegister, vcHash: vcHashToRegister }),
     });
-    setVcIdToRegister("");
-    setVcHashToRegister("");
+
+    if (res.ok) {
+      const data = await res.json();
+      updateDppLocally(data.updatedProduct);
+      toast({
+        title: "VC Hash Registered (Mock)",
+        description: data.message || `VC Hash for ID '${vcIdToRegister}' conceptually registered for ${selected.productName}.`,
+      });
+      setVcIdToRegister("");
+      setVcHashToRegister("");
+    } else {
+      handleApiError(res, "Registering VC Hash");
+    }
     setIsRegisteringVcHashLoading(false);
   };
 
@@ -1206,4 +1215,3 @@ export default function BlockchainPage() {
 }
       
     
-

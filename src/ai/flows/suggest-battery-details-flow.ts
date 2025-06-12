@@ -18,11 +18,30 @@ const SuggestBatteryDetailsInputSchema = z.object({
 });
 export type SuggestBatteryDetailsInput = z.infer<typeof SuggestBatteryDetailsInputSchema>;
 
+const SuggestedCarbonFootprintSchema = z.object({
+  value: z.number().optional().describe("A plausible manufacturing carbon footprint value (e.g., 75.5)."),
+  unit: z.string().optional().describe("Unit, typically 'kg CO2e/kWh' or similar."),
+  calculationMethod: z.string().optional().describe("A common calculation method, e.g., 'PEFCR for Batteries v1.2' or 'ISO 14067'."),
+}).optional();
+
+const SuggestedRecycledContentSchema = z.object({
+  material: z.string().optional().describe("Name of the material, e.g., 'Cobalt', 'Lithium', 'Nickel', 'Overall Battery'."),
+  percentage: z.number().optional().describe("A common recycled content percentage for this material (e.g., 10 for 10%)."),
+}).optional();
+
+const SuggestedStateOfHealthSchema = z.object({
+  value: z.number().optional().describe("A typical state of health percentage (e.g., 100 for new, 95 for refurbished)."),
+  unit: z.string().optional().describe("Unit, typically '%'."),
+  measurementDate: z.string().optional().describe("A plausible measurement date, e.g., today's date in YYYY-MM-DD format."),
+}).optional();
+
 const SuggestBatteryDetailsOutputSchema = z.object({
   suggestedBatteryChemistry: z.string().optional().describe("A common battery chemistry (e.g., 'Li-ion NMC', 'LFP', 'Lead-Acid')."),
-  suggestedStateOfHealth: z.number().optional().describe("A typical state of health percentage (e.g., 98 for 98%)."),
-  suggestedCarbonFootprintManufacturing: z.number().optional().describe("A plausible manufacturing carbon footprint in kg CO2e per kWh (e.g., 75.5)."),
-  suggestedRecycledContentPercentage: z.number().optional().describe("A common recycled content percentage for batteries (e.g., 15 for 15%)."),
+  suggestedBatteryPassportId: z.string().optional().describe("A plausible format for a battery passport ID, e.g., BATT-ID-PRODUCTNAME-SERIAL."),
+  suggestedCarbonFootprint: SuggestedCarbonFootprintSchema,
+  suggestedRecycledContent: z.array(SuggestedRecycledContentSchema).optional().describe("An array with 1-2 suggestions for recycled content (e.g., one for Cobalt, one for Lithium, or one for 'Overall Battery')."),
+  suggestedStateOfHealth: SuggestedStateOfHealthSchema,
+  suggestedBatteryRegulationVcId: z.string().optional().describe("A plausible format for an overall VC ID, e.g., vc:battery:example-org:PRODUCTID."),
 });
 export type SuggestBatteryDetailsOutput = z.infer<typeof SuggestBatteryDetailsOutputSchema>;
 
@@ -38,21 +57,34 @@ const prompt = ai.definePrompt({
   output: {schema: SuggestBatteryDetailsOutputSchema},
   prompt: `You are a product data specialist focusing on battery technologies.
 Based on the provided product name, category, and description, determine if this product is likely a battery or contains a significant battery.
-If it is, suggest plausible values for the following battery details:
-- Battery Chemistry: (e.g., "Li-ion NMC", "LFP", "Lithium Polymer", "NiMH", "Lead-Acid")
-- State of Health (%): (e.g., for a new product, typically 100; for a refurbished one, maybe 90-98)
-- Manufacturing Carbon Footprint (kg CO2e/kWh): (e.g., Li-ion NMC ranges 60-150 kg CO2e/kWh. Suggest a value within a reasonable range if applicable, like 75.5 or 110.2)
-- Recycled Content (%): (e.g., common targets are 6-16% for cobalt, lithium, nickel. Suggest a general recycled content percentage for the battery pack if applicable, like 10 or 15)
+If it is, suggest plausible values for the following battery details in the specified JSON structure:
 
-If the product is clearly not battery-related (e.g., a t-shirt, a wooden chair), return null or omit fields for all suggestions. Focus on providing realistic and common values.
+- suggestedBatteryChemistry: (e.g., "Li-ion NMC", "LFP", "Lithium Polymer", "NiMH", "Lead-Acid")
+- suggestedBatteryPassportId: (e.g., a plausible ID like "BATT-ID-EVMODULE-XYZ123")
+- suggestedCarbonFootprint: An object with 'value' (e.g., Li-ion NMC ranges 60-150 kg CO2e/kWh, suggest a value like 85.0), 'unit' (e.g., "kg CO2e/kWh"), and 'calculationMethod' (e.g., "PEFCR for Batteries v1.2").
+- suggestedRecycledContent: An array of 1-2 objects. Each object should have 'material' (e.g., "Cobalt", "Lithium", or "Overall Battery Pack") and 'percentage' (e.g., 12 for Cobalt, 5 for Lithium, or 10 for Overall).
+- suggestedStateOfHealth: An object with 'value' (e.g., for a new product, 100; for refurbished, 95), 'unit' (typically "%"), and 'measurementDate' (e.g., current date "YYYY-MM-DD").
+- suggestedBatteryRegulationVcId: (e.g., a plausible ID like "vc:battery:acme:evmodule123")
+
+If the product is clearly not battery-related (e.g., a t-shirt, a wooden chair), return an empty JSON object or omit all suggestion fields. Focus on providing realistic and common values for battery-related products.
 
 Product Name: {{{productName}}}
 {{#if productCategory}}Product Category: {{{productCategory}}}{{/if}}
 {{#if productDescription}}Product Description: {{{productDescription}}}{{/if}}
 
 Return ONLY the suggested values in the output JSON object.
-Example output for an "EV Battery Module":
-{ "suggestedBatteryChemistry": "Li-ion NMC", "suggestedStateOfHealth": 100, "suggestedCarbonFootprintManufacturing": 85.0, "suggestedRecycledContentPercentage": 12 }
+Example for an "EV Battery Module":
+{ 
+  "suggestedBatteryChemistry": "Li-ion NMC", 
+  "suggestedBatteryPassportId": "BATT-ID-EVMODULE-XYZ789",
+  "suggestedCarbonFootprint": { "value": 85.0, "unit": "kg CO2e/kWh", "calculationMethod": "PEFCR for Batteries v1.2" },
+  "suggestedRecycledContent": [
+    { "material": "Cobalt", "percentage": 12 },
+    { "material": "Nickel", "percentage": 10 }
+  ],
+  "suggestedStateOfHealth": { "value": 100, "unit": "%", "measurementDate": "2024-07-30" },
+  "suggestedBatteryRegulationVcId": "vc:battery:evcorp:module789"
+}
 Example for "Cotton T-Shirt":
 {}
 `,
@@ -69,3 +101,4 @@ const suggestBatteryDetailsFlow = ai.defineFlow(
     return output || {}; // Ensure an empty object if output is null/undefined
   }
 );
+

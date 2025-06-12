@@ -7,7 +7,7 @@ export { default as ExtendDigitalProductPassport } from './ExtendDigitalProductP
 export { default as AddLifecycleEventToDpp } from './AddLifecycleEventToDpp';
 export { default as ArchiveDigitalProductPassport } from './ArchiveDigitalProductPassport';
 export { default as ApiReferencePrivateLayerEndpoints } from './ApiReferencePrivateLayerEndpoints';
-export { default as ApiReferenceZkpLayerEndpoints } from './ApiReferenceZkpLayerEndpoints'; // Added export
+export { default as ApiReferenceZkpLayerEndpoints } from './ApiReferenceZkpLayerEndpoints'; 
 
 // Ensure ApiReferenceDppEndpoints is also exported if it's the main aggregator,
 // or export the new components directly if they are separate files.

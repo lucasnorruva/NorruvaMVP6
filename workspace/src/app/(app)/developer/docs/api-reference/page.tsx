@@ -8,11 +8,10 @@ import ApiReferenceQrEndpoints from '@/components/developer/docs/ApiReferenceQrE
 import ApiReferenceComplianceEndpoints from '@/components/developer/docs/ApiReferenceComplianceEndpoints';
 import ApiReferenceTokenEndpoints from '@/components/developer/docs/ApiReferenceTokenEndpoints';
 import ApiReferencePrivateLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferencePrivateLayerEndpoints';
-import ApiReferenceZkpLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferenceZkpLayerEndpoints'; // New import
+import ApiReferenceZkpLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferenceZkpLayerEndpoints';
 import type { DigitalProductPassport } from "@/types/dpp";
 
 export default function ApiReferencePage() {
-  // Use DPP005 for a rich example including battery data
   const exampleDppForResponse = MOCK_DPPS.find(dpp => dpp.id === "DPP005") || MOCK_DPPS[0];
   const exampleDppResponse = JSON.stringify(exampleDppForResponse, null, 2);
 

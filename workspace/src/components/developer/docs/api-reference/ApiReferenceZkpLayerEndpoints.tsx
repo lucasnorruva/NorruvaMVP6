@@ -40,7 +40,7 @@ export default function ApiReferenceZkpLayerEndpoints({
           <CardDescription>
             <span className="inline-flex items-center font-mono text-sm">
               <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
-              <code className="bg-muted px-1 py-0.5 rounded-sm">/zkp/submit-proof/{"{dppId}"}</code>
+              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/zkp/submit-proof/{"{dppId}"}</code>
             </span>
             <br />
             Allows a prover to submit a ZKP related to a specific DPP.
@@ -95,7 +95,7 @@ export default function ApiReferenceZkpLayerEndpoints({
           <CardDescription>
             <span className="inline-flex items-center font-mono text-sm">
               <Badge variant="outline" className="bg-sky-100 text-sky-700 border-sky-300 mr-2 font-semibold">GET</Badge>
-              <code className="bg-muted px-1 py-0.5 rounded-sm">/zkp/verify-claim/{"{dppId}"}</code>
+              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/zkp/verify-claim/{"{dppId}"}</code>
             </span>
             <br />
             Allows a verifier to check if a specific claim for a DPP has a valid (mock) ZKP associated.
@@ -140,4 +140,3 @@ export default function ApiReferenceZkpLayerEndpoints({
     </section>
   );
 }
-

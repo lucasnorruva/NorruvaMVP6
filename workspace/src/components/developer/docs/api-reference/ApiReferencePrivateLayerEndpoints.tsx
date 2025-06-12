@@ -42,7 +42,7 @@ export default function ApiReferencePrivateLayerEndpoints({
           <CardDescription>
             <span className="inline-flex items-center font-mono text-sm">
               <Badge variant="outline" className="bg-sky-100 text-sky-700 border-sky-300 mr-2 font-semibold">GET</Badge>
-              <code className="bg-muted px-1 py-0.5 rounded-sm">/private/dpp/{"{productId}"}/supplier/{"{supplierId}"}/attestations</code>
+              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/private/dpp/{"{productId}"}/supplier/{"{supplierId}"}/attestations</code>
             </span>
             <br />
             Fetches detailed, potentially sensitive attestations from a specific supplier for a given product.
@@ -85,7 +85,7 @@ export default function ApiReferencePrivateLayerEndpoints({
           <CardDescription>
             <span className="inline-flex items-center font-mono text-sm">
               <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
-              <code className="bg-muted px-1 py-0.5 rounded-sm">/private/dpp/{"{productId}"}/component-transfer</code>
+              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/private/dpp/{"{productId}"}/component-transfer</code>
             </span>
             <br />
             Records the transfer of a component or sub-assembly between two verified entities within a private supply chain network.
@@ -140,7 +140,7 @@ export default function ApiReferencePrivateLayerEndpoints({
           <CardDescription>
             <span className="inline-flex items-center font-mono text-sm">
               <Badge variant="outline" className="bg-sky-100 text-sky-700 border-sky-300 mr-2 font-semibold">GET</Badge>
-              <code className="bg-muted px-1 py-0.5 rounded-sm">/private/dpp/{"{productId}"}/confidential-materials</code>
+              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/private/dpp/{"{productId}"}/confidential-materials</code>
             </span>
             <br />
             Fetches highly detailed or proprietary material composition information that is not suitable for the public DPP.

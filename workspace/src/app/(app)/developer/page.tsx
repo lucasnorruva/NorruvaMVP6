@@ -20,8 +20,8 @@ import {
     ExternalLink as ExternalLinkIcon, Search, Users, Activity, FileCog, Rocket, Settings2, PackageSearch, Layers,
     Lock, MessageSquare, Share2, BookText, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock,
     AlertTriangle as ErrorIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone,
-    Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIconPg, History, // Renamed FileText to FileTextIconPg
-    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags, FilePlus2, Sigma, Hash
+    Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIconPg, History, 
+    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags, FilePlus2, Sigma, Hash, Layers3
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -32,7 +32,7 @@ import WebhooksManager, { type WebhookEntry } from '@/components/developer/Webho
 import DeveloperEndpointCard from '@/components/developer/DeveloperEndpointCard';
 import { cn } from '@/lib/utils';
 import { generateMockCodeSnippet } from '@/utils/apiPlaygroundUtils'; 
-import ResourcesTab from '@/components/developer/ResourcesTab'; // Import new ResourcesTab
+import ResourcesTab from '@/components/developer/ResourcesTab'; 
 
 // Import new dashboard section components
 import ApiMetricsCard from '@/components/developer/dashboard/ApiMetricsCard';
@@ -219,6 +219,22 @@ export default function DeveloperPortalPage() {
   const [postRegisterVcHashSnippetLang, setPostRegisterVcHashSnippetLang] = useState("cURL");
   const [postRegisterVcHashCodeSnippet, setPostRegisterVcHashCodeSnippet] = useState("");
 
+  // State for Private Layer Endpoint
+  const [postComponentTransferProductId, setPostComponentTransferProductId] = useState<string>("DPP001");
+  const [postComponentTransferBody, setPostComponentTransferBody] = useState<string>(
+    JSON.stringify({
+      componentId: "COMP_XYZ_123",
+      quantity: 100,
+      transferDate: new Date().toISOString(),
+      fromParty: { participantId: "SUP001", role: "Supplier" },
+      toParty: { participantId: "MFG001", role: "Manufacturer" }
+    }, null, 2)
+  );
+  const [postComponentTransferResponse, setPostComponentTransferResponse] = useState<string | null>(null);
+  const [isPostComponentTransferLoading, setIsPostComponentTransferLoading] = useState(false);
+  const [postComponentTransferSnippetLang, setPostComponentTransferSnippetLang] = useState("cURL");
+  const [postComponentTransferCodeSnippet, setPostComponentTransferCodeSnippet] = useState("");
+
 
 
   const [getProductCodeSnippet, setGetProductCodeSnippet] = useState("");
@@ -270,6 +286,9 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("onchainLifecycleStage", "POST", postOnchainLifecycleSnippetLang, { productId: postOnchainLifecycleProductId }, postOnchainLifecycleBody, setPostOnchainLifecycleCodeSnippet), [postOnchainLifecycleProductId, postOnchainLifecycleBody, postOnchainLifecycleSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet), [postLogCriticalEventProductId, postLogCriticalEventBody, postLogCriticalEventSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet), [postRegisterVcHashProductId, postRegisterVcHashBody, postRegisterVcHashSnippetLang, updateSnippet]);
+  
+  // useEffect for new Private Layer endpoint
+  useEffect(() => updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet), [postComponentTransferProductId, postComponentTransferBody, postComponentTransferSnippetLang, updateSnippet]);
 
 
   const handleCopyKey = (keyToCopy: string) => {
@@ -335,7 +354,6 @@ export default function DeveloperPortalPage() {
   };
 
   const handleEditWebhook = (webhookId: string) => {
-    // In a real app, this would open a dialog pre-filled with the webhook's data
     const webhookToEdit = webhooks.find(wh => wh.id === webhookId);
     if (webhookToEdit) {
         const newUrl = prompt(`Enter new URL for webhook ${webhookId}:`, webhookToEdit.url);
@@ -362,9 +380,6 @@ export default function DeveloperPortalPage() {
     setLoading(true);
     setResponse(null);
     
-    // Use a real mock API key. Ensure 'SANDBOX_KEY_123' is in your .env or auth config.
-    // For the playground, always use a sandbox key for safety, even if "Production" env is selected in UI.
-    // The `currentEnvironment` variable is mostly for display/snippet generation.
     const apiKeyToUse = "SANDBOX_KEY_123"; 
 
     toast({ 
@@ -377,15 +392,13 @@ export default function DeveloperPortalPage() {
         method,
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKeyToUse}` // Use the actual mock key
+          'Authorization': `Bearer ${apiKeyToUse}` 
         }
       };
       if (body && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
         options.body = typeof body === 'string' ? body : JSON.stringify(body);
       }
 
-      // In a real app, the fetch URL would be absolute or configured.
-      // Here, we assume API routes are relative to the current origin.
       const res = await fetch(url, options); 
       const responseData = await res.json();
 
@@ -425,6 +438,10 @@ export default function DeveloperPortalPage() {
   const handleMockUpdateOnChainLifecycleStage = () => { updateSnippet("onchainLifecycleStage", "POST", postOnchainLifecycleSnippetLang, { productId: postOnchainLifecycleProductId }, postOnchainLifecycleBody, setPostOnchainLifecycleCodeSnippet); makeApiCall(`/api/v1/dpp/${postOnchainLifecycleProductId}/onchain-lifecycle-stage`, 'POST', postOnchainLifecycleBody, setIsPostOnchainLifecycleLoading, setPostOnchainLifecycleResponse); }
   const handleMockLogCriticalEvent = () => { updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet); makeApiCall(`/api/v1/dpp/${postLogCriticalEventProductId}/log-critical-event`, 'POST', postLogCriticalEventBody, setIsPostLogCriticalEventLoading, setPostLogCriticalEventResponse); }
   const handleMockRegisterVcHash = () => { updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet); makeApiCall(`/api/v1/dpp/${postRegisterVcHashProductId}/register-vc-hash`, 'POST', postRegisterVcHashBody, setIsPostRegisterVcHashLoading, setPostRegisterVcHashResponse); }
+  
+  // Handler for new Private Layer endpoint
+  const handleMockPostComponentTransfer = () => { updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet); makeApiCall(`/api/v1/private/dpp/${postComponentTransferProductId}/component-transfer`, 'POST', postComponentTransferBody, setIsPostComponentTransferLoading, setPostComponentTransferResponse); }
+
 
 
   const codeSampleLanguages = ["cURL", "JavaScript", "Python"];
@@ -844,6 +861,31 @@ export default function DeveloperPortalPage() {
           </div>
         </>
       )
+    },
+    // New Private Layer Endpoint
+    {
+      id: 'post-component-transfer',
+      section: 'private', // New section key
+      title: 'POST /api/v1/private/dpp/{productId}/component-transfer',
+      description: '[Private Layer] Record a private B2B component transfer.',
+      onSendRequest: handleMockPostComponentTransfer,
+      isLoading: isPostComponentTransferLoading,
+      response: postComponentTransferResponse,
+      codeSnippet: postComponentTransferCodeSnippet,
+      snippetLanguage: postComponentTransferSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setPostComponentTransferSnippetLang(lang); updateSnippet('postComponentTransfer','POST',lang,{productId: postComponentTransferProductId},postComponentTransferBody,setPostComponentTransferCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="componentTransferProductId">Product ID (Path Parameter)</Label>
+            <Input id="componentTransferProductId" value={postComponentTransferProductId} onChange={(e) => setPostComponentTransferProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="componentTransferBody">Request Body (JSON)</Label>
+            <Textarea id="componentTransferBody" value={postComponentTransferBody} onChange={(e) => setPostComponentTransferBody(e.target.value)} rows={8} className="font-mono text-xs" />
+          </div>
+        </>
+      )
     }
   ] as const;
 
@@ -1018,6 +1060,20 @@ export default function DeveloperPortalPage() {
                     ))}
                   </AccordionContent>
                 </AccordionItem>
+
+                <AccordionItem value="private-layer">
+                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline flex items-center">
+                    <Layers3 className="mr-2 h-5 w-5" /> Private Layer Endpoints (Conceptual)
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 space-y-6">
+                    {endpointConfigs.filter(e => e.section === 'private').map(ep => (
+                      <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
+                        {ep.children}
+                      </DeveloperEndpointCard>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+
               </Accordion>
             </CardContent>
         </Card>
@@ -1122,4 +1178,3 @@ export default function DeveloperPortalPage() {
   );
 }
 
-    

@@ -208,8 +208,8 @@ export interface SimpleProductDetail {
   contractAddress?: string;
   tokenId?: string;
   anchorTransactionHash?: string;
-  ebsiStatus?: EbsiVerificationDetails['status']; // Already present from PublicProductInfo mapping
-  ebsiVerificationId?: string; // Already present from PublicProductInfo mapping
+  ebsiStatus?: EbsiVerificationDetails['status']; 
+  ebsiVerificationId?: string; 
 }
 
 export interface StoredUserProduct {
@@ -263,9 +263,9 @@ export interface StoredUserProduct {
     battery_regulation?: Partial<DigitalProductPassport['compliance']['battery_regulation']>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
-  authenticationVcId?: string; // Add new fields
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; // Add new fields
-  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; // To store full object from MOCK_DPPS
+  authenticationVcId?: string; 
+  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; 
+  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; 
 }
 
 export interface RichMockProduct {
@@ -330,6 +330,9 @@ export interface PublicProductInfo {
   documents?: DocumentReference[];
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  // Conceptual token details for public view
+  contractAddress?: string;
+  tokenId?: string;
 }
 
 export interface Supplier {

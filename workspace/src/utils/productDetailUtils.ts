@@ -156,8 +156,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         contractAddress: dpp.blockchainIdentifiers?.contractAddress,
         tokenId: dpp.blockchainIdentifiers?.tokenId,
         anchorTransactionHash: dpp.blockchainIdentifiers?.anchorTransactionHash,
-        ebsiStatus: dpp.ebsiVerification?.status, // Already mapped via complianceSummary.ebsi.status
-        ebsiVerificationId: dpp.ebsiVerification?.verificationId, // Already mapped
+        ebsiStatus: dpp.ebsiVerification?.status, 
+        ebsiVerificationId: dpp.ebsiVerification?.verificationId, 
     };
 }
 
@@ -243,9 +243,9 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           })),
           certifications: certificationsForUserProd,
           supplyChainLinks: userProductData.supplyChainLinks || [],
-          authenticationVcId: userProductData.authenticationVcId, // Map from StoredUserProduct
-          ownershipNftLink: userProductData.ownershipNftLink, // Map from StoredUserProduct
-          blockchainIdentifiers: userProductData.blockchainIdentifiers, // Map from StoredUserProduct
+          authenticationVcId: userProductData.authenticationVcId, 
+          ownershipNftLink: userProductData.ownershipNftLink, 
+          blockchainIdentifiers: userProductData.blockchainIdentifiers, 
         } as DigitalProductPassport;
       }
     }

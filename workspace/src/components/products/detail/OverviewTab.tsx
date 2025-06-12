@@ -97,7 +97,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           <Card className="shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center">
-                <KeyRound className="mr-2 h-5 w-5 text-primary" /> {/* Changed Icon */}
+                <KeyRound className="mr-2 h-5 w-5 text-primary" /> 
                 Authenticity & Ownership
               </CardTitle>
             </CardHeader>
@@ -246,13 +246,29 @@ export default function OverviewTab({ product }: OverviewTabProps) {
               <p><strong className="text-muted-foreground flex items-center"><Layers3 className="mr-1.5 h-4 w-4 text-teal-600"/>Platform:</strong> {product.blockchainPlatform}</p>
             )}
             {product.contractAddress && (
-              <p><strong className="text-muted-foreground flex items-center"><FileCog className="mr-1.5 h-4 w-4 text-teal-600"/>Contract Address:</strong> <span className="font-mono text-xs break-all">{product.contractAddress}</span></p>
+              <p><strong className="text-muted-foreground flex items-center"><FileCog className="mr-1.5 h-4 w-4 text-teal-600"/>Contract Address:</strong> 
+                <TooltipProvider><Tooltip><TooltipTrigger asChild>
+                   <span className="font-mono text-xs break-all ml-1">{product.contractAddress}</span>
+                </TooltipTrigger><TooltipContent><p>{product.contractAddress}</p></TooltipContent></Tooltip></TooltipProvider>
+              </p>
             )}
             {product.tokenId && (
-              <p><strong className="text-muted-foreground flex items-center"><Tag className="mr-1.5 h-4 w-4 text-teal-600"/>Token ID:</strong> <span className="font-mono text-xs break-all">{product.tokenId}</span></p>
+              <p><strong className="text-muted-foreground flex items-center"><Tag className="mr-1.5 h-4 w-4 text-teal-600"/>Token ID:</strong> 
+                 <TooltipProvider><Tooltip><TooltipTrigger asChild>
+                   <span className="font-mono text-xs break-all ml-1">{product.tokenId}</span>
+                 </TooltipTrigger><TooltipContent><p>{product.tokenId}</p></TooltipContent></Tooltip></TooltipProvider>
+              </p>
             )}
             {product.anchorTransactionHash && (
-              <p><strong className="text-muted-foreground flex items-center"><Anchor className="mr-1.5 h-4 w-4 text-teal-600"/>Anchor Tx Hash:</strong> <span className="font-mono text-xs break-all">{product.anchorTransactionHash}</span></p>
+              <div>
+                <strong className="text-muted-foreground flex items-center"><Anchor className="mr-1.5 h-4 w-4 text-teal-600"/>Anchor Tx Hash:</strong> 
+                <TooltipProvider><Tooltip><TooltipTrigger asChild>
+                   <span className="font-mono text-xs break-all">{product.anchorTransactionHash}</span>
+                </TooltipTrigger><TooltipContent><p>{product.anchorTransactionHash}</p></TooltipContent></Tooltip></TooltipProvider>
+                <NextLink href={`https://mock-token-explorer.example.com/tx/${product.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs ml-2">
+                  View Anchor Tx <ExternalLink className="ml-1 h-3 w-3" />
+                </NextLink>
+              </div>
             )}
             {product.contractAddress && product.tokenId && (
               <NextLink href={`https://mock-token-explorer.example.com/token/${product.contractAddress}/${product.tokenId}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs mt-1">
@@ -264,7 +280,9 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 <strong className="text-muted-foreground flex items-center"><Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
                 <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiStatus)}</div>
                 {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
-                  <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
+                   <TooltipProvider><Tooltip><TooltipTrigger asChild>
+                    <p className="text-xs mt-0.5">ID: <span className="font-mono">{product.ebsiVerificationId}</span></p>
+                  </TooltipTrigger><TooltipContent><p>{product.ebsiVerificationId}</p></TooltipContent></Tooltip></TooltipProvider>
                 )}
               </div>
             )}

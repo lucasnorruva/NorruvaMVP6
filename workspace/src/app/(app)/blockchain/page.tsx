@@ -14,7 +14,7 @@ import {
     KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, 
     PlusCircle, CalendarDays, Sigma, Layers3, Tag, CheckCircle as CheckCircleLucide, 
     Server as ServerIcon, Link as LinkIconPath, FileCog, BookOpen, CircleDot, Clock, Share2, Users, Factory, Truck, ShoppingCart, Recycle as RecycleIconLucide, Upload, MessageSquare,
-    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers, FileLock 
+    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers, FileLock, Users2 as Users2Icon // Added Users2Icon for DAO transfer
 } from "lucide-react";
 import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse, OwnershipNftLink } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
@@ -231,6 +231,13 @@ export default function BlockchainPage() {
   const [nftTokenId, setNftTokenId] = useState<string>("");
   const [nftChainName, setNftChainName] = useState<string>("");
 
+  // New state for DAO Transfer
+  const [daoTransferTokenId, setDaoTransferTokenId] = useState<string>("");
+  const [daoTransferCurrentOwner, setDaoTransferCurrentOwner] = useState<string>("");
+  const [daoTransferNewOwnerAddress, setDaoTransferNewOwnerAddress] = useState<string>("");
+  const [isDaoTransferLoading, setIsDaoTransferLoading] = useState(false);
+  const [daoTransferResponse, setDaoTransferResponse] = useState<string | null>(null);
+
 
   const lifecycleStageOptions = ["Design", "Manufacturing", "QualityAssurance", "Distribution", "InUse", "Maintenance", "EndOfLife"];
 
@@ -303,6 +310,15 @@ export default function BlockchainPage() {
       setOnChainStatusUpdate(dpp.metadata.onChainStatus || "active");
       setOnChainLifecycleStage(dpp.metadata.onChainLifecycleStage || "Manufacturing"); 
 
+      // DAO Transfer Pre-fill
+      setDaoTransferTokenId(tokenId || "N/A (Mint Token First)");
+      if (parsedTokenStatus && parsedTokenStatus.tokenId === tokenId) {
+        setDaoTransferCurrentOwner(parsedTokenStatus.ownerAddress);
+      } else {
+        setDaoTransferCurrentOwner("Fetch token status to see current owner");
+      }
+      setDaoTransferNewOwnerAddress("");
+
     } else {
       setUpdateTokenId("");
       setStatusTokenId("");
@@ -316,13 +332,17 @@ export default function BlockchainPage() {
       setNftChainName("");
       setOnChainStatusUpdate("active");
       setOnChainLifecycleStage("Manufacturing"); 
+      setDaoTransferTokenId("");
+      setDaoTransferCurrentOwner("");
+      setDaoTransferNewOwnerAddress("");
     }
     setFetchedCredential(null);
     setMintResponse(null);
     setUpdateTokenResponse(null);
     setStatusTokenResponse(null);
-    setParsedTokenStatus(null);
+    // setParsedTokenStatus(null); // Do not clear parsedTokenStatus here, it's needed for DAO transfer prefill
     setViewTokenMetadataResponse(null);
+    setDaoTransferResponse(null);
   };
 
   const updateDppLocally = (updated: DigitalProductPassport) => {
@@ -334,6 +354,7 @@ export default function BlockchainPage() {
           setUpdateTokenId(tokenId);
           setStatusTokenId(tokenId);
           setViewTokenId(tokenId);
+          setDaoTransferTokenId(tokenId); // Keep DAO transfer token ID updated
       }
       if (updated.ownershipNftLink) {
         setNftRegistryUrl(updated.ownershipNftLink.registryUrl || "");
@@ -479,6 +500,7 @@ export default function BlockchainPage() {
             }
         };
         updateDppLocally(updatedSelectedDpp);
+        setDaoTransferTokenId(data.tokenId); // Update for DAO transfer form
       } else {
         handleApiError(res, "Minting Token");
       }
@@ -538,6 +560,9 @@ export default function BlockchainPage() {
         setStatusTokenResponse(JSON.stringify(data, null, 2));
         if (res.ok) {
           setParsedTokenStatus(data); 
+          if(selected && selected.blockchainIdentifiers?.tokenId === statusTokenId){
+            setDaoTransferCurrentOwner(data.ownerAddress); // Update for DAO transfer form
+          }
           toast({ title: "Token Status Retrieved (Mock)", description: `Status for token ${statusTokenId} displayed.` });
         } else {
           handleApiError(res, "Getting Token Status");
@@ -742,6 +767,39 @@ export default function BlockchainPage() {
         toast({ title: "Linking NFT Failed", description: errorMsg, variant: "destructive" });
     }
     setIsActionLoading(false);
+  };
+
+  const handleDaoTransferToken = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!daoTransferTokenId || daoTransferTokenId === "N/A (Mint Token First)") {
+      toast({ title: "Token ID Required", description: "Please select a product with a minted token ID.", variant: "destructive" });
+      return;
+    }
+    if (!daoTransferNewOwnerAddress.trim()) {
+      toast({ title: "New Owner Address Required", description: "Please enter the new owner's blockchain address.", variant: "destructive" });
+      return;
+    }
+    setIsDaoTransferLoading(true);
+    setDaoTransferResponse(null);
+    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
+
+    // Simulate update of local token status if available
+    if (parsedTokenStatus && parsedTokenStatus.tokenId === daoTransferTokenId) {
+      setParsedTokenStatus(prev => prev ? { ...prev, ownerAddress: daoTransferNewOwnerAddress.trim() } : null);
+      setDaoTransferCurrentOwner(daoTransferNewOwnerAddress.trim()); // Update display
+    }
+    
+    const mockTx = `0xdaotransfer_mock_${Date.now().toString(16).slice(-8)}`;
+    const responseMessage = `Conceptual DAO token transfer for token ${daoTransferTokenId} to ${daoTransferNewOwnerAddress.trim()} simulated successfully. Mock Tx: ${mockTx}`;
+    setDaoTransferResponse(JSON.stringify({
+      message: "DAO Token Transfer Simulated",
+      tokenId: daoTransferTokenId,
+      newOwner: daoTransferNewOwnerAddress.trim(),
+      mockTxHash: mockTx,
+    }, null, 2));
+    toast({ title: "DAO Token Transfer Simulated", description: responseMessage });
+    setDaoTransferNewOwnerAddress(""); // Clear input
+    setIsDaoTransferLoading(false);
   };
 
 
@@ -988,7 +1046,7 @@ export default function BlockchainPage() {
                                 </Card>
 
                                 <Card className="bg-background">
-                                    <CardHeader><CardTitle className="text-md flex items-center"><UploadCloud className="mr-2 h-4 w-4 text-info"/>Transfer Ownership</CardTitle></CardHeader>
+                                    <CardHeader><CardTitle className="text-md flex items-center"><UploadCloud className="mr-2 h-4 w-4 text-info"/>Transfer Ownership (Off-Chain DPP Record)</CardTitle></CardHeader>
                                     <CardContent>
                                       <form onSubmit={handleTransfer} className="space-y-3">
                                         <Input placeholder="New Owner Name" value={transferName} onChange={e => setTransferName(e.target.value)} />
@@ -1192,6 +1250,33 @@ export default function BlockchainPage() {
                                             </form>
                                         </CardContent>
                                     </Card>
+                                    <Card className="bg-background">
+                                        <CardHeader>
+                                            <CardTitle className="text-md flex items-center"><Users2Icon className="h-4 w-4 mr-1.5 text-primary"/>Transfer Token Ownership (DAO/Admin Action)</CardTitle>
+                                            <CardDescription className="text-xs">Simulates an on-chain token transfer initiated by a DAO or admin with TRANSFER_ROLE.</CardDescription>
+                                        </CardHeader>
+                                        <CardContent>
+                                            <form onSubmit={handleDaoTransferToken} className="space-y-3">
+                                                <div>
+                                                    <Label htmlFor="daoTransferTokenId" className="text-xs">Token ID</Label>
+                                                    <Input id="daoTransferTokenId" value={daoTransferTokenId} readOnly disabled className="font-mono text-xs bg-muted/50" />
+                                                </div>
+                                                <div>
+                                                    <Label htmlFor="daoTransferCurrentOwner" className="text-xs">Current On-Chain Owner</Label>
+                                                    <Input id="daoTransferCurrentOwner" value={daoTransferCurrentOwner} readOnly disabled className="font-mono text-xs bg-muted/50" />
+                                                </div>
+                                                <div>
+                                                    <Label htmlFor="daoTransferNewOwnerAddress" className="text-xs">New Owner Address</Label>
+                                                    <Input id="daoTransferNewOwnerAddress" value={daoTransferNewOwnerAddress} onChange={e => setDaoTransferNewOwnerAddress(e.target.value)} placeholder="e.g., 0xNEW_OWNER_ADDRESS" />
+                                                </div>
+                                                <Button type="submit" size="sm" disabled={isDaoTransferLoading || !selected || daoTransferTokenId === "N/A (Mint Token First)"}>
+                                                    {isDaoTransferLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                                                    {isDaoTransferLoading ? "Transferring..." : "Simulate DAO Transfer"}
+                                                </Button>
+                                                {renderApiResult("DAO Transfer Simulation", daoTransferResponse)}
+                                            </form>
+                                        </CardContent>
+                                    </Card>
                                 </div>
                             </div>
                           </div>
@@ -1217,3 +1302,4 @@ export default function BlockchainPage() {
 }
       
     
+

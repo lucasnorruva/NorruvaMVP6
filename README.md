@@ -334,11 +334,11 @@ npm run deploy:contracts
 
 ### Deploying DAO Components (Conceptual Order)
 
-The `npm run deploy:contracts` command specifically deploys the `DPPToken`. To deploy the other core contracts for a complete conceptual DAO setup, follow this order:
+The `npm run deploy:contracts` command specifically deploys the `DPPToken`. To deploy the other core contracts for a complete conceptual DAO setup, follow this order. Ensure you are in the `workspace/` directory for all commands.
 
 1.  **Deploy NORUToken:**
     ```bash
-    # Ensure you are in the workspace/ directory
+    # Ensure ALCHEMY_API_KEY and PRIVATE_KEY are set in workspace/.env for your chosen network
     npx hardhat run scripts/deploy_noru_token.ts --network <your_network_name>
     ```
     (Replace `<your_network_name>` with, e.g., `sepolia` or `localhost`. This will be read from `workspace/hardhat.config.ts`).
@@ -346,24 +346,26 @@ The `npm run deploy:contracts` command specifically deploys the `DPPToken`. To d
 
 2.  **Deploy TimelockController:**
     ```bash
-    # Ensure you are in the workspace/ directory
+    # Ensure ALCHEMY_API_KEY and PRIVATE_KEY are set
     npx hardhat run scripts/deploy_timelock_controller.ts --network <your_network_name>
     ```
     Note the deployed `TimelockController` address from the console output. You **must** set this in your `workspace/.env` file as `TIMELOCK_CONTROLLER_ADDRESS` for the next step.
 
 3.  **Deploy DPPGovernor:**
     Before running, you **must** ensure that the `NORU_TOKEN_ADDRESS` and `TIMELOCK_CONTROLLER_ADDRESS` environment variables are set correctly in your `workspace/.env` file (or directly in the shell) to the addresses obtained from the previous deployment steps.
-    ```bash
+    ```env
     # Example content for workspace/.env:
     # ALCHEMY_API_KEY=your_alchemy_key
     # PRIVATE_KEY=your_private_key
     # NORU_TOKEN_ADDRESS=0xAddressOfDeployedNoruToken
     # TIMELOCK_CONTROLLER_ADDRESS=0xAddressOfDeployedTimelock
-    
-    # Ensure you are in the workspace/ directory
+    ```
+    Then, deploy the Governor:
+    ```bash
+    # Ensure ALCHEMY_API_KEY and PRIVATE_KEY are set
     npx hardhat run scripts/deploy_governor.ts --network <your_network_name>
     ```
-    This script will deploy the `DPPGovernor` and also attempt to configure the necessary roles on the `TimelockController` (PROPOSER_ROLE, CANCELLER_ROLE, EXECUTOR_ROLE, TIMELOCK_ADMIN_ROLE) to grant the Governor operational control.
+    This script will deploy the `DPPGovernor` and also attempt to configure the necessary roles on the `TimelockController` (PROPOSER_ROLE, CANCELLER_ROLE, EXECUTOR_ROLE, TIMELOCK_ADMIN_ROLE) to grant the Governor operational control and make the Governor the sole admin of the Timelock.
 
 ### Upgrading Contracts
 
@@ -375,9 +377,10 @@ To upgrade an existing UUPS proxy (e.g., `DPPToken`, `NORUToken`, `DPPGovernor`)
     ```bash
     # Ensure you are in the workspace/ directory
     # Ensure .env contains PROXY_ADDRESS and UPGRADE_CONTRACT_NAME
+    # Ensure ALCHEMY_API_KEY and PRIVATE_KEY are set for the target network
     npm run upgrade:contracts 
     ```
-    (This command runs `workspace/scripts/upgrade.ts` by default).
+    (This command runs `workspace/scripts/upgrade.ts` by default, configured for the specified network).
 
 ### Foundry (Alternative)
 
@@ -394,4 +397,3 @@ This application is being developed within the Firebase Studio environment, an A
 ---
 
 This README will be updated as the project evolves.
-

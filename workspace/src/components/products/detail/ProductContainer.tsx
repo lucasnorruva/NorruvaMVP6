@@ -1,4 +1,3 @@
-
 // --- File: ProductContainer.tsx ---
 // Description: Main layout component for the product detail view, managing tabs.
 "use client";
@@ -109,4 +108,3 @@ export default function ProductContainer({
   );
 }
     
-

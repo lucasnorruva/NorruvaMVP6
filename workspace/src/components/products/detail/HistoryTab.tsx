@@ -1,4 +1,3 @@
-
 // --- File: HistoryTab.tsx ---
 // Description: Displays product-specific history/audit trail.
 "use client";

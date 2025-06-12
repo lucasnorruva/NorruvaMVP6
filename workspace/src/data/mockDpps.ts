@@ -15,10 +15,12 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       created_at: "2024-01-01T10:00:00Z",
       last_updated: "2024-07-30T10:00:00Z",
       status: "published",
-      dppStandardVersion: "CIRPASS v0.9 Draft"
+      dppStandardVersion: "CIRPASS v0.9 Draft",
+      onChainStatus: "Active", // Added
+      onChainLifecycleStage: "InUse", // Added
     },
-    authenticationVcId: "vc_auth_DPP001_mock123", 
-    ownershipNftLink: { 
+    authenticationVcId: "vc_auth_DPP001_mock123", // Added for Task 31
+    ownershipNftLink: { // Added for Task 31
         registryUrl: "https://mock-nft-market.example/token/0xNFTContractForDPP001/1",
         contractAddress: "0xNFTContractForDPP001",
         tokenId: "1",
@@ -139,7 +141,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     category: "Apparel",
     manufacturer: { name: "EcoThreads", eori: "FR987654321"},
     modelNumber: "ET-TS-ORG-M",
-    metadata: { last_updated: "2024-07-25T14:30:00Z", status: "draft", created_at: "2024-03-01T10:00:00Z" },
+    metadata: { 
+      last_updated: "2024-07-25T14:30:00Z", 
+      status: "draft", 
+      created_at: "2024-03-01T10:00:00Z",
+      onChainStatus: "Pending Activation", // Added
+      onChainLifecycleStage: "Manufacturing", // Added
+    },
     authenticationVcId: "vc_auth_DPP002_mock456", 
     // No ownershipNftLink for this one to show variability
     productDetails: {
@@ -213,7 +221,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     category: "Accessories",
     manufacturer: { name: "ReCase It", eori: "NL112233445"},
     modelNumber: "RC-POLY-IP15",
-    metadata: { last_updated: "2024-07-22T09:15:00Z", status: "flagged", created_at: "2024-04-10T10:00:00Z" },
+    metadata: { 
+      last_updated: "2024-07-22T09:15:00Z", 
+      status: "flagged", 
+      created_at: "2024-04-10T10:00:00Z",
+      onChainStatus: "FlaggedForReview", // Added
+      // onChainLifecycleStage not specified, will be undefined
+    },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-22T00:00:00Z" },
       eu_espr: { status: "compliant" },
@@ -265,7 +279,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     category: "Furniture",
     manufacturer: { name: "Comfy Living"},
     modelNumber: "CL-MODSOFA-01",
-    metadata: { last_updated: "2024-07-20T11:00:00Z", status: "archived", created_at: "2023-12-01T10:00:00Z" },
+    metadata: { 
+      last_updated: "2024-07-20T11:00:00Z", 
+      status: "archived", 
+      created_at: "2023-12-01T10:00:00Z",
+      onChainStatus: "Archived", // Added
+      onChainLifecycleStage: "EndOfLife" // Added
+    },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-20T00:00:00Z" },
       eu_espr: { status: "compliant" },
@@ -306,7 +326,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     category: "Automotive Parts",
     manufacturer: { name: "PowerVolt", eori: "US567890123"},
     modelNumber: "PV-EVB-75KWH",
-    metadata: { last_updated: "2024-07-29T08:00:00Z", status: "pending_review", created_at: "2024-05-01T10:00:00Z" },
+    metadata: { 
+      last_updated: "2024-07-29T08:00:00Z", 
+      status: "pending_review", 
+      created_at: "2024-05-01T10:00:00Z",
+      onChainStatus: "Active",
+      onChainLifecycleStage: "QualityAssurance",
+    },
     productDetails: {
       description: "A high-performance EV battery module designed for long range and fast charging. Contains NMC 811 chemistry for optimal energy density.",
       imageUrl: "https://placehold.co/600x400.png",

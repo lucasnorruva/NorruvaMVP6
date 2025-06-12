@@ -336,21 +336,23 @@ The `npm run deploy:contracts` command specifically deploys the `DPPToken` as de
     npx hardhat run scripts/deploy_noru_token.ts --network <your_network_name>
     ```
     (Replace `<your_network_name>` with, e.g., `sepolia` or `localhost`)
-    Note the deployed `NORUToken` address.
+    Note the deployed `NORUToken` address. You will need to set this in your `.env` file as `NORU_TOKEN_ADDRESS` for subsequent steps.
 
 2.  **Deploy TimelockController:**
     ```bash
     npx hardhat run scripts/deploy_timelock_controller.ts --network <your_network_name>
     ```
-    Note the deployed `TimelockController` address.
+    Note the deployed `TimelockController` address. You will need to set this in your `.env` file as `TIMELOCK_CONTROLLER_ADDRESS` for the next step.
 
 3.  **Deploy DPPGovernor:**
-    Before running, you **must** set the `NORU_TOKEN_ADDRESS` and `TIMELOCK_CONTROLLER_ADDRESS` environment variables (e.g., in your `.env` file or directly in the shell) to the addresses obtained from the previous steps.
+    Before running, you **must** ensure that the `NORU_TOKEN_ADDRESS` and `TIMELOCK_CONTROLLER_ADDRESS` environment variables are set correctly (e.g., in your `.env` file or directly in the shell) to the addresses obtained from the previous deployment steps.
     ```bash
-    # Example: export NORU_TOKEN_ADDRESS=0x... TIMELOCK_CONTROLLER_ADDRESS=0x...
+    # Example: Ensure .env contains:
+    # NORU_TOKEN_ADDRESS=0x...
+    # TIMELOCK_CONTROLLER_ADDRESS=0x...
     npx hardhat run scripts/deploy_governor.ts --network <your_network_name>
     ```
-    This script will also attempt to configure the necessary roles on the `TimelockController` for the `DPPGovernor`.
+    This script will deploy the `DPPGovernor` and also attempt to configure the necessary roles on the `TimelockController` to grant the Governor proposal and execution rights.
 
 ### Upgrading Contracts
 

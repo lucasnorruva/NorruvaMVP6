@@ -14,7 +14,7 @@ import * as LucideIcons from 'lucide-react'; // Import all icons as LucideIcons
 import {
   Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint,
   ServerIcon as ServerIconLucide, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
-  KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, Sigma, Layers as LayersIconShadcn // Added Sigma, LayersIconShadcn
+  KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, Sigma, Layers as LayersIconShadcn, Shirt, Construction // Added Shirt, Construction
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react';
@@ -321,6 +321,56 @@ export default function PublicPassportPage() {
                 </Card>
               </div>
             )}
+
+            {product.textileInformation && (
+              <div className="mt-8 pt-6 border-t border-border">
+                <Card className="border-0 shadow-none">
+                  <CardHeader className="px-0 pt-0 pb-4">
+                    <CardTitle className="text-xl text-primary flex items-center"><Shirt className="mr-2 h-6 w-6" />Textile Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm px-0 pb-0">
+                    {product.textileInformation.fiberComposition && product.textileInformation.fiberComposition.length > 0 && (
+                      <div>
+                        <strong className="text-muted-foreground">Fiber Composition:</strong>
+                        <ul className="list-disc list-inside ml-4">
+                          {product.textileInformation.fiberComposition.map((fc, idx) => (
+                            <li key={idx}>{fc.fiberName}: {fc.percentage === null || fc.percentage === undefined ? 'N/A' : `${fc.percentage}%`}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {product.textileInformation.countryOfOriginLabeling && <p><strong className="text-muted-foreground">Country of Origin (Label):</strong> {product.textileInformation.countryOfOriginLabeling}</p>}
+                    {product.textileInformation.careInstructionsUrl && <p><strong className="text-muted-foreground">Care Instructions:</strong> <Link href={product.textileInformation.careInstructionsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View Care Guide</Link></p>}
+                    {product.textileInformation.isSecondHand !== undefined && <p><strong className="text-muted-foreground">Second Hand:</strong> {product.textileInformation.isSecondHand ? 'Yes' : 'No'}</p>}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+            {product.constructionProductInformation && (
+              <div className="mt-8 pt-6 border-t border-border">
+                <Card className="border-0 shadow-none">
+                  <CardHeader className="px-0 pt-0 pb-4">
+                    <CardTitle className="text-xl text-primary flex items-center"><Construction className="mr-2 h-6 w-6" />Construction Product Information</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm px-0 pb-0">
+                    {product.constructionProductInformation.declarationOfPerformanceId && <p><strong className="text-muted-foreground">Declaration of Performance ID:</strong> {product.constructionProductInformation.declarationOfPerformanceId}</p>}
+                    {product.constructionProductInformation.ceMarkingDetailsUrl && <p><strong className="text-muted-foreground">CE Marking:</strong> <Link href={product.constructionProductInformation.ceMarkingDetailsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View Details</Link></p>}
+                    {product.constructionProductInformation.intendedUseDescription && <p><strong className="text-muted-foreground">Intended Use:</strong> {product.constructionProductInformation.intendedUseDescription}</p>}
+                    {product.constructionProductInformation.essentialCharacteristics && product.constructionProductInformation.essentialCharacteristics.length > 0 && (
+                      <div>
+                        <strong className="text-muted-foreground">Essential Characteristics:</strong>
+                        <ul className="list-disc list-inside ml-4">
+                          {product.constructionProductInformation.essentialCharacteristics.map((ec, idx) => (
+                            <li key={idx}>{ec.characteristicName}: {ec.value} {ec.unit || ''} {ec.testMethod ? `(Test: ${ec.testMethod})` : ''}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
             
             <div className="mt-8 pt-6 border-t border-border">
                  <Card className="border-0 shadow-none">
@@ -462,3 +512,7 @@ export default function PublicPassportPage() {
     </div>
   );
 }
+
+    
+
+    

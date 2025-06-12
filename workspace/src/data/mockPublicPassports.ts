@@ -31,8 +31,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     tokenId: "MOCK_TOKENID_FOR_DPP001_mock1",   
     ebsiStatus: 'verified',
     ebsiVerificationId: "EBSI-VC-XYZ-00123",
-    onChainStatus: "Active", // Added
-    onChainLifecycleStage: "InUse", // Added
+    onChainStatus: "Active", 
+    onChainLifecycleStage: "InUse", 
     lifecycleHighlights: [
       { stage: "Manufacturing", date: "Jan 2024", details: "Produced in our green-certified facility in Germany.", isEbsiVerified: true, iconName: "Factory" },
       { stage: "Shipped", date: "Feb 2024", details: "Transported via low-emission logistics partners to EU distribution centers.", isEbsiVerified: false, iconName: "Truck" },
@@ -63,46 +63,92 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
   },
   "PROD002": {
     passportId: "PROD002",
-    productName: "Smart LED Bulb (4-Pack)",
-    tagline: "Illuminate Your World, Sustainably.",
+    productName: "Sustainable Cotton T-Shirt",
+    tagline: "Comfortable, Ethical, Eco-Friendly.",
     imageUrl: "https://placehold.co/800x600.png",
-    imageHint: "led bulbs packaging",
-    productStory: "Brighten your home responsibly with our Smart LED Bulb pack. These energy-efficient bulbs offer customizable lighting and connect to smart home systems. Designed for a long lifespan, reducing waste.",
+    imageHint: "cotton t-shirt apparel",
+    productStory: "Our Sustainable Cotton T-Shirt is crafted from 100% GOTS certified organic cotton, ensuring a soft feel and minimal environmental impact. Produced in Fair Trade certified facilities, it represents our commitment to ethical fashion. Perfect for everyday wear, combining style with sustainability.",
     sustainabilityHighlights: [
-      { iconName: "Zap", text: "Uses 85% less energy than incandescent bulbs" },
-      { iconName: "Recycle", text: "Recyclable packaging materials" },
-      { iconName: "Leaf", text: "Mercury-free design" },
+      { iconName: "Leaf", text: "100% GOTS Certified Organic Cotton" },
+      { iconName: "Users", text: "Fair Trade Certified Production" },
+      { iconName: "Droplet", text: "Reduced Water Usage in Dyeing" },
     ],
-    manufacturerName: "BrightSpark Electronics",
+    manufacturerName: "EcoThreads",
     manufacturerWebsite: "#",
-    brandLogoUrl: "https://placehold.co/150x50.png?text=BrightSpark",
+    brandLogoUrl: "https://placehold.co/150x50.png?text=EcoThreads",
     learnMoreLink: "#",
-    complianceSummary: "Complies with EU energy efficiency and hazardous substance directives. EBSI verification pending.",
-    category: "Electronics",
-    modelNumber: "BS-LED-S04",
+    complianceSummary: "Complies with EU textile labelling regulations. GOTS certified. EBSI verification pending.",
+    category: "Apparel",
+    modelNumber: "ET-TS-ORG-M",
     blockchainPlatform: "MockChain (Polygon Layer 2)",
     contractAddress: "0xSomeOtherContract", 
     tokenId: "TOKEN_TSHIRT_002",
     ebsiStatus: 'pending',
-    onChainStatus: "Pending Activation", // Added
-    onChainLifecycleStage: "Manufacturing", // Added
+    onChainStatus: "Pending Activation", 
+    onChainLifecycleStage: "Manufacturing", 
     lifecycleHighlights: [
-      { stage: "Manufactured", date: "2024-03-01", details: "Batch #LEDB456 produced in Shenzhen SmartPlant facility.", isEbsiVerified: true, iconName: "Factory" },
-      { stage: "Imported to EU", date: "2024-03-15", details: "Cleared customs at Rotterdam Port, Netherlands. Ready for EU distribution.", isEbsiVerified: false, iconName: "Anchor" },
-      { stage: "Firmware Update v1.2", date: "2024-08-01", details: "Over-the-air firmware update v1.2 deployed, improving energy efficiency algorithm and security patches.", isEbsiVerified: true, iconName: "UploadCloud" },
-      { stage: "Product Registration", date: "2024-03-20", details: "Registered in EPREL database (ID: EPREL_PENDING_002), awaiting final data submission.", isEbsiVerified: false, iconName: "ClipboardCheck" },
+      { stage: "Manufacturing", date: "2024-03-01", details: "Produced in India, Fair Trade facility.", isEbsiVerified: true, iconName: "Factory" },
+      { stage: "Imported to EU", date: "2024-03-15", details: "Cleared customs at Rotterdam Port, Netherlands.", isEbsiVerified: false, iconName: "Anchor" },
     ],
     certifications: [
-      { name: "RoHS Compliance", authority: "Self-Certified", isVerified: true },
-      { name: "CE Marking", authority: "Self-Certified", isVerified: true },
-      { name: "Bluetooth SIG Qualification", authority: "Bluetooth SIG", expiryDate: "2028-01-01", link:"#", isVerified: true },
+      { name: "GOTS", authority: "Control Union", expiryDate: "2025-02-19", isVerified: true, standard: "Global Organic Textile Standard 6.0" },
+      { name: "Fair Trade Certified", authority: "Fair Trade International", isVerified: true, standard: "Fair Trade Textile Standard" },
     ],
     documents: [],
     customAttributes: [
-        {key: "Smart Home Compatibility", value: "Google Home, Amazon Alexa, Apple HomeKit"},
-        {key: "Light Color Options", value: "RGBW (16 million colors + Tunable White)"},
+        {key: "Fit Type", value: "Regular Fit"},
+        {key: "GSM (Fabric Weight)", value: "180"},
     ],
+    textileInformation: {
+      fiberComposition: [
+        { fiberName: "Organic Cotton", percentage: 95 },
+        { fiberName: "Elastane", percentage: 5 }
+      ],
+      countryOfOriginLabeling: "India (Manufacturing), Portugal (Finishing)",
+      careInstructionsUrl: "https://ecothreads.com/care/ET-TS-ORG-M",
+      isSecondHand: false,
+    },
     authenticationVcId: "vc_auth_DPP002_mock456",
+  },
+  "DPP006": { // Renamed from PROD006 to match ID in MOCK_DPPS
+    passportId: "DPP006",
+    productName: "EcoSmart Insulation Panel R50",
+    tagline: "Superior Insulation, Sustainably Made.",
+    imageUrl: "https://placehold.co/800x600.png",
+    imageHint: "insulation panel construction",
+    productStory: "The EcoSmart Insulation Panel R50 offers exceptional thermal resistance for residential and commercial buildings. Made primarily from recycled cellulose fibers and a bio-based binder, it contributes to energy efficiency and a lower carbon footprint in construction projects. Complies with relevant EU Construction Products Regulation.",
+    sustainabilityHighlights: [
+      { iconName: "Recycle", text: "Made with 85% Recycled Cellulose Fiber" },
+      { iconName: "Leaf", text: "Bio-based Binder Technology" },
+      { iconName: "Zap", text: "High Thermal Resistance (R-50)" },
+      { iconName: "ShieldCheck", text: "Low VOC Emissions (A+)" }
+    ],
+    manufacturerName: "BuildGreen Systems",
+    manufacturerWebsite: "#",
+    brandLogoUrl: "https://placehold.co/150x50.png?text=BuildGreen",
+    complianceSummary: "Complies with EU Construction Products Regulation (CPR). Declaration of Performance available. CE Marked.",
+    category: "Construction Materials",
+    modelNumber: "ESP-R50-1200",
+    ebsiStatus: 'pending_verification',
+    onChainStatus: "Active",
+    onChainLifecycleStage: "InUse",
+    lifecycleHighlights: [
+      { stage: "Manufacturing", date: "July 2024", details: "Produced in Belgium adhering to EN 13163.", iconName: "Factory" },
+      { stage: "CE Marking Achieved", date: "July 2024", details: "Conformity assessment completed.", iconName: "Award" },
+    ],
+    certifications: [
+      { name: "CE Marking (EN 13163)", authority: "Notified Body 1234", isVerified: true, standard: "EN 13163" },
+      { name: "Environmental Product Declaration (EPD)", authority: "EPD Program Operator", link: "#", isVerified: false, standard: "ISO 14025" }
+    ],
+    constructionProductInformation: {
+      declarationOfPerformanceId: "DoP_ESP-R50-1200_001",
+      ceMarkingDetailsUrl: "https://buildgreen.com/certs/ce_esp-r50.pdf",
+      intendedUseDescription: "Thermal insulation for building envelopes (walls, roofs, floors).",
+      essentialCharacteristics: [
+        { characteristicName: "Thermal Conductivity (λ)", value: "0.030 W/(m·K)", testMethod: "EN 12667" },
+        { characteristicName: "Reaction to Fire", value: "Euroclass B-s1, d0", testMethod: "EN 13501-1" },
+      ]
+    },
   },
   "USER_PROD123456": {
     passportId: "USER_PROD123456",
@@ -126,8 +172,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     blockchainPlatform: "UserMockNet",
     contractAddress: "0xUserProductContract",
     tokenId: "UP_TOKEN_123",
-    onChainStatus: "Draft", // Added
-    onChainLifecycleStage: "Design", // Added
+    onChainStatus: "Draft", 
+    onChainLifecycleStage: "Design", 
     certifications: [], 
     documents: [],
     customAttributes: [
@@ -144,3 +190,6 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     },
   }
 };
+    
+
+    

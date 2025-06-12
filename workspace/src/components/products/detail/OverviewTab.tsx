@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Construction, Shirt } from "lucide-react"; // Added Construction, Shirt
+import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Construction, Shirt } from "lucide-react"; 
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; 
 import { getEbsiStatusBadge } from "@/utils/dppDisplayUtils"; 
@@ -278,14 +278,14 @@ export default function OverviewTab({ product }: OverviewTabProps) {
 
         {product.textileInformation && (
           <Card className="shadow-sm">
-            <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><Shirt className="mr-2 h-5 w-5 text-purple-600" />Textile Information</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><Shirt className="mr-2 h-5 w-5 text-purple-600" />Textile Product Information</CardTitle></CardHeader>
             <CardContent className="text-sm space-y-1.5">
               {product.textileInformation.fiberComposition && product.textileInformation.fiberComposition.length > 0 && (
                 <div>
                   <strong className="text-muted-foreground">Fiber Composition:</strong>
                   <ul className="list-disc list-inside ml-4">
                     {product.textileInformation.fiberComposition.map((fc, idx) => (
-                      <li key={idx}>{fc.fiberName}: {fc.percentage}%</li>
+                      <li key={idx}>{fc.fiberName}: {fc.percentage === null || fc.percentage === undefined ? 'N/A' : `${fc.percentage}%`}</li>
                     ))}
                   </ul>
                 </div>
@@ -318,6 +318,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           </Card>
         )}
 
+
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -344,5 +345,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
+
+    
 
     

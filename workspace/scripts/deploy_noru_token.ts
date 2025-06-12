@@ -10,10 +10,12 @@ async function main() {
 
   const tokenName = "Norruva Governance Token";
   const tokenSymbol = "NORU";
-  // Initial supply: 1,000,000 tokens (with 18 decimals)
-  const initialSupply = ethers.parseUnits("1000000", 18); 
+  const initialSupply = ethers.parseUnits("1000000", 18); // 1 million tokens
+  const tokenCap = ethers.parseUnits("1000000000", 18); // 1 billion token cap
 
-  const noruToken = await upgrades.deployProxy(NORUTokenFactory, [tokenName, tokenSymbol, deployer.address, initialSupply], {
+  const noruToken = await upgrades.deployProxy(NORUTokenFactory, 
+    [tokenName, tokenSymbol, deployer.address, initialSupply, tokenCap], 
+    {
     initializer: "initialize",
     kind: "uups",
   });
@@ -27,6 +29,8 @@ async function main() {
 
   const balance = await noruToken.balanceOf(deployer.address);
   console.log(`Initial supply of ${ethers.formatUnits(balance, 18)} NORU minted to deployer ${deployer.address}`);
+  console.log(`Token Cap set to: ${ethers.formatUnits(await noruToken.cap(), 18)} NORU`);
+  console.log(`Deployer has MINTER_ROLE: ${await noruToken.hasRole(await noruToken.MINTER_ROLE(), deployer.address)}`);
 }
 
 main()
@@ -35,4 +39,3 @@ main()
     console.error(error);
     process.exit(1);
   });
-

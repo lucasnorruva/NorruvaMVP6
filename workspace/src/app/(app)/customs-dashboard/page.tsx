@@ -3,17 +3,18 @@
 // Description: Dashboard for customs officers and compliance managers to track products and alerts.
 "use client";
 
-import React from 'react'; // Added React import
+import React, { useState, useEffect, useCallback } from 'react'; // Added React import
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { BarChart3, AlertTriangle, ShieldCheck, Package, CheckCircle, Clock, Truck, Ship, Plane, ScanLine, FileText, CalendarDays, Anchor, Warehouse, ArrowUp, ArrowDown, MinusCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { BarChart3, AlertTriangle, ShieldCheck, Package, CheckCircle, Clock, Truck, Ship, Plane, ScanLine, FileText, CalendarDays, Anchor, Warehouse, ArrowUp, ArrowDown, MinusCircle, Eye } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from 'next/navigation';
 import { MOCK_TRANSIT_PRODUCTS, MOCK_CUSTOMS_ALERTS } from '@/data';
-import type { TransitProduct, CustomsAlert } from '@/types/dpp';
-import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; // Import utils
+import type { TransitProduct, CustomsAlert, InspectionEvent } from '@/types/dpp'; // Import InspectionEvent
+import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; 
 
 const MetricCardWidget: React.FC<{title: string, value: string | number, icon: React.ElementType, description?: string, trend?: string, trendDirection?: 'up' | 'down' | 'neutral'}> = ({ title, value, icon: Icon, description, trend, trendDirection }) => {
   let TrendIconComponent = MinusCircle;
@@ -47,10 +48,70 @@ const MetricCardWidget: React.FC<{title: string, value: string | number, icon: R
   );
 };
 
+// Conceptual function to generate mock inspection timeline
+const generateMockInspectionTimelineForProduct = (product: TransitProduct): InspectionEvent[] => {
+  const timeline: InspectionEvent[] = [];
+  const now = new Date();
+  const etaDate = new Date(product.eta);
+
+  const addEvent = (baseTimestamp: Date, offsetDays: number, title: string, description: string, icon: React.ElementType, status: InspectionEvent['status'], badgeVariant?: InspectionEvent['badgeVariant']) => {
+    const eventDate = new Date(baseTimestamp);
+    eventDate.setDate(baseTimestamp.getDate() + offsetDays);
+    timeline.push({
+      id: `evt-${product.id}-${title.replace(/\s+/g, '')}-${Math.random().toString(36).substring(7)}`,
+      icon,
+      title,
+      timestamp: eventDate.toISOString(),
+      description,
+      status,
+      badgeVariant
+    });
+  };
+  
+  // 1. Departure from Origin
+  addEvent(etaDate, -5, `Departure from ${product.origin.split(',')[1] || product.origin}`, `Shipment left origin country. Transport: ${product.transport}`, product.transport === "Ship" ? Ship : product.transport === "Truck" ? Truck : Plane, "Completed");
+
+  // 2. Approaching EU Border (if applicable based on stage)
+  if(product.stage.toLowerCase().includes("approaching")) {
+    addEvent(etaDate, -1, `Approaching EU Border (${product.stage.split('(')[1]?.split(')')[0] || 'Entry Port'})`, `Shipment nearing EU customs territory.`, product.transport === "Ship" ? Ship : product.transport === "Truck" ? Truck : Plane, "In Progress");
+  }
+  
+  // 3. Arrival at EU Border
+  addEvent(etaDate, 0, `Arrival at EU Border (${product.stage.split('(')[1]?.split(')')[0] || 'Entry Port'})`, `Product arrived at EU entry point. Current Stage: ${product.stage}`, Anchor, product.stage.toLowerCase().includes("cleared") || product.stage.toLowerCase().includes("arrived") ? "Completed" : "In Progress");
+
+  // 4. Initial Customs Scan & DPP Check
+  addEvent(etaDate, 0, "Initial Customs Scan & DPP Check", `Automated scan. DPP Status: ${product.dppStatus}.`, ScanLine, "Completed");
+
+  // 5. Documentation Review
+  addEvent(etaDate, 0, "Documentation Review", `Import declarations and compliance documents checked.`, FileText, "Completed");
+
+  // 6. Conditional Inspection
+  if (product.dppStatus === 'Pending Review' || product.dppStatus === 'Non-Compliant' || product.id === "PROD789" /* Specific example product */) {
+    addEvent(etaDate, 1, "Flagged for Physical Inspection", `Product batch selected for inspection. Reason: ${product.dppStatus === 'Non-Compliant' ? 'DPP Discrepancy' : product.dppStatus === 'Pending Review' ? 'Incomplete Data' : 'Random Check'}.`, AlertTriangle, "Action Required", "outline");
+    addEvent(etaDate, 2, "Physical Inspection Complete", `Inspection results: ${product.dppStatus === 'Non-Compliant' ? 'Minor issues found, report filed.' : 'Passed.'}`, CheckCircle, "Completed", product.dppStatus === 'Non-Compliant' ? "destructive" : "default");
+  }
+
+  // 7. Customs Clearance
+  const clearanceOffset = (product.dppStatus === 'Pending Review' || product.dppStatus === 'Non-Compliant' || product.id === "PROD789") ? 3 : 1;
+  addEvent(etaDate, clearanceOffset, "Customs Clearance Granted", `Product cleared for entry into EU market.`, ShieldCheck, "Completed", "default");
+
+  // 8. Released for Inland Transit
+  addEvent(etaDate, clearanceOffset, `Released for Inland Transit to ${product.destination.split(',')[0]}`, `Released to logistics partner.`, Truck, "In Progress");
+  
+  // 9. Arrival at Destination
+  addEvent(etaDate, clearanceOffset + 2, `Arrival at Destination Warehouse (${product.destination.split(',')[0]})`, `Expected delivery at destination.`, Warehouse, "Upcoming");
+  
+  timeline.sort((a,b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+  return timeline;
+};
+
+
 export default function CustomsDashboardPage() {
   const searchParams = useSearchParams();
   const countryParam = searchParams.get('country');
   const country = countryParam ? decodeURIComponent(countryParam) : null;
+  const [selectedProductForTimeline, setSelectedProductForTimeline] = useState<TransitProduct | null>(null);
+  const [dynamicInspectionTimeline, setDynamicInspectionTimeline] = useState<InspectionEvent[]>([]);
 
   const filteredProducts = country
     ? MOCK_TRANSIT_PRODUCTS.filter(p =>
@@ -68,6 +129,23 @@ export default function CustomsDashboardPage() {
           : false;
       })
     : MOCK_CUSTOMS_ALERTS;
+
+  const handleViewTimeline = useCallback((product: TransitProduct) => {
+    setSelectedProductForTimeline(product);
+    setDynamicInspectionTimeline(generateMockInspectionTimelineForProduct(product));
+  }, []);
+
+  useEffect(() => {
+    // Optionally select the first product in the filtered list if none selected
+    if (!selectedProductForTimeline && filteredProducts.length > 0) {
+      // handleViewTimeline(filteredProducts[0]); // Uncomment to auto-select first product
+    } else if (selectedProductForTimeline && !filteredProducts.find(p => p.id === selectedProductForTimeline.id)) {
+      // If current selected product is no longer in filtered list, clear selection
+      setSelectedProductForTimeline(null);
+      setDynamicInspectionTimeline([]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filteredProducts]); // Re-evaluate if filteredProducts change
 
   return (
     <div className="space-y-8">
@@ -88,7 +166,7 @@ export default function CustomsDashboardPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="font-headline flex items-center"><Package className="mr-2 h-5 w-5 text-primary"/>Products in Transit / At Customs</CardTitle>
-          <CardDescription>Overview of products currently moving towards or within the EU customs territory.</CardDescription>
+          <CardDescription>Overview of products currently moving towards or within the EU customs territory. Click "View Timeline" for details.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -101,6 +179,7 @@ export default function CustomsDashboardPage() {
                 <TableHead>Origin &rarr; Dest.</TableHead>
                 <TableHead>ETA</TableHead>
                 <TableHead>DPP Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -111,14 +190,12 @@ export default function CustomsDashboardPage() {
                 const isEtaPast = etaDate < today;
                 const isEtaToday = etaDate.toDateString() === today.toDateString();
                 
-                // Use dppDisplayUtils for status badge
                 const DppStatusIcon = getStatusIcon(product.dppStatus);
                 const dppStatusBadgeVariant = getStatusBadgeVariant(product.dppStatus);
                 const dppStatusClasses = getStatusBadgeClasses(product.dppStatus);
                 const formattedDppStatus = product.dppStatus
                   .replace(/_/g, ' ')
                   .replace(/\b\w/g, char => char.toUpperCase());
-
 
                 return (
                   <TableRow key={product.id} className="hover:bg-muted/30 transition-colors">
@@ -156,6 +233,11 @@ export default function CustomsDashboardPage() {
                         {formattedDppStatus}
                       </Badge>
                     </TableCell>
+                    <TableCell className="text-right">
+                      <Button variant="ghost" size="sm" onClick={() => handleViewTimeline(product)}>
+                        <Eye className="mr-1 h-4 w-4" /> Timeline
+                      </Button>
+                    </TableCell>
                   </TableRow>
                 );
               })}
@@ -167,12 +249,47 @@ export default function CustomsDashboardPage() {
       <div className="grid md:grid-cols-3 gap-6">
         <Card className="shadow-lg md:col-span-2">
           <CardHeader>
-            <CardTitle className="font-headline flex items-center"><CalendarDays className="mr-2 h-5 w-5 text-primary"/>Customs Inspection Timeline (Example: PROD789 - Smart Thermostat G3)</CardTitle>
+            <CardTitle className="font-headline flex items-center">
+              <CalendarDays className="mr-2 h-5 w-5 text-primary"/>
+              Customs Inspection Timeline {selectedProductForTimeline ? `for ${selectedProductForTimeline.name} (${selectedProductForTimeline.id})` : "(Select a Product)"}
+            </CardTitle>
             <CardDescription>Chronological overview of a product's conceptual journey through customs.</CardDescription>
           </CardHeader>
           <CardContent className="pr-2">
-            {/* MOCK_INSPECTION_TIMELINE related code was removed. If needed, re-add MOCK_INSPECTION_TIMELINE data and loop here. */}
-             <p className="text-sm text-muted-foreground">Example inspection timeline would be displayed here.</p>
+            {selectedProductForTimeline ? (
+              <ul className="space-y-3 max-h-[450px] overflow-y-auto">
+                {dynamicInspectionTimeline.map((event) => {
+                  let badgeColorClass = "bg-muted text-muted-foreground";
+                  if (event.status === "Completed" && event.badgeVariant === "default") badgeColorClass = "bg-green-100 text-green-700 border-green-300";
+                  else if (event.status === "Completed") badgeColorClass = "bg-green-100 text-green-700 border-green-300";
+                  else if (event.status === "Action Required" || event.status === "Delayed") badgeColorClass = "bg-yellow-100 text-yellow-700 border-yellow-300";
+                  else if (event.status === "In Progress") badgeColorClass = "bg-blue-100 text-blue-700 border-blue-300";
+                  else if (event.status === "Upcoming") badgeColorClass = "bg-gray-100 text-gray-700 border-gray-300";
+                  
+                  return (
+                    <li key={event.id} className="flex items-start space-x-3 p-3.5 border rounded-md bg-background hover:bg-muted/30 transition-colors shadow-sm">
+                      <div className={cn("flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center", badgeColorClass.split(' ')[0])}>
+                        <event.icon className={cn("h-4 w-4", badgeColorClass.split(' ')[1])} />
+                      </div>
+                      <div className="flex-grow">
+                        <div className="flex justify-between items-center">
+                          <p className="font-medium text-foreground">{event.title}</p>
+                          {event.status && (
+                             <Badge variant={event.badgeVariant || "secondary"} className={cn(badgeColorClass, "text-xs")}>
+                               {event.status}
+                             </Badge>
+                          )}
+                        </div>
+                        <p className="text-xs text-muted-foreground">{new Date(event.timestamp).toLocaleString()}</p>
+                        <p className="text-sm text-foreground/80 mt-1">{event.description}</p>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-10">Select a product from the table above to view its detailed inspection timeline.</p>
+            )}
           </CardContent>
         </Card>
 
@@ -256,3 +373,5 @@ export default function CustomsDashboardPage() {
   );
 }
     
+
+```

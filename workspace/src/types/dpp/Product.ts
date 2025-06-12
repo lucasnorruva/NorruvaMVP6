@@ -2,7 +2,7 @@
 // --- File: Product.ts ---
 // Description: Product related type definitions and mock data.
 
-import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight } from './Lifecycle';
+import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle'; // Ensure IconName is exported or defined if used here
 import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails } from './Compliance';
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -321,7 +321,7 @@ export interface PublicProductInfo {
   imageUrl: string;
   imageHint?: string;
   productStory: string;
-  sustainabilityHighlights: Array<{ iconName?: LifecycleHighlight['iconName']; text: string }>;
+  sustainabilityHighlights: Array<{ iconName?: LucideIconName; text: string }>;
   manufacturerName: string;
   manufacturerWebsite?: string;
   brandLogoUrl?: string;
@@ -436,16 +436,16 @@ export interface TokenStatusResponse {
   message?: string;
 }
 
-// Types moved from mockTransitProducts.ts and mockCustomsAlerts.ts
+// Customs & Transit Types
 export interface TransitProduct {
   id: string;
   name: string;
   stage: string;
-  eta: string; // ISO Date string or human-readable like "2024-08-10"
-  dppStatus: ProductComplianceSummary['overallStatus']; // Using standardized status
+  eta: string; 
+  dppStatus: ProductComplianceSummary['overallStatus']; // Use standardized status
   transport: "Ship" | "Truck" | "Plane";
-  origin: string; // Format: "City, Country Name" or "Country Name"
-  destination: string; // Format: "City, Country Name" or "Country Name"
+  origin: string; 
+  destination: string; 
 }
 
 export interface CustomsAlert {
@@ -453,8 +453,18 @@ export interface CustomsAlert {
   productId: string;
   message: string;
   severity: "High" | "Medium" | "Low";
-  timestamp: string; // Human-readable time ago or ISO string
+  timestamp: string; 
   regulation?: string;
 }
 
+export interface InspectionEvent {
+  id: string;
+  icon: React.ElementType;
+  title: string;
+  timestamp: string; // ISO Date string or human-readable
+  description: string;
+  status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
+  badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
+}
     
+```

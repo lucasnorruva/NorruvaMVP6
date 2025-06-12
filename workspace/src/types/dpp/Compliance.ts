@@ -110,7 +110,7 @@ export interface ProductComplianceSummary {
 }
 
 export interface SimpleCertification {
-  id: string; // Added ID for unique key prop
+  id: string; // Made non-optional
   name: string;
   authority: string;
   standard?: string;

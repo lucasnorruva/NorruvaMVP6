@@ -81,7 +81,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
     const customAttributes = dpp.productDetails?.customAttributes || [];
     const mappedCertifications: SimpleCertification[] = dpp.certifications?.map(cert => ({
-        id: cert.id, 
+        id: cert.id, // Ensure ID is mapped
         name: cert.name,
         authority: cert.issuer,
         standard: cert.standard,
@@ -165,7 +165,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
 
 export async function fetchProductDetails(productId: string): Promise<SimpleProductDetail | null> {
-  await new Promise(resolve => setTimeout(resolve, 0)); 
+  // Simulate async fetching
+  await new Promise(resolve => setTimeout(resolve, 0)); // Minimal delay for promise resolution
 
   let foundDpp: DigitalProductPassport | undefined;
 
@@ -185,7 +186,7 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             }
         }
         const certificationsForUserProd: Certification[] = userProductData.certifications?.map(sc => ({
-            id: sc.id || `cert_user_${sc.name.replace(/\s+/g, '_')}`, 
+            id: sc.id || `cert_user_${sc.name.replace(/\s+/g, '_')}_${Math.random().toString(36).slice(2, 7)}`, // Ensure ID exists
             name: sc.name,
             issuer: sc.authority,
             issueDate: sc.issueDate,

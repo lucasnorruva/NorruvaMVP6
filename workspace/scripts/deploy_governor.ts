@@ -29,6 +29,8 @@ async function main() {
 
   const DPPGovernorFactory = await ethers.getContractFactory("DPPGovernor");
   console.log("Deploying DPPGovernor proxy...");
+  // Assuming DPPGovernor's initialize function signature is:
+  // initialize(address _token, address _timelock, string memory _name)
   const governor = await upgrades.deployProxy(DPPGovernorFactory, [NORU_TOKEN_ADDRESS, TIMELOCK_CONTROLLER_ADDRESS, GOVERNOR_NAME], {
     initializer: "initialize",
     kind: "uups",
@@ -43,11 +45,14 @@ async function main() {
 
   // --- Configure TimelockController roles ---
   console.log("\nConfiguring TimelockController roles...");
+  // Assuming TimelockControllerUpgradeable ABI is available or compatible with a standard OpenZeppelin one.
+  // If you have a specific ABI, you might need to load it here.
+  // For this example, we'll assume the contract instance can call these standard functions.
   const timelockController = await ethers.getContractAt("TimelockControllerUpgradeable", TIMELOCK_CONTROLLER_ADDRESS);
 
   const PROPOSER_ROLE = await timelockController.PROPOSER_ROLE();
   const EXECUTOR_ROLE = await timelockController.EXECUTOR_ROLE();
-  const CANCELLER_ROLE = await timelockController.CANCELLER_ROLE();
+  const CANCELLER_ROLE = await timelockController.CANCELLER_ROLE(); // New: CANCELLER_ROLE for Governor
   const TIMELOCK_ADMIN_ROLE = await timelockController.TIMELOCK_ADMIN_ROLE();
 
   console.log(`Granting PROPOSER_ROLE to Governor (${governorAddress}) on TimelockController...`);
@@ -61,11 +66,15 @@ async function main() {
   console.log("CANCELLER_ROLE granted to Governor.");
 
   console.log(`Granting EXECUTOR_ROLE to address(0) (anyone) on TimelockController...`);
-  tx = await timelockController.connect(deployer).grantRole(EXECUTOR_ROLE, ethers.ZeroAddress);
+  // According to OpenZeppelin Governor, EXECUTOR_ROLE should be granted to address(0) 
+  // if you want anyone to be able to execute a passed proposal.
+  // Or, grant it to the governor if only the governor should execute.
+  tx = await timelockController.connect(deployer).grantRole(EXECUTOR_ROLE, ethers.ZeroAddress); 
   await tx.wait();
   console.log("EXECUTOR_ROLE granted to address(0). (Any account can execute passed proposals)");
   
-  // Check if deployer has TIMELOCK_ADMIN_ROLE before attempting to renounce
+  // The deployer (owner) should renounce the TIMELOCK_ADMIN_ROLE so that only the Timelock itself controls it
+  // (or the DAO through proposals if the Governor is made the admin).
   const deployerIsAdmin = await timelockController.hasRole(TIMELOCK_ADMIN_ROLE, deployer.address);
   if (deployerIsAdmin) {
     console.log(`Deployer (${deployer.address}) currently has TIMELOCK_ADMIN_ROLE. Renouncing...`);

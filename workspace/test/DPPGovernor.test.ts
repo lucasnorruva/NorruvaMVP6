@@ -148,6 +148,13 @@ describe("DPPGovernor", function () {
       await governor.connect(voter3).castVote(proposalId, 0); // Against
       await governor.connect(proposer).castVote(proposalId, 1); // For
 
+      // Voting period in Governor contract is typically set in blocks. Default is around 1 day / 7200 blocks.
+      // For testing, this is usually overridden in the Governor contract itself or we need to mine many blocks.
+      // Assuming the default votingPeriod() is 1 block for test environment or overriden in the contract
+      // Let's simulate passage of time by mining blocks equal to votingPeriod()
+      // For the OpenZeppelin Governor, the votingPeriod is set during construction/initialization or defaults (usually around 1 day for real networks).
+      // Check `governor.votingPeriod()` to see the actual value. For this test, let's assume it's short.
+      // A common pattern for OZ Governor tests is to mine (votingPeriod + 1) blocks.
       for (let i = 0; i < (Number(await governor.votingPeriod()) + 1); i++) {
         await network.provider.send("evm_mine");
       }
@@ -193,17 +200,13 @@ describe("DPPGovernor", function () {
       await network.provider.send("evm_mine");
       expect(await governor.state(proposalId)).to.equal(1); // Active
 
-      // 2. Vote such that it fails (e.g., 1 For, 2 Against)
-      await governor.connect(voter1).castVote(proposalId, 1); // For
+      // 2. Vote such that it fails
+      await governor.connect(voter1).castVote(proposalId, 0); // Against
       await governor.connect(voter2).castVote(proposalId, 0); // Against
       await governor.connect(voter3).castVote(proposalId, 0); // Against
-      // Proposer votes for (optional, could be against or abstain)
+      // Proposer can vote For, but it won't be enough if quorum/threshold not met by 'For' votes
       await governor.connect(proposer).castVote(proposalId, 1); // For
-      // Total: 2 For (proposer, voter1), 2 Against (voter2, voter3). If threshold is >0, this might pass depending on tie-breaking.
-      // Let's make it definitively fail: 1 For, 3 Against
-      // Re-vote proposer to make it simple:
-      // await governor.connect(proposer).castVote(proposalId, 0); // Proposer votes against. Now 1 For, 3 Against.
-
+      
       // Fast-forward past voting period
       for (let i = 0; i < (Number(await governor.votingPeriod()) + 1); i++) {
         await network.provider.send("evm_mine");
@@ -285,4 +288,3 @@ contract DPPGovernorV2 is DPPGovernor {
     }
 }
 */
-

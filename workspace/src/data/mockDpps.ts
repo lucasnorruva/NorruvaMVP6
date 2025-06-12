@@ -1,5 +1,5 @@
 
-import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails } from '@/types/dpp'; // Added EbsiVerificationDetails
+import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation } from '@/types/dpp'; // Added EbsiVerificationDetails
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
   {

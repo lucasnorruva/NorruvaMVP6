@@ -442,7 +442,7 @@ export interface TransitProduct {
   name: string;
   stage: string;
   eta: string; 
-  dppStatus: ProductComplianceSummary['overallStatus']; // Use standardized status
+  dppStatus: ProductComplianceSummary['overallStatus'];
   transport: "Ship" | "Truck" | "Plane";
   origin: string; 
   destination: string; 
@@ -467,4 +467,3 @@ export interface InspectionEvent {
   badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
 }
     
-```

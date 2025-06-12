@@ -160,6 +160,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         onChainLifecycleStage: dpp.metadata.onChainLifecycleStage,
         textileInformation: dpp.textileInformation, 
         constructionProductInformation: dpp.constructionProductInformation, 
+        lastUpdated: dpp.metadata.last_updated,
     };
 }
 

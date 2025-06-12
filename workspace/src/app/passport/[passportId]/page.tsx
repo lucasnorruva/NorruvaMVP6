@@ -321,7 +321,7 @@ export default function PublicPassportPage() {
                 </Card>
               </div>
             )}
-
+            
             {product.textileInformation && (
               <div className="mt-8 pt-6 border-t border-border">
                 <Card className="border-0 shadow-none">
@@ -386,7 +386,7 @@ export default function PublicPassportPage() {
                     {product.contractAddress && (
                         <p><strong className="text-muted-foreground flex items-center"><FileCog className="mr-1.5 h-4 w-4 text-teal-600"/>Contract Address:</strong> 
                             <TooltipProvider><Tooltip><TooltipTrigger asChild>
-                            <span className="font-mono text-xs break-all ml-1">{product.contractAddress}</span>
+                               <span className="font-mono text-xs break-all ml-1">{product.contractAddress}</span>
                             </TooltipTrigger><TooltipContent><p>{product.contractAddress}</p></TooltipContent></Tooltip></TooltipProvider>
                         </p>
                     )}

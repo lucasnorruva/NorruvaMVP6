@@ -486,7 +486,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     }
     setCustomAttributes(prev => [...prev, suggestedAttr]);
     setSuggestedCustomAttributes(prev => prev.filter(attr => attr.key.toLowerCase() !== suggestedAttr.key.toLowerCase()));
-    toast({ title: "Attribute Added", description: `"${suggestedAttr.key}" has been added.`, variant: "default" });
+    toast({ title: "Attribute Added", description: `"${suggestedAttr.key}" has been added from suggestions.`, variant: "default" });
   };
 
   const formContent = (
@@ -677,4 +677,5 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
+
 

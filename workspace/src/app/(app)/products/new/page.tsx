@@ -10,7 +10,7 @@ import { extractProductData } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, Info, Edit, Compass, Wand2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, CarbonFootprintData, StateOfHealthData, RecycledContentData } from "@/types/dpp";
+import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from "@/types/dpp"; // Added TextileInformation, ConstructionProductInformation
 import { fileToDataUri } from '@/utils/fileUtils';
 import AiExtractionSection from "@/components/products/new/AiExtractionSection";
 import ProductDetailsSection from "@/components/products/new/ProductDetailsSection";
@@ -59,6 +59,10 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
     euCustomsData?: Partial<EuCustomsDataDetails>;
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
+  textileInformation?: TextileInformation; // New
+  constructionProductInformation?: ConstructionProductInformation; // New
+  onChainStatus?: string; // New
+  onChainLifecycleStage?: string; // New
 }
 
 
@@ -86,6 +90,17 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
+  textileInformation?: TextileInformation; // New
+  constructionProductInformation?: ConstructionProductInformation; // New
+  metadata?: { // Add metadata object to store onChainStatus and onChainLifecycleStage
+    onChainStatus?: string;
+    onChainLifecycleStage?: string;
+    // Include other metadata fields if they are directly edited or set here
+    created_at?: string;
+    last_updated?: string;
+    status?: string;
+    dppStandardVersion?: string;
+  };
 }
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -117,6 +132,20 @@ const defaultEuCustomsDataState: Partial<EuCustomsDataDetails> = {
   customsValuation: { value: null, currency: "" }
 };
 
+const defaultTextileInformationState: TextileInformation = {
+  fiberComposition: [],
+  countryOfOriginLabeling: "",
+  careInstructionsUrl: "",
+  isSecondHand: false,
+};
+
+const defaultConstructionProductInformationState: ConstructionProductInformation = {
+  declarationOfPerformanceId: "",
+  ceMarkingDetailsUrl: "",
+  intendedUseDescription: "",
+  essentialCharacteristics: [],
+};
+
 
 export default function AddNewProductPage() {
   const router = useRouter();
@@ -137,6 +166,8 @@ export default function AddNewProductPage() {
     productName: "", gtin: "", sku: "", nfcTagId: "", rfidTagId: "", productDescription: "", manufacturer: "", modelNumber: "",
     materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
     imageUrl: "", imageHint: "", imageUrlOrigin: undefined,
+    onChainStatus: "Unknown", // New
+    onChainLifecycleStage: "Unknown", // New
     batteryRegulation: { ...defaultBatteryRegulationState },
     customAttributesJsonString: "",
     productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined,
@@ -149,7 +180,9 @@ export default function AddNewProductPage() {
       scipNotification: { ...defaultScipNotificationState },
       euCustomsData: { ...defaultEuCustomsDataState },
       battery_regulation: { ...defaultBatteryRegulationState },
-    }
+    },
+    textileInformation: { ...defaultTextileInformationState }, // New
+    constructionProductInformation: { ...defaultConstructionProductInformationState }, // New
   };
 
   const [currentProductDataForForm, setCurrentProductDataForForm] = useState<InitialProductFormData>(defaultFormState);
@@ -162,6 +195,8 @@ export default function AddNewProductPage() {
       if (productToEdit) {
         const editData: InitialProductFormData = {
           ...productToEdit,
+          onChainStatus: productToEdit.metadata?.onChainStatus || "Unknown", // Load from metadata
+          onChainLifecycleStage: productToEdit.metadata?.onChainLifecycleStage || "Unknown", // Load from metadata
           batteryRegulation: {
             ...defaultBatteryRegulationState,
             ...(productToEdit.batteryRegulation || {}),
@@ -203,6 +238,8 @@ export default function AddNewProductPage() {
                     : [],
             }
           },
+          textileInformation: { ...defaultTextileInformationState, ...(productToEdit.textileInformation || {}) }, // New
+          constructionProductInformation: { ...defaultConstructionProductInformationState, ...(productToEdit.constructionProductInformation || {}) }, // New
           batteryRegulationOrigin: { ...defaultBatteryRegulationOriginState }, 
           productNameOrigin: productToEdit.productNameOrigin || undefined,
           productDescriptionOrigin: productToEdit.productDescriptionOrigin || undefined,
@@ -237,6 +274,8 @@ export default function AddNewProductPage() {
         gtin: prev.gtin,
         productCategory: prev.productCategory,
         compliance: { ...defaultFormState.compliance }, 
+        textileInformation: { ...defaultTextileInformationState }, // Reset
+        constructionProductInformation: { ...defaultConstructionProductInformationState }, // Reset
       }));
       setError(null);
       setAiExtractionAppliedSuccessfully(false);
@@ -265,7 +304,9 @@ export default function AddNewProductPage() {
           scipNotification: { ...defaultScipNotificationState },
           euCustomsData: { ...defaultEuCustomsDataState },
           battery_regulation: { ...defaultBatteryRegulationState },
-        }
+        },
+        textileInformation: { ...defaultTextileInformationState }, // New
+        constructionProductInformation: { ...defaultConstructionProductInformationState }, // New
       };
 
       if (result.productName) { aiInitialFormData.productName = result.productName; aiInitialFormData.productNameOrigin = 'AI_EXTRACTED'; }
@@ -308,7 +349,6 @@ export default function AddNewProductPage() {
         if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.vcIdOrigin = 'AI_EXTRACTED';
       }
       
-      // Map extracted SCIP and Customs data
       if (result.scipData && aiInitialFormData.compliance?.scipNotification) {
           if(result.scipData.articleName) aiInitialFormData.compliance.scipNotification.articleName = result.scipData.articleName;
           if(result.scipData.primaryArticleId) aiInitialFormData.compliance.scipNotification.primaryArticleId = result.scipData.primaryArticleId;
@@ -321,11 +361,12 @@ export default function AddNewProductPage() {
           if(result.customsData.countryOfOrigin) aiInitialFormData.compliance.euCustomsData.countryOfOrigin = result.customsData.countryOfOrigin;
       }
 
-
       aiInitialFormData.imageUrl = "";
       aiInitialFormData.imageHint = "";
       aiInitialFormData.imageUrlOrigin = undefined;
       aiInitialFormData.customAttributesJsonString = "";
+      aiInitialFormData.onChainStatus = "Unknown";
+      aiInitialFormData.onChainLifecycleStage = "Unknown";
 
       setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData}));
       setAiExtractionAppliedSuccessfully(true);
@@ -373,6 +414,15 @@ export default function AddNewProductPage() {
           battery_regulation: formDataFromForm.compliance?.battery_regulation,
         },
         batteryRegulation: formDataFromForm.batteryRegulation,
+        textileInformation: formDataFromForm.textileInformation, // New
+        constructionProductInformation: formDataFromForm.constructionProductInformation, // New
+        metadata: { // Store onChainStatus and onChainLifecycleStage here
+          onChainStatus: formDataFromForm.onChainStatus,
+          onChainLifecycleStage: formDataFromForm.onChainLifecycleStage,
+          // Preserve other metadata if editing
+          ...(isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata : {}),
+          last_updated: new Date().toISOString(), // Always update this
+        },
         complianceSummary: { 
           overallStatus: 'Pending Review', 
           eprel: { status: formDataFromForm.compliance?.eprel?.status || 'N/A', lastChecked: new Date().toISOString() },

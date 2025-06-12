@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn } from "lucide-react"; // Added Sigma, LayersIconShadcn
+import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Construction, Shirt } from "lucide-react"; // Added Construction, Shirt
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; 
 import { getEbsiStatusBadge } from "@/utils/dppDisplayUtils"; 
@@ -125,7 +125,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           </Card>
         )}
         
-        {/* Combined Blockchain & EBSI Card */}
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
@@ -276,6 +275,48 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             )}
           </CardContent>
         </Card>
+
+        {product.textileInformation && (
+          <Card className="shadow-sm">
+            <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><Shirt className="mr-2 h-5 w-5 text-purple-600" />Textile Information</CardTitle></CardHeader>
+            <CardContent className="text-sm space-y-1.5">
+              {product.textileInformation.fiberComposition && product.textileInformation.fiberComposition.length > 0 && (
+                <div>
+                  <strong className="text-muted-foreground">Fiber Composition:</strong>
+                  <ul className="list-disc list-inside ml-4">
+                    {product.textileInformation.fiberComposition.map((fc, idx) => (
+                      <li key={idx}>{fc.fiberName}: {fc.percentage}%</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {product.textileInformation.countryOfOriginLabeling && <p><strong className="text-muted-foreground">Country of Origin (Label):</strong> {product.textileInformation.countryOfOriginLabeling}</p>}
+              {product.textileInformation.careInstructionsUrl && <p><strong className="text-muted-foreground">Care Instructions:</strong> <NextLink href={product.textileInformation.careInstructionsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View Care Guide</NextLink></p>}
+              {product.textileInformation.isSecondHand !== undefined && <p><strong className="text-muted-foreground">Second Hand:</strong> {product.textileInformation.isSecondHand ? 'Yes' : 'No'}</p>}
+            </CardContent>
+          </Card>
+        )}
+
+        {product.constructionProductInformation && (
+          <Card className="shadow-sm">
+            <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><Construction className="mr-2 h-5 w-5 text-orange-600" />Construction Product Information</CardTitle></CardHeader>
+            <CardContent className="text-sm space-y-1.5">
+              {product.constructionProductInformation.declarationOfPerformanceId && <p><strong className="text-muted-foreground">Declaration of Performance ID:</strong> {product.constructionProductInformation.declarationOfPerformanceId}</p>}
+              {product.constructionProductInformation.ceMarkingDetailsUrl && <p><strong className="text-muted-foreground">CE Marking:</strong> <NextLink href={product.constructionProductInformation.ceMarkingDetailsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View Details</NextLink></p>}
+              {product.constructionProductInformation.intendedUseDescription && <p><strong className="text-muted-foreground">Intended Use:</strong> {product.constructionProductInformation.intendedUseDescription}</p>}
+              {product.constructionProductInformation.essentialCharacteristics && product.constructionProductInformation.essentialCharacteristics.length > 0 && (
+                <div>
+                  <strong className="text-muted-foreground">Essential Characteristics:</strong>
+                  <ul className="list-disc list-inside ml-4">
+                    {product.constructionProductInformation.essentialCharacteristics.map((ec, idx) => (
+                      <li key={idx}>{ec.characteristicName}: {ec.value} {ec.unit || ''} {ec.testMethod ? `(Test: ${ec.testMethod})` : ''}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="shadow-sm">
           <CardHeader>

@@ -5,7 +5,7 @@
 
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
 import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification, ScipNotificationDetails, EuCustomsDataDetails, BatteryRegulationDetails } from '@/types/dpp';
+import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification, ScipNotificationDetails, EuCustomsDataDetails, BatteryRegulationDetails, TextileInformation, ConstructionProductInformation } from '@/types/dpp';
 import { getOverallComplianceDetails } from '@/utils/dppDisplayUtils';
 
 // Helper function to map DigitalProductPassport to SimpleProductDetail
@@ -24,14 +24,13 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
     const specificRegulations: ComplianceDetailItem[] = [];
     
-    // EU ESPR and US Scope 3 are examples of 'other' regulations now
     if (dpp.compliance.eu_espr) {
         specificRegulations.push({
             regulationName: "EU ESPR",
             status: dpp.compliance.eu_espr.status as ComplianceDetailItem['status'],
             detailsUrl: dpp.compliance.eu_espr.reportUrl,
             verificationId: dpp.compliance.eu_espr.vcId,
-            lastChecked: dpp.metadata.last_updated, // Fallback, better if eu_espr has its own lastChecked
+            lastChecked: dpp.metadata.last_updated, 
         });
     }
     if (dpp.compliance.esprConformity) {
@@ -48,7 +47,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             status: dpp.compliance.us_scope3.status as ComplianceDetailItem['status'],
             detailsUrl: dpp.compliance.us_scope3.reportUrl,
             verificationId: dpp.compliance.us_scope3.vcId,
-            lastChecked: dpp.metadata.last_updated, // Fallback
+            lastChecked: dpp.metadata.last_updated, 
         });
     }
 
@@ -82,7 +81,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
     const customAttributes = dpp.productDetails?.customAttributes || [];
     const mappedCertifications: SimpleCertification[] = dpp.certifications?.map(cert => ({
-        id: cert.id, // Add id to SimpleCertification
+        id: cert.id, 
         name: cert.name,
         authority: cert.issuer,
         standard: cert.standard,
@@ -151,7 +150,6 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         certifications: mappedCertifications,
         authenticationVcId: dpp.authenticationVcId,
         ownershipNftLink: dpp.ownershipNftLink,
-        // Map blockchainIdentifiers
         blockchainPlatform: dpp.blockchainIdentifiers?.platform,
         contractAddress: dpp.blockchainIdentifiers?.contractAddress,
         tokenId: dpp.blockchainIdentifiers?.tokenId,
@@ -160,13 +158,14 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         ebsiVerificationId: dpp.ebsiVerification?.verificationId, 
         onChainStatus: dpp.metadata.onChainStatus,
         onChainLifecycleStage: dpp.metadata.onChainLifecycleStage,
+        textileInformation: dpp.textileInformation, // New
+        constructionProductInformation: dpp.constructionProductInformation, // New
     };
 }
 
 
 export async function fetchProductDetails(productId: string): Promise<SimpleProductDetail | null> {
-  // Simulate async fetching
-  await new Promise(resolve => setTimeout(resolve, 0)); // Minimal delay for promise resolution
+  await new Promise(resolve => setTimeout(resolve, 0)); 
 
   let foundDpp: DigitalProductPassport | undefined;
 
@@ -186,7 +185,7 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             }
         }
         const certificationsForUserProd: Certification[] = userProductData.certifications?.map(sc => ({
-            id: sc.id || `cert_user_${sc.name.replace(/\s+/g, '_')}`, // Use existing ID or generate one
+            id: sc.id || `cert_user_${sc.name.replace(/\s+/g, '_')}`, 
             name: sc.name,
             issuer: sc.authority,
             issueDate: sc.issueDate,
@@ -198,7 +197,6 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
         })) || [];
         
         const complianceSummaryFromStorage = userProductData.complianceSummary || { overallStatus: 'N/A' };
-
 
         foundDpp = {
           id: userProductData.id,
@@ -213,9 +211,9 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           metadata: {
             status: (userProductData.status?.toLowerCase() as DigitalProductPassport['metadata']['status']) || 'draft',
             last_updated: userProductData.lastUpdated || new Date().toISOString(),
-            created_at: userProductData.lastUpdated || new Date().toISOString(), // Or a dedicated created_at if available
-            onChainStatus: userProductData.onChainStatus,
-            onChainLifecycleStage: userProductData.onChainLifecycleStage,
+            created_at: userProductData.lastUpdated || new Date().toISOString(), 
+            onChainStatus: userProductData.metadata?.onChainStatus,
+            onChainLifecycleStage: userProductData.metadata?.onChainLifecycleStage,
           },
           productDetails: {
             description: userProductData.productDescription,
@@ -224,14 +222,14 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             sustainabilityClaims: userProductData.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
             materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [],
             energyLabel: userProductData.energyLabel,
-            specifications: userProductData.specifications, // Pass as string
-            customAttributes: parsedCustomAttributes, // Pass as array
+            specifications: userProductData.specifications, 
+            customAttributes: parsedCustomAttributes, 
           },
           compliance: { 
             eprel: complianceSummaryFromStorage.eprel,
             scipNotification: complianceSummaryFromStorage.scip, 
             euCustomsData: complianceSummaryFromStorage.euCustomsData,
-            battery_regulation: complianceSummaryFromStorage.battery, // Directly assign from storage if structure matches
+            battery_regulation: userProductData.batteryRegulation, // Use detailed from StoredUserProduct
           },
           ebsiVerification: complianceSummaryFromStorage.ebsi ? {
             status: complianceSummaryFromStorage.ebsi.status as EbsiVerificationDetails['status'],
@@ -250,6 +248,8 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           authenticationVcId: userProductData.authenticationVcId, 
           ownershipNftLink: userProductData.ownershipNftLink, 
           blockchainIdentifiers: userProductData.blockchainIdentifiers, 
+          textileInformation: userProductData.textileInformation, // New
+          constructionProductInformation: userProductData.constructionProductInformation, // New
         } as DigitalProductPassport;
       }
     }

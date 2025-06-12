@@ -1112,7 +1112,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
+  
   /api/v1/dpp/{productId}/onchain-status:
     post:
       operationId: updateDppOnChainStatus
@@ -1287,7 +1287,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/v1/dpp/{productId}/register-vc-hash: # New endpoint
+  /api/v1/dpp/{productId}/register-vc-hash: 
     post:
       operationId: registerDppVcHash
       summary: Register Verifiable Credential Hash (Conceptual)
@@ -2216,6 +2216,12 @@ components:
               nullable: true
               items:
                 $ref: '#/components/schemas/CustomAttribute'
+        textileInformation: # New
+          $ref: '#/components/schemas/TextileInformation'
+          nullable: true
+        constructionProductInformation: # New
+          $ref: '#/components/schemas/ConstructionProductInformation'
+          nullable: true
         lifecycleEvents:
           type: array
           nullable: true
@@ -2305,164 +2311,14 @@ components:
                   type: string
                   nullable: true
             battery_regulation:
-              type: object
+              $ref: '#/components/schemas/BatteryRegulationDetails' # Use defined schema
               nullable: true
-              properties:
-                status:
-                  type: string
-                  enum:
-                    - compliant
-                    - non_compliant
-                    - pending
-                    - not_applicable
-                batteryPassportId:
-                  type: string
-                  nullable: true
-                  description: Unique identifier for the battery passport itself.
-                carbonFootprint:
-                  type: object
-                  nullable: true
-                  properties:
-                    value:
-                      type: number
-                      description: "Carbon footprint value."
-                    unit:
-                      type: string
-                      description: "Unit of the carbon footprint (e.g., kg CO2e/kWh)."
-                    calculationMethod:
-                      type: string
-                      nullable: true
-                      description: "Methodology used for calculation (e.g., PEFCR, ISO 14067)."
-                    vcId:
-                      type: string
-                      nullable: true
-                      description: "Verifiable Credential ID for the carbon footprint data."
-                  required:
-                    - value
-                    - unit
-                recycledContent:
-                  type: array
-                  nullable: true
-                  items:
-                    type: object
-                    properties:
-                      material:
-                        type: string
-                        description: "Specific material (e.g., Cobalt, Lithium, Nickel, Lead)."
-                      percentage:
-                        type: number
-                        description: "Percentage of recycled content for this material."
-                      vcId:
-                        type: string
-                        nullable: true
-                        description: "Verifiable Credential ID for this recycled content claim."
-                    required:
-                      - material
-                      - percentage
-                stateOfHealth:
-                  type: object
-                  nullable: true
-                  properties:
-                    value:
-                      type: number
-                      description: "State of Health value, typically a percentage."
-                    unit:
-                      type: string
-                      description: "Unit for State of Health (e.g., '%')."
-                    measurementDate:
-                      type: string
-                      format: date-time
-                      description: "Date when the State of Health was measured."
-                    vcId:
-                      type: string
-                      nullable: true
-                      description: "Verifiable Credential ID for the State of Health data."
-                  required:
-                    - value
-                    - unit
-                    - measurementDate
-                vcId:
-                  type: string
-                  nullable: true
-                  description: "Overall Verifiable Credential ID for the battery regulation compliance."
             scipNotification:
-              type: object
+              $ref: '#/components/schemas/ScipNotificationDetails' # Use defined schema
               nullable: true
-              properties:
-                status:
-                  type: string
-                  enum: ['Notified', 'Pending Notification', 'Not Required', 'Error', 'N/A']
-                notificationId:
-                  type: string
-                  nullable: true
-                  description: SCIP database notification number.
-                svhcListVersion:
-                  type: string
-                  nullable: true
-                  description: Version of the ECHA Candidate List used for assessment.
-                submittingLegalEntity:
-                  type: string
-                  nullable: true
-                  description: Name or identifier of the legal entity that submitted the notification.
-                articleName:
-                  type: string
-                  nullable: true
-                  description: Name of the article as notified to SCIP.
-                primaryArticleId:
-                  type: string
-                  nullable: true
-                  description: Primary identifier of the article (e.g., EAN, TARIC code).
-                safeUseInstructionsLink:
-                  type: string
-                  format: url
-                  nullable: true
-                  description: Link to safe use instructions, if SVHCs are present.
-                lastChecked:
-                  type: string
-                  format: date-time
             euCustomsData:
-              type: object
+              $ref: '#/components/schemas/EuCustomsDataDetails' # Use defined schema
               nullable: true
-              properties:
-                status:
-                  type: string
-                  enum: ['Verified', 'Pending Documents', 'Mismatch', 'Cleared', 'N/A']
-                declarationId:
-                  type: string
-                  nullable: true
-                  description: Customs declaration reference number.
-                hsCode:
-                  type: string
-                  nullable: true
-                  description: Harmonized System (HS) code for customs classification.
-                countryOfOrigin:
-                  type: string
-                  format: "ISO3166-1-Alpha-2"
-                  nullable: true
-                  description: ISO 3166-1 alpha-2 country code of origin.
-                netWeightKg:
-                  type: number
-                  format: float
-                  nullable: true
-                  description: Net weight of the product in kilograms.
-                grossWeightKg:
-                  type: number
-                  format: float
-                  nullable: true
-                  description: Gross weight of the product in kilograms.
-                customsValuation:
-                  type: object
-                  nullable: true
-                  properties:
-                    value:
-                      type: number
-                      format: float
-                    currency:
-                      type: string
-                      format: "ISO4217" # e.g., EUR, USD
-                  lastChecked:
-                    type: string
-                    format: date-time
         ebsiVerification:
           type: object
           nullable: true
@@ -2520,7 +2376,7 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/ProductSupplyChainLink'
-      example: # Added example for DigitalProductPassport
+      example: 
         id: "DPP001"
         version: 1
         productName: "EcoSmart Refrigerator X500"
@@ -2760,6 +2616,12 @@ components:
             imageHint:
               type: string
               nullable: true
+        textileInformation: # New
+          $ref: '#/components/schemas/TextileInformation'
+          nullable: true
+        constructionProductInformation: # New
+          $ref: '#/components/schemas/ConstructionProductInformation'
+          nullable: true
     UpdateDppRequestBody:
       type: object
       properties:
@@ -2795,6 +2657,14 @@ components:
             dppStandardVersion:
               type: string
               nullable: true
+            onChainStatus: 
+              type: string
+              nullable: true
+              description: "Conceptual on-chain status of the DPP."
+            onChainLifecycleStage: 
+              type: string
+              nullable: true
+              description: "Conceptual on-chain lifecycle stage of the DPP."
         productDetails:
           type: object
           nullable: true
@@ -2846,6 +2716,12 @@ components:
             imageHint:
               type: string
               nullable: true
+        textileInformation: # New
+          $ref: '#/components/schemas/TextileInformation'
+          nullable: true
+        constructionProductInformation: # New
+          $ref: '#/components/schemas/ConstructionProductInformation'
+          nullable: true
         compliance: # Allow full update of compliance object
           type: object 
           nullable: true
@@ -2867,58 +2743,14 @@ components:
                 assessmentDate: { type: string, format: "date-time", nullable: true }
                 vcId: { type: string, nullable: true }
             scipNotification:
-              type: object
+              $ref: '#/components/schemas/ScipNotificationDetails'
               nullable: true
-              properties:
-                status: { type: string, enum: ['Notified', 'Pending Notification', 'Not Required', 'Error', 'N/A'], nullable: true }
-                notificationId: { type: string, nullable: true }
-                svhcListVersion: { type: string, nullable: true }
-                submittingLegalEntity: { type: string, nullable: true }
-                articleName: { type: string, nullable: true }
-                primaryArticleId: { type: string, nullable: true }
-                safeUseInstructionsLink: { type: string, format: url, nullable: true }
-                lastChecked: { type: string, format: "date-time", nullable: true }
             euCustomsData:
-              type: object
+              $ref: '#/components/schemas/EuCustomsDataDetails'
               nullable: true
-              properties:
-                status: { type: string, enum: ['Verified', 'Pending Documents', 'Mismatch', 'Cleared', 'N/A'], nullable: true }
-                declarationId: { type: string, nullable: true }
-                hsCode: { type: string, nullable: true }
-                countryOfOrigin: { type: string, format: "ISO3166-1-Alpha-2", nullable: true }
-                netWeightKg: { type: number, format: float, nullable: true }
-                grossWeightKg: { type: number, format: float, nullable: true }
-                customsValuation: { 
-                  type: object, 
-                  nullable: true, 
-                  properties: { value: {type: "number", format: "float"}, currency: {type: "string", format: "ISO4217"} } 
-                }
-                lastChecked: { type: string, format: "date-time", nullable: true }
-            battery_regulation: # Allow full update of battery_regulation
-              type: object
+            battery_regulation: 
+              $ref: '#/components/schemas/BatteryRegulationDetails'
               nullable: true
-              properties:
-                status: { type: string, enum: ['compliant', 'non_compliant', 'pending', 'not_applicable'], nullable: true }
-                batteryPassportId: { type: string, nullable: true }
-                carbonFootprint: { 
-                  type: object, 
-                  nullable: true, 
-                  properties: { value: {type: "number"}, unit: {type: "string"}, calculationMethod: {type: "string", nullable: true}, vcId: {type: "string", nullable: true}} 
-                }
-                recycledContent: {
-                  type: array,
-                  nullable: true,
-                  items: {
-                    type: object,
-                    properties: { material: {type: "string"}, percentage: {type: "number"}, vcId: {type: "string", nullable: true}}
-                  }
-                }
-                stateOfHealth: {
-                  type: object,
-                  nullable: true,
-                  properties: { value: {type: "number"}, unit: {type: "string"}, measurementDate: {type: "string", format: "date-time"}, vcId: {type: "string", nullable: true}}
-                }
-                vcId: { type: string, nullable: true }
         ebsiVerification:
           type: object
           nullable: true
@@ -2975,7 +2807,7 @@ components:
           nullable: true
           description: Severity of the event. Defaults to "High" if not provided by API.
           example: "High"
-    RegisterVcHashRequest: # New Schema
+    RegisterVcHashRequest: 
       type: object
       required:
         - vcId
@@ -3209,6 +3041,209 @@ components:
           type: string
           description: A message regarding the verification outcome.
           example: "Mock ZKP for claim 'material_compliance_svhc_lead_less_0.1' is considered valid for this DPP."
+    BatteryRegulationDetails: # New schema
+      type: object
+      properties:
+        status:
+          type: string
+          enum: ["compliant", "non_compliant", "pending", "not_applicable"]
+          nullable: true
+        batteryChemistry:
+          type: string
+          nullable: true
+        batteryPassportId:
+          type: string
+          nullable: true
+        carbonFootprint:
+          $ref: '#/components/schemas/CarbonFootprintData'
+          nullable: true
+        recycledContent:
+          type: array
+          nullable: true
+          items:
+            $ref: '#/components/schemas/RecycledContentData'
+        stateOfHealth:
+          $ref: '#/components/schemas/StateOfHealthData'
+          nullable: true
+        vcId:
+          type: string
+          nullable: true
+    CarbonFootprintData: # New schema
+      type: object
+      properties:
+        value:
+          type: number
+          format: float
+          nullable: true
+        unit:
+          type: string
+          nullable: true
+        calculationMethod:
+          type: string
+          nullable: true
+        vcId:
+          type: string
+          nullable: true
+    RecycledContentData: # New schema
+      type: object
+      properties:
+        material:
+          type: string
+          nullable: true
+        percentage:
+          type: number
+          format: float
+          nullable: true
+        vcId:
+          type: string
+          nullable: true
+    StateOfHealthData: # New schema
+      type: object
+      properties:
+        value:
+          type: number
+          format: float
+          nullable: true
+        unit:
+          type: string
+          nullable: true
+        measurementDate:
+          type: string
+          format: date-time
+          nullable: true
+        vcId:
+          type: string
+          nullable: true
+    ScipNotificationDetails: # New schema
+      type: object
+      properties:
+        status:
+          type: string
+          enum: ['Notified', 'Pending Notification', 'Not Required', 'Error', 'N/A']
+          nullable: true
+        notificationId:
+          type: string
+          nullable: true
+        svhcListVersion:
+          type: string
+          nullable: true
+        submittingLegalEntity:
+          type: string
+          nullable: true
+        articleName:
+          type: string
+          nullable: true
+        primaryArticleId:
+          type: string
+          nullable: true
+        safeUseInstructionsLink:
+          type: string
+          format: url
+          nullable: true
+        lastChecked:
+          type: string
+          format: date-time
+          nullable: true
+    EuCustomsDataDetails: # New schema
+      type: object
+      properties:
+        status:
+          type: string
+          enum: ['Verified', 'Pending Documents', 'Mismatch', 'Cleared', 'N/A']
+          nullable: true
+        declarationId:
+          type: string
+          nullable: true
+        hsCode:
+          type: string
+          nullable: true
+        countryOfOrigin:
+          type: string
+          format: "ISO3166-1-Alpha-2"
+          nullable: true
+        netWeightKg:
+          type: number
+          format: float
+          nullable: true
+        grossWeightKg:
+          type: number
+          format: float
+          nullable: true
+        customsValuation:
+          type: object
+          nullable: true
+          properties:
+            value:
+              type: number
+              format: float
+              nullable: true
+            currency:
+              type: string
+              format: "ISO4217"
+              nullable: true
+        lastChecked:
+          type: string
+          format: date-time
+          nullable: true
+    TextileInformation: # New
+      type: object
+      properties:
+        fiberComposition:
+          type: array
+          items:
+            type: object
+            properties:
+              fiberName:
+                type: string
+              percentage:
+                type: number
+                format: float
+                nullable: true
+            required:
+              - fiberName
+          nullable: true
+        countryOfOriginLabeling:
+          type: string
+          nullable: true
+        careInstructionsUrl:
+          type: string
+          format: url
+          nullable: true
+        isSecondHand:
+          type: boolean
+          nullable: true
+    ConstructionProductInformation: # New
+      type: object
+      properties:
+        declarationOfPerformanceId:
+          type: string
+          nullable: true
+        ceMarkingDetailsUrl:
+          type: string
+          format: url
+          nullable: true
+        intendedUseDescription:
+          type: string
+          nullable: true
+        essentialCharacteristics:
+          type: array
+          items:
+            type: object
+            properties:
+              characteristicName:
+                type: string
+              value:
+                type: string
+              unit:
+                type: string
+                nullable: true
+              testMethod:
+                type: string
+                nullable: true
+            required:
+              - characteristicName
+              - value
+          nullable: true
 security:
   - ApiKeyAuth: []
 components:
@@ -3218,22 +3253,3 @@ components:
       in: header
       name: Authorization
       description: API key for authentication. Provide as 'Bearer YOUR_API_KEY'.
-    
-
-    
-
-    
-
-
-
-
-
-    
-
-    
-
-
-
-
-
-

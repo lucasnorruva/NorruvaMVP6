@@ -16,11 +16,11 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       last_updated: "2024-07-30T10:00:00Z",
       status: "published",
       dppStandardVersion: "CIRPASS v0.9 Draft",
-      onChainStatus: "Active", // Added
-      onChainLifecycleStage: "InUse", // Added
+      onChainStatus: "Active", 
+      onChainLifecycleStage: "InUse", 
     },
-    authenticationVcId: "vc_auth_DPP001_mock123", // Added for Task 31
-    ownershipNftLink: { // Added for Task 31
+    authenticationVcId: "vc_auth_DPP001_mock123", 
+    ownershipNftLink: { 
         registryUrl: "https://mock-nft-market.example/token/0xNFTContractForDPP001/1",
         contractAddress: "0xNFTContractForDPP001",
         tokenId: "1",
@@ -107,7 +107,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
             issuer: "did:ebsi:zTuvRheinland",
             issuanceDate: "2024-01-20T00:00:00Z",
             credentialSubject: {
-                productId: "DPP001", // Corrected to DPP001 if it's for DPP001
+                productId: "DPP001", 
                 standard: "ISO 14001:2015",
                 complianceStatus: "Conformant",
                 expiryDate: "2026-11-14"
@@ -145,11 +145,10 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       last_updated: "2024-07-25T14:30:00Z", 
       status: "draft", 
       created_at: "2024-03-01T10:00:00Z",
-      onChainStatus: "Pending Activation", // Added
-      onChainLifecycleStage: "Manufacturing", // Added
+      onChainStatus: "Pending Activation", 
+      onChainLifecycleStage: "Manufacturing", 
     },
     authenticationVcId: "vc_auth_DPP002_mock456", 
-    // No ownershipNftLink for this one to show variability
     productDetails: {
       description: "A sustainable t-shirt made from organic cotton.",
       imageUrl: "https://placehold.co/600x400.png",
@@ -157,6 +156,15 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       materials: [{name: "Organic Cotton", percentage: 100}],
       specifications: JSON.stringify({ "Fit": "Regular", "GSM": "180", "Origin": "India", "Care": "Machine wash cold" }, null, 2),
       customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}]
+    },
+    textileInformation: { // New
+      fiberComposition: [
+        { fiberName: "Organic Cotton", percentage: 95 },
+        { fiberName: "Elastane", percentage: 5 }
+      ],
+      countryOfOriginLabeling: "India",
+      careInstructionsUrl: "https://ecothreads.com/care/ET-TS-ORG-M",
+      isSecondHand: false,
     },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-25T00:00:00Z" },
@@ -225,7 +233,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       last_updated: "2024-07-22T09:15:00Z", 
       status: "flagged", 
       created_at: "2024-04-10T10:00:00Z",
-      onChainStatus: "FlaggedForReview", // Added
+      onChainStatus: "FlaggedForReview", 
       // onChainLifecycleStage not specified, will be undefined
     },
     compliance: {
@@ -283,8 +291,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       last_updated: "2024-07-20T11:00:00Z", 
       status: "archived", 
       created_at: "2023-12-01T10:00:00Z",
-      onChainStatus: "Archived", // Added
-      onChainLifecycleStage: "EndOfLife" // Added
+      onChainStatus: "Archived", 
+      onChainLifecycleStage: "EndOfLife" 
     },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-20T00:00:00Z" },
@@ -353,7 +361,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       ]
     },
     compliance: {
-      eprel: { status: "Not Applicable", lastChecked: "2024-07-28T00:00:00Z" }, // EPREL not typically for EV batteries directly
+      eprel: { status: "Not Applicable", lastChecked: "2024-07-28T00:00:00Z" }, 
       battery_regulation: {
         status: "pending",
         batteryPassportId: "BATT-ID-PV-EVB-75KWH-SN001",
@@ -366,7 +374,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         stateOfHealth: {value: 100, unit: '%', measurementDate: "2024-07-15T00:00:00Z", vcId: "vc:soh:dpp005"},
         vcId: "vc:battreg:overall:dpp005"
       } as BatteryRegulationDetails,
-      eu_espr: { status: "pending" }, // General ESPR requirements might apply to EV components
+      eu_espr: { status: "pending" }, 
       scipNotification: { 
         status: 'Pending Notification', 
         svhcListVersion: '2024/01 (24.0.1)',
@@ -377,7 +385,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       },
       euCustomsData: { 
         status: 'Pending Documents', 
-        hsCode: "85076000", // Example HS for lithium-ion batteries
+        hsCode: "85076000", 
         countryOfOrigin: "US",
         netWeightKg: 450.0,
         grossWeightKg: 465.0,
@@ -422,7 +430,55 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     supplyChainLinks: []
   },
+  { // New Mock Product for Construction Product Regulation
+    id: "DPP006",
+    productName: "EcoSmart Insulation Panel R50",
+    category: "Construction Materials",
+    manufacturer: { name: "BuildGreen Systems", eori: "BE0123456789" },
+    modelNumber: "ESP-R50-1200",
+    metadata: {
+      created_at: "2024-07-01T00:00:00Z",
+      last_updated: "2024-08-01T10:00:00Z",
+      status: "published",
+      dppStandardVersion: "CPR EN 13163",
+      onChainStatus: "Active",
+      onChainLifecycleStage: "InUse",
+    },
+    productDetails: {
+      description: "High-performance, sustainable insulation panel made from recycled cellulose fibers and a bio-based binder. Provides excellent thermal resistance (R-value 50).",
+      imageUrl: "https://placehold.co/600x400.png",
+      imageHint: "insulation panel construction",
+      materials: [
+        { name: "Recycled Cellulose Fiber", percentage: 85, isRecycled: true },
+        { name: "Bio-based Binder", percentage: 10 },
+        { name: "Fire Retardant (Non-halogenated)", percentage: 5 }
+      ],
+      specifications: JSON.stringify({ "Thermal Resistance (R-value)": "50", "Thickness (mm)": "150", "Density (kg/m^3)": "35", "Fire Rating": "Euroclass B-s1, d0" }, null, 2),
+      customAttributes: [
+        {key: "Recycled Content Source", value: "Post-consumer paper"},
+        {key: "VOC Emissions", value: "Low (A+)"}
+      ]
+    },
+    constructionProductInformation: {
+      declarationOfPerformanceId: "DoP_ESP-R50-1200_001",
+      ceMarkingDetailsUrl: "https://buildgreen.com/certs/ce_esp-r50.pdf",
+      intendedUseDescription: "Thermal insulation for building envelopes (walls, roofs, floors).",
+      essentialCharacteristics: [
+        { characteristicName: "Thermal Conductivity (λ)", value: "0.030", unit: "W/(m·K)", testMethod: "EN 12667" },
+        { characteristicName: "Reaction to Fire", value: "B-s1, d0", testMethod: "EN 13501-1" },
+        { characteristicName: "Water Vapour Diffusion Resistance (µ)", value: "3", testMethod: "EN 12086" }
+      ]
+    },
+    compliance: {
+      eprel: { status: "Not Applicable", lastChecked: "2024-08-01T00:00:00Z" },
+      battery_regulation: { status: "not_applicable" },
+      scipNotification: { status: 'Not Required', lastChecked: "2024-08-01T00:00:00Z" },
+    },
+    ebsiVerification: { status: "pending_verification", lastChecked: "2024-08-01T00:00:00Z"} as EbsiVerificationDetails,
+    traceability: { originCountry: "BE" },
+    consumerScans: 15,
+  }
 ];
     
-
+    
     

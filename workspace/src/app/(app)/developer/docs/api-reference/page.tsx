@@ -7,6 +7,7 @@ import ApiReferenceDppEndpoints from '@/components/developer/docs/ApiReferenceDp
 import ApiReferenceQrEndpoints from '@/components/developer/docs/ApiReferenceQrEndpoints';
 import ApiReferenceComplianceEndpoints from '@/components/developer/docs/ApiReferenceComplianceEndpoints';
 import ApiReferenceTokenEndpoints from '@/components/developer/docs/ApiReferenceTokenEndpoints';
+import ApiReferencePrivateLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferencePrivateLayerEndpoints'; // New import
 import type { DigitalProductPassport } from "@/types/dpp";
 
 export default function ApiReferencePage() {
@@ -358,6 +359,41 @@ export default function ApiReferencePage() {
     ]
   }, null, 2);
 
+  // Example for Private Layer Endpoint
+  const exampleB2BComponentTransferRequestBody = JSON.stringify({
+    componentId: "COMP_XYZ_123",
+    batchOrSerialNumbers: ["BATCH_A001", "BATCH_A002"],
+    quantity: 200,
+    unit: "units",
+    transferDate: new Date().toISOString(),
+    fromParty: {
+      participantId: "SUP001",
+      participantDid: "did:example:supplier:greenpartsinc",
+      role: "Component Supplier"
+    },
+    toParty: {
+      participantId: "MFG002_ASSEMBLY",
+      participantDid: "did:example:manufacturer:acmeassembly",
+      role: "Pack Assembler"
+    },
+    transactionDetails: {
+      type: "InternalStockTransfer",
+      referenceId: "ERP_PO_67890"
+    },
+    notes: "Transfer of tested battery cells for EV pack assembly."
+  }, null, 2);
+
+  const exampleB2BComponentTransferResponseBody = JSON.stringify({
+    transferId: "transfer_comp_xyz_123_mock123", // Example generated ID
+    // ... (rest of the request body would be echoed back)
+    componentId: "COMP_XYZ_123",
+    quantity: 200,
+    transferDate: new Date().toISOString(),
+    fromParty: { participantId: "SUP001", role: "Supplier" },
+    toParty: { participantId: "MFG001", role: "Manufacturer" },
+    productId: "DPP001" // Added by the mock handler
+  }, null, 2);
+
 
   return (
     <DocsPageLayout
@@ -393,6 +429,7 @@ export default function ApiReferencePage() {
         error400_update_dpp={error400_update_dpp}
         error400_patch_dpp={error400_patch_dpp}
         error400_lifecycle_event={error400_lifecycle_event}
+        error400_general={error400_general} // Pass general 400 error
       />
       <ApiReferenceTokenEndpoints
         mintRequest={mintTokenRequest}
@@ -414,6 +451,14 @@ export default function ApiReferencePage() {
       <ApiReferenceComplianceEndpoints
         conceptualComplianceSummaryResponse={conceptualComplianceSummaryResponse}
         conceptualVerifyDppResponse={conceptualVerifyDppResponse}
+        error401={error401}
+        error404={error404}
+        error500={error500}
+      />
+      <ApiReferencePrivateLayerEndpoints
+        exampleB2BComponentTransferRequestBody={exampleB2BComponentTransferRequestBody}
+        exampleB2BComponentTransferResponseBody={exampleB2BComponentTransferResponseBody}
+        error400General={error400_general}
         error401={error401}
         error404={error404}
         error500={error500}

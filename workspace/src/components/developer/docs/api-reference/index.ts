@@ -6,6 +6,8 @@ export { default as UpdateDigitalProductPassport } from './UpdateDigitalProductP
 export { default as ExtendDigitalProductPassport } from './ExtendDigitalProductPassport';
 export { default as AddLifecycleEventToDpp } from './AddLifecycleEventToDpp';
 export { default as ArchiveDigitalProductPassport } from './ArchiveDigitalProductPassport';
+export { default as ApiReferencePrivateLayerEndpoints } from './ApiReferencePrivateLayerEndpoints'; // Added export
+
 // Ensure ApiReferenceDppEndpoints is also exported if it's the main aggregator,
 // or export the new components directly if they are separate files.
 // For now, assuming they are part of ApiReferenceDppEndpoints.tsx or similar structure.

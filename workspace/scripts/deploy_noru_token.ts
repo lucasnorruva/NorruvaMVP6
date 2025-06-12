@@ -9,7 +9,7 @@ async function main() {
   console.log("Deploying NORUToken proxy...");
 
   // Initial supply: 1,000,000 tokens (with 18 decimals)
-  const initialSupply = ethers.parseUnits("1000000", 18);
+  const initialSupply = ethers.parseUnits("1000000", 18); // 1 million tokens
 
   const noruToken = await upgrades.deployProxy(NORUTokenFactory, ["Norruva Governance Token", "NORU", deployer.address, initialSupply], {
     initializer: "initialize",
@@ -23,7 +23,8 @@ async function main() {
   const implementationAddress = await upgrades.erc1967.getImplementationAddress(noruTokenAddress);
   console.log("NORUToken implementation deployed to:", implementationAddress);
 
-  console.log(`Minted ${ethers.formatUnits(initialSupply, 18)} NORU to ${deployer.address}`);
+  const balance = await noruToken.balanceOf(deployer.address);
+  console.log(`Initial supply of ${ethers.formatUnits(balance, 18)} NORU minted to deployer ${deployer.address}`);
 }
 
 main()
@@ -32,3 +33,4 @@ main()
     console.error(error);
     process.exit(1);
   });
+

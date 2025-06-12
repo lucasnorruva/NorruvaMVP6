@@ -91,6 +91,8 @@ export default function GlobeV2Page() {
     'India': { lat: 20.5937, lng: 78.9629 }, 'Netherlands': { lat: 52.1326, lng: 5.2913 },
     'Czechia': { lat: 49.8175, lng: 15.4730 }, 'Belgium': { lat: 50.5039, lng: 4.4699 },
     'Switzerland': { lat: 46.8182, lng: 8.2275}, 'Kenya': {lat: -0.0236, lng: 37.9062},
+    'Vietnam': { lat: 14.0583, lng: 108.2772 }, // Added Vietnam for Modular Sofa
+    'Hong Kong': { lat: 22.3193, lng: 114.1694 }, // Added Hong Kong
   }), []);
 
   useEffect(() => {
@@ -132,7 +134,7 @@ export default function GlobeV2Page() {
             const loc: string | undefined = node.data?.location;
             if (loc) {
               const country = loc.split(',').pop()?.trim();
-              if (country) countries.add(country);
+              if (country && mockCountryCoordinates[country]) countries.add(country); // Only add if coords exist
             }
           }
         });
@@ -154,7 +156,7 @@ export default function GlobeV2Page() {
 
     setClickedCountryInfo(null); // Clear country info when product changes
 
-  }, [selectedProduct, mockCountryCoordinates]); // Added mockCountryCoordinates dependency
+  }, [selectedProduct, mockCountryCoordinates]); 
 
   useEffect(() => {
     const arcs = highlightedCountries.map((countryName, index) => {
@@ -259,11 +261,11 @@ export default function GlobeV2Page() {
          }}
          value={selectedProduct || 'select-placeholder'}
        >
-        <SelectTrigger className="w-[200px]"><SelectValue placeholder="Select a Product" /></SelectTrigger>
+        <SelectTrigger className="w-[250px] sm:w-[300px]"><SelectValue placeholder="Select a Product" /></SelectTrigger>
         <SelectContent>
-          <SelectItem value="select-placeholder">Select a Product</SelectItem>
-          {MOCK_DPPS.map(dpp => ( // Use MOCK_DPPS for dropdown options
-            <SelectItem key={dpp.id} value={dpp.id}>{dpp.productName}</SelectItem>
+          <SelectItem value="select-placeholder">Select a Product to Track</SelectItem>
+          {MOCK_DPPS.map(dpp => ( 
+            <SelectItem key={dpp.id} value={dpp.id}>{dpp.productName} ({dpp.id})</SelectItem>
           ))}
         </SelectContent>
       </Select>
@@ -294,7 +296,7 @@ export default function GlobeV2Page() {
                 setSelectedProduct(null);
                 setSelectedProductTransitInfo(null);
                 setSelectedProductAlerts([]);
-                router.push(`/dpp-global-tracker-v2`, { scroll: false }); // Clear product from URL too
+                router.push(`/dpp-global-tracker-v2`, { scroll: false }); 
             }}
         />
       )}
@@ -312,3 +314,4 @@ export default function GlobeV2Page() {
   </>
   );
 }
+

@@ -134,7 +134,7 @@ export default function GlobeV2Page() {
           if (node.type === 'manufacturer' && node.data?.location) {
             const country = node.data.location.split(',').pop()?.trim();
             if (country && mockCountryCoordinates[country]) {
-                manufacturerCountry = country; // Prioritize manufacturer's country
+                manufacturerCountry = country; 
                 countries.add(country);
             }
           } else if (node.type === 'supplier' && node.data?.location) {
@@ -156,12 +156,12 @@ export default function GlobeV2Page() {
                         newArcs.push({
                             startLat: manufacturerCoords.lat, startLng: manufacturerCoords.lng,
                             endLat: supplierCoords.lat, endLng: supplierCoords.lng,
-                            color: '#f97316' // Supply chain arc color (orange)
+                            color: '#FFFF00' 
                         });
                     }
                 }
             });
-        } else if (supplyChainCountries.length > 1) { // Fallback: connect sequentially if no distinct manufacturer
+        } else if (supplyChainCountries.length > 1) { 
             for (let i = 0; i < supplyChainCountries.length - 1; i++) {
                 const startCoords = mockCountryCoordinates[supplyChainCountries[i]];
                 const endCoords = mockCountryCoordinates[supplyChainCountries[i+1]];
@@ -169,7 +169,7 @@ export default function GlobeV2Page() {
                     newArcs.push({
                         startLat: startCoords.lat, startLng: startCoords.lng,
                         endLat: endCoords.lat, endLng: endCoords.lng,
-                        color: '#f97316' 
+                        color: '#FFFF00' 
                     });
                 }
             }
@@ -227,12 +227,18 @@ export default function GlobeV2Page() {
     const name = properties?.ADMIN;
     if (clickedCountryInfo && (clickedCountryInfo.ADM0_A3 === iso || clickedCountryInfo.ADMIN === name) ) return '#ff4500';
     if (hoverD && (hoverD.properties.ADM0_A3 === iso || hoverD.properties.ADMIN === name)) return '#ffa500';
-    // Use a different color for highlighted supply chain countries vs EU countries
     if (name && highlightedCountries.includes(name)) {
-        return isEU(iso) ? '#FFBF00' : '#f97316'; // Amber for EU in chain, Orange for Non-EU in chain
+        return isEU(iso) ? '#FFBF00' : '#f97316'; 
     }
     return isEU(iso) ? '#002D62' : '#CCCCCC'; 
   }, [isEU, highlightedCountries, clickedCountryInfo, hoverD]);
+
+  const handleDismissProductInfo = () => {
+    setSelectedProduct(null);
+    setSelectedProductTransitInfo(null);
+    setSelectedProductAlerts([]);
+    router.push(`/dpp-global-tracker-v2`, { scroll: false });
+  };
 
   if (dimensions.width === 0 || dimensions.height === 0 || !dataLoaded) {
     return (
@@ -319,12 +325,7 @@ export default function GlobeV2Page() {
         <SelectedProductCustomsInfoCard 
             productTransitInfo={selectedProductTransitInfo}
             alerts={selectedProductAlerts}
-            onDismiss={() => {
-                setSelectedProduct(null);
-                setSelectedProductTransitInfo(null);
-                setSelectedProductAlerts([]);
-                router.push(`/dpp-global-tracker-v2`, { scroll: false }); 
-            }}
+            onDismiss={handleDismissProductInfo}
         />
       )}
 
@@ -341,4 +342,3 @@ export default function GlobeV2Page() {
   </>
   );
 }
-

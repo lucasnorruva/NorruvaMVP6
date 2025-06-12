@@ -18,6 +18,7 @@ export const MOCK_TRANSIT_PRODUCTS: TransitProduct[] = [
   { id: "DPP003", name: "Recycled Polymer Phone Case", stage: "Airborne - Approaching EU", eta: "2024-08-08", dppStatus: "Compliant", transport: "Plane", origin: "Shenzhen, CN", destination: "Frankfurt, DE" },
   { id: "DPP004", name: "Modular Sofa System", stage: "Awaiting Customs Clearance (Antwerp, BE)", eta: "2024-08-01", dppStatus: "Pending Review", transport: "Ship", origin: "Ho Chi Minh, VN", destination: "Lyon, FR" },
   { id: "DPP005", name: "High-Performance EV Battery", stage: "Pre-Arrival Notification Submitted (Bremerhaven, DE)", eta: "2024-08-15", dppStatus: "Pending Review", transport: "Ship", origin: "Newark, US", destination: "Stuttgart, DE" },
+  { id: "DPP006", name: "EcoSmart Insulation Panel R50", stage: "At Port of Entry (Zeebrugge, BE)", eta: "2024-08-20", dppStatus: "Compliant", transport: "Ship", origin: "Factory, BE", destination: "Construction Site, UK" },
   { id: "PROD789", name: "Smart Thermostat G3", stage: "Approaching EU Border (Hamburg)", eta: "2024-08-10", dppStatus: "Compliant", transport: "Ship", origin: "Shanghai, CN", destination: "Munich, DE" },
   { id: "PROD101", name: "Luxury Handbags Batch B", stage: "Flagged for Inspection (CDG Airport)", eta: "2024-08-03", dppStatus: "Issue - Discrepancy", transport: "Plane", origin: "Milan, IT", destination: "New York, US (Transit EU)"},
   { id: "PROD222", name: "Pharmaceutical Batch Z", stage: "Awaiting Final Clearance (FRA Airport)", eta: "2024-08-06", dppStatus: "Compliant", transport: "Plane", origin: "Zurich, CH", destination: "London, UK"},
@@ -25,4 +26,3 @@ export const MOCK_TRANSIT_PRODUCTS: TransitProduct[] = [
   { id: "PROD800", name: "Vintage Electronics Lot", stage: "Delayed at Customs (Antwerp)", eta: "2024-07-25", dppStatus: "Issue - Discrepancy", transport: "Ship", origin: "Hong Kong, HK", destination: "Brussels, BE" },
   { id: "PROD801", name: "Fresh Flowers Batch", stage: "Arrived at Airport (AMS)", eta: new Date().toISOString().split('T')[0], dppStatus: "Pending Inspection", transport: "Plane", origin: "Nairobi, KE", destination: "Amsterdam, NL" },
 ];
-

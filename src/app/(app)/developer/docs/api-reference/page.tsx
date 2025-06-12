@@ -7,9 +7,12 @@ import ApiReferenceDppEndpoints from '@/components/developer/docs/ApiReferenceDp
 import ApiReferenceQrEndpoints from '@/components/developer/docs/ApiReferenceQrEndpoints';
 import ApiReferenceComplianceEndpoints from '@/components/developer/docs/ApiReferenceComplianceEndpoints';
 import ApiReferenceTokenEndpoints from '@/components/developer/docs/ApiReferenceTokenEndpoints';
+import type { DigitalProductPassport } from "@/types/dpp";
 
 export default function ApiReferencePage() {
-  const exampleDppResponse = JSON.stringify(MOCK_DPPS[0], null, 2);
+  // Use DPP005 for a rich example including battery data
+  const exampleDppForResponse = MOCK_DPPS.find(dpp => dpp.id === "DPP005") || MOCK_DPPS[0];
+  const exampleDppResponse = JSON.stringify(exampleDppForResponse, null, 2);
 
   const exampleListDppsResponse = JSON.stringify({
     data: [
@@ -130,7 +133,16 @@ export default function ApiReferencePage() {
         { "key": "OS", "value": "WearOS" }
       ]
     },
-    compliance: { battery_regulation: { status: "not_applicable" } },
+    compliance: { 
+        eprel: { status: "N/A", lastChecked: new Date().toISOString() },
+        battery_regulation: { 
+            status: "not_applicable",
+            batteryChemistry: "",
+            carbonFootprint: { value: null, unit: ""},
+            recycledContent: [],
+            stateOfHealth: { value: null, unit: ""}
+        } 
+    },
     ebsiVerification: { status: "pending_verification", lastChecked: new Date().toISOString() },
     lifecycleEvents: [],
     certifications: [],
@@ -151,15 +163,31 @@ export default function ApiReferencePage() {
     },
     metadata: {
       status: "pending_review"
+    },
+    compliance: { // Example update for battery regulation
+        battery_regulation: {
+            status: "pending",
+            batteryPassportId: "BATT-ID-SW-S5-ECO-001",
+            carbonFootprint: {
+                value: 12.5,
+                unit: "kg CO2e/unit",
+                calculationMethod: "Product specific LCA"
+            },
+            recycledContent: [
+                { material: "Aluminum", percentage: 80 }
+            ]
+        }
     }
   }, null, 2);
 
+  // Use DPP001 as base for update example, but add battery_regulation to show its structure
+  const dpp001ForUpdateResponse = MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0];
   const conceptualUpdateDppResponseBody = JSON.stringify({
-    ...(MOCK_DPPS[0] || {}), 
-    id: MOCK_DPPS[0]?.id || "DPP001_MOCK",
-    productName: MOCK_DPPS[0]?.productName || "EcoSmart Refrigerator X500", 
+    ...dpp001ForUpdateResponse, 
+    id: dpp001ForUpdateResponse.id,
+    productName: dpp001ForUpdateResponse.productName, 
     productDetails: {
-        ...(MOCK_DPPS[0]?.productDetails || {}),
+        ...dpp001ForUpdateResponse.productDetails,
         description: "The latest smart watch with a focus on sustainability, featuring a recycled aluminum case, energy-efficient display, and enhanced battery life.", 
         sustainabilityClaims: [ 
           { claim: "Made with 80% recycled aluminum", verificationDetails: "Verified by GreenCert" }
@@ -171,9 +199,32 @@ export default function ApiReferencePage() {
         ]
     },
     metadata: {
-        ...(MOCK_DPPS[0]?.metadata || {}),
+        ...dpp001ForUpdateResponse.metadata,
         status: "pending_review", 
         last_updated: new Date().toISOString() 
+    },
+    compliance: {
+        ...dpp001ForUpdateResponse.compliance,
+        battery_regulation: { // Show updated battery_regulation data
+            status: "pending",
+            batteryPassportId: "BATT-ID-SW-S5-ECO-001",
+            carbonFootprint: {
+                value: 12.5,
+                unit: "kg CO2e/unit",
+                calculationMethod: "Product specific LCA",
+                vcId: "vc:cf:sw-s5-eco:001"
+            },
+            recycledContent: [
+                { material: "Aluminum", percentage: 80, vcId: "vc:rc:aluminum:sw-s5-eco:001" }
+            ],
+            stateOfHealth: { // Add example SoH
+                value: 99,
+                unit: "%",
+                measurementDate: new Date().toISOString(),
+                vcId: "vc:soh:sw-s5-eco:001"
+            },
+            vcId: "vc:battreg:overall:sw-s5-eco:001"
+        }
     }
   }, null, 2);
 
@@ -212,10 +263,11 @@ export default function ApiReferencePage() {
     }
   }, null, 2);
 
+  const dpp001ForPatch = MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0];
   const conceptualPatchDppExtendResponseBody = JSON.stringify({
-    ...(MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0]),
+    ...dpp001ForPatch,
     documents: [
-      ...(MOCK_DPPS.find(dpp => dpp.id === "DPP001")?.documents || []),
+      ...(dpp001ForPatch.documents || []),
       {
         name: "Compliance Certificate 2024",
         url: "https://example.com/certs/compliance_2024.pdf",
@@ -224,7 +276,7 @@ export default function ApiReferencePage() {
       }
     ],
     metadata: {
-      ...(MOCK_DPPS.find(dpp => dpp.id === "DPP001")?.metadata || MOCK_DPPS[0].metadata),
+      ...(dpp001ForPatch.metadata),
       last_updated: new Date().toISOString()
     }
   }, null, 2);
@@ -254,18 +306,27 @@ export default function ApiReferencePage() {
 
   const error400_lifecycle_event = JSON.stringify({ error: { code: 400, message: "Field 'eventType' is required and must be a non-empty string." } }, null, 2);
 
+  const dppForComplianceSummary = MOCK_DPPS.find(dpp => dpp.id === "DPP005") || MOCK_DPPS[0]; // DPP005 has battery data
   const conceptualComplianceSummaryResponse = JSON.stringify({
-    productId: "DPP001",
-    productName: "EcoSmart Refrigerator X500",
-    overallStatus: "Fully Compliant",
-    eprelStatus: "Registered",
-    ebsiVerificationStatus: "verified",
-    batteryRegulationStatus: "not_applicable",
-    esprStatus: "conformant",
+    productId: dppForComplianceSummary.id,
+    productName: dppForComplianceSummary.productName,
+    overallStatus: "Fully Compliant", // This would be dynamically calculated by the API
+    eprelStatus: dppForComplianceSummary.compliance.eprel?.status || "N/A",
+    ebsiVerificationStatus: dppForComplianceSummary.ebsiVerification?.status || "N/A",
+    batteryRegulationStatus: dppForComplianceSummary.compliance.battery_regulation?.status || "N/A",
+    esprStatus: dppForComplianceSummary.compliance.eu_espr?.status || (dppForComplianceSummary.compliance.esprConformity?.status ? `${dppForComplianceSummary.compliance.esprConformity.status} (Conformity)` : "N/A"),
+    scipStatus: dppForComplianceSummary.compliance.scipNotification?.status || "N/A",
+    customsDataStatus: dppForComplianceSummary.compliance.euCustomsData?.status || "N/A",
     lastChecked: new Date().toISOString(),
     details: {
-      eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" },
-      ebsi: { status: "verified", verificationId: "EBSI_TX_ABC123", lastChecked: "2024-07-25T00:00:00Z" },
+      eprel: dppForComplianceSummary.compliance.eprel,
+      ebsi: dppForComplianceSummary.ebsiVerification,
+      batteryRegulation: dppForComplianceSummary.compliance.battery_regulation, // Include full battery object
+      esprConformity: dppForComplianceSummary.compliance.esprConformity,
+      euEspr: dppForComplianceSummary.compliance.eu_espr,
+      usScope3: dppForComplianceSummary.compliance.us_scope3,
+      scipNotification: dppForComplianceSummary.compliance.scipNotification,
+      euCustomsData: dppForComplianceSummary.compliance.euCustomsData,
     }
   }, null, 2);
 
@@ -333,11 +394,3 @@ export default function ApiReferencePage() {
     </DocsPageLayout>
   );
 }
-
-
-
-
-
-
-
-

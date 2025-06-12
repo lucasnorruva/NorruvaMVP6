@@ -84,7 +84,7 @@ const dashboardQuickActions = [
   { label: "View My API Keys", href: "#", targetTab: "api_keys", icon: KeyRound, tooltip: "Manage your API access keys" },
   { label: "Explore API Reference", href: "/developer/docs/api-reference", icon: BookText, tooltip: "Detailed API endpoint documentation" },
   { label: "Manage Webhooks", href: "#", targetTab: "webhooks", icon: Webhook, tooltip: "Configure event notifications" },
-  { label: "Tutorials & Resources", href: "#", targetTab: "resources", icon: Lightbulb, tooltip: "Access SDKs, tutorials, and guides" },
+  { label: "Tutorials & Resources", href: "#", targetTab: "resources", icon: Lightbulb, tooltip: "Access SDKs, tutorials, and developer guides" },
   { label: "Check API Status", href: "#", targetTab: "dashboard", icon: ServerCrash, tooltip: "View current API and system status" },
 ];
 
@@ -100,7 +100,6 @@ export default function DeveloperPortalPage() {
   const [activeTopTab, setActiveTopTab] = useState("dashboard");
 
   useEffect(() => {
-    // This effect runs only on the client side
     setLastStatusCheckTime(new Date().toLocaleTimeString());
   }, []);
 
@@ -236,6 +235,22 @@ export default function DeveloperPortalPage() {
   const [postComponentTransferSnippetLang, setPostComponentTransferSnippetLang] = useState("cURL");
   const [postComponentTransferCodeSnippet, setPostComponentTransferCodeSnippet] = useState("");
 
+  // State for ZKP Endpoints
+  const [zkpSubmitDppId, setZkpSubmitDppId] = useState<string>("DPP001");
+  const [zkpSubmitBody, setZkpSubmitBody] = useState<string>(
+    JSON.stringify({ claimType: "material_compliance_svhc_lead_less_0.1", proofData: "0xMockProofData...", publicInputs: { productBatchId: "BATCH123" } }, null, 2)
+  );
+  const [zkpSubmitResponse, setZkpSubmitResponse] = useState<string | null>(null);
+  const [isZkpSubmitLoading, setIsZkpSubmitLoading] = useState(false);
+  const [zkpSubmitSnippetLang, setZkpSubmitSnippetLang] = useState("cURL");
+  const [zkpSubmitCodeSnippet, setZkpSubmitCodeSnippet] = useState("");
+
+  const [zkpVerifyDppId, setZkpVerifyDppId] = useState<string>("DPP001");
+  const [zkpVerifyClaimType, setZkpVerifyClaimType] = useState<string>("material_compliance_svhc_lead_less_0.1");
+  const [zkpVerifyResponse, setZkpVerifyResponse] = useState<string | null>(null);
+  const [isZkpVerifyLoading, setIsZkpVerifyLoading] = useState(false);
+  const [zkpVerifySnippetLang, setZkpVerifySnippetLang] = useState("cURL");
+  const [zkpVerifyCodeSnippet, setZkpVerifyCodeSnippet] = useState("");
 
 
   const [getProductCodeSnippet, setGetProductCodeSnippet] = useState("");
@@ -290,6 +305,10 @@ export default function DeveloperPortalPage() {
   
   // useEffect for new Private Layer endpoint
   useEffect(() => updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet), [postComponentTransferProductId, postComponentTransferBody, postComponentTransferSnippetLang, updateSnippet]);
+
+  // useEffects for ZKP Endpoints
+  useEffect(() => updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet), [zkpSubmitDppId, zkpSubmitBody, zkpSubmitSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("zkpVerifyClaim", "GET", zkpVerifySnippetLang, { dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType }, null, setZkpVerifyCodeSnippet), [zkpVerifyDppId, zkpVerifyClaimType, zkpVerifySnippetLang, updateSnippet]);
 
 
   const handleCopyKey = (keyToCopy: string) => {
@@ -443,6 +462,9 @@ export default function DeveloperPortalPage() {
   // Handler for new Private Layer endpoint
   const handleMockPostComponentTransfer = () => { updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet); makeApiCall(`/api/v1/private/dpp/${postComponentTransferProductId}/component-transfer`, 'POST', postComponentTransferBody, setIsPostComponentTransferLoading, setPostComponentTransferResponse); }
 
+  // Handlers for ZKP Endpoints
+  const handleMockZkpSubmitProof = () => { updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet); makeApiCall(`/api/v1/zkp/submit-proof/${zkpSubmitDppId}`, 'POST', zkpSubmitBody, setIsZkpSubmitLoading, setZkpSubmitResponse); }
+  const handleMockZkpVerifyClaim = () => { updateSnippet("zkpVerifyClaim", "GET", zkpVerifySnippetLang, { dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType }, null, setZkpVerifyCodeSnippet); makeApiCall(`/api/v1/zkp/verify-claim/${zkpVerifyDppId}?claimType=${encodeURIComponent(zkpVerifyClaimType)}`, 'GET', null, setIsZkpVerifyLoading, setZkpVerifyResponse); }
 
 
   const codeSampleLanguages = ["cURL", "JavaScript", "Python"];
@@ -887,6 +909,56 @@ export default function DeveloperPortalPage() {
           </div>
         </>
       )
+    },
+    // New ZKP Endpoints
+    {
+      id: 'zkp-submit-proof',
+      section: 'zkp',
+      title: 'POST /api/v1/zkp/submit-proof/{dppId}',
+      description: '[ZKP Layer] Submit a Zero-Knowledge Proof for a DPP (Mock).',
+      onSendRequest: handleMockZkpSubmitProof,
+      isLoading: isZkpSubmitLoading,
+      response: zkpSubmitResponse,
+      codeSnippet: zkpSubmitCodeSnippet,
+      snippetLanguage: zkpSubmitSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setZkpSubmitSnippetLang(lang); updateSnippet('zkpSubmitProof','POST',lang,{dppId: zkpSubmitDppId},zkpSubmitBody,setZkpSubmitCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="zkpSubmitDppId">DPP ID (Path Parameter)</Label>
+            <Input id="zkpSubmitDppId" value={zkpSubmitDppId} onChange={(e) => setZkpSubmitDppId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="zkpSubmitBody">Request Body (JSON)</Label>
+            <Textarea id="zkpSubmitBody" value={zkpSubmitBody} onChange={(e) => setZkpSubmitBody(e.target.value)} rows={5} className="font-mono text-xs" />
+            <p className="text-xs text-muted-foreground mt-1">Body should include claimType, proofData, publicInputs. See API Reference.</p>
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'zkp-verify-claim',
+      section: 'zkp',
+      title: 'GET /api/v1/zkp/verify-claim/{dppId}',
+      description: '[ZKP Layer] Verify a ZKP claim for a DPP (Mock).',
+      onSendRequest: handleMockZkpVerifyClaim,
+      isLoading: isZkpVerifyLoading,
+      response: zkpVerifyResponse,
+      codeSnippet: zkpVerifyCodeSnippet,
+      snippetLanguage: zkpVerifySnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setZkpVerifySnippetLang(lang); updateSnippet('zkpVerifyClaim','GET',lang,{dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType},null,setZkpVerifyCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="zkpVerifyDppId">DPP ID (Path Parameter)</Label>
+            <Input id="zkpVerifyDppId" value={zkpVerifyDppId} onChange={(e) => setZkpVerifyDppId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="zkpVerifyClaimType">Claim Type (Query Parameter)</Label>
+            <Input id="zkpVerifyClaimType" value={zkpVerifyClaimType} onChange={(e) => setZkpVerifyClaimType(e.target.value)} placeholder="e.g., material_compliance_svhc_lead_less_0.1" />
+          </div>
+        </>
+      )
     }
   ] as const;
 
@@ -1052,7 +1124,7 @@ export default function DeveloperPortalPage() {
                 </AccordionItem>
 
                 <AccordionItem value="dpp-utility">
-                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline">DPP Utility &amp; Advanced Endpoints</AccordionTrigger>
+                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline">DPP Utility & Advanced Endpoints</AccordionTrigger>
                   <AccordionContent className="pt-4 space-y-6">
                     {endpointConfigs.filter(e => e.section === 'utility').map(ep => (
                       <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
@@ -1068,6 +1140,19 @@ export default function DeveloperPortalPage() {
                   </AccordionTrigger>
                   <AccordionContent className="pt-4 space-y-6">
                     {endpointConfigs.filter(e => e.section === 'private').map(ep => (
+                      <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
+                        {ep.children}
+                      </DeveloperEndpointCard>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+                
+                <AccordionItem value="zkp-layer">
+                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline flex items-center">
+                    <ZapIcon className="mr-2 h-5 w-5" /> ZKP Layer Endpoints (Conceptual)
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 space-y-6">
+                    {endpointConfigs.filter(e => e.section === 'zkp').map(ep => (
                       <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
                         {ep.children}
                       </DeveloperEndpointCard>

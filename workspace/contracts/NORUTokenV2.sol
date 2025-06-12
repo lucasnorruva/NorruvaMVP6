@@ -1,28 +1,31 @@
-
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.20;
 
-import "./NORUToken.sol"; // Import the base contract
+import "./NORUToken.sol"; // Assuming NORUToken.sol is in the same directory or path is correct
 
-// A simple V2 contract for testing upgradeability.
 contract NORUTokenV2 is NORUToken {
     /// @custom:oz-upgrades-unsafe-allow constructor
     constructor() {
-        _disableInitializers(); // Required for UUPS upgradeable contracts
+        _disableInitializers(); // Required for UUPS
     }
 
-    // This function is added in V2 to demonstrate a successful upgrade.
-    function version() public pure returns (string memory) {
+    // If V1 (NORUToken) has an initializer like:
+    // initialize(string memory name, string memory symbol, address initialAdmin, uint256 initialSupply)
+    // And V2 adds no new state variables that need initializing beyond what V1 did,
+    // then V2 might not need its own explicit initializeV2 function.
+    // However, if V2 adds new state or changes initialization logic, it would need one.
+    // For this example, we assume V2 just adds a version function and is compatible.
+
+    function version() public pure virtual returns (string memory) {
         return "V2";
     }
 
-    // If NORUTokenV2 had its own initializer that needed to be called upon upgrade,
-    // it would be defined here and called via the 'call' option in upgrades.upgradeProxy.
-    // For example:
-    // function initializeV2(string memory newParameter) public reinitializer(2) {
-    //     // Additional V2 initialization logic here
-    // }
-    // And in the test:
-    // await upgrades.upgradeProxy(noruTokenAddress, NORUTokenV2Factory, { call: { func: "initializeV2", args: ["testParam"] } });
-    // For this basic version check, re-initialization is not strictly needed if state layout is compatible.
+    // _authorizeUpgrade is inherited from NORUToken (which should inherit from UUPSUpgradeable)
+    // and should already be restricted (e.g., to DEFAULT_ADMIN_ROLE).
+    // If NORUToken itself doesn't directly include it, and UUPSUpgradeable is its parent,
+    // this function is implicitly handled by UUPSUpgradeable's _authorizeUpgrade logic
+    // which typically calls _checkRole(DEFAULT_ADMIN_ROLE).
+    // Explicitly overriding it like below is good practice if you want to be certain
+    // or if the base contract (NORUToken) did not already define it.
+    // function _authorizeUpgrade(address newImplementation) internal override onlyRole(DEFAULT_ADMIN_ROLE) {}
 }

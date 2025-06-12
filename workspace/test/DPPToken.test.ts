@@ -10,35 +10,36 @@ describe("DPPToken", function () {
   let owner: SignerWithAddress;
   let minter: SignerWithAddress;
   let updater: SignerWithAddress;
+  let transferAgent: SignerWithAddress; // For TRANSFER_ROLE
   let user1: SignerWithAddress;
   let user2: SignerWithAddress;
 
   const DEFAULT_ADMIN_ROLE = ethers.ZeroHash;
-  const MINTER_ROLE = ethers.id("MINTER_ROLE"); // Using ethers.id for roles
+  const MINTER_ROLE = ethers.id("MINTER_ROLE"); 
   const UPDATER_ROLE = ethers.id("UPDATER_ROLE");
-  const TRANSFER_ROLE = ethers.id("TRANSFER_ROLE"); // Assuming this role exists for transfer tests
+  const TRANSFER_ROLE = ethers.id("TRANSFER_ROLE"); 
 
   const TOKEN_NAME = "Norruva DPP Token";
   const TOKEN_SYMBOL = "NDPP";
 
   beforeEach(async function () {
-    [owner, minter, updater, user1, user2] = await ethers.getSigners();
+    [owner, minter, updater, transferAgent, user1, user2] = await ethers.getSigners();
 
     const DPPTokenFactory = await ethers.getContractFactory("DPPToken");
     dppToken = (await upgrades.deployProxy(
       DPPTokenFactory,
-      [TOKEN_NAME, TOKEN_SYMBOL, owner.address], // Correct initializer arguments
+      [TOKEN_NAME, TOKEN_SYMBOL, owner.address], 
       {
         initializer: "initialize",
         kind: "uups",
       }
-    )) as unknown as DPPToken; // Cast to DPPToken type
+    )) as unknown as DPPToken; 
     await dppToken.waitForDeployment();
 
     // Grant roles for testing
     await dppToken.connect(owner).grantRole(MINTER_ROLE, minter.address);
     await dppToken.connect(owner).grantRole(UPDATER_ROLE, updater.address);
-    await dppToken.connect(owner).grantRole(TRANSFER_ROLE, owner.address); // Grant owner transfer role for some tests
+    await dppToken.connect(owner).grantRole(TRANSFER_ROLE, transferAgent.address);
   });
 
   describe("Deployment & Initialization", function () {
@@ -51,9 +52,10 @@ describe("DPPToken", function () {
       expect(await dppToken.hasRole(DEFAULT_ADMIN_ROLE, owner.address)).to.be.true;
     });
 
-    it("Should grant MINTER_ROLE and UPDATER_ROLE to the deployer (owner) by default", async function () {
+    it("Should grant MINTER_ROLE, UPDATER_ROLE, and TRANSFER_ROLE to the deployer (owner) by default", async function () {
       expect(await dppToken.hasRole(MINTER_ROLE, owner.address)).to.be.true;
       expect(await dppToken.hasRole(UPDATER_ROLE, owner.address)).to.be.true;
+      expect(await dppToken.hasRole(TRANSFER_ROLE, owner.address)).to.be.true;
     });
   });
 
@@ -65,8 +67,8 @@ describe("DPPToken", function () {
       await expect(dppToken.connect(minter).mint(user1.address, tokenId, metadataHash))
         .to.emit(dppToken, "Transfer")
         .withArgs(ethers.ZeroAddress, user1.address, tokenId)
-        .and.to.emit(dppToken, "MetadataUpdate") // Assuming mint also calls _setTokenMetadataHash which emits
-        .withArgs(tokenId, "", metadataHash); // Old hash is empty string in mint
+        .and.to.emit(dppToken, "MetadataUpdate") 
+        .withArgs(tokenId, "", metadataHash); 
 
       expect(await dppToken.ownerOf(tokenId)).to.equal(user1.address);
       expect(await dppToken.tokenURI(tokenId)).to.equal(`mock-uri-prefix:${metadataHash}`);
@@ -99,7 +101,7 @@ describe("DPPToken", function () {
     it("Should allow token owner to update metadata hash", async function () {
       await expect(dppToken.connect(user1).updateMetadataHash(tokenId, newMetadataHash))
         .to.emit(dppToken, "MetadataUpdate")
-        .withArgs(tokenId, initialMetadataHash, newMetadataHash); // Assuming _setTokenMetadataHash stores and emits old hash
+        .withArgs(tokenId, initialMetadataHash, newMetadataHash);
       expect(await dppToken.tokenURI(tokenId)).to.equal(`mock-uri-prefix:${newMetadataHash}`);
     });
 
@@ -127,52 +129,63 @@ describe("DPPToken", function () {
     });
   });
 
-  describe("Transfers (Soulbound Behavior)", function () {
+  describe("Transfers (Soulbound & DAO Transfer)", function () {
     const tokenId = 1;
     beforeEach(async function () {
       await dppToken.connect(minter).mint(user1.address, tokenId, "hash");
     });
 
-    it("Should restrict transfers by default (soulbound)", async function () {
+    it("Should restrict standard transfers by token owner (soulbound behavior)", async function () {
+      // User1 trying to transfer their own token
       await expect(
         dppToken.connect(user1).transferFrom(user1.address, user2.address, tokenId)
-      ).to.be.revertedWith("Transfer restricted");
+      ).to.be.revertedWith("Transfer restricted: Requires TRANSFER_ROLE or DAO approval.");
     });
 
-    it("Should allow transfers if TRANSFER_ROLE is granted and called by role holder", async function () {
-      // Owner has TRANSFER_ROLE from beforeEach
-      await expect(dppToken.connect(owner).transferFrom(user1.address, user2.address, tokenId))
+    it("Should allow transfers by an account with TRANSFER_ROLE via transferFrom", async function () {
+      // transferAgent has TRANSFER_ROLE
+      await expect(dppToken.connect(transferAgent).transferFrom(user1.address, user2.address, tokenId))
+        .to.emit(dppToken, "Transfer")
+        .withArgs(user1.address, user2.address, tokenId);
+      expect(await dppToken.ownerOf(tokenId)).to.equal(user2.address);
+    });
+
+    it("Should allow transfers by an account with TRANSFER_ROLE via daoTransfer", async function () {
+      // transferAgent has TRANSFER_ROLE
+      await expect(dppToken.connect(transferAgent).daoTransfer(user1.address, user2.address, tokenId))
         .to.emit(dppToken, "Transfer")
         .withArgs(user1.address, user2.address, tokenId);
       expect(await dppToken.ownerOf(tokenId)).to.equal(user2.address);
     });
     
-    it("Should still restrict transfers by token owner if they don't have TRANSFER_ROLE", async function () {
-        // Revoke owner's transfer role for this specific test
-        await dppToken.connect(owner).revokeRole(TRANSFER_ROLE, owner.address);
+    it("Should not allow user without TRANSFER_ROLE to call daoTransfer", async function () {
         await expect(
-            dppToken.connect(user1).transferFrom(user1.address, user2.address, tokenId)
-        ).to.be.revertedWith("Transfer restricted");
+            dppToken.connect(user1).daoTransfer(user1.address, user2.address, tokenId)
+        ).to.be.revertedWithCustomError(dppToken, "AccessControlUnauthorizedAccount")
+         .withArgs(user1.address, TRANSFER_ROLE);
     });
 
     it("Should revert approve calls due to soulbound nature", async function () {
       await expect(dppToken.connect(user1).approve(user2.address, tokenId))
         .to.be.revertedWith("Soulbound token: approval not allowed");
     });
+
+    it("Should revert setApprovalForAll calls due to soulbound nature", async function () {
+      await expect(dppToken.connect(user1).setApprovalForAll(user2.address, true))
+        .to.be.revertedWith("Soulbound token: approval not allowed");
+    });
   });
   
   describe("Upgradeability", function () {
-    it("Should upgrade to V2 and call new function", async function () {
+    it("Should upgrade to V2 and call new version function", async function () {
       const DPPTokenV2Factory = await ethers.getContractFactory("DPPTokenV2");
       const upgradedToken = (await upgrades.upgradeProxy(
         await dppToken.getAddress(),
         DPPTokenV2Factory
-      )) as unknown as DPPTokenV2; // Cast to DPPTokenV2 type
+      )) as unknown as DPPTokenV2; 
       await upgradedToken.waitForDeployment();
 
       expect(await upgradedToken.version()).to.equal("V2");
-      // Example of calling a new function if one existed in V2
-      // await expect(upgradedToken.newFunctionInV2()).to.not.be.reverted;
     });
 
     it("Should only allow admin to authorize upgrade", async function () {

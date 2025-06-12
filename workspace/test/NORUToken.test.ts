@@ -70,7 +70,7 @@ describe("NORUToken", function () {
       const tooLargeAmount = ethers.parseUnits("2000000", 18); // More than initial supply
       await expect(
         noruToken.connect(owner).transfer(user1.address, tooLargeAmount)
-      ).to.be.revertedWith("ERC20: transfer amount exceeds balance");
+      ).to.be.revertedWithCustomError(noruToken, "ERC20InsufficientBalance").withArgs(owner.address, INITIAL_SUPPLY, tooLargeAmount);
     });
 
     it("Should allow approval and transferFrom", async function () {
@@ -97,16 +97,11 @@ describe("NORUToken", function () {
       await noruToken.connect(owner).approve(user1.address, approveAmount);
       await expect(
         noruToken.connect(user1).transferFrom(owner.address, user2.address, transferAmount)
-      ).to.be.revertedWith("ERC20: insufficient allowance");
+      ).to.be.revertedWithCustomError(noruToken, "ERC20InsufficientAllowance").withArgs(user1.address, approveAmount, transferAmount);
     });
   });
 
   describe("Role Management & Minting (if applicable)", function () {
-    // If NORUToken is designed with a fixed supply (only minted in initializer),
-    // then additional minting tests might not be relevant unless a MINTER_ROLE is used
-    // for future controlled inflation. The current NORUToken.sol does not expose a public mint function
-    // beyond the initializer for the initial supply.
-
     it("Only DEFAULT_ADMIN_ROLE should be able to grant roles (example: hypothetical MINTER_ROLE)", async function () {
       const HYPOTHETICAL_MINTER_ROLE = ethers.id("HYPOTHETICAL_MINTER_ROLE");
       await expect(noruToken.connect(user1).grantRole(HYPOTHETICAL_MINTER_ROLE, user2.address))
@@ -121,25 +116,28 @@ describe("NORUToken", function () {
   });
 
   describe("Upgradeability (UUPS)", function () {
-    it("Should be upgradeable by an admin", async function () {
-      const NORUTokenV2Factory = await ethers.getContractFactory("NORUTokenV2"); // Assuming a V2 contract exists
+    it("Should be upgradeable by an admin to NORUTokenV2", async function () {
+      const NORUTokenV2Factory = await ethers.getContractFactory("NORUTokenV2"); 
       const noruTokenAddress = await noruToken.getAddress();
       
       const upgradedToken = (await upgrades.upgradeProxy(
         noruTokenAddress,
-        NORUTokenV2Factory,
-        // No explicit call options needed if V2's initialize is compatible or not called
+        NORUTokenV2Factory
       )) as unknown as NORUTokenV2;
       await upgradedToken.waitForDeployment();
 
       expect(await upgradedToken.getAddress()).to.equal(noruTokenAddress);
-      // Assuming NORUTokenV2 has a version() function returning "V2"
       expect(await upgradedToken.version()).to.equal("V2"); 
+
+      // Check if basic ERC20 functions still work
+      expect(await upgradedToken.name()).to.equal(TOKEN_NAME);
+      expect(await upgradedToken.symbol()).to.equal(TOKEN_SYMBOL);
+      expect(await upgradedToken.balanceOf(owner.address)).to.equal(INITIAL_SUPPLY);
     });
 
     it("Should not be upgradeable by a non-admin", async function () {
       const NORUTokenV2Factory = await ethers.getContractFactory("NORUTokenV2");
-      const noruTokenV2Impl = await NORUTokenV2Factory.deploy();
+      const noruTokenV2Impl = await NORUTokenV2Factory.deploy(); // Deploy V2 implementation
       await noruTokenV2Impl.waitForDeployment();
       
       await expect(
@@ -149,36 +147,3 @@ describe("NORUToken", function () {
     });
   });
 });
-
-// Create a dummy NORUTokenV2.sol for upgradeability testing
-// You would create this file in contracts/NORUTokenV2.sol if it doesn't exist
-/*
-// SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
-
-import "./NORUToken.sol"; // Import the base contract
-
-contract NORUTokenV2 is NORUToken {
-    /// @custom:oz-upgrades-unsafe-allow constructor
-    constructor() {
-        _disableInitializers();
-    }
-
-    // We need to re-declare initialize to make it callable for V2 if needed,
-    // or ensure it's not called if state should be preserved.
-    // For simple version check, we might not need to call initialize again
-    // if V2's state is compatible with V1's.
-
-    function version() public pure returns (string memory) {
-        return "V2";
-    }
-
-    // If V2 has a new initializer or needs to re-initialize, define it here.
-    // For example, if it adds new state variables:
-    // function initializeV2(string memory newParameter) public reinitializer(2) {
-    //     // set newParameter
-    // }
-    // And in the test, when upgrading:
-    // await upgrades.upgradeProxy(noruTokenAddress, NORUTokenV2Factory, { call: { func: "initializeV2", args: ["testParam"] } });
-}
-*/

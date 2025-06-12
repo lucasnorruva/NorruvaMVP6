@@ -223,7 +223,7 @@ export interface SimpleProductDetail {
   onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  lastUpdated?: string; // Added for consistency in SimpleProductDetail
+  lastUpdated?: string; 
 }
 
 export interface StoredUserProduct {

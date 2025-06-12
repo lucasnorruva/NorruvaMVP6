@@ -98,7 +98,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center">
                 <KeyRound className="mr-2 h-5 w-5 text-primary" /> 
-                Authenticity &amp; Ownership
+                Authenticity & Ownership
               </CardTitle>
             </CardHeader>
             <CardContent className="text-sm space-y-2">
@@ -128,7 +128,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
-              <Fingerprint className="mr-2 h-5 w-5 text-primary" /> Blockchain &amp; EBSI Details
+              <Fingerprint className="mr-2 h-5 w-5 text-primary" /> Blockchain & EBSI Details
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">

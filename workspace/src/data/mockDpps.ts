@@ -234,6 +234,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       status: "flagged", 
       created_at: "2024-04-10T10:00:00Z",
       onChainStatus: "FlaggedForReview", 
+      onChainLifecycleStage: "InUse"
     },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-22T00:00:00Z" },
@@ -494,4 +495,5 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     
     
     
+
 

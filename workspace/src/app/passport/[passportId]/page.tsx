@@ -376,7 +376,7 @@ export default function PublicPassportPage() {
                  <Card className="border-0 shadow-none">
                     <CardHeader className="px-0 pt-0 pb-4">
                     <CardTitle className="text-xl text-primary flex items-center">
-                        <Fingerprint className="mr-2 h-6 w-6" /> Blockchain &amp; Token Details
+                        <Fingerprint className="mr-2 h-6 w-6" /> Blockchain & Token Details
                     </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm px-0 pb-0">
@@ -431,7 +431,7 @@ export default function PublicPassportPage() {
                           {product.onChainLifecycleStage && <p className="mt-1"><strong className="text-muted-foreground flex items-center"><LayersIconShadcn className="mr-1.5 h-4 w-4 text-purple-600"/>Lifecycle Stage:</strong> <span className="font-semibold capitalize text-foreground/90">{product.onChainLifecycleStage.replace(/([A-Z])/g, ' $1').trim()}</span></p>}
                         </div>
                     )}
-                    {(!product.blockchainPlatform && !product.contractAddress && !product.tokenId && !product.anchorTransactionHash && !product.ebsiStatus && !product.onChainStatus && !product.onChainLifecycleStage) && (
+                    {!(product.blockchainPlatform || product.contractAddress || product.tokenId || product.anchorTransactionHash || product.ebsiStatus || product.onChainStatus || product.onChainLifecycleStage) && (
                         <p className="text-muted-foreground">No specific blockchain, EBSI, or on-chain state details available for this product.</p>
                     )}
                     </CardContent>

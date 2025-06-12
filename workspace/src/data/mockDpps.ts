@@ -19,8 +19,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       onChainStatus: "Active", 
       onChainLifecycleStage: "InUse", 
     },
-    authenticationVcId: "vc_auth_DPP001_mock123", 
-    ownershipNftLink: { 
+    authenticationVcId: "vc_auth_DPP001_mock123", // Added for Task 31
+    ownershipNftLink: { // Added for Task 31
         registryUrl: "https://mock-nft-market.example/token/0xNFTContractForDPP001/1",
         contractAddress: "0xNFTContractForDPP001",
         tokenId: "1",
@@ -157,12 +157,12 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       specifications: JSON.stringify({ "Fit": "Regular", "GSM": "180", "Origin": "India", "Care": "Machine wash cold" }, null, 2),
       customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}]
     },
-    textileInformation: { 
+    textileInformation: {
       fiberComposition: [
         { fiberName: "Organic Cotton", percentage: 95 },
         { fiberName: "Elastane", percentage: 5 }
       ],
-      countryOfOriginLabeling: "India (Manufacturing), Portugal (Finishing)",
+      countryOfOriginLabeling: "India (Spinning, Weaving), Portugal (Making-up)",
       careInstructionsUrl: "https://ecothreads.com/care/ET-TS-ORG-M",
       isSecondHand: false,
     },
@@ -485,8 +485,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-08-01T00:00:00Z"} as EbsiVerificationDetails,
     traceability: { originCountry: "BE" },
     consumerScans: 15,
+    certifications: [
+      {id: "cert_cpr_01", name: "CE Marking (CPR)", issuer: "Notified Body 0123 (BE)", issueDate: "2024-07-15", documentUrl: "https://buildgreen.com/certs/ce_esp-r50.pdf", standard: "EN 13163"},
+      {id: "cert_epd_01", name: "Environmental Product Declaration", issuer: "EPD Program Operator XYZ", issueDate: "2024-07-20", documentUrl: "https://buildgreen.com/epd/esp-r50.pdf", standard: "ISO 14025", vcId: "vc:epd:buildgreen:dpp006"}
+    ],
   }
 ];
     
     
     
+

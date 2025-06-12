@@ -104,13 +104,13 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
         { fiberName: "Organic Cotton", percentage: 95 },
         { fiberName: "Elastane", percentage: 5 }
       ],
-      countryOfOriginLabeling: "India (Manufacturing), Portugal (Finishing)",
+      countryOfOriginLabeling: "India (Spinning, Weaving), Portugal (Making-up)",
       careInstructionsUrl: "https://ecothreads.com/care/ET-TS-ORG-M",
       isSecondHand: false,
     },
     authenticationVcId: "vc_auth_DPP002_mock456",
   },
-  "DPP006": { // Renamed from PROD006 to match ID in MOCK_DPPS
+  "DPP006": { 
     passportId: "DPP006",
     productName: "EcoSmart Insulation Panel R50",
     tagline: "Superior Insulation, Sustainably Made.",
@@ -137,8 +137,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       { stage: "CE Marking Achieved", date: "July 2024", details: "Conformity assessment completed.", iconName: "Award" },
     ],
     certifications: [
-      { name: "CE Marking (EN 13163)", authority: "Notified Body 1234", isVerified: true, standard: "EN 13163" },
-      { name: "Environmental Product Declaration (EPD)", authority: "EPD Program Operator", link: "#", isVerified: false, standard: "ISO 14025" }
+      { name: "CE Marking (CPR)", authority: "Notified Body 1234", isVerified: true, standard: "EN 13163" },
+      { name: "Environmental Product Declaration (EPD)", authority: "EPD Program Operator XYZ", link: "#", isVerified: false, standard: "ISO 14025" }
     ],
     constructionProductInformation: {
       declarationOfPerformanceId: "DoP_ESP-R50-1200_001",
@@ -190,6 +190,5 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     },
   }
 };
-    
 
     

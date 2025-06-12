@@ -376,7 +376,7 @@ export default function PublicPassportPage() {
                  <Card className="border-0 shadow-none">
                     <CardHeader className="px-0 pt-0 pb-4">
                     <CardTitle className="text-xl text-primary flex items-center">
-                        <Fingerprint className="mr-2 h-6 w-6" /> Blockchain & Token Details
+                        <Fingerprint className="mr-2 h-6 w-6" /> Blockchain &amp; Token Details
                     </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm px-0 pb-0">
@@ -506,13 +506,11 @@ export default function PublicPassportPage() {
       <footer className="py-8 bg-foreground text-background text-center mt-12">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <p>&copy; {new Date().getFullYear()} Norruva. All rights reserved.</p>
-          <p className="text-sm text-muted-foreground mt-1">Empowering Transparent & Sustainable Commerce.</p>
+          <p className="text-sm text-muted-foreground mt-1">Empowering Transparent &amp; Sustainable Commerce.</p>
         </div>
       </footer>
     </div>
   );
 }
-
-    
 
     

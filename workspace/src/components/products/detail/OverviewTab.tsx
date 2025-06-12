@@ -98,7 +98,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             <CardHeader>
               <CardTitle className="text-lg font-semibold flex items-center">
                 <KeyRound className="mr-2 h-5 w-5 text-primary" /> 
-                Authenticity & Ownership
+                Authenticity &amp; Ownership
               </CardTitle>
             </CardHeader>
             <CardContent className="text-sm space-y-2">
@@ -128,7 +128,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
-              <Fingerprint className="mr-2 h-5 w-5 text-primary" /> Blockchain & EBSI Details
+              <Fingerprint className="mr-2 h-5 w-5 text-primary" /> Blockchain &amp; EBSI Details
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm">
@@ -278,7 +278,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
 
         {product.textileInformation && (
           <Card className="shadow-sm">
-            <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><Shirt className="mr-2 h-5 w-5 text-purple-600" />Textile Product Information</CardTitle></CardHeader>
+            <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><Shirt className="mr-2 h-5 w-5 text-purple-600" />Textile Information</CardTitle></CardHeader>
             <CardContent className="text-sm space-y-1.5">
               {product.textileInformation.fiberComposition && product.textileInformation.fiberComposition.length > 0 && (
                 <div>
@@ -345,7 +345,5 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
-
-    
 
     

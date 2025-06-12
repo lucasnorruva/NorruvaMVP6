@@ -1434,7 +1434,7 @@ paths:
       summary: Retrieve Private Supplier Attestations
       description: >
         [Private Layer - Conceptual] Fetches detailed, potentially sensitive attestations from a specific supplier for a given product.
-        Access to this endpoint would conceptually require a higher level of authentication and specific permissions.
+        Access to this endpoint would conceptually require a higher level of authentication and specific permissions beyond standard API key.
       parameters:
         - name: productId
           in: path
@@ -1557,6 +1557,112 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
         '404':
           description: Product not found or no confidential material data available.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  # --- Zero-Knowledge Proof Layer API Endpoints (Highly Conceptual) ---
+  /api/v1/zkp/submit-proof/{dppId}:
+    post:
+      operationId: submitZkpForDpp
+      summary: Submit Zero-Knowledge Proof for a DPP
+      description: >
+        [ZKP Layer - Highly Conceptual] Allows a prover (e.g., manufacturer, supplier) to submit a Zero-Knowledge Proof (ZKP) related to a specific DPP.
+        This endpoint is a placeholder for a complex ZKP system interaction. The actual proof format and validation logic would depend on the chosen ZKP scheme (e.g., zk-SNARKs, zk-STARKs) and are not implemented in this mock.
+        This mock only acknowledges receipt.
+      parameters:
+        - name: dppId
+          in: path
+          required: true
+          description: The unique identifier of the Digital Product Passport this proof relates to.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ZkpSubmissionRequest'
+      responses:
+        '202':
+          description: ZKP submission acknowledged for conceptual processing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZkpSubmissionResponse'
+        '400':
+          description: Invalid request body (e.g., missing claimType or proofData).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: DPP with the given dppId not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/zkp/verify-claim/{dppId}:
+    get:
+      operationId: verifyZkpClaimForDpp
+      summary: Verify Claim with ZKP for a DPP
+      description: >
+        [ZKP Layer - Highly Conceptual] Allows a verifier to check if a specific claim for a DPP has a valid (mock) Zero-Knowledge Proof associated with it.
+        This endpoint simulates the verification check. Actual ZKP verification is not performed.
+      parameters:
+        - name: dppId
+          in: path
+          required: true
+          description: The unique identifier of the Digital Product Passport.
+          schema:
+            type: string
+        - name: claimType
+          in: query
+          required: true
+          description: The type of claim to verify (e.g., "material_compliance_svhc_x", "ethical_sourcing_region_y").
+          schema:
+            type: string
+      responses:
+        '200':
+          description: ZKP claim verification status (mock).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ZkpVerificationResponse'
+        '400':
+          description: Invalid query parameters (e.g., missing claimType).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: DPP or specified claim proof not found.
           content:
             application/json:
               schema:
@@ -1771,11 +1877,11 @@ components:
             anchorTransactionHash:
               type: string
               nullable: true
-        authenticationVcId: # New field
+        authenticationVcId: 
           type: string
           nullable: true
           description: Identifier for a Verifiable Credential attesting to product authenticity.
-        ownershipNftLink: # New field
+        ownershipNftLink: 
           $ref: '#/components/schemas/OwnershipNftLink'
           nullable: true
           description: Link to an NFT representing product ownership.
@@ -2698,6 +2804,83 @@ components:
         - productId
         - materialName
         - composition
+    ZkpSubmissionRequest: # Conceptual Schema for ZKP Layer
+      type: object
+      properties:
+        claimType:
+          type: string
+          description: >
+            A standardized string identifying the type of claim being proven (e.g., "material_compliance_svhc_lead_less_0.1", "ethical_sourcing_cobalt_conflict_free_region_x").
+            This helps the verifier understand what is being attested to.
+          example: "material_compliance_svhc_lead_less_0.1"
+        proofData:
+          type: string
+          format: byte # Typically base64 encoded ZKP data
+          description: The actual Zero-Knowledge Proof data, specific to the ZKP scheme used.
+          example: "0xabcdef123456..."
+        publicInputs:
+          type: object
+          additionalProperties: true
+          nullable: true
+          description: >
+            Any public inputs that were used to generate the proof and are needed by the verifier (e.g., a commitment to the private data, a specific product batch ID).
+            The structure of this object is highly dependent on the ZKP scheme.
+          example: { "productBatchId": "BATCH_XYZ123", "svhcCasNumber": "7439-92-1" }
+      required:
+        - claimType
+        - proofData
+    ZkpSubmissionResponse: # Conceptual Schema for ZKP Layer
+      type: object
+      properties:
+        dppId:
+          type: string
+          description: The DPP ID for which the proof was submitted.
+        proofId:
+          type: string
+          description: A unique identifier for the submitted proof, assigned by the Norruva platform.
+          example: "zkp_proof_mock_123abc"
+        status:
+          type: string
+          enum: ["acknowledged", "pending_verification", "failed_initial_check"]
+          description: The initial status of the proof submission. "acknowledged" means received, not yet validated.
+          example: "acknowledged"
+        message:
+          type: string
+          description: A message regarding the submission status.
+          example: "ZKP submission received and queued for conceptual verification."
+        timestamp:
+          type: string
+          format: date-time
+          description: Timestamp of the submission.
+    ZkpVerificationResponse: # Conceptual Schema for ZKP Layer
+      type: object
+      properties:
+        dppId:
+          type: string
+          description: The DPP ID for which the claim was queried.
+        claimType:
+          type: string
+          description: The type of claim that was queried for verification.
+          example: "material_compliance_svhc_lead_less_0.1"
+        isVerified:
+          type: boolean
+          description: >
+            True if a valid (mock) ZKP for this claim type is associated with the DPP, false otherwise.
+            This is a mock response; actual ZKP verification is complex.
+        proofId:
+          type: string
+          nullable: true
+          description: The ID of the proof if verification was successful.
+          example: "zkp_proof_mock_123abc"
+        verifiedAt:
+          type: string
+          format: date-time
+          nullable: true
+          description: Timestamp of when this (mock) verification check was performed.
+        message:
+          type: string
+          description: A message regarding the verification outcome.
+          example: "Mock ZKP for claim 'material_compliance_svhc_lead_less_0.1' is considered valid for this DPP."
 security:
   - ApiKeyAuth: []
 components:
@@ -2720,3 +2903,4 @@ components:
     
 
     
+

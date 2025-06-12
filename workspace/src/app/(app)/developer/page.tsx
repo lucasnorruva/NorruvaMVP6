@@ -1,3 +1,4 @@
+
 // --- File: page.tsx (Developer Portal) ---
 // Description: Main page for the Developer Portal, providing access to API keys, documentation, and tools.
 "use client";
@@ -20,7 +21,7 @@ import {
     Lock, MessageSquare, Share2, BookText, TestTube2, Server as ServerIconShadcn, Webhook, Info, Clock,
     AlertTriangle as ErrorIcon, FileCode, LayoutGrid, Wrench, HelpCircle, Globe, BarChartBig, Megaphone,
     Zap as ZapIcon, ServerCrash, Laptop, DatabaseZap, CheckCircle, Building, FileText as FileTextIconPg, History, // Renamed FileText to FileTextIconPg
-    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags, FilePlus2
+    UploadCloud, ShieldCheck, Cpu, HardDrive, Filter as FilterIcon, AlertTriangle, RefreshCw, Info as InfoIconLucide, Tags, FilePlus2, Sigma, Hash
 } from "lucide-react";
 import Link from "next/link";
 import { useToast } from "@/hooks/use-toast";
@@ -189,6 +190,36 @@ export default function DeveloperPortalPage() {
   const [isGetStatusLoading, setIsGetStatusLoading] = useState(false);
   const [getStatusSnippetLang, setGetStatusSnippetLang] = useState("cURL");
 
+  // State for new on-chain operation endpoints
+  const [postOnchainStatusProductId, setPostOnchainStatusProductId] = useState<string>("DPP001");
+  const [postOnchainStatusBody, setPostOnchainStatusBody] = useState<string>(JSON.stringify({ status: "active" }, null, 2));
+  const [postOnchainStatusResponse, setPostOnchainStatusResponse] = useState<string | null>(null);
+  const [isPostOnchainStatusLoading, setIsPostOnchainStatusLoading] = useState(false);
+  const [postOnchainStatusSnippetLang, setPostOnchainStatusSnippetLang] = useState("cURL");
+  const [postOnchainStatusCodeSnippet, setPostOnchainStatusCodeSnippet] = useState("");
+
+  const [postOnchainLifecycleProductId, setPostOnchainLifecycleProductId] = useState<string>("DPP001");
+  const [postOnchainLifecycleBody, setPostOnchainLifecycleBody] = useState<string>(JSON.stringify({ lifecycleStage: "Manufacturing" }, null, 2));
+  const [postOnchainLifecycleResponse, setPostOnchainLifecycleResponse] = useState<string | null>(null);
+  const [isPostOnchainLifecycleLoading, setIsPostOnchainLifecycleLoading] = useState(false);
+  const [postOnchainLifecycleSnippetLang, setPostOnchainLifecycleSnippetLang] = useState("cURL");
+  const [postOnchainLifecycleCodeSnippet, setPostOnchainLifecycleCodeSnippet] = useState("");
+
+  const [postLogCriticalEventProductId, setPostLogCriticalEventProductId] = useState<string>("DPP001");
+  const [postLogCriticalEventBody, setPostLogCriticalEventBody] = useState<string>(JSON.stringify({ eventDescription: "Safety recall initiated for batch XYZ.", severity: "High" }, null, 2));
+  const [postLogCriticalEventResponse, setPostLogCriticalEventResponse] = useState<string | null>(null);
+  const [isPostLogCriticalEventLoading, setIsPostLogCriticalEventLoading] = useState(false);
+  const [postLogCriticalEventSnippetLang, setPostLogCriticalEventSnippetLang] = useState("cURL");
+  const [postLogCriticalEventCodeSnippet, setPostLogCriticalEventCodeSnippet] = useState("");
+  
+  const [postRegisterVcHashProductId, setPostRegisterVcHashProductId] = useState<string>("DPP001");
+  const [postRegisterVcHashBody, setPostRegisterVcHashBody] = useState<string>(JSON.stringify({ vcId: "urn:uuid:example-vc-id-123", vcHash: "a1b2c3d4e5f6..." }, null, 2));
+  const [postRegisterVcHashResponse, setPostRegisterVcHashResponse] = useState<string | null>(null);
+  const [isPostRegisterVcHashLoading, setIsPostRegisterVcHashLoading] = useState(false);
+  const [postRegisterVcHashSnippetLang, setPostRegisterVcHashSnippetLang] = useState("cURL");
+  const [postRegisterVcHashCodeSnippet, setPostRegisterVcHashCodeSnippet] = useState("");
+
+
 
   const [getProductCodeSnippet, setGetProductCodeSnippet] = useState("");
   const [listDppsCodeSnippet, setListDppsCodeSnippet] = useState("");
@@ -233,6 +264,12 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("importDpps", "POST", importDppsSnippetLang, { fileType: postImportFileType, sourceDescription: postImportSourceDescription }, JSON.stringify({fileType: postImportFileType, data: "mock_base64_data", sourceDescription: postImportSourceDescription }), setImportDppsCodeSnippet), [postImportFileType, postImportSourceDescription, importDppsSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet), [getGraphProductId, getDppGraphSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet), [getStatusProductId, getStatusSnippetLang, updateSnippet]);
+
+  // useEffects for new on-chain operation endpoints
+  useEffect(() => updateSnippet("onchainStatus", "POST", postOnchainStatusSnippetLang, { productId: postOnchainStatusProductId }, postOnchainStatusBody, setPostOnchainStatusCodeSnippet), [postOnchainStatusProductId, postOnchainStatusBody, postOnchainStatusSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("onchainLifecycleStage", "POST", postOnchainLifecycleSnippetLang, { productId: postOnchainLifecycleProductId }, postOnchainLifecycleBody, setPostOnchainLifecycleCodeSnippet), [postOnchainLifecycleProductId, postOnchainLifecycleBody, postOnchainLifecycleSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet), [postLogCriticalEventProductId, postLogCriticalEventBody, postLogCriticalEventSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet), [postRegisterVcHashProductId, postRegisterVcHashBody, postRegisterVcHashSnippetLang, updateSnippet]);
 
 
   const handleCopyKey = (keyToCopy: string) => {
@@ -326,10 +363,12 @@ export default function DeveloperPortalPage() {
     setResponse(null);
     
     // Use a real mock API key. Ensure 'SANDBOX_KEY_123' is in your .env or auth config.
+    // For the playground, always use a sandbox key for safety, even if "Production" env is selected in UI.
+    // The `currentEnvironment` variable is mostly for display/snippet generation.
     const apiKeyToUse = "SANDBOX_KEY_123"; 
 
     toast({ 
-      title: `Sending API Request to ${currentEnvironment.toUpperCase()}...`, 
+      title: `Sending API Request (via Playground)...`, 
       description: `${method} ${url}` 
     });
 
@@ -380,6 +419,12 @@ export default function DeveloperPortalPage() {
   const handleMockPostImport = () => { const body = { fileType: postImportFileType, data: "mock_file_content_base64_encoded", sourceDescription: postImportSourceDescription }; updateSnippet("importDpps", "POST", importDppsSnippetLang, body, JSON.stringify(body), setImportDppsCodeSnippet); makeApiCall('/api/v1/dpp/import', 'POST', body, setIsPostImportLoading, setPostImportResponse); }
   const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetDppGraphResponse); }
   const handleMockGetStatus = () => { updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet); makeApiCall(`/api/v1/dpp/status/${getStatusProductId}`, 'GET', null, setIsGetStatusLoading, setGetStatusResponse); }
+
+  // Handlers for new on-chain operation endpoints
+  const handleMockUpdateOnChainStatus = () => { updateSnippet("onchainStatus", "POST", postOnchainStatusSnippetLang, { productId: postOnchainStatusProductId }, postOnchainStatusBody, setPostOnchainStatusCodeSnippet); makeApiCall(`/api/v1/dpp/${postOnchainStatusProductId}/onchain-status`, 'POST', postOnchainStatusBody, setIsPostOnchainStatusLoading, setPostOnchainStatusResponse); }
+  const handleMockUpdateOnChainLifecycleStage = () => { updateSnippet("onchainLifecycleStage", "POST", postOnchainLifecycleSnippetLang, { productId: postOnchainLifecycleProductId }, postOnchainLifecycleBody, setPostOnchainLifecycleCodeSnippet); makeApiCall(`/api/v1/dpp/${postOnchainLifecycleProductId}/onchain-lifecycle-stage`, 'POST', postOnchainLifecycleBody, setIsPostOnchainLifecycleLoading, setPostOnchainLifecycleResponse); }
+  const handleMockLogCriticalEvent = () => { updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet); makeApiCall(`/api/v1/dpp/${postLogCriticalEventProductId}/log-critical-event`, 'POST', postLogCriticalEventBody, setIsPostLogCriticalEventLoading, setPostLogCriticalEventResponse); }
+  const handleMockRegisterVcHash = () => { updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet); makeApiCall(`/api/v1/dpp/${postRegisterVcHashProductId}/register-vc-hash`, 'POST', postRegisterVcHashBody, setIsPostRegisterVcHashLoading, setPostRegisterVcHashResponse); }
 
 
   const codeSampleLanguages = ["cURL", "JavaScript", "Python"];
@@ -702,6 +747,103 @@ export default function DeveloperPortalPage() {
           <Input id="graphProductIdInput" value={getGraphProductId} onChange={(e) => setGetGraphProductId(e.target.value)} placeholder="e.g., DPP001" />
         </div>
       )
+    },
+    // New On-Chain Operation Endpoints for Playground
+    {
+      id: 'update-onchain-status',
+      section: 'utility',
+      title: 'POST /api/v1/dpp/{productId}/onchain-status',
+      description: 'Conceptually update the on-chain status of a DPP.',
+      onSendRequest: handleMockUpdateOnChainStatus,
+      isLoading: isPostOnchainStatusLoading,
+      response: postOnchainStatusResponse,
+      codeSnippet: postOnchainStatusCodeSnippet,
+      snippetLanguage: postOnchainStatusSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setPostOnchainStatusSnippetLang(lang); updateSnippet('onchainStatus','POST',lang,{productId: postOnchainStatusProductId},postOnchainStatusBody,setPostOnchainStatusCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="onchainStatusProductId">Product ID (Path Parameter)</Label>
+            <Input id="onchainStatusProductId" value={postOnchainStatusProductId} onChange={(e) => setPostOnchainStatusProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="onchainStatusBody">Request Body (JSON)</Label>
+            <Textarea id="onchainStatusBody" value={postOnchainStatusBody} onChange={(e) => setPostOnchainStatusBody(e.target.value)} rows={3} className="font-mono text-xs" />
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'update-onchain-lifecycle-stage',
+      section: 'utility',
+      title: 'POST /api/v1/dpp/{productId}/onchain-lifecycle-stage',
+      description: 'Conceptually update the on-chain lifecycle stage of a DPP.',
+      onSendRequest: handleMockUpdateOnChainLifecycleStage,
+      isLoading: isPostOnchainLifecycleLoading,
+      response: postOnchainLifecycleResponse,
+      codeSnippet: postOnchainLifecycleCodeSnippet,
+      snippetLanguage: postOnchainLifecycleSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setPostOnchainLifecycleSnippetLang(lang); updateSnippet('onchainLifecycleStage','POST',lang,{productId: postOnchainLifecycleProductId},postOnchainLifecycleBody,setPostOnchainLifecycleCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="onchainLifecycleProductId">Product ID (Path Parameter)</Label>
+            <Input id="onchainLifecycleProductId" value={postOnchainLifecycleProductId} onChange={(e) => setPostOnchainLifecycleProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="onchainLifecycleBody">Request Body (JSON)</Label>
+            <Textarea id="onchainLifecycleBody" value={postOnchainLifecycleBody} onChange={(e) => setPostOnchainLifecycleBody(e.target.value)} rows={3} className="font-mono text-xs" />
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'log-critical-event',
+      section: 'utility',
+      title: 'POST /api/v1/dpp/{productId}/log-critical-event',
+      description: 'Conceptually log a critical event on-chain for a DPP.',
+      onSendRequest: handleMockLogCriticalEvent,
+      isLoading: isPostLogCriticalEventLoading,
+      response: postLogCriticalEventResponse,
+      codeSnippet: postLogCriticalEventCodeSnippet,
+      snippetLanguage: postLogCriticalEventSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setPostLogCriticalEventSnippetLang(lang); updateSnippet('logCriticalEvent','POST',lang,{productId: postLogCriticalEventProductId},postLogCriticalEventBody,setPostLogCriticalEventCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="logCriticalEventProductId">Product ID (Path Parameter)</Label>
+            <Input id="logCriticalEventProductId" value={postLogCriticalEventProductId} onChange={(e) => setPostLogCriticalEventProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="logCriticalEventBody">Request Body (JSON)</Label>
+            <Textarea id="logCriticalEventBody" value={postLogCriticalEventBody} onChange={(e) => setPostLogCriticalEventBody(e.target.value)} rows={3} className="font-mono text-xs" />
+          </div>
+        </>
+      )
+    },
+    {
+      id: 'register-vc-hash',
+      section: 'utility',
+      title: 'POST /api/v1/dpp/{productId}/register-vc-hash',
+      description: "Conceptually register a VC's hash on-chain for a DPP.",
+      onSendRequest: handleMockRegisterVcHash,
+      isLoading: isPostRegisterVcHashLoading,
+      response: postRegisterVcHashResponse,
+      codeSnippet: postRegisterVcHashCodeSnippet,
+      snippetLanguage: postRegisterVcHashSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setPostRegisterVcHashSnippetLang(lang); updateSnippet('registerVcHash','POST',lang,{productId: postRegisterVcHashProductId},postRegisterVcHashBody,setPostRegisterVcHashCodeSnippet); },
+      children: (
+        <>
+          <div>
+            <Label htmlFor="registerVcHashProductId">Product ID (Path Parameter)</Label>
+            <Input id="registerVcHashProductId" value={postRegisterVcHashProductId} onChange={(e) => setPostRegisterVcHashProductId(e.target.value)} placeholder="e.g., DPP001" />
+          </div>
+          <div className="mt-2">
+            <Label htmlFor="registerVcHashBody">Request Body (JSON)</Label>
+            <Textarea id="registerVcHashBody" value={postRegisterVcHashBody} onChange={(e) => setPostRegisterVcHashBody(e.target.value)} rows={3} className="font-mono text-xs" />
+          </div>
+        </>
+      )
     }
   ] as const;
 
@@ -979,3 +1121,5 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
+
+    

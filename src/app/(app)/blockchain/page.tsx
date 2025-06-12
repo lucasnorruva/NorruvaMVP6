@@ -14,7 +14,7 @@ import {
     KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, 
     PlusCircle, CalendarDays, Sigma, Layers3, Tag, CheckCircle as CheckCircleLucide, 
     Server as ServerIcon, Link as LinkIconPath, FileCog, BookOpen, CircleDot, Clock, Share2, Users, Factory, Truck, ShoppingCart, Recycle as RecycleIconLucide, Upload, MessageSquare,
-    FileEdit, MessageSquareWarning, ListCollapse
+    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers
 } from "lucide-react";
 import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
@@ -23,6 +23,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
 import { Separator } from "@/components/ui/separator";
+import { Textarea } from "@/components/ui/textarea"; // Added Textarea import
 
 const EBSI_EXPLORER_BASE_URL = "https://mock-ebsi-explorer.example.com/tx/";
 const TOKEN_EXPLORER_BASE_URL = "https://mock-token-explorer.example.com/token/"; // General token explorer
@@ -164,7 +165,7 @@ export default function BlockchainPage() {
 
   const [mintContractAddress, setMintContractAddress] = useState("0xMOCK_DPP_TOKEN_CONTRACT");
   const [mintRecipientAddress, setMintRecipientAddress] = useState("0xRECIPIENT_MOCK_ADDRESS");
-  const [mintMetadataUri, setMintMetadataUri] = useState(""); // Initially empty
+  const [mintMetadataUri, setMintMetadataUri] = useState(""); 
   const [mintResponse, setMintResponse] = useState<MintTokenResponse | null>(null);
   
   const [updateTokenId, setUpdateTokenId] = useState("");
@@ -181,6 +182,17 @@ export default function BlockchainPage() {
 
   const [onChainStatusUpdate, setOnChainStatusUpdate] = useState<string>("active");
   const [criticalEventLog, setCriticalEventLog] = useState<string>("");
+  const [isUpdatingOnChainStatusLoading, setIsUpdatingOnChainStatusLoading] = useState(false);
+  const [isLoggingCriticalEventLoading, setIsLoggingCriticalEventLoading] = useState(false);
+
+  // New state for additional smart contract actions
+  const [onChainLifecycleStage, setOnChainLifecycleStage] = useState<string>("Manufacturing");
+  const [vcIdToRegister, setVcIdToRegister] = useState<string>("");
+  const [vcHashToRegister, setVcHashToRegister] = useState<string>("");
+  const [isUpdatingLifecycleStageLoading, setIsUpdatingLifecycleStageLoading] = useState(false);
+  const [isRegisteringVcHashLoading, setIsRegisteringVcHashLoading] = useState(false);
+
+  const lifecycleStageOptions = ["Design", "Manufacturing", "QualityAssurance", "Distribution", "InUse", "Maintenance", "EndOfLife"];
 
 
   const handleApiError = useCallback(async (response: Response, action: string) => {
@@ -473,7 +485,6 @@ export default function BlockchainPage() {
 
     const metadataUriToFetch = parsedTokenStatus?.metadataUri || `ipfs://dpp_metadata_for_${viewTokenId || selected?.id}`;
     
-    // Mock fetching metadata
     const mockMetadata = {
       name: `DPP Token for ${selected?.productName || viewTokenId || 'Product'}`,
       description: `Verifiable Digital Product Passport for ${selected?.productName || 'Unknown Product'}. Category: ${selected?.category || 'N/A'}.`,
@@ -496,15 +507,14 @@ export default function BlockchainPage() {
   const handleUpdateOnChainStatus = async (e: FormEvent) => {
     e.preventDefault();
     if (!selected) return;
-    setIsActionLoading("updateOnChainStatus");
+    setIsUpdatingOnChainStatusLoading(true);
     await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
-    // In a real app, this would call a smart contract function.
     const mockTxHash = `0xstatus_update_tx_${Date.now().toString(16)}`;
     toast({
       title: "On-Chain Status Update (Mock)",
       description: `Conceptual transaction to update DPP status for ${selected.productName} to '${onChainStatusUpdate}' submitted. Tx: ${mockTxHash}`
     });
-    setIsActionLoading(false);
+    setIsUpdatingOnChainStatusLoading(false);
   };
 
   const handleLogCriticalEvent = async (e: FormEvent) => {
@@ -513,7 +523,7 @@ export default function BlockchainPage() {
       toast({ title: "Missing Info", description: "Please select a product and enter an event description.", variant: "destructive" });
       return;
     }
-    setIsActionLoading("logCriticalEvent");
+    setIsLoggingCriticalEventLoading(true);
     await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
     const mockTxHash = `0xevent_log_tx_${Date.now().toString(16)}`;
     toast({
@@ -521,7 +531,38 @@ export default function BlockchainPage() {
       description: `Event "${criticalEventLog.substring(0,30)}..." conceptually logged on-chain for ${selected.productName}. Tx: ${mockTxHash}`
     });
     setCriticalEventLog("");
-    setIsActionLoading(false);
+    setIsLoggingCriticalEventLoading(false);
+  };
+
+  const handleUpdateOnChainLifecycleStage = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!selected) return;
+    setIsUpdatingLifecycleStageLoading(true);
+    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
+    const mockTxHash = `0xlifecycle_stage_update_tx_${Date.now().toString(16)}`;
+    toast({
+      title: "Lifecycle Stage Update (Mock)",
+      description: `Conceptual transaction to update DPP lifecycle stage for ${selected.productName} to '${onChainLifecycleStage}'. Tx: ${mockTxHash}`
+    });
+    setIsUpdatingLifecycleStageLoading(false);
+  };
+
+  const handleRegisterVcHash = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!selected || !vcIdToRegister.trim() || !vcHashToRegister.trim()) {
+      toast({ title: "Missing Info", description: "Please select a product, enter a VC ID and VC Hash.", variant: "destructive" });
+      return;
+    }
+    setIsRegisteringVcHashLoading(true);
+    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
+    const mockTxHash = `0xvc_hash_register_tx_${Date.now().toString(16)}`;
+    toast({
+      title: "VC Hash Registered (Mock)",
+      description: `VC Hash for ID '${vcIdToRegister}' conceptually registered on-chain for ${selected.productName}. Hash: ${vcHashToRegister.substring(0,10)}... Tx: ${mockTxHash}`
+    });
+    setVcIdToRegister("");
+    setVcHashToRegister("");
+    setIsRegisteringVcHashLoading(false);
   };
 
 
@@ -782,7 +823,6 @@ export default function BlockchainPage() {
                                 </Card>
                             </div>
 
-                            {/* Conceptual Smart Contract Actions */}
                             <Card className="bg-background mt-6 md:col-span-2">
                               <CardHeader>
                                 <CardTitle className="text-md flex items-center"><ListCollapse className="mr-2 h-4 w-4 text-info"/>Conceptual Smart Contract Actions</CardTitle>
@@ -801,25 +841,50 @@ export default function BlockchainPage() {
                                       <SelectItem value="archived">Archived (End of Life)</SelectItem>
                                     </SelectContent>
                                   </Select>
-                                  <Button type="submit" size="sm" disabled={isActionLoading === "updateOnChainStatus"}>
-                                    {isActionLoading === "updateOnChainStatus" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sigma className="mr-2 h-4 w-4" />}
-                                    {isActionLoading === "updateOnChainStatus" ? "Submitting..." : "Update Mock Status"}
+                                  <Button type="submit" size="sm" disabled={isUpdatingOnChainStatusLoading}>
+                                    {isUpdatingOnChainStatusLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sigma className="mr-2 h-4 w-4" />}
+                                    {isUpdatingOnChainStatusLoading ? "Submitting..." : "Update Mock Status"}
                                   </Button>
                                 </form>
                                 <form onSubmit={handleLogCriticalEvent} className="space-y-3 p-3 border rounded-md">
                                   <h4 className="font-medium text-sm flex items-center"><MessageSquareWarning className="h-4 w-4 mr-1.5 text-primary"/>Log Critical Event On-Chain</h4>
                                   <p className="text-xs text-muted-foreground">Simulate recording a critical event (e.g., major defect, safety recall details).</p>
                                   <Textarea value={criticalEventLog} onChange={e => setCriticalEventLog(e.target.value)} placeholder="Enter event description..." rows={2} />
-                                  <Button type="submit" size="sm" disabled={isActionLoading === "logCriticalEvent"}>
-                                    {isActionLoading === "logCriticalEvent" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquareWarning className="mr-2 h-4 w-4" />}
-                                    {isActionLoading === "logCriticalEvent" ? "Submitting..." : "Log Mock Event"}
+                                  <Button type="submit" size="sm" disabled={isLoggingCriticalEventLoading}>
+                                    {isLoggingCriticalEventLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquareWarning className="mr-2 h-4 w-4" />}
+                                    {isLoggingCriticalEventLoading ? "Submitting..." : "Log Mock Event"}
+                                  </Button>
+                                </form>
+                                <form onSubmit={handleUpdateOnChainLifecycleStage} className="space-y-3 p-3 border rounded-md">
+                                  <h4 className="font-medium text-sm flex items-center"><Layers className="h-4 w-4 mr-1.5 text-primary"/>Update DPP Lifecycle Stage On-Chain</h4>
+                                  <p className="text-xs text-muted-foreground">Simulate updating the product's lifecycle stage on the blockchain.</p>
+                                  <Select value={onChainLifecycleStage} onValueChange={setOnChainLifecycleStage}>
+                                    <SelectTrigger><SelectValue placeholder="Select Lifecycle Stage" /></SelectTrigger>
+                                    <SelectContent>
+                                      {lifecycleStageOptions.map(stage => (
+                                        <SelectItem key={stage} value={stage}>{stage.replace(/([A-Z])/g, ' $1').trim()}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <Button type="submit" size="sm" disabled={isUpdatingLifecycleStageLoading}>
+                                    {isUpdatingLifecycleStageLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Layers3 className="mr-2 h-4 w-4" />}
+                                    {isUpdatingLifecycleStageLoading ? "Updating..." : "Update Mock Stage"}
+                                  </Button>
+                                </form>
+                                <form onSubmit={handleRegisterVcHash} className="space-y-3 p-3 border rounded-md">
+                                  <h4 className="font-medium text-sm flex items-center"><Hash className="h-4 w-4 mr-1.5 text-primary"/>Register Verifiable Credential Hash On-Chain</h4>
+                                  <p className="text-xs text-muted-foreground">Simulate registering a VC hash on the blockchain for integrity verification.</p>
+                                  <Input value={vcIdToRegister} onChange={e => setVcIdToRegister(e.target.value)} placeholder="Verifiable Credential ID (e.g., urn:uuid:...)" />
+                                  <Input value={vcHashToRegister} onChange={e => setVcHashToRegister(e.target.value)} placeholder="VC Hash (SHA256)" />
+                                  <Button type="submit" size="sm" disabled={isRegisteringVcHashLoading}>
+                                    {isRegisteringVcHashLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Hash className="mr-2 h-4 w-4" />}
+                                    {isRegisteringVcHashLoading ? "Registering..." : "Register Mock VC Hash"}
                                   </Button>
                                 </form>
                               </CardContent>
                             </Card>
 
 
-                            {/* Restructured DPP Token Operations */}
                             <div className="md:col-span-2 mt-6">
                                 <h3 className="text-xl font-semibold text-foreground mb-3 flex items-center">
                                     <KeyRound className="mr-2 h-5 w-5 text-primary" /> DPP Token Operations (Conceptual)
@@ -939,3 +1004,4 @@ export default function BlockchainPage() {
 }
       
     
+

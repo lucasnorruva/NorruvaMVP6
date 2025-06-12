@@ -212,6 +212,7 @@ export default function BlockchainPage() {
 
   const [onChainStatusUpdate, setOnChainStatusUpdate] = useState<string>("active");
   const [criticalEventLog, setCriticalEventLog] = useState<string>("");
+  const [criticalEventSeverity, setCriticalEventSeverity] = useState<"High" | "Medium" | "Low">("High");
   const [isUpdatingOnChainStatusLoading, setIsUpdatingOnChainStatusLoading] = useState(false);
   const [isLoggingCriticalEventLoading, setIsLoggingCriticalEventLoading] = useState(false);
 
@@ -577,7 +578,6 @@ export default function BlockchainPage() {
     e.preventDefault();
     if (!selected) return;
     setIsUpdatingOnChainStatusLoading(true);
-    // Call API to update on-chain status
     const res = await fetch(`/api/v1/dpp/${selected.id}/onchain-status`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${MOCK_API_KEY}` },
@@ -604,13 +604,24 @@ export default function BlockchainPage() {
       return;
     }
     setIsLoggingCriticalEventLoading(true);
-    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
-    const mockTxHash = `0xevent_log_tx_${Date.now().toString(16)}`;
-    toast({
-      title: "Critical Event Logged (Mock)",
-      description: `Event "${criticalEventLog.substring(0,30)}..." conceptually logged on-chain for ${selected.productName}. Tx: ${mockTxHash}`
+    
+    const res = await fetch(`/api/v1/dpp/${selected.id}/log-critical-event`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${MOCK_API_KEY}` },
+      body: JSON.stringify({ eventDescription: criticalEventLog, severity: criticalEventSeverity }),
     });
-    setCriticalEventLog("");
+
+    if (res.ok) {
+      const data = await res.json();
+      updateDppLocally(data.updatedProduct);
+      toast({
+        title: "Critical Event Logged (Mock)",
+        description: data.message || `Event "${criticalEventLog.substring(0,30)}..." conceptually logged on-chain for ${selected.productName}.`,
+      });
+      setCriticalEventLog("");
+    } else {
+      handleApiError(res, "Logging Critical Event");
+    }
     setIsLoggingCriticalEventLoading(false);
   };
 
@@ -987,15 +998,25 @@ export default function BlockchainPage() {
                                     {isUpdatingOnChainStatusLoading ? "Submitting..." : "Update Mock Status"}
                                   </Button>
                                 </form>
+                                
                                 <form onSubmit={handleLogCriticalEvent} className="space-y-3 p-3 border rounded-md">
                                   <h4 className="font-medium text-sm flex items-center"><MessageSquareWarning className="h-4 w-4 mr-1.5 text-primary"/>Log Critical Event On-Chain</h4>
                                   <p className="text-xs text-muted-foreground">Simulate recording a critical event (e.g., major defect, safety recall details).</p>
-                                  <Textarea value={criticalEventLog} onChange={e => setCriticalEventLog(e.target.value)} placeholder="Enter event description..." rows={2} />
+                                  <Textarea value={criticalEventLog} onChange={e => setCriticalEventLog(e.target.value)} placeholder="Enter event description..." rows={1} />
+                                  <Select value={criticalEventSeverity} onValueChange={(value) => setCriticalEventSeverity(value as "High" | "Medium" | "Low")}>
+                                      <SelectTrigger><SelectValue placeholder="Select Severity"/></SelectTrigger>
+                                      <SelectContent>
+                                          <SelectItem value="High">High</SelectItem>
+                                          <SelectItem value="Medium">Medium</SelectItem>
+                                          <SelectItem value="Low">Low</SelectItem>
+                                      </SelectContent>
+                                  </Select>
                                   <Button type="submit" size="sm" disabled={isLoggingCriticalEventLoading}>
                                     {isLoggingCriticalEventLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquareWarning className="mr-2 h-4 w-4" />}
                                     {isLoggingCriticalEventLoading ? "Submitting..." : "Log Mock Event"}
                                   </Button>
                                 </form>
+
                                 <form onSubmit={handleUpdateOnChainLifecycleStage} className="space-y-3 p-3 border rounded-md">
                                   <h4 className="font-medium text-sm flex items-center"><Layers className="h-4 w-4 mr-1.5 text-primary"/>Update DPP Lifecycle Stage On-Chain</h4>
                                   <p className="text-xs text-muted-foreground">Simulate updating the product's lifecycle stage on the blockchain.</p>
@@ -1167,4 +1188,3 @@ export default function BlockchainPage() {
 }
       
     
-

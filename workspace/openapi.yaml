@@ -1113,6 +1113,121 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/v1/dpp/{productId}/onchain-status:
+    post:
+      operationId: updateDppOnChainStatus
+      summary: Update DPP On-Chain Status (Conceptual)
+      description: Conceptually updates the on-chain status of a Digital Product Passport.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOnChainStatusRequest'
+      responses:
+        '200':
+          description: On-chain status conceptually updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  updatedProduct:
+                    $ref: '#/components/schemas/DigitalProductPassport'
+                example:
+                  message: "Conceptual on-chain status for product DPP001 updated to 'active'. Mock Tx: 0xmock_tx_hash_123"
+                  updatedProduct: 
+                    $ref: '#/components/schemas/DigitalProductPassport/example' 
+        '400':
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/dpp/{productId}/log-critical-event: # New Endpoint
+    post:
+      operationId: logDppCriticalEvent
+      summary: Log Critical Event for a DPP (Conceptual)
+      description: Conceptually logs a critical event on-chain for a specified DPP.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogCriticalEventRequest'
+      responses:
+        '200':
+          description: Critical event conceptually logged.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Critical event logged for product DPP001. Mock Tx: 0xmock_critical_tx_456"
+                  updatedProduct:
+                    $ref: '#/components/schemas/DigitalProductPassport'
+        '400':
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/v1/token/mint/{productId}:
     post:
       operationId: mintDppToken
@@ -1416,65 +1531,6 @@ paths:
                       type: integer
         '401':
           description: API key missing or invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '500':
-          description: Internal server error.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-
-  /api/v1/dpp/{productId}/onchain-status:
-    post:
-      operationId: updateDppOnChainStatus
-      summary: Update DPP On-Chain Status (Conceptual)
-      description: Conceptually updates the on-chain status of a Digital Product Passport.
-      parameters:
-        - name: productId
-          in: path
-          required: true
-          description: The unique identifier of the product.
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/UpdateOnChainStatusRequest'
-      responses:
-        '200':
-          description: On-chain status conceptually updated.
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                  updatedProduct:
-                    $ref: '#/components/schemas/DigitalProductPassport'
-                example:
-                  message: "Conceptual on-chain status for product DPP001 updated to 'active'. Mock Tx: 0xmock_tx_hash_123"
-                  updatedProduct: 
-                    $ref: '#/components/schemas/DigitalProductPassport/example' # Reference example for DigitalProductPassport
-        '400':
-          description: Invalid request body.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '401':
-          description: API key missing or invalid.
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-        '404':
-          description: Product not found.
           content:
             application/json:
               schema:
@@ -2764,7 +2820,7 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/DocumentReference'
-    UpdateOnChainStatusRequest: # New Schema
+    UpdateOnChainStatusRequest: 
       type: object
       required:
         - status
@@ -2773,6 +2829,20 @@ components:
           type: string
           enum: ["active", "recalled", "flagged_for_review", "archived"]
           description: The new conceptual on-chain status for the DPP.
+    LogCriticalEventRequest: # New Schema
+      type: object
+      required:
+        - eventDescription
+      properties:
+        eventDescription:
+          type: string
+          description: A description of the critical event.
+        severity:
+          type: string
+          enum: ["High", "Medium", "Low"]
+          nullable: true
+          description: Severity of the event. Defaults to "High" if not provided by API.
+          example: "High"
     MintTokenRequest:
       type: object
       required:
@@ -3015,6 +3085,7 @@ components:
     
 
     
+
 
 
 

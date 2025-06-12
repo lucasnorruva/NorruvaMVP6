@@ -3,12 +3,14 @@
 "use client";
 
 import React from 'react';
+import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { X, Package, Truck, Ship, Plane, AlertTriangle, CheckCircle, Clock, CalendarDays } from 'lucide-react';
-import type { TransitProduct, CustomsAlert } from '@/data'; // Assuming types are exported from data index
+import { X, Package, Truck, Ship, Plane, AlertTriangle, CalendarDays, ExternalLink } from 'lucide-react';
+import type { TransitProduct, CustomsAlert } from '@/types/dpp';
 import { cn } from '@/lib/utils';
+import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils";
 
 interface SelectedProductCustomsInfoCardProps {
   productTransitInfo: TransitProduct;
@@ -28,15 +30,13 @@ export default function SelectedProductCustomsInfoCard({ productTransitInfo, ale
   const isEtaPast = etaDate < today;
   const isEtaToday = etaDate.toDateString() === today.toDateString();
 
-  let dppStatusIcon = Clock;
-  let dppStatusColor = "bg-yellow-100 text-yellow-700 border-yellow-300";
-  if (productTransitInfo.dppStatus === "Compliant") {
-    dppStatusIcon = CheckCircle;
-    dppStatusColor = "bg-green-100 text-green-700 border-green-300";
-  } else if (productTransitInfo.dppStatus.startsWith("Issue")) {
-    dppStatusIcon = AlertTriangle;
-    dppStatusColor = "bg-red-100 text-red-700 border-red-300";
-  }
+  // Use utility functions for DPP status badge
+  const DppStatusIcon = getStatusIcon(productTransitInfo.dppStatus);
+  const dppStatusBadgeVariant = getStatusBadgeVariant(productTransitInfo.dppStatus);
+  const dppStatusClasses = getStatusBadgeClasses(productTransitInfo.dppStatus);
+  const formattedDppStatus = productTransitInfo.dppStatus
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, char => char.toUpperCase());
 
   return (
     <Card className="absolute bottom-4 left-4 z-20 w-full max-w-md shadow-xl bg-card/95 backdrop-blur-sm">
@@ -68,7 +68,7 @@ export default function SelectedProductCustomsInfoCard({ productTransitInfo, ale
                     </Badge>
                 ) : isEtaToday ? (
                     <Badge variant="outline" className="text-xs bg-yellow-100 text-yellow-700 border-yellow-300">
-                        <CalendarDays className="mr-1 h-3 w-3" /> {/* Changed from Clock */}
+                        <CalendarDays className="mr-1 h-3 w-3" />
                         Due Today: {etaDate.toLocaleDateString()}
                     </Badge>
                 ) : (
@@ -76,9 +76,9 @@ export default function SelectedProductCustomsInfoCard({ productTransitInfo, ale
                 )}
             </div>
             <p className="flex items-center"><strong className="text-muted-foreground mr-1">DPP Status:</strong> 
-                <Badge className={cn("text-xs capitalize", dppStatusColor)}>
-                    {React.createElement(dppStatusIcon, {className: "mr-1 h-3 w-3"})}
-                    {productTransitInfo.dppStatus}
+                <Badge className={cn("text-xs capitalize", dppStatusClasses)} variant={dppStatusBadgeVariant}>
+                    {React.cloneElement(DppStatusIcon, {className: "mr-1 h-3 w-3"})}
+                    {formattedDppStatus}
                 </Badge>
             </p>
         </div>
@@ -99,6 +99,11 @@ export default function SelectedProductCustomsInfoCard({ productTransitInfo, ale
         {alerts.length === 0 && (
             <p className="text-xs text-green-600 mt-1.5">No active customs alerts for this product.</p>
         )}
+         <Button variant="link" size="sm" className="p-0 h-auto text-primary mt-2 text-xs" asChild>
+            <Link href={`/passport/${productTransitInfo.id}`} target="_blank" rel="noopener noreferrer">
+              View Full DPP <ExternalLink className="ml-1 h-3 w-3" />
+            </Link>
+          </Button>
       </CardContent>
     </Card>
   );

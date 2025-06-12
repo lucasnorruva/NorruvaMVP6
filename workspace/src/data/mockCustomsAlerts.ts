@@ -1,14 +1,6 @@
 
 // --- File: src/data/mockCustomsAlerts.ts ---
-
-export interface CustomsAlert {
-  id: string;
-  productId: string;
-  message: string;
-  severity: "High" | "Medium" | "Low";
-  timestamp: string; // Human-readable time ago or ISO string
-  regulation?: string;
-}
+import type { CustomsAlert } from '@/types/dpp'; // Import type from new location
 
 export const MOCK_CUSTOMS_ALERTS: CustomsAlert[] = [
   { id: "ALERT001", productId: "PROD101", message: "Flagged at CDG Airport - Potential counterfeit. Physical inspection scheduled.", severity: "High", timestamp: "2 hours ago", regulation: "Anti-Counterfeiting" },

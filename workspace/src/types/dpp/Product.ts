@@ -436,4 +436,25 @@ export interface TokenStatusResponse {
   message?: string;
 }
 
+// Types moved from mockTransitProducts.ts and mockCustomsAlerts.ts
+export interface TransitProduct {
+  id: string;
+  name: string;
+  stage: string;
+  eta: string; // ISO Date string or human-readable like "2024-08-10"
+  dppStatus: ProductComplianceSummary['overallStatus']; // Using standardized status
+  transport: "Ship" | "Truck" | "Plane";
+  origin: string; // Format: "City, Country Name" or "Country Name"
+  destination: string; // Format: "City, Country Name" or "Country Name"
+}
+
+export interface CustomsAlert {
+  id: string;
+  productId: string;
+  message: string;
+  severity: "High" | "Medium" | "Low";
+  timestamp: string; // Human-readable time ago or ISO string
+  regulation?: string;
+}
+
     

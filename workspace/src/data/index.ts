@@ -4,5 +4,7 @@ export * from './simpleMockProducts';
 export * from './mockSuppliers';
 export * from './mockPublicPassports';
 export * from './mockImportJobs';
-export * from './mockTransitProducts'; // Added export
-export * from './mockCustomsAlerts'; // Added export
+export * from './mockTransitProducts'; 
+export * from './mockCustomsAlerts'; 
+export type { TransitProduct, CustomsAlert } from '@/types/dpp'; // Re-export types from their new location
+

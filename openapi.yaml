@@ -1112,7 +1112,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-
+  
   /api/v1/dpp/{productId}/onchain-status:
     post:
       operationId: updateDppOnChainStatus
@@ -1287,7 +1287,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/v1/dpp/{productId}/register-vc-hash: 
+  /api/v1/dpp/{productId}/register-vc-hash: # New endpoint
     post:
       operationId: registerDppVcHash
       summary: Register Verifiable Credential Hash (Conceptual)
@@ -2094,11 +2094,11 @@ components:
             dataSchemaVersion:
               type: string
               nullable: true
-            onChainStatus:
+            onChainStatus: # Added
               type: string
               nullable: true
               description: "Conceptual on-chain status of the DPP (e.g., active, recalled)."
-            onChainLifecycleStage:
+            onChainLifecycleStage: # Added
               type: string
               nullable: true
               description: "Conceptual on-chain lifecycle stage of the DPP."
@@ -2535,7 +2535,7 @@ components:
           last_updated: "2024-07-30T10:00:00Z"
           status: "published"
           dppStandardVersion: "CIRPASS v0.9 Draft"
-          onChainStatus: "active" # Example value
+          onChainStatus: "Active" # Example value
           onChainLifecycleStage: "InUse" # Example value
         blockchainIdentifiers:
           platform: "MockChain"
@@ -2983,7 +2983,7 @@ components:
           nullable: true
           description: Severity of the event. Defaults to "High" if not provided by API.
           example: "High"
-    RegisterVcHashRequest: 
+    RegisterVcHashRequest: # New Schema
       type: object
       required:
         - vcId
@@ -3246,5 +3246,3 @@ components:
 
 
 
-
-  

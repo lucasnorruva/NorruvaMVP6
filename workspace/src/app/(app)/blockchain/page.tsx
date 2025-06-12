@@ -219,6 +219,7 @@ export default function BlockchainPage() {
   const [isLoggingCriticalEventLoading, setIsLoggingCriticalEventLoading] = useState(false);
 
   const [onChainLifecycleStage, setOnChainLifecycleStage] = useState<string>("Manufacturing");
+  const [isUpdatingLifecycleStageLoading, setIsUpdatingLifecycleStageLoading] = useState(false);
   const [vcIdToRegister, setVcIdToRegister] = useState<string>("");
   const [vcHashToRegister, setVcHashToRegister] = useState<string>("");
   const [isRegisteringVcHashLoading, setIsRegisteringVcHashLoading] = useState(false);
@@ -1012,7 +1013,7 @@ export default function BlockchainPage() {
                                   <h4 className="font-medium text-sm flex items-center"><Sigma className="h-4 w-4 mr-1.5 text-primary"/>Update On-Chain DPP Status</h4>
                                   <p className="text-xs text-muted-foreground">Simulate updating the product's status on the blockchain (e.g., after recall).</p>
                                   <Select value={onChainStatusUpdate} onValueChange={setOnChainStatusUpdate}>
-                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="Select On-Chain Status" /></SelectTrigger>
                                     <SelectContent>
                                       <SelectItem value="active">Active</SelectItem>
                                       <SelectItem value="recalled">Recalled</SelectItem>
@@ -1020,9 +1021,26 @@ export default function BlockchainPage() {
                                       <SelectItem value="archived">Archived (End of Life)</SelectItem>
                                     </SelectContent>
                                   </Select>
-                                  <Button type="submit" size="sm" disabled={isUpdatingOnChainStatusLoading}>
+                                  <Button type="submit" size="sm" disabled={isUpdatingOnChainStatusLoading || !selected}>
                                     {isUpdatingOnChainStatusLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sigma className="mr-2 h-4 w-4" />}
                                     {isUpdatingOnChainStatusLoading ? "Submitting..." : "Update Mock Status"}
+                                  </Button>
+                                </form>
+                                
+                                <form onSubmit={handleUpdateOnChainLifecycleStage} className="space-y-3 p-3 border rounded-md">
+                                  <h4 className="font-medium text-sm flex items-center"><Layers className="h-4 w-4 mr-1.5 text-primary"/>Update DPP On-Chain Lifecycle Stage</h4>
+                                  <p className="text-xs text-muted-foreground">Simulate updating the product's on-chain lifecycle stage.</p>
+                                  <Select value={onChainLifecycleStage} onValueChange={setOnChainLifecycleStage}>
+                                    <SelectTrigger><SelectValue placeholder="Select Lifecycle Stage" /></SelectTrigger>
+                                    <SelectContent>
+                                      {lifecycleStageOptions.map(stage => (
+                                        <SelectItem key={stage} value={stage}>{stage.replace(/([A-Z])/g, ' $1').trim()}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                  <Button type="submit" size="sm" disabled={isUpdatingLifecycleStageLoading || !selected}>
+                                    {isUpdatingLifecycleStageLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Layers3 className="mr-2 h-4 w-4" />}
+                                    {isUpdatingLifecycleStageLoading ? "Updating..." : "Update Mock Stage"}
                                   </Button>
                                 </form>
                                 
@@ -1038,34 +1056,18 @@ export default function BlockchainPage() {
                                           <SelectItem value="Low">Low</SelectItem>
                                       </SelectContent>
                                   </Select>
-                                  <Button type="submit" size="sm" disabled={isLoggingCriticalEventLoading}>
+                                  <Button type="submit" size="sm" disabled={isLoggingCriticalEventLoading || !selected || !criticalEventLog.trim()}>
                                     {isLoggingCriticalEventLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquareWarning className="mr-2 h-4 w-4" />}
                                     {isLoggingCriticalEventLoading ? "Submitting..." : "Log Mock Event"}
                                   </Button>
                                 </form>
 
-                                <form onSubmit={handleUpdateOnChainLifecycleStage} className="space-y-3 p-3 border rounded-md">
-                                  <h4 className="font-medium text-sm flex items-center"><Layers className="h-4 w-4 mr-1.5 text-primary"/>Update DPP On-Chain Lifecycle Stage</h4>
-                                  <p className="text-xs text-muted-foreground">Simulate updating the product's on-chain lifecycle stage.</p>
-                                  <Select value={onChainLifecycleStage} onValueChange={setOnChainLifecycleStage}>
-                                    <SelectTrigger><SelectValue placeholder="Select Lifecycle Stage" /></SelectTrigger>
-                                    <SelectContent>
-                                      {lifecycleStageOptions.map(stage => (
-                                        <SelectItem key={stage} value={stage}>{stage.replace(/([A-Z])/g, ' $1').trim()}</SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                  <Button type="submit" size="sm" disabled={isUpdatingLifecycleStageLoading}>
-                                    {isUpdatingLifecycleStageLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Layers3 className="mr-2 h-4 w-4" />}
-                                    {isUpdatingLifecycleStageLoading ? "Updating..." : "Update Mock Stage"}
-                                  </Button>
-                                </form>
                                 <form onSubmit={handleRegisterVcHash} className="space-y-3 p-3 border rounded-md">
                                   <h4 className="font-medium text-sm flex items-center"><Hash className="h-4 w-4 mr-1.5 text-primary"/>Register Verifiable Credential Hash On-Chain</h4>
                                   <p className="text-xs text-muted-foreground">Simulate registering a VC hash on the blockchain for integrity verification.</p>
                                   <Input value={vcIdToRegister} onChange={e => setVcIdToRegister(e.target.value)} placeholder="Verifiable Credential ID (e.g., urn:uuid:...)" />
                                   <Input value={vcHashToRegister} onChange={e => setVcHashToRegister(e.target.value)} placeholder="VC Hash (SHA256)" />
-                                  <Button type="submit" size="sm" disabled={isRegisteringVcHashLoading}>
+                                  <Button type="submit" size="sm" disabled={isRegisteringVcHashLoading || !selected || !vcIdToRegister.trim() || !vcHashToRegister.trim()}>
                                     {isRegisteringVcHashLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Hash className="mr-2 h-4 w-4" />}
                                     {isRegisteringVcHashLoading ? "Registering..." : "Register Mock VC Hash"}
                                   </Button>

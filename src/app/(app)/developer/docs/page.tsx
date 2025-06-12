@@ -25,7 +25,8 @@ import {
     QrCode,
     Server as ServerIconShadcn,
     VenetianMask,
-    History 
+    History,
+    Layers3 // Added for Private Layer
 } from "lucide-react";
 
 export default function DeveloperDocumentationHubPage() {
@@ -75,7 +76,8 @@ export default function DeveloperDocumentationHubPage() {
               <li><Link href="/developer/guides/quick-start" className="text-primary hover:underline flex items-center"><Rocket className="mr-2 h-4 w-4" />Quick Start Integration Guide</Link></li>
               <li><Link href="/developer/guides/manufacturer-onboarding" className="text-primary hover:underline flex items-center"><Users className="mr-2 h-4 w-4" />Manufacturer Onboarding</Link></li>
               <li><Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline flex items-center"><Share2 className="mr-2 h-4 w-4" />EBSI Integration Overview</Link></li>
-              <li><Link href="/developer/docs/public-layer-ebsi" className="text-primary hover:underline flex items-center"><Share2 className="mr-2 h-4 w-4" />Public Layer & EBSI Alignment</Link></li> {/* New Link */}
+              <li><Link href="/developer/docs/public-layer-ebsi" className="text-primary hover:underline flex items-center"><Share2 className="mr-2 h-4 w-4" />Public Layer & EBSI Alignment</Link></li>
+              <li><Link href="/developer/docs/private-layer-architecture" className="text-primary hover:underline flex items-center"><Layers3 className="mr-2 h-4 w-4" />Private Layer Architecture</Link></li> {/* New Link */}
               <li><Link href="/developer/docs/regulatory-alignment" className="text-primary hover:underline flex items-center"><Scale className="mr-2 h-4 w-4" />Regulatory Alignment (ESPR, EPREL)</Link></li>
               <li><Link href="/developer/docs/data-management-best-practices" className="text-primary hover:underline flex items-center"><LayersIcon className="mr-2 h-4 w-4" />Data Management Best Practices</Link></li>
               <li><Link href="/developer/docs/qr-code-embedding" className="text-primary hover:underline flex items-center"><QrCode className="mr-2 h-4 w-4" />QR Code Generation &amp; Embedding</Link></li>

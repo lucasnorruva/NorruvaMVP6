@@ -330,9 +330,8 @@ export interface PublicProductInfo {
   documents?: DocumentReference[];
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
-  // Conceptual token details for public view
-  contractAddress?: string;
-  tokenId?: string;
+  contractAddress?: string; // Added for detailed token info
+  tokenId?: string;         // Added for detailed token info
 }
 
 export interface Supplier {
@@ -417,5 +416,3 @@ export interface TokenStatusResponse {
   status: string; // e.g., "minted", "transferred", "active"
   message?: string;
 }
-
-    

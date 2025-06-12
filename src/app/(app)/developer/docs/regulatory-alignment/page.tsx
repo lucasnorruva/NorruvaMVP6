@@ -3,7 +3,7 @@
 "use client";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Scale, Settings, Info, Database as DatabaseIcon, Anchor, UserCheck } from "lucide-react"; // Added relevant icons
+import { Scale, Settings, Info, Database as DatabaseIcon, Anchor, UserCheck, BatteryCharging } from "lucide-react"; // Added relevant icons
 import Link from "next/link";
 import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
@@ -46,6 +46,23 @@ export default function RegulatoryAlignmentPage() {
                 </Button>
             </section>
             <section>
+                <h3 className="font-semibold text-lg mb-1 flex items-center"><BatteryCharging className="mr-2 h-4 w-4 text-accent"/>EU Battery Regulation (EU 2023/1542)</h3>
+                <p className="text-sm text-muted-foreground">
+                    This regulation mandates a "Battery Passport" for LMT, industrial, and EV batteries. The Norruva platform includes specific fields within <code className="bg-muted px-1 rounded-sm font-mono text-xs">compliance.battery_regulation</code> to support this. Key data points conceptually supported include:
+                </p>
+                <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1 mt-1 pl-4">
+                    <li><code className="bg-muted px-1 rounded-sm font-mono text-xs">batteryPassportId</code>: Unique identifier for the battery passport.</li>
+                    <li><code className="bg-muted px-1 rounded-sm font-mono text-xs">batteryChemistry</code>: The chemical composition of the battery.</li>
+                    <li><code className="bg-muted px-1 rounded-sm font-mono text-xs">carbonFootprint</code>: An object detailing the <code className="bg-muted px-1 rounded-sm font-mono text-xs">value</code>, <code className="bg-muted px-1 rounded-sm font-mono text-xs">unit</code>, <code className="bg-muted px-1 rounded-sm font-mono text-xs">calculationMethod</code>, and optional <code className="bg-muted px-1 rounded-sm font-mono text-xs">vcId</code>.</li>
+                    <li><code className="bg-muted px-1 rounded-sm font-mono text-xs">recycledContent</code>: An array of objects, each specifying <code className="bg-muted px-1 rounded-sm font-mono text-xs">material</code>, <code className="bg-muted px-1 rounded-sm font-mono text-xs">percentage</code>, and optional <code className="bg-muted px-1 rounded-sm font-mono text-xs">vcId</code>.</li>
+                    <li><code className="bg-muted px-1 rounded-sm font-mono text-xs">stateOfHealth</code>: An object for <code className="bg-muted px-1 rounded-sm font-mono text-xs">value</code>, <code className="bg-muted px-1 rounded-sm font-mono text-xs">unit</code>, <code className="bg-muted px-1 rounded-sm font-mono text-xs">measurementDate</code>, and optional <code className="bg-muted px-1 rounded-sm font-mono text-xs">vcId</code>.</li>
+                    <li><code className="bg-muted px-1 rounded-sm font-mono text-xs">vcId</code>: An overall Verifiable Credential ID for the battery regulation compliance.</li>
+                </ul>
+                 <p className="text-sm text-muted-foreground mt-1">
+                    Our <Link href="/compliance/pathways/battery-regulation" className="text-primary hover:underline">Battery Regulation Pathway</Link> provides step-by-step guidance for populating these fields.
+                </p>
+            </section>
+            <section>
                 <h3 className="font-semibold text-lg mb-1">EPREL Database (EU Product Registry for Energy Labelling)</h3>
                 <p className="text-sm text-muted-foreground">
                     For products requiring energy labels, EPREL is the mandatory registration database. The Norruva DPP can store relevant EPREL data points within the <code className="bg-muted px-1 rounded-sm font-mono text-xs">compliance.eprel</code> object (e.g., <code className="bg-muted px-1 rounded-sm font-mono text-xs">id</code>, <code className="bg-muted px-1 rounded-sm font-mono text-xs">status</code>, <code className="bg-muted px-1 rounded-sm font-mono text-xs">url</code>). Future integrations may facilitate streamlined data submission or verification. The platform currently allows for manual EPREL ID entry and simulated sync checks.
@@ -74,12 +91,6 @@ export default function RegulatoryAlignmentPage() {
                     DPP data, including product identifiers (GTIN, model number), classification (<code className="bg-muted px-1 rounded-sm font-mono text-xs">category</code>), origin (<code className="bg-muted px-1 rounded-sm font-mono text-xs">euCustomsData.countryOfOrigin</code>), and compliance attestations, can be structured to align with the EUCDM. The <code className="bg-muted px-1 rounded-sm font-mono text-xs">compliance.euCustomsData</code> object within the DPP (with fields like <code className="bg-muted px-1 rounded-sm font-mono text-xs">hsCode</code>, <code className="bg-muted px-1 rounded-sm font-mono text-xs">declarationId</code>, weights, and valuation) directly supports this, facilitating smoother customs processes by providing readily available and verifiable information.
                 </p>
                  <Button variant="link" className="p-0 h-auto text-xs mt-1" disabled>EUCDM Mapping Guide (Coming Soon)</Button>
-            </section>
-             <section>
-                <h3 className="font-semibold text-lg mb-1">EU Battery Regulation (EU 2023/1542)</h3>
-                <p className="text-sm text-muted-foreground">
-                    This regulation mandates a "Battery Passport" for LMT, industrial, and EV batteries. The Norruva platform includes specific fields within <code className="bg-muted px-1 rounded-sm font-mono text-xs">compliance.battery_regulation</code> (e.g., <code className="bg-muted px-1 rounded-sm font-mono text-xs">carbonFootprint</code>, <code className="bg-muted px-1 rounded-sm font-mono text-xs">recycledContent</code>, <code className="bg-muted px-1 rounded-sm font-mono text-xs">stateOfHealth</code>) and general product details aligned with the Battery Regulation's requirements. Our <Link href="/compliance/pathways/battery-regulation" className="text-primary hover:underline">Battery Regulation Pathway</Link> provides step-by-step guidance.
-                </p>
             </section>
              <section>
                 <h3 className="font-semibold text-lg mb-1">Other Relevant Directives & Initiatives</h3>

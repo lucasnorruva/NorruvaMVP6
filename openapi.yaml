@@ -1113,6 +1113,239 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
+  /api/v1/dpp/{productId}/onchain-status:
+    post:
+      operationId: updateDppOnChainStatus
+      summary: Update DPP On-Chain Status (Conceptual)
+      description: Conceptually updates the on-chain status of a Digital Product Passport.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOnChainStatusRequest'
+      responses:
+        '200':
+          description: On-chain status conceptually updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  updatedProduct:
+                    $ref: '#/components/schemas/DigitalProductPassport'
+                example:
+                  message: "Conceptual on-chain status for product DPP001 updated to 'active'. Mock Tx: 0xmock_tx_hash_123"
+                  updatedProduct: 
+                    $ref: '#/components/schemas/DigitalProductPassport/example' 
+        '400':
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  
+  /api/v1/dpp/{productId}/onchain-lifecycle-stage: 
+    post:
+      operationId: updateDppOnChainLifecycleStage
+      summary: Update DPP On-Chain Lifecycle Stage (Conceptual)
+      description: Conceptually updates the on-chain lifecycle stage of a Digital Product Passport.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateOnChainLifecycleStageRequest'
+      responses:
+        '200':
+          description: On-chain lifecycle stage conceptually updated.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  updatedProduct:
+                    $ref: '#/components/schemas/DigitalProductPassport'
+                example:
+                  message: "Conceptual on-chain lifecycle stage for product DPP001 updated to 'Manufacturing'. Mock Tx: 0xlifecycle_update_abc"
+                  updatedProduct: 
+                    $ref: '#/components/schemas/DigitalProductPassport/example' 
+        '400':
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/dpp/{productId}/log-critical-event:
+    post:
+      operationId: logDppCriticalEvent
+      summary: Log Critical Event for a DPP (Conceptual)
+      description: Conceptually logs a critical event on-chain for a specified DPP.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LogCriticalEventRequest'
+      responses:
+        '200':
+          description: Critical event conceptually logged.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Critical event logged for product DPP001. Mock Tx: 0xmock_critical_tx_456"
+                  updatedProduct:
+                    $ref: '#/components/schemas/DigitalProductPassport'
+        '400':
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/v1/dpp/{productId}/register-vc-hash: 
+    post:
+      operationId: registerDppVcHash
+      summary: Register Verifiable Credential Hash (Conceptual)
+      description: Conceptually registers a Verifiable Credential's hash on-chain for a DPP.
+      parameters:
+        - name: productId
+          in: path
+          required: true
+          description: The unique identifier of the product.
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterVcHashRequest'
+      responses:
+        '200':
+          description: VC Hash conceptually registered.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                  updatedProduct:
+                    $ref: '#/components/schemas/DigitalProductPassport'
+                example:
+                  message: "VC Hash for ID 'vc_id_example' conceptually registered for product DPP001. Mock Tx: 0xvc_hash_tx_123"
+                  updatedProduct:
+                    $ref: '#/components/schemas/DigitalProductPassport/example'
+        '400':
+          description: Invalid request body.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: API key missing or invalid.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Product not found.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '500':
+          description: Internal server error.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
   /api/v1/token/mint/{productId}:
     post:
       operationId: mintDppToken
@@ -1861,6 +2094,14 @@ components:
             dataSchemaVersion:
               type: string
               nullable: true
+            onChainStatus:
+              type: string
+              nullable: true
+              description: "Conceptual on-chain status of the DPP (e.g., active, recalled)."
+            onChainLifecycleStage:
+              type: string
+              nullable: true
+              description: "Conceptual on-chain lifecycle stage of the DPP."
         blockchainIdentifiers:
           type: object
           nullable: true
@@ -2279,6 +2520,31 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/ProductSupplyChainLink'
+      example: # Added example for DigitalProductPassport
+        id: "DPP001"
+        version: 1
+        productName: "EcoSmart Refrigerator X500"
+        category: "Appliances"
+        gtin: "01234567890123"
+        modelNumber: "X500-ECO"
+        manufacturer:
+          name: "GreenTech Appliances"
+          did: "did:ebsi:zyxts12345"
+        metadata:
+          created_at: "2024-01-01T10:00:00Z"
+          last_updated: "2024-07-30T10:00:00Z"
+          status: "published"
+          dppStandardVersion: "CIRPASS v0.9 Draft"
+          onChainStatus: "active" # Example value
+          onChainLifecycleStage: "InUse" # Example value
+        blockchainIdentifiers:
+          platform: "MockChain"
+          anchorTransactionHash: "0x123abc..."
+          contractAddress: "0xContract123"
+          tokenId: "Token789"
+        productDetails:
+          description: "An eco friendly fridge."
+          energyLabel: "A++"
     LifecycleEvent:
       type: object
       properties:
@@ -2529,6 +2795,14 @@ components:
             dppStandardVersion:
               type: string
               nullable: true
+            onChainStatus: # Add here for PUT updates
+              type: string
+              nullable: true
+              description: "Conceptual on-chain status of the DPP."
+            onChainLifecycleStage: # Add here for PUT updates
+              type: string
+              nullable: true
+              description: "Conceptual on-chain lifecycle stage of the DPP."
         productDetails:
           type: object
           nullable: true
@@ -2677,6 +2951,52 @@ components:
           nullable: true
           items:
             $ref: '#/components/schemas/DocumentReference'
+    UpdateOnChainStatusRequest: 
+      type: object
+      required:
+        - status
+      properties:
+        status:
+          type: string
+          enum: ["active", "recalled", "flagged_for_review", "archived"]
+          description: The new conceptual on-chain status for the DPP.
+    UpdateOnChainLifecycleStageRequest: 
+      type: object
+      required:
+        - lifecycleStage
+      properties:
+        lifecycleStage:
+          type: string
+          description: The new conceptual on-chain lifecycle stage for the DPP.
+          example: "Manufacturing"
+    LogCriticalEventRequest:
+      type: object
+      required:
+        - eventDescription
+      properties:
+        eventDescription:
+          type: string
+          description: A description of the critical event.
+        severity:
+          type: string
+          enum: ["High", "Medium", "Low"]
+          nullable: true
+          description: Severity of the event. Defaults to "High" if not provided by API.
+          example: "High"
+    RegisterVcHashRequest: 
+      type: object
+      required:
+        - vcId
+        - vcHash
+      properties:
+        vcId:
+          type: string
+          description: The unique identifier of the Verifiable Credential.
+          example: "urn:uuid:abcdef12-3456-7890-abcd-ef1234567890"
+        vcHash:
+          type: string
+          description: The cryptographic hash (e.g., SHA-256) of the Verifiable Credential.
+          example: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2" # 64 char hex for SHA256
     MintTokenRequest:
       type: object
       required:
@@ -2850,9 +3170,10 @@ components:
       properties:
         dppId:
           type: string
-          example: "DPP001"
+          description: The DPP ID for which the proof was submitted.
         proofId:
           type: string
+          description: A unique identifier for the submitted proof, assigned by the Norruva platform.
           example: "zkp_proof_mock_123abc"
         status:
           type: string
@@ -2866,20 +3187,19 @@ components:
         timestamp:
           type: string
           format: date-time
-          example: "2024-08-15T12:00:00Z"
+          description: Timestamp of the submission.
     ZkpVerificationResponse: # Conceptual Schema for ZKP Layer
       type: object
       properties:
         dppId:
           type: string
-          example: "DPP001"
+          description: The DPP ID for which the claim was queried.
         claimType:
           type: string
           description: The type of claim that was queried for verification.
           example: "material_compliance_svhc_lead_less_0.1"
         isVerified:
           type: boolean
-          example: true
           description: >
             True if a valid (mock) ZKP for this claim type is associated with the DPP, false otherwise.
             This is a mock response; actual ZKP verification is complex.
@@ -2892,7 +3212,6 @@ components:
           type: string
           format: date-time
           nullable: true
-          example: "2024-08-15T12:05:00Z"
           description: Timestamp of when this (mock) verification check was performed.
         message:
           type: string
@@ -2924,4 +3243,8 @@ components:
 
 
 
-    
+
+
+
+
+  

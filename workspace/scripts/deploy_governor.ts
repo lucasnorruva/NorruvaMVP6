@@ -1,18 +1,26 @@
 
 import { ethers, upgrades } from "hardhat";
+import dotenv from "dotenv";
+
+dotenv.config(); // Load .env file
 
 async function main() {
   const [deployer] = await ethers.getSigners();
   console.log("Deploying DPPGovernor contract with the account:", deployer.address);
 
-  // IMPORTANT: Replace these with your actual deployed NORUToken and TimelockController addresses
-  // These addresses would typically be obtained from previous deployment script outputs or environment variables.
-  const NORU_TOKEN_ADDRESS = process.env.NORU_TOKEN_ADDRESS || "YOUR_DEPLOYED_NORU_TOKEN_ADDRESS";
-  const TIMELOCK_CONTROLLER_ADDRESS = process.env.TIMELOCK_CONTROLLER_ADDRESS || "YOUR_DEPLOYED_TIMELOCK_CONTROLLER_ADDRESS";
+  // Retrieve deployed addresses from environment variables
+  const NORU_TOKEN_ADDRESS = process.env.NORU_TOKEN_ADDRESS;
+  const TIMELOCK_CONTROLLER_ADDRESS = process.env.TIMELOCK_CONTROLLER_ADDRESS;
   const GOVERNOR_NAME = "Norruva DPP DAO Governor";
 
-  if (NORU_TOKEN_ADDRESS === "YOUR_DEPLOYED_NORU_TOKEN_ADDRESS" || TIMELOCK_CONTROLLER_ADDRESS === "YOUR_DEPLOYED_TIMELOCK_CONTROLLER_ADDRESS") {
-    console.error("Please replace placeholder addresses for NORU_TOKEN_ADDRESS and TIMELOCK_CONTROLLER_ADDRESS in deploy_governor.ts");
+  if (!NORU_TOKEN_ADDRESS || NORU_TOKEN_ADDRESS === "YOUR_DEPLOYED_NORU_TOKEN_ADDRESS") {
+    console.error("ERROR: NORU_TOKEN_ADDRESS is not set or is a placeholder in .env file or environment.");
+    console.log("Please deploy NORUToken first and set its address in .env or pass it.");
+    process.exit(1);
+  }
+  if (!TIMELOCK_CONTROLLER_ADDRESS || TIMELOCK_CONTROLLER_ADDRESS === "YOUR_DEPLOYED_TIMELOCK_CONTROLLER_ADDRESS") {
+    console.error("ERROR: TIMELOCK_CONTROLLER_ADDRESS is not set or is a placeholder in .env file or environment.");
+    console.log("Please deploy TimelockController first and set its address in .env or pass it.");
     process.exit(1);
   }
 
@@ -39,55 +47,39 @@ async function main() {
 
   const PROPOSER_ROLE = await timelockController.PROPOSER_ROLE();
   const EXECUTOR_ROLE = await timelockController.EXECUTOR_ROLE();
-  const CANCELLER_ROLE = await timelockController.CANCELLER_ROLE(); // Added CANCELLER_ROLE
+  const CANCELLER_ROLE = await timelockController.CANCELLER_ROLE();
   const TIMELOCK_ADMIN_ROLE = await timelockController.TIMELOCK_ADMIN_ROLE();
 
-  // Grant PROPOSER_ROLE to the Governor contract
   console.log(`Granting PROPOSER_ROLE to Governor (${governorAddress}) on TimelockController...`);
-  let tx = await timelockController.grantRole(PROPOSER_ROLE, governorAddress);
+  let tx = await timelockController.connect(deployer).grantRole(PROPOSER_ROLE, governorAddress);
   await tx.wait();
   console.log("PROPOSER_ROLE granted to Governor.");
 
-  // Grant CANCELLER_ROLE to the Governor contract (so it can cancel its own proposals if needed)
   console.log(`Granting CANCELLER_ROLE to Governor (${governorAddress}) on TimelockController...`);
-  tx = await timelockController.grantRole(CANCELLER_ROLE, governorAddress);
+  tx = await timelockController.connect(deployer).grantRole(CANCELLER_ROLE, governorAddress);
   await tx.wait();
   console.log("CANCELLER_ROLE granted to Governor.");
 
-  // Grant EXECUTOR_ROLE to address(0) to allow anyone to execute proposals once passed and timelocked.
-  // Alternatively, could grant to Governor or specific accounts.
   console.log(`Granting EXECUTOR_ROLE to address(0) (anyone) on TimelockController...`);
-  tx = await timelockController.grantRole(EXECUTOR_ROLE, ethers.ZeroAddress);
+  tx = await timelockController.connect(deployer).grantRole(EXECUTOR_ROLE, ethers.ZeroAddress);
   await tx.wait();
-  console.log("EXECUTOR_ROLE granted to address(0).");
-
-  // Check if deployer has TIMELOCK_ADMIN_ROLE
+  console.log("EXECUTOR_ROLE granted to address(0). (Any account can execute passed proposals)");
+  
+  // Check if deployer has TIMELOCK_ADMIN_ROLE before attempting to renounce
   const deployerIsAdmin = await timelockController.hasRole(TIMELOCK_ADMIN_ROLE, deployer.address);
   if (deployerIsAdmin) {
-    // Transfer TIMELOCK_ADMIN_ROLE from deployer to Governor (making DAO self-governed for timelock)
-    // First, grant admin role to Governor
-    console.log(`Granting TIMELOCK_ADMIN_ROLE to Governor (${governorAddress}) on TimelockController...`);
-    tx = await timelockController.grantRole(TIMELOCK_ADMIN_ROLE, governorAddress);
+    console.log(`Deployer (${deployer.address}) currently has TIMELOCK_ADMIN_ROLE. Renouncing...`);
+    tx = await timelockController.connect(deployer).renounceRole(TIMELOCK_ADMIN_ROLE, deployer.address);
     await tx.wait();
-    console.log("TIMELOCK_ADMIN_ROLE granted to Governor.");
-    
-    // Then, deployer renounces TIMELOCK_ADMIN_ROLE
-    console.log(`Deployer (${deployer.address}) renouncing TIMELOCK_ADMIN_ROLE on TimelockController...`);
-    tx = await timelockController.renounceRole(TIMELOCK_ADMIN_ROLE, deployer.address);
-    await tx.wait();
-    console.log("Deployer renounced TIMELOCK_ADMIN_ROLE. Governor is now admin of Timelock.");
+    console.log("Deployer renounced TIMELOCK_ADMIN_ROLE. The TimelockController is now admin-less (or managed by another previously assigned admin).");
+    console.log("For full DAO control, the Governor contract itself might need to be granted TIMELOCK_ADMIN_ROLE, and then only the DAO can change Timelock parameters.");
   } else {
-    console.log("Deployer is not TIMELOCK_ADMIN_ROLE, skipping admin role transfer to Governor.");
-    // Check if Governor is already admin
-    const governorIsAdmin = await timelockController.hasRole(TIMELOCK_ADMIN_ROLE, governorAddress);
-    if(governorIsAdmin) {
-        console.log("Governor is already TIMELOCK_ADMIN_ROLE.");
-    } else {
-        console.warn("WARNING: TIMELOCK_ADMIN_ROLE is not held by deployer and not transferred to Governor. Timelock may be unmanageable.");
-    }
+    console.log(`Deployer (${deployer.address}) does not have TIMELOCK_ADMIN_ROLE. No renouncement needed from deployer.`);
   }
-  console.log("TimelockController roles configured.");
-  console.log("Deployment and DAO setup complete.");
+
+  console.log("\nTimelockController roles configured for DPPGovernor.");
+  console.log("Deployment and DAO setup steps complete for Governor.");
+  console.log("Ensure that NORU_TOKEN_ADDRESS and TIMELOCK_CONTROLLER_ADDRESS in your .env (or environment) point to the correct deployed contracts.");
 }
 
 main()

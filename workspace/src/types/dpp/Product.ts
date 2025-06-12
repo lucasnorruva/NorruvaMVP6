@@ -133,6 +133,8 @@ export interface DigitalProductPassport {
     customAttributes?: CustomAttribute[];
   };
 
+  textileInformation?: TextileInformation;
+  constructionProductInformation?: ConstructionProductInformation;
   lifecycleEvents?: LifecycleEvent[];
   certifications?: Certification[];
   documents?: DocumentReference[];
@@ -165,8 +167,6 @@ export interface DigitalProductPassport {
   accessControlPolicyUrl?: string;
   privacyPolicyUrl?: string;
   supplyChainLinks?: ProductSupplyChainLink[];
-  textileInformation?: TextileInformation;
-  constructionProductInformation?: ConstructionProductInformation;
 }
 
 export interface DashboardFiltersState {

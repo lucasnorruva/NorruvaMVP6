@@ -1,5 +1,5 @@
 
-import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation } from '@/types/dpp'; // Added EbsiVerificationDetails
+import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from '@/types/dpp'; // Added EbsiVerificationDetails
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
   {
@@ -234,7 +234,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       status: "flagged", 
       created_at: "2024-04-10T10:00:00Z",
       onChainStatus: "FlaggedForReview", 
-      onChainLifecycleStage: "InUse"
+      onChainLifecycleStage: "InUse" 
     },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-22T00:00:00Z" },
@@ -473,7 +473,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-08-01T00:00:00Z" },
       battery_regulation: { status: "not_applicable" },
-      scipNotification: { status: 'Not Required', lastChecked: "2024-08-01T00:00:00Z" },
+      scipNotification: { status: 'Not Required', lastChecked: "2024-08-01T00:00:00Z", svhcListVersion: "N/A" },
       esprConformity: { status: "conformant", assessmentId: "CPR_ASSESS_006", assessmentDate: "2024-07-15" },
       euCustomsData: {
         status: "Verified",
@@ -495,5 +495,6 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     
     
     
+
 
 

@@ -110,8 +110,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     },
     authenticationVcId: "vc_auth_DPP002_mock456",
   },
-  "DPP006": { 
-    passportId: "DPP006",
+  "PROD006": { 
+    passportId: "PROD006",
     productName: "EcoSmart Insulation Panel R50",
     tagline: "Superior Insulation, Sustainably Made.",
     imageUrl: "https://placehold.co/800x600.png",

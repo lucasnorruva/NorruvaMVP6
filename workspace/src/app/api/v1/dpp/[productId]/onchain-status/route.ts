@@ -9,7 +9,7 @@ import type { DigitalProductPassport, LifecycleEvent } from '@/types/dpp';
 import { validateApiKey } from '@/middleware/apiKeyAuth';
 
 interface UpdateOnChainStatusRequestBody {
-  status: 'active' | 'recalled' | 'flagged_for_review' | 'archived'; // Made stricter, removed | string
+  status: 'active' | 'recalled' | 'flagged_for_review' | 'archived';
 }
 
 export async function POST(
@@ -46,6 +46,9 @@ export async function POST(
   const previousStatus = product.metadata.onChainStatus || "Unknown";
 
   // Update the conceptual on-chain status
+  if (!product.metadata) { // Ensure metadata object exists
+    product.metadata = { status: 'draft', last_updated: now };
+  }
   product.metadata.onChainStatus = newOnChainStatus;
   product.metadata.last_updated = now;
 

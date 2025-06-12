@@ -65,6 +65,10 @@ export async function POST(
     product.lifecycleEvents = [];
   }
   product.lifecycleEvents.push(vcHashRegisteredEvent);
+  
+  if (!product.metadata) { 
+    product.metadata = { status: 'draft', last_updated: now };
+  }
   product.metadata.last_updated = now;
 
   MOCK_DPPS[productIndex] = product;
@@ -77,4 +81,3 @@ export async function POST(
     updatedProduct: product,
   }, { status: 200 });
 }
-

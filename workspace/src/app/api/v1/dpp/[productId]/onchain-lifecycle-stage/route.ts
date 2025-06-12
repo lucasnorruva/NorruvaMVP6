@@ -45,6 +45,9 @@ export async function POST(
   const previousStage = product.metadata.onChainLifecycleStage || "Unknown";
 
   // Update the conceptual on-chain lifecycle stage
+  if (!product.metadata) { // Ensure metadata object exists
+    product.metadata = { status: 'draft', last_updated: now };
+  }
   product.metadata.onChainLifecycleStage = newLifecycleStage;
   product.metadata.last_updated = now;
 
@@ -60,7 +63,7 @@ export async function POST(
       reason: "Admin action via Blockchain Management page.",
       mockTransactionHash: mockTxHash,
     },
-    transactionHash: mockTxHash, // Store mock tx hash here too
+    transactionHash: mockTxHash, 
   };
 
   if (!product.lifecycleEvents) {
@@ -78,4 +81,3 @@ export async function POST(
     updatedProduct: product,
   }, { status: 200 });
 }
-

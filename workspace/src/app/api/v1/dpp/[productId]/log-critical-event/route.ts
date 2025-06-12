@@ -10,7 +10,7 @@ import { validateApiKey } from '@/middleware/apiKeyAuth';
 
 interface LogCriticalEventRequestBody {
   eventDescription: string;
-  severity?: "High" | "Medium" | "Low"; // Optional for now, API can default
+  severity?: "High" | "Medium" | "Low"; 
 }
 
 export async function POST(
@@ -28,11 +28,16 @@ export async function POST(
     return NextResponse.json({ error: { code: 400, message: "Invalid JSON payload." } }, { status: 400 });
   }
 
-  const { eventDescription, severity = "High" } = requestBody; // Default severity if not provided
+  const { eventDescription, severity = "High" } = requestBody; 
 
   if (!eventDescription || typeof eventDescription !== 'string' || eventDescription.trim() === '') {
     return NextResponse.json({ error: { code: 400, message: "Field 'eventDescription' is required and must be a non-empty string." } }, { status: 400 });
   }
+  const validSeverities: LogCriticalEventRequestBody['severity'][] = ["High", "Medium", "Low"];
+  if (severity && !validSeverities.includes(severity)) {
+    return NextResponse.json({ error: { code: 400, message: `Field 'severity' must be one of: ${validSeverities.join(', ')}.` } }, { status: 400 });
+  }
+
 
   const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
 
@@ -62,6 +67,10 @@ export async function POST(
     product.lifecycleEvents = [];
   }
   product.lifecycleEvents.push(criticalEvent);
+
+  if (!product.metadata) { 
+    product.metadata = { status: 'draft', last_updated: now };
+  }
   product.metadata.last_updated = now;
 
   MOCK_DPPS[productIndex] = product;

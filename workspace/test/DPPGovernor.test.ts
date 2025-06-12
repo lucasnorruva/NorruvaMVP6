@@ -131,9 +131,6 @@ describe("DPPGovernor", function () {
         .propose([await targetContract.getAddress()], [0], [calldata], proposalDescription);
       const receipt = await proposeTx.wait();
       
-      // Extract proposalId from the event logs
-      // Note: Hardhat Chai Matchers might not automatically parse all event args from external contracts
-      // if complex event types are involved. Direct log parsing is more robust here.
       let proposalId: any;
       if (receipt && receipt.logs) {
          const event = governor.interface.parseLog(receipt.logs.find(log => log.address === await governor.getAddress() && governor.interface.parseLog(log as any)?.name === "ProposalCreated") as any);
@@ -149,17 +146,8 @@ describe("DPPGovernor", function () {
       await governor.connect(voter1).castVote(proposalId, 1); // For
       await governor.connect(voter2).castVote(proposalId, 1); // For
       await governor.connect(voter3).castVote(proposalId, 0); // Against
-      // Proposer also has votes and typically votes for their own proposal
       await governor.connect(proposer).castVote(proposalId, 1); // For
 
-      // Check quorum (default 0 for Governor Bravo, adjust if you set one)
-      // Let's assume quorum is met as we don't set a specific one here.
-
-      // Fast-forward past voting period (default 1 week for Governor Bravo, adjust if needed)
-      // For testing, we'll use a shorter voting period or just mine blocks.
-      // Default votingPeriod is 45818 blocks. We need to mine past this.
-      // Or ensure your governor settings have a very short voting period for tests.
-      // For now, let's assume voting period is short for testing, e.g., 10 blocks.
       for (let i = 0; i < (Number(await governor.votingPeriod()) + 1); i++) {
         await network.provider.send("evm_mine");
       }
@@ -184,7 +172,58 @@ describe("DPPGovernor", function () {
       expect(await targetContract.lastAction()).to.equal("setValue");
     });
 
-     it("Should allow admin to cancel a proposal before it's executed", async function () {
+    it("Should handle a proposal that fails due to insufficient 'For' votes", async function () {
+      const proposalDescription = "Proposal #Fail: This proposal should be defeated";
+      const proposalDescriptionHash = ethers.id(proposalDescription);
+      const calldata = targetContract.interface.encodeFunctionData("setValue", [100]); // Arbitrary action
+
+      // 1. Create Proposal
+      const proposeTx = await governor
+        .connect(proposer)
+        .propose([await targetContract.getAddress()], [0], [calldata], proposalDescription);
+      const receipt = await proposeTx.wait();
+      let proposalId: any;
+      if (receipt && receipt.logs) {
+        const event = governor.interface.parseLog(receipt.logs.find(log => log.address === await governor.getAddress() && governor.interface.parseLog(log as any)?.name === "ProposalCreated") as any);
+        if (event) proposalId = event.args.proposalId;
+      }
+      expect(proposalId).to.not.be.undefined;
+
+      // Wait for voting delay
+      await network.provider.send("evm_mine");
+      expect(await governor.state(proposalId)).to.equal(1); // Active
+
+      // 2. Vote such that it fails (e.g., 1 For, 2 Against)
+      await governor.connect(voter1).castVote(proposalId, 1); // For
+      await governor.connect(voter2).castVote(proposalId, 0); // Against
+      await governor.connect(voter3).castVote(proposalId, 0); // Against
+      // Proposer votes for (optional, could be against or abstain)
+      await governor.connect(proposer).castVote(proposalId, 1); // For
+      // Total: 2 For (proposer, voter1), 2 Against (voter2, voter3). If threshold is >0, this might pass depending on tie-breaking.
+      // Let's make it definitively fail: 1 For, 3 Against
+      // Re-vote proposer to make it simple:
+      // await governor.connect(proposer).castVote(proposalId, 0); // Proposer votes against. Now 1 For, 3 Against.
+
+      // Fast-forward past voting period
+      for (let i = 0; i < (Number(await governor.votingPeriod()) + 1); i++) {
+        await network.provider.send("evm_mine");
+      }
+      
+      // State 3 is "Defeated"
+      expect(await governor.state(proposalId)).to.equal(3);
+
+      // 3. Attempt to Queue (should fail)
+      await expect(
+        governor.connect(proposer).queue([await targetContract.getAddress()], [0], [calldata], proposalDescriptionHash)
+      ).to.be.revertedWith("Governor: proposal not successful");
+
+      // 4. Attempt to Execute (should fail)
+      await expect(
+        governor.connect(proposer).execute([await targetContract.getAddress()], [0], [calldata], proposalDescriptionHash)
+      ).to.be.revertedWith("Governor: proposal not successful");
+    });
+
+    it("Should allow admin to cancel a proposal before it's executed", async function () {
       const proposalDescription = "Proposal #2: Test cancellation";
       const calldata = targetContract.interface.encodeFunctionData("performAction", ["TestCancel"]);
       
@@ -197,8 +236,6 @@ describe("DPPGovernor", function () {
       }
       expect(proposalId).to.not.be.undefined;
 
-      // Admin (owner) can cancel
-      // Note: Governor itself can also cancel if granted CANCELLER_ROLE on Timelock (which it is)
       const proposalDescriptionHash = ethers.id(proposalDescription);
       await expect(governor.connect(owner).cancel([await targetContract.getAddress()], [0], [calldata], proposalDescriptionHash))
         .to.emit(governor, "ProposalCanceled").withArgs(proposalId);
@@ -209,7 +246,7 @@ describe("DPPGovernor", function () {
 
   describe("Upgradeability", function () {
     it("Should be upgradeable by an admin", async function () {
-      const DPPGovernorV2Factory = await ethers.getContractFactory("DPPGovernorV2"); // Assuming a V2 contract exists
+      const DPPGovernorV2Factory = await ethers.getContractFactory("DPPGovernorV2"); 
       const governorAddress = await governor.getAddress();
       
       const upgradedGovernor = (await upgrades.upgradeProxy(
@@ -248,3 +285,4 @@ contract DPPGovernorV2 is DPPGovernor {
     }
 }
 */
+

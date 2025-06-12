@@ -65,3 +65,4 @@ describe('POST /api/v1/dpp/anchor/[productId]', () => {
     expect(res.status).toBe(401);
   });
 });
+

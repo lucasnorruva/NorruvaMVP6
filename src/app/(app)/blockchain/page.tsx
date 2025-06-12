@@ -14,16 +14,16 @@ import {
     KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, 
     PlusCircle, CalendarDays, Sigma, Layers3, Tag, CheckCircle as CheckCircleLucide, 
     Server as ServerIcon, Link as LinkIconPath, FileCog, BookOpen, CircleDot, Clock, Share2, Users, Factory, Truck, ShoppingCart, Recycle as RecycleIconLucide, Upload, MessageSquare,
-    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers
+    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers, FileLock // Added FileLock
 } from "lucide-react";
-import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse } from "@/types/dpp";
+import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse, OwnershipNftLink } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from '@/lib/utils';
 import { Separator } from "@/components/ui/separator";
-import { Textarea } from "@/components/ui/textarea"; // Added Textarea import
+import { Textarea } from "@/components/ui/textarea"; 
 
 const EBSI_EXPLORER_BASE_URL = "https://mock-ebsi-explorer.example.com/tx/";
 const TOKEN_EXPLORER_BASE_URL = "https://mock-token-explorer.example.com/token/"; // General token explorer
@@ -69,6 +69,8 @@ const getEbsiStatusBadge = (status?: "verified" | "pending_verification" | "not_
 function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
   const hasBlockchainInfo = product.blockchainIdentifiers?.platform || product.blockchainIdentifiers?.contractAddress || product.blockchainIdentifiers?.tokenId || product.blockchainIdentifiers?.anchorTransactionHash;
   const hasEbsiInfo = product.ebsiVerification?.status || product.ebsiVerification?.verificationId || product.ebsiVerification?.issuerDid || product.ebsiVerification?.schema || product.ebsiVerification?.issuanceDate;
+  const hasAuthVc = product.authenticationVcId;
+  const hasOwnershipNft = product.ownershipNftLink;
 
   return (
     <div className="space-y-3 text-xs">
@@ -129,9 +131,29 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
             {product.ebsiVerification?.issuanceDate && (<div className="flex items-center gap-1 mb-0.5"><CalendarDays className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Issued:</span><span className="font-mono text-foreground/90 break-all">{new Date(product.ebsiVerification.issuanceDate).toLocaleString()}</span></div>)}
         </div>
       )}
+
+      {(hasAuthVc || hasOwnershipNft) && (
+        <div className={cn((hasBlockchainInfo || hasEbsiInfo) && "mt-2 pt-2 border-t border-border/30")}>
+            <h4 className="text-sm font-semibold text-primary mb-1.5 flex items-center"><KeyRound className="h-4 w-4 mr-1.5"/>Authenticity & Ownership VCs/NFTs</h4>
+             {hasAuthVc && (
+                <div className="flex items-center gap-1 mb-0.5"><FileLock className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Auth VC ID:</span><span className="font-mono break-all text-foreground/90">{product.authenticationVcId}</span></div>
+             )}
+             {hasOwnershipNft && (
+                <div className="mt-1">
+                    <div className="flex items-center gap-1 mb-0.5"><Tag className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Ownership NFT:</span></div>
+                    <div className="pl-4 text-xs">
+                        {product.ownershipNftLink?.registryUrl && <p><span className="text-muted-foreground">Registry:</span> <Link href={product.ownershipNftLink.registryUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline break-all">{product.ownershipNftLink.registryUrl}</Link></p>}
+                        <p><span className="text-muted-foreground">Contract:</span> <span className="font-mono break-all text-foreground/90">{product.ownershipNftLink?.contractAddress}</span></p>
+                        <p><span className="text-muted-foreground">Token ID:</span> <span className="font-mono break-all text-foreground/90">{product.ownershipNftLink?.tokenId}</span></p>
+                        {product.ownershipNftLink?.chainName && <p><span className="text-muted-foreground">Chain:</span> <span className="text-foreground/90">{product.ownershipNftLink.chainName}</span></p>}
+                    </div>
+                </div>
+             )}
+        </div>
+      )}
       
-      {!hasBlockchainInfo && !hasEbsiInfo && (
-        <p className="text-muted-foreground text-sm">No specific blockchain or EBSI verification details available for this product.</p>
+      {!hasBlockchainInfo && !hasEbsiInfo && !hasAuthVc && !hasOwnershipNft && (
+        <p className="text-muted-foreground text-sm">No specific blockchain, EBSI, authenticity VC or ownership NFT details available for this product.</p>
       )}
     </div>
   );
@@ -185,12 +207,19 @@ export default function BlockchainPage() {
   const [isUpdatingOnChainStatusLoading, setIsUpdatingOnChainStatusLoading] = useState(false);
   const [isLoggingCriticalEventLoading, setIsLoggingCriticalEventLoading] = useState(false);
 
-  // New state for additional smart contract actions
   const [onChainLifecycleStage, setOnChainLifecycleStage] = useState<string>("Manufacturing");
   const [vcIdToRegister, setVcIdToRegister] = useState<string>("");
   const [vcHashToRegister, setVcHashToRegister] = useState<string>("");
   const [isUpdatingLifecycleStageLoading, setIsUpdatingLifecycleStageLoading] = useState(false);
   const [isRegisteringVcHashLoading, setIsRegisteringVcHashLoading] = useState(false);
+
+  const [authVcProductId, setAuthVcProductId] = useState<string>("");
+  const [nftProductId, setNftProductId] = useState<string>("");
+  const [nftRegistryUrl, setNftRegistryUrl] = useState<string>("");
+  const [nftContractAddress, setNftContractAddress] = useState<string>("");
+  const [nftTokenId, setNftTokenId] = useState<string>("");
+  const [nftChainName, setNftChainName] = useState<string>("");
+
 
   const lifecycleStageOptions = ["Design", "Manufacturing", "QualityAssurance", "Distribution", "InUse", "Maintenance", "EndOfLife"];
 
@@ -248,15 +277,30 @@ export default function BlockchainPage() {
     setSelected(dpp);
     if (dpp) {
       const tokenId = dpp.blockchainIdentifiers?.tokenId;
+      const contractAddr = dpp.blockchainIdentifiers?.contractAddress;
       setUpdateTokenId(tokenId || "");
       setStatusTokenId(tokenId || "");
       setViewTokenId(tokenId || "");
       setMintMetadataUri(tokenId ? `ipfs://dpp_metadata_for_${tokenId}` : `ipfs://dpp_metadata_for_${dpp.id}`);
+      
+      setAuthVcProductId(dpp.id);
+      setNftProductId(dpp.id);
+      setNftRegistryUrl(dpp.ownershipNftLink?.registryUrl || "");
+      setNftContractAddress(dpp.ownershipNftLink?.contractAddress || contractAddr || "");
+      setNftTokenId(dpp.ownershipNftLink?.tokenId || tokenId || "");
+      setNftChainName(dpp.ownershipNftLink?.chainName || dpp.blockchainIdentifiers?.platform || "");
+
     } else {
       setUpdateTokenId("");
       setStatusTokenId("");
       setViewTokenId("");
       setMintMetadataUri("");
+      setAuthVcProductId("");
+      setNftProductId("");
+      setNftRegistryUrl("");
+      setNftContractAddress("");
+      setNftTokenId("");
+      setNftChainName("");
     }
     setFetchedCredential(null);
     setMintResponse(null);
@@ -275,6 +319,13 @@ export default function BlockchainPage() {
           setUpdateTokenId(tokenId);
           setStatusTokenId(tokenId);
           setViewTokenId(tokenId);
+      }
+       // Update NFT form fields if ownership link was part of the update
+      if (updated.ownershipNftLink) {
+        setNftRegistryUrl(updated.ownershipNftLink.registryUrl || "");
+        setNftContractAddress(updated.ownershipNftLink.contractAddress);
+        setNftTokenId(updated.ownershipNftLink.tokenId);
+        setNftChainName(updated.ownershipNftLink.chainName || "");
       }
     }
   };
@@ -565,6 +616,66 @@ export default function BlockchainPage() {
     setIsRegisteringVcHashLoading(false);
   };
 
+  const handleIssueAuthVc = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!authVcProductId) {
+      toast({ title: "Product ID Required", description: "Please enter a Product ID to issue an Auth VC for.", variant: "destructive" });
+      return;
+    }
+    setIsActionLoading("issueAuthVc");
+    try {
+      const res = await fetch(`/api/v1/dpp/${authVcProductId}/issue-auth-vc`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
+        body: JSON.stringify({}), // Empty body for this mock
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast({ title: "Authentication VC Issued (Mock)", description: data.message });
+        if (data.updatedProduct) updateDppLocally(data.updatedProduct);
+      } else {
+        handleApiError(res, "Issuing Authentication VC");
+      }
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "An unknown error occurred";
+      toast({ title: "Issuing Auth VC Failed", description: errorMsg, variant: "destructive" });
+    }
+    setIsActionLoading(false);
+  };
+  
+  const handleLinkNft = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!nftProductId || !nftContractAddress || !nftTokenId) {
+      toast({ title: "Required Fields Missing", description: "Product ID, NFT Contract Address, and Token ID are required.", variant: "destructive" });
+      return;
+    }
+    setIsActionLoading("linkNft");
+    const payload: OwnershipNftLink & { registryUrl?: string } = {
+        contractAddress: nftContractAddress,
+        tokenId: nftTokenId,
+        ...(nftRegistryUrl && { registryUrl: nftRegistryUrl }),
+        ...(nftChainName && { chainName: nftChainName }),
+    };
+    try {
+      const res = await fetch(`/api/v1/dpp/${nftProductId}/link-nft`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast({ title: "Ownership NFT Linked (Mock)", description: data.message });
+        if (data.updatedProduct) updateDppLocally(data.updatedProduct);
+      } else {
+        handleApiError(res, "Linking Ownership NFT");
+      }
+    } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : "An unknown error occurred";
+        toast({ title: "Linking NFT Failed", description: errorMsg, variant: "destructive" });
+    }
+    setIsActionLoading(false);
+  };
+
 
   const renderApiResult = (title: string, responseString: string | null | object, isErrorResponse?: boolean) => {
     if (!responseString) return null;
@@ -635,6 +746,7 @@ export default function BlockchainPage() {
             <li><strong>Managing Verifiable Credentials:</strong> Viewing and retrieving product-related VCs.</li>
             <li><strong>DPP Token Operations:</strong> Conceptual minting, metadata updates, and status checks for DPP tokens.</li>
             <li><strong>Smart Contract Actions:</strong> Conceptual interactions for on-chain status updates and event logging.</li>
+            <li><strong>Authenticity & Ownership:</strong> Issuing conceptual VCs for authenticity and linking NFTs for ownership.</li>
           </ul>
           <p className="mt-2">
             These operations interact with mock API endpoints. For technical details, refer to the 
@@ -825,10 +937,10 @@ export default function BlockchainPage() {
 
                             <Card className="bg-background mt-6 md:col-span-2">
                               <CardHeader>
-                                <CardTitle className="text-md flex items-center"><ListCollapse className="mr-2 h-4 w-4 text-info"/>Conceptual Smart Contract Actions</CardTitle>
-                                <CardDescription className="text-xs">Simulate direct interactions with a DPP smart contract.</CardDescription>
+                                <CardTitle className="text-md flex items-center"><ListCollapse className="mr-2 h-4 w-4 text-info"/>Conceptual Smart Contract &amp; Public Layer Actions</CardTitle>
+                                <CardDescription className="text-xs">Simulate direct interactions with a DPP smart contract or public layer operations.</CardDescription>
                               </CardHeader>
-                              <CardContent className="grid sm:grid-cols-2 gap-6">
+                              <CardContent className="grid sm:grid-cols-2 gap-x-6 gap-y-8">
                                 <form onSubmit={handleUpdateOnChainStatus} className="space-y-3 p-3 border rounded-md">
                                   <h4 className="font-medium text-sm flex items-center"><Sigma className="h-4 w-4 mr-1.5 text-primary"/>Update On-Chain DPP Status</h4>
                                   <p className="text-xs text-muted-foreground">Simulate updating the product's status on the blockchain (e.g., after recall).</p>
@@ -879,6 +991,28 @@ export default function BlockchainPage() {
                                   <Button type="submit" size="sm" disabled={isRegisteringVcHashLoading}>
                                     {isRegisteringVcHashLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Hash className="mr-2 h-4 w-4" />}
                                     {isRegisteringVcHashLoading ? "Registering..." : "Register Mock VC Hash"}
+                                  </Button>
+                                </form>
+                                <form onSubmit={handleIssueAuthVc} className="space-y-3 p-3 border rounded-md">
+                                  <h4 className="font-medium text-sm flex items-center"><FileLock className="h-4 w-4 mr-1.5 text-primary"/>Issue Authentication VC (Mock)</h4>
+                                  <p className="text-xs text-muted-foreground">Simulate issuing a Verifiable Credential attesting to product authenticity.</p>
+                                  <Input value={authVcProductId} onChange={e => setAuthVcProductId(e.target.value)} placeholder="Product ID (pre-filled)" />
+                                  <Button type="submit" size="sm" disabled={isActionLoading === "issueAuthVc" || !authVcProductId}>
+                                    {isActionLoading === "issueAuthVc" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <FileLock className="mr-2 h-4 w-4" />}
+                                    {isActionLoading === "issueAuthVc" ? "Issuing..." : "Issue Auth VC"}
+                                  </Button>
+                                </form>
+                                <form onSubmit={handleLinkNft} className="space-y-3 p-3 border rounded-md">
+                                  <h4 className="font-medium text-sm flex items-center"><Tag className="h-4 w-4 mr-1.5 text-primary"/>Link Ownership NFT (Mock)</h4>
+                                  <p className="text-xs text-muted-foreground">Simulate linking an NFT representing product ownership.</p>
+                                  <Input value={nftProductId} onChange={e => setNftProductId(e.target.value)} placeholder="Product ID (pre-filled)" />
+                                  <Input value={nftRegistryUrl} onChange={e => setNftRegistryUrl(e.target.value)} placeholder="NFT Registry URL (e.g., OpenSea, Rarible)" />
+                                  <Input value={nftContractAddress} onChange={e => setNftContractAddress(e.target.value)} placeholder="NFT Contract Address (e.g., 0x...)" />
+                                  <Input value={nftTokenId} onChange={e => setNftTokenId(e.target.value)} placeholder="NFT Token ID (e.g., 123)" />
+                                  <Input value={nftChainName} onChange={e => setNftChainName(e.target.value)} placeholder="Blockchain Name (e.g., Ethereum)" />
+                                  <Button type="submit" size="sm" disabled={isActionLoading === "linkNft" || !nftProductId || !nftContractAddress || !nftTokenId}>
+                                    {isActionLoading === "linkNft" ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Tag className="mr-2 h-4 w-4" />}
+                                    {isActionLoading === "linkNft" ? "Linking..." : "Link Ownership NFT"}
                                   </Button>
                                 </form>
                               </CardContent>
@@ -1004,4 +1138,3 @@ export default function BlockchainPage() {
 }
       
     
-

@@ -158,8 +158,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         ebsiVerificationId: dpp.ebsiVerification?.verificationId, 
         onChainStatus: dpp.metadata.onChainStatus,
         onChainLifecycleStage: dpp.metadata.onChainLifecycleStage,
-        textileInformation: dpp.textileInformation, // New
-        constructionProductInformation: dpp.constructionProductInformation, // New
+        textileInformation: dpp.textileInformation, 
+        constructionProductInformation: dpp.constructionProductInformation, 
     };
 }
 
@@ -226,10 +226,10 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             customAttributes: parsedCustomAttributes, 
           },
           compliance: { 
-            eprel: complianceSummaryFromStorage.eprel,
-            scipNotification: complianceSummaryFromStorage.scip, 
-            euCustomsData: complianceSummaryFromStorage.euCustomsData,
-            battery_regulation: userProductData.batteryRegulation, // Use detailed from StoredUserProduct
+            eprel: userProductData.complianceData?.eprel,
+            scipNotification: userProductData.complianceData?.scipNotification, 
+            euCustomsData: userProductData.complianceData?.euCustomsData,
+            battery_regulation: userProductData.complianceData?.battery_regulation, 
           },
           ebsiVerification: complianceSummaryFromStorage.ebsi ? {
             status: complianceSummaryFromStorage.ebsi.status as EbsiVerificationDetails['status'],
@@ -248,8 +248,8 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           authenticationVcId: userProductData.authenticationVcId, 
           ownershipNftLink: userProductData.ownershipNftLink, 
           blockchainIdentifiers: userProductData.blockchainIdentifiers, 
-          textileInformation: userProductData.textileInformation, // New
-          constructionProductInformation: userProductData.constructionProductInformation, // New
+          textileInformation: userProductData.textileInformation, 
+          constructionProductInformation: userProductData.constructionProductInformation, 
         } as DigitalProductPassport;
       }
     }

@@ -10,24 +10,51 @@ import { extractProductData } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, Info, Edit, Compass, Wand2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute } from "@/types/dpp";
-import { fileToDataUri } from '@/utils/fileUtils'; // Import the utility function
+import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails } from "@/types/dpp"; // Added BatteryRegulationDetails
+import { fileToDataUri } from '@/utils/fileUtils'; 
 import AiExtractionSection from "@/components/products/new/AiExtractionSection";
 import ProductDetailsSection from "@/components/products/new/ProductDetailsSection";
 
+type AiOrigin = 'AI_EXTRACTED' | 'manual' | undefined;
+
+interface BatteryRegulationOrigin {
+  batteryChemistryOrigin?: AiOrigin;
+  batteryPassportIdOrigin?: AiOrigin;
+  carbonFootprintOrigin?: {
+    valueOrigin?: AiOrigin;
+    unitOrigin?: AiOrigin;
+    calculationMethodOrigin?: AiOrigin;
+    vcIdOrigin?: AiOrigin;
+  };
+  recycledContentOrigin?: Array<{
+    materialOrigin?: AiOrigin;
+    percentageOrigin?: AiOrigin;
+    vcIdOrigin?: AiOrigin;
+  }>;
+  stateOfHealthOrigin?: {
+    valueOrigin?: AiOrigin;
+    unitOrigin?: AiOrigin;
+    measurementDateOrigin?: AiOrigin;
+    vcIdOrigin?: AiOrigin;
+  };
+  vcIdOrigin?: AiOrigin; // Overall VCID origin
+}
+
 export interface InitialProductFormData extends ProductFormData {
-  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
-  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
-  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
-  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
-  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
-  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
-  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
-  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
-  batteryChemistryOrigin?: 'AI_EXTRACTED' | 'manual';
-  stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
-  carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
-  recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
+  productNameOrigin?: AiOrigin;
+  productDescriptionOrigin?: AiOrigin;
+  manufacturerOrigin?: AiOrigin;
+  modelNumberOrigin?: AiOrigin;
+  materialsOrigin?: AiOrigin;
+  sustainabilityClaimsOrigin?: AiOrigin;
+  energyLabelOrigin?: AiOrigin;
+  specificationsOrigin?: AiOrigin;
+  // batteryChemistryOrigin?: AiOrigin; // Now part of batteryRegulationOrigin
+  // stateOfHealthOrigin?: AiOrigin; // Now part of batteryRegulationOrigin
+  // carbonFootprintManufacturingOrigin?: AiOrigin; // Now part of batteryRegulationOrigin
+  // recycledContentPercentageOrigin?: AiOrigin; // Now part of batteryRegulationOrigin
+  batteryRegulation?: Partial<BatteryRegulationDetails>; // Store the actual battery data here
+  batteryRegulationOrigin?: BatteryRegulationOrigin; // Store origins for battery data
 }
 
 interface StoredUserProduct extends ProductFormData {
@@ -45,6 +72,7 @@ interface StoredUserProduct extends ProductFormData {
   supplyChainLinks?: ProductSupplyChainLink[]; 
   lifecycleEvents?: SimpleLifecycleEvent[]; 
   complianceSummary?: ProductComplianceSummary; 
+  batteryRegulation?: Partial<BatteryRegulationDetails>; // Added
 }
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -69,13 +97,20 @@ export default function AddNewProductPage() {
     productName: "", gtin: "", sku: "", nfcTagId: "", rfidTagId: "", productDescription: "", manufacturer: "", modelNumber: "",
     materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
     imageUrl: "", imageHint: "", imageUrlOrigin: undefined,
-    batteryChemistry: "", stateOfHealth: undefined, carbonFootprintManufacturing: undefined, recycledContentPercentage: undefined,
+    // Old battery fields are removed, new batteryRegulation object added
+    batteryRegulation: { // Initialize with empty or default structure
+        batteryChemistry: "",
+        batteryPassportId: "",
+        carbonFootprint: { value: null, unit: "", calculationMethod: "", vcId: "" },
+        recycledContent: [],
+        stateOfHealth: { value: null, unit: "", measurementDate: "", vcId: "" },
+        vcId: "",
+    },
     customAttributesJsonString: "",
     productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined,
     modelNumberOrigin: undefined, materialsOrigin: undefined, sustainabilityClaimsOrigin: undefined,
-    energyLabelOrigin: undefined, specificationsOrigin: undefined, batteryChemistryOrigin: undefined,
-    stateOfHealthOrigin: undefined, carbonFootprintManufacturingOrigin: undefined,
-    recycledContentPercentageOrigin: undefined,
+    energyLabelOrigin: undefined, specificationsOrigin: undefined,
+    batteryRegulationOrigin: {}, // Initialize origin for battery object
   };
 
   const [currentProductDataForForm, setCurrentProductDataForForm] = useState<Partial<InitialProductFormData>>(defaultFormState);
@@ -88,9 +123,7 @@ export default function AddNewProductPage() {
       if (productToEdit) {
         const editData: Partial<InitialProductFormData> = {
           ...productToEdit, 
-          stateOfHealth: productToEdit.stateOfHealth ?? undefined,
-          carbonFootprintManufacturing: productToEdit.carbonFootprintManufacturing ?? undefined,
-          recycledContentPercentage: productToEdit.recycledContentPercentage ?? undefined,
+          batteryRegulation: productToEdit.batteryRegulation || defaultFormState.batteryRegulation, // Ensure it exists
         };
         setCurrentProductDataForForm(editData);
         setActiveTab("manual");
@@ -103,7 +136,7 @@ export default function AddNewProductPage() {
       setAiExtractionAppliedSuccessfully(false);
       setCurrentProductDataForForm(defaultFormState);
     }
-  }, [isEditMode, editProductId, router, toast]);
+  }, [isEditMode, editProductId, router, toast, defaultFormState]);
 
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -132,7 +165,7 @@ export default function AddNewProductPage() {
       const documentDataUri = await fileToDataUri(file);
       const result = await extractProductData({ documentDataUri, documentType });
 
-      const aiInitialFormData: Partial<InitialProductFormData> = {};
+      const aiInitialFormData: Partial<InitialProductFormData> = { batteryRegulationOrigin: {} }; // Ensure batteryRegulationOrigin is initialized
       if (result.productName) { aiInitialFormData.productName = result.productName; aiInitialFormData.productNameOrigin = 'AI_EXTRACTED'; }
       if (result.productDescription) { aiInitialFormData.productDescription = result.productDescription; aiInitialFormData.productDescriptionOrigin = 'AI_EXTRACTED'; }
       if (result.manufacturer) { aiInitialFormData.manufacturer = result.manufacturer; aiInitialFormData.manufacturerOrigin = 'AI_EXTRACTED'; }
@@ -147,11 +180,27 @@ export default function AddNewProductPage() {
       }
 
       if (result.energyLabel) { aiInitialFormData.energyLabel = result.energyLabel; aiInitialFormData.energyLabelOrigin = 'AI_EXTRACTED'; }
+      
+      // Map new battery fields
+      aiInitialFormData.batteryRegulation = { ...defaultFormState.batteryRegulation }; // Start with defaults
+      if (result.batteryChemistry) {
+         aiInitialFormData.batteryRegulation!.batteryChemistry = result.batteryChemistry;
+         aiInitialFormData.batteryRegulationOrigin!.batteryChemistryOrigin = 'AI_EXTRACTED';
+      }
+      if (result.stateOfHealth !== undefined && result.stateOfHealth !== null) {
+        aiInitialFormData.batteryRegulation!.stateOfHealth = { ...aiInitialFormData.batteryRegulation?.stateOfHealth, value: result.stateOfHealth };
+        aiInitialFormData.batteryRegulationOrigin!.stateOfHealthOrigin = { ...aiInitialFormData.batteryRegulationOrigin?.stateOfHealthOrigin, valueOrigin: 'AI_EXTRACTED'};
+      }
+      if (result.carbonFootprintManufacturing !== undefined && result.carbonFootprintManufacturing !== null) {
+         aiInitialFormData.batteryRegulation!.carbonFootprint = { ...aiInitialFormData.batteryRegulation?.carbonFootprint, value: result.carbonFootprintManufacturing };
+         aiInitialFormData.batteryRegulationOrigin!.carbonFootprintOrigin = { ...aiInitialFormData.batteryRegulationOrigin?.carbonFootprintOrigin, valueOrigin: 'AI_EXTRACTED' };
+      }
+      if (result.recycledContentPercentage !== undefined && result.recycledContentPercentage !== null) {
+        // AI currently gives a single percentage, we'll put it in the first item of the array for now
+        aiInitialFormData.batteryRegulation!.recycledContent = [{ material: "Overall Battery", percentage: result.recycledContentPercentage }];
+        aiInitialFormData.batteryRegulationOrigin!.recycledContentOrigin = [{ percentageOrigin: 'AI_EXTRACTED' }];
+      }
 
-      if (result.batteryChemistry) { aiInitialFormData.batteryChemistry = result.batteryChemistry; aiInitialFormData.batteryChemistryOrigin = 'AI_EXTRACTED'; }
-      if (result.stateOfHealth !== undefined && result.stateOfHealth !== null) { aiInitialFormData.stateOfHealth = result.stateOfHealth; aiInitialFormData.stateOfHealthOrigin = 'AI_EXTRACTED'; }
-      if (result.carbonFootprintManufacturing !== undefined && result.carbonFootprintManufacturing !== null) { aiInitialFormData.carbonFootprintManufacturing = result.carbonFootprintManufacturing; aiInitialFormData.carbonFootprintManufacturingOrigin = 'AI_EXTRACTED'; }
-      if (result.recycledContentPercentage !== undefined && result.recycledContentPercentage !== null) { aiInitialFormData.recycledContentPercentage = result.recycledContentPercentage; aiInitialFormData.recycledContentPercentageOrigin = 'AI_EXTRACTED'; }
 
       aiInitialFormData.imageUrl = ""; 
       aiInitialFormData.imageHint = "";
@@ -187,7 +236,7 @@ export default function AddNewProductPage() {
       let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
       
       const productCoreData: StoredUserProduct = {
-        id: isEditMode && editProductId ? editProductId : `USER_PROD_${Date.now().toString().slice(-6)}`, // Ensure USER_PROD prefix
+        id: isEditMode && editProductId ? editProductId : `USER_PROD_${Date.now().toString().slice(-6)}`,
         ...formDataFromForm, 
         productName: formDataFromForm.productName || "Unnamed Product", 
         status: (isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.status) : "Draft") || "Draft",
@@ -196,6 +245,7 @@ export default function AddNewProductPage() {
         supplyChainLinks: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.supplyChainLinks) || [] : [],
         lifecycleEvents: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.lifecycleEvents) || [] : [],
         complianceSummary: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.complianceSummary) : undefined,
+        batteryRegulation: formDataFromForm.batteryRegulation || defaultFormState.batteryRegulation, // Save new battery object
       };
 
 
@@ -314,4 +364,3 @@ export default function AddNewProductPage() {
     </div>
   );
 }
-    

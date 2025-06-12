@@ -50,32 +50,33 @@ export interface EuCustomsDataDetails {
 }
 
 export interface CarbonFootprintData {
-  value: number;
-  unit: string;
+  value?: number | null; // Made optional and nullable for form
+  unit?: string;
   calculationMethod?: string;
   vcId?: string;
 }
 
 export interface RecycledContentData {
-  material: string;
-  percentage: number;
+  material?: string;
+  percentage?: number | null; // Made optional and nullable for form
   vcId?: string;
 }
 
 export interface StateOfHealthData {
-  value: number;
-  unit: string;
-  measurementDate: string; // ISO Date string
+  value?: number | null; // Made optional and nullable for form
+  unit?: string;
+  measurementDate?: string; // ISO Date string
   vcId?: string;
 }
 
 export interface BatteryRegulationDetails {
-  status: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable' | string;
+  status?: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable' | string; // Made optional for form
+  batteryChemistry?: string; // Moved here
   batteryPassportId?: string;
   carbonFootprint?: CarbonFootprintData;
   recycledContent?: RecycledContentData[];
   stateOfHealth?: StateOfHealthData;
-  vcId?: string;
+  vcId?: string; // Overall VC ID for battery regulation compliance
 }
 
 
@@ -102,9 +103,9 @@ export interface ProductComplianceSummary {
     transactionUrl?: string;
     lastChecked: string; // ISO Date string
   };
-  scip?: ScipNotificationDetails; 
-  euCustomsData?: EuCustomsDataDetails; 
-  battery?: BatteryRegulationDetails; // Added for explicit battery data
+  scip?: ScipNotificationDetails;
+  euCustomsData?: EuCustomsDataDetails;
+  battery?: BatteryRegulationDetails;
   specificRegulations?: ComplianceDetailItem[];
 }
 
@@ -130,10 +131,3 @@ export interface PublicCertification {
   vcId?: string;
   transactionHash?: string;
 }
-
-
-
-    
-
-    
-

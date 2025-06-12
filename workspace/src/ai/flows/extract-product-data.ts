@@ -57,7 +57,7 @@ const ScipDataSchemaForAI = z.object({
 
 const CustomsDataSchemaForAI = z.object({
   hsCode: z.string().optional().describe("Harmonized System (HS) code for customs classification."),
-  countryOfOrigin: z.string().optional().describe("ISO 3166-1 alpha-2 country code of origin."),
+  countryOfOrigin: z.string().optional().describe("ISO 3166-1 alpha-2 code for the country of origin."),
 }).optional();
 
 

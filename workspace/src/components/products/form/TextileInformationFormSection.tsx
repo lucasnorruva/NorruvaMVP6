@@ -22,8 +22,6 @@ import type { ProductFormData } from "@/components/products/ProductForm";
 
 interface TextileInformationFormSectionProps {
   form: UseFormReturn<ProductFormData>;
-  // initialData?: Partial<InitialProductFormData>; // Not directly used here, form defaultValues handle it
-  // isSubmittingForm?: boolean;
 }
 
 export default function TextileInformationFormSection({
@@ -72,7 +70,7 @@ export default function TextileInformationFormSection({
                 </FormItem>
               )}
             />
-            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="text-destructive hover:text-destructive h-8 w-8 absolute top-1 right-1 sm:relative sm:top-auto sm:right-auto">
+            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="text-destructive hover:text-destructive h-8 w-8">
               <Trash2 className="h-4 w-4" />
             </Button>
           </div>

@@ -72,6 +72,7 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
   const hasAuthVc = product.authenticationVcId;
   const hasOwnershipNft = product.ownershipNftLink;
   const hasOnChainStatus = product.metadata?.onChainStatus;
+  const hasOnChainLifecycleStage = product.metadata?.onChainLifecycleStage;
 
   return (
     <div className="space-y-3 text-xs">
@@ -110,15 +111,16 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
         </div>
       )}
 
-      {hasOnChainStatus && (
+      {(hasOnChainStatus || hasOnChainLifecycleStage) && (
          <div className={cn(hasBlockchainInfo && "mt-2 pt-2 border-t border-border/30")}>
-            <h4 className="text-sm font-semibold text-primary mb-1.5 flex items-center"><Sigma className="h-4 w-4 mr-1.5"/>On-Chain DPP Status</h4>
-             <div className="flex items-center gap-1 mb-0.5"><span className="text-muted-foreground">Status:</span><span className="font-semibold capitalize text-foreground/90">{product.metadata.onChainStatus?.replace('_',' ')}</span></div>
+            <h4 className="text-sm font-semibold text-primary mb-1.5 flex items-center"><Sigma className="h-4 w-4 mr-1.5"/>On-Chain DPP State</h4>
+             {hasOnChainStatus && <div className="flex items-center gap-1 mb-0.5"><span className="text-muted-foreground">Status:</span><span className="font-semibold capitalize text-foreground/90">{product.metadata.onChainStatus?.replace('_',' ')}</span></div>}
+             {hasOnChainLifecycleStage && <div className="flex items-center gap-1 mb-0.5"><span className="text-muted-foreground">Lifecycle Stage:</span><span className="font-semibold capitalize text-foreground/90">{product.metadata.onChainLifecycleStage?.replace(/([A-Z])/g, ' $1').trim()}</span></div>}
          </div>
       )}
       
       {hasEbsiInfo && (
-        <div className={cn((hasBlockchainInfo || hasOnChainStatus) && "mt-2 pt-2 border-t border-border/30")}>
+        <div className={cn((hasBlockchainInfo || hasOnChainStatus || hasOnChainLifecycleStage) && "mt-2 pt-2 border-t border-border/30")}>
             <h4 className="text-sm font-semibold text-primary mb-1.5 flex items-center"><ShieldCheck className="h-4 w-4 mr-1.5"/>EBSI Verification</h4>
             {product.ebsiVerification?.status && (
               <div className="flex items-center gap-1 mb-0.5"><Sigma className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Status:</span><div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiVerification.status)}</div></div>
@@ -141,7 +143,7 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
       )}
 
       {(hasAuthVc || hasOwnershipNft) && (
-        <div className={cn((hasBlockchainInfo || hasEbsiInfo || hasOnChainStatus) && "mt-2 pt-2 border-t border-border/30")}>
+        <div className={cn((hasBlockchainInfo || hasEbsiInfo || hasOnChainStatus || hasOnChainLifecycleStage) && "mt-2 pt-2 border-t border-border/30")}>
             <h4 className="text-sm font-semibold text-primary mb-1.5 flex items-center"><KeyRound className="h-4 w-4 mr-1.5"/>Authenticity & Ownership VCs/NFTs</h4>
              {hasAuthVc && (
                 <div className="flex items-center gap-1 mb-0.5"><FileLock className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Auth VC ID:</span><span className="font-mono break-all text-foreground/90">{product.authenticationVcId}</span></div>
@@ -160,8 +162,8 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
         </div>
       )}
       
-      {!hasBlockchainInfo && !hasEbsiInfo && !hasAuthVc && !hasOwnershipNft && !hasOnChainStatus && (
-        <p className="text-muted-foreground text-sm">No specific blockchain, EBSI, authenticity VC, ownership NFT, or on-chain status details available for this product.</p>
+      {!hasBlockchainInfo && !hasEbsiInfo && !hasAuthVc && !hasOwnershipNft && !hasOnChainStatus && !hasOnChainLifecycleStage && (
+        <p className="text-muted-foreground text-sm">No specific blockchain, EBSI, authenticity VC, ownership NFT, or on-chain state details available for this product.</p>
       )}
     </div>
   );
@@ -299,6 +301,7 @@ export default function BlockchainPage() {
       setNftTokenId(dpp.ownershipNftLink?.tokenId || tokenId || "");
       setNftChainName(dpp.ownershipNftLink?.chainName || dpp.blockchainIdentifiers?.platform || "");
       setOnChainStatusUpdate(dpp.metadata.onChainStatus || "active");
+      setOnChainLifecycleStage(dpp.metadata.onChainLifecycleStage || "Manufacturing"); // Pre-fill lifecycle stage
 
     } else {
       setUpdateTokenId("");
@@ -312,6 +315,7 @@ export default function BlockchainPage() {
       setNftTokenId("");
       setNftChainName("");
       setOnChainStatusUpdate("active");
+      setOnChainLifecycleStage("Manufacturing"); // Reset lifecycle stage
     }
     setFetchedCredential(null);
     setMintResponse(null);
@@ -342,6 +346,9 @@ export default function BlockchainPage() {
       }
       if (updated.metadata.onChainStatus) {
         setOnChainStatusUpdate(updated.metadata.onChainStatus);
+      }
+      if (updated.metadata.onChainLifecycleStage) { // Update local state for lifecycle stage
+        setOnChainLifecycleStage(updated.metadata.onChainLifecycleStage);
       }
     }
   };
@@ -629,12 +636,23 @@ export default function BlockchainPage() {
     e.preventDefault();
     if (!selected) return;
     setIsUpdatingLifecycleStageLoading(true);
-    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
-    const mockTxHash = `0xlifecycle_stage_update_tx_${Date.now().toString(16)}`;
-    toast({
-      title: "Lifecycle Stage Update (Mock)",
-      description: `Conceptual transaction to update DPP lifecycle stage for ${selected.productName} to '${onChainLifecycleStage}'. Tx: ${mockTxHash}`
+    
+    const res = await fetch(`/api/v1/dpp/${selected.id}/onchain-lifecycle-stage`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${MOCK_API_KEY}` },
+        body: JSON.stringify({ lifecycleStage: onChainLifecycleStage }),
     });
+
+    if (res.ok) {
+        const data = await res.json();
+        updateDppLocally(data.updatedProduct);
+        toast({
+            title: "Lifecycle Stage Update (Mock)",
+            description: data.message || `Conceptual on-chain lifecycle stage for ${selected.productName} updated to '${onChainLifecycleStage}'.`,
+        });
+    } else {
+        handleApiError(res, "Updating On-Chain Lifecycle Stage");
+    }
     setIsUpdatingLifecycleStageLoading(false);
   };
 
@@ -1018,8 +1036,8 @@ export default function BlockchainPage() {
                                 </form>
 
                                 <form onSubmit={handleUpdateOnChainLifecycleStage} className="space-y-3 p-3 border rounded-md">
-                                  <h4 className="font-medium text-sm flex items-center"><Layers className="h-4 w-4 mr-1.5 text-primary"/>Update DPP Lifecycle Stage On-Chain</h4>
-                                  <p className="text-xs text-muted-foreground">Simulate updating the product's lifecycle stage on the blockchain.</p>
+                                  <h4 className="font-medium text-sm flex items-center"><Layers className="h-4 w-4 mr-1.5 text-primary"/>Update DPP On-Chain Lifecycle Stage</h4>
+                                  <p className="text-xs text-muted-foreground">Simulate updating the product's on-chain lifecycle stage.</p>
                                   <Select value={onChainLifecycleStage} onValueChange={setOnChainLifecycleStage}>
                                     <SelectTrigger><SelectValue placeholder="Select Lifecycle Stage" /></SelectTrigger>
                                     <SelectContent>
@@ -1188,3 +1206,4 @@ export default function BlockchainPage() {
 }
       
     
+

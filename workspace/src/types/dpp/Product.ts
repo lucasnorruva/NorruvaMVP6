@@ -74,6 +74,7 @@ export interface DigitalProductPassport {
     status: 'draft' | 'published' | 'archived' | 'pending_review' | 'revoked' | 'flagged';
     dppStandardVersion?: string;
     dataSchemaVersion?: string;
+    onChainStatus?: string; // New field for conceptual on-chain status
   };
 
   blockchainIdentifiers?: {
@@ -210,6 +211,7 @@ export interface SimpleProductDetail {
   anchorTransactionHash?: string;
   ebsiStatus?: EbsiVerificationDetails['status']; 
   ebsiVerificationId?: string; 
+  onChainStatus?: string; // New field for conceptual on-chain status
 }
 
 export interface StoredUserProduct {
@@ -266,6 +268,7 @@ export interface StoredUserProduct {
   authenticationVcId?: string; 
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; 
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; 
+  onChainStatus?: string; // New field for conceptual on-chain status
 }
 
 export interface RichMockProduct {
@@ -300,6 +303,7 @@ export interface RichMockProduct {
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  onChainStatus?: string; // New field for conceptual on-chain status
 }
 
 export interface PublicProductInfo {
@@ -330,8 +334,9 @@ export interface PublicProductInfo {
   documents?: DocumentReference[];
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
-  contractAddress?: string; // Added for detailed token info
-  tokenId?: string;         // Added for detailed token info
+  contractAddress?: string; 
+  tokenId?: string;         
+  onChainStatus?: string; // New field for conceptual on-chain status
 }
 
 export interface Supplier {
@@ -381,6 +386,7 @@ export interface DisplayableProduct {
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  onChainStatus?: string; // New field for conceptual on-chain status
 }
 
 export interface AnchorResult {
@@ -416,3 +422,4 @@ export interface TokenStatusResponse {
   status: string; // e.g., "minted", "transferred", "active"
   message?: string;
 }
+

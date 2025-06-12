@@ -14,7 +14,7 @@ import {
     KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, 
     PlusCircle, CalendarDays, Sigma, Layers3, Tag, CheckCircle as CheckCircleLucide, 
     Server as ServerIcon, Link as LinkIconPath, FileCog, BookOpen, CircleDot, Clock, Share2, Users, Factory, Truck, ShoppingCart, Recycle as RecycleIconLucide, Upload, MessageSquare,
-    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers, FileLock // Added FileLock
+    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers, FileLock 
 } from "lucide-react";
 import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse, OwnershipNftLink } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
@@ -71,6 +71,7 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
   const hasEbsiInfo = product.ebsiVerification?.status || product.ebsiVerification?.verificationId || product.ebsiVerification?.issuerDid || product.ebsiVerification?.schema || product.ebsiVerification?.issuanceDate;
   const hasAuthVc = product.authenticationVcId;
   const hasOwnershipNft = product.ownershipNftLink;
+  const hasOnChainStatus = product.metadata?.onChainStatus;
 
   return (
     <div className="space-y-3 text-xs">
@@ -108,9 +109,16 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
           )}
         </div>
       )}
+
+      {hasOnChainStatus && (
+         <div className={cn(hasBlockchainInfo && "mt-2 pt-2 border-t border-border/30")}>
+            <h4 className="text-sm font-semibold text-primary mb-1.5 flex items-center"><Sigma className="h-4 w-4 mr-1.5"/>On-Chain DPP Status</h4>
+             <div className="flex items-center gap-1 mb-0.5"><span className="text-muted-foreground">Status:</span><span className="font-semibold capitalize text-foreground/90">{product.metadata.onChainStatus?.replace('_',' ')}</span></div>
+         </div>
+      )}
       
       {hasEbsiInfo && (
-        <div className={cn(hasBlockchainInfo && "mt-2 pt-2 border-t border-border/30")}>
+        <div className={cn((hasBlockchainInfo || hasOnChainStatus) && "mt-2 pt-2 border-t border-border/30")}>
             <h4 className="text-sm font-semibold text-primary mb-1.5 flex items-center"><ShieldCheck className="h-4 w-4 mr-1.5"/>EBSI Verification</h4>
             {product.ebsiVerification?.status && (
               <div className="flex items-center gap-1 mb-0.5"><Sigma className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Status:</span><div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiVerification.status)}</div></div>
@@ -133,7 +141,7 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
       )}
 
       {(hasAuthVc || hasOwnershipNft) && (
-        <div className={cn((hasBlockchainInfo || hasEbsiInfo) && "mt-2 pt-2 border-t border-border/30")}>
+        <div className={cn((hasBlockchainInfo || hasEbsiInfo || hasOnChainStatus) && "mt-2 pt-2 border-t border-border/30")}>
             <h4 className="text-sm font-semibold text-primary mb-1.5 flex items-center"><KeyRound className="h-4 w-4 mr-1.5"/>Authenticity & Ownership VCs/NFTs</h4>
              {hasAuthVc && (
                 <div className="flex items-center gap-1 mb-0.5"><FileLock className="h-3.5 w-3.5 text-muted-foreground"/><span className="text-muted-foreground">Auth VC ID:</span><span className="font-mono break-all text-foreground/90">{product.authenticationVcId}</span></div>
@@ -152,8 +160,8 @@ function BlockchainStatus({ product }: { product: DigitalProductPassport }) {
         </div>
       )}
       
-      {!hasBlockchainInfo && !hasEbsiInfo && !hasAuthVc && !hasOwnershipNft && (
-        <p className="text-muted-foreground text-sm">No specific blockchain, EBSI, authenticity VC or ownership NFT details available for this product.</p>
+      {!hasBlockchainInfo && !hasEbsiInfo && !hasAuthVc && !hasOwnershipNft && !hasOnChainStatus && (
+        <p className="text-muted-foreground text-sm">No specific blockchain, EBSI, authenticity VC, ownership NFT, or on-chain status details available for this product.</p>
       )}
     </div>
   );
@@ -289,6 +297,7 @@ export default function BlockchainPage() {
       setNftContractAddress(dpp.ownershipNftLink?.contractAddress || contractAddr || "");
       setNftTokenId(dpp.ownershipNftLink?.tokenId || tokenId || "");
       setNftChainName(dpp.ownershipNftLink?.chainName || dpp.blockchainIdentifiers?.platform || "");
+      setOnChainStatusUpdate(dpp.metadata.onChainStatus || "active");
 
     } else {
       setUpdateTokenId("");
@@ -301,6 +310,7 @@ export default function BlockchainPage() {
       setNftContractAddress("");
       setNftTokenId("");
       setNftChainName("");
+      setOnChainStatusUpdate("active");
     }
     setFetchedCredential(null);
     setMintResponse(null);
@@ -320,16 +330,17 @@ export default function BlockchainPage() {
           setStatusTokenId(tokenId);
           setViewTokenId(tokenId);
       }
-       // Update NFT form fields if ownership link was part of the update
       if (updated.ownershipNftLink) {
         setNftRegistryUrl(updated.ownershipNftLink.registryUrl || "");
         setNftContractAddress(updated.ownershipNftLink.contractAddress);
         setNftTokenId(updated.ownershipNftLink.tokenId);
         setNftChainName(updated.ownershipNftLink.chainName || "");
       }
-      // Update Auth VC Product ID if it was part of the update
       if (updated.authenticationVcId) {
         setAuthVcProductId(updated.id); 
+      }
+      if (updated.metadata.onChainStatus) {
+        setOnChainStatusUpdate(updated.metadata.onChainStatus);
       }
     }
   };
@@ -566,12 +577,23 @@ export default function BlockchainPage() {
     e.preventDefault();
     if (!selected) return;
     setIsUpdatingOnChainStatusLoading(true);
-    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
-    const mockTxHash = `0xstatus_update_tx_${Date.now().toString(16)}`;
-    toast({
-      title: "On-Chain Status Update (Mock)",
-      description: `Conceptual transaction to update DPP status for ${selected.productName} to '${onChainStatusUpdate}' submitted. Tx: ${mockTxHash}`
+    // Call API to update on-chain status
+    const res = await fetch(`/api/v1/dpp/${selected.id}/onchain-status`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${MOCK_API_KEY}` },
+      body: JSON.stringify({ status: onChainStatusUpdate }),
     });
+
+    if (res.ok) {
+      const data = await res.json();
+      updateDppLocally(data.updatedProduct);
+      toast({
+        title: "On-Chain Status Update (Mock)",
+        description: data.message || `Conceptual transaction to update DPP status for ${selected.productName} to '${onChainStatusUpdate}' submitted.`,
+      });
+    } else {
+      handleApiError(res, "Updating On-Chain Status");
+    }
     setIsUpdatingOnChainStatusLoading(false);
   };
 
@@ -657,7 +679,7 @@ export default function BlockchainPage() {
       return;
     }
     setIsActionLoading("linkNft");
-    const payload: OwnershipNftLink & { registryUrl?: string | null } = { // Allow registryUrl to be null from state
+    const payload: OwnershipNftLink & { registryUrl?: string | null } = { 
         contractAddress: nftContractAddress,
         tokenId: nftTokenId,
         ...(nftRegistryUrl && { registryUrl: nftRegistryUrl }),
@@ -1145,3 +1167,4 @@ export default function BlockchainPage() {
 }
       
     
+

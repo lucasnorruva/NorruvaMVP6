@@ -223,6 +223,7 @@ export interface SimpleProductDetail {
   onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
+  lastUpdated?: string; // Added for consistency in SimpleProductDetail
 }
 
 export interface StoredUserProduct {
@@ -243,10 +244,6 @@ export interface StoredUserProduct {
   imageUrl?: string;
   imageHint?: string;
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  // batteryChemistry?: string; // Moved to batteryRegulation
-  // stateOfHealth?: number | null; // Moved to batteryRegulation
-  // carbonFootprintManufacturing?: number | null; // Moved to batteryRegulation
-  // recycledContentPercentage?: number | null; // Moved to batteryRegulation
   status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string;
   compliance: string; 
   lastUpdated: string;
@@ -258,10 +255,6 @@ export interface StoredUserProduct {
   sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
   energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
   specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
-  // batteryChemistryOrigin?: 'AI_EXTRACTED' | 'manual'; // Moved to batteryRegulationOrigin
-  // stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual'; // Moved to batteryRegulationOrigin
-  // carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual'; // Moved to batteryRegulationOrigin
-  // recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual'; // Moved to batteryRegulationOrigin
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
@@ -304,10 +297,10 @@ export interface RichMockProduct {
   specifications?: string; 
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
-  batteryChemistry?: string; // Keep for direct display from older mock data if needed
-  stateOfHealth?: number | null; // Keep for direct display
-  carbonFootprintManufacturing?: number | null; // Keep for direct display
-  recycledContentPercentage?: number | null; // Keep for direct display
+  batteryChemistry?: string; 
+  stateOfHealth?: number | null; 
+  carbonFootprintManufacturing?: number | null; 
+  recycledContentPercentage?: number | null; 
   ebsiVerification?: EbsiVerificationDetails;
   certifications?: Certification[];
   documents?: DocumentReference[];

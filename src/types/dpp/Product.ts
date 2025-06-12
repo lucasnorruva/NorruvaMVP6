@@ -83,13 +83,12 @@ export interface DigitalProductPassport {
     anchorTransactionHash?: string;
   };
 
-  // New fields for Task 31
-  authenticationVcId?: string; // ID of a VC attesting to product authenticity
-  ownershipNftLink?: { // Link to an NFT representing ownership
-    registryUrl?: string; // e.g., OpenSea, Rarible link
+  authenticationVcId?: string;
+  ownershipNftLink?: {
+    registryUrl?: string;
     contractAddress: string;
     tokenId: string;
-    chainName?: string; // e.g., Ethereum, Polygon
+    chainName?: string;
   };
 
   productDetails?: {
@@ -202,7 +201,6 @@ export interface SimpleProductDetail {
   lifecycleEvents?: SimpleLifecycleEvent[];
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
-  // Added for Task 31/32 display
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
 }
@@ -290,8 +288,8 @@ export interface RichMockProduct {
   supplyChainLinks?: ProductSupplyChainLink[];
   customAttributes?: CustomAttribute[];
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string; // Added for Task 31/32
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; // Added for Task 31/32
+  authenticationVcId?: string;
+  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
 }
 
 export interface PublicProductInfo {
@@ -320,7 +318,6 @@ export interface PublicProductInfo {
   certifications?: PublicCertification[];
   customAttributes?: CustomAttribute[];
   documents?: DocumentReference[];
-  // Added for Task 31/32
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
 }
@@ -370,8 +367,8 @@ export interface DisplayableProduct {
   customAttributes?: CustomAttribute[];
   customAttributesJsonString?: string;
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string; // Added for Task 31/32
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; // Added for Task 31/32
+  authenticationVcId?: string;
+  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
 }
 
 export interface AnchorResult {
@@ -407,5 +404,3 @@ export interface TokenStatusResponse {
   status: string; // e.g., "minted", "transferred", "active"
   message?: string;
 }
-
-    

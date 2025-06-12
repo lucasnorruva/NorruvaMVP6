@@ -51,8 +51,6 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             lastChecked: dpp.metadata.last_updated, // Fallback
         });
     }
-    // Battery Regulation is now handled by its own dedicated field in complianceSummary,
-    // so it's not added to specificRegulations here.
 
     const complianceOverallStatusDetails = getOverallComplianceDetails(dpp);
     const keyCompliancePointsPopulated: string[] = [];
@@ -113,8 +111,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         imageHint: dpp.productDetails?.imageHint,
         keySustainabilityPoints: dpp.productDetails?.sustainabilityClaims?.map(c => c.claim).filter(Boolean) || [],
         keyCompliancePoints: keyCompliancePointsPopulated,
-        specifications: dpp.productDetails?.specifications, // Directly pass the JSON string
-        customAttributes: customAttributes, // Directly pass CustomAttribute[]
+        specifications: dpp.productDetails?.specifications,
+        customAttributes: customAttributes,
         complianceSummary: {
             overallStatus: complianceOverallStatusDetails.text,
             eprel: dpp.compliance.eprel ? {
@@ -130,7 +128,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             } : { status: 'N/A', lastChecked: new Date().toISOString() },
             scip: dpp.compliance.scipNotification, 
             euCustomsData: dpp.compliance.euCustomsData, 
-            battery: dpp.compliance.battery_regulation, // Map full battery_regulation object
+            battery: dpp.compliance.battery_regulation,
             specificRegulations: specificRegulations,
         },
         lifecycleEvents: dpp.lifecycleEvents?.map(event => ({
@@ -152,6 +150,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         recyclabilityInfo: dpp.productDetails?.recyclabilityInformation ? { percentage: dpp.productDetails.recyclabilityInformation.recycledContentPercentage, instructionsUrl: dpp.productDetails.recyclabilityInformation.instructionsUrl } : undefined,
         supplyChainLinks: dpp.supplyChainLinks || [],
         certifications: mappedCertifications,
+        authenticationVcId: dpp.authenticationVcId,
+        ownershipNftLink: dpp.ownershipNftLink,
     };
 }
 
@@ -237,6 +237,10 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           })),
           certifications: certificationsForUserProd,
           supplyChainLinks: userProductData.supplyChainLinks || [],
+          // authenticationVcId and ownershipNftLink should ideally be part of StoredUserProduct if they are user-editable
+          // For now, assuming they are not directly in StoredUserProduct
+          authenticationVcId: undefined, 
+          ownershipNftLink: undefined,
         } as DigitalProductPassport;
       }
     }

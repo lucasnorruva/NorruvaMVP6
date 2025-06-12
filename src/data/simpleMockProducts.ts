@@ -1,3 +1,4 @@
+
 import type { SimpleProductDetail } from '@/types/dpp';
 
 export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
@@ -72,6 +73,13 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
       { name: "User Manual v1.2", url: "#manual_v1.2.pdf", type: "User Manual", addedTimestamp: "2024-01-15T00:00:00Z" },
       { name: "Warranty Card", url: "#warranty.pdf", type: "Warranty", addedTimestamp: "2024-01-15T00:00:00Z" },
     ],
+    authenticationVcId: "vc_auth_DPP001_mock123",
+    ownershipNftLink: {
+        registryUrl: "https://mock-nft-market.example/token/0xNFTContractForDPP001/1",
+        contractAddress: "0xNFTContractForDPP001",
+        tokenId: "1",
+        chainName: "MockEthereum",
+    },
   }
 ];
 

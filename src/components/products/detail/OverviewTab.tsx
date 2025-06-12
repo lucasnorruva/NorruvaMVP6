@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info } from "lucide-react";
+import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIcon } from "lucide-react"; // Added Fingerprint, Link as LinkIcon
 import { getAiHintForImage } from "@/utils/imageUtils";
+import NextLink from "next/link"; // Renamed to avoid conflict with LinkIcon
 
 interface OverviewTabProps {
   product: SimpleProductDetail;
@@ -31,7 +32,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
       try {
           parsedSpecifications = JSON.parse(product.specifications);
           if (Object.keys(parsedSpecifications).length === 0 && product.specifications.trim() !== '{}') {
-            // If parsing results in empty object but original string was not '{}', treat as error or non-JSON string.
              parsedSpecifications = { "Raw Data": product.specifications };
           }
       } catch (e) {
@@ -40,7 +40,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
           specificationsError = true;
       }
   } else if (product.specifications && typeof product.specifications === 'object' && product.specifications !== null) {
-    // If it's already an object (though SimpleProductDetail expects string)
     parsedSpecifications = product.specifications;
   }
 
@@ -91,6 +90,39 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             </CardContent>
           </Card>
         )}
+
+        {(product.authenticationVcId || product.ownershipNftLink) && (
+          <Card className="shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold flex items-center">
+                <Fingerprint className="mr-2 h-5 w-5 text-primary" />
+                Authenticity & Ownership
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-sm space-y-2">
+              {product.authenticationVcId && (
+                <div>
+                  <strong className="text-muted-foreground">Authenticity VC ID:</strong>
+                  <p className="font-mono text-xs break-all text-foreground/90">{product.authenticationVcId}</p>
+                </div>
+              )}
+              {product.ownershipNftLink && (
+                <div className="mt-1.5 pt-1.5 border-t border-border/50">
+                  <strong className="text-muted-foreground block mb-0.5">Ownership NFT:</strong>
+                  <p>Token ID: <span className="font-mono text-foreground/90">{product.ownershipNftLink.tokenId}</span></p>
+                  <p>Contract: <span className="font-mono text-xs break-all text-foreground/90">{product.ownershipNftLink.contractAddress}</span></p>
+                  {product.ownershipNftLink.chainName && <p>Chain: <span className="text-foreground/90">{product.ownershipNftLink.chainName}</span></p>}
+                  {product.ownershipNftLink.registryUrl && (
+                    <NextLink href={product.ownershipNftLink.registryUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs mt-1">
+                      View on Registry <LinkIcon className="ml-1 h-3 w-3" />
+                    </NextLink>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
       </div>
 
       {/* Right Column: Description, Key Points, Specifications, Custom Attributes */}

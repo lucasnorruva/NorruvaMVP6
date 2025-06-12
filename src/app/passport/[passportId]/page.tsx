@@ -13,8 +13,9 @@ import { Button } from '@/components/ui/button';
 import * as LucideIcons from 'lucide-react'; // Import all icons as LucideIcons
 import {
   Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint,
-  ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode
-} from 'lucide-react'; // Keep specific imports for direct use or if iconMap was very selective
+  ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
+  KeyRound, FileLock // Added KeyRound and FileLock for new section
+} from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
@@ -22,9 +23,7 @@ import { useRole } from '@/contexts/RoleContext';
 import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification, CustomAttribute } from '@/types/dpp';
 import { MOCK_PUBLIC_PASSPORTS } from '@/data';
 import RoleSpecificCard from '@/components/passport/RoleSpecificCard';
-import { getAiHintForImage } from '@/utils/imageUtils'; // Import centralized utility
-
-// Removed manual iconMap
+import { getAiHintForImage } from '@/utils/imageUtils';
 
 const STORY_TRUNCATE_LENGTH = 250;
 
@@ -37,13 +36,14 @@ export default function PublicPassportPage() {
   const { currentRole } = useRole();
 
   useEffect(() => {
-    // Simulate fetching product data
     const fetchedProduct = MOCK_PUBLIC_PASSPORTS[passportId];
     if (fetchedProduct) {
-      // Ensure customAttributes is always an array, even if undefined in mock
       setProduct({
         ...fetchedProduct,
-        customAttributes: fetchedProduct.customAttributes || []
+        customAttributes: fetchedProduct.customAttributes || [],
+        documents: fetchedProduct.documents || [],
+        authenticationVcId: fetchedProduct.authenticationVcId,
+        ownershipNftLink: fetchedProduct.ownershipNftLink,
       });
     }
     setIsLoading(false);
@@ -87,7 +87,6 @@ export default function PublicPassportPage() {
   const aiCopilotQuery = encodeURIComponent(`What are the key compliance requirements for a product like '${product.productName}' in the '${product.category}' category? Also, what are specific considerations for its EBSI status of '${product.ebsiStatus || 'N/A'}'?`);
   const aiCopilotLink = `/copilot?contextQuery=${aiCopilotQuery}`;
 
-  // Use the centralized utility function
   const aiHintForImage = getAiHintForImage({
     productName: product.productName,
     category: product.category,
@@ -323,7 +322,7 @@ export default function PublicPassportPage() {
                 </Card>
               </div>
             )}
-
+            
             <div className="mt-8 pt-6 border-t border-border">
                  <Card className="border-0 shadow-none">
                     <CardHeader className="px-0 pt-0 pb-4">
@@ -366,6 +365,44 @@ export default function PublicPassportPage() {
                     </CardContent>
                 </Card>
             </div>
+
+            {(product.authenticationVcId || product.ownershipNftLink) && (
+              <div className="mt-8 pt-6 border-t border-border">
+                <Card className="border-0 shadow-none">
+                  <CardHeader className="px-0 pt-0 pb-4">
+                    <CardTitle className="text-xl text-primary flex items-center">
+                      <KeyRound className="mr-2 h-6 w-6" /> Authenticity &amp; Ownership
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-3 text-sm px-0 pb-0">
+                    {product.authenticationVcId && (
+                      <div className="flex flex-col mb-2">
+                        <span className="text-xs text-muted-foreground">Authenticity VC ID:</span>
+                        <span className="font-mono text-xs break-all text-foreground/90" title={product.authenticationVcId}>
+                          {product.authenticationVcId}
+                        </span>
+                      </div>
+                    )}
+                    {product.ownershipNftLink && (
+                      <div className="pt-2 mt-2 border-t border-border/30">
+                        <h4 className="text-sm font-semibold text-foreground mb-1">Ownership NFT Link:</h4>
+                        {product.ownershipNftLink.registryUrl && (
+                          <p>
+                            <Link href={product.ownershipNftLink.registryUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center">
+                              View on Registry <ExternalLink className="ml-1 h-3 w-3" />
+                            </Link>
+                          </p>
+                        )}
+                        <p>Contract: <span className="font-mono text-xs break-all">{product.ownershipNftLink.contractAddress}</span></p>
+                        <p>Token ID: <span className="font-mono">{product.ownershipNftLink.tokenId}</span></p>
+                        {product.ownershipNftLink.chainName && <p>Chain: {product.ownershipNftLink.chainName}</p>}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
              <div className="mt-8 pt-6 border-t border-border">
                 <CardHeader className="px-0 pt-0 pb-4">
                     <CardTitle className="text-xl text-primary">Compliance Overview</CardTitle>

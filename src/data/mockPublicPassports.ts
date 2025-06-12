@@ -1,3 +1,4 @@
+
 import type { PublicProductInfo } from '@/types/dpp';
 
 export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
@@ -48,6 +49,13 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
         {key: "Warranty Period", value: "5 Years"},
         {key: "Country of Origin", value: "Germany"},
     ],
+    authenticationVcId: "vc_auth_DPP001_mock123",
+    ownershipNftLink: {
+        registryUrl: "https://mock-nft-market.example/token/0xNFTContractForDPP001/1",
+        contractAddress: "0xNFTContractForDPP001",
+        tokenId: "1",
+        chainName: "MockEthereum",
+    },
   },
   "PROD002": {
     passportId: "PROD002",
@@ -87,6 +95,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
         {key: "Smart Home Compatibility", value: "Google Home, Amazon Alexa, Apple HomeKit"},
         {key: "Light Color Options", value: "RGBW (16 million colors + Tunable White)"},
     ],
+    authenticationVcId: "vc_auth_DPP002_mock456",
+    // ownershipNftLink is intentionally omitted for this product for variation
   },
   "USER_PROD123456": {
     passportId: "USER_PROD123456",
@@ -114,5 +124,11 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
         {key: "Artisan Name", value: "John Craft"},
         {key: "Lead Time", value: "4-6 Weeks"}
     ],
+    authenticationVcId: "vc_auth_USER_PROD123456_mock789",
+    ownershipNftLink: {
+        contractAddress: "0xUserProdNFTContract",
+        tokenId: "101",
+        chainName: "MockUserChain",
+    },
   }
 };

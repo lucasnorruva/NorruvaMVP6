@@ -91,38 +91,44 @@ const extractProductDataPrompt = ai.definePrompt({
   output: {schema: ExtractProductDataOutputSchema},
   prompt: `You are an AI assistant tasked with extracting product information from supplier documents.
 
-You will be provided with a document and its type. Your goal is to extract relevant product information and categorize it into the following fields:
-
-- productName: The name of the product.
-- productDescription: A detailed description of the product.
-- manufacturer: The manufacturer of the product.
-- modelNumber: The model number of the product.
-- specifications: A key-value pair of product specifications (e.g., {"color": "blue", "weight": "10kg"}).
-- energyLabel: The energy label of the product, if available (e.g., A++, B).
-
-If the document appears to be related to a battery (e.g., documentType is 'battery_spec_sheet' or content suggests it), also extract the following battery-specific details:
-- batteryChemistry: The chemical composition of the battery (e.g., Li-ion NMC, LFP).
-- batteryPassportId: The unique ID of the battery passport itself, if mentioned.
-- carbonFootprint: An object with 'value' (number), 'unit' (e.g., "kg CO2e/kWh"), 'calculationMethod' (e.g., "PEFCR for Batteries v1.2"), and 'vcId' (optional string).
-- recycledContent: An array of objects. Each object should have 'material' (e.g., "Cobalt"), 'percentage' (number), and 'vcId' (optional string). Extract up to 2-3 key materials if specified.
-- stateOfHealth: An object with 'value' (number, e.g., 98 for 98%), 'unit' (e.g., "%"), 'measurementDate' (string, e.g., "YYYY-MM-DD"), and 'vcId' (optional string).
-- batteryRegulationVcId: An overall Verifiable Credential ID for the battery regulation compliance, if mentioned separately.
-
-If the documentType is 'specification_sheet' or 'material_safety_data_sheet' or contains information about substances of very high concern (SVHCs), also extract the following SCIP-related data into a 'scipData' object:
-- articleName: Name of the article containing the SVHC.
-- primaryArticleId: Identifier for the article (e.g., part number).
-- svhcListVersion: Version of the ECHA Candidate List used.
-- submittingLegalEntity: The entity name responsible for submission.
-- safeUseInstructionsLink: URL for safe use instructions.
-
-If the documentType is 'commercial_invoice' or 'packing_list', also extract the following basic customs data into a 'customsData' object:
-- hsCode: Harmonized System (HS) code.
-- countryOfOrigin: ISO 3166-1 alpha-2 code for the country of origin.
+You will be provided with a document and its type. Your goal is to extract relevant product information and categorize it into the general fields:
+- productName, productDescription, manufacturer, modelNumber, specifications, energyLabel.
 
 Document Type: {{{documentType}}}
 Document Content: {{media url=documentDataUri}}
 
-Extract the product information and return it in JSON format. If a numeric field cannot be found, omit it or return null where appropriate within nested objects. For arrays like 'recycledContent', if no information is found, return an empty array or omit the field. Only include the 'scipData' or 'customsData' objects if relevant information is found.
+**Prioritization based on Document Type:**
+
+*   **If documentType is 'battery_spec_sheet' or clearly indicates detailed battery information:**
+    *   **Strongly prioritize** extracting ALL of the following battery-specific details:
+        *   batteryChemistry: (e.g., Li-ion NMC, LFP)
+        *   batteryPassportId: Unique ID for the battery passport.
+        *   carbonFootprint: Object with 'value' (number), 'unit', 'calculationMethod', 'vcId' (optional).
+        *   recycledContent: Array of objects, each with 'material', 'percentage' (number), 'vcId' (optional). Extract up to 2-3 key materials.
+        *   stateOfHealth: Object with 'value' (number), 'unit', 'measurementDate' (YYYY-MM-DD), 'vcId' (optional).
+        *   batteryRegulationVcId: Overall Verifiable Credential ID for battery regulation compliance.
+    *   Also extract general product information (productName, manufacturer, modelNumber) if present.
+
+*   **If documentType is 'commercial_invoice' or 'packing_list':**
+    *   **Prioritize** extracting customs-related data into a 'customsData' object:
+        *   hsCode: Harmonized System (HS) code.
+        *   countryOfOrigin: ISO 3166-1 alpha-2 code for the country of origin.
+    *   Also extract general product information like productName, modelNumber if clearly identifiable. Other fields like productDescription or detailed specifications may be less relevant from these document types.
+
+*   **If documentType is 'material_safety_data_sheet' (MSDS), 'specification_sheet' that clearly discusses chemical composition or substances of concern:**
+    *   **Prioritize** extracting SCIP-related data into a 'scipData' object:
+        *   articleName: Name of the article containing the SVHC.
+        *   primaryArticleId: Identifier for the article (e.g., part number).
+        *   svhcListVersion: Version of the ECHA Candidate List used (if mentioned).
+        *   submittingLegalEntity: The entity name responsible for submission (if mentioned).
+        *   safeUseInstructionsLink: URL for safe use instructions (if provided).
+    *   Also extract general product information, especially 'productName' and 'materials' if specified.
+
+*   **For other documentTypes (e.g., 'invoice', 'general_specification', 'bill_of_materials', 'technical_drawing'):**
+    *   Extract as much of the general product information as possible: productName, productDescription, manufacturer, modelNumber, specifications, energyLabel.
+    *   If battery, SCIP, or customs details are incidentally present and clearly identifiable, extract them into their respective objects.
+
+Extract the product information and return it in JSON format. If a numeric field cannot be found, omit it or return null where appropriate within nested objects. For arrays like 'recycledContent', if no information is found, return an empty array or omit the field. Only include the 'scipData' or 'customsData' objects if relevant information is found and prioritized by document type.
 `,
 });
 

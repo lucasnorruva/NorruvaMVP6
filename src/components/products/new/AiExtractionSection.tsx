@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -61,7 +62,7 @@ export default function AiExtractionSection({
             placeholder="e.g., invoice, specification sheet"
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Examples: invoice, specification, battery_spec_sheet, bill_of_materials, technical_drawing.
+            Examples: invoice, specification, battery_spec_sheet, commercial_invoice, packing_list, material_safety_data_sheet, bill_of_materials, technical_drawing.
           </p>
         </div>
         <Button onClick={onExtractData} disabled={isLoading || !file} variant="secondary">

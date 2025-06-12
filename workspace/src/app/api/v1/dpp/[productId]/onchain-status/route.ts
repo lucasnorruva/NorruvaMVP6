@@ -9,7 +9,7 @@ import type { DigitalProductPassport, LifecycleEvent } from '@/types/dpp';
 import { validateApiKey } from '@/middleware/apiKeyAuth';
 
 interface UpdateOnChainStatusRequestBody {
-  status: 'active' | 'recalled' | 'flagged_for_review' | 'archived' | string; // Allow string for flexibility
+  status: 'active' | 'recalled' | 'flagged_for_review' | 'archived'; // Made stricter, removed | string
 }
 
 export async function POST(
@@ -29,8 +29,9 @@ export async function POST(
 
   const { status: newOnChainStatus } = requestBody;
 
-  if (!newOnChainStatus || typeof newOnChainStatus !== 'string' || newOnChainStatus.trim() === '') {
-    return NextResponse.json({ error: { code: 400, message: "Field 'status' is required and must be a non-empty string." } }, { status: 400 });
+  const validStatuses: UpdateOnChainStatusRequestBody['status'][] = ['active', 'recalled', 'flagged_for_review', 'archived'];
+  if (!newOnChainStatus || !validStatuses.includes(newOnChainStatus)) {
+    return NextResponse.json({ error: { code: 400, message: `Field 'status' is required and must be one of: ${validStatuses.join(', ')}.` } }, { status: 400 });
   }
 
   const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
@@ -42,6 +43,7 @@ export async function POST(
   const product = MOCK_DPPS[productIndex];
   const now = new Date().toISOString();
   const mockTxHash = `0xmock_onchain_status_update_${Date.now().toString(16).slice(-8)}`;
+  const previousStatus = product.metadata.onChainStatus || "Unknown";
 
   // Update the conceptual on-chain status
   product.metadata.onChainStatus = newOnChainStatus;
@@ -54,7 +56,7 @@ export async function POST(
     timestamp: now,
     responsibleParty: "System/Admin Action (Blockchain Mgmt)",
     data: {
-      previousStatus: product.metadata.onChainStatus || "Unknown", // Or however you track previous
+      previousStatus: previousStatus, 
       newStatus: newOnChainStatus,
       reason: "Admin action via Blockchain Management page.",
       mockTransactionHash: mockTxHash,

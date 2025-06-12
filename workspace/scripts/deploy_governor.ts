@@ -15,12 +15,12 @@ async function main() {
 
   if (!NORU_TOKEN_ADDRESS || NORU_TOKEN_ADDRESS === "YOUR_DEPLOYED_NORU_TOKEN_ADDRESS" || NORU_TOKEN_ADDRESS.trim() === "") {
     console.error("ERROR: NORU_TOKEN_ADDRESS is not set correctly in .env file or environment.");
-    console.log("Please deploy NORUToken first and set its address.");
+    console.log("Please deploy NORUToken first and set its address using: npx hardhat run scripts/deploy_noru_token.ts --network <your_network>");
     process.exit(1);
   }
   if (!TIMELOCK_CONTROLLER_ADDRESS || TIMELOCK_CONTROLLER_ADDRESS === "YOUR_DEPLOYED_TIMELOCK_CONTROLLER_ADDRESS" || TIMELOCK_CONTROLLER_ADDRESS.trim() === "") {
     console.error("ERROR: TIMELOCK_CONTROLLER_ADDRESS is not set correctly in .env file or environment.");
-    console.log("Please deploy TimelockController first and set its address.");
+    console.log("Please deploy TimelockController first and set its address using: npx hardhat run scripts/deploy_timelock_controller.ts --network <your_network>");
     process.exit(1);
   }
 
@@ -65,6 +65,8 @@ async function main() {
   console.log("CANCELLER_ROLE granted to Governor.");
 
   console.log(`Granting EXECUTOR_ROLE to address(0) (anyone) on TimelockController...`);
+  // Granting EXECUTOR_ROLE to address(0) allows anyone to execute a passed proposal.
+  // This is a common setup, but can be restricted to the Governor or specific accounts if needed.
   tx = await timelockController.connect(deployer).grantRole(EXECUTOR_ROLE, ethers.ZeroAddress); 
   await tx.wait();
   console.log("EXECUTOR_ROLE granted to address(0).");

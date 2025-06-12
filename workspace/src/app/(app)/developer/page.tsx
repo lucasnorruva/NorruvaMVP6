@@ -190,36 +190,30 @@ export default function DeveloperPortalPage() {
   const [isGetStatusLoading, setIsGetStatusLoading] = useState(false);
   const [getStatusSnippetLang, setGetStatusSnippetLang] = useState("cURL");
 
-  // State for new on-chain operation endpoints
   const [postOnchainStatusProductId, setPostOnchainStatusProductId] = useState<string>("DPP001");
   const [postOnchainStatusBody, setPostOnchainStatusBody] = useState<string>(JSON.stringify({ status: "active" }, null, 2));
   const [postOnchainStatusResponse, setPostOnchainStatusResponse] = useState<string | null>(null);
   const [isPostOnchainStatusLoading, setIsPostOnchainStatusLoading] = useState(false);
   const [postOnchainStatusSnippetLang, setPostOnchainStatusSnippetLang] = useState("cURL");
-  const [postOnchainStatusCodeSnippet, setPostOnchainStatusCodeSnippet] = useState("");
 
   const [postOnchainLifecycleProductId, setPostOnchainLifecycleProductId] = useState<string>("DPP001");
   const [postOnchainLifecycleBody, setPostOnchainLifecycleBody] = useState<string>(JSON.stringify({ lifecycleStage: "Manufacturing" }, null, 2));
   const [postOnchainLifecycleResponse, setPostOnchainLifecycleResponse] = useState<string | null>(null);
   const [isPostOnchainLifecycleLoading, setIsPostOnchainLifecycleLoading] = useState(false);
   const [postOnchainLifecycleSnippetLang, setPostOnchainLifecycleSnippetLang] = useState("cURL");
-  const [postOnchainLifecycleCodeSnippet, setPostOnchainLifecycleCodeSnippet] = useState("");
 
   const [postLogCriticalEventProductId, setPostLogCriticalEventProductId] = useState<string>("DPP001");
   const [postLogCriticalEventBody, setPostLogCriticalEventBody] = useState<string>(JSON.stringify({ eventDescription: "Safety recall initiated for batch XYZ.", severity: "High" }, null, 2));
   const [postLogCriticalEventResponse, setPostLogCriticalEventResponse] = useState<string | null>(null);
   const [isPostLogCriticalEventLoading, setIsPostLogCriticalEventLoading] = useState(false);
   const [postLogCriticalEventSnippetLang, setPostLogCriticalEventSnippetLang] = useState("cURL");
-  const [postLogCriticalEventCodeSnippet, setPostLogCriticalEventCodeSnippet] = useState("");
   
   const [postRegisterVcHashProductId, setPostRegisterVcHashProductId] = useState<string>("DPP001");
   const [postRegisterVcHashBody, setPostRegisterVcHashBody] = useState<string>(JSON.stringify({ vcId: "urn:uuid:example-vc-id-123", vcHash: "a1b2c3d4e5f6..." }, null, 2));
   const [postRegisterVcHashResponse, setPostRegisterVcHashResponse] = useState<string | null>(null);
   const [isPostRegisterVcHashLoading, setIsPostRegisterVcHashLoading] = useState(false);
   const [postRegisterVcHashSnippetLang, setPostRegisterVcHashSnippetLang] = useState("cURL");
-  const [postRegisterVcHashCodeSnippet, setPostRegisterVcHashCodeSnippet] = useState("");
 
-  // State for Private Layer Endpoint
   const [postComponentTransferProductId, setPostComponentTransferProductId] = useState<string>("DPP001");
   const [postComponentTransferBody, setPostComponentTransferBody] = useState<string>(
     JSON.stringify({
@@ -233,9 +227,7 @@ export default function DeveloperPortalPage() {
   const [postComponentTransferResponse, setPostComponentTransferResponse] = useState<string | null>(null);
   const [isPostComponentTransferLoading, setIsPostComponentTransferLoading] = useState(false);
   const [postComponentTransferSnippetLang, setPostComponentTransferSnippetLang] = useState("cURL");
-  const [postComponentTransferCodeSnippet, setPostComponentTransferCodeSnippet] = useState("");
 
-  // State for ZKP Endpoints
   const [zkpSubmitDppId, setZkpSubmitDppId] = useState<string>("DPP001");
   const [zkpSubmitBody, setZkpSubmitBody] = useState<string>(
     JSON.stringify({ claimType: "material_compliance_svhc_lead_less_0.1", proofData: "0xMockProofData...", publicInputs: { productBatchId: "BATCH123" } }, null, 2)
@@ -243,35 +235,29 @@ export default function DeveloperPortalPage() {
   const [zkpSubmitResponse, setZkpSubmitResponse] = useState<string | null>(null);
   const [isZkpSubmitLoading, setIsZkpSubmitLoading] = useState(false);
   const [zkpSubmitSnippetLang, setZkpSubmitSnippetLang] = useState("cURL");
-  const [zkpSubmitCodeSnippet, setZkpSubmitCodeSnippet] = useState("");
 
   const [zkpVerifyDppId, setZkpVerifyDppId] = useState<string>("DPP001");
   const [zkpVerifyClaimType, setZkpVerifyClaimType] = useState<string>("material_compliance_svhc_lead_less_0.1");
   const [zkpVerifyResponse, setZkpVerifyResponse] = useState<string | null>(null);
   const [isZkpVerifyLoading, setIsZkpVerifyLoading] = useState(false);
   const [zkpVerifySnippetLang, setZkpVerifySnippetLang] = useState("cURL");
-  const [zkpVerifyCodeSnippet, setZkpVerifyCodeSnippet] = useState("");
 
-  // State for Token Endpoints
   const [mintTokenProductId, setMintTokenProductId] = useState<string>("DPP001");
   const [mintTokenBody, setMintTokenBody] = useState<string>(JSON.stringify({ contractAddress: "0xMOCK_DPP_TOKEN_CONTRACT", recipientAddress: "0xRECIPIENT_MOCK_ADDRESS", metadataUri: "ipfs://example_metadata_cid" }, null, 2));
   const [mintTokenResponsePlayground, setMintTokenResponsePlayground] = useState<string | null>(null);
   const [isMintTokenLoading, setIsMintTokenLoading] = useState(false);
   const [mintTokenSnippetLang, setMintTokenSnippetLang] = useState("cURL");
-  const [mintTokenCodeSnippet, setMintTokenCodeSnippet] = useState("");
 
   const [updateTokenMetaTokenId, setUpdateTokenMetaTokenId] = useState<string>("101");
   const [updateTokenMetaBody, setUpdateTokenMetaBody] = useState<string>(JSON.stringify({ metadataUri: "ipfs://new_example_metadata_cid" }, null, 2));
   const [updateTokenMetaResponse, setUpdateTokenMetaResponse] = useState<string | null>(null);
   const [isUpdateTokenMetaLoading, setIsUpdateTokenMetaLoading] = useState(false);
   const [updateTokenMetaSnippetLang, setUpdateTokenMetaSnippetLang] = useState("cURL");
-  const [updateTokenMetaCodeSnippet, setUpdateTokenMetaCodeSnippet] = useState("");
 
   const [getTokenStatusTokenId, setGetTokenStatusTokenId] = useState<string>("101");
   const [getTokenStatusResponse, setGetTokenStatusResponse] = useState<string | null>(null);
   const [isGetTokenStatusLoading, setIsGetTokenStatusLoading] = useState(false);
   const [getTokenStatusSnippetLang, setGetTokenStatusSnippetLang] = useState("cURL");
-  const [getTokenStatusCodeSnippet, setGetTokenStatusCodeSnippet] = useState("");
 
 
   const [getProductCodeSnippet, setGetProductCodeSnippet] = useState("");
@@ -288,6 +274,16 @@ export default function DeveloperPortalPage() {
   const [importDppsCodeSnippet, setImportDppsCodeSnippet] = useState("");
   const [getDppGraphCodeSnippet, setGetDppGraphCodeSnippet] = useState("");
   const [getStatusCodeSnippet, setGetStatusCodeSnippet] = useState("");
+  const [postOnchainStatusCodeSnippet, setPostOnchainStatusCodeSnippet] = useState("");
+  const [postOnchainLifecycleCodeSnippet, setPostOnchainLifecycleCodeSnippet] = useState("");
+  const [postLogCriticalEventCodeSnippet, setPostLogCriticalEventCodeSnippet] = useState("");
+  const [postRegisterVcHashCodeSnippet, setPostRegisterVcHashCodeSnippet] = useState("");
+  const [postComponentTransferCodeSnippet, setPostComponentTransferCodeSnippet] = useState("");
+  const [zkpSubmitCodeSnippet, setZkpSubmitCodeSnippet] = useState("");
+  const [zkpVerifyCodeSnippet, setZkpVerifyCodeSnippet] = useState("");
+  const [mintTokenCodeSnippet, setMintTokenCodeSnippet] = useState("");
+  const [updateTokenMetaCodeSnippet, setUpdateTokenMetaCodeSnippet] = useState("");
+  const [getTokenStatusCodeSnippet, setGetTokenStatusCodeSnippet] = useState("");
 
 
   const updateSnippet = useCallback((
@@ -318,20 +314,16 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet), [getGraphProductId, getDppGraphSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet), [getStatusProductId, getStatusSnippetLang, updateSnippet]);
 
-  // useEffects for new on-chain operation endpoints
   useEffect(() => updateSnippet("onchainStatus", "POST", postOnchainStatusSnippetLang, { productId: postOnchainStatusProductId }, postOnchainStatusBody, setPostOnchainStatusCodeSnippet), [postOnchainStatusProductId, postOnchainStatusBody, postOnchainStatusSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("onchainLifecycleStage", "POST", postOnchainLifecycleSnippetLang, { productId: postOnchainLifecycleProductId }, postOnchainLifecycleBody, setPostOnchainLifecycleCodeSnippet), [postOnchainLifecycleProductId, postOnchainLifecycleBody, postOnchainLifecycleSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet), [postLogCriticalEventProductId, postLogCriticalEventBody, postLogCriticalEventSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet), [postRegisterVcHashProductId, postRegisterVcHashBody, postRegisterVcHashSnippetLang, updateSnippet]);
   
-  // useEffect for new Private Layer endpoint
   useEffect(() => updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet), [postComponentTransferProductId, postComponentTransferBody, postComponentTransferSnippetLang, updateSnippet]);
 
-  // useEffects for ZKP Endpoints
   useEffect(() => updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet), [zkpSubmitDppId, zkpSubmitBody, zkpSubmitSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("zkpVerifyClaim", "GET", zkpVerifySnippetLang, { dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType }, null, setZkpVerifyCodeSnippet), [zkpVerifyDppId, zkpVerifyClaimType, zkpVerifySnippetLang, updateSnippet]);
 
-  // useEffects for Token Endpoints
   useEffect(() => updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet), [mintTokenProductId, mintTokenBody, mintTokenSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("updateTokenMetadata", "PATCH", updateTokenMetaSnippetLang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet), [updateTokenMetaTokenId, updateTokenMetaBody, updateTokenMetaSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getTokenStatus", "GET", getTokenStatusSnippetLang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet), [getTokenStatusTokenId, getTokenStatusSnippetLang, updateSnippet]);
@@ -479,20 +471,16 @@ export default function DeveloperPortalPage() {
   const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetDppGraphResponse); }
   const handleMockGetStatus = () => { updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet); makeApiCall(`/api/v1/dpp/status/${getStatusProductId}`, 'GET', null, setIsGetStatusLoading, setGetStatusResponse); }
 
-  // Handlers for new on-chain operation endpoints
   const handleMockUpdateOnChainStatus = () => { updateSnippet("onchainStatus", "POST", postOnchainStatusSnippetLang, { productId: postOnchainStatusProductId }, postOnchainStatusBody, setPostOnchainStatusCodeSnippet); makeApiCall(`/api/v1/dpp/${postOnchainStatusProductId}/onchain-status`, 'POST', postOnchainStatusBody, setIsPostOnchainStatusLoading, setPostOnchainStatusResponse); }
   const handleMockUpdateOnChainLifecycleStage = () => { updateSnippet("onchainLifecycleStage", "POST", postOnchainLifecycleSnippetLang, { productId: postOnchainLifecycleProductId }, postOnchainLifecycleBody, setPostOnchainLifecycleCodeSnippet); makeApiCall(`/api/v1/dpp/${postOnchainLifecycleProductId}/onchain-lifecycle-stage`, 'POST', postOnchainLifecycleBody, setIsPostOnchainLifecycleLoading, setPostOnchainLifecycleResponse); }
   const handleMockLogCriticalEvent = () => { updateSnippet("logCriticalEvent", "POST", postLogCriticalEventSnippetLang, { productId: postLogCriticalEventProductId }, postLogCriticalEventBody, setPostLogCriticalEventCodeSnippet); makeApiCall(`/api/v1/dpp/${postLogCriticalEventProductId}/log-critical-event`, 'POST', postLogCriticalEventBody, setIsPostLogCriticalEventLoading, setPostLogCriticalEventResponse); }
   const handleMockRegisterVcHash = () => { updateSnippet("registerVcHash", "POST", postRegisterVcHashSnippetLang, { productId: postRegisterVcHashProductId }, postRegisterVcHashBody, setPostRegisterVcHashCodeSnippet); makeApiCall(`/api/v1/dpp/${postRegisterVcHashProductId}/register-vc-hash`, 'POST', postRegisterVcHashBody, setIsPostRegisterVcHashLoading, setPostRegisterVcHashResponse); }
   
-  // Handler for new Private Layer endpoint
   const handleMockPostComponentTransfer = () => { updateSnippet("postComponentTransfer", "POST", postComponentTransferSnippetLang, { productId: postComponentTransferProductId }, postComponentTransferBody, setPostComponentTransferCodeSnippet); makeApiCall(`/api/v1/private/dpp/${postComponentTransferProductId}/component-transfer`, 'POST', postComponentTransferBody, setIsPostComponentTransferLoading, setPostComponentTransferResponse); }
 
-  // Handlers for ZKP Endpoints
   const handleMockZkpSubmitProof = () => { updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet); makeApiCall(`/api/v1/zkp/submit-proof/${zkpSubmitDppId}`, 'POST', zkpSubmitBody, setIsZkpSubmitLoading, setZkpSubmitResponse); }
   const handleMockZkpVerifyClaim = () => { updateSnippet("zkpVerifyClaim", "GET", zkpVerifySnippetLang, { dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType }, null, setZkpVerifyCodeSnippet); makeApiCall(`/api/v1/zkp/verify-claim/${zkpVerifyDppId}?claimType=${encodeURIComponent(zkpVerifyClaimType)}`, 'GET', null, setIsZkpVerifyLoading, setZkpVerifyResponse); }
 
-  // Handlers for Token Endpoints
   const handleMockMintToken = () => { updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet); makeApiCall(`/api/v1/token/mint/${mintTokenProductId}`, 'POST', mintTokenBody, setIsMintTokenLoading, setMintTokenResponsePlayground); }
   const handleMockUpdateTokenMetadata = () => { updateSnippet("updateTokenMetadata", "PATCH", updateTokenMetaSnippetLang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet); makeApiCall(`/api/v1/token/metadata/${updateTokenMetaTokenId}`, 'PATCH', updateTokenMetaBody, setIsUpdateTokenMetaLoading, setUpdateTokenMetaResponse); }
   const handleMockGetTokenStatus = () => { updateSnippet("getTokenStatus", "GET", getTokenStatusSnippetLang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet); makeApiCall(`/api/v1/token/status/${getTokenStatusTokenId}`, 'GET', null, setIsGetTokenStatusLoading, setGetTokenStatusResponse); }
@@ -819,10 +807,9 @@ export default function DeveloperPortalPage() {
         </div>
       )
     },
-    // New On-Chain Operation Endpoints for Playground
     {
       id: 'update-onchain-status',
-      section: 'utility',
+      section: 'onchain',
       title: 'POST /api/v1/dpp/{productId}/onchain-status',
       description: 'Conceptually update the on-chain status of a DPP.',
       onSendRequest: handleMockUpdateOnChainStatus,
@@ -834,19 +821,19 @@ export default function DeveloperPortalPage() {
       children: (
         <>
           <div>
-            <Label htmlFor="onchainStatusProductId">Product ID (Path Parameter)</Label>
-            <Input id="onchainStatusProductId" value={postOnchainStatusProductId} onChange={(e) => setPostOnchainStatusProductId(e.target.value)} placeholder="e.g., DPP001" />
+            <Label htmlFor="onchainStatusProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="onchainStatusProductIdPlayground" value={postOnchainStatusProductId} onChange={(e) => setPostOnchainStatusProductId(e.target.value)} placeholder="e.g., DPP001" />
           </div>
           <div className="mt-2">
-            <Label htmlFor="onchainStatusBody">Request Body (JSON)</Label>
-            <Textarea id="onchainStatusBody" value={postOnchainStatusBody} onChange={(e) => setPostOnchainStatusBody(e.target.value)} rows={3} className="font-mono text-xs" />
+            <Label htmlFor="onchainStatusBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="onchainStatusBodyPlayground" value={postOnchainStatusBody} onChange={(e) => setPostOnchainStatusBody(e.target.value)} rows={3} className="font-mono text-xs" />
           </div>
         </>
       )
     },
     {
       id: 'update-onchain-lifecycle-stage',
-      section: 'utility',
+      section: 'onchain',
       title: 'POST /api/v1/dpp/{productId}/onchain-lifecycle-stage',
       description: 'Conceptually update the on-chain lifecycle stage of a DPP.',
       onSendRequest: handleMockUpdateOnChainLifecycleStage,
@@ -858,19 +845,19 @@ export default function DeveloperPortalPage() {
       children: (
         <>
           <div>
-            <Label htmlFor="onchainLifecycleProductId">Product ID (Path Parameter)</Label>
-            <Input id="onchainLifecycleProductId" value={postOnchainLifecycleProductId} onChange={(e) => setPostOnchainLifecycleProductId(e.target.value)} placeholder="e.g., DPP001" />
+            <Label htmlFor="onchainLifecycleProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="onchainLifecycleProductIdPlayground" value={postOnchainLifecycleProductId} onChange={(e) => setPostOnchainLifecycleProductId(e.target.value)} placeholder="e.g., DPP001" />
           </div>
           <div className="mt-2">
-            <Label htmlFor="onchainLifecycleBody">Request Body (JSON)</Label>
-            <Textarea id="onchainLifecycleBody" value={postOnchainLifecycleBody} onChange={(e) => setPostOnchainLifecycleBody(e.target.value)} rows={3} className="font-mono text-xs" />
+            <Label htmlFor="onchainLifecycleBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="onchainLifecycleBodyPlayground" value={postOnchainLifecycleBody} onChange={(e) => setPostOnchainLifecycleBody(e.target.value)} rows={3} className="font-mono text-xs" />
           </div>
         </>
       )
     },
     {
       id: 'log-critical-event',
-      section: 'utility',
+      section: 'onchain',
       title: 'POST /api/v1/dpp/{productId}/log-critical-event',
       description: 'Conceptually log a critical event on-chain for a DPP.',
       onSendRequest: handleMockLogCriticalEvent,
@@ -882,19 +869,19 @@ export default function DeveloperPortalPage() {
       children: (
         <>
           <div>
-            <Label htmlFor="logCriticalEventProductId">Product ID (Path Parameter)</Label>
-            <Input id="logCriticalEventProductId" value={postLogCriticalEventProductId} onChange={(e) => setPostLogCriticalEventProductId(e.target.value)} placeholder="e.g., DPP001" />
+            <Label htmlFor="logCriticalEventProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="logCriticalEventProductIdPlayground" value={postLogCriticalEventProductId} onChange={(e) => setPostLogCriticalEventProductId(e.target.value)} placeholder="e.g., DPP001" />
           </div>
           <div className="mt-2">
-            <Label htmlFor="logCriticalEventBody">Request Body (JSON)</Label>
-            <Textarea id="logCriticalEventBody" value={postLogCriticalEventBody} onChange={(e) => setPostLogCriticalEventBody(e.target.value)} rows={3} className="font-mono text-xs" />
+            <Label htmlFor="logCriticalEventBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="logCriticalEventBodyPlayground" value={postLogCriticalEventBody} onChange={(e) => setPostLogCriticalEventBody(e.target.value)} rows={3} className="font-mono text-xs" />
           </div>
         </>
       )
     },
     {
       id: 'register-vc-hash',
-      section: 'utility',
+      section: 'onchain',
       title: 'POST /api/v1/dpp/{productId}/register-vc-hash',
       description: "Conceptually register a VC's hash on-chain for a DPP.",
       onSendRequest: handleMockRegisterVcHash,
@@ -906,20 +893,19 @@ export default function DeveloperPortalPage() {
       children: (
         <>
           <div>
-            <Label htmlFor="registerVcHashProductId">Product ID (Path Parameter)</Label>
-            <Input id="registerVcHashProductId" value={postRegisterVcHashProductId} onChange={(e) => setPostRegisterVcHashProductId(e.target.value)} placeholder="e.g., DPP001" />
+            <Label htmlFor="registerVcHashProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="registerVcHashProductIdPlayground" value={postRegisterVcHashProductId} onChange={(e) => setPostRegisterVcHashProductId(e.target.value)} placeholder="e.g., DPP001" />
           </div>
           <div className="mt-2">
-            <Label htmlFor="registerVcHashBody">Request Body (JSON)</Label>
-            <Textarea id="registerVcHashBody" value={postRegisterVcHashBody} onChange={(e) => setPostRegisterVcHashBody(e.target.value)} rows={3} className="font-mono text-xs" />
+            <Label htmlFor="registerVcHashBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="registerVcHashBodyPlayground" value={postRegisterVcHashBody} onChange={(e) => setPostRegisterVcHashBody(e.target.value)} rows={3} className="font-mono text-xs" />
           </div>
         </>
       )
     },
-    // New Private Layer Endpoint
     {
       id: 'post-component-transfer',
-      section: 'private', // New section key
+      section: 'private',
       title: 'POST /api/v1/private/dpp/{productId}/component-transfer',
       description: '[Private Layer] Record a private B2B component transfer.',
       onSendRequest: handleMockPostComponentTransfer,
@@ -931,17 +917,16 @@ export default function DeveloperPortalPage() {
       children: (
         <>
           <div>
-            <Label htmlFor="componentTransferProductId">Product ID (Path Parameter)</Label>
-            <Input id="componentTransferProductId" value={postComponentTransferProductId} onChange={(e) => setPostComponentTransferProductId(e.target.value)} placeholder="e.g., DPP001" />
+            <Label htmlFor="componentTransferProductIdPlayground">Product ID (Path Parameter)</Label>
+            <Input id="componentTransferProductIdPlayground" value={postComponentTransferProductId} onChange={(e) => setPostComponentTransferProductId(e.target.value)} placeholder="e.g., DPP001" />
           </div>
           <div className="mt-2">
-            <Label htmlFor="componentTransferBody">Request Body (JSON)</Label>
-            <Textarea id="componentTransferBody" value={postComponentTransferBody} onChange={(e) => setPostComponentTransferBody(e.target.value)} rows={8} className="font-mono text-xs" />
+            <Label htmlFor="componentTransferBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="componentTransferBodyPlayground" value={postComponentTransferBody} onChange={(e) => setPostComponentTransferBody(e.target.value)} rows={8} className="font-mono text-xs" />
           </div>
         </>
       )
     },
-    // New ZKP Endpoints
     {
       id: 'zkp-submit-proof',
       section: 'zkp',
@@ -956,12 +941,12 @@ export default function DeveloperPortalPage() {
       children: (
         <>
           <div>
-            <Label htmlFor="zkpSubmitDppId">DPP ID (Path Parameter)</Label>
-            <Input id="zkpSubmitDppId" value={zkpSubmitDppId} onChange={(e) => setZkpSubmitDppId(e.target.value)} placeholder="e.g., DPP001" />
+            <Label htmlFor="zkpSubmitDppIdPlayground">DPP ID (Path Parameter)</Label>
+            <Input id="zkpSubmitDppIdPlayground" value={zkpSubmitDppId} onChange={(e) => setZkpSubmitDppId(e.target.value)} placeholder="e.g., DPP001" />
           </div>
           <div className="mt-2">
-            <Label htmlFor="zkpSubmitBody">Request Body (JSON)</Label>
-            <Textarea id="zkpSubmitBody" value={zkpSubmitBody} onChange={(e) => setZkpSubmitBody(e.target.value)} rows={5} className="font-mono text-xs" />
+            <Label htmlFor="zkpSubmitBodyPlayground">Request Body (JSON)</Label>
+            <Textarea id="zkpSubmitBodyPlayground" value={zkpSubmitBody} onChange={(e) => setZkpSubmitBody(e.target.value)} rows={5} className="font-mono text-xs" />
             <p className="text-xs text-muted-foreground mt-1">Body should include claimType, proofData, publicInputs. See API Reference.</p>
           </div>
         </>
@@ -981,17 +966,16 @@ export default function DeveloperPortalPage() {
       children: (
         <>
           <div>
-            <Label htmlFor="zkpVerifyDppId">DPP ID (Path Parameter)</Label>
-            <Input id="zkpVerifyDppId" value={zkpVerifyDppId} onChange={(e) => setZkpVerifyDppId(e.target.value)} placeholder="e.g., DPP001" />
+            <Label htmlFor="zkpVerifyDppIdPlayground">DPP ID (Path Parameter)</Label>
+            <Input id="zkpVerifyDppIdPlayground" value={zkpVerifyDppId} onChange={(e) => setZkpVerifyDppId(e.target.value)} placeholder="e.g., DPP001" />
           </div>
           <div className="mt-2">
-            <Label htmlFor="zkpVerifyClaimType">Claim Type (Query Parameter)</Label>
-            <Input id="zkpVerifyClaimType" value={zkpVerifyClaimType} onChange={(e) => setZkpVerifyClaimType(e.target.value)} placeholder="e.g., material_compliance_svhc_lead_less_0.1" />
+            <Label htmlFor="zkpVerifyClaimTypePlayground">Claim Type (Query Parameter)</Label>
+            <Input id="zkpVerifyClaimTypePlayground" value={zkpVerifyClaimType} onChange={(e) => setZkpVerifyClaimType(e.target.value)} placeholder="e.g., material_compliance_svhc_lead_less_0.1" />
           </div>
         </>
       )
     },
-    // Token Endpoints
     {
       id: 'mint-token',
       section: 'token',
@@ -1005,8 +989,8 @@ export default function DeveloperPortalPage() {
       onSnippetLanguageChange: (lang: string) => { setMintTokenSnippetLang(lang); updateSnippet('mintToken', 'POST', lang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet); },
       children: (
         <>
-          <div><Label htmlFor="mintTokenProductId">Product ID (Path Parameter)</Label><Input id="mintTokenProductId" value={mintTokenProductId} onChange={(e) => setMintTokenProductId(e.target.value)} placeholder="e.g., DPP001" /></div>
-          <div className="mt-2"><Label htmlFor="mintTokenBody">Request Body (JSON)</Label><Textarea id="mintTokenBody" value={mintTokenBody} onChange={(e) => setMintTokenBody(e.target.value)} rows={4} className="font-mono text-xs" /></div>
+          <div><Label htmlFor="mintTokenProductIdPlayground">Product ID (Path Parameter)</Label><Input id="mintTokenProductIdPlayground" value={mintTokenProductId} onChange={(e) => setMintTokenProductId(e.target.value)} placeholder="e.g., DPP001" /></div>
+          <div className="mt-2"><Label htmlFor="mintTokenBodyPlayground">Request Body (JSON)</Label><Textarea id="mintTokenBodyPlayground" value={mintTokenBody} onChange={(e) => setMintTokenBody(e.target.value)} rows={4} className="font-mono text-xs" /></div>
         </>
       )
     },
@@ -1023,8 +1007,8 @@ export default function DeveloperPortalPage() {
       onSnippetLanguageChange: (lang: string) => { setUpdateTokenMetaSnippetLang(lang); updateSnippet('updateTokenMetadata', 'PATCH', lang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet); },
       children: (
         <>
-          <div><Label htmlFor="updateTokenMetaTokenId">Token ID (Path Parameter)</Label><Input id="updateTokenMetaTokenId" value={updateTokenMetaTokenId} onChange={(e) => setUpdateTokenMetaTokenId(e.target.value)} placeholder="e.g., 101" /></div>
-          <div className="mt-2"><Label htmlFor="updateTokenMetaBody">Request Body (JSON)</Label><Textarea id="updateTokenMetaBody" value={updateTokenMetaBody} onChange={(e) => setUpdateTokenMetaBody(e.target.value)} rows={3} className="font-mono text-xs" /></div>
+          <div><Label htmlFor="updateTokenMetaTokenIdPlayground">Token ID (Path Parameter)</Label><Input id="updateTokenMetaTokenIdPlayground" value={updateTokenMetaTokenId} onChange={(e) => setUpdateTokenMetaTokenId(e.target.value)} placeholder="e.g., 101" /></div>
+          <div className="mt-2"><Label htmlFor="updateTokenMetaBodyPlayground">Request Body (JSON)</Label><Textarea id="updateTokenMetaBodyPlayground" value={updateTokenMetaBody} onChange={(e) => setUpdateTokenMetaBody(e.target.value)} rows={3} className="font-mono text-xs" /></div>
         </>
       )
     },
@@ -1040,7 +1024,7 @@ export default function DeveloperPortalPage() {
       snippetLanguage: getTokenStatusSnippetLang,
       onSnippetLanguageChange: (lang: string) => { setGetTokenStatusSnippetLang(lang); updateSnippet('getTokenStatus', 'GET', lang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet); },
       children: (
-        <div><Label htmlFor="getTokenStatusTokenId">Token ID (Path Parameter)</Label><Input id="getTokenStatusTokenId" value={getTokenStatusTokenId} onChange={(e) => setGetTokenStatusTokenId(e.target.value)} placeholder="e.g., 101" /></div>
+        <div><Label htmlFor="getTokenStatusTokenIdPlayground">Token ID (Path Parameter)</Label><Input id="getTokenStatusTokenIdPlayground" value={getTokenStatusTokenId} onChange={(e) => setGetTokenStatusTokenId(e.target.value)} placeholder="e.g., 101" /></div>
       )
     }
   ] as const;
@@ -1210,6 +1194,19 @@ export default function DeveloperPortalPage() {
                   <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline">DPP Utility & Advanced Endpoints</AccordionTrigger>
                   <AccordionContent className="pt-4 space-y-6">
                     {endpointConfigs.filter(e => e.section === 'utility').map(ep => (
+                      <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
+                        {ep.children}
+                      </DeveloperEndpointCard>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="dpp-onchain">
+                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline flex items-center">
+                    <Sigma className="mr-2 h-5 w-5" /> Conceptual On-Chain DPP Operations
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 space-y-6">
+                    {endpointConfigs.filter(e => e.section === 'onchain').map(ep => (
                       <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
                         {ep.children}
                       </DeveloperEndpointCard>

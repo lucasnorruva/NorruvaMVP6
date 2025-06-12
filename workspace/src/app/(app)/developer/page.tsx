@@ -81,10 +81,11 @@ const systemStatusData = [
 ];
 
 const dashboardQuickActions = [
-  { label: "View My API Keys", href: "#", targetTab: "api_keys", icon: KeyRound },
-  { label: "Explore API Reference", href: "/developer/docs/api-reference", icon: BookText },
-  { label: "Manage Webhooks", href: "#", targetTab: "webhooks", icon: Webhook },
-  { label: "Check API Status", href: "#", targetTab: "dashboard", icon: ServerCrash, tooltip: "View API Status on Dashboard" },
+  { label: "View My API Keys", href: "#", targetTab: "api_keys", icon: KeyRound, tooltip: "Manage your API access keys" },
+  { label: "Explore API Reference", href: "/developer/docs/api-reference", icon: BookText, tooltip: "Detailed API endpoint documentation" },
+  { label: "Manage Webhooks", href: "#", targetTab: "webhooks", icon: Webhook, tooltip: "Configure event notifications" },
+  { label: "Tutorials & Resources", href: "#", targetTab: "resources", icon: Lightbulb, tooltip: "Access SDKs, tutorials, and guides" },
+  { label: "Check API Status", href: "#", targetTab: "dashboard", icon: ServerCrash, tooltip: "View current API and system status" },
 ];
 
 
@@ -1051,7 +1052,7 @@ export default function DeveloperPortalPage() {
                 </AccordionItem>
 
                 <AccordionItem value="dpp-utility">
-                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline">DPP Utility & Advanced Endpoints</AccordionTrigger>
+                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline">DPP Utility &amp; Advanced Endpoints</AccordionTrigger>
                   <AccordionContent className="pt-4 space-y-6">
                     {endpointConfigs.filter(e => e.section === 'utility').map(ep => (
                       <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
@@ -1103,7 +1104,7 @@ export default function DeveloperPortalPage() {
         <TabsContent value="settings_usage" className="mt-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
             <Card className="shadow-lg lg:col-span-2">
                 <CardHeader>
-                <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage & Reporting</CardTitle>
+                <CardTitle className="font-headline flex items-center"><BarChart2 className="mr-3 h-6 w-6 text-primary" /> API Usage &amp; Reporting</CardTitle>
                 <CardDescription>Monitor your API usage, view logs, and understand integration performance (Mock Data for <Badge variant="outline" className="capitalize">{currentEnvironment}</Badge> environment for <Badge variant="outline">{mockOrganizationName}</Badge>).</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
@@ -1162,7 +1163,7 @@ export default function DeveloperPortalPage() {
                 </Card>
                  <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle className="font-headline flex items-center"><HelpCircle className="mr-3 h-6 w-6 text-primary" /> Support & Feedback</CardTitle>
+                        <CardTitle className="font-headline flex items-center"><HelpCircle className="mr-3 h-6 w-6 text-primary" /> Support &amp; Feedback</CardTitle>
                         <CardDescription>Get help and share your thoughts.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">

@@ -17,6 +17,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       status: "published",
       dppStandardVersion: "CIRPASS v0.9 Draft"
     },
+    authenticationVcId: "vc_auth_DPP001_mock123", // Added for Task 31
+    ownershipNftLink: { // Added for Task 31
+        registryUrl: "https://mock-nft-market.example/token/0xNFTContractForDPP001/1",
+        contractAddress: "0xNFTContractForDPP001",
+        tokenId: "1",
+        chainName: "MockEthereum",
+    },
     productDetails: {
       description: "An eco friendly fridge.",
       energyLabel: "A++",
@@ -93,7 +100,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
             issuer: "did:ebsi:zTuvRheinland",
             issuanceDate: "2024-01-20T00:00:00Z",
             credentialSubject: {
-                productId: "DPP001",
+                productId: "DPP002", // Corrected to DPP001 if it's for DPP001
                 standard: "ISO 14001:2015",
                 complianceStatus: "Conformant",
                 expiryDate: "2026-11-14"
@@ -128,6 +135,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     manufacturer: { name: "EcoThreads", eori: "FR987654321"},
     modelNumber: "ET-TS-ORG-M",
     metadata: { last_updated: "2024-07-25T14:30:00Z", status: "draft", created_at: "2024-03-01T10:00:00Z" },
+    authenticationVcId: "vc_auth_DPP002_mock456", // Added for Task 31
+    // No ownershipNftLink for this one to show variability
     productDetails: {
       description: "A sustainable t-shirt made from organic cotton.",
       imageUrl: "https://placehold.co/600x400.png",
@@ -376,3 +385,4 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
 ];
     
 
+    

@@ -3,7 +3,7 @@
 // Description: Product related type definitions and mock data.
 
 import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight } from './Lifecycle';
-import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification } from './Compliance';
+import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification, BatteryRegulationDetails } from './Compliance'; // Added BatteryRegulationDetails
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
@@ -65,6 +65,7 @@ export interface DigitalProductPassport {
     name: string;
     did?: string;
     address?: string;
+    eori?: string; // Added EORI to manufacturer
   };
 
   metadata: {
@@ -80,6 +81,15 @@ export interface DigitalProductPassport {
     contractAddress?: string;
     tokenId?: string;
     anchorTransactionHash?: string;
+  };
+
+  // New fields for Task 31
+  authenticationVcId?: string; // ID of a VC attesting to product authenticity
+  ownershipNftLink?: { // Link to an NFT representing ownership
+    registryUrl?: string; // e.g., OpenSea, Rarible link
+    contractAddress: string;
+    tokenId: string;
+    chainName?: string; // e.g., Ethereum, Polygon
   };
 
   productDetails?: {
@@ -115,13 +125,29 @@ export interface DigitalProductPassport {
     };
     eu_espr?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
     us_scope3?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
-    battery_regulation?: {
-      status: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable';
-      batteryPassportId?: string;
-      carbonFootprint?: { value: number; unit: string; calculationMethod?: string; vcId?: string };
-      recycledContent?: Array<{ material: string; percentage: number; vcId?: string }>;
-      stateOfHealth?: { value: number; unit: string; measurementDate: string; vcId?: string };
-      vcId?: string;
+    battery_regulation?: BatteryRegulationDetails; // Using imported type
+    scipNotification?: { // SCIP data structure
+      status?: string;
+      notificationId?: string;
+      svhcListVersion?: string;
+      submittingLegalEntity?: string;
+      articleName?: string;
+      primaryArticleId?: string;
+      safeUseInstructionsLink?: string;
+      lastChecked?: string;
+    };
+    euCustomsData?: { // EU Customs data structure
+      status?: string;
+      declarationId?: string;
+      hsCode?: string;
+      countryOfOrigin?: string;
+      netWeightKg?: number | null;
+      grossWeightKg?: number | null;
+      customsValuation?: {
+        value?: number | null;
+        currency?: string;
+      };
+      lastChecked?: string;
     };
   };
 
@@ -176,6 +202,9 @@ export interface SimpleProductDetail {
   lifecycleEvents?: SimpleLifecycleEvent[];
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
+  // Added for Task 31/32 display
+  authenticationVcId?: string;
+  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
 }
 
 export interface StoredUserProduct {
@@ -201,7 +230,7 @@ export interface StoredUserProduct {
   carbonFootprintManufacturing?: number | null;
   recycledContentPercentage?: number | null;
   status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string;
-  compliance: string;
+  compliance: string; // Simplified compliance text for list view
   lastUpdated: string;
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -221,6 +250,14 @@ export interface StoredUserProduct {
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
   customAttributesJsonString?: string;
+  complianceData?: { // For detailed compliance data storage
+    eprel?: Partial<DigitalProductPassport['compliance']['eprel']>;
+    esprConformity?: Partial<DigitalProductPassport['compliance']['esprConformity']>;
+    scipNotification?: Partial<DigitalProductPassport['compliance']['scipNotification']>;
+    euCustomsData?: Partial<DigitalProductPassport['compliance']['euCustomsData']>;
+    battery_regulation?: Partial<DigitalProductPassport['compliance']['battery_regulation']>;
+  };
+  batteryRegulation?: Partial<BatteryRegulationDetails>;
 }
 
 export interface RichMockProduct {
@@ -253,6 +290,8 @@ export interface RichMockProduct {
   supplyChainLinks?: ProductSupplyChainLink[];
   customAttributes?: CustomAttribute[];
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
+  authenticationVcId?: string; // Added for Task 31/32
+  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; // Added for Task 31/32
 }
 
 export interface PublicProductInfo {
@@ -281,6 +320,9 @@ export interface PublicProductInfo {
   certifications?: PublicCertification[];
   customAttributes?: CustomAttribute[];
   documents?: DocumentReference[];
+  // Added for Task 31/32
+  authenticationVcId?: string;
+  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
 }
 
 export interface Supplier {
@@ -328,6 +370,8 @@ export interface DisplayableProduct {
   customAttributes?: CustomAttribute[];
   customAttributesJsonString?: string;
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
+  authenticationVcId?: string; // Added for Task 31/32
+  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; // Added for Task 31/32
 }
 
 export interface AnchorResult {
@@ -363,3 +407,5 @@ export interface TokenStatusResponse {
   status: string; // e.g., "minted", "transferred", "active"
   message?: string;
 }
+
+    

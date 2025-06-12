@@ -8,7 +8,7 @@ import ProductComplianceHeader from "./ProductComplianceHeader";
 import ComplianceDetailItemDisplay, { type ComplianceDetailItemProps } from "./ComplianceDetailItemDisplay"; // Import the new component and its props type
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, Fingerprint, Database, Anchor } from "lucide-react"; // Added Database, Anchor
+import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, Fingerprint, Database, Anchor, BatteryCharging } from "lucide-react"; // Added BatteryCharging
 import Link from "next/link";
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -108,19 +108,40 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     });
   }
 
+  // Handle Battery Regulation explicitly
+  if (summary.battery) {
+    const batteryNotes: string[] = [];
+    if (summary.battery.carbonFootprint) {
+      batteryNotes.push(`CF: ${summary.battery.carbonFootprint.value} ${summary.battery.carbonFootprint.unit}`);
+    }
+    if (summary.battery.stateOfHealth) {
+      batteryNotes.push(`SoH: ${summary.battery.stateOfHealth.value}${summary.battery.stateOfHealth.unit}`);
+    }
+    if (summary.battery.recycledContent && summary.battery.recycledContent.length > 0) {
+      const mainRecycled = summary.battery.recycledContent[0];
+      batteryNotes.push(`Recycled ${mainRecycled.material}: ${mainRecycled.percentage}%`);
+    }
+
+    allComplianceItems.push({
+      title: "EU Battery Regulation",
+      icon: BatteryCharging,
+      status: summary.battery.status,
+      lastChecked: product.lastUpdated, // Using product's last update date as general proxy for battery details
+      id: summary.battery.batteryPassportId,
+      url: summary.battery.vcId ? `#vc-${summary.battery.vcId}` : undefined, // Conceptual link to VC
+      notes: batteryNotes.join(' | ') || "Detailed battery passport information available.",
+    });
+  }
+
   // Handle other specific regulations
   if (summary.specificRegulations) {
     summary.specificRegulations.forEach(reg => {
-      // Ensure these are regulations NOT already covered by explicit handling above
-      // This logic assumes that specificRegulations in SimpleProductDetail 
-      // is now populated by productDetailUtils.ts *only* with items
-      // that are NOT eprel, ebsi, scip, or euCustomsData.
       allComplianceItems.push({
         title: reg.regulationName,
         icon: ListChecks, // Default icon for other regulations
         status: reg.status,
         lastChecked: reg.lastChecked,
-        id: reg.verificationId, // Using id for consistency, was verificationId in ComplianceDetailItem
+        id: reg.verificationId, 
         url: reg.detailsUrl,
         notes: reg.notes,
       });
@@ -131,7 +152,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     <div className="space-y-6">
       <ProductComplianceHeader
         overallStatusText={summary.overallStatus}
-        // notifications={product.notifications} // Assuming product.notifications exists
+        // notifications={product.notifications} // Assuming product.notifications exists and is passed down
       />
 
       {allComplianceItems.length > 0 && (

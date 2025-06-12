@@ -2622,7 +2622,7 @@ components:
         constructionProductInformation:
           $ref: '#/components/schemas/ConstructionProductInformation'
           nullable: true
-        compliance: # Added compliance section
+        compliance: 
           type: object
           nullable: true
           properties:
@@ -2755,15 +2755,15 @@ components:
           nullable: true
           properties:
             eprel:
-              type: object # Kept eprel simple as it was
+              type: object 
               nullable: true
               properties:
                 id: { type: string, nullable: true }
                 status: { type: string, nullable: true }
-                url: { type: string, format: url, nullable: true } # Corrected format
+                url: { type: string, format: url, nullable: true } 
                 lastChecked: { type: string, format: "date-time", nullable: true }
             esprConformity:
-              type: object # Kept esprConformity simple
+              type: object 
               nullable: true
               properties:
                 assessmentId: { type: string, nullable: true }
@@ -2771,13 +2771,13 @@ components:
                 assessmentDate: { type: string, format: "date-time", nullable: true }
                 vcId: { type: string, nullable: true }
             scipNotification:
-              $ref: '#/components/schemas/ScipNotificationDetails' # Using $ref
+              $ref: '#/components/schemas/ScipNotificationDetails' 
               nullable: true
             euCustomsData:
-              $ref: '#/components/schemas/EuCustomsDataDetails' # Using $ref
+              $ref: '#/components/schemas/EuCustomsDataDetails' 
               nullable: true
             battery_regulation: 
-              $ref: '#/components/schemas/BatteryRegulationDetails' # Using $ref
+              $ref: '#/components/schemas/BatteryRegulationDetails' 
               nullable: true
         ebsiVerification:
           type: object
@@ -3213,65 +3213,85 @@ components:
           type: string
           format: date-time
           nullable: true
-    TextileInformation: 
+    FiberCompositionEntry: # New schema for textile fiber composition
+      type: object
+      required:
+        - fiberName
+      properties:
+        fiberName:
+          type: string
+          description: "Name of the textile fiber (e.g., Cotton, Polyester)."
+        percentage:
+          type: number
+          format: float
+          nullable: true
+          minimum: 0
+          maximum: 100
+          description: "Percentage of this fiber in the product."
+    TextileInformation: # New schema for ESPR textile products
       type: object
       properties:
         fiberComposition:
           type: array
           items:
-            type: object
-            properties:
-              fiberName:
-                type: string
-              percentage:
-                type: number
-                format: float
-                nullable: true
-            required:
-              - fiberName
+            $ref: '#/components/schemas/FiberCompositionEntry'
           nullable: true
+          description: "List of fibers and their percentages."
         countryOfOriginLabeling:
           type: string
           nullable: true
+          description: "Country of origin for key manufacturing processes (e.g., spinning, weaving, making up) as stated on the label."
         careInstructionsUrl:
           type: string
           format: url
           nullable: true
+          description: "URL to detailed care instructions."
         isSecondHand:
           type: boolean
           nullable: true
-    ConstructionProductInformation: 
+          description: "Indicates if the textile product is second-hand."
+    EssentialCharacteristic: # New schema for construction product characteristics
+      type: object
+      required:
+        - characteristicName
+        - value
+      properties:
+        characteristicName:
+          type: string
+          description: "Name of the essential characteristic (e.g., Thermal Resistance)."
+        value:
+          type: string
+          description: "Value of the characteristic."
+        unit:
+          type: string
+          nullable: true
+          description: "Unit of measurement for the value."
+        testMethod:
+          type: string
+          nullable: true
+          description: "Test method used to determine the value (e.g., EN 12667)."
+    ConstructionProductInformation: # New schema for ESPR construction products
       type: object
       properties:
         declarationOfPerformanceId:
           type: string
           nullable: true
+          description: "Identifier of the Declaration of Performance (DoP)."
         ceMarkingDetailsUrl:
           type: string
           format: url
           nullable: true
+          description: "URL to CE marking information or certificate."
         intendedUseDescription:
           type: string
           nullable: true
+          description: "Description of the intended use of the construction product."
         essentialCharacteristics:
           type: array
           items:
-            type: object
-            properties:
-              characteristicName:
-                type: string
-              value:
-                type: string
-              unit:
-                type: string
-                nullable: true
-              testMethod:
-                type: string
-                nullable: true
-            required:
-              - characteristicName
-              - value
+            $ref: '#/components/schemas/EssentialCharacteristic'
           nullable: true
+          description: "List of essential characteristics and their declared performances."
 security:
   - ApiKeyAuth: []
 components:

@@ -1,68 +1,91 @@
-
 const CACHE_NAME = 'norruva-dpp-cache-v1';
-const urlsToCache = [
+const PRECACHE_ASSETS = [
   '/',
   '/dashboard',
-  // Add other critical shell paths here
-  // Note: Be careful with caching dynamic API routes or large assets initially.
-  // For actual offline functionality, a more sophisticated strategy is needed.
+  '/globals.css',
+  // Consider adding logo URL if stable and desired for offline:
+  // 'https://firebasestorage.googleapis.com/v0/b/norruva.firebasestorage.app/o/Norruva%20Logo.png?alt=media&token=08d8ede9-1121-433b-bfa5-7ccb4497a09f'
 ];
 
 self.addEventListener('install', (event) => {
-  console.log('[ServiceWorker] Install');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[ServiceWorker] Caching app shell');
-        return cache.addAll(urlsToCache.map(url => new Request(url, { cache: 'reload' }))); // Force reload to avoid cached opaque responses
-      })
-      .catch(error => {
-        console.error('[ServiceWorker] Failed to cache app shell:', error);
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('[ServiceWorker] Pre-caching offline page and assets:', PRECACHE_ASSETS);
+      return cache.addAll(PRECACHE_ASSETS);
+    }).catch(error => {
+      console.error('[ServiceWorker] Pre-caching failed:', error);
+    })
   );
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('[ServiceWorker] Activate');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('[ServiceWorker] Removing old cache:', cacheName);
+            console.log('[ServiceWorker] Old cache removed:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
-  return self.clients.claim();
+  self.clients.claim();
 });
 
 self.addEventListener('fetch', (event) => {
-  console.log('[ServiceWorker] Fetch event for:', event.request.url);
-  // Basic cache-first strategy for GET requests
-  if (event.request.method === 'GET') {
-    event.respondWith(
-      caches.match(event.request)
-        .then((response) => {
-          if (response) {
-            console.log('[ServiceWorker] Found in cache:', event.request.url);
-            return response;
-          }
-          console.log('[ServiceWorker] Not found in cache, fetching from network:', event.request.url);
-          return fetch(event.request).then(
-            (networkResponse) => {
-              // Optionally, cache the new response here if it's a cachable asset
-              // Be careful with caching API responses without a proper strategy
-              return networkResponse;
-            }
-          ).catch(error => {
-            console.error('[ServiceWorker] Fetch failed:', error);
-            // Optionally, return an offline page here
-            // return caches.match('/offline.html');
-          });
-        })
-    );
+  if (event.request.method !== 'GET') {
+    return;
   }
+
+  const requestUrl = new URL(event.request.url);
+
+  // Cache-first for pre-cached assets (matching by pathname)
+  if (PRECACHE_ASSETS.includes(requestUrl.pathname)) {
+    event.respondWith(
+      caches.open(CACHE_NAME).then(async (cache) => {
+        const cachedResponse = await cache.match(event.request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        return fetch(event.request).then((networkResponse) => {
+          // Optionally cache if it was missed during initial pre-cache
+          // cache.put(event.request, networkResponse.clone());
+          return networkResponse;
+        });
+      })
+    );
+    return;
+  }
+
+  // Network-first for other GET requests, then cache
+  event.respondWith(
+    fetch(event.request)
+      .then((networkResponse) => {
+        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
+        }
+        return networkResponse;
+      })
+      .catch(async () => {
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        // Optional: Generic fallback for navigation requests. 
+        // Requires an 'offline.html' to be pre-cached.
+        // if (event.request.mode === 'navigate') {
+        //   return caches.match('/offline.html');
+        // }
+        return new Response("Network error and resource not found in cache.", {
+            status: 408, // Request Timeout
+            headers: { 'Content-Type': 'text/plain' },
+        });
+      })
+  );
 });

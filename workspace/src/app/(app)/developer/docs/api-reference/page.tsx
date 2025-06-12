@@ -7,7 +7,8 @@ import ApiReferenceDppEndpoints from '@/components/developer/docs/ApiReferenceDp
 import ApiReferenceQrEndpoints from '@/components/developer/docs/ApiReferenceQrEndpoints';
 import ApiReferenceComplianceEndpoints from '@/components/developer/docs/ApiReferenceComplianceEndpoints';
 import ApiReferenceTokenEndpoints from '@/components/developer/docs/ApiReferenceTokenEndpoints';
-import ApiReferencePrivateLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferencePrivateLayerEndpoints'; // New import
+import ApiReferencePrivateLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferencePrivateLayerEndpoints';
+import ApiReferenceZkpLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferenceZkpLayerEndpoints'; // New import
 import type { DigitalProductPassport } from "@/types/dpp";
 
 export default function ApiReferencePage() {
@@ -181,7 +182,6 @@ export default function ApiReferencePage() {
     }
   }, null, 2);
 
-  // Use DPP001 as base for update example, but add battery_regulation to show its structure
   const dpp001ForUpdateResponse = MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0];
   const conceptualUpdateDppResponseBody = JSON.stringify({
     ...dpp001ForUpdateResponse, 
@@ -206,7 +206,7 @@ export default function ApiReferencePage() {
     },
     compliance: {
         ...dpp001ForUpdateResponse.compliance,
-        battery_regulation: { // Show updated battery_regulation data
+        battery_regulation: { 
             status: "pending",
             batteryPassportId: "BATT-ID-SW-S5-ECO-001",
             carbonFootprint: {
@@ -218,7 +218,7 @@ export default function ApiReferencePage() {
             recycledContent: [
                 { material: "Aluminum", percentage: 80, vcId: "vc:rc:aluminum:sw-s5-eco:001" }
             ],
-            stateOfHealth: { // Add example SoH
+            stateOfHealth: { 
                 value: 99,
                 unit: "%",
                 measurementDate: new Date().toISOString(),
@@ -311,7 +311,7 @@ export default function ApiReferencePage() {
   const conceptualComplianceSummaryResponse = JSON.stringify({
     productId: dppForComplianceSummary.id,
     productName: dppForComplianceSummary.productName,
-    overallStatus: "Fully Compliant", // This would be dynamically calculated by the API
+    overallStatus: "Fully Compliant", 
     eprelStatus: dppForComplianceSummary.compliance.eprel?.status || "N/A",
     ebsiVerificationStatus: dppForComplianceSummary.ebsiVerification?.status || "N/A",
     batteryRegulationStatus: dppForComplianceSummary.compliance.battery_regulation?.status || "N/A",
@@ -322,7 +322,7 @@ export default function ApiReferencePage() {
     details: {
       eprel: dppForComplianceSummary.compliance.eprel,
       ebsi: dppForComplianceSummary.ebsiVerification,
-      batteryRegulation: dppForComplianceSummary.compliance.battery_regulation, // Include full battery object
+      batteryRegulation: dppForComplianceSummary.compliance.battery_regulation, 
       esprConformity: dppForComplianceSummary.compliance.esprConformity,
       euEspr: dppForComplianceSummary.compliance.eu_espr,
       usScope3: dppForComplianceSummary.compliance.us_scope3,
@@ -339,18 +339,17 @@ export default function ApiReferencePage() {
     checksPerformed: ["Mock Data Integrity Check", "Mock EBSI Anchor Verification"]
   }, null, 2);
 
-  // Examples for new on-chain endpoints
   const exampleUpdateOnChainStatusRequestBody = JSON.stringify({ status: "recalled" }, null, 2);
   const exampleUpdateOnChainLifecycleStageRequestBody = JSON.stringify({ lifecycleStage: "Distribution" }, null, 2);
   const exampleLogCriticalEventRequestBody = JSON.stringify({ eventDescription: "Major defect discovered in Batch XYZ.", severity: "High" }, null, 2);
   const exampleRegisterVcHashRequestBody = JSON.stringify({ vcId: "urn:uuid:some-vc-id-123", vcHash: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2" }, null, 2);
   
   const dppForOnChainOps = MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0];
-  const exampleUpdatedDppResponse = JSON.stringify({ // Example of an updated DPP after an on-chain operation
+  const exampleUpdatedDppResponse = JSON.stringify({ 
     ...dppForOnChainOps,
     metadata: {
         ...dppForOnChainOps.metadata,
-        onChainStatus: "recalled", // Example change
+        onChainStatus: "recalled", 
         last_updated: new Date().toISOString(),
     },
     lifecycleEvents: [
@@ -359,7 +358,7 @@ export default function ApiReferencePage() {
     ]
   }, null, 2);
 
-  // Example for Private Layer Endpoint
+
   const exampleB2BComponentTransferRequestBody = JSON.stringify({
     componentId: "COMP_XYZ_123",
     batchOrSerialNumbers: ["BATCH_A001", "BATCH_A002"],
@@ -384,14 +383,55 @@ export default function ApiReferencePage() {
   }, null, 2);
 
   const exampleB2BComponentTransferResponseBody = JSON.stringify({
-    transferId: "transfer_comp_xyz_123_mock123", // Example generated ID
-    // ... (rest of the request body would be echoed back)
+    transferId: "transfer_comp_xyz_123_mock123",
     componentId: "COMP_XYZ_123",
     quantity: 200,
     transferDate: new Date().toISOString(),
     fromParty: { participantId: "SUP001", role: "Supplier" },
     toParty: { participantId: "MFG001", role: "Manufacturer" },
-    productId: "DPP001" // Added by the mock handler
+    productId: "DPP001" 
+  }, null, 2);
+
+  const exampleGetSupplierAttestationsResponseBody = JSON.stringify([
+    {
+      attestationId: "attest_sup001_compA_batchXYZ_20240815",
+      productId: "DPP001",
+      componentId: "COMP_A_BATTERY_CELL",
+      supplierId: "SUP001",
+      attestationType: "EthicalSourcingCompliance",
+      attestationStatement: "Component COMP_A_BATTERY_CELL sourced in compliance with OECD Due Diligence Guidance.",
+      issuanceDate: "2024-08-15T10:00:00Z"
+    }
+  ], null, 2);
+
+  const exampleGetConfidentialMaterialsResponseBody = JSON.stringify({
+    confidentialMaterialId: "cm_dpp001_proprietary_alloy_X1",
+    productId: "DPP001",
+    materialName: "Proprietary Alloy X1-Alpha",
+    composition: [{ substanceName: "Titanium", percentageByWeight: "75-78%" }]
+  }, null, 2);
+
+  const exampleZkpSubmitRequestBody = JSON.stringify({
+    claimType: "material_compliance_svhc_lead_less_0.1",
+    proofData: "0xMockProofDataStringForLeadCompliance...",
+    publicInputs: { productBatchId: "BATCH_XYZ123", svhcCasNumber: "7439-92-1" }
+  }, null, 2);
+
+  const exampleZkpSubmitResponseBody = JSON.stringify({
+    dppId: "DPP001",
+    proofId: "zkp_proof_mock_abcdef123",
+    status: "acknowledged",
+    message: "ZKP submission received and queued for conceptual verification.",
+    timestamp: new Date().toISOString()
+  }, null, 2);
+
+  const exampleZkpVerifyResponseBody = JSON.stringify({
+    dppId: "DPP001",
+    claimType: "material_compliance_svhc_lead_less_0.1",
+    isVerified: true,
+    proofId: "zkp_proof_mock_abcdef123",
+    verifiedAt: new Date().toISOString(),
+    message: "Mock ZKP for claim 'material_compliance_svhc_lead_less_0.1' is considered valid for this DPP."
   }, null, 2);
 
 
@@ -415,13 +455,11 @@ export default function ApiReferencePage() {
         conceptualPatchDppExtendResponseBody={conceptualPatchDppExtendResponseBody}
         addLifecycleEventRequestBodyExample={addLifecycleEventRequestBodyExample}
         addLifecycleEventResponseExample={addLifecycleEventResponseExample}
-        // Pass new props for on-chain endpoints
         exampleUpdateOnChainStatusRequestBody={exampleUpdateOnChainStatusRequestBody}
         exampleUpdateOnChainLifecycleStageRequestBody={exampleUpdateOnChainLifecycleStageRequestBody}
         exampleLogCriticalEventRequestBody={exampleLogCriticalEventRequestBody}
         exampleRegisterVcHashRequestBody={exampleRegisterVcHashRequestBody}
         exampleUpdatedDppResponse={exampleUpdatedDppResponse}
-        // Error responses
         error401={error401}
         error404={error404}
         error500={error500}
@@ -429,7 +467,7 @@ export default function ApiReferencePage() {
         error400_update_dpp={error400_update_dpp}
         error400_patch_dpp={error400_patch_dpp}
         error400_lifecycle_event={error400_lifecycle_event}
-        error400_general={error400_general} // Pass general 400 error
+        error400_general={error400_general} 
       />
       <ApiReferenceTokenEndpoints
         mintRequest={mintTokenRequest}
@@ -458,6 +496,17 @@ export default function ApiReferencePage() {
       <ApiReferencePrivateLayerEndpoints
         exampleB2BComponentTransferRequestBody={exampleB2BComponentTransferRequestBody}
         exampleB2BComponentTransferResponseBody={exampleB2BComponentTransferResponseBody}
+        exampleGetSupplierAttestationsResponseBody={exampleGetSupplierAttestationsResponseBody}
+        exampleGetConfidentialMaterialsResponseBody={exampleGetConfidentialMaterialsResponseBody}
+        error400General={error400_general}
+        error401={error401}
+        error404={error404}
+        error500={error500}
+      />
+      <ApiReferenceZkpLayerEndpoints
+        exampleZkpSubmitRequestBody={exampleZkpSubmitRequestBody}
+        exampleZkpSubmitResponseBody={exampleZkpSubmitResponseBody}
+        exampleZkpVerifyResponseBody={exampleZkpVerifyResponseBody}
         error400General={error400_general}
         error401={error401}
         error404={error404}

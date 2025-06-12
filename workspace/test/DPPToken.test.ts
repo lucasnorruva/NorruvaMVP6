@@ -19,8 +19,8 @@ describe("DPPToken", function () {
   const UPDATER_ROLE = ethers.id("UPDATER_ROLE");
   const TRANSFER_ROLE = ethers.id("TRANSFER_ROLE"); 
 
-  const TOKEN_NAME = "Norruva DPP Token";
-  const TOKEN_SYMBOL = "NDPP";
+  const TOKEN_NAME = "Norruva DPP Token"; // Updated to match initializer
+  const TOKEN_SYMBOL = "NDPP"; // Updated to match initializer
 
   beforeEach(async function () {
     [owner, minter, updater, transferAgent, user1, user2] = await ethers.getSigners();
@@ -28,7 +28,7 @@ describe("DPPToken", function () {
     const DPPTokenFactory = await ethers.getContractFactory("DPPToken");
     dppToken = (await upgrades.deployProxy(
       DPPTokenFactory,
-      [TOKEN_NAME, TOKEN_SYMBOL, owner.address], 
+      [TOKEN_NAME, TOKEN_SYMBOL, owner.address], // Updated initializer args
       {
         initializer: "initialize",
         kind: "uups",
@@ -63,7 +63,7 @@ describe("DPPToken", function () {
     const tokenId = 1;
     const metadataHash = "ipfs://QmHash123";
 
-    it("Should allow MINTER_ROLE to mint tokens", async function () {
+    it("Should allow MINTER_ROLE to mint tokens with metadataHash", async function () {
       await expect(dppToken.connect(minter).mint(user1.address, tokenId, metadataHash))
         .to.emit(dppToken, "Transfer")
         .withArgs(ethers.ZeroAddress, user1.address, tokenId)
@@ -142,14 +142,6 @@ describe("DPPToken", function () {
       ).to.be.revertedWith("Transfer restricted: Requires TRANSFER_ROLE or DAO approval.");
     });
 
-    it("Should allow transfers by an account with TRANSFER_ROLE via transferFrom", async function () {
-      // transferAgent has TRANSFER_ROLE
-      await expect(dppToken.connect(transferAgent).transferFrom(user1.address, user2.address, tokenId))
-        .to.emit(dppToken, "Transfer")
-        .withArgs(user1.address, user2.address, tokenId);
-      expect(await dppToken.ownerOf(tokenId)).to.equal(user2.address);
-    });
-
     it("Should allow transfers by an account with TRANSFER_ROLE via daoTransfer", async function () {
       // transferAgent has TRANSFER_ROLE
       await expect(dppToken.connect(transferAgent).daoTransfer(user1.address, user2.address, tokenId))
@@ -163,6 +155,20 @@ describe("DPPToken", function () {
             dppToken.connect(user1).daoTransfer(user1.address, user2.address, tokenId)
         ).to.be.revertedWithCustomError(dppToken, "AccessControlUnauthorizedAccount")
          .withArgs(user1.address, TRANSFER_ROLE);
+    });
+    
+    it("Should still restrict transferFrom if called by TRANSFER_ROLE but not directly (it will use _beforeTokenTransfer check for _msgSender())", async function () {
+      // This test confirms that even if transferAgent has TRANSFER_ROLE,
+      // if user1 (owner) *initiates* the transferFrom, and transferAgent is just approved (which it can't be),
+      // the call would still fail because _msgSender() inside _beforeTokenTransfer would be user1.
+      // However, direct call of transferFrom by transferAgent *should* work.
+      
+      // This specific test case for transferFrom where _msgSender() is not TRANSFER_ROLE is implicitly covered by the first test in this describe block.
+      // Let's test the direct call by transferAgent
+       await expect(dppToken.connect(transferAgent).transferFrom(user1.address, user2.address, tokenId))
+        .to.emit(dppToken, "Transfer")
+        .withArgs(user1.address, user2.address, tokenId);
+       expect(await dppToken.ownerOf(tokenId)).to.equal(user2.address);
     });
 
     it("Should revert approve calls due to soulbound nature", async function () {
@@ -204,3 +210,4 @@ describe("DPPToken", function () {
     });
   });
 });
+

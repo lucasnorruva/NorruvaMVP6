@@ -10,8 +10,9 @@ import "@openzeppelin/contracts-upgradeable/proxy/utils/UUPSUpgradeable.sol";
 contract DPPToken is Initializable, ERC721Upgradeable, ERC721URIStorageUpgradeable, AccessControlEnumerableUpgradeable, UUPSUpgradeable {
     bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
     bytes32 public constant UPDATER_ROLE = keccak256("UPDATER_ROLE");
-    // DEFAULT_ADMIN_ROLE is already defined in AccessControlUpgradeable
+    bytes32 public constant TRANSFER_ROLE = keccak256("TRANSFER_ROLE");
 
+    // Mapping from token ID to its metadata hash (e.g., IPFS CID)
     mapping(uint256 => string) private _metadataHashes;
 
     /// @custom:oz-upgrades-unsafe-allow constructor
@@ -19,56 +20,66 @@ contract DPPToken is Initializable, ERC721Upgradeable, ERC721URIStorageUpgradeab
         _disableInitializers();
     }
 
-    function initialize(string memory name, string memory symbol, address defaultAdmin) public initializer {
+    function initialize(string memory name, string memory symbol, address defaultAdmin) public virtual initializer {
         __ERC721_init(name, symbol);
         __ERC721URIStorage_init(); // Initialize ERC721URIStorage
         __AccessControlEnumerable_init();
         __UUPSUpgradeable_init();
 
         _grantRole(DEFAULT_ADMIN_ROLE, defaultAdmin);
-        _grantRole(MINTER_ROLE, defaultAdmin); // Grant MINTER_ROLE to admin
-        _grantRole(UPDATER_ROLE, defaultAdmin); // Grant UPDATER_ROLE to admin
+        _grantRole(MINTER_ROLE, defaultAdmin); 
+        _grantRole(UPDATER_ROLE, defaultAdmin); 
+        _grantRole(TRANSFER_ROLE, defaultAdmin); 
     }
 
     function mint(address to, uint256 tokenId, string memory metadataHash) public virtual onlyRole(MINTER_ROLE) {
         _safeMint(to, tokenId);
-        _setTokenMetadataHash(tokenId, metadataHash);
+        _setTokenMetadataHash(tokenId, metadataHash); // Set initial hash via internal function
     }
 
     function updateMetadataHash(uint256 tokenId, string memory newMetadataHash) public virtual {
         require(_exists(tokenId), "DPPToken: URI update for nonexistent token");
         require(hasRole(UPDATER_ROLE, _msgSender()) || _isApprovedOrOwner(_msgSender(), tokenId), "DPPToken: caller is not owner nor approved updater");
         
-        string memory oldMetadataHash = _metadataHashes[tokenId]; // Get old hash before setting new one
+        string memory oldMetadataHash = _metadataHashes[tokenId];
         _setTokenMetadataHash(tokenId, newMetadataHash);
         emit MetadataUpdate(tokenId, oldMetadataHash, newMetadataHash);
     }
 
     function _setTokenMetadataHash(uint256 tokenId, string memory metadataHash) internal virtual {
         _metadataHashes[tokenId] = metadataHash;
-        // Note: The tokenURI function constructs the full URI, so we only store the hash.
-        // The MetadataUpdate event is now emitted in updateMetadataHash after getting the old hash.
-        // If minting, the old hash would conceptually be empty.
+        // Note: We are not calling _setTokenURI here to align with the spec's approach
+        // of constructing the full URI dynamically in tokenURI().
     }
 
     function tokenURI(uint256 tokenId) public view virtual override(ERC721Upgradeable, ERC721URIStorageUpgradeable) returns (string memory) {
         require(_exists(tokenId), "DPPToken: URI query for nonexistent token");
         string memory metadataHash = _metadataHashes[tokenId];
-        // For mock purposes, we'll just return the hash, or a prefixed version.
-        // In a real scenario, this would be an IPFS URI like "ipfs://<metadataHash>"
+        // Construct URI using a prefix as specified in workspace/docs/blockchain-architecture.md
         return string(abi.encodePacked("mock-uri-prefix:", metadataHash));
     }
     
-    // @notice This function is required by ERC721URIStorageUpgradeable.
-    // It's called internally when a token is burned to clear its URI storage.
-    function _burn(uint256 tokenId, bool approvalCheck) internal virtual override(ERC721Upgradeable, ERC721URIStorageUpgradeable) {
-        super._burn(tokenId, approvalCheck);
-        // ERC721URIStorageUpgradeable's _burn already clears the token URI by calling _setTokenURI(tokenId, "")
-        // which in our case means it would try to set the hash to empty.
-        // We can explicitly clear our hash mapping too if needed, though super._burn should handle it via _setTokenURI.
-        if (bytes(_metadataHashes[tokenId]).length != 0) {
-            delete _metadataHashes[tokenId];
+    function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
+        internal
+        virtual
+        override(ERC721Upgradeable) 
+    {
+        super._beforeTokenTransfer(from, to, tokenId, batchSize);
+        if (from != address(0) && to != address(0)) { // Not minting or burning
+            require(hasRole(TRANSFER_ROLE, _msgSender()), "Transfer restricted: Requires TRANSFER_ROLE or DAO approval.");
         }
+    }
+
+    function daoTransfer(address from, address to, uint256 tokenId) public virtual onlyRole(TRANSFER_ROLE) {
+        _transfer(from, to, tokenId);
+    }
+
+    function approve(address, uint256) public virtual override {
+        revert("Soulbound token: approval not allowed");
+    }
+
+    function setApprovalForAll(address, bool) public virtual override {
+        revert("Soulbound token: approval not allowed");
     }
 
     function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721Upgradeable, AccessControlEnumerableUpgradeable) returns (bool) {
@@ -77,13 +88,11 @@ contract DPPToken is Initializable, ERC721Upgradeable, ERC721URIStorageUpgradeab
 
     function _authorizeUpgrade(address newImplementation) internal virtual override onlyRole(DEFAULT_ADMIN_ROLE) {}
     
-    // Required by OpenZeppelin when overriding _update from multiple parents
-    // This _update function is from ERC721Upgradeable and ERC721URIStorageUpgradeable calls ERC721Upgradeable's version.
-    // We don't need to explicitly call ERC721URIStorageUpgradeable's _update here.
+    // Required by ERC721URIStorageUpgradeable if overriding tokenURI and not _setTokenURI directly
     function _update(address to, uint256 tokenId, address auth)
         internal
         virtual
-        override(ERC721Upgradeable, ERC721URIStorageUpgradeable) 
+        override(ERC721Upgradeable, ERC721URIStorageUpgradeable)
         returns (address)
     {
         return super._update(to, tokenId, auth);

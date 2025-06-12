@@ -299,7 +299,15 @@ export default function DeveloperPortalPage() {
   };
 
   const handleEditWebhook = (webhookId: string) => {
-    toast({ title: "Mock Action", description: `Edit functionality for webhook ${webhookId} is not implemented. In a real app, this would open an edit form.` });
+    // In a real app, this would open a dialog pre-filled with the webhook's data
+    const webhookToEdit = webhooks.find(wh => wh.id === webhookId);
+    if (webhookToEdit) {
+        const newUrl = prompt(`Enter new URL for webhook ${webhookId}:`, webhookToEdit.url);
+        if (newUrl) {
+            setWebhooks(prev => prev.map(wh => wh.id === webhookId ? {...wh, url: newUrl} : wh));
+            toast({ title: "Webhook Updated (Mock)", description: `URL for webhook ${webhookId} changed.` });
+        }
+    }
   };
 
   const handleDeleteWebhook = (webhookId: string) => {
@@ -964,19 +972,3 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
-
-    
-
-    
-
-
-    
-
-
-
-
-
-
-
-
-

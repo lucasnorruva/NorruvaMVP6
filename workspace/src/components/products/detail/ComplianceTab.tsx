@@ -194,3 +194,5 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     </div>
   );
 }
+
+    

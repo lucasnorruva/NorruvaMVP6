@@ -232,6 +232,7 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
             scipNotification: userProductData.complianceData?.scipNotification, 
             euCustomsData: userProductData.complianceData?.euCustomsData,
             battery_regulation: userProductData.complianceData?.battery_regulation, 
+            esprConformity: userProductData.complianceData?.esprConformity, // Added
           },
           ebsiVerification: complianceSummaryFromStorage.ebsi ? {
             status: complianceSummaryFromStorage.ebsi.status as EbsiVerificationDetails['status'],

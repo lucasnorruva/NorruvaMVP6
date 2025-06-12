@@ -2702,6 +2702,10 @@ components:
           type: string
         transactionHash:
           type: string
+      example:
+        tokenId: "101"
+        contractAddress: "0xMOCK_DPP_TOKEN_CONTRACT"
+        transactionHash: "0xmint_tx_mock_abcdef123456"
     UpdateTokenMetadataRequest:
       type: object
       required:
@@ -2723,6 +2727,10 @@ components:
           type: string
         transactionHash:
           type: string
+      example:
+        tokenId: "101"
+        contractAddress: "0xMOCK_DPP_TOKEN_CONTRACT"
+        transactionHash: "0xmeta_update_tx_mock_654321fedcba"
     TokenStatusResponse:
       type: object
       properties:
@@ -2744,6 +2752,14 @@ components:
         status:
           type: string
           description: Current on-chain status of the token.
+      example:
+        tokenId: "101"
+        contractAddress: "0xMOCK_DPP_TOKEN_CONTRACT"
+        ownerAddress: "0xRECIPIENT_MOCK_ADDRESS"
+        mintedAt: "2024-08-01T10:00:00Z"
+        metadataUri: "ipfs://dpp_metadata_for_DPP001"
+        lastTransactionHash: "0xlast_tx_mock_randomhash"
+        status: "active"
     DetailedSupplierAttestation: # Conceptual Schema for Private Layer
       type: object
       properties:
@@ -2834,10 +2850,9 @@ components:
       properties:
         dppId:
           type: string
-          description: The DPP ID for which the proof was submitted.
+          example: "DPP001"
         proofId:
           type: string
-          description: A unique identifier for the submitted proof, assigned by the Norruva platform.
           example: "zkp_proof_mock_123abc"
         status:
           type: string
@@ -2851,19 +2866,20 @@ components:
         timestamp:
           type: string
           format: date-time
-          description: Timestamp of the submission.
+          example: "2024-08-15T12:00:00Z"
     ZkpVerificationResponse: # Conceptual Schema for ZKP Layer
       type: object
       properties:
         dppId:
           type: string
-          description: The DPP ID for which the claim was queried.
+          example: "DPP001"
         claimType:
           type: string
           description: The type of claim that was queried for verification.
           example: "material_compliance_svhc_lead_less_0.1"
         isVerified:
           type: boolean
+          example: true
           description: >
             True if a valid (mock) ZKP for this claim type is associated with the DPP, false otherwise.
             This is a mock response; actual ZKP verification is complex.
@@ -2876,6 +2892,7 @@ components:
           type: string
           format: date-time
           nullable: true
+          example: "2024-08-15T12:05:00Z"
           description: Timestamp of when this (mock) verification check was performed.
         message:
           type: string
@@ -2904,3 +2921,7 @@ components:
 
     
 
+
+
+
+    

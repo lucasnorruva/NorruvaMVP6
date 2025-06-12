@@ -19,7 +19,7 @@ export default function TestingValidationPage() {
           <section>
             <h3 className="font-semibold text-lg mb-2">QR Code Generation Testing</h3>
             <ul className="list-disc list-inside text-sm space-y-1">
-              <li><strong>Identifier Accuracy:</strong> Verify that the QR code (mock placeholder image for now) correctly represents the unique product identifier (e.g., the URL <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/{'{productId}'}</code>). Test with various <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> values.</li>
+              <li><strong>Identifier Accuracy:</strong> Verify that the QR code (mock placeholder image for now) correctly represents the unique product identifier (e.g., the URL <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/{productId}</code>). Test with various <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> values.</li>
               <li><strong>Uniqueness:</strong> Ensure each product ID generates a distinct QR code representation (conceptually, if real generation were implemented).</li>
               <li><strong>Visual Integrity (Mock):</strong> For the placeholder, ensure it displays consistently and the text within it (e.g., "QR + ProductID") is correct.</li>
             </ul>
@@ -30,7 +30,7 @@ export default function TestingValidationPage() {
               <li><strong>Valid Scan Simulation:</strong>
                 <ul className="list-disc list-inside ml-4">
                     <li>Using the mock "Scan Product QR" dialog on the DPP Live Dashboard, enter known valid product IDs.</li>
-                    <li>Verify that submitting a valid ID redirects to the correct <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/{'{productId}'}</code> (public viewer). Note: The internal link to `/products/{productID}` was changed to point to the public passport viewer in the context of QR scanning from the public dashboard.</li>
+                    <li>Verify that submitting a valid ID redirects to the correct <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/{productId}</code> (public viewer). Note: The internal link to `/products/{productID}` was changed to point to the public passport viewer in the context of QR scanning from the public dashboard.</li>
                 </ul>
               </li>
               <li><strong>Invalid/Malformed Scan Simulation:</strong>
@@ -147,7 +147,7 @@ export default function TestingValidationPage() {
           <section>
             <h3 className="font-semibold text-lg mb-2">Scope</h3>
             <p className="text-sm">
-              Primary focus is on the public Digital Product Passport viewer page (e.g., <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/{'{passportId}'}</code>).
+              Primary focus is on the public Digital Product Passport viewer page (e.g., <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">/passport/{passportId}</code>).
             </p>
           </section>
           <section>

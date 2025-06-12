@@ -252,6 +252,27 @@ export default function DeveloperPortalPage() {
   const [zkpVerifySnippetLang, setZkpVerifySnippetLang] = useState("cURL");
   const [zkpVerifyCodeSnippet, setZkpVerifyCodeSnippet] = useState("");
 
+  // State for Token Endpoints
+  const [mintTokenProductId, setMintTokenProductId] = useState<string>("DPP001");
+  const [mintTokenBody, setMintTokenBody] = useState<string>(JSON.stringify({ contractAddress: "0xMOCK_DPP_TOKEN_CONTRACT", recipientAddress: "0xRECIPIENT_MOCK_ADDRESS", metadataUri: "ipfs://example_metadata_cid" }, null, 2));
+  const [mintTokenResponsePlayground, setMintTokenResponsePlayground] = useState<string | null>(null);
+  const [isMintTokenLoading, setIsMintTokenLoading] = useState(false);
+  const [mintTokenSnippetLang, setMintTokenSnippetLang] = useState("cURL");
+  const [mintTokenCodeSnippet, setMintTokenCodeSnippet] = useState("");
+
+  const [updateTokenMetaTokenId, setUpdateTokenMetaTokenId] = useState<string>("101");
+  const [updateTokenMetaBody, setUpdateTokenMetaBody] = useState<string>(JSON.stringify({ metadataUri: "ipfs://new_example_metadata_cid" }, null, 2));
+  const [updateTokenMetaResponse, setUpdateTokenMetaResponse] = useState<string | null>(null);
+  const [isUpdateTokenMetaLoading, setIsUpdateTokenMetaLoading] = useState(false);
+  const [updateTokenMetaSnippetLang, setUpdateTokenMetaSnippetLang] = useState("cURL");
+  const [updateTokenMetaCodeSnippet, setUpdateTokenMetaCodeSnippet] = useState("");
+
+  const [getTokenStatusTokenId, setGetTokenStatusTokenId] = useState<string>("101");
+  const [getTokenStatusResponse, setGetTokenStatusResponse] = useState<string | null>(null);
+  const [isGetTokenStatusLoading, setIsGetTokenStatusLoading] = useState(false);
+  const [getTokenStatusSnippetLang, setGetTokenStatusSnippetLang] = useState("cURL");
+  const [getTokenStatusCodeSnippet, setGetTokenStatusCodeSnippet] = useState("");
+
 
   const [getProductCodeSnippet, setGetProductCodeSnippet] = useState("");
   const [listDppsCodeSnippet, setListDppsCodeSnippet] = useState("");
@@ -309,6 +330,11 @@ export default function DeveloperPortalPage() {
   // useEffects for ZKP Endpoints
   useEffect(() => updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet), [zkpSubmitDppId, zkpSubmitBody, zkpSubmitSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("zkpVerifyClaim", "GET", zkpVerifySnippetLang, { dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType }, null, setZkpVerifyCodeSnippet), [zkpVerifyDppId, zkpVerifyClaimType, zkpVerifySnippetLang, updateSnippet]);
+
+  // useEffects for Token Endpoints
+  useEffect(() => updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet), [mintTokenProductId, mintTokenBody, mintTokenSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("updateTokenMetadata", "PATCH", updateTokenMetaSnippetLang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet), [updateTokenMetaTokenId, updateTokenMetaBody, updateTokenMetaSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("getTokenStatus", "GET", getTokenStatusSnippetLang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet), [getTokenStatusTokenId, getTokenStatusSnippetLang, updateSnippet]);
 
 
   const handleCopyKey = (keyToCopy: string) => {
@@ -465,6 +491,11 @@ export default function DeveloperPortalPage() {
   // Handlers for ZKP Endpoints
   const handleMockZkpSubmitProof = () => { updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet); makeApiCall(`/api/v1/zkp/submit-proof/${zkpSubmitDppId}`, 'POST', zkpSubmitBody, setIsZkpSubmitLoading, setZkpSubmitResponse); }
   const handleMockZkpVerifyClaim = () => { updateSnippet("zkpVerifyClaim", "GET", zkpVerifySnippetLang, { dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType }, null, setZkpVerifyCodeSnippet); makeApiCall(`/api/v1/zkp/verify-claim/${zkpVerifyDppId}?claimType=${encodeURIComponent(zkpVerifyClaimType)}`, 'GET', null, setIsZkpVerifyLoading, setZkpVerifyResponse); }
+
+  // Handlers for Token Endpoints
+  const handleMockMintToken = () => { updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet); makeApiCall(`/api/v1/token/mint/${mintTokenProductId}`, 'POST', mintTokenBody, setIsMintTokenLoading, setMintTokenResponsePlayground); }
+  const handleMockUpdateTokenMetadata = () => { updateSnippet("updateTokenMetadata", "PATCH", updateTokenMetaSnippetLang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet); makeApiCall(`/api/v1/token/metadata/${updateTokenMetaTokenId}`, 'PATCH', updateTokenMetaBody, setIsUpdateTokenMetaLoading, setUpdateTokenMetaResponse); }
+  const handleMockGetTokenStatus = () => { updateSnippet("getTokenStatus", "GET", getTokenStatusSnippetLang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet); makeApiCall(`/api/v1/token/status/${getTokenStatusTokenId}`, 'GET', null, setIsGetTokenStatusLoading, setGetTokenStatusResponse); }
 
 
   const codeSampleLanguages = ["cURL", "JavaScript", "Python"];
@@ -959,6 +990,58 @@ export default function DeveloperPortalPage() {
           </div>
         </>
       )
+    },
+    // Token Endpoints
+    {
+      id: 'mint-token',
+      section: 'token',
+      title: 'POST /api/v1/token/mint/{productId}',
+      description: 'Mints a blockchain token representing the specified DPP.',
+      onSendRequest: handleMockMintToken,
+      isLoading: isMintTokenLoading,
+      response: mintTokenResponsePlayground,
+      codeSnippet: mintTokenCodeSnippet,
+      snippetLanguage: mintTokenSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setMintTokenSnippetLang(lang); updateSnippet('mintToken', 'POST', lang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet); },
+      children: (
+        <>
+          <div><Label htmlFor="mintTokenProductId">Product ID (Path Parameter)</Label><Input id="mintTokenProductId" value={mintTokenProductId} onChange={(e) => setMintTokenProductId(e.target.value)} placeholder="e.g., DPP001" /></div>
+          <div className="mt-2"><Label htmlFor="mintTokenBody">Request Body (JSON)</Label><Textarea id="mintTokenBody" value={mintTokenBody} onChange={(e) => setMintTokenBody(e.target.value)} rows={4} className="font-mono text-xs" /></div>
+        </>
+      )
+    },
+    {
+      id: 'update-token-metadata',
+      section: 'token',
+      title: 'PATCH /api/v1/token/metadata/{tokenId}',
+      description: 'Updates the on-chain metadata URI for a minted DPP token.',
+      onSendRequest: handleMockUpdateTokenMetadata,
+      isLoading: isUpdateTokenMetaLoading,
+      response: updateTokenMetaResponse,
+      codeSnippet: updateTokenMetaCodeSnippet,
+      snippetLanguage: updateTokenMetaSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setUpdateTokenMetaSnippetLang(lang); updateSnippet('updateTokenMetadata', 'PATCH', lang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet); },
+      children: (
+        <>
+          <div><Label htmlFor="updateTokenMetaTokenId">Token ID (Path Parameter)</Label><Input id="updateTokenMetaTokenId" value={updateTokenMetaTokenId} onChange={(e) => setUpdateTokenMetaTokenId(e.target.value)} placeholder="e.g., 101" /></div>
+          <div className="mt-2"><Label htmlFor="updateTokenMetaBody">Request Body (JSON)</Label><Textarea id="updateTokenMetaBody" value={updateTokenMetaBody} onChange={(e) => setUpdateTokenMetaBody(e.target.value)} rows={3} className="font-mono text-xs" /></div>
+        </>
+      )
+    },
+    {
+      id: 'get-token-status',
+      section: 'token',
+      title: 'GET /api/v1/token/status/{tokenId}',
+      description: 'Retrieves on-chain information for a DPP token.',
+      onSendRequest: handleMockGetTokenStatus,
+      isLoading: isGetTokenStatusLoading,
+      response: getTokenStatusResponse,
+      codeSnippet: getTokenStatusCodeSnippet,
+      snippetLanguage: getTokenStatusSnippetLang,
+      onSnippetLanguageChange: (lang: string) => { setGetTokenStatusSnippetLang(lang); updateSnippet('getTokenStatus', 'GET', lang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet); },
+      children: (
+        <div><Label htmlFor="getTokenStatusTokenId">Token ID (Path Parameter)</Label><Input id="getTokenStatusTokenId" value={getTokenStatusTokenId} onChange={(e) => setGetTokenStatusTokenId(e.target.value)} placeholder="e.g., 101" /></div>
+      )
     }
   ] as const;
 
@@ -1127,6 +1210,19 @@ export default function DeveloperPortalPage() {
                   <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline">DPP Utility & Advanced Endpoints</AccordionTrigger>
                   <AccordionContent className="pt-4 space-y-6">
                     {endpointConfigs.filter(e => e.section === 'utility').map(ep => (
+                      <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
+                        {ep.children}
+                      </DeveloperEndpointCard>
+                    ))}
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="dpp-token">
+                  <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline flex items-center">
+                    <KeyRound className="mr-2 h-5 w-5" /> DPP Token Operations (Conceptual)
+                  </AccordionTrigger>
+                  <AccordionContent className="pt-4 space-y-6">
+                    {endpointConfigs.filter(e => e.section === 'token').map(ep => (
                       <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
                         {ep.children}
                       </DeveloperEndpointCard>

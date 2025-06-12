@@ -32,7 +32,7 @@ import WebhooksManager, { type WebhookEntry } from '@/components/developer/Webho
 import DeveloperEndpointCard from '@/components/developer/DeveloperEndpointCard';
 import { cn } from '@/lib/utils';
 import { generateMockCodeSnippet } from '@/utils/apiPlaygroundUtils'; 
-import ResourcesTab from '@/components/developer/ResourcesTab';
+import ResourcesTab from '@/components/developer/ResourcesTab'; // Import new ResourcesTab
 
 // Import new dashboard section components
 import ApiMetricsCard from '@/components/developer/dashboard/ApiMetricsCard';
@@ -371,7 +371,7 @@ export default function DeveloperPortalPage() {
   const handleMockPostVerify = () => { updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productIdPath: postVerifyProductIdPath }, null, setVerifyDppCodeSnippet); makeApiCall(`/api/v1/dpp/verify/${postVerifyProductIdPath}`, 'POST', null, setIsPostVerifyLoading, setPostVerifyResponse); } 
   const handleMockGetHistory = () => { updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet); makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetHistoryResponse); }
   const handleMockPostImport = () => { const body = { fileType: postImportFileType, data: "mock_file_content_base64_encoded", sourceDescription: postImportSourceDescription }; updateSnippet("importDpps", "POST", importDppsSnippetLang, body, JSON.stringify(body), setImportDppsCodeSnippet); makeApiCall('/api/v1/dpp/import', 'POST', body, setIsPostImportLoading, setPostImportResponse); }
-  const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetGraphResponse); }
+  const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetDppGraphResponse); }
   const handleMockGetStatus = () => { updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet); makeApiCall(`/api/v1/dpp/status/${getStatusProductId}`, 'GET', null, setIsGetStatusLoading, setGetStatusResponse); }
 
 

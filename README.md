@@ -304,26 +304,69 @@ Detailed smart contract design and DAO governance specifications are documented 
 
 ## Smart Contract Development
 
-Solidity contracts live in the `contracts/` directory. The project includes **Hardhat** and **Foundry** configurations for local development and upgrades.
+Solidity smart contracts for the Norruva platform are located in the `contracts/` directory. The project is configured for Hardhat development, focusing on UUPS upgradeable contracts for flexibility. Foundry configuration is also available for alternative workflows.
 
-### Common Commands
+### Core Contracts
+
+1.  **`DPPToken.sol`**: An ERC-721 compliant token representing each Digital Product Passport as an NFT. It is UUPS upgradeable and manages minting and metadata URI updates through role-based access control.
+2.  **`NORUToken.sol`**: An ERC-20 compliant governance token (`NORU`) for the conceptual Norruva DAO. It is UUPS upgradeable, with an initial supply minted to the deployer.
+3.  **`TimelockControllerUpgradeable.sol` (OpenZeppelin)**: A standard Timelock contract to enforce a delay on DAO proposals before execution. Deployed via `scripts/deploy_timelock_controller.ts`.
+4.  **`DPPGovernor.sol`**: A `GovernorUpgradeable` contract for on-chain governance, using `NORUToken` for voting and interacting with the `TimelockController`. It is UUPS upgradeable.
+
+### Common Hardhat Commands
 
 ```bash
 # Compile the contracts
 npm run compile:contracts
 
-# Execute the Hardhat test suite
+# Execute the Hardhat test suite for the contracts
 npm run test:contracts
 
-# Deploy the proxy to a network (requires ALCHEMY_API_KEY and PRIVATE_KEY)
+# Deploy the DPPToken proxy to a network (e.g., sepolia)
+# Requires ALCHEMY_API_KEY and PRIVATE_KEY in .env
 npm run deploy:contracts
-
-# Upgrade an existing proxy (set PROXY_ADDRESS in `.env`)
-npm run upgrade:contracts
 ```
 
-If Foundry is installed you can also run:
+### Deploying Other Contracts (Conceptual Order)
 
+The `npm run deploy:contracts` command specifically deploys the `DPPToken` as defined in `package.json` (it runs `scripts/deploy.ts`). To deploy the other core contracts for a complete conceptual DAO setup, you would typically run their respective scripts:
+
+1.  **Deploy NORUToken:**
+    ```bash
+    npx hardhat run scripts/deploy_noru_token.ts --network <your_network_name>
+    ```
+    (Replace `<your_network_name>` with, e.g., `sepolia` or `localhost`)
+    Note the deployed `NORUToken` address.
+
+2.  **Deploy TimelockController:**
+    ```bash
+    npx hardhat run scripts/deploy_timelock_controller.ts --network <your_network_name>
+    ```
+    Note the deployed `TimelockController` address.
+
+3.  **Deploy DPPGovernor:**
+    Before running, you **must** set the `NORU_TOKEN_ADDRESS` and `TIMELOCK_CONTROLLER_ADDRESS` environment variables (e.g., in your `.env` file or directly in the shell) to the addresses obtained from the previous steps.
+    ```bash
+    # Example: export NORU_TOKEN_ADDRESS=0x... TIMELOCK_CONTROLLER_ADDRESS=0x...
+    npx hardhat run scripts/deploy_governor.ts --network <your_network_name>
+    ```
+    This script will also attempt to configure the necessary roles on the `TimelockController` for the `DPPGovernor`.
+
+### Upgrading Contracts
+
+To upgrade an existing UUPS proxy (e.g., `DPPToken`):
+1.  Create a new version of the contract (e.g., `DPPTokenV2.sol`).
+2.  Set the `PROXY_ADDRESS` environment variable in your `.env` file to the address of the deployed proxy you want to upgrade.
+3.  Run the upgrade script (example for `DPPToken`):
+    ```bash
+    # Ensure scripts/upgrade.ts points to the correct new contract version (e.g., DPPTokenV2)
+    npm run upgrade:contracts
+    ```
+    (This command runs `scripts/upgrade.ts` by default)
+
+### Foundry (Alternative)
+
+If Foundry is installed, you can also use its tools for building and testing:
 ```bash
 forge build
 forge test

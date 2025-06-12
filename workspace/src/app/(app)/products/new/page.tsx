@@ -419,7 +419,10 @@ export default function AddNewProductPage() {
           onChainStatus: formDataFromForm.onChainStatus,
           onChainLifecycleStage: formDataFromForm.onChainLifecycleStage,
           ...(isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata : {}),
-          last_updated: new Date().toISOString(), 
+          created_at: (isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata?.created_at : undefined) || new Date().toISOString(),
+          last_updated: new Date().toISOString(),
+          status: (isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata?.status : 'draft') || 'draft',
+          dppStandardVersion: (isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata?.dppStandardVersion : "CIRPASS v1.0 Draft") || "CIRPASS v1.0 Draft",
         },
         complianceSummary: { 
           overallStatus: 'Pending Review', 
@@ -558,4 +561,3 @@ export default function AddNewProductPage() {
     </div>
   );
 }
-

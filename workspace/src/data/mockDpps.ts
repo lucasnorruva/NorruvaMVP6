@@ -1,5 +1,5 @@
 
-import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails } from '@/types/dpp'; // Added EbsiVerificationDetails
+import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails } from '@/types/dpp'; // Added EbsiVerificationDetails
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
   {
@@ -157,12 +157,12 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       specifications: JSON.stringify({ "Fit": "Regular", "GSM": "180", "Origin": "India", "Care": "Machine wash cold" }, null, 2),
       customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}]
     },
-    textileInformation: { // New
+    textileInformation: { 
       fiberComposition: [
         { fiberName: "Organic Cotton", percentage: 95 },
         { fiberName: "Elastane", percentage: 5 }
       ],
-      countryOfOriginLabeling: "India",
+      countryOfOriginLabeling: "India (Manufacturing), Portugal (Finishing)",
       careInstructionsUrl: "https://ecothreads.com/care/ET-TS-ORG-M",
       isSecondHand: false,
     },
@@ -170,7 +170,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eprel: { status: "Not Applicable", lastChecked: "2024-07-25T00:00:00Z" },
       eu_espr: { status: "pending" },
       battery_regulation: { status: "not_applicable" },
-      scipNotification: { status: 'Not Required', lastChecked: "2024-07-25T00:00:00Z" }, 
+      scipNotification: { status: 'Not Required', lastChecked: "2024-07-25T00:00:00Z", svhcListVersion: "N/A" }, 
       euCustomsData: { 
         status: 'Pending Documents', 
         hsCode: "61091000", 
@@ -234,7 +234,6 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       status: "flagged", 
       created_at: "2024-04-10T10:00:00Z",
       onChainStatus: "FlaggedForReview", 
-      // onChainLifecycleStage not specified, will be undefined
     },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-22T00:00:00Z" },
@@ -364,6 +363,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eprel: { status: "Not Applicable", lastChecked: "2024-07-28T00:00:00Z" }, 
       battery_regulation: {
         status: "pending",
+        batteryChemistry: "NMC 811",
         batteryPassportId: "BATT-ID-PV-EVB-75KWH-SN001",
         carbonFootprint: { value: 85.5, unit: "kg CO2e/kWh", calculationMethod: "PEFCR for Batteries v1.2", vcId: "vc:cf:dpp005" },
         recycledContent: [
@@ -430,7 +430,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     },
     supplyChainLinks: []
   },
-  { // New Mock Product for Construction Product Regulation
+  { 
     id: "DPP006",
     productName: "EcoSmart Insulation Panel R50",
     category: "Construction Materials",
@@ -473,6 +473,14 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       eprel: { status: "Not Applicable", lastChecked: "2024-08-01T00:00:00Z" },
       battery_regulation: { status: "not_applicable" },
       scipNotification: { status: 'Not Required', lastChecked: "2024-08-01T00:00:00Z" },
+      esprConformity: { status: "conformant", assessmentId: "CPR_ASSESS_006", assessmentDate: "2024-07-15" },
+      euCustomsData: {
+        status: "Verified",
+        declarationId: "CUST_CPR_DPP006",
+        hsCode: "68061000", // Slag wool, rock wool and similar mineral wools
+        countryOfOrigin: "BE",
+        lastChecked: "2024-07-20T00:00:00Z"
+      }
     },
     ebsiVerification: { status: "pending_verification", lastChecked: "2024-08-01T00:00:00Z"} as EbsiVerificationDetails,
     traceability: { originCountry: "BE" },

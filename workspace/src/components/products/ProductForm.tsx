@@ -25,8 +25,8 @@ import TechnicalSpecificationsFormSection from "./form/TechnicalSpecificationsFo
 import CustomAttributesFormSection from "./form/CustomAttributesFormSection";
 import ScipNotificationFormSection from "./form/ScipNotificationFormSection"; 
 import EuCustomsDataFormSection from "./form/EuCustomsDataFormSection"; 
-import TextileInformationFormSection from "./form/TextileInformationFormSection"; // New
-import ConstructionProductInformationFormSection from "./form/ConstructionProductInformationFormSection"; // New
+import TextileInformationFormSection from "./form/TextileInformationFormSection"; 
+import ConstructionProductInformationFormSection from "./form/ConstructionProductInformationFormSection"; 
 import {
   handleGenerateImageAI, 
 } from "@/utils/aiFormHelpers";
@@ -156,10 +156,10 @@ const formSchema = z.object({
     battery_regulation: batteryRegulationDetailsSchema.optional(),
   }).optional(),
   
-  textileInformation: textileInformationSchema.optional(), // New
-  constructionProductInformation: constructionProductInformationSchema.optional(), // New
-  onChainStatus: z.string().optional(), // New
-  onChainLifecycleStage: z.string().optional(), // New
+  textileInformation: textileInformationSchema.optional(), 
+  constructionProductInformation: constructionProductInformationSchema.optional(), 
+  onChainStatus: z.string().optional(), 
+  onChainLifecycleStage: z.string().optional(), 
 
   productNameOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   productDescriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
@@ -226,8 +226,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       productCategory: initialData?.productCategory || "",
       imageUrl: initialData?.imageUrl || "",
       imageHint: initialData?.imageHint || "",
-      onChainStatus: initialData?.onChainStatus || "Unknown", // New
-      onChainLifecycleStage: initialData?.onChainLifecycleStage || "Unknown", // New
+      onChainStatus: initialData?.onChainStatus || "Unknown", 
+      onChainLifecycleStage: initialData?.onChainLifecycleStage || "Unknown", 
       
       batteryRegulation: initialData?.batteryRegulation ? {
         status: initialData.batteryRegulation.status || "not_applicable",
@@ -276,8 +276,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           vcId: "",
         }
       },
-      textileInformation: initialData?.textileInformation || { fiberComposition: [], isSecondHand: false }, // New
-      constructionProductInformation: initialData?.constructionProductInformation || { essentialCharacteristics: [] }, // New
+      textileInformation: initialData?.textileInformation || { fiberComposition: [], isSecondHand: false }, 
+      constructionProductInformation: initialData?.constructionProductInformation || { essentialCharacteristics: [] }, 
 
       productNameOrigin: initialData?.productNameOrigin,
       productDescriptionOrigin: initialData?.productDescriptionOrigin,
@@ -334,8 +334,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         productCategory: initialData.productCategory || "",
         imageUrl: initialData.imageUrl || "",
         imageHint: initialData.imageHint || "",
-        onChainStatus: initialData.onChainStatus || "Unknown", // New
-        onChainLifecycleStage: initialData.onChainLifecycleStage || "Unknown", // New
+        onChainStatus: initialData.onChainStatus || "Unknown", 
+        onChainLifecycleStage: initialData.onChainLifecycleStage || "Unknown", 
         batteryRegulation: initialData.batteryRegulation ? {
           status: initialData.batteryRegulation.status || "not_applicable",
           batteryChemistry: initialData.batteryRegulation.batteryChemistry || "",
@@ -382,8 +382,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             vcId: "",
           }
         },
-        textileInformation: initialData.textileInformation || { fiberComposition: [], isSecondHand: false }, // New
-        constructionProductInformation: initialData.constructionProductInformation || { essentialCharacteristics: [] }, // New
+        textileInformation: initialData.textileInformation || { fiberComposition: [], isSecondHand: false }, 
+        constructionProductInformation: initialData.constructionProductInformation || { essentialCharacteristics: [] }, 
         productNameOrigin: initialData.productNameOrigin,
         productDescriptionOrigin: initialData.productDescriptionOrigin,
         manufacturerOrigin: initialData.manufacturerOrigin,
@@ -428,6 +428,12 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         if(transformedData.compliance.euCustomsData.customsValuation && (transformedData.compliance.euCustomsData.customsValuation.value === undefined || String(transformedData.compliance.euCustomsData.customsValuation.value).trim() === "")) {
             transformedData.compliance.euCustomsData.customsValuation.value = null;
         }
+    }
+    if (transformedData.textileInformation?.fiberComposition) {
+      transformedData.textileInformation.fiberComposition = transformedData.textileInformation.fiberComposition.map(fc => ({
+        ...fc,
+        percentage: (fc.percentage === undefined || String(fc.percentage).trim() === "") ? null : fc.percentage,
+      }));
     }
     
     const dataToSubmit = {
@@ -484,7 +490,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   };
 
   const formContent = (
-    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5', 'item-6', 'item-7', 'item-8', 'item-9', 'item-10']} className="w-full">
+    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5', 'item-6', 'item-7', 'item-8', 'item-9', 'item-10', 'item-11']} className="w-full">
       <AccordionItem value="item-1">
         <AccordionTrigger className="text-lg font-semibold flex items-center"><FileText className="mr-2 h-5 w-5 text-primary" />Basic Information</AccordionTrigger>
         <AccordionContent>
@@ -671,4 +677,3 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
-

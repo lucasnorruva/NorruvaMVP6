@@ -25,32 +25,32 @@ export interface EbsiVerificationDetails {
 }
 
 export interface ScipNotificationDetails {
-  status: 'Notified' | 'Pending Notification' | 'Not Required' | 'Error' | 'N/A' | string;
+  status?: 'Notified' | 'Pending Notification' | 'Not Required' | 'Error' | 'N/A' | string;
   notificationId?: string;
   svhcListVersion?: string;
   submittingLegalEntity?: string;
   articleName?: string;
   primaryArticleId?: string;
   safeUseInstructionsLink?: string;
-  lastChecked: string; // ISO Date string
+  lastChecked?: string; // Not a form field, for display
 }
 
 export interface EuCustomsDataDetails {
-  status: 'Verified' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'N/A' | string;
+  status?: 'Verified' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'N/A' | string;
   declarationId?: string;
   hsCode?: string;
-  countryOfOrigin?: string;
-  netWeightKg?: number;
-  grossWeightKg?: number;
+  countryOfOrigin?: string; // ISO 3166-1 Alpha-2
+  netWeightKg?: number | null;
+  grossWeightKg?: number | null;
   customsValuation?: {
-    value: number;
-    currency: string;
+    value?: number | null;
+    currency?: string; // ISO 4217
   };
-  lastChecked: string; // ISO Date string
+  lastChecked?: string; // Not a form field, for display
 }
 
 export interface CarbonFootprintData {
-  value?: number | null; // Made optional and nullable for form
+  value?: number | null;
   unit?: string;
   calculationMethod?: string;
   vcId?: string;
@@ -58,33 +58,33 @@ export interface CarbonFootprintData {
 
 export interface RecycledContentData {
   material?: string;
-  percentage?: number | null; // Made optional and nullable for form
+  percentage?: number | null;
   vcId?: string;
 }
 
 export interface StateOfHealthData {
-  value?: number | null; // Made optional and nullable for form
+  value?: number | null;
   unit?: string;
   measurementDate?: string; // ISO Date string
   vcId?: string;
 }
 
 export interface BatteryRegulationDetails {
-  status?: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable' | string; // Made optional for form
-  batteryChemistry?: string; // Moved here
+  status?: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable' | string;
+  batteryChemistry?: string;
   batteryPassportId?: string;
   carbonFootprint?: CarbonFootprintData;
   recycledContent?: RecycledContentData[];
   stateOfHealth?: StateOfHealthData;
-  vcId?: string; // Overall VC ID for battery regulation compliance
+  vcId?: string;
 }
 
 
 export interface ComplianceDetailItem {
   regulationName: string;
-  status: 'Compliant' | 'Non-Compliant' | 'Pending' | 'Not Applicable' | 'In Progress' | 'Data Incomplete' | 'Registered' | 'Verified' | 'Notified' | 'Pending Notification' | 'Not Required' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'Conformant' | 'Non-Conformant' | 'Pending Assessment' | 'Error' | 'Data Mismatch' | 'Product Not Found in EPREL' | 'Synced Successfully' | string; // Made string more open
+  status: 'Compliant' | 'Non-Compliant' | 'Pending' | 'Not Applicable' | 'In Progress' | 'Data Incomplete' | 'Registered' | 'Verified' | 'Notified' | 'Pending Notification' | 'Not Required' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'Conformant' | 'Non-Conformant' | 'Pending Assessment' | 'Error' | 'Data Mismatch' | 'Product Not Found in EPREL' | 'Synced Successfully' | string;
   detailsUrl?: string;
-  verificationId?: string; // Can be EPREL ID, SCIP Notification ID, Customs Declaration ID, Assessment ID etc.
+  verificationId?: string;
   lastChecked: string; // ISO Date string
   notes?: string;
 }

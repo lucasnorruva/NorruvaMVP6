@@ -2097,11 +2097,11 @@ components:
             onChainStatus: 
               type: string
               nullable: true
-              description: Conceptual on-chain status of the DPP (e.g., active, recalled).
+              description: "Conceptual on-chain status of the DPP (e.g., active, recalled)."
             onChainLifecycleStage: 
               type: string
               nullable: true
-              description: Conceptual on-chain lifecycle stage of the DPP.
+              description: "Conceptual on-chain lifecycle stage of the DPP."
         blockchainIdentifiers:
           type: object
           nullable: true
@@ -2216,10 +2216,10 @@ components:
               nullable: true
               items:
                 $ref: '#/components/schemas/CustomAttribute'
-        textileInformation: # New
+        textileInformation:
           $ref: '#/components/schemas/TextileInformation'
           nullable: true
-        constructionProductInformation: # New
+        constructionProductInformation:
           $ref: '#/components/schemas/ConstructionProductInformation'
           nullable: true
         lifecycleEvents:
@@ -2311,13 +2311,13 @@ components:
                   type: string
                   nullable: true
             battery_regulation:
-              $ref: '#/components/schemas/BatteryRegulationDetails' # Use defined schema
+              $ref: '#/components/schemas/BatteryRegulationDetails'
               nullable: true
             scipNotification:
-              $ref: '#/components/schemas/ScipNotificationDetails' # Use defined schema
+              $ref: '#/components/schemas/ScipNotificationDetails'
               nullable: true
             euCustomsData:
-              $ref: '#/components/schemas/EuCustomsDataDetails' # Use defined schema
+              $ref: '#/components/schemas/EuCustomsDataDetails'
               nullable: true
         ebsiVerification:
           type: object
@@ -2330,7 +2330,7 @@ components:
                 - pending_verification
                 - not_verified
                 - error
-                - N/A # Added N/A as a possible status
+                - N/A
             verificationId:
               type: string
               nullable: true
@@ -2616,10 +2616,10 @@ components:
             imageHint:
               type: string
               nullable: true
-        textileInformation: # New
+        textileInformation:
           $ref: '#/components/schemas/TextileInformation'
           nullable: true
-        constructionProductInformation: # New
+        constructionProductInformation:
           $ref: '#/components/schemas/ConstructionProductInformation'
           nullable: true
     UpdateDppRequestBody:
@@ -2716,13 +2716,13 @@ components:
             imageHint:
               type: string
               nullable: true
-        textileInformation: # New
+        textileInformation:
           $ref: '#/components/schemas/TextileInformation'
           nullable: true
-        constructionProductInformation: # New
+        constructionProductInformation:
           $ref: '#/components/schemas/ConstructionProductInformation'
           nullable: true
-        compliance: # Allow full update of compliance object
+        compliance: 
           type: object 
           nullable: true
           properties:
@@ -3041,7 +3041,7 @@ components:
           type: string
           description: A message regarding the verification outcome.
           example: "Mock ZKP for claim 'material_compliance_svhc_lead_less_0.1' is considered valid for this DPP."
-    BatteryRegulationDetails: # New schema
+    BatteryRegulationDetails: 
       type: object
       properties:
         status:
@@ -3068,7 +3068,7 @@ components:
         vcId:
           type: string
           nullable: true
-    CarbonFootprintData: # New schema
+    CarbonFootprintData: 
       type: object
       properties:
         value:
@@ -3084,7 +3084,7 @@ components:
         vcId:
           type: string
           nullable: true
-    RecycledContentData: # New schema
+    RecycledContentData: 
       type: object
       properties:
         material:
@@ -3097,7 +3097,7 @@ components:
         vcId:
           type: string
           nullable: true
-    StateOfHealthData: # New schema
+    StateOfHealthData: 
       type: object
       properties:
         value:
@@ -3114,7 +3114,7 @@ components:
         vcId:
           type: string
           nullable: true
-    ScipNotificationDetails: # New schema
+    ScipNotificationDetails: 
       type: object
       properties:
         status:
@@ -3144,7 +3144,7 @@ components:
           type: string
           format: date-time
           nullable: true
-    EuCustomsDataDetails: # New schema
+    EuCustomsDataDetails: 
       type: object
       properties:
         status:
@@ -3185,7 +3185,7 @@ components:
           type: string
           format: date-time
           nullable: true
-    TextileInformation: # New
+    TextileInformation: 
       type: object
       properties:
         fiberComposition:
@@ -3212,7 +3212,7 @@ components:
         isSecondHand:
           type: boolean
           nullable: true
-    ConstructionProductInformation: # New
+    ConstructionProductInformation: 
       type: object
       properties:
         declarationOfPerformanceId:
@@ -3253,3 +3253,4 @@ components:
       in: header
       name: Authorization
       description: API key for authentication. Provide as 'Bearer YOUR_API_KEY'.
+

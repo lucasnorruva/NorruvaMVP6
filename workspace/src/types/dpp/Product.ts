@@ -3,7 +3,7 @@
 // Description: Product related type definitions and mock data.
 
 import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight } from './Lifecycle';
-import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails } from './Compliance'; // Added ScipNotificationDetails, EuCustomsDataDetails
+import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails } from './Compliance';
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
@@ -165,8 +165,8 @@ export interface DigitalProductPassport {
   accessControlPolicyUrl?: string;
   privacyPolicyUrl?: string;
   supplyChainLinks?: ProductSupplyChainLink[];
-  textileInformation?: TextileInformation; // New
-  constructionProductInformation?: ConstructionProductInformation; // New
+  textileInformation?: TextileInformation;
+  constructionProductInformation?: ConstructionProductInformation;
 }
 
 export interface DashboardFiltersState {
@@ -221,8 +221,8 @@ export interface SimpleProductDetail {
   ebsiVerificationId?: string;
   onChainStatus?: string;
   onChainLifecycleStage?: string;
-  textileInformation?: TextileInformation; // New
-  constructionProductInformation?: ConstructionProductInformation; // New
+  textileInformation?: TextileInformation;
+  constructionProductInformation?: ConstructionProductInformation;
 }
 
 export interface StoredUserProduct {
@@ -243,10 +243,10 @@ export interface StoredUserProduct {
   imageUrl?: string;
   imageHint?: string;
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  batteryChemistry?: string;
-  stateOfHealth?: number | null;
-  carbonFootprintManufacturing?: number | null;
-  recycledContentPercentage?: number | null;
+  // batteryChemistry?: string; // Moved to batteryRegulation
+  // stateOfHealth?: number | null; // Moved to batteryRegulation
+  // carbonFootprintManufacturing?: number | null; // Moved to batteryRegulation
+  // recycledContentPercentage?: number | null; // Moved to batteryRegulation
   status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string;
   compliance: string; 
   lastUpdated: string;
@@ -258,10 +258,10 @@ export interface StoredUserProduct {
   sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
   energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
   specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
-  batteryChemistryOrigin?: 'AI_EXTRACTED' | 'manual';
-  stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual';
-  carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual';
-  recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual';
+  // batteryChemistryOrigin?: 'AI_EXTRACTED' | 'manual'; // Moved to batteryRegulationOrigin
+  // stateOfHealthOrigin?: 'AI_EXTRACTED' | 'manual'; // Moved to batteryRegulationOrigin
+  // carbonFootprintManufacturingOrigin?: 'AI_EXTRACTED' | 'manual'; // Moved to batteryRegulationOrigin
+  // recycledContentPercentageOrigin?: 'AI_EXTRACTED' | 'manual'; // Moved to batteryRegulationOrigin
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
@@ -280,8 +280,8 @@ export interface StoredUserProduct {
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
   metadata?: Partial<DigitalProductPassport['metadata']>;
-  textileInformation?: TextileInformation; // New
-  constructionProductInformation?: ConstructionProductInformation; // New
+  textileInformation?: TextileInformation;
+  constructionProductInformation?: ConstructionProductInformation;
 }
 
 export interface RichMockProduct {
@@ -304,10 +304,10 @@ export interface RichMockProduct {
   specifications?: string; 
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
-  batteryChemistry?: string;
-  stateOfHealth?: number | null;
-  carbonFootprintManufacturing?: number | null;
-  recycledContentPercentage?: number | null;
+  batteryChemistry?: string; // Keep for direct display from older mock data if needed
+  stateOfHealth?: number | null; // Keep for direct display
+  carbonFootprintManufacturing?: number | null; // Keep for direct display
+  recycledContentPercentage?: number | null; // Keep for direct display
   ebsiVerification?: EbsiVerificationDetails;
   certifications?: Certification[];
   documents?: DocumentReference[];
@@ -317,8 +317,8 @@ export interface RichMockProduct {
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
   metadata?: Partial<DigitalProductPassport['metadata']>;
-  textileInformation?: TextileInformation; // New
-  constructionProductInformation?: ConstructionProductInformation; // New
+  textileInformation?: TextileInformation;
+  constructionProductInformation?: ConstructionProductInformation;
 }
 
 export interface PublicProductInfo {
@@ -353,8 +353,8 @@ export interface PublicProductInfo {
   tokenId?: string;
   onChainStatus?: string;
   onChainLifecycleStage?: string;
-  textileInformation?: TextileInformation; // New
-  constructionProductInformation?: ConstructionProductInformation; // New
+  textileInformation?: TextileInformation;
+  constructionProductInformation?: ConstructionProductInformation;
 }
 
 export interface Supplier {
@@ -405,8 +405,8 @@ export interface DisplayableProduct {
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
   metadata?: Partial<DigitalProductPassport['metadata']>;
-  textileInformation?: TextileInformation; // New
-  constructionProductInformation?: ConstructionProductInformation; // New
+  textileInformation?: TextileInformation;
+  constructionProductInformation?: ConstructionProductInformation;
 }
 
 export interface AnchorResult {
@@ -442,3 +442,5 @@ export interface TokenStatusResponse {
   status: string; 
   message?: string;
 }
+
+    

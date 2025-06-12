@@ -428,5 +428,3 @@ export interface TokenStatusResponse {
   status: string; // e.g., "minted", "transferred", "active"
   message?: string;
 }
-
-    

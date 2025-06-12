@@ -326,7 +326,7 @@ export default function PublicPassportPage() {
                  <Card className="border-0 shadow-none">
                     <CardHeader className="px-0 pt-0 pb-4">
                     <CardTitle className="text-xl text-primary flex items-center">
-                        <Fingerprint className="mr-2 h-6 w-6" /> Blockchain &amp; Token Details
+                        <Fingerprint className="mr-2 h-6 w-6" /> Blockchain & Token Details
                     </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm px-0 pb-0">
@@ -462,5 +462,3 @@ export default function PublicPassportPage() {
     </div>
   );
 }
-
-    

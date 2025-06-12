@@ -80,7 +80,7 @@ export default function ApiReferencePage() {
   }, null, 2);
 
   const error401 = JSON.stringify({ error: { code: 401, message: "API key missing or invalid." } }, null, 2);
-  const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }, { status: 404 }); 
+  const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }); 
   const error400_general = JSON.stringify({ error: { code: 400, message: "Invalid request payload or parameters." } }, null, 2);
   const error400_qr = JSON.stringify({ error: { code: 400, message: "Invalid request body. 'qrIdentifier' is required." } }, null, 2);
   const error500 = JSON.stringify({ error: { code: 500, message: "An unexpected error occurred on the server." } }, null, 2);
@@ -338,6 +338,26 @@ export default function ApiReferencePage() {
     checksPerformed: ["Mock Data Integrity Check", "Mock EBSI Anchor Verification"]
   }, null, 2);
 
+  // Examples for new on-chain endpoints
+  const exampleUpdateOnChainStatusRequestBody = JSON.stringify({ status: "recalled" }, null, 2);
+  const exampleUpdateOnChainLifecycleStageRequestBody = JSON.stringify({ lifecycleStage: "Distribution" }, null, 2);
+  const exampleLogCriticalEventRequestBody = JSON.stringify({ eventDescription: "Major defect discovered in Batch XYZ.", severity: "High" }, null, 2);
+  const exampleRegisterVcHashRequestBody = JSON.stringify({ vcId: "urn:uuid:some-vc-id-123", vcHash: "a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4e5f6a1b2" }, null, 2);
+  
+  const dppForOnChainOps = MOCK_DPPS.find(dpp => dpp.id === "DPP001") || MOCK_DPPS[0];
+  const exampleUpdatedDppResponse = JSON.stringify({ // Example of an updated DPP after an on-chain operation
+    ...dppForOnChainOps,
+    metadata: {
+        ...dppForOnChainOps.metadata,
+        onChainStatus: "recalled", // Example change
+        last_updated: new Date().toISOString(),
+    },
+    lifecycleEvents: [
+        ...(dppForOnChainOps.lifecycleEvents || []),
+        { id: "evt_onchain_mock", type: "OnChainStatusUpdate", timestamp: new Date().toISOString(), data: { newStatus: "recalled", mockTxHash: "0xmock..."}}
+    ]
+  }, null, 2);
+
 
   return (
     <DocsPageLayout
@@ -359,6 +379,13 @@ export default function ApiReferencePage() {
         conceptualPatchDppExtendResponseBody={conceptualPatchDppExtendResponseBody}
         addLifecycleEventRequestBodyExample={addLifecycleEventRequestBodyExample}
         addLifecycleEventResponseExample={addLifecycleEventResponseExample}
+        // Pass new props for on-chain endpoints
+        exampleUpdateOnChainStatusRequestBody={exampleUpdateOnChainStatusRequestBody}
+        exampleUpdateOnChainLifecycleStageRequestBody={exampleUpdateOnChainLifecycleStageRequestBody}
+        exampleLogCriticalEventRequestBody={exampleLogCriticalEventRequestBody}
+        exampleRegisterVcHashRequestBody={exampleRegisterVcHashRequestBody}
+        exampleUpdatedDppResponse={exampleUpdatedDppResponse}
+        // Error responses
         error401={error401}
         error404={error404}
         error500={error500}
@@ -394,3 +421,4 @@ export default function ApiReferencePage() {
     </DocsPageLayout>
   );
 }
+

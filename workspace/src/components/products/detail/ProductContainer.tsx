@@ -13,9 +13,10 @@ import ComplianceTab from './ComplianceTab';
 import LifecycleTab from './LifecycleTab';
 import SupplyChainTab from './SupplyChainTab';
 import CertificationsTab from './CertificationsTab';
-import QrCodeTab from './QrCodeTab'; // Import the new QR Code tab
+import QrCodeTab from './QrCodeTab';
+import HistoryTab from './HistoryTab'; // Import the new HistoryTab
 
-import { Package, Leaf, ShieldCheck, History, Layers, Award, QrCode } from 'lucide-react';
+import { Package, Leaf, ShieldCheck, History as HistoryIcon, Layers, Award, QrCode } from 'lucide-react';
 
 
 interface ProductContainerProps {
@@ -44,9 +45,10 @@ export default function ProductContainer({
     { value: "sustainability", label: "Sustainability", icon: Leaf },
     { value: "compliance", label: "Compliance", icon: ShieldCheck },
     { value: "certifications", label: "Certifications", icon: Award },
-    { value: "lifecycle", label: "Lifecycle", icon: History },
+    { value: "lifecycle", label: "Lifecycle", icon: HistoryIcon },
     { value: "supplyChain", label: "Supply Chain", icon: Layers },
-    { value: "qrCode", label: "QR Code", icon: QrCode }, // Added QR Code tab
+    { value: "history", label: "History", icon: HistoryIcon }, // Added History tab
+    { value: "qrCode", label: "QR Code", icon: QrCode },
   ];
 
   return (
@@ -54,7 +56,7 @@ export default function ProductContainer({
       <ProductHeader product={product} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 h-auto p-1.5"> {/* Adjusted grid columns */}
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2 h-auto p-1.5"> {/* Adjusted grid columns */}
           {tabItems.map(tab => (
             <TabsTrigger 
               key={tab.value} 
@@ -95,7 +97,11 @@ export default function ProductContainer({
           <SupplyChainTab product={product} onSupplyChainLinksChange={onSupplyChainUpdate} />
         </TabsContent>
 
-        <TabsContent value="qrCode" className="mt-6"> {/* Added TabsContent for QR Code */}
+        <TabsContent value="history" className="mt-6"> {/* Added TabsContent for History */}
+          <HistoryTab productId={product.id} />
+        </TabsContent>
+
+        <TabsContent value="qrCode" className="mt-6">
           <QrCodeTab productId={product.id} productName={product.productName} />
         </TabsContent>
       </Tabs>
@@ -103,3 +109,4 @@ export default function ProductContainer({
   );
 }
     
+

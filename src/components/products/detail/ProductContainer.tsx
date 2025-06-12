@@ -12,9 +12,10 @@ import SustainabilityTab from './SustainabilityTab';
 import ComplianceTab from './ComplianceTab';
 import LifecycleTab from './LifecycleTab';
 import SupplyChainTab from './SupplyChainTab';
-import CertificationsTab from './CertificationsTab'; // Import the new tab
+import CertificationsTab from './CertificationsTab';
+import QrCodeTab from './QrCodeTab'; // Import the new QR Code tab
 
-import { Package, Leaf, ShieldCheck, History, Layers, Award } from 'lucide-react';
+import { Package, Leaf, ShieldCheck, History, Layers, Award, QrCode } from 'lucide-react';
 
 
 interface ProductContainerProps {
@@ -45,6 +46,7 @@ export default function ProductContainer({
     { value: "certifications", label: "Certifications", icon: Award },
     { value: "lifecycle", label: "Lifecycle", icon: History },
     { value: "supplyChain", label: "Supply Chain", icon: Layers },
+    { value: "qrCode", label: "QR Code", icon: QrCode }, // Added QR Code tab
   ];
 
   return (
@@ -52,7 +54,7 @@ export default function ProductContainer({
       <ProductHeader product={product} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2 h-auto p-1.5">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2 h-auto p-1.5"> {/* Adjusted grid columns */}
           {tabItems.map(tab => (
             <TabsTrigger 
               key={tab.value} 
@@ -92,10 +94,12 @@ export default function ProductContainer({
          <TabsContent value="supplyChain" className="mt-6">
           <SupplyChainTab product={product} onSupplyChainLinksChange={onSupplyChainUpdate} />
         </TabsContent>
+
+        <TabsContent value="qrCode" className="mt-6"> {/* Added TabsContent for QR Code */}
+          <QrCodeTab productId={product.id} productName={product.productName} />
+        </TabsContent>
       </Tabs>
     </div>
   );
 }
-
     
-

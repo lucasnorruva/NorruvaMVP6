@@ -301,21 +301,26 @@ Without this permission Google Cloud cannot generate the access token required t
 ## Advanced Blockchain Architecture
 
 Detailed smart contract design and DAO governance specifications are documented in [docs/blockchain-architecture.md](docs/blockchain-architecture.md).
+The smart contract code itself resides in `workspace/contracts/`.
 
 ## Smart Contract Development
 
-Solidity smart contracts for the Norruva platform are located in the `contracts/` directory. The project is configured for Hardhat development, focusing on UUPS upgradeable contracts for flexibility. Foundry configuration is also available for alternative workflows.
+Solidity smart contracts for the Norruva platform are located in the `workspace/contracts/` directory. The project is configured for Hardhat development, focusing on UUPS upgradeable contracts for flexibility.
 
 ### Core Contracts
 
-1.  **`DPPToken.sol`**: An ERC-721 compliant token representing each Digital Product Passport as an NFT. It is UUPS upgradeable and manages minting and metadata URI updates through role-based access control.
-2.  **`NORUToken.sol`**: An ERC-20 compliant governance token (`NORU`) for the conceptual Norruva DAO. It is UUPS upgradeable, with an initial supply minted to the deployer.
-3.  **`TimelockControllerUpgradeable.sol` (OpenZeppelin)**: A standard Timelock contract to enforce a delay on DAO proposals before execution. Deployed via `scripts/deploy_timelock_controller.ts`.
-4.  **`DPPGovernor.sol`**: A `GovernorUpgradeable` contract for on-chain governance, using `NORUToken` for voting and interacting with the `TimelockController`. It is UUPS upgradeable.
+1.  **`DPPToken.sol`**: An ERC-721 compliant token representing each Digital Product Passport as an NFT. It is UUPS upgradeable and manages minting and metadata URI updates through role-based access control. Transfers are restricted by default and can be enabled via DAO-controlled functions.
+2.  **`NORUToken.sol`**: An ERC-20 compliant governance token (`NORU`) for the conceptual Norruva DAO. It is UUPS upgradeable, with a capped supply and role-based minting.
+3.  **`TimelockControllerUpgradeable.sol` (OpenZeppelin)**: A standard Timelock contract to enforce a delay on DAO proposals before execution. Deployed via `workspace/scripts/deploy_timelock_controller.ts`.
+4.  **`DPPGovernor.sol`**: A `GovernorUpgradeable` contract for on-chain governance, using `NORUToken` for voting and interacting with the `TimelockController`. It is UUPS upgradeable and deployed via `workspace/scripts/deploy_governor.ts`.
 
 ### Common Hardhat Commands
 
+The Hardhat project is configured at the root of the `workspace/` directory. To run Hardhat commands, first `cd workspace`.
+
 ```bash
+cd workspace
+
 # Compile the contracts
 npm run compile:contracts
 
@@ -323,52 +328,60 @@ npm run compile:contracts
 npm run test:contracts
 
 # Deploy the DPPToken proxy to a network (e.g., sepolia)
-# Requires ALCHEMY_API_KEY and PRIVATE_KEY in .env
+# Requires ALCHEMY_API_KEY and PRIVATE_KEY in .env at the root of the workspace
 npm run deploy:contracts
 ```
 
-### Deploying Other Contracts (Conceptual Order)
+### Deploying DAO Components (Conceptual Order)
 
-The `npm run deploy:contracts` command specifically deploys the `DPPToken` as defined in `package.json` (it runs `scripts/deploy.ts`). To deploy the other core contracts for a complete conceptual DAO setup, you would typically run their respective scripts:
+The `npm run deploy:contracts` command specifically deploys the `DPPToken`. To deploy the other core contracts for a complete conceptual DAO setup, follow this order:
 
 1.  **Deploy NORUToken:**
     ```bash
+    # Ensure you are in the workspace/ directory
     npx hardhat run scripts/deploy_noru_token.ts --network <your_network_name>
     ```
-    (Replace `<your_network_name>` with, e.g., `sepolia` or `localhost`)
-    Note the deployed `NORUToken` address. You will need to set this in your `.env` file as `NORU_TOKEN_ADDRESS` for subsequent steps.
+    (Replace `<your_network_name>` with, e.g., `sepolia` or `localhost`. This will be read from `workspace/hardhat.config.ts`).
+    Note the deployed `NORUToken` address from the console output. You **must** set this in your `workspace/.env` file as `NORU_TOKEN_ADDRESS` for subsequent steps.
 
 2.  **Deploy TimelockController:**
     ```bash
+    # Ensure you are in the workspace/ directory
     npx hardhat run scripts/deploy_timelock_controller.ts --network <your_network_name>
     ```
-    Note the deployed `TimelockController` address. You will need to set this in your `.env` file as `TIMELOCK_CONTROLLER_ADDRESS` for the next step.
+    Note the deployed `TimelockController` address from the console output. You **must** set this in your `workspace/.env` file as `TIMELOCK_CONTROLLER_ADDRESS` for the next step.
 
 3.  **Deploy DPPGovernor:**
-    Before running, you **must** ensure that the `NORU_TOKEN_ADDRESS` and `TIMELOCK_CONTROLLER_ADDRESS` environment variables are set correctly (e.g., in your `.env` file or directly in the shell) to the addresses obtained from the previous deployment steps.
+    Before running, you **must** ensure that the `NORU_TOKEN_ADDRESS` and `TIMELOCK_CONTROLLER_ADDRESS` environment variables are set correctly in your `workspace/.env` file (or directly in the shell) to the addresses obtained from the previous deployment steps.
     ```bash
-    # Example: Ensure .env contains:
-    # NORU_TOKEN_ADDRESS=0x...
-    # TIMELOCK_CONTROLLER_ADDRESS=0x...
+    # Example content for workspace/.env:
+    # ALCHEMY_API_KEY=your_alchemy_key
+    # PRIVATE_KEY=your_private_key
+    # NORU_TOKEN_ADDRESS=0xAddressOfDeployedNoruToken
+    # TIMELOCK_CONTROLLER_ADDRESS=0xAddressOfDeployedTimelock
+    
+    # Ensure you are in the workspace/ directory
     npx hardhat run scripts/deploy_governor.ts --network <your_network_name>
     ```
-    This script will deploy the `DPPGovernor` and also attempt to configure the necessary roles on the `TimelockController` to grant the Governor proposal and execution rights.
+    This script will deploy the `DPPGovernor` and also attempt to configure the necessary roles on the `TimelockController` (PROPOSER_ROLE, CANCELLER_ROLE, EXECUTOR_ROLE, TIMELOCK_ADMIN_ROLE) to grant the Governor operational control.
 
 ### Upgrading Contracts
 
-To upgrade an existing UUPS proxy (e.g., `DPPToken`):
+To upgrade an existing UUPS proxy (e.g., `DPPToken`, `NORUToken`, `DPPGovernor`):
 1.  Create a new version of the contract (e.g., `DPPTokenV2.sol`).
-2.  Set the `PROXY_ADDRESS` environment variable in your `.env` file to the address of the deployed proxy you want to upgrade.
-3.  Run the upgrade script (example for `DPPToken`):
+2.  Set the `PROXY_ADDRESS` environment variable in your `workspace/.env` file to the address of the deployed proxy you want to upgrade.
+3.  Set the `UPGRADE_CONTRACT_NAME` environment variable to the base name of the contract being upgraded (e.g., `DPPToken`). The script will look for `<UPGRADE_CONTRACT_NAME>V2`.
+4.  Run the upgrade script:
     ```bash
-    # Ensure scripts/upgrade.ts points to the correct new contract version (e.g., DPPTokenV2)
-    npm run upgrade:contracts
+    # Ensure you are in the workspace/ directory
+    # Ensure .env contains PROXY_ADDRESS and UPGRADE_CONTRACT_NAME
+    npm run upgrade:contracts 
     ```
-    (This command runs `scripts/upgrade.ts` by default)
+    (This command runs `workspace/scripts/upgrade.ts` by default).
 
 ### Foundry (Alternative)
 
-If Foundry is installed, you can also use its tools for building and testing:
+If Foundry is installed, you can also use its tools for building and testing (from the `workspace/` directory):
 ```bash
 forge build
 forge test
@@ -381,3 +394,4 @@ This application is being developed within the Firebase Studio environment, an A
 ---
 
 This README will be updated as the project evolves.
+

@@ -93,7 +93,33 @@ export default function GlobeV2Page() {
     'Hong Kong': { lat: 22.3193, lng: 114.1694 }, 
     'Australia': { lat: -25.2744, lng: 133.7751 },
     'South Korea': { lat: 35.9078, lng: 127.7669 },
+    'Shanghai': { lat: 31.2304, lng: 121.4737 }, // City as fallback
+    'Mumbai': { lat: 19.0760, lng: 72.8777 },
+    'Shenzhen': { lat: 22.5431, lng: 114.0579 },
+    'Ho Chi Minh City': { lat: 10.8231, lng: 106.6297 },
+    'Newark': { lat: 40.7357, lng: -74.1724 },
+    'Gdansk': { lat: 54.372158, lng: 18.638306 },
+    'Milan': { lat: 45.4642, lng: 9.1900 },
+    'Zurich': { lat: 47.3769, lng: 8.5417 },
+    'Prague': { lat: 50.0755, lng: 14.4378 },
+    'Nairobi': { lat: -1.2921, lng: 36.8219 },
   }), []);
+
+  const getCountryFromLocationString = (locationString: string): string | null => {
+      if (!locationString) return null;
+      const parts = locationString.split(',').map(p => p.trim());
+      const country = parts.pop(); // Assume country is last
+      // Basic check if it might be a country name or known code
+      if (country && (country.length === 2 || country.length === 3 || mockCountryCoordinates[country] || EU_COUNTRY_CODES.has(country.toUpperCase()))) {
+          return country;
+      }
+      // If it's a city name, check if we have coords for it
+      if (parts.length > 0) {
+          const city = parts.pop();
+          if (city && mockCountryCoordinates[city]) return city; // Treat city as key if coords exist
+      }
+      return country || null; // Return last part as best guess if all else fails
+  };
 
   useEffect(() => {
     fetch(
@@ -112,85 +138,98 @@ export default function GlobeV2Page() {
   }, []);
 
   useEffect(() => {
+    setHighlightedCountries([]);
+    setArcsData([]);
+    setSelectedProductTransitInfo(null);
+    setSelectedProductAlerts([]);
+    setClickedCountryInfo(null);
+
     if (!selectedProduct) {
-        setHighlightedCountries([]);
-        setArcsData([]);
-        setSelectedProductTransitInfo(null);
-        setSelectedProductAlerts([]);
-        setClickedCountryInfo(null); 
-        return;
+      if (globeEl.current) globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.5 }, 1000);
+      return;
     }
-
-    fetch(`/api/v1/dpp/graph/${selectedProduct}`)
-      .then(res => res.ok ? res.json() : null)
-      .then((graph) => {
-        if (!graph || !graph.nodes) {
-            setHighlightedCountries([]); setArcsData([]); return;
-        }
-        const countries = new Set<string>();
-        let manufacturerCountry: string | null = null;
-
-        graph.nodes.forEach((node: any) => {
-          if (node.type === 'manufacturer' && node.data?.location) {
-            const country = node.data.location.split(',').pop()?.trim();
-            if (country && mockCountryCoordinates[country]) {
-                manufacturerCountry = country; 
-                countries.add(country);
-            }
-          } else if (node.type === 'supplier' && node.data?.location) {
-            const country = node.data.location.split(',').pop()?.trim();
-            if (country && mockCountryCoordinates[country]) countries.add(country);
-          }
-        });
-        
-        const supplyChainCountries = Array.from(countries);
-        setHighlightedCountries(supplyChainCountries);
-        
-        const newArcs = [];
-        if (manufacturerCountry && supplyChainCountries.length > 1) {
-            const manufacturerCoords = mockCountryCoordinates[manufacturerCountry];
-            supplyChainCountries.forEach(countryName => {
-                if (countryName !== manufacturerCountry) {
-                    const supplierCoords = mockCountryCoordinates[countryName];
-                    if (supplierCoords) {
-                        newArcs.push({
-                            startLat: manufacturerCoords.lat, startLng: manufacturerCoords.lng,
-                            endLat: supplierCoords.lat, endLng: supplierCoords.lng,
-                            color: '#FFFF00' 
-                        });
-                    }
-                }
-            });
-        } else if (supplyChainCountries.length > 1) { 
-            for (let i = 0; i < supplyChainCountries.length - 1; i++) {
-                const startCoords = mockCountryCoordinates[supplyChainCountries[i]];
-                const endCoords = mockCountryCoordinates[supplyChainCountries[i+1]];
-                if (startCoords && endCoords) {
-                    newArcs.push({
-                        startLat: startCoords.lat, startLng: startCoords.lng,
-                        endLat: endCoords.lat, endLng: endCoords.lng,
-                        color: '#FFFF00' 
-                    });
-                }
-            }
-        }
-        setArcsData(newArcs as any[]);
-        
-        if (globeEl.current) {
-          if (countries.has('China') || countries.has('Japan') || countries.has('India')) globeEl.current.pointOfView({ lat: 20, lng: 90, altitude: 2.5 }, 1000);
-          else if (countries.has('United States') || countries.has('Canada')) globeEl.current.pointOfView({ lat: 45, lng: -90, altitude: 2.5 }, 1000);
-          else globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.0 }, 1000);
-        }
-      })
-      .catch((err) => { console.error('Error fetching product graph:', err); setHighlightedCountries([]); setArcsData([]); });
 
     const transitInfo = MOCK_TRANSIT_PRODUCTS.find(p => p.id === selectedProduct);
     setSelectedProductTransitInfo(transitInfo || null);
-    const alerts = MOCK_CUSTOMS_ALERTS.filter(a => a.productId === selectedProduct);
-    setSelectedProductAlerts(alerts);
+    setSelectedProductAlerts(MOCK_CUSTOMS_ALERTS.filter(a => a.productId === selectedProduct));
 
-    setClickedCountryInfo(null); 
+    if (transitInfo) {
+      const originCountry = getCountryFromLocationString(transitInfo.origin);
+      const destinationCountry = getCountryFromLocationString(transitInfo.destination);
+      const originCoords = originCountry ? mockCountryCoordinates[originCountry] : null;
+      const destinationCoords = destinationCountry ? mockCountryCoordinates[destinationCountry] : null;
 
+      const newHighlights: string[] = [];
+      if (originCountry) newHighlights.push(originCountry);
+      if (destinationCountry && destinationCountry !== originCountry) newHighlights.push(destinationCountry);
+      setHighlightedCountries(newHighlights);
+      
+      if (originCoords && destinationCoords) {
+        setArcsData([{
+          startLat: originCoords.lat, startLng: originCoords.lng,
+          endLat: destinationCoords.lat, endLng: destinationCoords.lng,
+          color: '#3B82F6', // Blue for transit
+          label: `${transitInfo.name} Transit`
+        }]);
+        if (globeEl.current) { // Focus view on transit arc
+             const midLat = (originCoords.lat + destinationCoords.lat) / 2;
+             const midLng = (originCoords.lng + destinationCoords.lng) / 2;
+             globeEl.current.pointOfView({ lat: midLat, lng: midLng, altitude: 2.0 }, 1000);
+        }
+      } else {
+        setArcsData([]);
+        // If no transit arc, fall back to supply chain view or default Europe
+        if (globeEl.current) globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.0 }, 1000);
+      }
+    } else {
+      // Fallback: If no transit info, fetch supply chain graph
+      fetch(`/api/v1/dpp/graph/${selectedProduct}`)
+        .then(res => res.ok ? res.json() : null)
+        .then((graph) => {
+          if (!graph || !graph.nodes) { return; }
+          const countries = new Set<string>();
+          let manufacturerCountry: string | null = null;
+          graph.nodes.forEach((node: any) => {
+            const loc: string | undefined = node.data?.location;
+            if (loc) {
+              const country = getCountryFromLocationString(loc);
+              if (country) {
+                countries.add(country);
+                if (node.type === 'manufacturer') manufacturerCountry = country;
+              }
+            }
+          });
+          const supplyChainCountries = Array.from(countries);
+          setHighlightedCountries(supplyChainCountries);
+          
+          const newSupplyArcs = [];
+          if (manufacturerCountry && supplyChainCountries.length > 1) {
+            const manufacturerCoords = mockCountryCoordinates[manufacturerCountry];
+            if (manufacturerCoords) {
+                supplyChainCountries.forEach(countryName => {
+                    if (countryName !== manufacturerCountry) {
+                        const supplierCoords = mockCountryCoordinates[countryName];
+                        if (supplierCoords) {
+                            newSupplyArcs.push({
+                                startLat: manufacturerCoords.lat, startLng: manufacturerCoords.lng,
+                                endLat: supplierCoords.lat, endLng: supplierCoords.lng,
+                                color: '#F59E0B', // Orange for supply chain
+                                label: `Supply: ${manufacturerCountry} to ${countryName}`
+                            });
+                        }
+                    }
+                });
+            }
+          }
+          setArcsData(newSupplyArcs as any[]);
+          if (globeEl.current) { // Focus view based on supply chain if any
+            if (countries.has('China') || countries.has('Japan') || countries.has('India')) globeEl.current.pointOfView({ lat: 20, lng: 90, altitude: 2.5 }, 1000);
+            else if (countries.has('United States') || countries.has('Canada')) globeEl.current.pointOfView({ lat: 45, lng: -90, altitude: 2.5 }, 1000);
+            else globeEl.current.pointOfView({ lat: 50, lng: 15, altitude: 2.0 }, 1000);
+          }
+        })
+        .catch((err) => { console.error('Error fetching product graph:', err); setHighlightedCountries([]); setArcsData([]); });
+    }
   }, [selectedProduct, mockCountryCoordinates]); 
 
   const isEU = useCallback((isoA3: string | undefined) => !!isoA3 && EU_COUNTRY_CODES.has(isoA3.toUpperCase()), []);
@@ -200,10 +239,12 @@ export default function GlobeV2Page() {
     let filtered = landPolygons;
     if (countryFilter === 'eu') {
       filtered = landPolygons.filter(feat => isEU(feat.properties?.ADM0_A3 || feat.properties?.ISO_A3));
-    } else if (countryFilter === 'supplyChain' && selectedProduct) { 
-      filtered = landPolygons.filter(feat =>
-        highlightedCountries.includes(feat.properties?.ADMIN || feat.properties?.NAME_LONG || '')
-      );
+    } else if (countryFilter === 'supplyChain' && selectedProduct && highlightedCountries.length > 0) { 
+      filtered = landPolygons.filter(feat => {
+        const adminName = feat.properties?.ADMIN || feat.properties?.NAME_LONG || '';
+        // Check against full country names in highlightedCountries, which now includes transit origin/dest
+        return highlightedCountries.some(hc => adminName.toLowerCase().includes(hc.toLowerCase()));
+      });
     }
     setFilteredLandPolygons(filtered);
   }, [countryFilter, landPolygons, highlightedCountries, isEU, selectedProduct]);
@@ -224,19 +265,21 @@ export default function GlobeV2Page() {
   const getPolygonCapColor = useCallback((feat: object) => {
     const properties = (feat as CountryFeature).properties;
     const iso = properties?.ADM0_A3 || properties?.ISO_A3;
-    const name = properties?.ADMIN;
+    const name = properties?.ADMIN || properties?.NAME_LONG || '';
+
     if (clickedCountryInfo && (clickedCountryInfo.ADM0_A3 === iso || clickedCountryInfo.ADMIN === name) ) return '#ff4500';
     if (hoverD && (hoverD.properties.ADM0_A3 === iso || hoverD.properties.ADMIN === name)) return '#ffa500';
-    if (name && highlightedCountries.includes(name)) {
-        return isEU(iso) ? '#FFBF00' : '#f97316'; 
+    
+    // highlightedCountries now contains either transit origin/dest or supply chain nodes
+    if (highlightedCountries.some(hc => name.toLowerCase().includes(hc.toLowerCase()))) {
+        return isEU(iso) ? '#FFBF00' : '#f97316'; // Amber for EU highlighted, Orange for Non-EU highlighted
     }
     return isEU(iso) ? '#002D62' : '#CCCCCC'; 
   }, [isEU, highlightedCountries, clickedCountryInfo, hoverD]);
 
   const handleDismissProductInfo = () => {
     setSelectedProduct(null);
-    setSelectedProductTransitInfo(null);
-    setSelectedProductAlerts([]);
+    // URL update will trigger useEffect to clear dependent states
     router.push(`/dpp-global-tracker-v2`, { scroll: false });
   };
 
@@ -260,8 +303,15 @@ export default function GlobeV2Page() {
             onPolygonHover={setHoverD as (feature: GeoJsonFeature | null) => void} onPolygonClick={handlePolygonClick} 
             polygonLabel={({ properties }: object) => {
               const p = properties as CountryProperties; const iso = p?.ADM0_A3 || p?.ISO_A3; const name = p?.ADMIN || p?.NAME_LONG || 'Country';
-              const isEUCountry = isEU(iso); const isInSupplyChain = name && highlightedCountries.includes(name);
-              return `<div style="background: rgba(40,40,40,0.8); color: white; padding: 5px 8px; border-radius: 4px; font-size: 12px;"><b>${name}</b>${iso ? ` (${iso})` : ''}<br/>${isEUCountry ? 'EU Member' : 'Non-EU Member'}<br/>${isInSupplyChain ? 'Part of Supply Chain' : ''}</div>`;
+              const isEUCountry = isEU(iso); const isHighlighted = highlightedCountries.some(hc => name.toLowerCase().includes(hc.toLowerCase()));
+              let roleInContext = "";
+              if (isHighlighted) {
+                  if (selectedProductTransitInfo?.origin && getCountryFromLocationString(selectedProductTransitInfo.origin) === name) roleInContext += "Transit Origin. ";
+                  if (selectedProductTransitInfo?.destination && getCountryFromLocationString(selectedProductTransitInfo.destination) === name) roleInContext += "Transit Destination. ";
+                  // Could add supply chain role if not transit origin/dest, but might get too busy.
+                  if (!roleInContext) roleInContext = "Supply Chain Node."
+              }
+              return `<div style="background: rgba(40,40,40,0.8); color: white; padding: 5px 8px; border-radius: 4px; font-size: 12px;"><b>${name}</b>${iso ? ` (${iso})` : ''}<br/>${isEUCountry ? 'EU Member' : 'Non-EU Member'}<br/>${roleInContext.trim()}</div>`;
             }}
             polygonsTransitionDuration={100} width={dimensions.width} height={dimensions.height}
             onGlobeReady={() => setGlobeReady(true)} enablePointerInteraction={true}
@@ -279,7 +329,7 @@ export default function GlobeV2Page() {
           <SelectTrigger className="w-[150px]"><SelectValue placeholder="Filter Countries" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Countries</SelectItem><SelectItem value="eu">EU Countries</SelectItem>
-            <SelectItem value="supplyChain" disabled={!selectedProduct}>Product Supply Chain</SelectItem>
+            <SelectItem value="supplyChain" disabled={!selectedProduct}>Product Focus</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -315,7 +365,7 @@ export default function GlobeV2Page() {
             <p><strong className="text-muted-foreground">DPPs Originating:</strong> {Math.floor(Math.random() * 50)} (Mock)</p>
             <p><strong className="text-muted-foreground">DPPs Transiting:</strong> {Math.floor(Math.random() * 20)} (Mock)</p>
             {isEU(clickedCountryInfo.ADM0_A3 || clickedCountryInfo.ISO_A3) && <p className="text-green-600 font-medium">EU Member State</p>}
-            {highlightedCountries.includes(clickedCountryInfo.ADMIN || '') && <p className="text-orange-600 font-medium">Part of Current Supply Chain</p>}
+            {highlightedCountries.includes(clickedCountryInfo.ADMIN || '') && <p className="text-orange-600 font-medium">Part of Focus Area</p>}
             <Button variant="link" size="sm" className="p-0 h-auto text-primary mt-2" disabled>View DPPs for {clickedCountryInfo.ADMIN?.substring(0,15) || 'Country'}... (Conceptual)</Button>
           </CardContent>
         </Card>
@@ -333,12 +383,14 @@ export default function GlobeV2Page() {
         <Info className="inline h-3 w-3 mr-1" />
         {countryFilter === 'all' ? 'EU: Dark Blue | Non-EU: Grey.' : 
          countryFilter === 'eu' ? 'Displaying EU Countries.' : 
-         countryFilter === 'supplyChain' && selectedProduct ? `Displaying Supply Chain for ${selectedProduct}.` :
-         'Select a product to view its supply chain.'
+         countryFilter === 'supplyChain' && selectedProduct ? `Displaying Focus Area for ${selectedProduct}.` :
+         'Select a product to view its focus area.'
         }
-        {selectedProduct && highlightedCountries.length > 0 && ` Supply Chain: Orange/Amber. Arcs: Yellow.`}
+        {selectedProduct && highlightedCountries.length > 0 && ` Highlighted: Amber/Orange.`}
+        {arcsData.length > 0 && (arcsData[0].color === '#3B82F6' ? ` Transit Arc: Blue.` : ` Supply Arc(s): Orange.`)}
       </div>
     </div>
   </>
   );
 }
+

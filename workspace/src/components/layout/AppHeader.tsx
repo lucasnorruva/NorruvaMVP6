@@ -1,7 +1,8 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react'; // Added useState, useEffect
+import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation'; // Import useRouter
 import { SidebarTrigger } from "@/components/ui/sidebar/Sidebar";
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { Button } from "@/components/ui/button";
@@ -36,6 +37,17 @@ interface AppNotification {
   time: string;
 }
 
+// Define roleDashboardPaths here for navigation
+const roleDashboardPaths: Record<UserRole, string> = {
+  admin: "/admin-dashboard",
+  manufacturer: "/manufacturer-dashboard",
+  supplier: "/supplier-dashboard",
+  retailer: "/retailer-dashboard",
+  recycler: "/recycler-dashboard",
+  verifier: "/verifier-dashboard",
+  service_provider: "/service-provider-dashboard",
+};
+
 const generateMockNotifications = (role: UserRole): AppNotification[] => {
   const now = Date.now();
   const baseNotifications: AppNotification[] = [
@@ -68,7 +80,6 @@ const generateMockNotifications = (role: UserRole): AppNotification[] => {
         { id: `ret_recall_${now+1}`, title: "Product Safety Alert (Mock)", description: "Minor update for 'Product Y' related to packaging information. No action required for sold units.", time: "1d ago" },
         ...baseNotifications.slice(0,2),
       ];
-    // Add service_provider case
     case 'service_provider':
       return [
         { id: `sp_job_${now}`, title: "New Service Job Assigned", description: "Product 'EcoCool Fridge Z100' requires urgent diagnostic. Check schedule.", time: "5m ago"},
@@ -80,15 +91,15 @@ const generateMockNotifications = (role: UserRole): AppNotification[] => {
   }
 };
 
-// Helper function to format role names for display
 const formatRoleNameForDisplay = (role: UserRole): string => {
   return role
-    .split('_') // Split by underscore
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1)) // Capitalize each word
-    .join(' '); // Join with space
+    .split('_') 
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1)) 
+    .join(' '); 
 };
 
 export default function AppHeader() {
+  const router = useRouter(); // Initialize useRouter
   const { isMobile } = useSidebar(); 
   const { currentRole, setCurrentRole, availableRoles } = useRole();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -100,6 +111,14 @@ export default function AppHeader() {
 
   const handleLogout = () => {
     alert("Mock Logout: User logged out!");
+  };
+
+  const handleRoleChange = (newRoleValue: string) => {
+    const newRole = newRoleValue as UserRole;
+    setCurrentRole(newRole);
+    if (roleDashboardPaths[newRole]) {
+      router.push(roleDashboardPaths[newRole]);
+    }
   };
 
   return (
@@ -130,8 +149,8 @@ export default function AppHeader() {
       <div className="flex items-center gap-3 md:gap-4"> 
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-muted-foreground" />
-          <Select value={currentRole} onValueChange={(value) => setCurrentRole(value as UserRole)}>
-            <SelectTrigger className="w-[130px] sm:w-[160px] h-9 text-sm focus:ring-primary"> {/* Increased width slightly for "Service Provider" */}
+          <Select value={currentRole} onValueChange={handleRoleChange}> {/* Updated onValueChange */}
+            <SelectTrigger className="w-[130px] sm:w-[160px] h-9 text-sm focus:ring-primary"> 
               <SelectValue placeholder="Select Role" />
             </SelectTrigger>
             <SelectContent>

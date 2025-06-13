@@ -3,24 +3,6 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import {
-  LayoutDashboard,
-  Package,
-  ScanLine,
-  ShieldCheck,
-  FileText,
-  Settings,
-  Bot,
-  Info,
-  Code2,
-  LineChart,
-  ListChecks,
-  BarChartHorizontal,
-  ClipboardList,
-  Globe2,
-  Users,
-  Fingerprint
-} from "lucide-react";
 import { Logo } from "@/components/icons/Logo";
 import { SidebarHeader, SidebarContent, SidebarFooter } from "@/components/ui/sidebar/Sidebar";
 import { SidebarMenu } from "@/components/ui/sidebar/SidebarMenu";
@@ -28,57 +10,42 @@ import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar/Side
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
-
-const navItems = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/dpp-live-dashboard", label: "Live DPPs", icon: LineChart },
-  { href: "/products", label: "Products", icon: Package },
-  { href: "/products/new", label: "Add Product", icon: ScanLine },
-  { href: "/suppliers", label: "Suppliers", icon: Users },
-  // Sustainability Group
-  { href: "/sustainability", label: "Sustainability Reporting", icon: FileText },
-  { href: "/sustainability/compare", label: "Compare Sustainability", icon: BarChartHorizontal },
-  // Compliance Group
-  { href: "/compliance/pathways", label: "Compliance Pathways", icon: ListChecks },
-  { href: "/copilot", label: "AI Co-Pilot", icon: Bot },
-  { href: "/gdpr", label: "GDPR Compliance", icon: ShieldCheck },
-  // Specialized Views
-  { href: "/blockchain", label: "Blockchain Management", icon: Fingerprint },
-  { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList },
-  { href: "/dpp-global-tracker-v2", label: "DPP Global Tracker v2", icon: Globe2 },
-];
-
-const secondaryNavItems = [
-  { href: "/developer", label: "Developer Portal", icon: Code2 },
-  { href: "/audit-log", label: "Audit Log", icon: ListChecks },
-  { href: "/settings", label: "Settings", icon: Settings },
-];
+import { useRole } from "@/contexts/RoleContext";
+import { ALL_NAV_ITEMS, type NavItemConfig } from "@/config/navConfig"; // Import new config
 
 export default function AppSidebarContent() {
   const pathname = usePathname();
   const { state: sidebarState, isMobile } = useSidebar();
+  const { currentRole } = useRole();
+
+  const accessibleNavItems = ALL_NAV_ITEMS.filter(item => item.requiredRoles.includes(currentRole));
+
+  const mainNavItems = accessibleNavItems.filter(item => item.group !== 'secondary');
+  const secondaryNavItems = accessibleNavItems.filter(item => item.group === 'secondary');
 
   const commonButtonClass = (href: string) => {
     let isActive: boolean;
 
-    // Handle specific overrides first
     if (href === "/dashboard") {
-      isActive = (pathname === href);
+      // Special handling for dashboard link, it's active if any role-specific dashboard is active
+      const roleDashboardPaths = {
+        admin: "/admin-dashboard",
+        manufacturer: "/manufacturer-dashboard",
+        supplier: "/supplier-dashboard",
+        retailer: "/retailer-dashboard",
+        recycler: "/recycler-dashboard",
+        verifier: "/verifier-dashboard",
+      };
+      isActive = pathname === href || Object.values(roleDashboardPaths).includes(pathname);
     } else if (href === "/products") {
-      // Active if on /products OR /products/* (excluding /products/new)
       isActive = (pathname === href || (pathname.startsWith(href + "/") && !pathname.endsWith("/new")));
     } else if (href === "/compliance/pathways") {
-      // Active if on /compliance/pathways OR /compliance/pathways/*
       isActive = pathname.startsWith(href);
     } else if (href === "/sustainability") {
-      // Active only if exactly on /sustainability, not its sub-pages like /sustainability/compare
       isActive = (pathname === href);
     } else if (href === "/sustainability/compare") {
-      // Exact match for /sustainability/compare
       isActive = (pathname === href);
     } else {
-      // General rule for all other links (including /developer, /settings, /products/new, /suppliers etc.)
-      // Parent link is active if current path starts with the parent's href.
       isActive = pathname.startsWith(href);
     }
 
@@ -111,7 +78,7 @@ export default function AppSidebarContent() {
       </SidebarHeader>
       <SidebarContent className="flex-1 py-2">
         <SidebarMenu className="px-2 space-y-1">
-          {navItems.map((item) => {
+          {mainNavItems.map((item) => {
             const { className, isActive } = commonButtonClass(item.href);
             return (
               <SidebarMenuItem key={item.href}>

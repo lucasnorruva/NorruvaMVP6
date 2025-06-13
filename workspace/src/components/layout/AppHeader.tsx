@@ -106,9 +106,7 @@ export default function AppHeader() {
   const handleRoleChange = (newRoleValue: string) => {
     const newRole = newRoleValue as UserRole;
     setCurrentRole(newRole); 
-    if (roleDashboardPaths[newRole]) {
-      router.push(roleDashboardPaths[newRole]); 
-    }
+    router.push('/dashboard'); // Always navigate to the generic dashboard page
   };
 
   return (
@@ -129,7 +127,7 @@ export default function AppHeader() {
         ) : (
           <>
             <SidebarTrigger className="hidden md:flex" />
-            <Link href={roleDashboardPaths[currentRole] || "/dashboard"} className="flex items-center text-primary"> {/* Logo links to current role's dashboard */}
+            <Link href="/dashboard" className="flex items-center text-primary"> {/* Logo now links to generic /dashboard */}
               <Logo className="h-8 w-auto" />
             </Link>
           </>

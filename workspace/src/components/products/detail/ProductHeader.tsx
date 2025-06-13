@@ -1,3 +1,4 @@
+
 "use client";
 
 import type { SimpleProductDetail } from "@/types/dpp";
@@ -107,7 +108,7 @@ export default function ProductHeader({ product }: ProductHeaderProps) {
                    {React.cloneElement(ComplianceStatusIconComponent, { className: "mr-1.5 h-4 w-4" })}
                    Compliance: {formattedOverallComplianceText}
                 </Badge>
-                <Button asChild variant="outline" size="sm" className="mt-1">
+                 <Button asChild variant="outline" size="sm" className="mt-1">
                   <Link href={`/dpp-global-tracker-v2?productId=${product.id}`}>
                     <Globe2 className="mr-2 h-4 w-4" /> View on Global Tracker
                   </Link>

@@ -57,3 +57,4 @@ export const ALL_NAV_ITEMS: NavItemConfig[] = [
   { href: "/audit-log", label: "Audit Log", icon: ListChecks, group: 'secondary', requiredRoles: ['admin'] },
   { href: "/settings", label: "Settings", icon: Settings, group: 'secondary', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider'] },
 ];
+

@@ -11,7 +11,8 @@ import { Menu, UserCircle, LogOut, User, Settings as SettingsIcon, Bell } from "
 import AppSidebarContent from "./AppSidebarContent";
 import { Logo } from "@/components/icons/Logo";
 import { useRole, type UserRole } from "@/contexts/RoleContext";
-import { roleDashboardPaths } from '@/config/navConfig'; 
+import { roleDashboardPaths } from '@/config/navConfig';
+// Select components are NOT imported as the selector is removed
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -76,17 +77,17 @@ const generateMockNotifications = (role: UserRole): AppNotification[] => {
 
 const formatRoleNameForDisplay = (role: UserRole): string => {
   return role
-    .split('_') 
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1)) 
-    .join(' '); 
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 };
 
 export default function AppHeader() {
-  const router = useRouter(); 
-  const { isMobile } = useSidebar(); 
-  const { currentRole, setCurrentRole, availableRoles } = useRole();
+  const router = useRouter();
+  const { isMobile } = useSidebar();
+  const { currentRole, setCurrentRole } = useRole(); // setCurrentRole still needed for the login page
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const pathname = usePathname(); 
+  const pathname = usePathname();
 
   useEffect(() => {
     setNotifications(generateMockNotifications(currentRole));
@@ -94,11 +95,13 @@ export default function AppHeader() {
 
   const handleLogout = () => {
     alert("Mock Logout: User logged out!");
-    router.push('/'); 
+    router.push('/');
   };
   
   const currentRoleDashboardPath = roleDashboardPaths[currentRole] || '/dashboard';
 
+  // This function is now primarily for the login page to use the context.
+  // It's not directly called by any UI element within this header anymore for role switching.
   const handleRoleChange = (newRole: UserRole) => {
     setCurrentRole(newRole);
     const targetPath = roleDashboardPaths[newRole];
@@ -109,7 +112,7 @@ export default function AppHeader() {
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b border-border bg-card px-4 backdrop-blur-md md:px-6">
-      <div className="flex items-center gap-2"> 
+      <div className="flex items-center gap-2">
         {isMobile ? (
           <Sheet>
             <SheetTrigger asChild>
@@ -119,7 +122,7 @@ export default function AppHeader() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0 bg-sidebar text-sidebar-foreground w-[--sidebar-width-mobile]">
-              <AppSidebarContent /> 
+              <AppSidebarContent />
             </SheetContent>
           </Sheet>
         ) : (
@@ -132,8 +135,8 @@ export default function AppHeader() {
         )}
       </div>
 
-      <div className="flex items-center gap-3 md:gap-4"> 
-        {/* Role display badge removed */}
+      <div className="flex items-center gap-3 md:gap-4">
+        {/* ROLE SELECTOR DROPDOWN HAS BEEN REMOVED FROM HERE */}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -217,3 +220,4 @@ export default function AppHeader() {
     </header>
   );
 }
+

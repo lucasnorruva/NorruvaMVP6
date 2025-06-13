@@ -9,7 +9,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, ArrowDown, ArrowUp, ChevronsUpDown, PieChart, Edit3, Sigma } from "lucide-react"; // Added Sigma
+import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, ArrowDown, ArrowUp, ChevronsUpDown, PieChart, Edit3, Sigma } from "lucide-react";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,13 +29,13 @@ import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
 import { ProductListRow } from "@/components/products/ProductListRow";
 import { calculateDppCompletenessForList } from "@/utils/dppDisplayUtils";
 import { cn } from "@/lib/utils";
-import { MOCK_DPPS as InitialMockDppsData } from '@/data'; // Use a different name for initial import
+import { MOCK_DPPS as InitialMockDppsData } from '@/data';
 
 const initialMockProductsData: RichMockProduct[] = InitialMockDppsData.map(dpp => ({
   ...dpp,
   productId: dpp.id,
-  status: dpp.metadata.status as RichMockProduct['status'], // Ensure status mapping
-  compliance: dpp.complianceSummary?.overallStatus || "N/A", // Simplified for list, might need better mapping
+  status: dpp.metadata.status as RichMockProduct['status'], 
+  compliance: dpp.complianceSummary?.overallStatus || "N/A", 
   lastUpdated: dpp.metadata.last_updated,
   description: dpp.productDetails?.description,
   imageUrl: dpp.productDetails?.imageUrl,
@@ -54,7 +54,7 @@ const initialMockProductsData: RichMockProduct[] = InitialMockDppsData.map(dpp =
   blockchainIdentifiers: dpp.blockchainIdentifiers,
   authenticationVcId: dpp.authenticationVcId,
   ownershipNftLink: dpp.ownershipNftLink,
-  metadata: dpp.metadata, // Keep the full metadata for onChainStatus
+  metadata: dpp.metadata, 
 }));
 
 
@@ -87,7 +87,7 @@ const SortableTableHead: React.FC<{
 interface ProductWithCompleteness extends DisplayableProduct {
   completeness: { score: number; filledFields: number; totalFields: number; missingFields: string[] };
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; 
-  metadata?: Partial<DigitalProductPassport['metadata']>; // Ensure metadata is available
+  metadata?: Partial<DigitalProductPassport['metadata']>; 
 }
 
 
@@ -119,7 +119,7 @@ export default function ProductsPage() {
       lifecycleEvents: p.lifecycleEvents || [],
       supplyChainLinks: p.supplyChainLinks || [],
       completeness: calculateDppCompletenessForList(p as DisplayableProduct),
-      metadata: p.metadata, // Include metadata for onChainStatus access
+      metadata: p.metadata, 
     }));
 
     const initialDisplayable: ProductWithCompleteness[] = initialMockProductsData.map(mock => ({
@@ -130,7 +130,7 @@ export default function ProductsPage() {
       supplyChainLinks: mock.supplyChainLinks || [],
       completeness: calculateDppCompletenessForList(mock as DisplayableProduct), 
       blockchainIdentifiers: mock.blockchainIdentifiers, 
-      metadata: mock.metadata, // Include metadata for onChainStatus access
+      metadata: mock.metadata, 
     }));
 
     const combined = [
@@ -184,7 +184,7 @@ export default function ProductsPage() {
       if (key === 'completenessScore') {
         return product.completeness.score;
       }
-      if (key === 'metadata.onChainStatus') { // Handle nested key for sorting
+      if (key === 'metadata.onChainStatus') { 
         return product.metadata?.onChainStatus;
       }
       return product[key as keyof ProductWithCompleteness];
@@ -345,4 +345,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-

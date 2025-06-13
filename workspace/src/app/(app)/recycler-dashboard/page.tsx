@@ -2,7 +2,7 @@
 // --- File: src/app/(app)/recycler-dashboard/page.tsx ---
 "use client";
 
-import { RecyclerDashboard as RecyclerDashboardContent } from "@/components/dashboard/RecyclerDashboard";
+import { RecyclerDashboard as RecyclerDashboardContent } from "@/components/dashboard/RecyclerDashboard"; // Ensure this is RecyclerDashboardContent
 
 export default function RecyclerDashboardPage() {
   return (
@@ -12,4 +12,3 @@ export default function RecyclerDashboardPage() {
     </div>
   );
 }
-

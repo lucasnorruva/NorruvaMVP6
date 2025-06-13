@@ -2,7 +2,7 @@
 // --- File: src/app/(app)/service-provider-dashboard/page.tsx ---
 "use client";
 
-import { ServiceProviderDashboard as ServiceProviderDashboardContent } from "@/components/dashboard/ServiceProviderDashboard";
+import { ServiceProviderDashboard as ServiceProviderDashboardContent } from "@/components/dashboard/ServiceProviderDashboard"; // Ensure this is ServiceProviderDashboardContent
 
 export default function ServiceProviderDashboardPage() {
   return (
@@ -12,4 +12,3 @@ export default function ServiceProviderDashboardPage() {
     </div>
   );
 }
-

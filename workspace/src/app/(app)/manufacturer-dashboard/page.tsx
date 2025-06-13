@@ -5,7 +5,7 @@
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import Link from "next/link";
-import { ManufacturerDashboard as ManufacturerDashboardContent } from "@/components/dashboard/ManufacturerDashboard"; 
+import { ManufacturerDashboard as ManufacturerDashboardContent } from "@/components/dashboard/ManufacturerDashboard"; // Ensure this is ManufacturerDashboardContent
 
 export default function ManufacturerDashboardPage() {
   return (
@@ -23,4 +23,3 @@ export default function ManufacturerDashboardPage() {
     </div>
   );
 }
-

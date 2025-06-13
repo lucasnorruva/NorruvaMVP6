@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter } from 'next/navigation'; // Ensure useRouter is from next/navigation
 import { SidebarTrigger } from "@/components/ui/sidebar/Sidebar";
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { Button } from "@/components/ui/button";
@@ -101,19 +101,21 @@ export default function AppHeader() {
 
   const handleLogout = () => {
     alert("Mock Logout: User logged out!");
+    // In a real app, you'd clear session/token and redirect to login page
   };
 
   const handleRoleChange = (newRoleValue: string) => {
     const newRole = newRoleValue as UserRole;
-    setCurrentRole(newRole);
+    setCurrentRole(newRole); // Update context
+    // THEN navigate to the new role's specific dashboard
     if (roleDashboardPaths[newRole]) {
-      router.push(roleDashboardPaths[newRole]);
+      router.push(roleDashboardPaths[newRole]); // Navigate directly
     } else {
-      router.push('/dashboard'); // Fallback if a specific dashboard path isn't defined
+      router.push('/dashboard'); // Fallback, though DashboardRedirectPage should handle it
     }
   };
   
-  const currentDashboardPath = roleDashboardPaths[currentRole] || '/dashboard';
+  const currentRoleDashboardPath = roleDashboardPaths[currentRole] || '/dashboard';
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b border-border bg-card px-4 backdrop-blur-md md:px-6">
@@ -133,7 +135,7 @@ export default function AppHeader() {
         ) : (
           <>
             <SidebarTrigger className="hidden md:flex" />
-            <Link href={currentDashboardPath} className="flex items-center text-primary">
+            <Link href={currentRoleDashboardPath} className="flex items-center text-primary">
               <Logo className="h-8 w-auto" />
             </Link>
           </>
@@ -239,4 +241,3 @@ export default function AppHeader() {
     </header>
   );
 }
-

@@ -2,7 +2,7 @@
 // --- File: src/app/(app)/verifier-dashboard/page.tsx ---
 "use client";
 
-import { VerifierDashboard as VerifierDashboardContent } from "@/components/dashboard/VerifierDashboard";
+import { VerifierDashboard as VerifierDashboardContent } from "@/components/dashboard/VerifierDashboard"; // Ensure this is VerifierDashboardContent
 
 export default function VerifierDashboardPage() {
   return (
@@ -12,4 +12,3 @@ export default function VerifierDashboardPage() {
     </div>
   );
 }
-

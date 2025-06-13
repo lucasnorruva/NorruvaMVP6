@@ -3,10 +3,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { PlusCircle, Settings } from "lucide-react";
+import { PlusCircle } from "lucide-react"; // Removed unused Settings icon
 import Link from "next/link";
 import { RegulationUpdatesCard } from "@/components/dashboard/RegulationUpdatesCard";
-import { AdminDashboardOverview } from "@/components/dashboard/AdminDashboardOverview";
+import { AdminDashboardOverview } from "@/components/dashboard/AdminDashboardOverview"; // Ensure this is the correct Admin-specific overview
 import { AdminQuickActions } from "@/components/dashboard/AdminQuickActions";
 import { PlatformHealthStatsCard } from "@/components/dashboard/PlatformHealthStatsCard";
 import AdminProductsAttentionCard from "@/components/dashboard/AdminProductsAttentionCard";
@@ -24,7 +24,7 @@ export default function AdminDashboardPage() {
           </Link>
         </Button>
       </div>
-      <AdminDashboardOverview />
+      <AdminDashboardOverview /> 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <AdminQuickActions />
         <AdminProductsAttentionCard /> 
@@ -37,4 +37,3 @@ export default function AdminDashboardPage() {
     </div>
   );
 }
-

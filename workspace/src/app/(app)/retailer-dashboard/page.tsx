@@ -2,7 +2,7 @@
 // --- File: src/app/(app)/retailer-dashboard/page.tsx ---
 "use client";
 
-import { RetailerDashboard as RetailerDashboardContent } from "@/components/dashboard/RetailerDashboard";
+import { RetailerDashboard as RetailerDashboardContent } from "@/components/dashboard/RetailerDashboard"; // Ensure this is RetailerDashboardContent
 
 export default function RetailerDashboardPage() {
   return (
@@ -12,4 +12,3 @@ export default function RetailerDashboardPage() {
     </div>
   );
 }
-

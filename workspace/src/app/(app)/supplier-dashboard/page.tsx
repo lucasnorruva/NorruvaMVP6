@@ -2,7 +2,7 @@
 // --- File: src/app/(app)/supplier-dashboard/page.tsx ---
 "use client";
 
-import { SupplierDashboard as SupplierDashboardContent } from "@/components/dashboard/SupplierDashboard";
+import { SupplierDashboard as SupplierDashboardContent } from "@/components/dashboard/SupplierDashboard"; // Ensure this is SupplierDashboardContent
 
 export default function SupplierDashboardPage() {
   return (
@@ -12,4 +12,3 @@ export default function SupplierDashboardPage() {
     </div>
   );
 }
-

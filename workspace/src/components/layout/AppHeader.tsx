@@ -105,9 +105,15 @@ export default function AppHeader() {
 
   const handleRoleChange = (newRoleValue: string) => {
     const newRole = newRoleValue as UserRole;
-    setCurrentRole(newRole); 
-    router.push('/dashboard'); // Always navigate to the generic dashboard page
+    setCurrentRole(newRole);
+    if (roleDashboardPaths[newRole]) {
+      router.push(roleDashboardPaths[newRole]);
+    } else {
+      router.push('/dashboard'); // Fallback if a specific dashboard path isn't defined
+    }
   };
+  
+  const currentDashboardPath = roleDashboardPaths[currentRole] || '/dashboard';
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b border-border bg-card px-4 backdrop-blur-md md:px-6">
@@ -127,7 +133,7 @@ export default function AppHeader() {
         ) : (
           <>
             <SidebarTrigger className="hidden md:flex" />
-            <Link href="/dashboard" className="flex items-center text-primary"> {/* Logo now links to generic /dashboard */}
+            <Link href={currentDashboardPath} className="flex items-center text-primary">
               <Logo className="h-8 w-auto" />
             </Link>
           </>
@@ -233,3 +239,4 @@ export default function AppHeader() {
     </header>
   );
 }
+

@@ -31,7 +31,7 @@ export const roleDashboardPaths: Record<UserRole, string> = {
 
 export const ALL_NAV_ITEMS: NavItemConfig[] = [
   // Main Group
-  // The href for "Dashboard" will be dynamically adjusted in AppSidebarContent
+  // The href for "Dashboard" will be dynamically adjusted in AppSidebarContent to point to the role-specific dashboard
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, group: 'main', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider'] },
   { href: "/dpp-live-dashboard", label: "Live DPPs", icon: LineChart, group: 'main', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider'] },
   { href: "/products", label: "Products", icon: Package, group: 'main', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier'] },
@@ -57,3 +57,4 @@ export const ALL_NAV_ITEMS: NavItemConfig[] = [
   { href: "/audit-log", label: "Audit Log", icon: ListChecks, group: 'secondary', requiredRoles: ['admin'] },
   { href: "/settings", label: "Settings", icon: Settings, group: 'secondary', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider'] },
 ];
+

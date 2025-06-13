@@ -11,7 +11,7 @@ import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useRole } from "@/contexts/RoleContext";
-import { ALL_NAV_ITEMS, roleDashboardPaths, type NavItemConfig } from "@/config/navConfig"; // Import roleDashboardPaths
+import { ALL_NAV_ITEMS, roleDashboardPaths, type NavItemConfig } from "@/config/navConfig"; 
 
 export default function AppSidebarContent() {
   const pathname = usePathname();
@@ -27,8 +27,7 @@ export default function AppSidebarContent() {
     let isActive: boolean;
 
     if (isDashboardLink) {
-      // For the dynamic dashboard link, check if current path matches any of the role-specific dashboard paths or the generic /dashboard
-      isActive = pathname === href || Object.values(roleDashboardPaths).includes(pathname) || pathname === "/dashboard";
+      isActive = pathname === roleDashboardPaths[currentRole];
     } else if (href === "/products") {
       isActive = (pathname === href || (pathname.startsWith(href + "/") && !pathname.endsWith("/new")));
     } else if (href === "/compliance/pathways") {
@@ -51,7 +50,7 @@ export default function AppSidebarContent() {
   };
 
   const commonIconClass = cn("h-5 w-5", sidebarState === 'expanded' || isMobile ? "mr-3" : "mr-0");
-  const currentRoleDashboardPath = roleDashboardPaths[currentRole] || "/dashboard";
+  const currentRoleDashboardPath = roleDashboardPaths[currentRole] || "/dashboard"; // Fallback to generic
 
   return (
     <>
@@ -71,11 +70,12 @@ export default function AppSidebarContent() {
         <SidebarMenu className="px-2 space-y-1">
           {mainNavItems.map((item) => {
             const isDashboardItem = item.label === "Dashboard";
+            // Use the centrally defined path for the current role's dashboard
             const itemHref = isDashboardItem ? currentRoleDashboardPath : item.href;
             const { className, isActive } = commonButtonClass(itemHref, isDashboardItem);
             
             return (
-              <SidebarMenuItem key={item.label}> {/* Use item.label for key if href can change */}
+              <SidebarMenuItem key={item.label}> 
                 <Link href={itemHref} asChild>
                   <SidebarMenuButton
                     className={className}
@@ -116,3 +116,4 @@ export default function AppSidebarContent() {
     </>
   );
 }
+

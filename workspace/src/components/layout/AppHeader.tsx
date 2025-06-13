@@ -2,16 +2,17 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } // Removed usePathname as it's not used after simplification
+import { useRouter } 
 from 'next/navigation';
 import { SidebarTrigger } from "@/components/ui/sidebar/Sidebar";
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, UserCircle, LogOut, User, Settings as SettingsIcon, Bell } from "lucide-react";
+import { Menu, UserCircle, LogOut, User, Settings as SettingsIcon, Bell, Briefcase } from "lucide-react"; // Added Briefcase for role
 import AppSidebarContent from "./AppSidebarContent";
 import { Logo } from "@/components/icons/Logo";
-// Removed useRole and roleDashboardPaths as role switching is not handled here
+import { useRole, type UserRole } from '@/contexts/RoleContext'; // Import useRole
+import { roleDashboardPaths } from '@/config/navConfig'; // Import roleDashboardPaths
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,31 +32,69 @@ interface AppNotification {
   time: string;
 }
 
-const generateMockNotifications = (): AppNotification[] => { // Removed role parameter
+const generateMockNotifications = (role: UserRole): AppNotification[] => {
   const now = Date.now();
-  // Simplified base notifications, not role-specific for this header version
-  return [
+  const baseNotifications: AppNotification[] = [
     { id: `gen_sys_${now+1}`, title: "Platform Update v1.2 Deployed", description: "New features include enhanced reporting and faster DPP generation. See changelog for details.", time: "2h ago" },
     { id: `gen_sec_${now+2}`, title: "Security Tip: Rotate API Keys", description: "Remember to periodically rotate your API keys for enhanced security.", time: "3d ago" },
-    { id: `generic_info_${now+3}`, title: "Welcome to Norruva", description: "Explore the platform's features and capabilities.", time: "1w ago" },
   ];
+
+  // Simplified example, can be expanded with role-specific notifications
+   const roleSpecificMessages: Record<UserRole, AppNotification[]> = {
+    admin: [
+        { id: `admin_rev_${now}`, title: "Review Queue Update", description: "5 new products are awaiting compliance review.", time: "15m ago" },
+        { id: `admin_sys_${now+1}`, title: "System Health: Optimal", description: "All platform services are operating normally.", time: "1h ago" },
+    ],
+    manufacturer: [
+        { id: `mfg_comp_${now}`, title: "ESPR Guidance Updated", description: "New guidance for 'Textiles' category published.", time: "30m ago" },
+        { id: `mfg_sup_${now+1}`, title: "Supplier 'EcoParts Ltd.' Update", description: "Material certs updated.", time: "4h ago" },
+    ],
+    supplier: [
+        { id: `sup_req_${now}`, title: "Data Request: Acme Corp", description: "Update specs for 'Component Alpha-7'.", time: "10m ago" },
+    ],
+    retailer: [
+        { id: `ret_dpp_${now}`, title: "New Product DPP Available", description: "DPP for 'Smart Toaster Pro X' published.", time: "1h ago" },
+    ],
+    recycler: [
+        { id: `rec_mat_${now}`, title: "Material Alert: High PET Volume", description: "Increased PET plastic available for processing.", time: "1d ago" },
+    ],
+    verifier: [
+        { id: `ver_audit_${now}`, title: "Audit Reminder: DPP005", description: "Scheduled audit for DPP005 is approaching.", time: "2d ago" },
+    ],
+    service_provider: [
+        { id: `serv_job_${now}`, title: "New Service Job Assigned", description: "Repair required for product PROD-XYZ in Berlin.", time: "5m ago" },
+    ],
+  };
+
+  return [...(roleSpecificMessages[role] || []), ...baseNotifications.slice(0, 2)];
 };
+
 
 export default function AppHeader() {
   const router = useRouter();
   const { isMobile } = useSidebar();
+  const { currentRole, setCurrentRole, availableRoles } = useRole(); // Get currentRole from context
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
 
   useEffect(() => {
-    setNotifications(generateMockNotifications());
-  }, []);
+    setNotifications(generateMockNotifications(currentRole));
+  }, [currentRole]);
 
+  const currentRoleDashboardPath = roleDashboardPaths[currentRole] || '/dashboard'; // Get role-specific path
 
   const handleLogout = () => {
     alert("Mock Logout: User logged out!");
+    // In a real app, you'd clear session/token and then redirect
     router.push('/'); // Redirect to homepage after logout
   };
   
+  const formatRoleNameForDisplay = (role: UserRole): string => {
+    return role
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b border-border bg-card px-4 backdrop-blur-md md:px-6">
       <div className="flex items-center gap-2">
@@ -74,13 +113,20 @@ export default function AppHeader() {
         ) : (
           <>
             <SidebarTrigger className="hidden md:flex" />
-            {/* Logo now links to a generic /dashboard, redirection will handle role */}
-            <Link href="/dashboard" className="flex items-center text-primary">
+            {/* Logo now links to the current role's specific dashboard */}
+            <Link href={currentRoleDashboardPath} className="flex items-center text-primary">
               <Logo className="h-8 w-auto" />
             </Link>
           </>
         )}
       </div>
+      
+      {/* Display Current Role */}
+      <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
+        <Briefcase className="h-4 w-4 text-primary" />
+        <span>Viewing as: <span className="font-semibold text-foreground">{formatRoleNameForDisplay(currentRole)}</span></span>
+      </div>
+
 
       <div className="flex items-center gap-3 md:gap-4">
         <DropdownMenu>
@@ -99,9 +145,8 @@ export default function AppHeader() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80 sm:w-96">
-            {/* Notification label is now generic */}
             <DropdownMenuLabel className="flex justify-between items-center">
-              <span>Notifications</span> 
+              <span>Notifications ({formatRoleNameForDisplay(currentRole)})</span>
               {notifications.length > 0 && (
                 <Badge variant="secondary" className="text-xs">{notifications.length} New</Badge>
               )}
@@ -166,3 +211,4 @@ export default function AppHeader() {
     </header>
   );
 }
+

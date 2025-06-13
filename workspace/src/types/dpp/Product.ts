@@ -3,7 +3,7 @@
 // Description: Product related type definitions and mock data.
 
 import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle'; // Ensure IconName is exported or defined if used here
-import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails } from './Compliance';
+import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from './Compliance';
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
@@ -217,8 +217,8 @@ export interface SimpleProductDetail {
   contractAddress?: string;
   tokenId?: string;
   anchorTransactionHash?: string;
-  ebsiStatus?: EbsiVerificationDetails['status'];
-  ebsiVerificationId?: string;
+  ebsiStatus?: EbsiVerificationDetails['status']; 
+  ebsiVerificationId?: string; 
   onChainStatus?: string;
   onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
@@ -349,7 +349,7 @@ export interface PublicProductInfo {
   onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; // Added for detailed battery info
+  batteryRegulation?: BatteryRegulationDetails; 
 }
 
 export interface Supplier {
@@ -402,7 +402,7 @@ export interface DisplayableProduct {
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; // Added for detailed battery info
+  batteryRegulation?: BatteryRegulationDetails; 
 }
 
 export interface AnchorResult {

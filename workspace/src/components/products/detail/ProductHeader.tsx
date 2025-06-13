@@ -7,10 +7,10 @@ import { Card, CardHeader, CardTitle, CardDescription } from "@/components/ui/ca
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { Package, Tag, Building, CheckCircle, AlertTriangle, Info, ShieldCheck, Barcode } from "lucide-react";
+import { Package, Tag, Building, CheckCircle, AlertTriangle, Info, ShieldCheck, Barcode, Globe2 } from "lucide-react"; // Added Globe2 for Global Tracker
 import { getStatusIcon as getComplianceStatusIcon, getStatusBadgeVariant as getComplianceBadgeVariant, getStatusBadgeClasses as getComplianceBadgeClasses } from "@/utils/dppDisplayUtils";
 import React from "react";
-import QrCodeGenerator from "@/components/qr/QrCodeGenerator";
+// QR Code Generator is removed from here as it has its own tab
 
 interface ProductHeaderProps {
   product: SimpleProductDetail;
@@ -61,6 +61,7 @@ export default function ProductHeader({ product }: ProductHeaderProps) {
     <Card className="mb-6 shadow-md">
       <CardHeader>
         <div className="flex flex-col md:flex-row justify-between items-start gap-4">
+            {/* Left Column: Product Info */}
             <div className="flex-grow">
                 <CardTitle className="text-2xl md:text-3xl font-headline text-primary flex items-center">
                     <Package className="mr-3 h-7 w-7" />
@@ -90,6 +91,8 @@ export default function ProductHeader({ product }: ProductHeaderProps) {
                     )}
                 </div>
             </div>
+            
+            {/* Right Column: Status Badges and Global Tracker Button */}
             <div className="flex flex-col items-start md:items-end gap-2 mt-2 md:mt-0 shrink-0">
                 <Badge
                     variant={getProductStatusBadgeVariant(product.status)}
@@ -105,14 +108,11 @@ export default function ProductHeader({ product }: ProductHeaderProps) {
                    {React.cloneElement(ComplianceStatusIconComponent, { className: "mr-1.5 h-4 w-4" })}
                    Compliance: {formattedOverallComplianceText}
                 </Badge>
-            </div>
-            <div className="flex flex-col items-center gap-2 pt-2 md:pt-0">
-              <QrCodeGenerator productId={product.id} />
-              <Button asChild variant="outline" size="sm">
-                <Link href={`/dpp-global-tracker-v2?productId=${product.id}`}>
-                  View on Global Tracker
-                </Link>
-              </Button>
+                <Button asChild variant="outline" size="sm" className="mt-1">
+                  <Link href={`/dpp-global-tracker-v2?productId=${product.id}`}>
+                    <Globe2 className="mr-2 h-4 w-4" /> View on Global Tracker
+                  </Link>
+                </Button>
             </div>
         </div>
       </CardHeader>
@@ -120,3 +120,4 @@ export default function ProductHeader({ product }: ProductHeaderProps) {
   );
 }
     
+

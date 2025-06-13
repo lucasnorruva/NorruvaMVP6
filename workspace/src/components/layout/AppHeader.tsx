@@ -7,18 +7,11 @@ import { SidebarTrigger } from "@/components/ui/sidebar/Sidebar";
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, UserCircle, Users, LogOut, User, Settings as SettingsIcon, Bell } from "lucide-react";
+import { Menu, UserCircle, LogOut, User, Settings as SettingsIcon, Bell } from "lucide-react"; // Removed Users icon
 import AppSidebarContent from "./AppSidebarContent";
 import { Logo } from "@/components/icons/Logo";
 import { useRole, type UserRole } from "@/contexts/RoleContext";
-import { roleDashboardPaths } from '@/config/navConfig'; // Import roleDashboardPaths
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { roleDashboardPaths } from '@/config/navConfig'; 
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -93,29 +86,33 @@ export default function AppHeader() {
   const { isMobile } = useSidebar(); 
   const { currentRole, setCurrentRole, availableRoles } = useRole();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const pathname = usePathname(); // Get current pathname
 
   useEffect(() => {
     setNotifications(generateMockNotifications(currentRole));
   }, [currentRole]);
 
-
   const handleLogout = () => {
     alert("Mock Logout: User logged out!");
-  };
-
-  const handleRoleChange = (newRoleValue: string) => {
-    const newRole = newRoleValue as UserRole;
-    setCurrentRole(newRole); // Update context first
-    
-    const targetPath = roleDashboardPaths[newRole];
-    if (targetPath) {
-      router.push(targetPath); // Then navigate directly to the specific dashboard
-    } else {
-      router.push('/dashboard'); // Fallback
-    }
+    // In a real app, you'd clear session/token and redirect to login page
+    // For now, let's redirect to the homepage which has the role selector
+    router.push('/'); 
   };
   
   const currentRoleDashboardPath = roleDashboardPaths[currentRole] || '/dashboard';
+
+  // This effect handles navigation when currentRole changes from an external source
+  // or if the user lands on a page that doesn't match their current dashboard context.
+  useEffect(() => {
+    const targetPath = roleDashboardPaths[currentRole];
+    if (targetPath && pathname !== targetPath && pathname.includes('dashboard')) {
+      // Only redirect if currently on a dashboard-like page but not the correct one
+      // This avoids redirecting from settings, products, etc., just because role changed.
+      router.push(targetPath);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentRole, pathname, router]); // Removed roleDashboardPaths from deps as it's stable
+
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b border-border bg-card px-4 backdrop-blur-md md:px-6">
@@ -143,21 +140,12 @@ export default function AppHeader() {
       </div>
 
       <div className="flex items-center gap-3 md:gap-4"> 
-        <div className="flex items-center gap-2">
-          <Users className="h-5 w-5 text-muted-foreground" />
-          <Select value={currentRole} onValueChange={handleRoleChange}> 
-            <SelectTrigger className="w-[130px] sm:w-[160px] h-9 text-sm focus:ring-primary"> 
-              <SelectValue placeholder="Select Role" />
-            </SelectTrigger>
-            <SelectContent>
-              {availableRoles.map(role => (
-                <SelectItem key={role} value={role}>
-                  {formatRoleNameForDisplay(role)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+        {/* Role Selector Removed */}
+        {/* The selected role will be displayed elsewhere or simply implied by the dashboard context */}
+        <Badge variant="outline" className="h-9 hidden sm:flex items-center text-sm">
+            Role: <span className="font-semibold ml-1.5">{formatRoleNameForDisplay(currentRole)}</span>
+        </Badge>
+
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

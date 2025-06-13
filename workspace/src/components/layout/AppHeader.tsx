@@ -2,12 +2,12 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation'; // Added usePathname
 import { SidebarTrigger } from "@/components/ui/sidebar/Sidebar";
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, UserCircle, LogOut, User, Settings as SettingsIcon, Bell } from "lucide-react"; // Removed Users icon
+import { Menu, UserCircle, LogOut, User, Settings as SettingsIcon, Bell } from "lucide-react";
 import AppSidebarContent from "./AppSidebarContent";
 import { Logo } from "@/components/icons/Logo";
 import { useRole, type UserRole } from "@/contexts/RoleContext";
@@ -86,7 +86,7 @@ export default function AppHeader() {
   const { isMobile } = useSidebar(); 
   const { currentRole, setCurrentRole, availableRoles } = useRole();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const pathname = usePathname(); // Get current pathname
+  const pathname = usePathname(); 
 
   useEffect(() => {
     setNotifications(generateMockNotifications(currentRole));
@@ -94,25 +94,18 @@ export default function AppHeader() {
 
   const handleLogout = () => {
     alert("Mock Logout: User logged out!");
-    // In a real app, you'd clear session/token and redirect to login page
-    // For now, let's redirect to the homepage which has the role selector
     router.push('/'); 
   };
   
   const currentRoleDashboardPath = roleDashboardPaths[currentRole] || '/dashboard';
 
-  // This effect handles navigation when currentRole changes from an external source
-  // or if the user lands on a page that doesn't match their current dashboard context.
-  useEffect(() => {
-    const targetPath = roleDashboardPaths[currentRole];
-    if (targetPath && pathname !== targetPath && pathname.includes('dashboard')) {
-      // Only redirect if currently on a dashboard-like page but not the correct one
-      // This avoids redirecting from settings, products, etc., just because role changed.
+  const handleRoleChange = (newRole: UserRole) => {
+    setCurrentRole(newRole);
+    const targetPath = roleDashboardPaths[newRole];
+    if (targetPath && pathname !== targetPath) {
       router.push(targetPath);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentRole, pathname, router]); // Removed roleDashboardPaths from deps as it's stable
-
+  };
 
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b border-border bg-card px-4 backdrop-blur-md md:px-6">
@@ -140,12 +133,7 @@ export default function AppHeader() {
       </div>
 
       <div className="flex items-center gap-3 md:gap-4"> 
-        {/* Role Selector Removed */}
-        {/* The selected role will be displayed elsewhere or simply implied by the dashboard context */}
-        <Badge variant="outline" className="h-9 hidden sm:flex items-center text-sm">
-            Role: <span className="font-semibold ml-1.5">{formatRoleNameForDisplay(currentRole)}</span>
-        </Badge>
-
+        {/* Role display badge removed */}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>

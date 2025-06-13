@@ -1,97 +1,285 @@
 
+// --- File: src/components/dashboard/ServiceProviderDashboard.tsx ---
 "use client";
 
+import React, { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
+import { ServiceProviderQuickActionsCard } from "./ServiceProviderQuickActionsCard";
+import { 
+    Wrench, CheckCircle, AlertTriangle, Clock, Search, MoreHorizontal, Eye, MessageSquare, ListChecks, BarChart3,
+    UserCircle, Tool, ArrowUp, ArrowDown, ChevronsUpDown, Filter as FilterIcon, Settings, PackageSearch
+} from "lucide-react";
 import Link from "next/link";
-import { Wrench, ShieldCheck, Search, ListChecks, Clock, History } from "lucide-react";
+import { cn } from '@/lib/utils';
+
+interface ServiceJob {
+  id: string;
+  productId: string;
+  productName: string;
+  customerName: string;
+  location: string;
+  issue: string;
+  status: 'Scheduled' | 'In Progress' | 'Completed' | 'On Hold' | 'Cancelled';
+  priority: 'High' | 'Medium' | 'Low';
+  scheduledDate: string; // ISO string
+  assignedTechnician?: string;
+  notes?: string;
+}
+
+const mockServiceJobs: ServiceJob[] = [
+  { id: "JOB001", productId: "PROD001", productName: "EcoFriendly Refrigerator X2000", customerName: "Alice Smith", location: "123 Main St, Anytown", issue: "Cooling unit malfunction, not cooling below 10°C.", status: "Scheduled", priority: "High", scheduledDate: "2024-08-15T10:00:00Z", assignedTechnician: "John Doe" },
+  { id: "JOB002", productId: "PROD005", productName: "High-Performance EV Battery", customerName: "Bob Johnson Motors", location: "456 Industrial Rd, Techville", issue: "Requires full diagnostic check and State of Health (SoH) report.", status: "In Progress", priority: "Medium", scheduledDate: "2024-08-10T14:00:00Z", assignedTechnician: "Jane Roe" },
+  { id: "JOB003", productId: "USER_PROD123456", productName: "Custom Craft Wooden Chair", customerName: "Charlie Brown Furnishings", location: "789 Artisan Way, Craftburg", issue: "One leg attachment loose, requires re-securing.", status: "Completed", priority: "Low", scheduledDate: "2024-08-05T09:00:00Z", assignedTechnician: "John Doe" },
+  { id: "JOB004", productId: "PROD002", productName: "Smart LED Bulb (4-Pack)", customerName: "Diana Prince Home", location: "101 Century Ave, Metrocity", issue: "Connectivity issues with smart home hub.", status: "On Hold", priority: "Medium", scheduledDate: "2024-08-12T11:00:00Z", notes: "Waiting for customer to provide hub details." },
+  { id: "JOB005", productId: "PROD001", productName: "EcoFriendly Refrigerator X2000", customerName: "Edward Green", location: "22 Park Lane, Greenside", issue: "Annual maintenance check.", status: "Scheduled", priority: "Low", scheduledDate: "2024-08-20T13:00:00Z" },
+  { id: "JOB006", productId: "DPP006", productName: "EcoSmart Insulation Panel R50", customerName: "BuildIt Construction", location: "Site Alpha, New Development Zone", issue: "Post-installation inspection and thermal performance check.", status: "Scheduled", priority: "High", scheduledDate: "2024-08-18T09:00:00Z", assignedTechnician: "Jane Roe" },
+];
+
+interface JobFilters {
+  search: string;
+  status: 'All' | ServiceJob['status'];
+  priority: 'All' | ServiceJob['priority'];
+  dateFrom: Date | undefined;
+  dateTo: Date | undefined;
+}
+
+type SortableJobKeys = keyof Pick<ServiceJob, 'id' | 'productName' | 'customerName' | 'status' | 'priority' | 'scheduledDate'>;
+
+interface JobSortConfig {
+  key: SortableJobKeys | null;
+  direction: 'ascending' | 'descending' | null;
+}
+
+const SortableJobHeader: React.FC<{ columnKey: SortableJobKeys, title: string, onSort: (key: SortableJobKeys) => void, sortConfig: JobSortConfig, className?: string }> = 
+  ({ columnKey, title, onSort, sortConfig, className }) => {
+  const isSorted = sortConfig.key === columnKey;
+  const Icon = isSorted ? (sortConfig.direction === 'ascending' ? ArrowUp : ArrowDown) : ChevronsUpDown;
+  return (
+    <TableHead className={cn("cursor-pointer hover:bg-muted/50 transition-colors", className)} onClick={() => onSort(columnKey)}>
+      <div className="flex items-center gap-1">
+        {title}
+        <Icon className={cn("h-3.5 w-3.5", isSorted ? "text-primary" : "text-muted-foreground/70")} />
+      </div>
+    </TableHead>
+  );
+};
+
 
 export const ServiceProviderDashboard = () => {
-  const mockServiceJobs = [
-    { id: "JOB001", productId: "PROD001", productName: "EcoFriendly Refrigerator X2000", issue: "Cooling unit malfunction", status: "Scheduled", scheduledDate: "2024-08-15" },
-    { id: "JOB002", productId: "PROD005", productName: "High-Performance EV Battery", issue: "Diagnostic check required", status: "In Progress", scheduledDate: "2024-08-10" },
-    { id: "JOB003", productId: "USER_PROD123456", productName: "Custom Craft Wooden Chair", issue: "Leg re-attachment", status: "Completed", scheduledDate: "2024-08-05" },
-  ];
+  const [filters, setFilters] = useState<JobFilters>({ search: '', status: 'All', priority: 'All', dateFrom: undefined, dateTo: undefined });
+  const [sortConfig, setSortConfig] = useState<JobSortConfig>({ key: 'scheduledDate', direction: 'ascending' });
 
-  const quickActions = [
-    { label: "View Assigned Jobs", href: "#", icon: ListChecks, description: "See your current service tasks." },
-    { label: "Search Product DPPs", href: "/dpp-live-dashboard", icon: Search, description: "Access technical info & repair guides." },
-    { label: "Update Service Records", href: "#", icon: History, description: "Log completed maintenance & repairs." },
-    { label: "Check Compliance Updates", href: "/compliance/pathways", icon: ShieldCheck, description: "Stay informed on product regulations." },
+  const handleSort = (key: SortableJobKeys) => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const getStatusBadgeStyle = (status: ServiceJob['status']) => {
+    switch (status) {
+      case 'Scheduled': return "bg-blue-100 text-blue-700 border-blue-300";
+      case 'In Progress': return "bg-yellow-100 text-yellow-700 border-yellow-300";
+      case 'Completed': return "bg-green-100 text-green-700 border-green-300";
+      case 'On Hold': return "bg-orange-100 text-orange-700 border-orange-300";
+      case 'Cancelled': return "bg-red-100 text-red-700 border-red-300";
+      default: return "bg-muted text-muted-foreground";
+    }
+  };
+
+  const getPriorityBadgeStyle = (priority: ServiceJob['priority']) => {
+    switch (priority) {
+      case 'High': return "bg-destructive/20 text-destructive border-destructive/30";
+      case 'Medium': return "bg-warning/20 text-orange-600 border-orange-500/30";
+      case 'Low': return "bg-accent/20 text-accent-foreground border-accent/30";
+      default: return "bg-muted text-muted-foreground";
+    }
+  };
+
+  const filteredAndSortedJobs = useMemo(() => {
+    let tempJobs = [...mockServiceJobs];
+    if (filters.search) {
+      const searchLower = filters.search.toLowerCase();
+      tempJobs = tempJobs.filter(job =>
+        job.productName.toLowerCase().includes(searchLower) ||
+        job.customerName.toLowerCase().includes(searchLower) ||
+        job.issue.toLowerCase().includes(searchLower) ||
+        job.id.toLowerCase().includes(searchLower)
+      );
+    }
+    if (filters.status !== 'All') {
+      tempJobs = tempJobs.filter(job => job.status === filters.status);
+    }
+    if (filters.priority !== 'All') {
+      tempJobs = tempJobs.filter(job => job.priority === filters.priority);
+    }
+    if (filters.dateFrom) {
+        const from = new Date(filters.dateFrom); from.setHours(0,0,0,0);
+        tempJobs = tempJobs.filter(job => new Date(job.scheduledDate) >= from);
+    }
+    if (filters.dateTo) {
+        const to = new Date(filters.dateTo); to.setHours(23,59,59,999);
+        tempJobs = tempJobs.filter(job => new Date(job.scheduledDate) <= to);
+    }
+    
+    if (sortConfig.key && sortConfig.direction) {
+        tempJobs.sort((a,b) => {
+            let valA = a[sortConfig.key!];
+            let valB = b[sortConfig.key!];
+            if (sortConfig.key === 'scheduledDate') {
+                valA = new Date(valA as string).getTime();
+                valB = new Date(valB as string).getTime();
+            }
+            if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
+            if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
+            return 0;
+        });
+    }
+
+    return tempJobs;
+  }, [filters, sortConfig]);
+
+  const performanceKPIs = [
+    { title: "Avg. Completion Time", value: "4.2h", icon: Clock, trend: "-0.3h", trendDirection: "down" as const, description: "Past 30 days" },
+    { title: "First-Time Fix Rate", value: "92%", icon: CheckCircle, trend: "+1.5%", trendDirection: "up" as const, description: "Target: 90%" },
+    { title: "Customer Satisfaction (CSAT)", value: "4.8/5", icon: UserCircle, trend: "+0.1", trendDirection: "up" as const, description: "Based on recent surveys" },
   ];
 
   return (
     <div className="space-y-6">
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="font-headline flex items-center"><Wrench className="mr-2 text-primary"/>Service & Maintenance Hub</CardTitle>
-          <CardDescription>Manage service jobs, access product information, and log maintenance activities.</CardDescription>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <Card className="bg-muted/50">
-            <CardHeader><CardTitle className="text-lg">Open Service Jobs</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold text-orange-500">{mockServiceJobs.filter(j => j.status !== 'Completed').length}</p></CardContent>
-          </Card>
-          <Card className="bg-muted/50">
-            <CardHeader><CardTitle className="text-lg">Completed This Week</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold text-green-600">5</p></CardContent>
-          </Card>
-          <Card className="bg-muted/50">
-            <CardHeader><CardTitle className="text-lg">Upcoming Critical Maintenance</CardTitle></CardHeader>
-            <CardContent><p className="text-3xl font-bold">2</p></CardContent>
-          </Card>
-        </CardContent>
-      </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <MetricCard title="Active Jobs" value={mockServiceJobs.filter(j => j.status === 'In Progress' || j.status === 'Scheduled').length} icon={Wrench} />
+        <MetricCard title="Jobs Due Today" value={mockServiceJobs.filter(j => new Date(j.scheduledDate).toDateString() === new Date().toDateString() && j.status !== 'Completed' && j.status !== 'Cancelled').length} icon={CalendarDays} trendDirection="neutral" />
+        <MetricCard title="High Priority Open" value={mockServiceJobs.filter(j => j.priority === 'High' && (j.status === 'Scheduled' || j.status === 'In Progress')).length} icon={AlertTriangle} trendDirection="up" />
+        <MetricCard title="Completed This Month" value={mockServiceJobs.filter(j => j.status === 'Completed' && new Date(j.scheduledDate).getMonth() === new Date().getMonth()).length} icon={CheckCircle} />
+      </div>
+      
+      <ServiceProviderQuickActionsCard />
 
       <Card className="shadow-lg">
         <CardHeader>
-          <CardTitle className="font-headline flex items-center"><ListChecks className="mr-2 h-5 w-5 text-primary" />Assigned Service Jobs</CardTitle>
-          <CardDescription>Your current and upcoming service assignments.</CardDescription>
+          <CardTitle className="font-headline flex items-center"><ListChecks className="mr-2 h-5 w-5 text-primary" />Service Jobs Overview</CardTitle>
+          <CardDescription>Manage and track all assigned service jobs.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-3">
-          {mockServiceJobs.map(job => (
-            <div key={job.id} className="p-3 border rounded-md bg-background hover:shadow-sm transition-shadow">
-              <div className="flex justify-between items-start">
-                <div>
-                  <Link href={`/products/${job.productId}`} className="font-medium text-primary hover:underline">{job.productName} ({job.productId})</Link>
-                  <p className="text-sm text-muted-foreground">{job.issue}</p>
-                </div>
-                <Badge variant={job.status === 'Completed' ? 'default' : job.status === 'In Progress' ? 'outline' : 'secondary'}
-                  className={job.status === 'Completed' ? 'bg-green-100 text-green-700' : job.status === 'In Progress' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}
-                >
-                  {job.status}
-                </Badge>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1 flex items-center">
-                <Clock className="h-3 w-3 mr-1" /> Scheduled: {new Date(job.scheduledDate).toLocaleDateString()}
-              </p>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 p-4 border rounded-md bg-muted/50 items-end">
+            <div className="lg:col-span-2">
+              <Label htmlFor="jobSearch" className="text-xs">Search (Product, Customer, Issue, ID)</Label>
+              <Input id="jobSearch" placeholder="Type to search..." value={filters.search} onChange={e => setFilters(prev => ({...prev, search: e.target.value}))}/>
             </div>
-          ))}
-          {mockServiceJobs.length === 0 && <p className="text-muted-foreground">No service jobs currently assigned.</p>}
+            <div>
+              <Label htmlFor="jobStatusFilter" className="text-xs">Status</Label>
+              <Select value={filters.status} onValueChange={value => setFilters(prev => ({...prev, status: value as JobFilters['status']}))}>
+                <SelectTrigger id="jobStatusFilter"><SelectValue /></SelectTrigger>
+                <SelectContent>{['All', 'Scheduled', 'In Progress', 'Completed', 'On Hold', 'Cancelled'].map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="jobPriorityFilter" className="text-xs">Priority</Label>
+              <Select value={filters.priority} onValueChange={value => setFilters(prev => ({...prev, priority: value as JobFilters['priority']}))}>
+                <SelectTrigger id="jobPriorityFilter"><SelectValue /></SelectTrigger>
+                <SelectContent>{['All', 'High', 'Medium', 'Low'].map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:gap-2 lg:col-span-1 items-end">
+              <div className="w-full sm:w-1/2">
+                <Label htmlFor="jobDateFrom" className="text-xs">Date From</Label>
+                <DatePicker date={filters.dateFrom} setDate={(date) => setFilters(prev => ({...prev, dateFrom: date}))} placeholder="Start date"/>
+              </div>
+              <div className="w-full sm:w-1/2 mt-2 sm:mt-0">
+                <Label htmlFor="jobDateTo" className="text-xs">Date To</Label>
+                <DatePicker date={filters.dateTo} setDate={(date) => setFilters(prev => ({...prev, dateTo: date}))} placeholder="End date"/>
+              </div>
+            </div>
+          </div>
+
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <SortableJobHeader columnKey="id" title="Job ID" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableJobHeader columnKey="productName" title="Product" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableJobHeader columnKey="customerName" title="Customer" onSort={handleSort} sortConfig={sortConfig} />
+                <TableHead>Location</TableHead>
+                <TableHead className="min-w-[200px]">Issue</TableHead>
+                <SortableJobHeader columnKey="priority" title="Priority" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableJobHeader columnKey="status" title="Status" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableJobHeader columnKey="scheduledDate" title="Scheduled" onSort={handleSort} sortConfig={sortConfig} />
+                <TableHead className="text-right">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredAndSortedJobs.map((job) => (
+                <TableRow key={job.id}>
+                  <TableCell className="font-mono text-xs">{job.id}</TableCell>
+                  <TableCell className="font-medium hover:underline">
+                    <Link href={`/products/${job.productId}`} title={`View DPP for ${job.productName}`}>
+                      {job.productName}
+                    </Link>
+                  </TableCell>
+                  <TableCell>{job.customerName}</TableCell>
+                  <TableCell className="text-xs">{job.location}</TableCell>
+                  <TableCell className="text-xs max-w-xs truncate" title={job.issue}>{job.issue}</TableCell>
+                  <TableCell><Badge className={cn("text-xs", getPriorityBadgeStyle(job.priority))}>{job.priority}</Badge></TableCell>
+                  <TableCell><Badge className={cn("text-xs", getStatusBadgeStyle(job.status))}>{job.status}</Badge></TableCell>
+                  <TableCell className="text-xs">{new Date(job.scheduledDate).toLocaleDateString()}</TableCell>
+                  <TableCell className="text-right">
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                      <DropdownMenuContent align="end">
+                        <DropdownMenuItem onClick={() => alert(`Mock: View details for Job ${job.id}`)}><Eye className="mr-2 h-4 w-4"/>View Details</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => alert(`Mock: Update status for Job ${job.id}`)}><Settings className="mr-2 h-4 w-4"/>Update Status</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => alert(`Mock: Add notes to Job ${job.id}`)}><MessageSquare className="mr-2 h-4 w-4"/>Add Notes</DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </TableCell>
+                </TableRow>
+              ))}
+              {filteredAndSortedJobs.length === 0 && (
+                <TableRow><TableCell colSpan={9} className="text-center py-6 text-muted-foreground">No service jobs match current filters.</TableCell></TableRow>
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 
-       <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="font-headline flex items-center">Quick Actions</CardTitle>
-        </CardHeader>
-        <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {quickActions.map((action) => (
-            <Link key={action.label} href={action.href} passHref legacyBehavior>
-              <a className="block">
-                <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
-                  <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
-                  <div>
-                    <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
-                    <p className="text-xs text-muted-foreground">{action.description}</p>
-                  </div>
-                </Button>
-              </a>
-            </Link>
-          ))}
-        </CardContent>
+      <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="font-headline flex items-center"><BarChart3 className="mr-2 h-5 w-5 text-primary"/>My Performance (Mock)</CardTitle>
+            <CardDescription>Overview of your service performance metrics.</CardDescription>
+          </CardHeader>
+          <CardContent className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {performanceKPIs.map(kpi => (
+                <Card key={kpi.title} className="bg-muted/30">
+                    <CardHeader className="pb-2">
+                        <CardTitle className="text-md font-medium flex items-center">
+                            <kpi.icon className={`mr-2 h-4 w-4 ${kpi.color || 'text-primary'}`} />
+                            {kpi.title}
+                        </CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                        <p className="text-2xl font-bold">{kpi.value}</p>
+                        {kpi.description && <p className="text-xs text-muted-foreground">{kpi.description}</p>}
+                        {kpi.trend && (
+                            <p className={cn("text-xs mt-1 flex items-center", kpi.trendDirection === 'up' ? 'text-green-600' : 'text-red-600')}>
+                                {kpi.trendDirection === 'up' ? <ArrowUp className="h-3 w-3 mr-1" /> : <ArrowDown className="h-3 w-3 mr-1" />}
+                                {kpi.trend}
+                            </p>
+                        )}
+                    </CardContent>
+                </Card>
+            ))}
+          </CardContent>
       </Card>
-
     </div>
   );
 };
+

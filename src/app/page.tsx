@@ -42,15 +42,10 @@ export default function HomePage() {
       <p className="text-xl md:text-2xl text-foreground/80 max-w-3xl mx-auto mb-10">
         Securely manage your product data, ensure EU compliance, and harness the power of AI for streamlined operations.
       </p>
-      <div className="space-y-4 sm:space-y-0 sm:flex sm:space-x-6 mb-12">
-        {/* Removed Partner Dashboard button */}
-        <Button variant="outline" size="lg" className="w-full sm:w-auto">
-          Learn More
-        </Button>
-      </div>
+      {/* Removed the "Learn More" button and its container div */}
 
       {/* Mock Login Section */}
-      <Card className="w-full max-w-md shadow-xl bg-card">
+      <Card className="w-full max-w-md shadow-xl bg-card mt-8"> {/* Added mt-8 for spacing */}
         <CardHeader>
           <CardTitle className="font-headline text-2xl flex items-center justify-center text-primary">
             <LogIn className="mr-2 h-6 w-6" /> Access Your Dashboard

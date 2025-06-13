@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation'; // Added usePathname
+import { useRouter, usePathname } from 'next/navigation';
 import { SidebarTrigger } from "@/components/ui/sidebar/Sidebar";
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,6 @@ import AppSidebarContent from "./AppSidebarContent";
 import { Logo } from "@/components/icons/Logo";
 import { useRole, type UserRole } from "@/contexts/RoleContext";
 import { roleDashboardPaths } from '@/config/navConfig';
-// Select components are NOT imported as the selector is removed
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,10 +81,11 @@ const formatRoleNameForDisplay = (role: UserRole): string => {
     .join(' ');
 };
 
+
 export default function AppHeader() {
   const router = useRouter();
   const { isMobile } = useSidebar();
-  const { currentRole, setCurrentRole } = useRole(); // setCurrentRole still needed for the login page
+  const { currentRole } = useRole(); // Only need currentRole for logo link
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
   const pathname = usePathname();
 
@@ -95,24 +95,15 @@ export default function AppHeader() {
 
   const handleLogout = () => {
     alert("Mock Logout: User logged out!");
-    router.push('/');
+    // In a real app, you would clear context/session and redirect to a login page
+    router.push('/'); // Redirect to homepage after logout
   };
   
   const currentRoleDashboardPath = roleDashboardPaths[currentRole] || '/dashboard';
 
-  // This function is now primarily for the login page to use the context.
-  // It's not directly called by any UI element within this header anymore for role switching.
-  const handleRoleChange = (newRole: UserRole) => {
-    setCurrentRole(newRole);
-    const targetPath = roleDashboardPaths[newRole];
-    if (targetPath && pathname !== targetPath) {
-      router.push(targetPath);
-    }
-  };
-
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b border-border bg-card px-4 backdrop-blur-md md:px-6">
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2"> {/* Container for left-aligned items */}
         {isMobile ? (
           <Sheet>
             <SheetTrigger asChild>
@@ -122,7 +113,7 @@ export default function AppHeader() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0 bg-sidebar text-sidebar-foreground w-[--sidebar-width-mobile]">
-              <AppSidebarContent />
+              <AppSidebarContent /> {/* This contains its own logo when sheet is open */}
             </SheetContent>
           </Sheet>
         ) : (
@@ -135,8 +126,8 @@ export default function AppHeader() {
         )}
       </div>
 
-      <div className="flex items-center gap-3 md:gap-4">
-        {/* ROLE SELECTOR DROPDOWN HAS BEEN REMOVED FROM HERE */}
+      <div className="flex items-center gap-3 md:gap-4"> {/* Container for right-aligned items */}
+        {/* Role selector dropdown has been removed */}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -220,4 +211,3 @@ export default function AppHeader() {
     </header>
   );
 }
-

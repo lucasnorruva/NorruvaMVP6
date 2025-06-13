@@ -23,11 +23,14 @@ export default function AppSidebarContent() {
   const mainNavItems = accessibleNavItems.filter(item => item.group !== 'secondary');
   const secondaryNavItems = accessibleNavItems.filter(item => item.group === 'secondary');
 
+  const currentRoleDashboardPath = roleDashboardPaths[currentRole] || '/dashboard'; // Fallback
+
   const commonButtonClass = (href: string, isDashboardLink: boolean = false) => {
     let isActive: boolean;
 
     if (isDashboardLink) {
-      isActive = pathname === roleDashboardPaths[currentRole];
+      // The "Dashboard" link is active if the current path IS the specific dashboard for the current role
+      isActive = pathname === currentRoleDashboardPath;
     } else if (href === "/products") {
       isActive = (pathname === href || (pathname.startsWith(href + "/") && !pathname.endsWith("/new")));
     } else if (href === "/compliance/pathways") {
@@ -35,6 +38,7 @@ export default function AppSidebarContent() {
     } else if (href === "/sustainability") {
       isActive = (pathname === href || pathname.startsWith("/sustainability/"));
     } else {
+      // For other links, check if the current path starts with the item's href
       isActive = pathname.startsWith(href);
     }
 
@@ -50,7 +54,6 @@ export default function AppSidebarContent() {
   };
 
   const commonIconClass = cn("h-5 w-5", sidebarState === 'expanded' || isMobile ? "mr-3" : "mr-0");
-  const currentRoleDashboardPath = roleDashboardPaths[currentRole] || "/dashboard"; // Fallback to generic
 
   return (
     <>
@@ -70,7 +73,6 @@ export default function AppSidebarContent() {
         <SidebarMenu className="px-2 space-y-1">
           {mainNavItems.map((item) => {
             const isDashboardItem = item.label === "Dashboard";
-            // Use the centrally defined path for the current role's dashboard
             const itemHref = isDashboardItem ? currentRoleDashboardPath : item.href;
             const { className, isActive } = commonButtonClass(itemHref, isDashboardItem);
             
@@ -95,7 +97,7 @@ export default function AppSidebarContent() {
       <SidebarFooter className="p-2 border-t-0">
          <SidebarMenu className="px-2 space-y-1">
            {secondaryNavItems.map((item) => {
-            const { className, isActive } = commonButtonClass(item.href);
+            const { className, isActive } = commonButtonClass(item.href); // isDashboardLink defaults to false
             return (
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} asChild>
@@ -116,4 +118,3 @@ export default function AppSidebarContent() {
     </>
   );
 }
-

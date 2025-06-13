@@ -3,10 +3,10 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { PlusCircle } from "lucide-react"; // Removed unused Settings icon
+import { PlusCircle } from "lucide-react";
 import Link from "next/link";
 import { RegulationUpdatesCard } from "@/components/dashboard/RegulationUpdatesCard";
-import { AdminDashboardOverview } from "@/components/dashboard/AdminDashboardOverview"; // Ensure this is the correct Admin-specific overview
+import { AdminDashboardOverview } from "@/components/dashboard/AdminDashboardOverview"; // Correct import
 import { AdminQuickActions } from "@/components/dashboard/AdminQuickActions";
 import { PlatformHealthStatsCard } from "@/components/dashboard/PlatformHealthStatsCard";
 import AdminProductsAttentionCard from "@/components/dashboard/AdminProductsAttentionCard";

@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // Ensure useRouter is from next/navigation
+import { useRouter } from 'next/navigation';
 import { SidebarTrigger } from "@/components/ui/sidebar/Sidebar";
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { Button } from "@/components/ui/button";
@@ -101,17 +101,17 @@ export default function AppHeader() {
 
   const handleLogout = () => {
     alert("Mock Logout: User logged out!");
-    // In a real app, you'd clear session/token and redirect to login page
   };
 
   const handleRoleChange = (newRoleValue: string) => {
     const newRole = newRoleValue as UserRole;
-    setCurrentRole(newRole); // Update context
-    // THEN navigate to the new role's specific dashboard
-    if (roleDashboardPaths[newRole]) {
-      router.push(roleDashboardPaths[newRole]); // Navigate directly
+    setCurrentRole(newRole); // Update context first
+    
+    const targetPath = roleDashboardPaths[newRole];
+    if (targetPath) {
+      router.push(targetPath); // Then navigate directly to the specific dashboard
     } else {
-      router.push('/dashboard'); // Fallback, though DashboardRedirectPage should handle it
+      router.push('/dashboard'); // Fallback
     }
   };
   

@@ -15,7 +15,7 @@ import {
   Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint,
   ServerIcon as ServerIconLucide, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
   KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, Sigma, Layers as LayersIconShadcn, Shirt, Construction,
-  BatteryCharging, Thermometer, Weight, Hash, CalendarDays as CalendarIcon, FileText as FileTextIcon // Added BatteryCharging, Thermometer, Weight, Hash, CalendarIcon, FileTextIcon
+  BatteryCharging, Thermometer, Weight, Hash, CalendarDays as CalendarIcon, FileText as FileTextIcon
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect } from 'react';
@@ -151,6 +151,9 @@ export default function PublicPassportPage() {
                   )}
                   {currentRole === 'recycler' && (
                     <p className="text-xs text-muted-foreground mt-3">Recyclers: Focus on 'Materials Composition' and 'Lifecycle' sections for EOL details.</p>
+                  )}
+                   {currentRole === 'service_provider' && (
+                    <p className="text-xs text-muted-foreground mt-3">Service Providers: Check 'Technical Specifications' and 'Documents' for repair guides.</p>
                   )}
                 </CardContent>
               </Card>
@@ -406,7 +409,7 @@ export default function PublicPassportPage() {
 
                             {product.batteryRegulation.stateOfHealth && (product.batteryRegulation.stateOfHealth.value !== null && product.batteryRegulation.stateOfHealth.value !== undefined) && (
                                 <div className="mt-2 pt-2 border-t border-border/30">
-                                    <strong className="text-muted-foreground flex items-center"><Heart className="mr-1.5 h-4 w-4 text-red-500" />State of Health:</strong>
+                                    <strong className="text-muted-foreground flex items-center"><LucideIcons.Heart className="mr-1.5 h-4 w-4 text-red-500" />State of Health:</strong>
                                     <p className="pl-5">Value: {product.batteryRegulation.stateOfHealth.value}{product.batteryRegulation.stateOfHealth.unit || '%'}</p>
                                     {product.batteryRegulation.stateOfHealth.measurementDate && <p className="pl-5">Measured: {new Date(product.batteryRegulation.stateOfHealth.measurementDate).toLocaleDateString()}</p>}
                                     {product.batteryRegulation.stateOfHealth.vcId && <p className="pl-5">VC ID: <span className="font-mono text-xs">{product.batteryRegulation.stateOfHealth.vcId}</span></p>}
@@ -560,3 +563,4 @@ export default function PublicPassportPage() {
 }
 
     
+

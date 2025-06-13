@@ -1,3 +1,4 @@
+
 # Advanced Blockchain Architecture for Digital Product Passport (DPP)
 
 This document outlines the proposed smart contract and governance architecture for the Norruva Digital Product Passport system. The design leverages an ERC-721 token to represent each passport and an ERC-20 governance token for the DAO.

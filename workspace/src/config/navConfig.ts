@@ -34,7 +34,7 @@ export const ALL_NAV_ITEMS: NavItemConfig[] = [
   // The href for "Dashboard" will be dynamically adjusted in AppSidebarContent to point to the role-specific dashboard
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, group: 'main', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider'] },
   { href: "/dpp-live-dashboard", label: "Live DPPs", icon: LineChart, group: 'main', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider'] },
-  { href: "/products", label: "Products", icon: Package, group: 'main', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier'] },
+  { href: "/products", label: "Products", icon: Package, group: 'main', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider'] },
   { href: "/products/new", label: "Add Product", icon: ScanLine, group: 'main', requiredRoles: ['admin', 'manufacturer'] },
   { href: "/suppliers", label: "Suppliers", icon: Users, group: 'main', requiredRoles: ['admin', 'manufacturer'] },
 
@@ -50,7 +50,7 @@ export const ALL_NAV_ITEMS: NavItemConfig[] = [
   // Specialized Views Group
   { href: "/blockchain", label: "Blockchain Management", icon: Fingerprint, group: 'specialized', requiredRoles: ['admin', 'manufacturer'] },
   { href: "/customs-dashboard", label: "Customs Dashboard", icon: ClipboardList, group: 'specialized', requiredRoles: ['admin', 'verifier'] },
-  { href: "/dpp-global-tracker-v2", label: "DPP Global Tracker v2", icon: Globe2, group: 'specialized', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'verifier'] },
+  { href: "/dpp-global-tracker-v2", label: "DPP Global Tracker v2", icon: Globe2, group: 'specialized', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'verifier', 'service_provider'] },
 
   // Secondary (Footer) Group
   { href: "/developer", label: "Developer Portal", icon: Code2, group: 'secondary', requiredRoles: ['admin', 'manufacturer'] },

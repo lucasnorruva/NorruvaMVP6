@@ -5,7 +5,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Wrench, Search, Tool, CalendarDays, BookOpen, Activity } from "lucide-react"; // Updated Icons
+import { Activity, Wrench, BookOpen, Tool, CalendarDays, Search } from "lucide-react"; // Updated Icons
 
 export const ServiceProviderQuickActionsCard = () => {
   const actions = [
@@ -13,6 +13,7 @@ export const ServiceProviderQuickActionsCard = () => {
     { label: "Access Technical Docs", href: "/developer/docs", icon: BookOpen, description: "Find product manuals & guides." },
     { label: "Order Spare Parts (Mock)", href: "#", icon: Tool, description: "Request parts needed for repairs." },
     { label: "View My Schedule", href: "#", icon: CalendarDays, description: "Check your upcoming service appointments." },
+    { label: "Search Knowledge Base (Mock)", href: "#", icon: Search, description: "Find solutions to common issues." },
   ];
   return (
     <Card className="shadow-lg">
@@ -34,8 +35,4 @@ export const ServiceProviderQuickActionsCard = () => {
             </a>
           </Link>
         ))}
-      </CardContent>
-    </Card>
-  );
-};
-
+      </Card

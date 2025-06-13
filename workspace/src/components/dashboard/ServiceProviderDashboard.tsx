@@ -15,10 +15,11 @@ import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
 import { ServiceProviderQuickActionsCard } from "./ServiceProviderQuickActionsCard";
 import { 
     Wrench, CheckCircle, AlertTriangle, Clock, Search, MoreHorizontal, Eye, MessageSquare, ListChecks, BarChart3,
-    UserCircle, Tool, ArrowUp, ArrowDown, ChevronsUpDown, Filter as FilterIcon, Settings, PackageSearch
+    UserCircle, Tool, ArrowUp, ArrowDown, ChevronsUpDown, Filter as FilterIcon, Settings, PackageSearch, FileText as FileTextIcon
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from '@/lib/utils';
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 interface ServiceJob {
   id: string;
@@ -35,13 +36,16 @@ interface ServiceJob {
 }
 
 const mockServiceJobs: ServiceJob[] = [
-  { id: "JOB001", productId: "PROD001", productName: "EcoFriendly Refrigerator X2000", customerName: "Alice Smith", location: "123 Main St, Anytown", issue: "Cooling unit malfunction, not cooling below 10°C.", status: "Scheduled", priority: "High", scheduledDate: "2024-08-15T10:00:00Z", assignedTechnician: "John Doe" },
-  { id: "JOB002", productId: "PROD005", productName: "High-Performance EV Battery", customerName: "Bob Johnson Motors", location: "456 Industrial Rd, Techville", issue: "Requires full diagnostic check and State of Health (SoH) report.", status: "In Progress", priority: "Medium", scheduledDate: "2024-08-10T14:00:00Z", assignedTechnician: "Jane Roe" },
-  { id: "JOB003", productId: "USER_PROD123456", productName: "Custom Craft Wooden Chair", customerName: "Charlie Brown Furnishings", location: "789 Artisan Way, Craftburg", issue: "One leg attachment loose, requires re-securing.", status: "Completed", priority: "Low", scheduledDate: "2024-08-05T09:00:00Z", assignedTechnician: "John Doe" },
-  { id: "JOB004", productId: "PROD002", productName: "Smart LED Bulb (4-Pack)", customerName: "Diana Prince Home", location: "101 Century Ave, Metrocity", issue: "Connectivity issues with smart home hub.", status: "On Hold", priority: "Medium", scheduledDate: "2024-08-12T11:00:00Z", notes: "Waiting for customer to provide hub details." },
-  { id: "JOB005", productId: "PROD001", productName: "EcoFriendly Refrigerator X2000", customerName: "Edward Green", location: "22 Park Lane, Greenside", issue: "Annual maintenance check.", status: "Scheduled", priority: "Low", scheduledDate: "2024-08-20T13:00:00Z" },
-  { id: "JOB006", productId: "DPP006", productName: "EcoSmart Insulation Panel R50", customerName: "BuildIt Construction", location: "Site Alpha, New Development Zone", issue: "Post-installation inspection and thermal performance check.", status: "Scheduled", priority: "High", scheduledDate: "2024-08-18T09:00:00Z", assignedTechnician: "Jane Roe" },
+  { id: "JOB001", productId: "PROD001", productName: "EcoFriendly Refrigerator X2000", customerName: "Alice Smith", location: "123 Main St, Anytown", issue: "Cooling unit malfunction, not cooling below 10°C.", status: "Scheduled", priority: "High", scheduledDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), assignedTechnician: "John Doe", notes: "Customer reports loud humming noise." },
+  { id: "JOB002", productId: "PROD005", productName: "High-Performance EV Battery", customerName: "Bob Johnson Motors", location: "456 Industrial Rd, Techville", issue: "Requires full diagnostic check and State of Health (SoH) report.", status: "In Progress", priority: "Medium", scheduledDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), assignedTechnician: "Jane Roe", notes: "Vehicle is on-site. Follow Protocol 7-B for diagnostics." },
+  { id: "JOB003", productId: "USER_PROD123456", productName: "Custom Craft Wooden Chair", customerName: "Charlie Brown Furnishings", location: "789 Artisan Way, Craftburg", issue: "One leg attachment loose, requires re-securing.", status: "Completed", priority: "Low", scheduledDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), assignedTechnician: "John Doe", notes: "Reinforced with L-bracket. Customer satisfied." },
+  { id: "JOB004", productId: "PROD002", productName: "Smart LED Bulb (4-Pack)", customerName: "Diana Prince Home", location: "101 Century Ave, Metrocity", issue: "Connectivity issues with smart home hub.", status: "On Hold", priority: "Medium", scheduledDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), notes: "Waiting for customer to provide hub details. Followed up on 2024-08-09." },
+  { id: "JOB005", productId: "PROD001", productName: "EcoFriendly Refrigerator X2000", customerName: "Edward Green", location: "22 Park Lane, Greenside", issue: "Annual maintenance check.", status: "Scheduled", priority: "Low", scheduledDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), assignedTechnician: "Sarah Lee" },
+  { id: "JOB006", productId: "DPP006", productName: "EcoSmart Insulation Panel R50", customerName: "BuildIt Construction", location: "Site Alpha, New Development Zone", issue: "Post-installation inspection and thermal performance check.", status: "Scheduled", priority: "High", scheduledDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), assignedTechnician: "Jane Roe", notes: "Bring thermal camera." },
+  { id: "JOB007", productId: "DPP001", productName: "EcoFriendly Refrigerator X2000", customerName: "Retro Coolers Ltd.", location: "Vintage Appliance Expo", issue: "Display model setup and calibration.", status: "Completed", priority: "Medium", scheduledDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), assignedTechnician: "John Doe" },
+  { id: "JOB008", productId: "PROD005", productName: "High-Performance EV Battery", customerName: "Future Auto R&D", location: "Tech Park, Suite 300", issue: "Investigate reported BMS error code P0A80.", status: "In Progress", priority: "High", scheduledDate: new Date().toISOString(), assignedTechnician: "Mike Brown", notes: "Error intermittent. Check diagnostic logs on arrival." },
 ];
+
 
 interface JobFilters {
   search: string;
@@ -51,7 +55,7 @@ interface JobFilters {
   dateTo: Date | undefined;
 }
 
-type SortableJobKeys = keyof Pick<ServiceJob, 'id' | 'productName' | 'customerName' | 'status' | 'priority' | 'scheduledDate'>;
+type SortableJobKeys = keyof Pick<ServiceJob, 'id' | 'productName' | 'customerName' | 'status' | 'priority' | 'scheduledDate' | 'assignedTechnician'>;
 
 interface JobSortConfig {
   key: SortableJobKeys | null;
@@ -74,6 +78,7 @@ const SortableJobHeader: React.FC<{ columnKey: SortableJobKeys, title: string, o
 
 
 export const ServiceProviderDashboard = () => {
+  const { toast } = useToast(); // Initialize toast
   const [filters, setFilters] = useState<JobFilters>({ search: '', status: 'All', priority: 'All', dateFrom: undefined, dateTo: undefined });
   const [sortConfig, setSortConfig] = useState<JobSortConfig>({ key: 'scheduledDate', direction: 'ascending' });
 
@@ -113,7 +118,8 @@ export const ServiceProviderDashboard = () => {
         job.productName.toLowerCase().includes(searchLower) ||
         job.customerName.toLowerCase().includes(searchLower) ||
         job.issue.toLowerCase().includes(searchLower) ||
-        job.id.toLowerCase().includes(searchLower)
+        job.id.toLowerCase().includes(searchLower) ||
+        (job.assignedTechnician && job.assignedTechnician.toLowerCase().includes(searchLower))
       );
     }
     if (filters.status !== 'All') {
@@ -135,10 +141,18 @@ export const ServiceProviderDashboard = () => {
         tempJobs.sort((a,b) => {
             let valA = a[sortConfig.key!];
             let valB = b[sortConfig.key!];
+
+            if (valA === undefined || valA === null) valA = ""; // Handle undefined/null for sorting
+            if (valB === undefined || valB === null) valB = "";
+
             if (sortConfig.key === 'scheduledDate') {
                 valA = new Date(valA as string).getTime();
                 valB = new Date(valB as string).getTime();
+            } else if (typeof valA === 'string' && typeof valB === 'string') {
+                 valA = valA.toLowerCase();
+                 valB = valB.toLowerCase();
             }
+            
             if (valA < valB) return sortConfig.direction === 'ascending' ? -1 : 1;
             if (valA > valB) return sortConfig.direction === 'ascending' ? 1 : -1;
             return 0;
@@ -148,6 +162,12 @@ export const ServiceProviderDashboard = () => {
     return tempJobs;
   }, [filters, sortConfig]);
 
+  const jobsOverdue = useMemo(() => {
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    return mockServiceJobs.filter(j => new Date(j.scheduledDate) < today && j.status !== 'Completed' && j.status !== 'Cancelled').length;
+  }, []);
+
   const performanceKPIs = [
     { title: "Avg. Completion Time", value: "4.2h", icon: Clock, trend: "-0.3h", trendDirection: "down" as const, description: "Past 30 days" },
     { title: "First-Time Fix Rate", value: "92%", icon: CheckCircle, trend: "+1.5%", trendDirection: "up" as const, description: "Target: 90%" },
@@ -156,10 +176,11 @@ export const ServiceProviderDashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6"> {/* Adjusted grid for 5 items */}
         <MetricCard title="Active Jobs" value={mockServiceJobs.filter(j => j.status === 'In Progress' || j.status === 'Scheduled').length} icon={Wrench} />
         <MetricCard title="Jobs Due Today" value={mockServiceJobs.filter(j => new Date(j.scheduledDate).toDateString() === new Date().toDateString() && j.status !== 'Completed' && j.status !== 'Cancelled').length} icon={CalendarDays} trendDirection="neutral" />
         <MetricCard title="High Priority Open" value={mockServiceJobs.filter(j => j.priority === 'High' && (j.status === 'Scheduled' || j.status === 'In Progress')).length} icon={AlertTriangle} trendDirection="up" />
+        <MetricCard title="Jobs Overdue" value={jobsOverdue} icon={AlertTriangle} trendDirection={jobsOverdue > 0 ? "up" : "neutral"} className={jobsOverdue > 0 ? "border-destructive" : ""} />
         <MetricCard title="Completed This Month" value={mockServiceJobs.filter(j => j.status === 'Completed' && new Date(j.scheduledDate).getMonth() === new Date().getMonth()).length} icon={CheckCircle} />
       </div>
       
@@ -173,7 +194,7 @@ export const ServiceProviderDashboard = () => {
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6 p-4 border rounded-md bg-muted/50 items-end">
             <div className="lg:col-span-2">
-              <Label htmlFor="jobSearch" className="text-xs">Search (Product, Customer, Issue, ID)</Label>
+              <Label htmlFor="jobSearch" className="text-xs">Search (Product, Customer, Issue, ID, Technician)</Label>
               <Input id="jobSearch" placeholder="Type to search..." value={filters.search} onChange={e => setFilters(prev => ({...prev, search: e.target.value}))}/>
             </div>
             <div>
@@ -209,9 +230,10 @@ export const ServiceProviderDashboard = () => {
                 <SortableJobHeader columnKey="productName" title="Product" onSort={handleSort} sortConfig={sortConfig} />
                 <SortableJobHeader columnKey="customerName" title="Customer" onSort={handleSort} sortConfig={sortConfig} />
                 <TableHead>Location</TableHead>
-                <TableHead className="min-w-[200px]">Issue</TableHead>
+                <TableHead className="min-w-[150px]">Issue</TableHead>
                 <SortableJobHeader columnKey="priority" title="Priority" onSort={handleSort} sortConfig={sortConfig} />
                 <SortableJobHeader columnKey="status" title="Status" onSort={handleSort} sortConfig={sortConfig} />
+                <SortableJobHeader columnKey="assignedTechnician" title="Technician" onSort={handleSort} sortConfig={sortConfig} />
                 <SortableJobHeader columnKey="scheduledDate" title="Scheduled" onSort={handleSort} sortConfig={sortConfig} />
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -227,24 +249,26 @@ export const ServiceProviderDashboard = () => {
                   </TableCell>
                   <TableCell>{job.customerName}</TableCell>
                   <TableCell className="text-xs">{job.location}</TableCell>
-                  <TableCell className="text-xs max-w-xs truncate" title={job.issue}>{job.issue}</TableCell>
+                  <TableCell className="text-xs max-w-[150px] truncate" title={job.issue}>{job.issue}</TableCell>
                   <TableCell><Badge className={cn("text-xs", getPriorityBadgeStyle(job.priority))}>{job.priority}</Badge></TableCell>
                   <TableCell><Badge className={cn("text-xs", getStatusBadgeStyle(job.status))}>{job.status}</Badge></TableCell>
+                  <TableCell className="text-xs">{job.assignedTechnician || "Unassigned"}</TableCell>
                   <TableCell className="text-xs">{new Date(job.scheduledDate).toLocaleDateString()}</TableCell>
                   <TableCell className="text-right">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild><Button variant="ghost" size="icon"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => alert(`Mock: View details for Job ${job.id}`)}><Eye className="mr-2 h-4 w-4"/>View Details</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => alert(`Mock: Update status for Job ${job.id}`)}><Settings className="mr-2 h-4 w-4"/>Update Status</DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => alert(`Mock: Add notes to Job ${job.id}`)}><MessageSquare className="mr-2 h-4 w-4"/>Add Notes</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => toast({title: "View Job Details (Mock)", description: `Viewing details for Job ID: ${job.id}`})}><Eye className="mr-2 h-4 w-4"/>View Details</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push(`/products/${job.productId}`)}><PackageSearch className="mr-2 h-4 w-4"/>View Product DPP</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => toast({title: "Update Job Status (Mock)", description: `Opening status update for Job ID: ${job.id}`})}><Settings className="mr-2 h-4 w-4"/>Update Status</DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => toast({title: "Add Note (Mock)", description: `Adding note to Job ID: ${job.id}`})}><MessageSquare className="mr-2 h-4 w-4"/>Add Notes</DropdownMenuItem>
                       </DropdownMenuContent>
                     </DropdownMenu>
                   </TableCell>
                 </TableRow>
               ))}
               {filteredAndSortedJobs.length === 0 && (
-                <TableRow><TableCell colSpan={9} className="text-center py-6 text-muted-foreground">No service jobs match current filters.</TableCell></TableRow>
+                <TableRow><TableCell colSpan={10} className="text-center py-6 text-muted-foreground">No service jobs match current filters.</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
@@ -282,4 +306,80 @@ export const ServiceProviderDashboard = () => {
     </div>
   );
 };
+
+```
+  </change>
+  <change>
+    <file>/workspace/src/components/dashboard/ServiceProviderQuickActionsCard.tsx</file>
+    <content><![CDATA[
+// --- File: src/components/dashboard/ServiceProviderQuickActionsCard.tsx ---
+"use client";
+
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import Link from "next/link";
+import { Activity, Wrench, BookOpen, Tool, CalendarDays, Search } from "lucide-react"; // Updated Icons
+
+export const ServiceProviderQuickActionsCard = () => {
+  const actions = [
+    { label: "Log New Service Call", href: "#", icon: Wrench, description: "Record a new service request or issue." },
+    { label: "Access Technical Docs", href: "/developer/docs", icon: BookOpen, description: "Find product manuals & guides." },
+    { label: "Order Spare Parts (Mock)", href: "#", icon: Tool, description: "Request parts needed for repairs." },
+    { label: "View My Schedule", href: "#", icon: CalendarDays, description: "Check your upcoming service appointments." },
+    { label: "Search Knowledge Base (Mock)", href: "#", icon: Search, description: "Find solutions to common issues." },
+  ];
+  return (
+    <Card className="shadow-lg">
+      <CardHeader>
+        <CardTitle className="font-headline flex items-center"><Activity className="mr-2 h-5 w-5 text-primary" />Quick Actions</CardTitle>
+        <CardDescription>Essential tools for service providers.</CardDescription>
+      </CardHeader>
+      <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {actions.map((action) => (
+          <Link key={action.label} href={action.href} passHref legacyBehavior>
+            <a className="block">
+              <Button variant="outline" className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10">
+                <action.icon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
+                <div>
+                  <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
+                  <p className="text-xs text-muted-foreground">{action.description}</p>
+                </div>
+              </Button>
+            </a>
+          </Link>
+        ))}
+      </CardContent>
+    </Card>
+  );
+};
+
+```
+  </change>
+  <change>
+    <file>/workspace/src/app/(app)/service-provider-dashboard/page.tsx</file>
+    <content><![CDATA[
+// --- File: src/app/(app)/service-provider-dashboard/page.tsx ---
+"use client";
+
+import { ServiceProviderDashboard as ServiceProviderDashboardContent } from "@/components/dashboard/ServiceProviderDashboard"; 
+import { Button } from "@/components/ui/button";
+import { PlusCircle } from "lucide-react"; 
+import Link from "next/link"; 
+
+export default function ServiceProviderDashboardPage() {
+  return (
+    <div className="space-y-8">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <h1 className="text-3xl font-headline font-semibold">Service Provider Dashboard</h1>
+        <Button asChild variant="default" className="bg-primary text-primary-foreground hover:bg-primary/90"> 
+          <Link href="#">
+            <PlusCircle className="mr-2 h-5 w-5" />
+            Log New Service Job (Mock)
+          </Link>
+        </Button>
+      </div>
+      <ServiceProviderDashboardContent /> 
+    </div>
+  );
+}
 

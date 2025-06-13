@@ -3,7 +3,7 @@
 // Description: Product related type definitions and mock data.
 
 import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle'; // Ensure IconName is exported or defined if used here
-import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from './Compliance';
+import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails } from './Compliance'; // Removed TextileInformation, ConstructionProductInformation
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
@@ -51,6 +51,7 @@ export interface DocumentReference {
   addedTimestamp: string;
 }
 
+// --- New Category-Specific Types ---
 export interface FiberCompositionEntry {
   fiberName: string;
   percentage: number | null; // Allow null for form input
@@ -76,6 +77,7 @@ export interface ConstructionProductInformation {
   intendedUseDescription?: string;
   essentialCharacteristics?: EssentialCharacteristic[];
 }
+// --- End New Category-Specific Types ---
 
 
 export interface DigitalProductPassport {

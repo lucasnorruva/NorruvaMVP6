@@ -408,6 +408,4 @@ This application is being developed within the Firebase Studio environment, an A
 ---
 
 This README will be updated as the project evolves.
-
-
     

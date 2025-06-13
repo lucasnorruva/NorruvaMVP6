@@ -39,3 +39,4 @@ export function useRole(): RoleContextType {
   }
   return context;
 }
+

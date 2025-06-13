@@ -5,16 +5,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useRole, type UserRole } from '@/contexts/RoleContext';
 import { Loader2 } from 'lucide-react';
-
-const roleDashboardPaths: Record<UserRole, string> = {
-  admin: "/admin-dashboard",
-  manufacturer: "/manufacturer-dashboard",
-  supplier: "/supplier-dashboard",
-  retailer: "/retailer-dashboard",
-  recycler: "/recycler-dashboard",
-  verifier: "/verifier-dashboard",
-  service_provider: "/service-provider-dashboard",
-};
+import { roleDashboardPaths } from '@/config/navConfig'; // Import from navConfig
 
 export default function DashboardRedirectPage() {
   const { currentRole } = useRole();

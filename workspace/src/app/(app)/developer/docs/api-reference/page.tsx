@@ -357,7 +357,6 @@ export default function ApiReferencePage() {
     ]
   }, null, 2);
 
-
   const exampleB2BComponentTransferRequestBody = JSON.stringify({
     componentId: "COMP_XYZ_123",
     batchOrSerialNumbers: ["BATCH_A001", "BATCH_A002"],
@@ -514,4 +513,5 @@ export default function ApiReferencePage() {
     </DocsPageLayout>
   );
 }
+
 

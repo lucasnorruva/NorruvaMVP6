@@ -9,8 +9,8 @@ import { FileJson, Server, Layers3 } from "lucide-react";
 interface ApiReferencePrivateLayerEndpointsProps {
   exampleB2BComponentTransferRequestBody: string;
   exampleB2BComponentTransferResponseBody: string;
-  exampleGetSupplierAttestationsResponseBody: string; // New
-  exampleGetConfidentialMaterialsResponseBody: string; // New
+  exampleGetSupplierAttestationsResponseBody: string; 
+  exampleGetConfidentialMaterialsResponseBody: string; 
   error400General: string;
   error401: string;
   error404: string;
@@ -178,3 +178,4 @@ export default function ApiReferencePrivateLayerEndpoints({
     </section>
   );
 }
+

@@ -10,7 +10,6 @@ import { cn } from "@/lib/utils";
 import { Package, Tag, Building, CheckCircle, AlertTriangle, Info, ShieldCheck, Barcode, Globe2 } from "lucide-react";
 import { getStatusIcon as getComplianceStatusIcon, getStatusBadgeVariant as getComplianceBadgeVariant, getStatusBadgeClasses as getComplianceBadgeClasses } from "@/utils/dppDisplayUtils";
 import React from "react";
-// QR Code Generator is removed from here as it has its own tab
 
 interface ProductHeaderProps {
   product: SimpleProductDetail;
@@ -119,3 +118,4 @@ export default function ProductHeader({ product }: ProductHeaderProps) {
     </Card>
   );
 }
+    

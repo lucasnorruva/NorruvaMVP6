@@ -2,8 +2,11 @@
 // --- File: Product.ts ---
 // Description: Product related type definitions and mock data.
 
-import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle'; // Ensure IconName is exported or defined if used here
-import type { Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails } from './Compliance'; // Removed TextileInformation, ConstructionProductInformation
+import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle';
+import type {
+  Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification,
+  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation
+} from './Compliance'; // Imported TextileInformation, ConstructionProductInformation
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
@@ -50,35 +53,6 @@ export interface DocumentReference {
   type: string;
   addedTimestamp: string;
 }
-
-// --- New Category-Specific Types ---
-export interface FiberCompositionEntry {
-  fiberName: string;
-  percentage: number | null; // Allow null for form input
-}
-
-export interface TextileInformation {
-  fiberComposition?: FiberCompositionEntry[];
-  countryOfOriginLabeling?: string;
-  careInstructionsUrl?: string;
-  isSecondHand?: boolean;
-}
-
-export interface EssentialCharacteristic {
-  characteristicName: string;
-  value: string;
-  unit?: string;
-  testMethod?: string;
-}
-
-export interface ConstructionProductInformation {
-  declarationOfPerformanceId?: string;
-  ceMarkingDetailsUrl?: string;
-  intendedUseDescription?: string;
-  essentialCharacteristics?: EssentialCharacteristic[];
-}
-// --- End New Category-Specific Types ---
-
 
 export interface DigitalProductPassport {
   id: string;
@@ -440,35 +414,3 @@ export interface TokenStatusResponse {
   status: string; 
   message?: string;
 }
-
-// Customs & Transit Types
-export interface TransitProduct {
-  id: string;
-  name: string;
-  stage: string;
-  eta: string; 
-  dppStatus: ProductComplianceSummary['overallStatus']; // Changed to use overallStatus type
-  transport: "Ship" | "Truck" | "Plane";
-  origin: string; 
-  destination: string; 
-}
-
-export interface CustomsAlert {
-  id: string;
-  productId: string;
-  message: string;
-  severity: "High" | "Medium" | "Low";
-  timestamp: string; 
-  regulation?: string;
-}
-
-export interface InspectionEvent {
-  id: string;
-  icon: React.ElementType;
-  title: string;
-  timestamp: string; // ISO Date string or human-readable
-  description: string;
-  status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
-  badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
-}
-    

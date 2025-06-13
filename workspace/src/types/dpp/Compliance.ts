@@ -160,3 +160,33 @@ export interface ConstructionProductInformation {
   essentialCharacteristics?: EssentialCharacteristic[];
 }
 
+// Customs and Transit types (moved from types/dpp/Product.ts)
+export interface TransitProduct {
+  id: string;
+  name: string;
+  stage: string;
+  eta: string; 
+  dppStatus: ProductComplianceSummary['overallStatus'];
+  transport: "Ship" | "Truck" | "Plane";
+  origin: string; 
+  destination: string; 
+}
+
+export interface CustomsAlert {
+  id: string;
+  productId: string;
+  message: string;
+  severity: "High" | "Medium" | "Low";
+  timestamp: string; 
+  regulation?: string;
+}
+
+export interface InspectionEvent {
+  id: string;
+  icon: React.ElementType;
+  title: string;
+  timestamp: string; 
+  description: string;
+  status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
+  badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
+}

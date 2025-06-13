@@ -167,10 +167,9 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
 
 export async function fetchProductDetails(productId: string): Promise<SimpleProductDetail | null> {
-  await new Promise(resolve => setTimeout(resolve, 0)); // Minimal delay for promise resolution
+  await new Promise(resolve => setTimeout(resolve, 0)); // Minimal delay
 
-  // 1. Attempt to load from localStorage first for ANY ID.
-  // This prioritizes user-created data, even if it clashes with a mock naming pattern.
+  // 1. Attempt to load from localStorage first
   const storedProductsString = typeof window !== 'undefined' ? localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY) : null;
   if (storedProductsString) {
     const userProducts: StoredUserProduct[] = JSON.parse(storedProductsString);
@@ -195,14 +194,13 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           transactionHash: sc.transactionHash,
       })) || [];
       
-      // Ensure complianceSummary and its nested objects exist before trying to access their properties
       const complianceSummaryFromStorage = userProductData.complianceSummary || { overallStatus: 'N/A' as SimpleProductDetail['complianceSummary']['overallStatus'] };
       const ebsiFromStorage = complianceSummaryFromStorage.ebsi;
 
       const dppEquivalent: DigitalProductPassport = {
         id: userProductData.id,
         productName: userProductData.productName || "N/A",
-        category: userProductData.productCategory || "N/A", // Map from productCategory
+        category: userProductData.productCategory || "N/A",
         manufacturer: userProductData.manufacturer ? { name: userProductData.manufacturer } : undefined,
         modelNumber: userProductData.modelNumber,
         sku: userProductData.sku,
@@ -227,7 +225,7 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           specifications: userProductData.specifications,
           customAttributes: parsedCustomAttributes,
         },
-        compliance: { // Use complianceData from StoredUserProduct if available
+        compliance: { 
           eprel: userProductData.complianceData?.eprel || complianceSummaryFromStorage.eprel,
           scipNotification: userProductData.complianceData?.scipNotification || complianceSummaryFromStorage.scip,
           euCustomsData: userProductData.complianceData?.euCustomsData || complianceSummaryFromStorage.euCustomsData,
@@ -258,26 +256,25 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
     }
   }
 
-  // 2. If not in localStorage, try MOCK_DPPS
-  let foundMockDpp: DigitalProductPassport | undefined;
-  let canonicalLookupId = productId; // Default to the provided ID
-
-  // If the ID starts with "PROD" but not "USER_PROD", it might be an alias for a "DPP" mock.
+  // 2. If not in localStorage, try MOCK_DPPS, attempting ID conversion if needed
+  let canonicalLookupId = productId;
   if (productId.startsWith("PROD") && !productId.startsWith("USER_PROD")) {
     canonicalLookupId = productId.replace("PROD", "DPP");
   }
-  // Attempt lookup with canonicalLookupId (which might be original productId or the converted "DPPxxx" ID)
-  foundMockDpp = MOCK_DPPS.find(dpp => dpp.id === canonicalLookupId);
-
+  
+  const foundMockDpp = MOCK_DPPS.find(dpp => dpp.id === canonicalLookupId);
   if (foundMockDpp) {
     return mapDppToSimpleProductDetail(foundMockDpp);
   }
+  
+  // If still not found even after canonical conversion, try the original productId against mocks one last time
+  // This covers cases where a mock might actually have an ID like "PRODxxx" (though current mocks use "DPPxxx")
+  if (productId !== canonicalLookupId) {
+    const foundMockDppOriginalId = MOCK_DPPS.find(dpp => dpp.id === productId);
+    if (foundMockDppOriginalId) {
+      return mapDppToSimpleProductDetail(foundMockDppOriginalId);
+    }
+  }
 
-  // If still not found, and the original productId was different from canonicalLookupId (meaning it was a "PRODxxx" that wasn't found as "DPPxxx"),
-  // it implies neither the "DPPxxx" version nor the "PRODxxx" direct ID exists in mocks.
-  // This final null return handles cases where the ID isn't in localStorage AND doesn't match any mock patterns.
   return null;
 }
-    
-    
-    

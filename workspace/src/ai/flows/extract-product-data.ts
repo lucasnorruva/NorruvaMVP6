@@ -143,5 +143,3 @@ const extractProductDataFlow = ai.defineFlow(
     return output!;
   }
 );
-
-    

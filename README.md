@@ -6,6 +6,7 @@ Welcome to the Norruva Digital Product Passport (DPP) concept application! This 
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Core System Framework & Compliance](#core-system-framework--compliance)
 - [Tech Stack](#tech-stack)
 - [Core Features (Conceptual)](#core-features-conceptual)
 - [Current Implemented Features](#current-implemented-features)
@@ -34,6 +35,10 @@ The Norruva DPP platform aims to provide a comprehensive solution for:
 
 This application serves as a prototype to demonstrate these capabilities.
 
+## Core System Framework & Compliance
+
+The overall design, features, and compliance approach for the Norruva DPP system are detailed in the [Comprehensive Digital Product Passport (DPP) Compliance Framework](docs/comprehensive-dpp-compliance-framework.md). This document covers a wide array of requirements including regulatory compliance, sustainability goals, lifecycle tracking, data integration strategies, and the incorporation of emerging technologies like AI, Blockchain, and IoT.
+
 ## Tech Stack
 
 - **Framework:** Next.js (App Router)
@@ -45,34 +50,39 @@ This application serves as a prototype to demonstrate these capabilities.
 
 ## Core Features (Conceptual)
 
-The platform is designed around the following core feature pillars:
+The platform is designed around the following core feature pillars (refer to the comprehensive framework for full details):
 
-- **Secure Product Data Storage:** Scalable and compliant data management.
-- **EBSI Blockchain Integration:** For transparent lifecycle tracking (conceptual).
-- **AI-Powered Data Extraction:** Automating data entry from supplier documents.
-- **GDPR Compliance Management:** Granular consent and data subject rights.
-- **EPREL Database Connectivity:** Automating energy label generation (conceptual).
-- **CSRD Reporting:** Supporting sustainability reporting.
+- **Regulatory Compliance**: Adherence to ESPR, REACH, RoHS, Battery Regulation, GDPR, etc.
+- **Sustainability & Circular Economy**: Carbon footprint tracking, circularity metrics, end-of-life management.
+- **Product Lifecycle Tracking & Data Integration**: Real-time IoT data, AI-powered analytics, smart contracts.
+- **Blockchain & Digital Twin Integration**: Immutable records, provenance, real-time monitoring.
+- **AI & Machine Learning Integration**: Design optimization, performance insights.
+- **Consumer & Business Interaction**: User-friendly interfaces, engagement platforms.
+- **Emerging Technologies**: Quantum-readiness, smart packaging, smart city integration.
+- **Ethical Sourcing & Fair Trade**: Supply chain transparency.
+- **Decentralized Governance**: Conceptual DAO integration.
+- **Global Trade Compliance**: Cross-border taxation and regulations.
 
 ## Current Implemented Features
 
 As of the current version, the following key areas and features have been prototyped:
 
-- **Role-Based Dashboard:** Different views and actions based on user roles (Admin, Manufacturer, Supplier, etc.).
+- **Role-Based Dashboard:** Different views and actions based on user roles (Admin, Manufacturer, Supplier, Retailer, Recycler, Verifier, Service Provider).
 - **DPP Live Dashboard:** A view for public-facing DPPs, with filtering and AI summary generation.
 - **Product Management:**
-    - Listing existing products.
-    - Adding new products via manual entry or AI-assisted document extraction.
-    - Viewing detailed product information on the individual product detail page.
+    - Listing existing products with advanced filtering and sorting.
+    - Adding new products via manual entry or AI-assisted document extraction, including category-specific fields (Textiles, Construction) and on-chain state management.
+    - Viewing detailed product information on the individual product detail page, including a new "History" tab.
     - Debounced search filtering for smoother performance on large datasets.
 - **AI Compliance Co-Pilot:** An AI assistant to answer questions about EU DPP regulations.
-- **Compliance Pathways:** Step-by-step guidance for specific regulations (e.g., EU Battery Regulation).
+- **Compliance Pathways:** Step-by-step guidance for specific regulations (e.g., EU Battery Regulation, ESPR, CSRD, SCIP).
 - **GDPR Management Page:** Mock interface for consent and data subject rights.
 - **Sustainability Reporting:** Mock CSRD summary generation and emissions overview.
 - **Customs & Compliance Dashboard:** A specialized view for customs-related product tracking and compliance alerts.
+- **Service Provider Dashboard:** A conceptual dashboard for service technicians to manage service jobs and access product technical data.
 - **Supply Chain Management:**
     - Managing a list of suppliers.
-    - Linking suppliers to products (viewable on the product detail page's "Supply Chain" tab).
+    - Linking suppliers to products (viewable on the product detail page's "Supply Chain" tab), with conceptual private attestation viewing.
 - **Developer Portal:** Mock portal with API key management, interactive playground, and conceptual documentation. The canonical OpenAPI specification lives in `openapi.yaml` and is served at `/openapi.yaml` after being copied to `public/openapi.yaml` during the build process.
 - **Settings Page:** Basic user profile, notifications, and organization settings.
 
@@ -84,7 +94,7 @@ profiling should be done with realistic datasets.
 
 ## Product Detail Page
 
-The individual **Product Detail Page** (accessed via `/products/[productId]`) has been refactored and is now fully functional. It provides a comprehensive tabbed view of product information, including overview, sustainability, compliance, lifecycle, and supply chain details.
+The individual **Product Detail Page** (accessed via `/products/[productId]`) has been refactored and is now significantly more comprehensive. It provides an enhanced tabbed view of product information, including a detailed overview with consolidated identifiers and blockchain state, sustainability metrics, full compliance status, product history, certifications, lifecycle events, and supply chain details. It also supports category-specific information for textiles and construction products.
 
 Links from other parts of the application, such as the "Products" listing page (`/products`) and the "DPP Live Dashboard" (`/dpp-live-dashboard`), that lead to this internal detail view are active and direct users to the relevant product's detailed information. The "Products" listing page (`/products`) and the "Add New Product" page (`/products/new`) are also fully functional for managing the product list and creating/editing entries.
 
@@ -297,10 +307,11 @@ Without this permission Google Cloud cannot generate the access token required t
 - `src/contexts/`: React context providers.
 - `src/types/`: TypeScript type definitions.
 - `openapi.yaml`: Canonical API specification. The build process copies this file to `public/openapi.yaml` so it is served at `/openapi.yaml`.
+- `docs/`: Contains high-level design and architecture documents, including the [Comprehensive DPP Compliance Framework](docs/comprehensive-dpp-compliance-framework.md).
 
 ## Advanced Blockchain Architecture
 
-Detailed smart contract design and DAO governance specifications are documented in [docs/blockchain-architecture.md](docs/blockchain-architecture.md).
+While the [Comprehensive DPP Compliance Framework](docs/comprehensive-dpp-compliance-framework.md) covers broader system design, specific smart contract design and DAO governance specifications are documented in `workspace/docs/blockchain-architecture.md`.
 The smart contract code itself resides in `workspace/contracts/`.
 
 ## Smart Contract Development
@@ -397,3 +408,6 @@ This application is being developed within the Firebase Studio environment, an A
 ---
 
 This README will be updated as the project evolves.
+
+
+    

@@ -79,11 +79,18 @@ export default function ZkpLayerConceptsPage() {
               <span className="text-muted-foreground ml-1">Conceptually allows a verifier to check if a claim for a DPP has a (mock) valid ZKP. The mock returns a simulated verification status.</span>
             </li>
           </ul>
-          <Button variant="link" asChild className="p-0 h-auto text-sm">
-            <a href="/openapi.yaml" target="_blank" rel="noopener noreferrer">
-                View in OpenAPI Specification <ExternalLink className="ml-1 h-3 w-3"/>
-            </a>
-          </Button>
+          <div className="flex flex-wrap gap-2 mt-2">
+            <Button variant="link" asChild className="p-0 h-auto text-sm">
+              <a href="/openapi.yaml" target="_blank" rel="noopener noreferrer">
+                  View in OpenAPI Specification <ExternalLink className="ml-1 h-3 w-3"/>
+              </a>
+            </Button>
+            <Button variant="link" asChild className="p-0 h-auto text-sm">
+              <Link href="/developer#playground">
+                  Test in API Playground
+              </Link>
+            </Button>
+          </div>
         </CardContent>
       </Card>
       
@@ -119,4 +126,3 @@ export default function ZkpLayerConceptsPage() {
     </DocsPageLayout>
   );
 }
-

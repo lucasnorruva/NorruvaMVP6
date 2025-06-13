@@ -36,11 +36,11 @@ export default function ApiReferenceZkpLayerEndpoints({
 
       <Card className="shadow-lg mt-6">
         <CardHeader>
-          <CardTitle className="text-lg">Submit Zero-Knowledge Proof for Private Claim</CardTitle>
+          <CardTitle className="text-lg">Submit Zero-Knowledge Proof for a DPP</CardTitle>
           <CardDescription>
             <span className="inline-flex items-center font-mono text-sm">
-              <Badge variant="outline" className="bg-sky-100 text-sky-700 border-sky-300 mr-2 font-semibold">POST</Badge>
-              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/zkp/dpp/{"{dppId}"}/submit</code>
+              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
+              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/zkp/submit-proof/{"{dppId}"}</code>
             </span>
             <br />
             Submits a ZKP to attest to a specific claim about data within the DPP, without revealing the underlying data itself.
@@ -54,8 +54,8 @@ export default function ApiReferenceZkpLayerEndpoints({
             </ul>
           </section>
           <section>
-            <h4 className="font-semibold mb-1">Request Body (JSON) - ZKP Submission</h4>
-            <p className="text-sm mb-1">Details of the ZKP submission.  This would be highly specific to the claim type and ZKP circuit being used.</p>
+            <h4 className="font-semibold mb-1">Request Body (JSON) - ZkpSubmissionRequest</h4>
+            <p className="text-sm mb-1">Details of the ZKP submission. This would be highly specific to the claim type and ZKP circuit being used. Includes <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">claimType</code>, <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">proofData</code>, and optional <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">publicInputs</code>.</p>
             <details className="border rounded-md">
               <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
                 <FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Request
@@ -80,9 +80,9 @@ export default function ApiReferenceZkpLayerEndpoints({
           <section>
             <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
             <ul className="list-disc list-inside text-sm space-y-2">
-              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>.</li>
+              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code> (e.g., missing claimType or proofData).</li>
               <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.</li>
-              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>.</li>
+              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code> (DPP not found).</li>
               <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.</li>
             </ul>
           </section>
@@ -91,14 +91,14 @@ export default function ApiReferenceZkpLayerEndpoints({
 
       <Card className="shadow-lg mt-6">
         <CardHeader>
-          <CardTitle className="text-lg">Verify Zero-Knowledge Proof for DPP</CardTitle>
+          <CardTitle className="text-lg">Verify ZKP Claim for a DPP</CardTitle>
           <CardDescription>
             <span className="inline-flex items-center font-mono text-sm">
-              <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">GET</Badge>
-              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/zkp/dpp/{"{dppId}"}/verify/{"{proofId}"}</code>
+              <Badge variant="outline" className="bg-sky-100 text-sky-700 border-sky-300 mr-2 font-semibold">GET</Badge>
+              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/zkp/verify-claim/{"{dppId}"}?claimType=...</code>
             </span>
             <br />
-            Verifies a previously submitted ZKP for a specific Digital Product Passport, checking its validity against the claim it makes.
+            Verifies a conceptual ZKP for a specific claim related to a DPP.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -106,12 +106,17 @@ export default function ApiReferenceZkpLayerEndpoints({
             <h4 className="font-semibold mb-1">Path Parameters</h4>
             <ul className="list-disc list-inside text-sm space-y-1">
               <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">dppId</code> (string, required): The unique identifier of the Digital Product Passport.</li>
-              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">proofId</code> (string, required): The unique identifier of the Zero-Knowledge Proof.</li>
+            </ul>
+          </section>
+          <section>
+            <h4 className="font-semibold mb-1">Query Parameters</h4>
+            <ul className="list-disc list-inside text-sm space-y-1">
+              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">claimType</code> (string, required): The specific claim to verify (e.g., "material_compliance_svhc_lead_less_0.1").</li>
             </ul>
           </section>
           <section>
             <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
-            <p className="text-sm mb-1">Returns the verification status of the ZKP.</p>
+            <p className="text-sm mb-1">Returns the verification status of the ZKP claim.</p>
             <details className="border rounded-md">
               <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
                 <FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Response
@@ -124,9 +129,9 @@ export default function ApiReferenceZkpLayerEndpoints({
           <section>
             <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
             <ul className="list-disc list-inside text-sm space-y-2">
-              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>.</li>
+              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code> (e.g., missing claimType).</li>
               <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.</li>
-              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>.</li>
+              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code> (DPP or specified claim proof not found).</li>
               <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.</li>
             </ul>
           </section>

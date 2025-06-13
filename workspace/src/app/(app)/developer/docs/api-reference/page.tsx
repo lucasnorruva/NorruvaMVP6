@@ -205,7 +205,7 @@ export default function ApiReferencePage() {
     },
     compliance: {
         ...dpp001ForUpdateResponse.compliance,
-        battery_regulation: { 
+        battery_regulation: { // Show updated battery_regulation data
             status: "pending",
             batteryPassportId: "BATT-ID-SW-S5-ECO-001",
             carbonFootprint: {
@@ -217,7 +217,7 @@ export default function ApiReferencePage() {
             recycledContent: [
                 { material: "Aluminum", percentage: 80, vcId: "vc:rc:aluminum:sw-s5-eco:001" }
             ],
-            stateOfHealth: { 
+            stateOfHealth: { // Add example SoH
                 value: 99,
                 unit: "%",
                 measurementDate: new Date().toISOString(),
@@ -513,5 +513,3 @@ export default function ApiReferencePage() {
     </DocsPageLayout>
   );
 }
-
-

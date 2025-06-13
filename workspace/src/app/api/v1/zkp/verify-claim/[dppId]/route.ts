@@ -45,5 +45,9 @@ export async function GET(
       : `Mock ZKP for claim '${claimType}' on DPP '${dppId}' could not be verified or was found invalid.`,
   };
 
+  // In a real system, this would involve looking up the submitted proofId (if provided or linked)
+  // and running a ZKP verification algorithm.
+  // For this mock, we simply return a random-ish result.
+
   return NextResponse.json(responsePayload, { status: 200 });
 }

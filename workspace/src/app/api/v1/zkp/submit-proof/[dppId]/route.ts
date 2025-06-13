@@ -56,5 +56,8 @@ export async function POST(
     timestamp: now,
   };
 
+  // In a real system, you might store this ZKP submission record linked to the DPP.
+  // For this mock, we just return the acknowledgement.
+
   return NextResponse.json(responsePayload, { status: 202 }); // 202 Accepted
 }

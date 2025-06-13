@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation'; // Import useRouter
+import { useRouter } from 'next/navigation';
 import { SidebarTrigger } from "@/components/ui/sidebar/Sidebar";
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import { Menu, UserCircle, Users, LogOut, User, Settings as SettingsIcon, Bell }
 import AppSidebarContent from "./AppSidebarContent";
 import { Logo } from "@/components/icons/Logo";
 import { useRole, type UserRole } from "@/contexts/RoleContext";
+import { roleDashboardPaths } from '@/config/navConfig'; // Import roleDashboardPaths
 import {
   Select,
   SelectContent,
@@ -36,17 +37,6 @@ interface AppNotification {
   description: string;
   time: string;
 }
-
-// Define roleDashboardPaths here for navigation
-const roleDashboardPaths: Record<UserRole, string> = {
-  admin: "/admin-dashboard",
-  manufacturer: "/manufacturer-dashboard",
-  supplier: "/supplier-dashboard",
-  retailer: "/retailer-dashboard",
-  recycler: "/recycler-dashboard",
-  verifier: "/verifier-dashboard",
-  service_provider: "/service-provider-dashboard",
-};
 
 const generateMockNotifications = (role: UserRole): AppNotification[] => {
   const now = Date.now();
@@ -99,7 +89,7 @@ const formatRoleNameForDisplay = (role: UserRole): string => {
 };
 
 export default function AppHeader() {
-  const router = useRouter(); // Initialize useRouter
+  const router = useRouter(); 
   const { isMobile } = useSidebar(); 
   const { currentRole, setCurrentRole, availableRoles } = useRole();
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
@@ -115,9 +105,9 @@ export default function AppHeader() {
 
   const handleRoleChange = (newRoleValue: string) => {
     const newRole = newRoleValue as UserRole;
-    setCurrentRole(newRole);
+    setCurrentRole(newRole); 
     if (roleDashboardPaths[newRole]) {
-      router.push(roleDashboardPaths[newRole]);
+      router.push(roleDashboardPaths[newRole]); 
     }
   };
 
@@ -139,7 +129,7 @@ export default function AppHeader() {
         ) : (
           <>
             <SidebarTrigger className="hidden md:flex" />
-            <Link href="/dashboard" className="flex items-center text-primary">
+            <Link href={roleDashboardPaths[currentRole] || "/dashboard"} className="flex items-center text-primary"> {/* Logo links to current role's dashboard */}
               <Logo className="h-8 w-auto" />
             </Link>
           </>
@@ -149,7 +139,7 @@ export default function AppHeader() {
       <div className="flex items-center gap-3 md:gap-4"> 
         <div className="flex items-center gap-2">
           <Users className="h-5 w-5 text-muted-foreground" />
-          <Select value={currentRole} onValueChange={handleRoleChange}> {/* Updated onValueChange */}
+          <Select value={currentRole} onValueChange={handleRoleChange}> 
             <SelectTrigger className="w-[130px] sm:w-[160px] h-9 text-sm focus:ring-primary"> 
               <SelectValue placeholder="Select Role" />
             </SelectTrigger>

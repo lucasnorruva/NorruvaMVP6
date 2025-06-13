@@ -18,8 +18,20 @@ export interface NavItemConfig {
   requiredRoles: UserRole[];
 }
 
+// Centralized mapping of roles to their specific dashboard paths
+export const roleDashboardPaths: Record<UserRole, string> = {
+  admin: "/admin-dashboard",
+  manufacturer: "/manufacturer-dashboard",
+  supplier: "/supplier-dashboard",
+  retailer: "/retailer-dashboard",
+  recycler: "/recycler-dashboard",
+  verifier: "/verifier-dashboard",
+  service_provider: "/service-provider-dashboard",
+};
+
 export const ALL_NAV_ITEMS: NavItemConfig[] = [
   // Main Group
+  // The href for "Dashboard" will be dynamically adjusted in AppSidebarContent
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard, group: 'main', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider'] },
   { href: "/dpp-live-dashboard", label: "Live DPPs", icon: LineChart, group: 'main', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider'] },
   { href: "/products", label: "Products", icon: Package, group: 'main', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier'] },

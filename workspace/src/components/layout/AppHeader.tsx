@@ -2,7 +2,8 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { useRouter, usePathname } from 'next/navigation';
+import { useRouter } // Removed usePathname as it's not used after simplification
+from 'next/navigation';
 import { SidebarTrigger } from "@/components/ui/sidebar/Sidebar";
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { Button } from "@/components/ui/button";
@@ -10,8 +11,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Menu, UserCircle, LogOut, User, Settings as SettingsIcon, Bell } from "lucide-react";
 import AppSidebarContent from "./AppSidebarContent";
 import { Logo } from "@/components/icons/Logo";
-import { useRole, type UserRole } from "@/contexts/RoleContext";
-import { roleDashboardPaths } from '@/config/navConfig';
+// Removed useRole and roleDashboardPaths as role switching is not handled here
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,79 +31,34 @@ interface AppNotification {
   time: string;
 }
 
-const generateMockNotifications = (role: UserRole): AppNotification[] => {
+const generateMockNotifications = (): AppNotification[] => { // Removed role parameter
   const now = Date.now();
-  const baseNotifications: AppNotification[] = [
+  // Simplified base notifications, not role-specific for this header version
+  return [
     { id: `gen_sys_${now+1}`, title: "Platform Update v1.2 Deployed", description: "New features include enhanced reporting and faster DPP generation. See changelog for details.", time: "2h ago" },
     { id: `gen_sec_${now+2}`, title: "Security Tip: Rotate API Keys", description: "Remember to periodically rotate your API keys for enhanced security.", time: "3d ago" },
+    { id: `generic_info_${now+3}`, title: "Welcome to Norruva", description: "Explore the platform's features and capabilities.", time: "1w ago" },
   ];
-
-  switch (role) {
-    case 'admin':
-      return [
-        { id: `admin_rev_${now}`, title: "Review Queue Update", description: "5 new products are awaiting compliance review in the admin dashboard.", time: "15m ago" },
-        { id: `admin_sys_${now+1}`, title: "System Health: Optimal", description: "All platform services are operating normally. Database backup successful.", time: "1h ago" },
-        ...baseNotifications.slice(0,2),
-      ];
-    case 'manufacturer':
-      return [
-        { id: `mfg_comp_${now}`, title: "ESPR Guidance Updated", description: "New guidance document for ESPR compliance in the 'Textiles' category published.", time: "30m ago" },
-        { id: `mfg_sup_${now+1}`, title: "Supplier 'EcoParts Ltd.' Update", description: "Supplier EcoParts Ltd. has updated their material certifications for 'Recycled Polymers'.", time: "4h ago" },
-        ...baseNotifications.slice(0,2),
-      ];
-    case 'supplier':
-      return [
-        { id: `sup_req_${now}`, title: "Data Request: Acme Corp", description: "Acme Corp has requested updated specifications for 'Component Alpha-7'. Deadline: EOD.", time: "10m ago" },
-        { id: `sup_cert_${now+1}`, title: "Certification Expiring Soon", description: "Your 'ISO 14001' certification for 'Eco-Solvents' is due for renewal next month.", time: "2d ago" },
-        ...baseNotifications.slice(0,2),
-      ];
-    case 'retailer':
-      return [
-        { id: `ret_dpp_${now}`, title: "New Product DPP Available", description: "DPP for 'Smart Toaster Pro X' from 'KitchenWiz' is now published and ready for consumer view.", time: "1h ago" },
-        { id: `ret_recall_${now+1}`, title: "Product Safety Alert (Mock)", description: "Minor update for 'Product Y' related to packaging information. No action required for sold units.", time: "1d ago" },
-        ...baseNotifications.slice(0,2),
-      ];
-    case 'service_provider':
-      return [
-        { id: `sp_job_${now}`, title: "New Service Job Assigned", description: "Product 'EcoCool Fridge Z100' requires urgent diagnostic. Check schedule.", time: "5m ago"},
-        { id: `sp_manual_${now+1}`, title: "Repair Manual Updated", description: "Updated repair manual for 'SolarPanel Gen3' series now available.", time: "6h ago"},
-        ...baseNotifications.slice(0,2),
-      ];
-    default:
-      return baseNotifications;
-  }
 };
-
-const formatRoleNameForDisplay = (role: UserRole): string => {
-  return role
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-};
-
 
 export default function AppHeader() {
   const router = useRouter();
   const { isMobile } = useSidebar();
-  const { currentRole } = useRole(); // Only need currentRole for logo link
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
-  const pathname = usePathname();
 
   useEffect(() => {
-    setNotifications(generateMockNotifications(currentRole));
-  }, [currentRole]);
+    setNotifications(generateMockNotifications());
+  }, []);
+
 
   const handleLogout = () => {
     alert("Mock Logout: User logged out!");
-    // In a real app, you would clear context/session and redirect to a login page
     router.push('/'); // Redirect to homepage after logout
   };
   
-  const currentRoleDashboardPath = roleDashboardPaths[currentRole] || '/dashboard';
-
   return (
     <header className="sticky top-0 z-40 flex h-16 items-center justify-between gap-4 border-b border-border bg-card px-4 backdrop-blur-md md:px-6">
-      <div className="flex items-center gap-2"> {/* Container for left-aligned items */}
+      <div className="flex items-center gap-2">
         {isMobile ? (
           <Sheet>
             <SheetTrigger asChild>
@@ -113,22 +68,21 @@ export default function AppHeader() {
               </Button>
             </SheetTrigger>
             <SheetContent side="left" className="flex flex-col p-0 bg-sidebar text-sidebar-foreground w-[--sidebar-width-mobile]">
-              <AppSidebarContent /> {/* This contains its own logo when sheet is open */}
+              <AppSidebarContent />
             </SheetContent>
           </Sheet>
         ) : (
           <>
             <SidebarTrigger className="hidden md:flex" />
-            <Link href={currentRoleDashboardPath} className="flex items-center text-primary">
+            {/* Logo now links to a generic /dashboard, redirection will handle role */}
+            <Link href="/dashboard" className="flex items-center text-primary">
               <Logo className="h-8 w-auto" />
             </Link>
           </>
         )}
       </div>
 
-      <div className="flex items-center gap-3 md:gap-4"> {/* Container for right-aligned items */}
-        {/* Role selector dropdown has been removed */}
-
+      <div className="flex items-center gap-3 md:gap-4">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative rounded-full">
@@ -145,8 +99,9 @@ export default function AppHeader() {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-80 sm:w-96">
+            {/* Notification label is now generic */}
             <DropdownMenuLabel className="flex justify-between items-center">
-              <span>Notifications ({formatRoleNameForDisplay(currentRole)})</span>
+              <span>Notifications</span> 
               {notifications.length > 0 && (
                 <Badge variant="secondary" className="text-xs">{notifications.length} New</Badge>
               )}

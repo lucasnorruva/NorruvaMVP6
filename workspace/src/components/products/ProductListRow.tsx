@@ -17,8 +17,8 @@ import ProductStatusBadge from './list/ProductStatusBadge';
 import ProductComplianceBadge from './list/ProductComplianceBadge';
 import ProductCompletenessIndicator from './list/ProductCompletenessIndicator';
 import { getAiHintForImage } from '@/utils/imageUtils';
-import { Badge } from '@/components/ui/badge'; // Import Badge
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip
+import { Badge } from '@/components/ui/badge'; 
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 
 
 interface ProductListRowProps {
@@ -138,4 +138,3 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
     </TableRow>
   );
 }
-

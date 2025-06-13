@@ -261,7 +261,7 @@ export default function ProductsPage() {
         <h1 className="text-3xl font-headline font-semibold">Product Management</h1>
         {canAddProducts && (
           <Link href="/products/new" passHref>
-            <Button variant="secondary">
+            <Button variant="default">
               <PlusCircle className="mr-2 h-5 w-5" />
               Add New Product
             </Button>

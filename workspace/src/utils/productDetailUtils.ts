@@ -171,12 +171,18 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
   await new Promise(resolve => setTimeout(resolve, 0)); // Minimal delay for promise resolution
 
   let foundDpp: DigitalProductPassport | undefined;
+  let canonicalProductId = productId;
+
+  // Handle the PRODxxx to DPPxxx mapping for mock data used in the product list page
+  if (productId.startsWith("PROD") && !productId.startsWith("USER_PROD")) {
+    canonicalProductId = productId.replace("PROD", "DPP");
+  }
 
   if (productId.startsWith("USER_PROD")) {
     const storedProductsString = typeof window !== 'undefined' ? localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY) : null;
     if (storedProductsString) {
       const userProducts: StoredUserProduct[] = JSON.parse(storedProductsString);
-      const userProductData = userProducts.find(p => p.id === productId);
+      const userProductData = userProducts.find(p => p.id === productId); // Use original productId for user products
       if (userProductData) {
         let parsedCustomAttributes: CustomAttribute[] = [];
         if (userProductData.customAttributesJsonString) {
@@ -258,7 +264,8 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
       }
     }
   } else {
-    foundDpp = MOCK_DPPS.find(dpp => dpp.id === productId);
+    // Use canonicalProductId for lookup in MOCK_DPPS for non-user products
+    foundDpp = MOCK_DPPS.find(dpp => dpp.id === canonicalProductId);
   }
 
   if (foundDpp) {

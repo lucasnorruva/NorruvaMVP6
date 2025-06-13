@@ -43,12 +43,7 @@ export default function HomePage() {
         Securely manage your product data, ensure EU compliance, and harness the power of AI for streamlined operations.
       </p>
       <div className="space-y-4 sm:space-y-0 sm:flex sm:space-x-6 mb-12">
-        <Link href="/dashboard" passHref>
-          <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 w-full sm:w-auto">
-            Partner Dashboard
-            <ArrowRight className="ml-2 h-5 w-5" />
-          </Button>
-        </Link>
+        {/* Removed Partner Dashboard button */}
         <Button variant="outline" size="lg" className="w-full sm:w-auto">
           Learn More
         </Button>

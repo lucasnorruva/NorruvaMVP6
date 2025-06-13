@@ -167,112 +167,117 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
 
 export async function fetchProductDetails(productId: string): Promise<SimpleProductDetail | null> {
-  // Simulate async fetching
   await new Promise(resolve => setTimeout(resolve, 0)); // Minimal delay for promise resolution
 
-  let foundDpp: DigitalProductPassport | undefined;
-  let canonicalProductId = productId;
-
-  // Handle the PRODxxx to DPPxxx mapping for mock data used in the product list page
-  if (productId.startsWith("PROD") && !productId.startsWith("USER_PROD")) {
-    canonicalProductId = productId.replace("PROD", "DPP");
-  }
-
-  if (productId.startsWith("USER_PROD")) {
-    const storedProductsString = typeof window !== 'undefined' ? localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY) : null;
-    if (storedProductsString) {
-      const userProducts: StoredUserProduct[] = JSON.parse(storedProductsString);
-      const userProductData = userProducts.find(p => p.id === productId); // Use original productId for user products
-      if (userProductData) {
-        let parsedCustomAttributes: CustomAttribute[] = [];
-        if (userProductData.customAttributesJsonString) {
-            try {
-                const parsed = JSON.parse(userProductData.customAttributesJsonString);
-                if (Array.isArray(parsed)) parsedCustomAttributes = parsed;
-            } catch (e) {
-                console.error("Failed to parse customAttributesJsonString from localStorage for USER_PROD:", e);
-            }
-        }
-        const certificationsForUserProd: Certification[] = userProductData.certifications?.map(sc => ({
-            id: sc.id || `cert_user_${sc.name.replace(/\s+/g, '_')}_${Math.random().toString(36).slice(2, 7)}`, // Ensure ID exists
-            name: sc.name,
-            issuer: sc.authority,
-            issueDate: sc.issueDate,
-            expiryDate: sc.expiryDate,
-            documentUrl: sc.documentUrl,
-            standard: sc.standard,
-            vcId: sc.vcId,
-            transactionHash: sc.transactionHash,
-        })) || [];
-        
-        const complianceSummaryFromStorage = userProductData.complianceSummary || { overallStatus: 'N/A' };
-
-        foundDpp = {
-          id: userProductData.id,
-          productName: userProductData.productName || "N/A",
-          category: userProductData.productCategory || "N/A",
-          manufacturer: { name: userProductData.manufacturer || "N/A" },
-          modelNumber: userProductData.modelNumber,
-          sku: userProductData.sku,
-          nfcTagId: userProductData.nfcTagId,
-          rfidTagId: userProductData.rfidTagId,
-          gtin: userProductData.gtin,
-          metadata: {
-            status: (userProductData.status?.toLowerCase() as DigitalProductPassport['metadata']['status']) || 'draft',
-            last_updated: userProductData.lastUpdated || new Date().toISOString(),
-            created_at: userProductData.lastUpdated || new Date().toISOString(), 
-            onChainStatus: userProductData.metadata?.onChainStatus,
-            onChainLifecycleStage: userProductData.metadata?.onChainLifecycleStage,
-          },
-          productDetails: {
-            description: userProductData.productDescription,
-            imageUrl: userProductData.imageUrl,
-            imageHint: userProductData.imageHint,
-            sustainabilityClaims: userProductData.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
-            materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [],
-            energyLabel: userProductData.energyLabel,
-            specifications: userProductData.specifications, 
-            customAttributes: parsedCustomAttributes, 
-          },
-          compliance: { 
-            eprel: userProductData.complianceData?.eprel,
-            scipNotification: userProductData.complianceData?.scipNotification, 
-            euCustomsData: userProductData.complianceData?.euCustomsData,
-            battery_regulation: userProductData.complianceData?.battery_regulation, 
-            esprConformity: userProductData.complianceData?.esprConformity, 
-          },
-          ebsiVerification: complianceSummaryFromStorage.ebsi ? {
-            status: complianceSummaryFromStorage.ebsi.status as EbsiVerificationDetails['status'],
-            verificationId: complianceSummaryFromStorage.ebsi.verificationId,
-            lastChecked: complianceSummaryFromStorage.ebsi.lastChecked,
-          } : undefined,
-          lifecycleEvents: userProductData.lifecycleEvents?.map(e => ({
-              id: e.id,
-              type: e.eventName,
-              timestamp: e.date,
-              location: e.location,
-              data: e.notes ? { notes: e.notes } : undefined,
-          })),
-          certifications: certificationsForUserProd,
-          supplyChainLinks: userProductData.supplyChainLinks || [],
-          authenticationVcId: userProductData.authenticationVcId, 
-          ownershipNftLink: userProductData.ownershipNftLink, 
-          blockchainIdentifiers: userProductData.blockchainIdentifiers, 
-          textileInformation: userProductData.textileInformation, 
-          constructionProductInformation: userProductData.constructionProductInformation, 
-        } as DigitalProductPassport;
+  // 1. Attempt to load from localStorage first for ANY ID.
+  // This prioritizes user-created data, even if it clashes with a mock naming pattern.
+  const storedProductsString = typeof window !== 'undefined' ? localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY) : null;
+  if (storedProductsString) {
+    const userProducts: StoredUserProduct[] = JSON.parse(storedProductsString);
+    const userProductData = userProducts.find(p => p.id === productId);
+    if (userProductData) {
+      let parsedCustomAttributes: CustomAttribute[] = [];
+      if (userProductData.customAttributesJsonString) {
+          try {
+              const parsed = JSON.parse(userProductData.customAttributesJsonString);
+              if (Array.isArray(parsed)) parsedCustomAttributes = parsed;
+          } catch (e) { console.error("Failed to parse customAttributesJsonString from localStorage:", e); }
       }
+      const certificationsForUserProd: Certification[] = userProductData.certifications?.map(sc => ({
+          id: sc.id || `cert_user_${sc.name.replace(/\s+/g, '_')}_${Math.random().toString(36).slice(2, 7)}`,
+          name: sc.name,
+          issuer: sc.authority,
+          issueDate: sc.issueDate,
+          expiryDate: sc.expiryDate,
+          documentUrl: sc.documentUrl,
+          standard: sc.standard,
+          vcId: sc.vcId,
+          transactionHash: sc.transactionHash,
+      })) || [];
+      
+      // Ensure complianceSummary and its nested objects exist before trying to access their properties
+      const complianceSummaryFromStorage = userProductData.complianceSummary || { overallStatus: 'N/A' as SimpleProductDetail['complianceSummary']['overallStatus'] };
+      const ebsiFromStorage = complianceSummaryFromStorage.ebsi;
+
+      const dppEquivalent: DigitalProductPassport = {
+        id: userProductData.id,
+        productName: userProductData.productName || "N/A",
+        category: userProductData.productCategory || "N/A", // Map from productCategory
+        manufacturer: userProductData.manufacturer ? { name: userProductData.manufacturer } : undefined,
+        modelNumber: userProductData.modelNumber,
+        sku: userProductData.sku,
+        nfcTagId: userProductData.nfcTagId,
+        rfidTagId: userProductData.rfidTagId,
+        gtin: userProductData.gtin,
+        metadata: {
+          status: (userProductData.status?.toLowerCase() as DigitalProductPassport['metadata']['status']) || 'draft',
+          last_updated: userProductData.lastUpdated || new Date().toISOString(),
+          created_at: userProductData.metadata?.created_at || userProductData.lastUpdated || new Date().toISOString(),
+          onChainStatus: userProductData.metadata?.onChainStatus,
+          onChainLifecycleStage: userProductData.metadata?.onChainLifecycleStage,
+          dppStandardVersion: userProductData.metadata?.dppStandardVersion,
+        },
+        productDetails: {
+          description: userProductData.productDescription,
+          imageUrl: userProductData.imageUrl,
+          imageHint: userProductData.imageHint,
+          sustainabilityClaims: userProductData.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
+          materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [],
+          energyLabel: userProductData.energyLabel,
+          specifications: userProductData.specifications,
+          customAttributes: parsedCustomAttributes,
+        },
+        compliance: { // Use complianceData from StoredUserProduct if available
+          eprel: userProductData.complianceData?.eprel || complianceSummaryFromStorage.eprel,
+          scipNotification: userProductData.complianceData?.scipNotification || complianceSummaryFromStorage.scip,
+          euCustomsData: userProductData.complianceData?.euCustomsData || complianceSummaryFromStorage.euCustomsData,
+          battery_regulation: userProductData.complianceData?.battery_regulation || userProductData.batteryRegulation || complianceSummaryFromStorage.battery,
+          esprConformity: userProductData.complianceData?.esprConformity,
+        },
+        ebsiVerification: ebsiFromStorage ? {
+          status: ebsiFromStorage.status as EbsiVerificationDetails['status'],
+          verificationId: ebsiFromStorage.verificationId,
+          lastChecked: ebsiFromStorage.lastChecked,
+        } : undefined,
+        lifecycleEvents: userProductData.lifecycleEvents?.map(e => ({
+          id: e.id,
+          type: e.eventName,
+          timestamp: e.date,
+          location: e.location,
+          data: e.notes ? { notes: e.notes } : undefined,
+        })),
+        certifications: certificationsForUserProd,
+        supplyChainLinks: userProductData.supplyChainLinks || [],
+        authenticationVcId: userProductData.authenticationVcId,
+        ownershipNftLink: userProductData.ownershipNftLink,
+        blockchainIdentifiers: userProductData.blockchainIdentifiers,
+        textileInformation: userProductData.textileInformation,
+        constructionProductInformation: userProductData.constructionProductInformation,
+      };
+      return mapDppToSimpleProductDetail(dppEquivalent);
     }
-  } else {
-    // Use canonicalProductId for lookup in MOCK_DPPS for non-user products
-    foundDpp = MOCK_DPPS.find(dpp => dpp.id === canonicalProductId);
   }
 
-  if (foundDpp) {
-    return mapDppToSimpleProductDetail(foundDpp);
+  // 2. If not in localStorage, try MOCK_DPPS
+  let foundMockDpp: DigitalProductPassport | undefined;
+  let canonicalLookupId = productId; // Default to the provided ID
+
+  // If the ID starts with "PROD" but not "USER_PROD", it might be an alias for a "DPP" mock.
+  if (productId.startsWith("PROD") && !productId.startsWith("USER_PROD")) {
+    canonicalLookupId = productId.replace("PROD", "DPP");
   }
+  // Attempt lookup with canonicalLookupId (which might be original productId or the converted "DPPxxx" ID)
+  foundMockDpp = MOCK_DPPS.find(dpp => dpp.id === canonicalLookupId);
+
+  if (foundMockDpp) {
+    return mapDppToSimpleProductDetail(foundMockDpp);
+  }
+
+  // If still not found, and the original productId was different from canonicalLookupId (meaning it was a "PRODxxx" that wasn't found as "DPPxxx"),
+  // it implies neither the "DPPxxx" version nor the "PRODxxx" direct ID exists in mocks.
+  // This final null return handles cases where the ID isn't in localStorage AND doesn't match any mock patterns.
   return null;
 }
     
-
+    
     

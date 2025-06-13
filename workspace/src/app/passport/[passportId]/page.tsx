@@ -425,7 +425,7 @@ export default function PublicPassportPage() {
                  <Card className="border-0 shadow-none">
                     <CardHeader className="px-0 pt-0 pb-4">
                     <CardTitle className="text-xl text-primary flex items-center">
-                        <Fingerprint className="mr-2 h-6 w-6" /> Blockchain & Token Details
+                        <Fingerprint className="mr-2 h-6 w-6" /> Blockchain &amp; Token Details
                     </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3 text-sm px-0 pb-0">
@@ -443,7 +443,7 @@ export default function PublicPassportPage() {
                         <p><strong className="text-muted-foreground flex items-center"><Tag className="mr-1.5 h-4 w-4 text-teal-600"/>Token ID:</strong> 
                              <TooltipProvider><Tooltip><TooltipTrigger asChild>
                                <span className="font-mono text-xs break-all ml-1">{product.tokenId}</span>
-                             </TooltipTrigger><TooltipContent><p>{product.tokenId}</p></TooltipContent></Tooltip></TooltipProvider>
+                             </TooltipTrigger><TooltipContent><p>{product.tokenId}</p></TooltipContent></Tooltip></Tooltip></TooltipProvider>
                         </p>
                     )}
                     {product.anchorTransactionHash && (
@@ -473,8 +473,8 @@ export default function PublicPassportPage() {
                             )}
                         </div>
                     )}
-                    {(product.onChainStatus || product.onChainLifecycleStage) && (
-                        <div className="mt-2 pt-2 border-t border-border/50">
+                     {(product.onChainStatus || product.onChainLifecycleStage) && (
+                        <div className="mt-1.5 pt-1.5 border-t border-border/50">
                           <h4 className="font-medium text-sm text-muted-foreground mb-1">Conceptual On-Chain State:</h4>
                           {product.onChainStatus && <p><strong className="text-muted-foreground flex items-center"><SigmaSquare className="mr-1.5 h-4 w-4 text-purple-600"/>Status:</strong> <Badge variant={product.onChainStatus === "Active" ? "default" : "outline"} className={`capitalize text-xs ${product.onChainStatus === "Active" ? 'bg-blue-100 text-blue-700 border-blue-300' : product.onChainStatus === "Recalled" ? 'bg-red-100 text-red-700 border-red-300' : 'bg-muted text-muted-foreground'}`}>{product.onChainStatus.replace(/_/g, ' ')}</Badge></p>}
                           {product.onChainLifecycleStage && <p className="mt-1"><strong className="text-muted-foreground flex items-center"><LayersIconShadcn className="mr-1.5 h-4 w-4 text-purple-600"/>Lifecycle Stage:</strong> <Badge variant="outline" className="capitalize text-xs">{product.onChainLifecycleStage.replace(/([A-Z])/g, ' $1').trim()}</Badge></p>}

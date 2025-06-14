@@ -29,18 +29,24 @@ const LiveDataCard: React.FC<{ category: string }> = ({ category }) => {
         setTemperature(`${(Math.random() * 6 + 2).toFixed(1)}°C`); // e.g., Refrigerator temp
       } else if (category.toLowerCase().includes("electronics")) {
         setTemperature(`${(Math.random() * 30 + 40).toFixed(1)}°C`); // e.g., CPU temp
+      } else if (category.toLowerCase().includes("automotive")) {
+        setTemperature(`${(Math.random() * 20 + 70).toFixed(1)}°C`); // e.g., Engine/Battery temp
       } else {
         setTemperature("Stable");
       }
     }, 5000);
 
     const usageInterval = setInterval(() => {
-      setUsageHours(prev => prev + 1);
-    }, 10000);
+      setUsageHours(prev => prev + Math.floor(Math.random() * 2) + 1); // Increment by 1 or 2 hours
+    }, 10000); // Update every 10 seconds
 
     const energyInterval = setInterval(() => {
-      if (category.toLowerCase().includes("appliance") || category.toLowerCase().includes("electronics")) {
-        setEnergyDraw(`${(Math.random() * 100 + 50).toFixed(0)}W`); // Random wattage
+      if (category.toLowerCase().includes("appliance")) {
+         setEnergyDraw(`${(Math.random() * 100 + 20).toFixed(0)}W`); // Typical appliance draw
+      } else if (category.toLowerCase().includes("electronics")) {
+         setEnergyDraw(`${(Math.random() * 50 + 10).toFixed(0)}W`); // Lower for electronics
+      } else if (category.toLowerCase().includes("automotive")) {
+         setEnergyDraw(`${(Math.random() * 5 + 1).toFixed(1)}kW`); // Higher for EV/Automotive
       } else {
         setEnergyDraw("Low");
       }
@@ -218,7 +224,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 <div className="mt-1.5 pt-1.5 border-t border-border/50">
                   <h4 className="font-medium text-sm text-muted-foreground mb-1">Conceptual On-Chain State:</h4>
                   {product.onChainStatus && <p><strong className="text-muted-foreground flex items-center"><SigmaSquare className="mr-1.5 h-4 w-4 text-purple-600"/>Status:</strong> <Badge variant={product.onChainStatus === "Active" ? "default" : "outline"} className={`capitalize text-xs ${product.onChainStatus === "Active" ? 'bg-blue-100 text-blue-700 border-blue-300' : product.onChainStatus === "Recalled" ? 'bg-red-100 text-red-700 border-red-300' : 'bg-muted text-muted-foreground'}`}>{product.onChainStatus.replace(/_/g, ' ')}</Badge></p>}
-                  {product.onChainLifecycleStage && <p className="mt-1"><strong className="text-muted-foreground flex items-center"><LayersIconShadcn className="mr-1.5 h-4 w-4 text-purple-600"/>Lifecycle Stage:</strong> <Badge variant="outline" className="capitalize text-xs">{product.onChainLifecycleStage.replace(/([A-Z])/g, ' $1$2').trim()}</Badge></p>}
+                  {product.onChainLifecycleStage && <p className="mt-1"><strong className="text-muted-foreground flex items-center"><LayersIconShadcn className="mr-1.5 h-4 w-4 text-purple-600"/>Lifecycle Stage:</strong> <Badge variant="outline" className="capitalize text-xs">{product.onChainLifecycleStage.replace(/([A-Z])/g, ' $1').trim()}</Badge></p>}
                 </div>
             )}
             {!(product.blockchainPlatform || product.contractAddress || product.tokenId || product.anchorTransactionHash || product.ebsiStatus || product.onChainStatus || product.onChainLifecycleStage) && (
@@ -226,9 +232,6 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             )}
           </CardContent>
         </Card>
-
-         <LiveDataCard category={product.category} />
-
       </div>
 
       {/* Right/Center Column (Details) */}
@@ -288,6 +291,9 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             </CardContent>
           </Card>
         </div>
+
+        <LiveDataCard category={product.category} />
+
 
         <Card className="shadow-sm">
           <CardHeader>
@@ -416,3 +422,4 @@ export default function OverviewTab({ product }: OverviewTabProps) {
     </div>
   );
 }
+

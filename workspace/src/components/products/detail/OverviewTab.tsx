@@ -6,16 +6,80 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Image from "next/image";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Cpu, SigmaSquare, Shirt, Construction, BatteryCharging } from "lucide-react"; 
+import { FileText, CheckCircle, Leaf, ShieldCheck, Tag, Barcode, ListChecks, Info, Fingerprint, Link as LinkIconPath, KeyRound, ExternalLink, Database, Anchor, Layers3, FileCog, Sigma, Layers as LayersIconShadcn, Cpu, SigmaSquare, Shirt, Construction, BatteryCharging, Activity as ActivityIcon, Thermometer, Zap, ClockIcon } from "lucide-react"; 
 import { getAiHintForImage } from "@/utils/imageUtils";
 import NextLink from "next/link"; 
 import { getEbsiStatusBadge } from "@/utils/dppDisplayUtils"; 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 import { Badge } from "@/components/ui/badge";
+import React, { useState, useEffect } from "react"; // Added useState and useEffect
 
 interface OverviewTabProps {
   product: SimpleProductDetail;
 }
+
+const LiveDataCard: React.FC<{ category: string }> = ({ category }) => {
+  const [temperature, setTemperature] = useState<string>("N/A");
+  const [usageHours, setUsageHours] = useState(Math.floor(Math.random() * 1000) + 200);
+  const [energyDraw, setEnergyDraw] = useState<string>("N/A");
+
+  useEffect(() => {
+    const tempInterval = setInterval(() => {
+      if (category.toLowerCase().includes("appliance")) {
+        setTemperature(`${(Math.random() * 6 + 2).toFixed(1)}°C`); // e.g., Refrigerator temp
+      } else if (category.toLowerCase().includes("electronics")) {
+        setTemperature(`${(Math.random() * 30 + 40).toFixed(1)}°C`); // e.g., CPU temp
+      } else {
+        setTemperature("Stable");
+      }
+    }, 5000);
+
+    const usageInterval = setInterval(() => {
+      setUsageHours(prev => prev + 1);
+    }, 10000);
+
+    const energyInterval = setInterval(() => {
+      if (category.toLowerCase().includes("appliance") || category.toLowerCase().includes("electronics")) {
+        setEnergyDraw(`${(Math.random() * 100 + 50).toFixed(0)}W`); // Random wattage
+      } else {
+        setEnergyDraw("Low");
+      }
+    }, 3000);
+
+    return () => {
+      clearInterval(tempInterval);
+      clearInterval(usageInterval);
+      clearInterval(energyInterval);
+    };
+  }, [category]);
+
+  return (
+    <Card className="shadow-sm">
+      <CardHeader>
+        <CardTitle className="text-lg font-semibold flex items-center">
+          <ActivityIcon className="mr-2 h-5 w-5 text-primary" />
+          Live Product Data (Simulated IoT)
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="text-sm space-y-2">
+        <div className="flex items-center justify-between p-2 bg-muted/30 rounded-md">
+          <span className="flex items-center text-muted-foreground"><Thermometer className="h-4 w-4 mr-1.5 text-red-500"/>Operating Temp:</span>
+          <span className="font-semibold text-foreground/90">{temperature}</span>
+        </div>
+        <div className="flex items-center justify-between p-2 bg-muted/30 rounded-md">
+          <span className="flex items-center text-muted-foreground"><ClockIcon className="h-4 w-4 mr-1.5 text-blue-500"/>Usage Hours:</span>
+          <span className="font-semibold text-foreground/90">{usageHours.toLocaleString()} hrs</span>
+        </div>
+        <div className="flex items-center justify-between p-2 bg-muted/30 rounded-md">
+          <span className="flex items-center text-muted-foreground"><Zap className="h-4 w-4 mr-1.5 text-yellow-500"/>Energy Draw:</span>
+          <span className="font-semibold text-foreground/90">{energyDraw}</span>
+        </div>
+        <p className="text-xs text-muted-foreground text-center pt-2">Simulated IoT Data - For Demonstration Only.</p>
+      </CardContent>
+    </Card>
+  );
+};
+
 
 export default function OverviewTab({ product }: OverviewTabProps) {
   if (!product) {
@@ -60,7 +124,7 @@ export default function OverviewTab({ product }: OverviewTabProps) {
                 fill 
                 className="object-contain" 
                 data-ai-hint={aiHint}
-                priority={!imageDisplayUrl.startsWith("data:"))}
+                priority={!imageDisplayUrl.startsWith("data:")}
               />
             </AspectRatio>
           </CardHeader>
@@ -162,6 +226,8 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             )}
           </CardContent>
         </Card>
+
+         <LiveDataCard category={product.category} />
 
       </div>
 
@@ -312,26 +378,37 @@ export default function OverviewTab({ product }: OverviewTabProps) {
             </CardContent>
           </Card>
         )}
-
-        {product.category && product.category.toLowerCase().includes("battery") && product.batteryRegulation && product.batteryRegulation.status !== 'not_applicable' && (
+         {product.batteryRegulation && product.batteryRegulation.status && product.batteryRegulation.status.toLowerCase() !== 'not_applicable' && (
             <Card className="shadow-sm">
                 <CardHeader><CardTitle className="text-lg font-semibold flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-lime-600" />EU Battery Regulation Details</CardTitle></CardHeader>
                 <CardContent className="text-sm space-y-2">
                     <p><strong className="text-muted-foreground">Status:</strong> <Badge variant="outline" className="capitalize">{product.batteryRegulation.status?.replace('_',' ')}</Badge></p>
                     {product.batteryRegulation.batteryChemistry && <p><strong className="text-muted-foreground">Chemistry:</strong> {product.batteryRegulation.batteryChemistry}</p>}
-                    {product.batteryRegulation.batteryPassportId && <p><strong className="text-muted-foreground">Passport ID:</strong> {product.batteryRegulation.batteryPassportId}</p>}
-                    {product.batteryRegulation.carbonFootprint?.value !== null && product.batteryRegulation.carbonFootprint?.value !== undefined && (
-                        <div><strong className="text-muted-foreground">Carbon Footprint:</strong> {product.batteryRegulation.carbonFootprint.value} {product.batteryRegulation.carbonFootprint.unit} ({product.batteryRegulation.carbonFootprint.calculationMethod})</div>
-                    )}
-                    {product.batteryRegulation.recycledContent && product.batteryRegulation.recycledContent.length > 0 && (
-                        <div><strong className="text-muted-foreground">Recycled Content:</strong>
-                            <ul className="list-disc list-inside ml-4">{product.batteryRegulation.recycledContent.map((rc,i) => <li key={i}>{rc.material}: {rc.percentage}%</li>)}</ul>
+                    {product.batteryRegulation.batteryPassportId && <p><strong className="text-muted-foreground">Battery Passport ID:</strong> <span className="font-mono text-xs">{product.batteryRegulation.batteryPassportId}</span></p>}
+                    
+                    {product.batteryRegulation.carbonFootprint && (product.batteryRegulation.carbonFootprint.value !== null && product.batteryRegulation.carbonFootprint.value !== undefined) && (
+                        <div className="mt-1 pt-1 border-t border-border/30"><strong className="text-muted-foreground">Carbon Footprint:</strong> {product.batteryRegulation.carbonFootprint.value} {product.batteryRegulation.carbonFootprint.unit || ''} (Method: {product.batteryRegulation.carbonFootprint.calculationMethod || 'N/A'})
+                         {(product.batteryRegulation.carbonFootprint.scope1Emissions || product.batteryRegulation.carbonFootprint.scope2Emissions || product.batteryRegulation.carbonFootprint.scope3Emissions) && (
+                            <ul className="list-disc list-inside ml-4 text-xs">
+                                {product.batteryRegulation.carbonFootprint.scope1Emissions && <li>Scope 1: {product.batteryRegulation.carbonFootprint.scope1Emissions} {product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')}</li>}
+                                {product.batteryRegulation.carbonFootprint.scope2Emissions && <li>Scope 2: {product.batteryRegulation.carbonFootprint.scope2Emissions} {product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')}</li>}
+                                {product.batteryRegulation.carbonFootprint.scope3Emissions && <li>Scope 3: {product.batteryRegulation.carbonFootprint.scope3Emissions} {product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')}</li>}
+                            </ul>
+                         )}
+                         {product.batteryRegulation.carbonFootprint.dataSource && <p className="text-xs text-muted-foreground pl-5">Data Source: {product.batteryRegulation.carbonFootprint.dataSource}</p>}
                         </div>
                     )}
-                    {product.batteryRegulation.stateOfHealth?.value !== null && product.batteryRegulation.stateOfHealth?.value !== undefined && (
-                        <div><strong className="text-muted-foreground">State of Health:</strong> {product.batteryRegulation.stateOfHealth.value}{product.batteryRegulation.stateOfHealth.unit} (Measured: {product.batteryRegulation.stateOfHealth.measurementDate ? new Date(product.batteryRegulation.stateOfHealth.measurementDate).toLocaleDateString() : 'N/A'})</div>
+
+                    {product.batteryRegulation.recycledContent && product.batteryRegulation.recycledContent.length > 0 && (
+                        <div className="mt-1 pt-1 border-t border-border/30"><strong className="text-muted-foreground">Recycled Content:</strong>
+                            <ul className="list-disc list-inside ml-4">{product.batteryRegulation.recycledContent.map((rc,i) => <li key={i}>{rc.material}: {rc.percentage ?? 'N/A'}% {rc.source && `(Source: ${rc.source})`}</li>)}</ul>
+                        </div>
                     )}
-                    {product.batteryRegulation.vcId && <p><strong className="text-muted-foreground">Overall VC ID:</strong> <span className="font-mono text-xs">{product.batteryRegulation.vcId}</span></p>}
+
+                    {product.batteryRegulation.stateOfHealth && (product.batteryRegulation.stateOfHealth.value !== null && product.batteryRegulation.stateOfHealth.value !== undefined) && (
+                        <div className="mt-1 pt-1 border-t border-border/30"><strong className="text-muted-foreground">State of Health:</strong> {product.batteryRegulation.stateOfHealth.value}{product.batteryRegulation.stateOfHealth.unit || '%'} (Measured: {product.batteryRegulation.stateOfHealth.measurementDate ? new Date(product.batteryRegulation.stateOfHealth.measurementDate).toLocaleDateString() : 'N/A'}, Method: {product.batteryRegulation.stateOfHealth.measurementMethod || 'N/A'})</div>
+                    )}
+                    {product.batteryRegulation.vcId && <p className="mt-1 pt-1 border-t border-border/30"><strong className="text-muted-foreground">Overall VC ID:</strong> <span className="font-mono text-xs">{product.batteryRegulation.vcId}</span></p>}
                 </CardContent>
             </Card>
         )}

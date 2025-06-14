@@ -70,14 +70,14 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
   energyLabelOrigin?: AiOrigin;
   specificationsOrigin?: AiOrigin;
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual' | undefined;
-  keyCompliancePointsOrigin?: AiOrigin; // Added for Task 21
+  keyCompliancePointsOrigin?: AiOrigin; 
   batteryRegulation?: Partial<BatteryRegulationDetails>;
   batteryRegulationOrigin?: BatteryRegulationOrigin;
   compliance?: {
     eprel?: Partial<ProductFormData['compliance']['eprel']>;
     esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
     scipNotification?: Partial<ScipNotificationDetails>;
-    euCustomsData?: Partial<EuCustomsDataDetails>;
+    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>; // Add cbamGoodsIdentifier here
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   textileInformation?: Partial<TextileInformation>; 
@@ -96,9 +96,9 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
   compliance: string; 
   lastUpdated: string;
   productCategory?: string;
-  keySustainabilityPoints?: string[]; // Maps to sustainabilityClaims in form
-  keyCompliancePoints?: string; // Added for Task 21, maps to keyCompliancePoints in form
-  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual'; // Added for Task 21
+  keySustainabilityPoints?: string[]; 
+  keyCompliancePoints?: string; 
+  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual'; 
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
   repairability?: { score: number; scale: number; detailsUrl?: string };
@@ -111,7 +111,7 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
     eprel?: Partial<ProductFormData['compliance']['eprel']>;
     esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
     scipNotification?: Partial<ScipNotificationDetails>;
-    euCustomsData?: Partial<EuCustomsDataDetails>;
+    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>; // Add cbamGoodsIdentifier here
     battery_regulation?: Partial<ProductFormData['compliance']['battery_regulation']>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
@@ -164,7 +164,8 @@ const defaultScipNotificationState: Partial<ScipNotificationDetails> = {
 const defaultEuCustomsDataState: Partial<EuCustomsDataDetails> = {
   status: "N/A", declarationId: "", hsCode: "", countryOfOrigin: "",
   netWeightKg: null, grossWeightKg: null,
-  customsValuation: { value: null, currency: "" }
+  customsValuation: { value: null, currency: "" },
+  cbamGoodsIdentifier: "", // Added for CBAM
 };
 
 const defaultTextileInformationState: Partial<TextileInformation> = {
@@ -206,8 +207,8 @@ export default function AddNewProductPage() {
     conflictMineralsReportUrl: "", 
     fairTradeCertificationId: "", 
     ethicalSourcingPolicyUrl: "", 
-    keyCompliancePoints: "", // Added for Task 21
-    keyCompliancePointsOrigin: undefined, // Added for Task 21
+    keyCompliancePoints: "", 
+    keyCompliancePointsOrigin: undefined, 
     batteryRegulation: { ...defaultBatteryRegulationState },
     customAttributesJsonString: "",
     productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined,
@@ -240,8 +241,8 @@ export default function AddNewProductPage() {
           conflictMineralsReportUrl: productToEdit.conflictMineralsReportUrl || "", 
           fairTradeCertificationId: productToEdit.fairTradeCertificationId || "", 
           ethicalSourcingPolicyUrl: productToEdit.ethicalSourcingPolicyUrl || "", 
-          keyCompliancePoints: productToEdit.keyCompliancePoints || "", // Added for Task 21
-          keyCompliancePointsOrigin: productToEdit.keyCompliancePointsOrigin || undefined, // Added for Task 21
+          keyCompliancePoints: productToEdit.keyCompliancePoints || "", 
+          keyCompliancePointsOrigin: productToEdit.keyCompliancePointsOrigin || undefined, 
           batteryRegulation: {
             ...defaultBatteryRegulationState,
             ...(productToEdit.batteryRegulation || {}),
@@ -434,8 +435,8 @@ export default function AddNewProductPage() {
       aiInitialFormData.customAttributesJsonString = "";
       aiInitialFormData.onChainStatus = "Unknown";
       aiInitialFormData.onChainLifecycleStage = "Unknown";
-      aiInitialFormData.keyCompliancePoints = ""; // Initialize new field
-      aiInitialFormData.keyCompliancePointsOrigin = undefined; // Initialize new field
+      aiInitialFormData.keyCompliancePoints = ""; 
+      aiInitialFormData.keyCompliancePointsOrigin = undefined; 
 
       setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData}));
       setAiExtractionAppliedSuccessfully(true);
@@ -474,8 +475,8 @@ export default function AddNewProductPage() {
         lastUpdated: new Date().toISOString(),
         supplyChainLinks: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.supplyChainLinks) || [] : [],
         lifecycleEvents: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.lifecycleEvents) || [] : [],
-        keyCompliancePoints: formDataFromForm.keyCompliancePoints, // Added for Task 21
-        keyCompliancePointsOrigin: formDataFromForm.keyCompliancePointsOrigin, // Added for Task 21
+        keyCompliancePoints: formDataFromForm.keyCompliancePoints, 
+        keyCompliancePointsOrigin: formDataFromForm.keyCompliancePointsOrigin, 
         complianceData: {
           eprel: formDataFromForm.compliance?.eprel,
           esprConformity: formDataFromForm.compliance?.esprConformity,
@@ -507,6 +508,7 @@ export default function AddNewProductPage() {
           euCustomsData: formDataFromForm.compliance?.euCustomsData ? {
             status: formDataFromForm.compliance.euCustomsData.status || 'N/A',
             declarationId: formDataFromForm.compliance.euCustomsData.declarationId,
+            cbamGoodsIdentifier: formDataFromForm.compliance.euCustomsData.cbamGoodsIdentifier, // Added for CBAM
             lastChecked: new Date().toISOString(),
           } : undefined,
           battery: formDataFromForm.compliance?.battery_regulation ? { 

@@ -89,6 +89,18 @@ export default function EuCustomsDataFormSection({
           </FormItem>
         )}
       />
+      <FormField
+        control={form.control}
+        name="compliance.euCustomsData.cbamGoodsIdentifier"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>CBAM Goods Identifier / Reference (Optional)</FormLabel>
+            <FormControl><Input placeholder="e.g., CBAM-REF-123" {...field} value={field.value || ""} /></FormControl>
+            <FormDescription>Identifier relevant for Carbon Border Adjustment Mechanism reporting, if applicable.</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
@@ -143,3 +155,4 @@ export default function EuCustomsDataFormSection({
     </div>
   );
 }
+

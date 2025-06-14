@@ -46,6 +46,7 @@ export interface EuCustomsDataDetails {
     value?: number | null;
     currency?: string; // ISO 4217
   };
+  cbamGoodsIdentifier?: string; // Added for CBAM
   lastChecked?: string;
 }
 
@@ -53,25 +54,25 @@ export interface CarbonFootprintData {
   value?: number | null;
   unit?: string;
   calculationMethod?: string;
-  scope1Emissions?: number | null; // Added
-  scope2Emissions?: number | null; // Added
-  scope3Emissions?: number | null; // Added
-  dataSource?: string; // Added
+  scope1Emissions?: number | null;
+  scope2Emissions?: number | null;
+  scope3Emissions?: number | null;
+  dataSource?: string;
   vcId?: string;
 }
 
 export interface RecycledContentData {
   material?: string;
   percentage?: number | null;
-  source?: 'Pre-consumer' | 'Post-consumer' | 'Mixed' | 'Unknown' | string; // Added source
+  source?: 'Pre-consumer' | 'Post-consumer' | 'Mixed' | 'Unknown' | string;
   vcId?: string;
 }
 
 export interface StateOfHealthData {
   value?: number | null;
   unit?: string;
-  measurementDate?: string; // ISO Date string
-  measurementMethod?: string; // Added
+  measurementDate?: string;
+  measurementMethod?: string;
   vcId?: string;
 }
 
@@ -79,23 +80,23 @@ export interface BatteryRegulationDetails {
   status?: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable' | string;
   batteryChemistry?: string;
   batteryPassportId?: string;
-  ratedCapacityAh?: number | null; // Added
-  nominalVoltage?: number | null; // Added
-  expectedLifetimeCycles?: number | null; // Added
-  manufacturingDate?: string; // Added
-  manufacturerName?: string; // Added (battery specific manufacturer)
+  ratedCapacityAh?: number | null;
+  nominalVoltage?: number | null;
+  expectedLifetimeCycles?: number | null;
+  manufacturingDate?: string;
+  manufacturerName?: string;
   carbonFootprint?: CarbonFootprintData;
   recycledContent?: RecycledContentData[];
   stateOfHealth?: StateOfHealthData;
-  recyclingEfficiencyRate?: number | null; // Added
-  materialRecoveryRates?: { // Added
+  recyclingEfficiencyRate?: number | null;
+  materialRecoveryRates?: {
     cobalt?: number | null;
     lead?: number | null;
     lithium?: number | null;
     nickel?: number | null;
   };
-  dismantlingInformationUrl?: string; // Added
-  safetyInformationUrl?: string; // Added
+  dismantlingInformationUrl?: string;
+  safetyInformationUrl?: string;
   vcId?: string;
 }
 
@@ -124,7 +125,7 @@ export interface ProductComplianceSummary {
     lastChecked: string;
   };
   scip?: ScipNotificationDetails;
-  euCustomsData?: EuCustomsDataDetails;
+  euCustomsData?: EuCustomsDataDetails; // Will now include cbamGoodsIdentifier
   battery?: BatteryRegulationDetails;
   specificRegulations?: ComplianceDetailItem[];
 }
@@ -205,6 +206,4 @@ export interface InspectionEvent {
   title: string;
   timestamp: string;
   description: string;
-  status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
-  badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
-}
+  status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "

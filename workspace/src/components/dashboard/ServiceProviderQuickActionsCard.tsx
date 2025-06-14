@@ -35,4 +35,8 @@ export const ServiceProviderQuickActionsCard = () => {
             </a>
           </Link>
         ))}
-      </Card
+      </CardContent>
+    </Card>
+  );
+};
+

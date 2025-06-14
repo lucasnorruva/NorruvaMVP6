@@ -1,4 +1,3 @@
-
 // --- File: ComplianceTab.tsx ---
 // Description: Displays compliance-related information for a product.
 "use client";
@@ -110,6 +109,9 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     if (summary.euCustomsData.customsValuation?.value !== undefined && summary.euCustomsData.customsValuation.value !== null) {
         customsNotesParts.push(`Value: ${summary.euCustomsData.customsValuation.value} ${summary.euCustomsData.customsValuation.currency || ''}`);
     }
+    if (summary.euCustomsData.cbamGoodsIdentifier) { // Added for CBAM
+        customsNotesParts.push(`CBAM ID: ${summary.euCustomsData.cbamGoodsIdentifier}`);
+    }
     
     allComplianceItems.push({
       title: "EU Customs Data",
@@ -194,5 +196,3 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     </div>
   );
 }
-
-    

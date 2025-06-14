@@ -108,7 +108,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         imageUrl: dpp.productDetails?.imageUrl,
         imageHint: dpp.productDetails?.imageHint,
         keySustainabilityPoints: dpp.productDetails?.sustainabilityClaims?.map(c => c.claim).filter(Boolean) || [],
-        keyCompliancePoints: keyCompliancePointsPopulated,
+        keyCompliancePoints: dpp.productDetails?.keyCompliancePoints, // Added for Task 21
         specifications: dpp.productDetails?.specifications,
         customAttributes: customAttributes,
         complianceSummary: {
@@ -162,9 +162,9 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         constructionProductInformation: dpp.constructionProductInformation, 
         batteryRegulation: dpp.compliance.battery_regulation, 
         lastUpdated: dpp.metadata.last_updated,
-        conflictMineralsReportUrl: dpp.productDetails?.conflictMineralsReportUrl, // Task 19
-        fairTradeCertificationId: dpp.productDetails?.fairTradeCertificationId, // Task 19
-        ethicalSourcingPolicyUrl: dpp.productDetails?.ethicalSourcingPolicyUrl, // Task 19
+        conflictMineralsReportUrl: dpp.productDetails?.conflictMineralsReportUrl, 
+        fairTradeCertificationId: dpp.productDetails?.fairTradeCertificationId, 
+        ethicalSourcingPolicyUrl: dpp.productDetails?.ethicalSourcingPolicyUrl, 
     };
 }
 
@@ -222,13 +222,14 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           imageUrl: userProductData.imageUrl,
           imageHint: userProductData.imageHint,
           sustainabilityClaims: userProductData.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
+          keyCompliancePoints: userProductData.keyCompliancePoints, // Added for Task 21
           materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [],
           energyLabel: userProductData.energyLabel,
           specifications: userProductData.specifications,
           customAttributes: parsedCustomAttributes,
-          conflictMineralsReportUrl: userProductData.conflictMineralsReportUrl, // Task 19
-          fairTradeCertificationId: userProductData.fairTradeCertificationId, // Task 19
-          ethicalSourcingPolicyUrl: userProductData.ethicalSourcingPolicyUrl, // Task 19
+          conflictMineralsReportUrl: userProductData.conflictMineralsReportUrl, 
+          fairTradeCertificationId: userProductData.fairTradeCertificationId, 
+          ethicalSourcingPolicyUrl: userProductData.ethicalSourcingPolicyUrl, 
         },
         compliance: { 
           eprel: userProductData.complianceData?.eprel || complianceSummaryFromStorage.eprel,
@@ -280,3 +281,4 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
 
   return null;
 }
+

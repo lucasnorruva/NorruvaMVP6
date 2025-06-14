@@ -1,4 +1,3 @@
-
 import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from '@/types/dpp'; // Added EbsiVerificationDetails
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
@@ -32,6 +31,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       imageUrl: "https://placehold.co/600x400.png",
       imageHint: "refrigerator appliance",
       materials: [{name: "Recycled Steel", percentage: 70, isRecycled: true}],
+      sustainabilityClaims: [{claim: "Energy Star Certified"}, {claim: "Made with 70% recycled materials"}], // Updated to match type
+      keyCompliancePoints: "EU Ecodesign Compliant\nEU Energy Labelling Compliant\nEPREL Registered\nRoHS Compliant", // Added for Task 21
       specifications: JSON.stringify({ "Capacity (Liters)": "400", "Annual Energy Consumption (kWh)": "150", "Noise Level (dB)": "38", "Dimensions (HxWxD cm)": "180x70x65", "Color": "Stainless Steel" }, null, 2),
       customAttributes: [
         {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
@@ -39,7 +40,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         {key: "Warranty Period", value: "5 Years"},
         {key: "Country of Origin", value: "Germany"}
       ],
-      ethicalSourcingPolicyUrl: "https://greentech.com/ethics/sourcing-policy.pdf", // Task 19
+      ethicalSourcingPolicyUrl: "https://greentech.com/ethics/sourcing-policy.pdf", 
     },
     compliance: {
       eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" },
@@ -63,6 +64,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         netWeightKg: 75.5,
         grossWeightKg: 80.2,
         customsValuation: { value: 450.00, currency: "EUR" },
+        cbamGoodsIdentifier: "CBAM_REF_FRIDGE_STEEL_ALUM_001", 
         lastChecked: "2024-07-28T00:00:00Z" 
       },
     },
@@ -155,11 +157,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       imageUrl: "https://placehold.co/600x400.png",
       imageHint: "cotton t-shirt apparel",
       materials: [{name: "Organic Cotton", percentage: 100}],
+      sustainabilityClaims: [{claim: "GOTS Certified"}, {claim:"Fair Trade Certified Production"}], // Updated to match type
+      keyCompliancePoints: "Textile Labelling Compliant\nSVHC Free (as per REACH)\nFair Wear Foundation Member", // Added for Task 21
       specifications: JSON.stringify({ "Fit": "Regular", "GSM": "180", "Origin": "India", "Care": "Machine wash cold" }, null, 2),
       customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}],
-      conflictMineralsReportUrl: "https://ecothreads.com/reports/conflict-minerals-na.pdf", // Task 19
-      fairTradeCertificationId: "FLOID12345", // Task 19
-      ethicalSourcingPolicyUrl: "https://ecothreads.com/ethics/sourcing-policy.pdf", // Task 19
+      conflictMineralsReportUrl: "https://ecothreads.com/reports/conflict-minerals-na.pdf", 
+      fairTradeCertificationId: "FLOID12345", 
+      ethicalSourcingPolicyUrl: "https://ecothreads.com/ethics/sourcing-policy.pdf", 
     },
     textileInformation: {
       fiberComposition: [
@@ -363,7 +367,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         {key: "Energy Density (Wh/kg)", value: "167"},
         {key: "Thermal Management", value: "Liquid Cooled"}
       ],
-      conflictMineralsReportUrl: "https://powervolt.com/reports/conflict-minerals-2023.pdf", // Task 19
+      conflictMineralsReportUrl: "https://powervolt.com/reports/conflict-minerals-2023.pdf", 
     },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-28T00:00:00Z" }, 
@@ -371,7 +375,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         status: "pending",
         batteryChemistry: "NMC 811",
         batteryPassportId: "BATT-ID-PV-EVB-75KWH-SN001",
-        ratedCapacityAh: 187.5, // 75kWh / 400V = 187.5Ah
+        ratedCapacityAh: 187.5, 
         nominalVoltage: 400,
         expectedLifetimeCycles: 3000,
         manufacturingDate: "2024-04-15",
@@ -388,7 +392,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
           { material: "Nickel", percentage: 10, source: "Post-consumer", vcId: "vc:rc:nickel:dpp005" }
         ],
         stateOfHealth: {value: 100, unit: '%', measurementDate: "2024-07-15T00:00:00Z", measurementMethod: "Direct Measurement Post-Production", vcId: "vc:soh:dpp005"},
-        recyclingEfficiencyRate: 70, // Example %
+        recyclingEfficiencyRate: 70, 
         materialRecoveryRates: { cobalt: 95, lithium: 50, nickel: 90 },
         dismantlingInformationUrl: "https://powervolt.com/manuals/dismantling_pv_evb_75.pdf",
         safetyInformationUrl: "https://powervolt.com/manuals/safety_pv_evb_75.pdf",
@@ -485,7 +489,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       intendedUseDescription: "Thermal insulation for building envelopes (walls, roofs, floors).",
       essentialCharacteristics: [
         { characteristicName: "Thermal Conductivity (λ)", value: "0.030 W/(m·K)", testMethod: "EN 12667" },
-        { characteristicName: "Reaction to Fire", value: "B-s1, d0", testMethod: "EN 13501-1" },
+        { characteristicName: "Reaction to Fire", value: "Euroclass B-s1, d0", testMethod: "EN 13501-1" },
         { characteristicName: "Water Vapour Diffusion Resistance (µ)", value: "3", testMethod: "EN 12086" }
       ]
     },
@@ -497,7 +501,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       euCustomsData: {
         status: "Verified",
         declarationId: "CUST_CPR_DPP006",
-        hsCode: "68061000", // Slag wool, rock wool and similar mineral wools
+        hsCode: "68061000", 
         countryOfOrigin: "BE",
         lastChecked: "2024-07-20T00:00:00Z"
       }

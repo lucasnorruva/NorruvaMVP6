@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -77,13 +76,13 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
     eprel?: Partial<ProductFormData['compliance']['eprel']>;
     esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
     scipNotification?: Partial<ScipNotificationDetails>;
-    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>; // Add cbamGoodsIdentifier here
+    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>; 
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   textileInformation?: Partial<TextileInformation>; 
   constructionProductInformation?: Partial<ConstructionProductInformation>; 
-  onChainStatus?: string; 
-  onChainLifecycleStage?: string; 
+  onChainStatus?: string; // Added for Task 32
+  onChainLifecycleStage?: string; // Added for Task 32
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
@@ -111,20 +110,16 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
     eprel?: Partial<ProductFormData['compliance']['eprel']>;
     esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
     scipNotification?: Partial<ScipNotificationDetails>;
-    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>; // Add cbamGoodsIdentifier here
+    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>; 
     battery_regulation?: Partial<ProductFormData['compliance']['battery_regulation']>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
   textileInformation?: Partial<TextileInformation>; 
   constructionProductInformation?: Partial<ConstructionProductInformation>; 
-  metadata?: { 
-    onChainStatus?: string;
-    onChainLifecycleStage?: string;
-    created_at?: string;
-    last_updated?: string;
-    status?: string;
-    dppStandardVersion?: string;
-  };
+  metadata?: Partial<InitialProductFormData>; // This should be the correct type for metadata storage
+  authenticationVcId?: string; 
+  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; 
+  blockchainIdentifiers?: InitialProductFormData['blockchainIdentifiers']; 
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
@@ -165,7 +160,7 @@ const defaultEuCustomsDataState: Partial<EuCustomsDataDetails> = {
   status: "N/A", declarationId: "", hsCode: "", countryOfOrigin: "",
   netWeightKg: null, grossWeightKg: null,
   customsValuation: { value: null, currency: "" },
-  cbamGoodsIdentifier: "", // Added for CBAM
+  cbamGoodsIdentifier: "", 
 };
 
 const defaultTextileInformationState: Partial<TextileInformation> = {
@@ -202,8 +197,8 @@ export default function AddNewProductPage() {
     productName: "", gtin: "", sku: "", nfcTagId: "", rfidTagId: "", productDescription: "", manufacturer: "", modelNumber: "",
     materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
     imageUrl: "", imageHint: "", imageUrlOrigin: undefined,
-    onChainStatus: "Unknown", 
-    onChainLifecycleStage: "Unknown", 
+    onChainStatus: "Unknown", // Added for Task 32
+    onChainLifecycleStage: "Unknown", // Added for Task 32
     conflictMineralsReportUrl: "", 
     fairTradeCertificationId: "", 
     ethicalSourcingPolicyUrl: "", 
@@ -236,8 +231,8 @@ export default function AddNewProductPage() {
       if (productToEdit) {
         const editData: InitialProductFormData = {
           ...productToEdit,
-          onChainStatus: productToEdit.metadata?.onChainStatus || "Unknown", 
-          onChainLifecycleStage: productToEdit.metadata?.onChainLifecycleStage || "Unknown", 
+          onChainStatus: productToEdit.metadata?.onChainStatus || "Unknown", // Map from metadata for Task 32
+          onChainLifecycleStage: productToEdit.metadata?.onChainLifecycleStage || "Unknown", // Map from metadata for Task 32
           conflictMineralsReportUrl: productToEdit.conflictMineralsReportUrl || "", 
           fairTradeCertificationId: productToEdit.fairTradeCertificationId || "", 
           ethicalSourcingPolicyUrl: productToEdit.ethicalSourcingPolicyUrl || "", 
@@ -371,48 +366,48 @@ export default function AddNewProductPage() {
       if (result.energyLabel) { aiInitialFormData.energyLabel = result.energyLabel; aiInitialFormData.energyLabelOrigin = 'AI_EXTRACTED'; }
       
       if (aiInitialFormData.batteryRegulation) { 
-        if (result.batteryChemistry) {
-            aiInitialFormData.batteryRegulation.batteryChemistry = result.batteryChemistry;
+        if (result.batteryRegulation?.batteryChemistry) {
+            aiInitialFormData.batteryRegulation.batteryChemistry = result.batteryRegulation.batteryChemistry;
             if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.batteryChemistryOrigin = 'AI_EXTRACTED';
         }
-        if (result.batteryPassportId) {
-            aiInitialFormData.batteryRegulation.batteryPassportId = result.batteryPassportId;
+        if (result.batteryRegulation?.batteryPassportId) {
+            aiInitialFormData.batteryRegulation.batteryPassportId = result.batteryRegulation.batteryPassportId;
             if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.batteryPassportIdOrigin = 'AI_EXTRACTED';
         }
-        if (result.carbonFootprint) {
+        if (result.batteryRegulation?.carbonFootprint) {
             aiInitialFormData.batteryRegulation.carbonFootprint = {
-                value: result.carbonFootprint.value ?? null,
-                unit: result.carbonFootprint.unit || "",
-                calculationMethod: result.carbonFootprint.calculationMethod || "",
-                scope1Emissions: result.carbonFootprint.scope1Emissions ?? null,
-                scope2Emissions: result.carbonFootprint.scope2Emissions ?? null,
-                scope3Emissions: result.carbonFootprint.scope3Emissions ?? null,
-                dataSource: result.carbonFootprint.dataSource || "",
-                vcId: result.carbonFootprint.vcId || "",
+                value: result.batteryRegulation.carbonFootprint.value ?? null,
+                unit: result.batteryRegulation.carbonFootprint.unit || "",
+                calculationMethod: result.batteryRegulation.carbonFootprint.calculationMethod || "",
+                scope1Emissions: result.batteryRegulation.carbonFootprint.scope1Emissions ?? null,
+                scope2Emissions: result.batteryRegulation.carbonFootprint.scope2Emissions ?? null,
+                scope3Emissions: result.batteryRegulation.carbonFootprint.scope3Emissions ?? null,
+                dataSource: result.batteryRegulation.carbonFootprint.dataSource || "",
+                vcId: result.batteryRegulation.carbonFootprint.vcId || "",
             };
             if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.carbonFootprintOrigin = { valueOrigin: 'AI_EXTRACTED', unitOrigin: 'AI_EXTRACTED', calculationMethodOrigin: 'AI_EXTRACTED', scope1EmissionsOrigin: 'AI_EXTRACTED', scope2EmissionsOrigin: 'AI_EXTRACTED', scope3EmissionsOrigin: 'AI_EXTRACTED', dataSourceOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED' };
         }
-        if (result.recycledContent) {
-            aiInitialFormData.batteryRegulation.recycledContent = result.recycledContent.map(rc => ({
+        if (result.batteryRegulation?.recycledContent) {
+            aiInitialFormData.batteryRegulation.recycledContent = result.batteryRegulation.recycledContent.map(rc => ({
                 material: rc.material || "",
                 percentage: rc.percentage ?? null,
                 source: rc.source || undefined,
                 vcId: rc.vcId || "",
             }));
-            if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.recycledContentOrigin = result.recycledContent.map(() => ({ materialOrigin: 'AI_EXTRACTED', percentageOrigin: 'AI_EXTRACTED', sourceOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED' }));
+            if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.recycledContentOrigin = result.batteryRegulation.recycledContent.map(() => ({ materialOrigin: 'AI_EXTRACTED', percentageOrigin: 'AI_EXTRACTED', sourceOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED' }));
         }
-        if (result.stateOfHealth) {
+        if (result.batteryRegulation?.stateOfHealth) {
             aiInitialFormData.batteryRegulation.stateOfHealth = {
-                value: result.stateOfHealth.value ?? null,
-                unit: result.stateOfHealth.unit || "",
-                measurementDate: result.stateOfHealth.measurementDate || "",
-                measurementMethod: result.stateOfHealth.measurementMethod || "",
-                vcId: result.stateOfHealth.vcId || "",
+                value: result.batteryRegulation.stateOfHealth.value ?? null,
+                unit: result.batteryRegulation.stateOfHealth.unit || "",
+                measurementDate: result.batteryRegulation.stateOfHealth.measurementDate || "",
+                measurementMethod: result.batteryRegulation.stateOfHealth.measurementMethod || "",
+                vcId: result.batteryRegulation.stateOfHealth.vcId || "",
             };
             if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.stateOfHealthOrigin = { valueOrigin: 'AI_EXTRACTED', unitOrigin: 'AI_EXTRACTED', measurementDateOrigin: 'AI_EXTRACTED', measurementMethodOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED' };
         }
-        if (result.batteryRegulationVcId) {
-            aiInitialFormData.batteryRegulation.vcId = result.batteryRegulationVcId;
+        if (result.batteryRegulation?.vcId) {
+            aiInitialFormData.batteryRegulation.vcId = result.batteryRegulation.vcId;
             if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.vcIdOrigin = 'AI_EXTRACTED';
         }
       }
@@ -488,12 +483,12 @@ export default function AddNewProductPage() {
         textileInformation: formDataFromForm.textileInformation, 
         constructionProductInformation: formDataFromForm.constructionProductInformation, 
         metadata: { 
-          onChainStatus: formDataFromForm.onChainStatus,
-          onChainLifecycleStage: formDataFromForm.onChainLifecycleStage,
-          ...(isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata : {}),
+          onChainStatus: formDataFromForm.onChainStatus, // Save from form for Task 32
+          onChainLifecycleStage: formDataFromForm.onChainLifecycleStage, // Save from form for Task 32
+          ...(isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata : {}), // Preserve other metadata
           created_at: (isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata?.created_at : undefined) || new Date().toISOString(),
           last_updated: new Date().toISOString(),
-          status: (isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata?.status : 'draft') || 'draft',
+          status: (isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata?.status as StoredUserProduct['status'] : 'draft') || 'draft',
           dppStandardVersion: (isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata?.dppStandardVersion : "CIRPASS v1.0 Draft") || "CIRPASS v1.0 Draft",
         },
         complianceSummary: { 
@@ -508,7 +503,7 @@ export default function AddNewProductPage() {
           euCustomsData: formDataFromForm.compliance?.euCustomsData ? {
             status: formDataFromForm.compliance.euCustomsData.status || 'N/A',
             declarationId: formDataFromForm.compliance.euCustomsData.declarationId,
-            cbamGoodsIdentifier: formDataFromForm.compliance.euCustomsData.cbamGoodsIdentifier, // Added for CBAM
+            cbamGoodsIdentifier: formDataFromForm.compliance.euCustomsData.cbamGoodsIdentifier, 
             lastChecked: new Date().toISOString(),
           } : undefined,
           battery: formDataFromForm.compliance?.battery_regulation ? { 

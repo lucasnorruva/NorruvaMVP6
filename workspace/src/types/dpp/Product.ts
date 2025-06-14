@@ -1,4 +1,3 @@
-
 // --- File: Product.ts ---
 // Description: Product related type definitions and mock data.
 
@@ -84,8 +83,8 @@ export interface DigitalProductPassport {
     status: 'draft' | 'published' | 'archived' | 'pending_review' | 'revoked' | 'flagged';
     dppStandardVersion?: string;
     dataSchemaVersion?: string;
-    onChainStatus?: string;
-    onChainLifecycleStage?: string;
+    onChainStatus?: string; // Added for Task 32
+    onChainLifecycleStage?: string; // Added for Task 32
   };
 
   blockchainIdentifiers?: {
@@ -95,8 +94,8 @@ export interface DigitalProductPassport {
     anchorTransactionHash?: string;
   };
 
-  authenticationVcId?: string; // Added for Task 31
-  ownershipNftLink?: OwnershipNftLink; // Added for Task 31
+  authenticationVcId?: string;
+  ownershipNftLink?: OwnershipNftLink;
 
   productDetails?: {
     description?: string;
@@ -159,7 +158,7 @@ export interface DashboardFiltersState {
   blockchainAnchored?: 'all' | 'anchored' | 'not_anchored';
 }
 
-export type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status' | 'metadata.onChainStatus';
+export type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status' | 'metadata.onChainStatus'; // Added metadata.onChainStatus for Task 32
 
 export interface SortConfig {
   key: SortableKeys | null;
@@ -193,16 +192,16 @@ export interface SimpleProductDetail {
   lifecycleEvents?: SimpleLifecycleEvent[];
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
-  authenticationVcId?: string; // Added for Task 31
-  ownershipNftLink?: OwnershipNftLink; // Added for Task 31
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   blockchainPlatform?: string;
   contractAddress?: string;
   tokenId?: string;
   anchorTransactionHash?: string;
   ebsiStatus?: EbsiVerificationDetails['status']; 
   ebsiVerificationId?: string; 
-  onChainStatus?: string;
-  onChainLifecycleStage?: string;
+  onChainStatus?: string; // Added for Task 32
+  onChainLifecycleStage?: string; // Added for Task 32
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
@@ -257,10 +256,10 @@ export interface StoredUserProduct {
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
-  authenticationVcId?: string; // Added for Task 31
-  ownershipNftLink?: OwnershipNftLink; // Added for Task 31
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  metadata?: Partial<DigitalProductPassport['metadata']>;
+  metadata?: Partial<DigitalProductPassport['metadata']>; // Includes onChainStatus, onChainLifecycleStage
   textileInformation?: Partial<TextileInformation>;
   constructionProductInformation?: Partial<ConstructionProductInformation>;
   conflictMineralsReportUrl?: string; 
@@ -299,9 +298,9 @@ export interface RichMockProduct {
   supplyChainLinks?: ProductSupplyChainLink[];
   customAttributes?: CustomAttribute[];
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string; // Added for Task 31
-  ownershipNftLink?: OwnershipNftLink; // Added for Task 31
-  metadata?: Partial<DigitalProductPassport['metadata']>;
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
+  metadata?: Partial<DigitalProductPassport['metadata']>; // Includes onChainStatus, onChainLifecycleStage
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
@@ -337,12 +336,12 @@ export interface PublicProductInfo {
   certifications?: PublicCertification[];
   customAttributes?: CustomAttribute[];
   documents?: DocumentReference[];
-  authenticationVcId?: string; // Added for Task 31
-  ownershipNftLink?: OwnershipNftLink; // Added for Task 31
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   contractAddress?: string;
   tokenId?: string;
-  onChainStatus?: string;
-  onChainLifecycleStage?: string;
+  onChainStatus?: string; // Added for Task 32
+  onChainLifecycleStage?: string; // Added for Task 32
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
@@ -397,9 +396,9 @@ export interface DisplayableProduct {
   customAttributes?: CustomAttribute[];
   customAttributesJsonString?: string;
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string; // Added for Task 31
-  ownershipNftLink?: OwnershipNftLink; // Added for Task 31
-  metadata?: Partial<DigitalProductPassport['metadata']>;
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
+  metadata?: Partial<DigitalProductPassport['metadata']>; // Includes onChainStatus, onChainLifecycleStage
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
@@ -441,5 +440,4 @@ export interface TokenStatusResponse {
   status: string; 
   message?: string;
 }
-
 

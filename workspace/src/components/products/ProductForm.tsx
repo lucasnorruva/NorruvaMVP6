@@ -151,7 +151,7 @@ const formSchema = z.object({
   rfidTagId: z.string().optional(),
   materials: z.string().optional().describe("Key materials used in the product, e.g., Cotton, Recycled Polyester, Aluminum."),
   sustainabilityClaims: z.string().optional().describe("Brief sustainability claims, e.g., 'Made with 50% recycled content', 'Carbon neutral production'."),
-  keyCompliancePoints: z.string().optional().describe("Key compliance points summary."), // Added for Task 21
+  keyCompliancePoints: z.string().optional().describe("Key compliance points summary."), 
   specifications: z.string().optional(),
   energyLabel: z.string().optional(),
   productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
@@ -195,7 +195,7 @@ const formSchema = z.object({
   modelNumberOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   materialsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   sustainabilityClaimsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  keyCompliancePointsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(), // Added for Task 21
+  keyCompliancePointsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(), 
   specificationsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
@@ -250,7 +250,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       rfidTagId: initialData?.rfidTagId || "",
       materials: initialData?.materials || "",
       sustainabilityClaims: initialData?.sustainabilityClaims || "",
-      keyCompliancePoints: initialData?.keyCompliancePoints || "", // Added for Task 21
+      keyCompliancePoints: initialData?.keyCompliancePoints || "", 
       specifications: initialData?.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
       energyLabel: initialData?.energyLabel || "",
       productCategory: initialData?.productCategory || "",
@@ -339,7 +339,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       modelNumberOrigin: initialData?.modelNumberOrigin,
       materialsOrigin: initialData?.materialsOrigin,
       sustainabilityClaimsOrigin: initialData?.sustainabilityClaimsOrigin,
-      keyCompliancePointsOrigin: initialData?.keyCompliancePointsOrigin, // Added for Task 21
+      keyCompliancePointsOrigin: initialData?.keyCompliancePointsOrigin, 
       specificationsOrigin: initialData?.specificationsOrigin,
       energyLabelOrigin: initialData?.energyLabelOrigin,
       imageUrlOrigin: initialData?.imageUrlOrigin,
@@ -349,7 +349,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
   const { toast } = useToast();
   const [suggestedClaims, setSuggestedClaims] = useState<string[]>([]);
-  const [suggestedKeyCompliancePoints, setSuggestedKeyCompliancePoints] = useState<string[]>([]); // Added for Task 21
+  const [suggestedKeyCompliancePoints, setSuggestedKeyCompliancePoints] = useState<string[]>([]); 
   const [suggestedCustomAttributes, setSuggestedCustomAttributes] = useState<CustomAttribute[]>([]);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>([]);
@@ -385,7 +385,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         rfidTagId: initialData.rfidTagId || "",
         materials: initialData.materials || "",
         sustainabilityClaims: initialData.sustainabilityClaims || "",
-        keyCompliancePoints: initialData.keyCompliancePoints || "", // Added for Task 21
+        keyCompliancePoints: initialData.keyCompliancePoints || "", 
         specifications: initialData.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
         energyLabel: initialData.energyLabel || "",
         productCategory: initialData.productCategory || "",
@@ -471,7 +471,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         modelNumberOrigin: initialData.modelNumberOrigin,
         materialsOrigin: initialData.materialsOrigin,
         sustainabilityClaimsOrigin: initialData.sustainabilityClaimsOrigin,
-        keyCompliancePointsOrigin: initialData.keyCompliancePointsOrigin, // Added for Task 21
+        keyCompliancePointsOrigin: initialData.keyCompliancePointsOrigin, 
         specificationsOrigin: initialData.specificationsOrigin,
         energyLabelOrigin: initialData.energyLabelOrigin,
         imageUrlOrigin: initialData.imageUrlOrigin,
@@ -611,10 +611,10 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             suggestedClaims={suggestedClaims}
             setSuggestedClaims={setSuggestedClaims}
             handleClaimClick={handleClaimClick}
+            suggestedKeyCompliancePoints={suggestedKeyCompliancePoints} 
+            setSuggestedKeyCompliancePoints={setSuggestedKeyCompliancePoints} 
             isSubmittingForm={!!isSubmitting}
             toast={toast}
-            suggestedKeyCompliancePoints={suggestedKeyCompliancePoints} // New prop
-            setSuggestedKeyCompliancePoints={setSuggestedKeyCompliancePoints} // New prop
           />
         </AccordionContent>
       </AccordionItem>
@@ -770,6 +770,4 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
-
-
 

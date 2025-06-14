@@ -60,6 +60,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
         tokenId: "1",
         chainName: "MockEthereum",
     },
+    ethicalSourcingPolicyUrl: "https://greentech.com/ethics/sourcing-policy.pdf", // Task 19
   },
   "PROD002": {
     passportId: "PROD002",
@@ -109,6 +110,9 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       isSecondHand: false,
     },
     authenticationVcId: "vc_auth_DPP002_mock456",
+    conflictMineralsReportUrl: "https://ecothreads.com/reports/conflict-minerals-na.pdf", // Task 19
+    fairTradeCertificationId: "FLOID12345 (Fair Trade International)", // Task 19
+    ethicalSourcingPolicyUrl: "https://ecothreads.com/ethics/sourcing-policy.pdf", // Task 19
   },
   "PROD006": { 
     passportId: "PROD006",
@@ -138,7 +142,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ],
     certifications: [
       { name: "CE Marking (CPR)", authority: "Notified Body 1234", isVerified: true, standard: "EN 13163" },
-      { name: "Environmental Product Declaration (EPD)", authority: "EPD Program Operator XYZ", link: "#", isVerified: false, standard: "ISO 14025" }
+      { name: "Environmental Product Declaration (EPD)", authority: "EPD Program Operator XYZ", issueDate: "2024-07-20", documentUrl: "https://buildgreen.com/epd/esp-r50.pdf", standard: "ISO 14025" }
     ],
     constructionProductInformation: {
       declarationOfPerformanceId: "DoP_ESP-R50-1200_001",
@@ -190,5 +194,3 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     },
   }
 };
-
-    

@@ -83,6 +83,9 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
   constructionProductInformation?: Partial<ConstructionProductInformation>; 
   onChainStatus?: string; 
   onChainLifecycleStage?: string; 
+  conflictMineralsReportUrl?: string; // Added for Task 19
+  fairTradeCertificationId?: string; // Added for Task 19
+  ethicalSourcingPolicyUrl?: string; // Added for Task 19
 }
 
 
@@ -120,6 +123,9 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
     status?: string;
     dppStandardVersion?: string;
   };
+  conflictMineralsReportUrl?: string; // Added for Task 19
+  fairTradeCertificationId?: string; // Added for Task 19
+  ethicalSourcingPolicyUrl?: string; // Added for Task 19
 }
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -195,6 +201,9 @@ export default function AddNewProductPage() {
     imageUrl: "", imageHint: "", imageUrlOrigin: undefined,
     onChainStatus: "Unknown", 
     onChainLifecycleStage: "Unknown", 
+    conflictMineralsReportUrl: "", // Task 19
+    fairTradeCertificationId: "", // Task 19
+    ethicalSourcingPolicyUrl: "", // Task 19
     batteryRegulation: { ...defaultBatteryRegulationState },
     customAttributesJsonString: "",
     productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined,
@@ -224,6 +233,9 @@ export default function AddNewProductPage() {
           ...productToEdit,
           onChainStatus: productToEdit.metadata?.onChainStatus || "Unknown", 
           onChainLifecycleStage: productToEdit.metadata?.onChainLifecycleStage || "Unknown", 
+          conflictMineralsReportUrl: productToEdit.conflictMineralsReportUrl || "", // Task 19
+          fairTradeCertificationId: productToEdit.fairTradeCertificationId || "", // Task 19
+          ethicalSourcingPolicyUrl: productToEdit.ethicalSourcingPolicyUrl || "", // Task 19
           batteryRegulation: {
             ...defaultBatteryRegulationState,
             ...(productToEdit.batteryRegulation || {}),
@@ -351,8 +363,7 @@ export default function AddNewProductPage() {
 
       if (result.energyLabel) { aiInitialFormData.energyLabel = result.energyLabel; aiInitialFormData.energyLabelOrigin = 'AI_EXTRACTED'; }
       
-      // Battery details from AI
-      if (aiInitialFormData.batteryRegulation) { // Ensure batteryRegulation object exists
+      if (aiInitialFormData.batteryRegulation) { 
         if (result.batteryChemistry) {
             aiInitialFormData.batteryRegulation.batteryChemistry = result.batteryChemistry;
             if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.batteryChemistryOrigin = 'AI_EXTRACTED';
@@ -361,7 +372,6 @@ export default function AddNewProductPage() {
             aiInitialFormData.batteryRegulation.batteryPassportId = result.batteryPassportId;
             if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.batteryPassportIdOrigin = 'AI_EXTRACTED';
         }
-        // Map detailed carbon footprint
         if (result.carbonFootprint) {
             aiInitialFormData.batteryRegulation.carbonFootprint = {
                 value: result.carbonFootprint.value ?? null,
@@ -375,7 +385,6 @@ export default function AddNewProductPage() {
             };
             if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.carbonFootprintOrigin = { valueOrigin: 'AI_EXTRACTED', unitOrigin: 'AI_EXTRACTED', calculationMethodOrigin: 'AI_EXTRACTED', scope1EmissionsOrigin: 'AI_EXTRACTED', scope2EmissionsOrigin: 'AI_EXTRACTED', scope3EmissionsOrigin: 'AI_EXTRACTED', dataSourceOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED' };
         }
-        // Map detailed recycled content
         if (result.recycledContent) {
             aiInitialFormData.batteryRegulation.recycledContent = result.recycledContent.map(rc => ({
                 material: rc.material || "",
@@ -385,7 +394,6 @@ export default function AddNewProductPage() {
             }));
             if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.recycledContentOrigin = result.recycledContent.map(() => ({ materialOrigin: 'AI_EXTRACTED', percentageOrigin: 'AI_EXTRACTED', sourceOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED' }));
         }
-        // Map detailed state of health
         if (result.stateOfHealth) {
             aiInitialFormData.batteryRegulation.stateOfHealth = {
                 value: result.stateOfHealth.value ?? null,
@@ -497,6 +505,9 @@ export default function AddNewProductPage() {
             batteryChemistry: formDataFromForm.compliance.battery_regulation.batteryChemistry,
           } : undefined,
         },
+        conflictMineralsReportUrl: formDataFromForm.conflictMineralsReportUrl, // Task 19
+        fairTradeCertificationId: formDataFromForm.fairTradeCertificationId, // Task 19
+        ethicalSourcingPolicyUrl: formDataFromForm.ethicalSourcingPolicyUrl, // Task 19
       };
 
 

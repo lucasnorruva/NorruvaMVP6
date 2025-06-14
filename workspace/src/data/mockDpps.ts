@@ -19,8 +19,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       onChainStatus: "Active", 
       onChainLifecycleStage: "InUse", 
     },
-    authenticationVcId: "vc_auth_DPP001_mock123", // Added for Task 31
-    ownershipNftLink: { // Added for Task 31
+    authenticationVcId: "vc_auth_DPP001_mock123", 
+    ownershipNftLink: { 
         registryUrl: "https://mock-nft-market.example/token/0xNFTContractForDPP001/1",
         contractAddress: "0xNFTContractForDPP001",
         tokenId: "1",
@@ -39,6 +39,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         {key: "Warranty Period", value: "5 Years"},
         {key: "Country of Origin", value: "Germany"}
       ],
+      ethicalSourcingPolicyUrl: "https://greentech.com/ethics/sourcing-policy.pdf", // Task 19
     },
     compliance: {
       eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" },
@@ -155,7 +156,10 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       imageHint: "cotton t-shirt apparel",
       materials: [{name: "Organic Cotton", percentage: 100}],
       specifications: JSON.stringify({ "Fit": "Regular", "GSM": "180", "Origin": "India", "Care": "Machine wash cold" }, null, 2),
-      customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}]
+      customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}],
+      conflictMineralsReportUrl: "https://ecothreads.com/reports/conflict-minerals-na.pdf", // Task 19
+      fairTradeCertificationId: "FLOID12345", // Task 19
+      ethicalSourcingPolicyUrl: "https://ecothreads.com/ethics/sourcing-policy.pdf", // Task 19
     },
     textileInformation: {
       fiberComposition: [
@@ -279,7 +283,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       ]
     },
     supplyChainLinks: [],
-    ebsiVerification: { status: "not_verified", lastChecked: "2024-07-23T00:00:00Z"} as EbsiVerificationDetails,
+    ebsiVerification: { status: "not_verified", lastChecked: "2024-07-23T00:00:00Z", message: "Connection timeout to EBSI node."} as EbsiVerificationDetails,
   },
   {
     id: "DPP004",
@@ -358,7 +362,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         {key: "Charging Time (0-80%)", value: "30 minutes (DC Fast Charge @ 150kW)"},
         {key: "Energy Density (Wh/kg)", value: "167"},
         {key: "Thermal Management", value: "Liquid Cooled"}
-      ]
+      ],
+      conflictMineralsReportUrl: "https://powervolt.com/reports/conflict-minerals-2023.pdf", // Task 19
     },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-28T00:00:00Z" }, 
@@ -366,13 +371,27 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         status: "pending",
         batteryChemistry: "NMC 811",
         batteryPassportId: "BATT-ID-PV-EVB-75KWH-SN001",
-        carbonFootprint: { value: 85.5, unit: "kg CO2e/kWh", calculationMethod: "PEFCR for Batteries v1.2", vcId: "vc:cf:dpp005" },
+        ratedCapacityAh: 187.5, // 75kWh / 400V = 187.5Ah
+        nominalVoltage: 400,
+        expectedLifetimeCycles: 3000,
+        manufacturingDate: "2024-04-15",
+        manufacturerName: "PowerVolt Cell Division",
+        carbonFootprint: { 
+            value: 85.5, unit: "kg CO2e/kWh", calculationMethod: "PEFCR for Batteries v1.2", 
+            scope1Emissions: 10.2, scope2Emissions: 5.3, scope3Emissions: 70.0, 
+            dataSource: "Internal LCA Study Q1 2024", 
+            vcId: "vc:cf:dpp005" 
+        },
         recycledContent: [
-          { material: "Cobalt", percentage: 12, vcId: "vc:rc:cobalt:dpp005" },
-          { material: "Lithium", percentage: 4, vcId: "vc:rc:lithium:dpp005" },
-          { material: "Nickel", percentage: 10, vcId: "vc:rc:nickel:dpp005" }
+          { material: "Cobalt", percentage: 12, source: "Post-consumer", vcId: "vc:rc:cobalt:dpp005" },
+          { material: "Lithium", percentage: 4, source: "Pre-consumer", vcId: "vc:rc:lithium:dpp005" },
+          { material: "Nickel", percentage: 10, source: "Post-consumer", vcId: "vc:rc:nickel:dpp005" }
         ],
-        stateOfHealth: {value: 100, unit: '%', measurementDate: "2024-07-15T00:00:00Z", vcId: "vc:soh:dpp005"},
+        stateOfHealth: {value: 100, unit: '%', measurementDate: "2024-07-15T00:00:00Z", measurementMethod: "Direct Measurement Post-Production", vcId: "vc:soh:dpp005"},
+        recyclingEfficiencyRate: 70, // Example %
+        materialRecoveryRates: { cobalt: 95, lithium: 50, nickel: 90 },
+        dismantlingInformationUrl: "https://powervolt.com/manuals/dismantling_pv_evb_75.pdf",
+        safetyInformationUrl: "https://powervolt.com/manuals/safety_pv_evb_75.pdf",
         vcId: "vc:battreg:overall:dpp005"
       } as BatteryRegulationDetails,
       eu_espr: { status: "pending" }, 
@@ -465,7 +484,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       ceMarkingDetailsUrl: "https://buildgreen.com/certs/ce_esp-r50.pdf",
       intendedUseDescription: "Thermal insulation for building envelopes (walls, roofs, floors).",
       essentialCharacteristics: [
-        { characteristicName: "Thermal Conductivity (λ)", value: "0.030", unit: "W/(m·K)", testMethod: "EN 12667" },
+        { characteristicName: "Thermal Conductivity (λ)", value: "0.030 W/(m·K)", testMethod: "EN 12667" },
         { characteristicName: "Reaction to Fire", value: "B-s1, d0", testMethod: "EN 13501-1" },
         { characteristicName: "Water Vapour Diffusion Resistance (µ)", value: "3", testMethod: "EN 12086" }
       ]
@@ -492,10 +511,3 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ],
   }
 ];
-    
-    
-    
-
-
-
-

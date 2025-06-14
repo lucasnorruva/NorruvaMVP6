@@ -6,7 +6,7 @@ import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName
 import type {
   Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification,
   BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation
-} from './Compliance'; // Imported TextileInformation, ConstructionProductInformation
+} from './Compliance'; 
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
@@ -107,6 +107,9 @@ export interface DigitalProductPassport {
     recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
     specifications?: string; 
     customAttributes?: CustomAttribute[];
+    conflictMineralsReportUrl?: string; // Added for Task 19
+    fairTradeCertificationId?: string; // Added for Task 19
+    ethicalSourcingPolicyUrl?: string; // Added for Task 19
   };
 
   textileInformation?: TextileInformation;
@@ -131,7 +134,7 @@ export interface DigitalProductPassport {
     };
     eu_espr?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
     us_scope3?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
-    battery_regulation?: BatteryRegulationDetails; // Using imported type
+    battery_regulation?: BatteryRegulationDetails; 
     scipNotification?: ScipNotificationDetails;
     euCustomsData?: EuCustomsDataDetails;
   };
@@ -199,8 +202,11 @@ export interface SimpleProductDetail {
   onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; // Added for detailed battery info
+  batteryRegulation?: BatteryRegulationDetails; 
   lastUpdated?: string; 
+  conflictMineralsReportUrl?: string; // Added for Task 19
+  fairTradeCertificationId?: string; // Added for Task 19
+  ethicalSourcingPolicyUrl?: string; // Added for Task 19
 }
 
 export interface StoredUserProduct {
@@ -250,8 +256,11 @@ export interface StoredUserProduct {
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
   metadata?: Partial<DigitalProductPassport['metadata']>;
-  textileInformation?: TextileInformation;
-  constructionProductInformation?: ConstructionProductInformation;
+  textileInformation?: Partial<TextileInformation>;
+  constructionProductInformation?: Partial<ConstructionProductInformation>;
+  conflictMineralsReportUrl?: string; // Added for Task 19
+  fairTradeCertificationId?: string; // Added for Task 19
+  ethicalSourcingPolicyUrl?: string; // Added for Task 19
 }
 
 export interface RichMockProduct {
@@ -289,6 +298,10 @@ export interface RichMockProduct {
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
+  batteryRegulation?: BatteryRegulationDetails; 
+  conflictMineralsReportUrl?: string; // Added for Task 19
+  fairTradeCertificationId?: string; // Added for Task 19
+  ethicalSourcingPolicyUrl?: string; // Added for Task 19
 }
 
 export interface PublicProductInfo {
@@ -326,6 +339,9 @@ export interface PublicProductInfo {
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
+  conflictMineralsReportUrl?: string; // Added for Task 19
+  fairTradeCertificationId?: string; // Added for Task 19
+  ethicalSourcingPolicyUrl?: string; // Added for Task 19
 }
 
 export interface Supplier {
@@ -379,6 +395,9 @@ export interface DisplayableProduct {
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
+  conflictMineralsReportUrl?: string; // Added for Task 19
+  fairTradeCertificationId?: string; // Added for Task 19
+  ethicalSourcingPolicyUrl?: string; // Added for Task 19
 }
 
 export interface AnchorResult {
@@ -414,3 +433,4 @@ export interface TokenStatusResponse {
   status: string; 
   message?: string;
 }
+

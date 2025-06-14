@@ -81,7 +81,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
     const customAttributes = dpp.productDetails?.customAttributes || [];
     const mappedCertifications: SimpleCertification[] = dpp.certifications?.map(cert => ({
-        id: cert.id, // Ensure ID is mapped
+        id: cert.id, 
         name: cert.name,
         authority: cert.issuer,
         standard: cert.standard,
@@ -160,16 +160,18 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         onChainLifecycleStage: dpp.metadata.onChainLifecycleStage,
         textileInformation: dpp.textileInformation, 
         constructionProductInformation: dpp.constructionProductInformation, 
-        batteryRegulation: dpp.compliance.battery_regulation, // Directly map full battery_regulation
+        batteryRegulation: dpp.compliance.battery_regulation, 
         lastUpdated: dpp.metadata.last_updated,
+        conflictMineralsReportUrl: dpp.productDetails?.conflictMineralsReportUrl, // Task 19
+        fairTradeCertificationId: dpp.productDetails?.fairTradeCertificationId, // Task 19
+        ethicalSourcingPolicyUrl: dpp.productDetails?.ethicalSourcingPolicyUrl, // Task 19
     };
 }
 
 
 export async function fetchProductDetails(productId: string): Promise<SimpleProductDetail | null> {
-  await new Promise(resolve => setTimeout(resolve, 0)); // Minimal delay
+  await new Promise(resolve => setTimeout(resolve, 0)); 
 
-  // 1. Attempt to load from localStorage first
   const storedProductsString = typeof window !== 'undefined' ? localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY) : null;
   if (storedProductsString) {
     const userProducts: StoredUserProduct[] = JSON.parse(storedProductsString);
@@ -180,7 +182,7 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           try {
               const parsed = JSON.parse(userProductData.customAttributesJsonString);
               if (Array.isArray(parsed)) parsedCustomAttributes = parsed;
-          } catch (e) { console.error("Failed to parse customAttributesJsonString from localStorage:", e); }
+          } catch (e) { console.error("Failed to parse customAttributesJsonString from localStorage for USER_PROD:", e); }
       }
       const certificationsForUserProd: Certification[] = userProductData.certifications?.map(sc => ({
           id: sc.id || `cert_user_${sc.name.replace(/\s+/g, '_')}_${Math.random().toString(36).slice(2, 7)}`,
@@ -224,6 +226,9 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           energyLabel: userProductData.energyLabel,
           specifications: userProductData.specifications,
           customAttributes: parsedCustomAttributes,
+          conflictMineralsReportUrl: userProductData.conflictMineralsReportUrl, // Task 19
+          fairTradeCertificationId: userProductData.fairTradeCertificationId, // Task 19
+          ethicalSourcingPolicyUrl: userProductData.ethicalSourcingPolicyUrl, // Task 19
         },
         compliance: { 
           eprel: userProductData.complianceData?.eprel || complianceSummaryFromStorage.eprel,
@@ -246,8 +251,8 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
         })),
         certifications: certificationsForUserProd,
         supplyChainLinks: userProductData.supplyChainLinks || [],
-        authenticationVcId: userProductData.authenticationVcId,
-        ownershipNftLink: userProductData.ownershipNftLink,
+        authenticationVcId: userProductData.authenticationVcId, 
+        ownershipNftLink: userProductData.ownershipNftLink, 
         blockchainIdentifiers: userProductData.blockchainIdentifiers,
         textileInformation: userProductData.textileInformation,
         constructionProductInformation: userProductData.constructionProductInformation,
@@ -256,7 +261,6 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
     }
   }
 
-  // 2. If not in localStorage, try MOCK_DPPS, attempting ID conversion if needed
   let canonicalLookupId = productId;
   if (productId.startsWith("PROD") && !productId.startsWith("USER_PROD")) {
     canonicalLookupId = productId.replace("PROD", "DPP");
@@ -267,8 +271,6 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
     return mapDppToSimpleProductDetail(foundMockDpp);
   }
   
-  // If still not found even after canonical conversion, try the original productId against mocks one last time
-  // This covers cases where a mock might actually have an ID like "PRODxxx" (though current mocks use "DPPxxx")
   if (productId !== canonicalLookupId) {
     const foundMockDppOriginalId = MOCK_DPPS.find(dpp => dpp.id === productId);
     if (foundMockDppOriginalId) {

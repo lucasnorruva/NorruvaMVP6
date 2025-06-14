@@ -16,7 +16,7 @@ import {
   ServerIcon as ServerIconLucide, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
   KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, Sigma, Layers as LayersIconShadcn, Shirt, Construction,
   BatteryCharging, Thermometer, Weight, Hash, CalendarDays as CalendarIcon, FileText as FileTextIcon, SigmaSquare,
-  BookmarkPlus, BookmarkCheck // Icons for tracking
+  BookmarkPlus, BookmarkCheck, Handshake // Added Handshake
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
@@ -57,6 +57,9 @@ export default function PublicPassportPage() {
         documents: fetchedProduct.documents || [],
         authenticationVcId: fetchedProduct.authenticationVcId,
         ownershipNftLink: fetchedProduct.ownershipNftLink,
+        conflictMineralsReportUrl: fetchedProduct.conflictMineralsReportUrl, // Added Task 19
+        fairTradeCertificationId: fetchedProduct.fairTradeCertificationId, // Added Task 19
+        ethicalSourcingPolicyUrl: fetchedProduct.ethicalSourcingPolicyUrl, // Added Task 19
       });
       updateTrackedStatus(); // Check tracking status on product load
     }
@@ -123,6 +126,9 @@ export default function PublicPassportPage() {
     category: product.category,
     imageHint: product.imageHint,
   });
+
+  const hasEthicalSourcingInfo = product.conflictMineralsReportUrl || product.fairTradeCertificationId || product.ethicalSourcingPolicyUrl;
+
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col">
@@ -339,6 +345,30 @@ export default function PublicPassportPage() {
               </Card>
             </div>
 
+            {hasEthicalSourcingInfo && ( // Task 19: Display Ethical Sourcing Card
+              <div className="mt-8 pt-6 border-t border-border">
+                <Card className="border-0 shadow-none">
+                  <CardHeader className="px-0 pt-0 pb-4">
+                    <CardTitle className="text-xl text-primary flex items-center">
+                      <Handshake className="mr-2 h-6 w-6" /> Ethical Sourcing & Transparency
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2 text-sm px-0 pb-0">
+                    {product.conflictMineralsReportUrl && (
+                       <p><strong className="text-muted-foreground">Conflict Minerals Report:</strong> <Link href={product.conflictMineralsReportUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View Report <ExternalLink className="inline h-3 w-3 ml-1" /></Link></p>
+                    )}
+                    {product.fairTradeCertificationId && (
+                       <p><strong className="text-muted-foreground">Fair Trade Certification:</strong> {product.fairTradeCertificationId.startsWith('http') ? <Link href={product.fairTradeCertificationId} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View Certificate <ExternalLink className="inline h-3 w-3 ml-1" /></Link> : product.fairTradeCertificationId}</p>
+                    )}
+                    {product.ethicalSourcingPolicyUrl && (
+                       <p><strong className="text-muted-foreground">Ethical Sourcing Policy:</strong> <Link href={product.ethicalSourcingPolicyUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View Policy <ExternalLink className="inline h-3 w-3 ml-1" /></Link></p>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+            )}
+
+
             {(product.customAttributes && product.customAttributes.length > 0) && (
               <div className="mt-8 pt-6 border-t border-border">
                 <Card className="border-0 shadow-none">
@@ -397,12 +427,9 @@ export default function PublicPassportPage() {
                     {product.constructionProductInformation.ceMarkingDetailsUrl && <p><strong className="text-muted-foreground">CE Marking:</strong> <Link href={product.constructionProductInformation.ceMarkingDetailsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View Details</Link></p>}
                     {product.constructionProductInformation.intendedUseDescription && <p><strong className="text-muted-foreground">Intended Use:</strong> {product.constructionProductInformation.intendedUseDescription}</p>}
                     {product.constructionProductInformation.essentialCharacteristics && product.constructionProductInformation.essentialCharacteristics.length > 0 && (
-                      <div>
-                        <strong className="text-muted-foreground">Essential Characteristics:</strong>
+                      <div><strong className="text-muted-foreground">Essential Characteristics:</strong>
                         <ul className="list-disc list-inside ml-4">
-                          {product.constructionProductInformation.essentialCharacteristics.map((ec, idx) => (
-                            <li key={idx}>{ec.characteristicName}: {ec.value} {ec.unit || ''} {ec.testMethod ? `(Test: ${ec.testMethod})` : ''}</li>
-                          ))}
+                          {product.constructionProductInformation.essentialCharacteristics.map((ec, idx) => <li key={idx}>{ec.characteristicName}: {ec.value} {ec.unit || ''} {ec.testMethod ? `(Test: ${ec.testMethod})` : ''}</li>)}
                         </ul>
                       </div>
                     )}
@@ -471,7 +498,7 @@ export default function PublicPassportPage() {
                         <p><strong className="text-muted-foreground flex items-center"><FileCog className="mr-1.5 h-4 w-4 text-teal-600"/>Contract Address:</strong> 
                             <TooltipProvider><Tooltip><TooltipTrigger asChild>
                                <span className="font-mono text-xs break-all ml-1">{product.contractAddress}</span>
-                            </TooltipTrigger><TooltipContent><p>{product.contractAddress}</p></TooltipContent></Tooltip></TooltipProvider>
+                            </TooltipTrigger><TooltipContent><p>{product.contractAddress}</p></TooltipContent></Tooltip></Tooltip></TooltipProvider>
                         </p>
                     )}
                     {product.tokenId && (
@@ -596,6 +623,4 @@ export default function PublicPassportPage() {
     </div>
   );
 }
-
-    
 

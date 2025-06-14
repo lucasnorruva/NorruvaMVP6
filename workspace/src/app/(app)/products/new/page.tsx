@@ -10,7 +10,7 @@ import { extractProductData } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, Info, Edit, Compass, Wand2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from "@/types/dpp"; 
+import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, CarbonFootprintData, StateOfHealthData, RecycledContentData } from "@/types/dpp"; 
 import { fileToDataUri } from '@/utils/fileUtils';
 import AiExtractionSection from "@/components/products/new/AiExtractionSection";
 import ProductDetailsSection from "@/components/products/new/ProductDetailsSection";
@@ -20,22 +20,42 @@ type AiOrigin = 'AI_EXTRACTED' | 'manual' | undefined;
 interface BatteryRegulationOrigin {
   batteryChemistryOrigin?: AiOrigin;
   batteryPassportIdOrigin?: AiOrigin;
+  manufacturerNameOrigin?: AiOrigin;
+  manufacturingDateOrigin?: AiOrigin;
+  ratedCapacityAhOrigin?: AiOrigin;
+  nominalVoltageOrigin?: AiOrigin;
+  expectedLifetimeCyclesOrigin?: AiOrigin;
+  recyclingEfficiencyRateOrigin?: AiOrigin;
+  dismantlingInformationUrlOrigin?: AiOrigin;
+  safetyInformationUrlOrigin?: AiOrigin;
   carbonFootprintOrigin?: {
     valueOrigin?: AiOrigin;
     unitOrigin?: AiOrigin;
     calculationMethodOrigin?: AiOrigin;
+    scope1EmissionsOrigin?: AiOrigin;
+    scope2EmissionsOrigin?: AiOrigin;
+    scope3EmissionsOrigin?: AiOrigin;
+    dataSourceOrigin?: AiOrigin;
     vcIdOrigin?: AiOrigin;
   };
   recycledContentOrigin?: Array<{
     materialOrigin?: AiOrigin;
     percentageOrigin?: AiOrigin;
+    sourceOrigin?: AiOrigin;
     vcIdOrigin?: AiOrigin;
   }>;
   stateOfHealthOrigin?: {
     valueOrigin?: AiOrigin;
     unitOrigin?: AiOrigin;
     measurementDateOrigin?: AiOrigin;
+    measurementMethodOrigin?: AiOrigin;
     vcIdOrigin?: AiOrigin;
+  };
+  materialRecoveryRatesOrigin?: {
+    cobaltOrigin?: AiOrigin;
+    leadOrigin?: AiOrigin;
+    lithiumOrigin?: AiOrigin;
+    nickelOrigin?: AiOrigin;
   };
   vcIdOrigin?: AiOrigin;
 }
@@ -104,19 +124,27 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 
-const defaultBatteryRegulationState: Partial<BatteryRegulationDetails> = {
+const defaultBatteryRegulationState: BatteryRegulationDetails = {
   status: "not_applicable", batteryChemistry: "", batteryPassportId: "",
-  carbonFootprint: { value: null, unit: "", calculationMethod: "", vcId: "" },
+  ratedCapacityAh: null, nominalVoltage: null, expectedLifetimeCycles: null, manufacturingDate: "",
+  manufacturerName: "",
+  carbonFootprint: { value: null, unit: "", calculationMethod: "", scope1Emissions: null, scope2Emissions: null, scope3Emissions: null, dataSource: "", vcId: "" },
   recycledContent: [],
-  stateOfHealth: { value: null, unit: "", measurementDate: "", vcId: "" },
+  stateOfHealth: { value: null, unit: "", measurementDate: "", measurementMethod: "", vcId: "" },
+  recyclingEfficiencyRate: null,
+  materialRecoveryRates: { cobalt: null, lead: null, lithium: null, nickel: null },
+  dismantlingInformationUrl: "", safetyInformationUrl: "",
   vcId: "",
 };
 
 const defaultBatteryRegulationOriginState: BatteryRegulationOrigin = {
-  batteryChemistryOrigin: undefined, batteryPassportIdOrigin: undefined,
-  carbonFootprintOrigin: { valueOrigin: undefined, unitOrigin: undefined, calculationMethodOrigin: undefined, vcIdOrigin: undefined, },
+  batteryChemistryOrigin: undefined, batteryPassportIdOrigin: undefined, manufacturerNameOrigin: undefined, manufacturingDateOrigin: undefined,
+  ratedCapacityAhOrigin: undefined, nominalVoltageOrigin: undefined, expectedLifetimeCyclesOrigin: undefined, recyclingEfficiencyRateOrigin: undefined,
+  dismantlingInformationUrlOrigin: undefined, safetyInformationUrlOrigin: undefined,
+  carbonFootprintOrigin: { valueOrigin: undefined, unitOrigin: undefined, calculationMethodOrigin: undefined, scope1EmissionsOrigin: undefined, scope2EmissionsOrigin: undefined, scope3EmissionsOrigin: undefined, dataSourceOrigin: undefined, vcIdOrigin: undefined, },
   recycledContentOrigin: [],
-  stateOfHealthOrigin: { valueOrigin: undefined, unitOrigin: undefined, measurementDateOrigin: undefined, vcIdOrigin: undefined, },
+  stateOfHealthOrigin: { valueOrigin: undefined, unitOrigin: undefined, measurementDateOrigin: undefined, measurementMethodOrigin: undefined, vcIdOrigin: undefined, },
+  materialRecoveryRatesOrigin: { cobaltOrigin: undefined, leadOrigin: undefined, lithiumOrigin: undefined, nickelOrigin: undefined },
   vcIdOrigin: undefined,
 };
 
@@ -322,30 +350,56 @@ export default function AddNewProductPage() {
       }
 
       if (result.energyLabel) { aiInitialFormData.energyLabel = result.energyLabel; aiInitialFormData.energyLabelOrigin = 'AI_EXTRACTED'; }
-
-      if (result.batteryChemistry && aiInitialFormData.batteryRegulation) {
-         aiInitialFormData.batteryRegulation.batteryChemistry = result.batteryChemistry;
-         if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.batteryChemistryOrigin = 'AI_EXTRACTED';
-      }
-      if (result.batteryPassportId && aiInitialFormData.batteryRegulation) {
-        aiInitialFormData.batteryRegulation.batteryPassportId = result.batteryPassportId;
-        if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.batteryPassportIdOrigin = 'AI_EXTRACTED';
-      }
-      if (result.carbonFootprint && aiInitialFormData.batteryRegulation) {
-        aiInitialFormData.batteryRegulation.carbonFootprint = {...result.carbonFootprint, value: result.carbonFootprint.value ?? null};
-        if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.carbonFootprintOrigin = { valueOrigin: 'AI_EXTRACTED', unitOrigin: 'AI_EXTRACTED', calculationMethodOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED'};
-      }
-      if (result.recycledContent && aiInitialFormData.batteryRegulation) {
-        aiInitialFormData.batteryRegulation.recycledContent = result.recycledContent.map(rc => ({...rc, percentage: rc.percentage ?? null}));
-        if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.recycledContentOrigin = result.recycledContent.map(() => ({ materialOrigin: 'AI_EXTRACTED', percentageOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED' }));
-      }
-      if (result.stateOfHealth && aiInitialFormData.batteryRegulation) {
-        aiInitialFormData.batteryRegulation.stateOfHealth = {...result.stateOfHealth, value: result.stateOfHealth.value ?? null};
-        if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.stateOfHealthOrigin = { valueOrigin: 'AI_EXTRACTED', unitOrigin: 'AI_EXTRACTED', measurementDateOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED'};
-      }
-      if (result.batteryRegulationVcId && aiInitialFormData.batteryRegulation) {
-        aiInitialFormData.batteryRegulation.vcId = result.batteryRegulationVcId;
-        if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.vcIdOrigin = 'AI_EXTRACTED';
+      
+      // Battery details from AI
+      if (aiInitialFormData.batteryRegulation) { // Ensure batteryRegulation object exists
+        if (result.batteryChemistry) {
+            aiInitialFormData.batteryRegulation.batteryChemistry = result.batteryChemistry;
+            if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.batteryChemistryOrigin = 'AI_EXTRACTED';
+        }
+        if (result.batteryPassportId) {
+            aiInitialFormData.batteryRegulation.batteryPassportId = result.batteryPassportId;
+            if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.batteryPassportIdOrigin = 'AI_EXTRACTED';
+        }
+        // Map detailed carbon footprint
+        if (result.carbonFootprint) {
+            aiInitialFormData.batteryRegulation.carbonFootprint = {
+                value: result.carbonFootprint.value ?? null,
+                unit: result.carbonFootprint.unit || "",
+                calculationMethod: result.carbonFootprint.calculationMethod || "",
+                scope1Emissions: result.carbonFootprint.scope1Emissions ?? null,
+                scope2Emissions: result.carbonFootprint.scope2Emissions ?? null,
+                scope3Emissions: result.carbonFootprint.scope3Emissions ?? null,
+                dataSource: result.carbonFootprint.dataSource || "",
+                vcId: result.carbonFootprint.vcId || "",
+            };
+            if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.carbonFootprintOrigin = { valueOrigin: 'AI_EXTRACTED', unitOrigin: 'AI_EXTRACTED', calculationMethodOrigin: 'AI_EXTRACTED', scope1EmissionsOrigin: 'AI_EXTRACTED', scope2EmissionsOrigin: 'AI_EXTRACTED', scope3EmissionsOrigin: 'AI_EXTRACTED', dataSourceOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED' };
+        }
+        // Map detailed recycled content
+        if (result.recycledContent) {
+            aiInitialFormData.batteryRegulation.recycledContent = result.recycledContent.map(rc => ({
+                material: rc.material || "",
+                percentage: rc.percentage ?? null,
+                source: rc.source || undefined,
+                vcId: rc.vcId || "",
+            }));
+            if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.recycledContentOrigin = result.recycledContent.map(() => ({ materialOrigin: 'AI_EXTRACTED', percentageOrigin: 'AI_EXTRACTED', sourceOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED' }));
+        }
+        // Map detailed state of health
+        if (result.stateOfHealth) {
+            aiInitialFormData.batteryRegulation.stateOfHealth = {
+                value: result.stateOfHealth.value ?? null,
+                unit: result.stateOfHealth.unit || "",
+                measurementDate: result.stateOfHealth.measurementDate || "",
+                measurementMethod: result.stateOfHealth.measurementMethod || "",
+                vcId: result.stateOfHealth.vcId || "",
+            };
+            if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.stateOfHealthOrigin = { valueOrigin: 'AI_EXTRACTED', unitOrigin: 'AI_EXTRACTED', measurementDateOrigin: 'AI_EXTRACTED', measurementMethodOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED' };
+        }
+        if (result.batteryRegulationVcId) {
+            aiInitialFormData.batteryRegulation.vcId = result.batteryRegulationVcId;
+            if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.vcIdOrigin = 'AI_EXTRACTED';
+        }
       }
       
       if (result.scipData && aiInitialFormData.compliance?.scipNotification) {
@@ -561,5 +615,4 @@ export default function AddNewProductPage() {
     </div>
   );
 }
-
 

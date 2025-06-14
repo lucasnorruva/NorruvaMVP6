@@ -31,7 +31,7 @@ export interface ScipNotificationDetails {
   submittingLegalEntity?: string;
   articleName?: string;
   primaryArticleId?: string;
-  safeUseInstructionsLink?: string;
+  safeUseInstructionsLink?: string; // Should be a URL
   lastChecked?: string; // Not a form field, for display
 }
 
@@ -50,33 +50,53 @@ export interface EuCustomsDataDetails {
 }
 
 export interface CarbonFootprintData {
-  value?: number | null;
-  unit?: string;
-  calculationMethod?: string;
+  value?: number | null; // Total manufacturing CF or relevant scope value
+  unit?: string; // e.g., kg CO2e/kWh, kg CO2e/battery
+  calculationMethod?: string; // e.g., PEFCR, ISO 14067
+  scope1Emissions?: number | null; // tCO2e
+  scope2Emissions?: number | null; // tCO2e (location-based)
+  scope3Emissions?: number | null; // tCO2e (relevant categories)
+  dataSource?: string; // e.g., "Primary data from factory", "Ecoinvent 3.8"
   vcId?: string;
 }
 
 export interface RecycledContentData {
-  material?: string;
+  material?: 'Cobalt' | 'Lead' | 'Lithium' | 'Nickel' | 'Other' | string; // Specific materials for battery reg
   percentage?: number | null;
+  source?: 'Pre-consumer' | 'Post-consumer' | 'Mixed';
   vcId?: string;
 }
 
 export interface StateOfHealthData {
-  value?: number | null;
-  unit?: string;
+  value?: number | null; // Typically percentage
+  unit?: string; // e.g., "%"
   measurementDate?: string; // ISO Date string
+  measurementMethod?: string; // e.g., "Direct Measurement", "Estimation Algorithm v1.2"
   vcId?: string;
 }
 
 export interface BatteryRegulationDetails {
   status?: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable' | string;
   batteryChemistry?: string;
-  batteryPassportId?: string;
+  batteryPassportId?: string; // Unique ID for the battery passport
+  ratedCapacityAh?: number | null; // Ampere-hours
+  nominalVoltage?: number | null; // Volts
+  expectedLifetimeCycles?: number | null; // e.g., at 80% DoD
+  manufacturingDate?: string; // ISO Date string
+  manufacturerName?: string; // Could be different from overall product manufacturer
   carbonFootprint?: CarbonFootprintData;
   recycledContent?: RecycledContentData[];
   stateOfHealth?: StateOfHealthData;
-  vcId?: string;
+  recyclingEfficiencyRate?: number | null; // Percentage
+  materialRecoveryRates?: { // Recovery rates for specific materials
+    cobalt?: number | null; // Percentage
+    lead?: number | null;   // Percentage
+    lithium?: number | null; // Percentage
+    nickel?: number | null;  // Percentage
+  };
+  dismantlingInformationUrl?: string;
+  safetyInformationUrl?: string;
+  vcId?: string; // Overall VC for battery regulation compliance
 }
 
 
@@ -110,6 +130,7 @@ export interface ProductComplianceSummary {
 }
 
 export interface SimpleCertification {
+  id: string; // Made non-optional
   name: string;
   authority: string;
   standard?: string;
@@ -131,3 +152,60 @@ export interface PublicCertification {
   vcId?: string;
   transactionHash?: string;
 }
+
+export interface FiberCompositionEntry {
+  fiberName: string;
+  percentage: number | null; // Allow null for form input
+}
+
+export interface TextileInformation {
+  fiberComposition?: FiberCompositionEntry[];
+  countryOfOriginLabeling?: string;
+  careInstructionsUrl?: string;
+  isSecondHand?: boolean;
+}
+
+export interface EssentialCharacteristic {
+  characteristicName: string;
+  value: string;
+  unit?: string;
+  testMethod?: string;
+}
+
+export interface ConstructionProductInformation {
+  declarationOfPerformanceId?: string;
+  ceMarkingDetailsUrl?: string;
+  intendedUseDescription?: string;
+  essentialCharacteristics?: EssentialCharacteristic[];
+}
+
+export interface TransitProduct {
+  id: string;
+  name: string;
+  stage: string;
+  eta: string; 
+  dppStatus: ProductComplianceSummary['overallStatus'];
+  transport: "Ship" | "Truck" | "Plane";
+  origin: string; 
+  destination: string; 
+}
+
+export interface CustomsAlert {
+  id: string;
+  productId: string;
+  message: string;
+  severity: "High" | "Medium" | "Low";
+  timestamp: string; 
+  regulation?: string;
+}
+
+export interface InspectionEvent {
+  id: string;
+  icon: React.ElementType;
+  title: string;
+  timestamp: string; 
+  description: string;
+  status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
+  badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
+}
+

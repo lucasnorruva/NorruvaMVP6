@@ -9,7 +9,7 @@ import React, { useEffect, useState, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, ArrowDown, ArrowUp, ChevronsUpDown, PieChart, Edit3, Sigma } from "lucide-react";
+import { PlusCircle, Package as PackageIcon, CheckCircle2, FileText as FileTextIconPg, ArrowDown, ArrowUp, ChevronsUpDown, PieChart, Edit3, Sigma, Upload, Download } from "lucide-react"; // Added Upload, Download
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,6 +20,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Added Tooltip
 import { useRole } from "@/contexts/RoleContext";
 import { useToast } from "@/hooks/use-toast";
 import type { StoredUserProduct, RichMockProduct, DisplayableProduct, DigitalProductPassport } from "@/types/dpp"; 
@@ -259,14 +260,36 @@ export default function ProductsPage() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <h1 className="text-3xl font-headline font-semibold">Product Management</h1>
-        {canAddProducts && (
-          <Link href="/products/new" passHref>
-            <Button variant="default">
-              <PlusCircle className="mr-2 h-5 w-5" />
-              Add New Product
-            </Button>
-          </Link>
-        )}
+        <div className="flex items-center gap-2">
+          {canAddProducts && (
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" disabled>
+                    <Upload className="mr-2 h-4 w-4" /> Batch Update Selected
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Conceptual: Batch update selected products (Coming Soon)</p></TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="outline" disabled>
+                    <Download className="mr-2 h-4 w-4" /> Export Selected (CSV)
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent><p>Conceptual: Export selected products as CSV (Coming Soon)</p></TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {canAddProducts && (
+            <Link href="/products/new" passHref>
+              <Button variant="default"> {/* Changed from secondary to default */}
+                <PlusCircle className="mr-2 h-5 w-5" />
+                Add New Product
+              </Button>
+            </Link>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">

@@ -14,7 +14,7 @@ import {
     KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, 
     PlusCircle, CalendarDays, Sigma, Layers3, Tag, CheckCircle as CheckCircleLucide, 
     Server as ServerIcon, Link as LinkIconPath, FileCog, BookOpen, CircleDot, Clock, Share2, Users, Factory, Truck, ShoppingCart, Recycle as RecycleIconLucide, Upload, MessageSquare,
-    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers, FileLock, Users2 as DaoIcon // Added DaoIcon
+    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers, FileLock, Users2 as DaoIcon
 } from "lucide-react";
 import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse, OwnershipNftLink } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
@@ -203,7 +203,8 @@ export default function BlockchainPage() {
   const [isViewingTokenMetadata, setIsViewingTokenMetadata] = useState(false);
 
   const [onChainStatusUpdate, setOnChainStatusUpdate] = useState<string>("active");
-  const [criticalEventLog, setCriticalEventLog] = useState<string>("");
+  const [criticalEventDescription, setCriticalEventDescription] = useState<string>(""); // Renamed from criticalEventLog
+  const [criticalEventSeverity, setCriticalEventSeverity] = useState<'High' | 'Medium' | 'Low'>("High");
   const [isUpdatingOnChainStatusLoading, setIsUpdatingOnChainStatusLoading] = useState(false);
   const [isLoggingCriticalEventLoading, setIsLoggingCriticalEventLoading] = useState(false);
 
@@ -213,12 +214,12 @@ export default function BlockchainPage() {
   const [isUpdatingLifecycleStageLoading, setIsUpdatingLifecycleStageLoading] = useState(false);
   const [isRegisteringVcHashLoading, setIsRegisteringVcHashLoading] = useState(false);
 
-  const [authVcProductId, setAuthVcProductId] = useState<string>(""); // For Task 31
-  const [nftProductId, setNftProductId] = useState<string>(""); // For Task 31
-  const [nftRegistryUrl, setNftRegistryUrl] = useState<string>(""); // For Task 31
-  const [nftContractAddress, setNftContractAddress] = useState<string>(""); // For Task 31
-  const [nftTokenId, setNftTokenId] = useState<string>(""); // For Task 31
-  const [nftChainName, setNftChainName] = useState<string>(""); // For Task 31
+  const [authVcProductId, setAuthVcProductId] = useState<string>("");
+  const [nftProductId, setNftProductId] = useState<string>("");
+  const [nftRegistryUrl, setNftRegistryUrl] = useState<string>("");
+  const [nftContractAddress, setNftContractAddress] = useState<string>("");
+  const [nftTokenId, setNftTokenId] = useState<string>("");
+  const [nftChainName, setNftChainName] = useState<string>("");
 
 
   const lifecycleStageOptions = ["Design", "Manufacturing", "QualityAssurance", "Distribution", "InUse", "Maintenance", "EndOfLife"];
@@ -283,8 +284,8 @@ export default function BlockchainPage() {
       setViewTokenId(tokenId || "");
       setMintMetadataUri(tokenId ? `ipfs://dpp_metadata_for_${tokenId}` : `ipfs://dpp_metadata_for_${dpp.id}`);
       
-      setAuthVcProductId(dpp.id); // Task 31: Pre-fill product ID
-      setNftProductId(dpp.id); // Task 31: Pre-fill product ID
+      setAuthVcProductId(dpp.id); 
+      setNftProductId(dpp.id); 
       setNftRegistryUrl(dpp.ownershipNftLink?.registryUrl || "");
       setNftContractAddress(dpp.ownershipNftLink?.contractAddress || contractAddr || "");
       setNftTokenId(dpp.ownershipNftLink?.tokenId || tokenId || "");
@@ -295,8 +296,8 @@ export default function BlockchainPage() {
       setStatusTokenId("");
       setViewTokenId("");
       setMintMetadataUri("");
-      setAuthVcProductId(""); // Task 31: Clear product ID
-      setNftProductId(""); // Task 31: Clear product ID
+      setAuthVcProductId(""); 
+      setNftProductId(""); 
       setNftRegistryUrl("");
       setNftContractAddress("");
       setNftTokenId("");
@@ -565,9 +566,9 @@ export default function BlockchainPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
         body: JSON.stringify({ status: onChainStatusUpdate }),
       });
-      const data = await res.json(); // Explicitly type data if available in response
+      const data = await res.json(); 
       if (res.ok && data.updatedProduct) {
-        updateDppLocally(data.updatedProduct as DigitalProductPassport); // Cast as DigitalProductPassport
+        updateDppLocally(data.updatedProduct as DigitalProductPassport); 
         toast({ title: "On-Chain Status Update (Mock)", description: data.message || `Conceptual status for ${selected.productName} updated to '${onChainStatusUpdate}'.` });
       } else {
         handleApiError(res, "Updating On-Chain Status");
@@ -580,7 +581,7 @@ export default function BlockchainPage() {
 
   const handleLogCriticalEvent = async (e: FormEvent) => {
     e.preventDefault();
-    if (!selected || !criticalEventLog.trim()) {
+    if (!selected || !criticalEventDescription.trim()) {
       toast({ title: "Missing Info", description: "Please select a product and enter an event description.", variant: "destructive" });
       return;
     }
@@ -589,13 +590,13 @@ export default function BlockchainPage() {
       const res = await fetch(`/api/v1/dpp/${selected.id}/log-critical-event`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
-        body: JSON.stringify({ eventDescription: criticalEventLog, severity: "High" }), // Mock severity
+        body: JSON.stringify({ eventDescription: criticalEventDescription, severity: criticalEventSeverity }),
       });
-      const data = await res.json();
+       const data = await res.json();
       if (res.ok && data.updatedProduct) {
         updateDppLocally(data.updatedProduct as DigitalProductPassport);
         toast({ title: "Critical Event Logged (Mock)", description: data.message || `Event logged for ${selected.productName}.` });
-        setCriticalEventLog("");
+        setCriticalEventDescription("");
       } else {
         handleApiError(res, "Logging Critical Event");
       }
@@ -1001,7 +1002,15 @@ export default function BlockchainPage() {
                                 <form onSubmit={handleLogCriticalEvent} className="space-y-3 p-3 border rounded-md">
                                   <h4 className="font-medium text-sm flex items-center"><MessageSquareWarning className="h-4 w-4 mr-1.5 text-primary"/>Log Critical Event On-Chain</h4>
                                   <p className="text-xs text-muted-foreground">Simulate recording a critical event (e.g., major defect, safety recall details).</p>
-                                  <Textarea value={criticalEventLog} onChange={e => setCriticalEventLog(e.target.value)} placeholder="Enter event description..." rows={2} />
+                                  <Textarea value={criticalEventDescription} onChange={e => setCriticalEventDescription(e.target.value)} placeholder="Enter event description..." rows={1} />
+                                  <Select value={criticalEventSeverity} onValueChange={(value) => setCriticalEventSeverity(value as 'High' | 'Medium' | 'Low')}>
+                                    <SelectTrigger><SelectValue placeholder="Select Severity" /></SelectTrigger>
+                                    <SelectContent>
+                                      <SelectItem value="High">High</SelectItem>
+                                      <SelectItem value="Medium">Medium</SelectItem>
+                                      <SelectItem value="Low">Low</SelectItem>
+                                    </SelectContent>
+                                  </Select>
                                   <Button type="submit" size="sm" disabled={isLoggingCriticalEventLoading}>
                                     {isLoggingCriticalEventLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MessageSquareWarning className="mr-2 h-4 w-4" />}
                                     {isLoggingCriticalEventLoading ? "Submitting..." : "Log Mock Event"}

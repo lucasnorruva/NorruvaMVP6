@@ -223,6 +223,7 @@ function RegisterDppVcHash({ exampleRequestBody, exampleDppResponse, error400, e
   );
 }
 
+
 // Component for Issue Authentication VC
 function IssueDppAuthVc({ exampleDppResponse, error401, error404, error500 }: { exampleDppResponse: string; error401: string; error404: string; error500: string; }) {
   return (
@@ -467,5 +468,3 @@ export default function ApiReferenceDppEndpoints(props: DppEndpointsProps) {
 ApiReferenceDppEndpoints.defaultProps = {
   error400_general: JSON.stringify({ error: { code: 400, message: "Invalid request body or parameters." } }, null, 2)
 };
-
-    

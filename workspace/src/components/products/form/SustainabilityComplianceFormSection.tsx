@@ -1,0 +1,205 @@
+
+
+// --- File: SustainabilityComplianceFormSection.tsx ---
+// Description: Form section component for sustainability and compliance details.
+"use client";
+
+import React, { useState } from "react"; // Added useState
+import type { UseFormReturn } from "react-hook-form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import AiIndicator from "./AiIndicator"; 
+import AiSuggestionDisplay from "./AiSuggestionDisplay";
+import { Loader2, Sparkles } from "lucide-react";
+import type { ProductFormData } from "@/components/products/ProductForm";
+import type { InitialProductFormData } from "@/app/(app)/products/new/page";
+import type { ToastInput } from "@/hooks/use-toast"; 
+import { handleSuggestClaimsAI, handleSuggestKeyCompliancePointsAI } from "@/utils/aiFormHelpers"; // Import helpers
+
+type ToastFn = (input: ToastInput) => void;
+
+interface SustainabilityComplianceFormSectionProps {
+  form: UseFormReturn<ProductFormData>;
+  initialData?: Partial<InitialProductFormData>;
+  suggestedClaims: string[]; 
+  setSuggestedClaims: React.Dispatch<React.SetStateAction<string[]>>; 
+  handleClaimClick: (claim: string) => void;
+  suggestedKeyCompliancePoints: string[]; // New prop for Task 21
+  setSuggestedKeyCompliancePoints: React.Dispatch<React.SetStateAction<string[]>>; // New prop for Task 21
+  isSubmittingForm?: boolean;
+  toast: ToastFn; 
+}
+
+export default function SustainabilityComplianceFormSection({
+  form,
+  initialData,
+  suggestedClaims,
+  setSuggestedClaims, 
+  handleClaimClick,
+  suggestedKeyCompliancePoints, // Destructure new prop
+  setSuggestedKeyCompliancePoints, // Destructure new prop
+  isSubmittingForm,
+  toast, 
+}: SustainabilityComplianceFormSectionProps) {
+  const [isSuggestingClaimsInternal, setIsSuggestingClaimsInternal] = useState(false);
+  const [isSuggestingComplianceInternal, setIsSuggestingComplianceInternal] = useState(false); // New state for Task 21
+
+  const callSuggestClaimsAIInternal = async () => {
+    const claims = await handleSuggestClaimsAI(form, toast, setIsSuggestingClaimsInternal);
+    if (claims) {
+        setSuggestedClaims(claims); 
+    } else {
+        setSuggestedClaims([]); 
+    }
+  };
+
+  // New handler for Task 21
+  const callSuggestKeyCompliancePointsAIInternal = async () => {
+    const points = await handleSuggestKeyCompliancePointsAI(form, toast, setIsSuggestingComplianceInternal);
+    if (points) {
+        setSuggestedKeyCompliancePoints(points);
+    } else {
+        setSuggestedKeyCompliancePoints([]);
+    }
+  };
+  
+  const anyLocalAISuggestionInProgress = isSuggestingClaimsInternal || isSuggestingComplianceInternal;
+
+  return (
+    <div className="space-y-6 pt-4">
+      <FormField
+        control={form.control}
+        name="materials"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="flex items-center">
+              Key Materials
+              <AiIndicator fieldOrigin={form.getValues("materialsOrigin") || initialData?.materialsOrigin} fieldName="Key Materials" />
+            </FormLabel>
+            <FormControl>
+              <Textarea
+                placeholder="e.g., Organic Cotton, Recycled PET, Aluminum (comma-separated)"
+                {...field}
+                rows={3}
+                onChange={(e) => { field.onChange(e); form.setValue("materialsOrigin", "manual"); }}
+              />
+            </FormControl>
+            <FormDescription>List primary materials. This helps AI suggest relevant claims.</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <FormField
+        control={form.control}
+        name="sustainabilityClaims"
+        render={({ field }) => (
+          <FormItem>
+            <div className="flex items-center justify-between">
+              <FormLabel className="flex items-center">
+                Sustainability Claims
+                <AiIndicator fieldOrigin={form.getValues("sustainabilityClaimsOrigin") || initialData?.sustainabilityClaimsOrigin} fieldName="Sustainability Claims" />
+              </FormLabel>
+              <Button type="button" variant="ghost" size="sm" onClick={callSuggestClaimsAIInternal} disabled={anyLocalAISuggestionInProgress || !!isSubmittingForm}>
+                {isSuggestingClaimsInternal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
+                <span className="ml-2">{isSuggestingClaimsInternal ? "Suggesting..." : "Suggest Claims"}</span>
+              </Button>
+            </div>
+            <FormControl>
+              <Textarea
+                placeholder="e.g., - Made with 70% recycled materials\n- Carbon neutral production"
+                {...field}
+                rows={4}
+                onChange={(e) => { field.onChange(e); form.setValue("sustainabilityClaimsOrigin", "manual"); }}
+              />
+            </FormControl>
+            <FormDescription>
+              Enter sustainability claims manually, one per line (optionally start with '- '). Or, use AI suggestions which will be appended.
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      
+      <AiSuggestionDisplay
+        suggestions={suggestedClaims}
+        onAddSuggestion={handleClaimClick}
+        title="AI Suggested Sustainability Claims:"
+        itemNoun="claim"
+      />
+
+      {/* New Key Compliance Points Field - Task 21 */}
+      <FormField
+        control={form.control}
+        name="keyCompliancePoints"
+        render={({ field }) => (
+          <FormItem>
+            <div className="flex items-center justify-between">
+              <FormLabel className="flex items-center">
+                Key Compliance Points
+                <AiIndicator fieldOrigin={form.getValues("keyCompliancePointsOrigin") || initialData?.keyCompliancePointsOrigin} fieldName="Key Compliance Points" />
+              </FormLabel>
+              <Button type="button" variant="ghost" size="sm" onClick={callSuggestKeyCompliancePointsAIInternal} disabled={anyLocalAISuggestionInProgress || !!isSubmittingForm}>
+                {isSuggestingComplianceInternal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
+                <span className="ml-2">{isSuggestingComplianceInternal ? "Suggesting..." : "Suggest Points"}</span>
+              </Button>
+            </div>
+            <FormControl>
+              <Textarea
+                placeholder="e.g., - EU ESPR Compliant\n- RoHS Certified\n- Battery Passport Ready"
+                {...field}
+                rows={4}
+                onChange={(e) => { field.onChange(e); form.setValue("keyCompliancePointsOrigin", "manual"); }}
+              />
+            </FormControl>
+            <FormDescription>
+              List key compliance aspects, one per line. AI can help suggest these based on product category and applicable regulations.
+            </FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+      <AiSuggestionDisplay
+        suggestions={suggestedKeyCompliancePoints}
+        onAddSuggestion={(point) => {
+            const currentPoints = form.getValues("keyCompliancePoints") || "";
+            form.setValue("keyCompliancePoints", currentPoints ? `${currentPoints}\n- ${point}` : `- ${point}`, { shouldValidate: true });
+        }}
+        title="AI Suggested Key Compliance Points:"
+        itemNoun="compliance point"
+      />
+
+      <FormField
+        control={form.control}
+        name="energyLabel"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel className="flex items-center">
+              Energy Label
+              <AiIndicator fieldOrigin={form.getValues("energyLabelOrigin") || initialData?.energyLabelOrigin} fieldName="Energy Label" />
+            </FormLabel>
+            <FormControl>
+              <Input
+                placeholder="e.g., A++, B, Not Applicable"
+                {...field}
+                onChange={(e) => { field.onChange(e); form.setValue("energyLabelOrigin", "manual"); }}
+              />
+            </FormControl>
+            <FormDescription>Specify the product's energy efficiency rating, if applicable.</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
+  );
+}
+
+

@@ -23,13 +23,13 @@ import BatteryDetailsFormSection from "./form/BatteryDetailsFormSection";
 import SustainabilityComplianceFormSection from "./form/SustainabilityComplianceFormSection";
 import TechnicalSpecificationsFormSection from "./form/TechnicalSpecificationsFormSection";
 import CustomAttributesFormSection from "./form/CustomAttributesFormSection";
-import ScipNotificationFormSection from "./form/ScipNotificationFormSection"; 
-import EuCustomsDataFormSection from "./form/EuCustomsDataFormSection"; 
-import TextileInformationFormSection from "./form/TextileInformationFormSection"; 
-import ConstructionProductInformationFormSection from "@/components/products/form/ConstructionProductInformationFormSection"; 
-import EthicalSourcingFormSection from "./form/EthicalSourcingFormSection"; 
+import ScipNotificationFormSection from "./form/ScipNotificationFormSection";
+import EuCustomsDataFormSection from "./form/EuCustomsDataFormSection";
+import TextileInformationFormSection from "./form/TextileInformationFormSection";
+import ConstructionProductInformationFormSection from "@/components/products/form/ConstructionProductInformationFormSection"; // Corrected import path
+import EthicalSourcingFormSection from "./form/EthicalSourcingFormSection";
 import {
-  handleGenerateImageAI, 
+  handleGenerateImageAI,
 } from "@/utils/aiFormHelpers";
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
@@ -151,38 +151,38 @@ const formSchema = z.object({
   rfidTagId: z.string().optional(),
   materials: z.string().optional().describe("Key materials used in the product, e.g., Cotton, Recycled Polyester, Aluminum."),
   sustainabilityClaims: z.string().optional().describe("Brief sustainability claims, e.g., 'Made with 50% recycled content', 'Carbon neutral production'."),
-  keyCompliancePoints: z.string().optional().describe("Key compliance points summary."), 
+  keyCompliancePoints: z.string().optional().describe("Key compliance points summary."),
   specifications: z.string().optional(),
   energyLabel: z.string().optional(),
   productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
   imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")),
   imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(),
-  
+
   batteryRegulation: batteryRegulationDetailsSchema.optional(),
   customAttributesJsonString: z.string().optional(),
 
   compliance: z.object({
-    eprel: z.object({ 
+    eprel: z.object({
         id: z.string().optional(),
         status: z.string().optional(),
         url: z.string().url().or(z.literal("")).optional(),
-        lastChecked: z.string().optional(), 
+        lastChecked: z.string().optional(),
     }).optional(),
     esprConformity: z.object({
         assessmentId: z.string().optional(),
-        status: z.string().optional(), 
-        assessmentDate: z.string().optional(), 
+        status: z.string().optional(),
+        assessmentDate: z.string().optional(),
         vcId: z.string().optional(),
     }).optional(),
     scipNotification: scipNotificationSchema.optional(),
     euCustomsData: euCustomsDataSchema.optional(),
     battery_regulation: batteryRegulationDetailsSchema.optional(),
   }).optional(),
-  
-  textileInformation: textileInformationSchema.optional(), 
-  constructionProductInformation: constructionProductInformationSchema.optional(), 
-  onChainStatus: z.string().optional(), 
-  onChainLifecycleStage: z.string().optional(), 
+
+  textileInformation: textileInformationSchema.optional(),
+  constructionProductInformation: constructionProductInformationSchema.optional(),
+  onChainStatus: z.string().optional(),
+  onChainLifecycleStage: z.string().optional(),
 
   // Ethical Sourcing Fields - Task 19
   conflictMineralsReportUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
@@ -195,21 +195,22 @@ const formSchema = z.object({
   modelNumberOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   materialsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   sustainabilityClaimsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  keyCompliancePointsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(), 
+  keyCompliancePointsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   specificationsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  batteryRegulationOrigin: z.any().optional(), 
+  batteryRegulationOrigin: z.any().optional(),
 });
 
 export type ProductFormData = z.infer<typeof formSchema>;
 
-interface AiIndicatorProps {
+interface AiIndicatorPropsUi { // Renamed to avoid conflict with imported AiIndicator
   fieldOrigin?: 'AI_EXTRACTED' | 'manual';
   fieldName: string;
 }
 
-const AiIndicator: React.FC<AiIndicatorProps> = ({ fieldOrigin, fieldName }) => {
+// Renamed to avoid conflict with imported AiIndicator
+const AiIndicatorUi: React.FC<AiIndicatorPropsUi> = ({ fieldOrigin, fieldName }) => {
   if (fieldOrigin === 'AI_EXTRACTED') {
     return (
       <TooltipProvider>
@@ -229,7 +230,7 @@ const AiIndicator: React.FC<AiIndicatorProps> = ({ fieldOrigin, fieldName }) => 
 
 
 interface ProductFormProps {
-  id?: string; 
+  id?: string;
   initialData?: Partial<InitialProductFormData>;
   onSubmit: (data: ProductFormData) => Promise<void>;
   isSubmitting?: boolean;
@@ -250,18 +251,18 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       rfidTagId: initialData?.rfidTagId || "",
       materials: initialData?.materials || "",
       sustainabilityClaims: initialData?.sustainabilityClaims || "",
-      keyCompliancePoints: initialData?.keyCompliancePoints || "", 
+      keyCompliancePoints: initialData?.keyCompliancePoints || "",
       specifications: initialData?.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
       energyLabel: initialData?.energyLabel || "",
       productCategory: initialData?.productCategory || "",
       imageUrl: initialData?.imageUrl || "",
       imageHint: initialData?.imageHint || "",
-      onChainStatus: initialData?.onChainStatus || "Unknown", 
-      onChainLifecycleStage: initialData?.onChainLifecycleStage || "Unknown", 
+      onChainStatus: initialData?.onChainStatus || "Unknown",
+      onChainLifecycleStage: initialData?.onChainLifecycleStage || "Unknown",
       conflictMineralsReportUrl: initialData?.conflictMineralsReportUrl || "",
       fairTradeCertificationId: initialData?.fairTradeCertificationId || "",
       ethicalSourcingPolicyUrl: initialData?.ethicalSourcingPolicyUrl || "",
-      
+
       batteryRegulation: initialData?.batteryRegulation ? {
         status: initialData.batteryRegulation.status || "not_applicable",
         batteryChemistry: initialData.batteryRegulation.batteryChemistry || "",
@@ -299,7 +300,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         dismantlingInformationUrl: initialData.batteryRegulation.dismantlingInformationUrl || "",
         safetyInformationUrl: initialData.batteryRegulation.safetyInformationUrl || "",
         vcId: initialData.batteryRegulation.vcId || "",
-      } : { 
+      } : {
         status: "not_applicable", batteryChemistry: "", batteryPassportId: "",
         ratedCapacityAh: null, nominalVoltage: null, expectedLifetimeCycles: null, manufacturingDate: "", manufacturerName: "",
         carbonFootprint: { value: null, unit: "", calculationMethod: "", scope1Emissions: null, scope2Emissions: null, scope3Emissions: null, dataSource: "", vcId: "" },
@@ -308,8 +309,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         recyclingEfficiencyRate: null, materialRecoveryRates: {}, dismantlingInformationUrl: "", safetyInformationUrl: "", vcId: "",
       },
       customAttributesJsonString: initialData?.customAttributesJsonString || "",
-      
-      compliance: { 
+
+      compliance: {
         eprel: initialData?.compliance?.eprel || { status: "N/A", id: "", url: ""},
         esprConformity: initialData?.compliance?.esprConformity || { status: "pending_assessment" },
         scipNotification: initialData?.compliance?.scipNotification || {
@@ -322,7 +323,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           customsValuation: { value: null, currency: "" },
           cbamGoodsIdentifier: "" // Added for CBAM
         },
-        battery_regulation: initialData?.compliance?.battery_regulation || { 
+        battery_regulation: initialData?.compliance?.battery_regulation || {
           status: "not_applicable", batteryChemistry: "", batteryPassportId: "",
           carbonFootprint: { value: null, unit: "", calculationMethod: "", vcId: "" },
           recycledContent: [],
@@ -330,8 +331,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           vcId: "",
         }
       },
-      textileInformation: initialData?.textileInformation || { fiberComposition: [], isSecondHand: false }, 
-      constructionProductInformation: initialData?.constructionProductInformation || { essentialCharacteristics: [] }, 
+      textileInformation: initialData?.textileInformation || { fiberComposition: [], isSecondHand: false },
+      constructionProductInformation: initialData?.constructionProductInformation || { essentialCharacteristics: [] },
 
       productNameOrigin: initialData?.productNameOrigin,
       productDescriptionOrigin: initialData?.productDescriptionOrigin,
@@ -339,7 +340,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       modelNumberOrigin: initialData?.modelNumberOrigin,
       materialsOrigin: initialData?.materialsOrigin,
       sustainabilityClaimsOrigin: initialData?.sustainabilityClaimsOrigin,
-      keyCompliancePointsOrigin: initialData?.keyCompliancePointsOrigin, 
+      keyCompliancePointsOrigin: initialData?.keyCompliancePointsOrigin,
       specificationsOrigin: initialData?.specificationsOrigin,
       energyLabelOrigin: initialData?.energyLabelOrigin,
       imageUrlOrigin: initialData?.imageUrlOrigin,
@@ -349,7 +350,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
   const { toast } = useToast();
   const [suggestedClaims, setSuggestedClaims] = useState<string[]>([]);
-  const [suggestedKeyCompliancePoints, setSuggestedKeyCompliancePoints] = useState<string[]>([]); 
+  const [suggestedKeyCompliancePoints, setSuggestedKeyCompliancePoints] = useState<string[]>([]);
   const [suggestedCustomAttributes, setSuggestedCustomAttributes] = useState<CustomAttribute[]>([]);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>([]);
@@ -385,14 +386,14 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         rfidTagId: initialData.rfidTagId || "",
         materials: initialData.materials || "",
         sustainabilityClaims: initialData.sustainabilityClaims || "",
-        keyCompliancePoints: initialData.keyCompliancePoints || "", 
+        keyCompliancePoints: initialData.keyCompliancePoints || "",
         specifications: initialData.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
         energyLabel: initialData.energyLabel || "",
         productCategory: initialData.productCategory || "",
         imageUrl: initialData.imageUrl || "",
         imageHint: initialData.imageHint || "",
-        onChainStatus: initialData.onChainStatus || "Unknown", 
-        onChainLifecycleStage: initialData.onChainLifecycleStage || "Unknown", 
+        onChainStatus: initialData.onChainStatus || "Unknown",
+        onChainLifecycleStage: initialData.onChainLifecycleStage || "Unknown",
         conflictMineralsReportUrl: initialData.conflictMineralsReportUrl || "",
         fairTradeCertificationId: initialData.fairTradeCertificationId || "",
         ethicalSourcingPolicyUrl: initialData.ethicalSourcingPolicyUrl || "",
@@ -433,7 +434,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           dismantlingInformationUrl: initialData.batteryRegulation.dismantlingInformationUrl || "",
           safetyInformationUrl: initialData.batteryRegulation.safetyInformationUrl || "",
           vcId: initialData.batteryRegulation.vcId || "",
-        } : { 
+        } : {
           status: "not_applicable", batteryChemistry: "", batteryPassportId: "",
           ratedCapacityAh: null, nominalVoltage: null, expectedLifetimeCycles: null, manufacturingDate: "", manufacturerName: "",
           carbonFootprint: { value: null, unit: "", calculationMethod: "", scope1Emissions: null, scope2Emissions: null, scope3Emissions: null, dataSource: "", vcId: "" },
@@ -455,7 +456,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             customsValuation: { value: null, currency: "" },
             cbamGoodsIdentifier: "" // Added for CBAM
           },
-          battery_regulation: initialData.compliance?.battery_regulation || { 
+          battery_regulation: initialData.compliance?.battery_regulation || {
             status: "not_applicable", batteryChemistry: "", batteryPassportId: "",
             carbonFootprint: { value: null, unit: "", calculationMethod: "", vcId: "" },
             recycledContent: [],
@@ -463,15 +464,15 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             vcId: "",
           }
         },
-        textileInformation: initialData.textileInformation || { fiberComposition: [], isSecondHand: false }, 
-        constructionProductInformation: initialData.constructionProductInformation || { essentialCharacteristics: [] }, 
+        textileInformation: initialData.textileInformation || { fiberComposition: [], isSecondHand: false },
+        constructionProductInformation: initialData.constructionProductInformation || { essentialCharacteristics: [] },
         productNameOrigin: initialData.productNameOrigin,
         productDescriptionOrigin: initialData.productDescriptionOrigin,
         manufacturerOrigin: initialData.manufacturerOrigin,
         modelNumberOrigin: initialData.modelNumberOrigin,
         materialsOrigin: initialData.materialsOrigin,
         sustainabilityClaimsOrigin: initialData.sustainabilityClaimsOrigin,
-        keyCompliancePointsOrigin: initialData.keyCompliancePointsOrigin, 
+        keyCompliancePointsOrigin: initialData.keyCompliancePointsOrigin,
         specificationsOrigin: initialData.specificationsOrigin,
         energyLabelOrigin: initialData.energyLabelOrigin,
         imageUrlOrigin: initialData.imageUrlOrigin,
@@ -479,7 +480,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       });
     }
   }, [initialData, form]);
-  
+
   useEffect(() => {
     form.setValue("customAttributesJsonString", JSON.stringify(customAttributes), { shouldValidate: true });
   }, [customAttributes, form]);
@@ -517,7 +518,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         percentage: (fc.percentage === undefined || String(fc.percentage).trim() === "") ? null : fc.percentage,
       }));
     }
-    
+
     const dataToSubmit = {
       ...transformedData,
       customAttributesJsonString: JSON.stringify(customAttributes)
@@ -556,7 +557,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   const handleRemoveCustomAttribute = (keyToRemove: string) => {
     setCustomAttributes(customAttributes.filter(attr => attr.key !== keyToRemove));
   };
-  
+
   const handleAddSuggestedCustomAttribute = (suggestedAttr: CustomAttribute) => {
     if (customAttributes.some(attr => attr.key.toLowerCase() === suggestedAttr.key.toLowerCase())) {
       toast({
@@ -592,7 +593,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         <AccordionContent>
           <ProductImageFormSection
             form={form}
-            aiImageHelper={handleGenerateImageAI} 
+            aiImageHelper={handleGenerateImageAI}
             initialImageUrlOrigin={initialData?.imageUrlOrigin}
             toast={toast}
             isGeneratingImageState={isGeneratingImage}
@@ -611,15 +612,15 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             suggestedClaims={suggestedClaims}
             setSuggestedClaims={setSuggestedClaims}
             handleClaimClick={handleClaimClick}
-            suggestedKeyCompliancePoints={suggestedKeyCompliancePoints} 
-            setSuggestedKeyCompliancePoints={setSuggestedKeyCompliancePoints} 
+            suggestedKeyCompliancePoints={suggestedKeyCompliancePoints}
+            setSuggestedKeyCompliancePoints={setSuggestedKeyCompliancePoints}
             isSubmittingForm={!!isSubmitting}
             toast={toast}
           />
         </AccordionContent>
       </AccordionItem>
-      
-      <AccordionItem value="item-12"> 
+
+      <AccordionItem value="item-12">
         <AccordionTrigger className="text-lg font-semibold flex items-center">
           <Handshake className="mr-2 h-5 w-5 text-primary" />Ethical Sourcing & Supply Chain
         </AccordionTrigger>
@@ -643,9 +644,9 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       <AccordionItem value="item-5">
         <AccordionTrigger className="text-lg font-semibold flex items-center"><BatteryCharging className="mr-2 h-5 w-5 text-primary" /> Battery Details (if applicable)</AccordionTrigger>
         <AccordionContent>
-          <BatteryDetailsFormSection 
-            form={form} 
-            initialData={initialData} 
+          <BatteryDetailsFormSection
+            form={form}
+            initialData={initialData}
             isSubmittingForm={!!isSubmitting}
             toast={toast}
           />
@@ -700,7 +701,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           <ConstructionProductInformationFormSection form={form} />
         </AccordionContent>
       </AccordionItem>
-      
+
        <AccordionItem value="item-11">
         <AccordionTrigger className="text-lg font-semibold flex items-center">
             <Cpu className="mr-2 h-5 w-5 text-primary" /> Conceptual On-Chain State
@@ -770,4 +771,4 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
-
+    

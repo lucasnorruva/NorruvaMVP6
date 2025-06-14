@@ -6,7 +6,7 @@ import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName
 import type {
   Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification,
   BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation
-} from './Compliance';
+} from './Compliance'; 
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
@@ -131,7 +131,7 @@ export interface DigitalProductPassport {
     };
     eu_espr?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
     us_scope3?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
-    battery_regulation?: BatteryRegulationDetails;
+    battery_regulation?: BatteryRegulationDetails; 
     scipNotification?: ScipNotificationDetails;
     euCustomsData?: EuCustomsDataDetails;
   };
@@ -199,7 +199,7 @@ export interface SimpleProductDetail {
   onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails;
+  batteryRegulation?: BatteryRegulationDetails; 
   lastUpdated?: string; 
 }
 
@@ -246,12 +246,12 @@ export interface StoredUserProduct {
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
+  textileInformation?: Partial<TextileInformation>; 
+  constructionProductInformation?: Partial<ConstructionProductInformation>; 
+  metadata?: Partial<DigitalProductPassport['metadata']>;
   authenticationVcId?: string;
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  metadata?: Partial<DigitalProductPassport['metadata']>;
-  textileInformation?: TextileInformation;
-  constructionProductInformation?: ConstructionProductInformation;
 }
 
 export interface RichMockProduct {
@@ -259,7 +259,7 @@ export interface RichMockProduct {
   productId: string;
   productName: string;
   category?: string;
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged';
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | 'published' | 'pending_review' | 'revoked';
   compliance: string;
   lastUpdated: string;
   gtin?: string;
@@ -388,6 +388,7 @@ export interface AnchorResult {
   platform?: string;
 }
 
+// Token Operation Response Types
 export interface MintTokenResponse {
   tokenId: string;
   contractAddress: string;

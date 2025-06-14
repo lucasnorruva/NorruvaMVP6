@@ -24,14 +24,13 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
     const specificRegulations: ComplianceDetailItem[] = [];
     
-    // EU ESPR and US Scope 3 are examples of 'other' regulations now
     if (dpp.compliance.eu_espr) {
         specificRegulations.push({
             regulationName: "EU ESPR",
             status: dpp.compliance.eu_espr.status as ComplianceDetailItem['status'],
             detailsUrl: dpp.compliance.eu_espr.reportUrl,
             verificationId: dpp.compliance.eu_espr.vcId,
-            lastChecked: dpp.metadata.last_updated, // Fallback, better if eu_espr has its own lastChecked
+            lastChecked: dpp.metadata.last_updated, 
         });
     }
     if (dpp.compliance.esprConformity) {
@@ -48,7 +47,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
             status: dpp.compliance.us_scope3.status as ComplianceDetailItem['status'],
             detailsUrl: dpp.compliance.us_scope3.reportUrl,
             verificationId: dpp.compliance.us_scope3.vcId,
-            lastChecked: dpp.metadata.last_updated, // Fallback
+            lastChecked: dpp.metadata.last_updated, 
         });
     }
 
@@ -82,6 +81,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
     const customAttributes = dpp.productDetails?.customAttributes || [];
     const mappedCertifications: SimpleCertification[] = dpp.certifications?.map(cert => ({
+        id: cert.id, 
         name: cert.name,
         authority: cert.issuer,
         standard: cert.standard,
@@ -150,105 +150,128 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         certifications: mappedCertifications,
         authenticationVcId: dpp.authenticationVcId,
         ownershipNftLink: dpp.ownershipNftLink,
+        blockchainPlatform: dpp.blockchainIdentifiers?.platform,
+        contractAddress: dpp.blockchainIdentifiers?.contractAddress,
+        tokenId: dpp.blockchainIdentifiers?.tokenId,
+        anchorTransactionHash: dpp.blockchainIdentifiers?.anchorTransactionHash,
+        ebsiStatus: dpp.ebsiVerification?.status, 
+        ebsiVerificationId: dpp.ebsiVerification?.verificationId, 
+        onChainStatus: dpp.metadata.onChainStatus,
+        onChainLifecycleStage: dpp.metadata.onChainLifecycleStage,
+        textileInformation: dpp.textileInformation, 
+        constructionProductInformation: dpp.constructionProductInformation, 
+        batteryRegulation: dpp.compliance.battery_regulation, 
+        lastUpdated: dpp.metadata.last_updated,
     };
 }
 
 
 export async function fetchProductDetails(productId: string): Promise<SimpleProductDetail | null> {
-  // Simulate async fetching
-  await new Promise(resolve => setTimeout(resolve, 0)); // Minimal delay for promise resolution
+  await new Promise(resolve => setTimeout(resolve, 0)); 
 
-  let foundDpp: DigitalProductPassport | undefined;
-
-  if (productId.startsWith("USER_PROD")) {
-    const storedProductsString = typeof window !== 'undefined' ? localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY) : null;
-    if (storedProductsString) {
-      const userProducts: StoredUserProduct[] = JSON.parse(storedProductsString);
-      const userProductData = userProducts.find(p => p.id === productId);
-      if (userProductData) {
-        let parsedCustomAttributes: CustomAttribute[] = [];
-        if (userProductData.customAttributesJsonString) {
-            try {
-                const parsed = JSON.parse(userProductData.customAttributesJsonString);
-                if (Array.isArray(parsed)) parsedCustomAttributes = parsed;
-            } catch (e) {
-                console.error("Failed to parse customAttributesJsonString from localStorage for USER_PROD:", e);
-            }
-        }
-        const certificationsForUserProd: Certification[] = userProductData.certifications?.map(sc => ({
-            id: `cert_user_${sc.name.replace(/\s+/g, '_')}`,
-            name: sc.name,
-            issuer: sc.authority,
-            issueDate: sc.issueDate,
-            expiryDate: sc.expiryDate,
-            documentUrl: sc.documentUrl,
-            standard: sc.standard,
-            vcId: sc.vcId,
-            transactionHash: sc.transactionHash,
-        })) || [];
-        
-        const complianceSummaryFromStorage = userProductData.complianceSummary || { overallStatus: 'N/A' };
-
-
-        foundDpp = {
-          id: userProductData.id,
-          productName: userProductData.productName || "N/A",
-          category: userProductData.productCategory || "N/A",
-          manufacturer: { name: userProductData.manufacturer || "N/A" },
-          modelNumber: userProductData.modelNumber,
-          sku: userProductData.sku,
-          nfcTagId: userProductData.nfcTagId,
-          rfidTagId: userProductData.rfidTagId,
-          gtin: userProductData.gtin,
-          metadata: {
-            status: (userProductData.status?.toLowerCase() as DigitalProductPassport['metadata']['status']) || 'draft',
-            last_updated: userProductData.lastUpdated || new Date().toISOString(),
-            created_at: userProductData.lastUpdated || new Date().toISOString(), // Or a dedicated created_at if available
-          },
-          productDetails: {
-            description: userProductData.productDescription,
-            imageUrl: userProductData.imageUrl,
-            imageHint: userProductData.imageHint,
-            sustainabilityClaims: userProductData.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
-            materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [],
-            energyLabel: userProductData.energyLabel,
-            specifications: userProductData.specifications, // Pass as string
-            customAttributes: parsedCustomAttributes, // Pass as array
-          },
-          compliance: { 
-            eprel: complianceSummaryFromStorage.eprel,
-            scipNotification: complianceSummaryFromStorage.scip, 
-            euCustomsData: complianceSummaryFromStorage.euCustomsData,
-            battery_regulation: complianceSummaryFromStorage.battery, // Directly assign from storage if structure matches
-          },
-          ebsiVerification: complianceSummaryFromStorage.ebsi ? {
-            status: complianceSummaryFromStorage.ebsi.status as EbsiVerificationDetails['status'],
-            verificationId: complianceSummaryFromStorage.ebsi.verificationId,
-            lastChecked: complianceSummaryFromStorage.ebsi.lastChecked,
-          } : undefined,
-          lifecycleEvents: userProductData.lifecycleEvents?.map(e => ({
-              id: e.id,
-              type: e.eventName,
-              timestamp: e.date,
-              location: e.location,
-              data: e.notes ? { notes: e.notes } : undefined,
-          })),
-          certifications: certificationsForUserProd,
-          supplyChainLinks: userProductData.supplyChainLinks || [],
-          authenticationVcId: userProductData.authenticationVcId, // Map from StoredUserProduct
-          ownershipNftLink: userProductData.ownershipNftLink, // Map from StoredUserProduct
-        } as DigitalProductPassport;
+  const storedProductsString = typeof window !== 'undefined' ? localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY) : null;
+  if (storedProductsString) {
+    const userProducts: StoredUserProduct[] = JSON.parse(storedProductsString);
+    const userProductData = userProducts.find(p => p.id === productId);
+    if (userProductData) {
+      let parsedCustomAttributes: CustomAttribute[] = [];
+      if (userProductData.customAttributesJsonString) {
+          try {
+              const parsed = JSON.parse(userProductData.customAttributesJsonString);
+              if (Array.isArray(parsed)) parsedCustomAttributes = parsed;
+          } catch (e) { console.error("Failed to parse customAttributesJsonString from localStorage for USER_PROD:", e); }
       }
+      const certificationsForUserProd: Certification[] = userProductData.certifications?.map(sc => ({
+          id: sc.id || `cert_user_${sc.name.replace(/\s+/g, '_')}_${Math.random().toString(36).slice(2, 7)}`,
+          name: sc.name,
+          issuer: sc.authority,
+          issueDate: sc.issueDate,
+          expiryDate: sc.expiryDate,
+          documentUrl: sc.documentUrl,
+          standard: sc.standard,
+          vcId: sc.vcId,
+          transactionHash: sc.transactionHash,
+      })) || [];
+      
+      const complianceSummaryFromStorage = userProductData.complianceSummary || { overallStatus: 'N/A' as SimpleProductDetail['complianceSummary']['overallStatus'] };
+      const ebsiFromStorage = complianceSummaryFromStorage.ebsi;
+
+      const dppEquivalent: DigitalProductPassport = {
+        id: userProductData.id,
+        productName: userProductData.productName || "N/A",
+        category: userProductData.productCategory || "N/A",
+        manufacturer: userProductData.manufacturer ? { name: userProductData.manufacturer } : undefined,
+        modelNumber: userProductData.modelNumber,
+        sku: userProductData.sku,
+        nfcTagId: userProductData.nfcTagId,
+        rfidTagId: userProductData.rfidTagId,
+        gtin: userProductData.gtin,
+        metadata: {
+          status: (userProductData.status?.toLowerCase() as DigitalProductPassport['metadata']['status']) || 'draft',
+          last_updated: userProductData.lastUpdated || new Date().toISOString(),
+          created_at: userProductData.metadata?.created_at || userProductData.lastUpdated || new Date().toISOString(),
+          onChainStatus: userProductData.metadata?.onChainStatus,
+          onChainLifecycleStage: userProductData.metadata?.onChainLifecycleStage,
+          dppStandardVersion: userProductData.metadata?.dppStandardVersion,
+        },
+        productDetails: {
+          description: userProductData.productDescription,
+          imageUrl: userProductData.imageUrl,
+          imageHint: userProductData.imageHint,
+          sustainabilityClaims: userProductData.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
+          materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [],
+          energyLabel: userProductData.energyLabel,
+          specifications: userProductData.specifications,
+          customAttributes: parsedCustomAttributes,
+        },
+        compliance: { 
+          eprel: userProductData.complianceData?.eprel || complianceSummaryFromStorage.eprel,
+          scipNotification: userProductData.complianceData?.scipNotification || complianceSummaryFromStorage.scip,
+          euCustomsData: userProductData.complianceData?.euCustomsData || complianceSummaryFromStorage.euCustomsData,
+          battery_regulation: userProductData.complianceData?.battery_regulation || userProductData.batteryRegulation || complianceSummaryFromStorage.battery,
+          esprConformity: userProductData.complianceData?.esprConformity,
+        },
+        ebsiVerification: ebsiFromStorage ? {
+          status: ebsiFromStorage.status as EbsiVerificationDetails['status'],
+          verificationId: ebsiFromStorage.verificationId,
+          lastChecked: ebsiFromStorage.lastChecked,
+        } : undefined,
+        lifecycleEvents: userProductData.lifecycleEvents?.map(e => ({
+          id: e.id,
+          type: e.eventName,
+          timestamp: e.date,
+          location: e.location,
+          data: e.notes ? { notes: e.notes } : undefined,
+        })),
+        certifications: certificationsForUserProd,
+        supplyChainLinks: userProductData.supplyChainLinks || [],
+        authenticationVcId: userProductData.authenticationVcId, 
+        ownershipNftLink: userProductData.ownershipNftLink, 
+        blockchainIdentifiers: userProductData.blockchainIdentifiers,
+        textileInformation: userProductData.textileInformation,
+        constructionProductInformation: userProductData.constructionProductInformation,
+      };
+      return mapDppToSimpleProductDetail(dppEquivalent);
     }
-  } else {
-    foundDpp = MOCK_DPPS.find(dpp => dpp.id === productId);
   }
 
-  if (foundDpp) {
-    return mapDppToSimpleProductDetail(foundDpp);
+  let canonicalLookupId = productId;
+  if (productId.startsWith("PROD") && !productId.startsWith("USER_PROD")) {
+    canonicalLookupId = productId.replace("PROD", "DPP");
   }
+  
+  const foundMockDpp = MOCK_DPPS.find(dpp => dpp.id === canonicalLookupId);
+  if (foundMockDpp) {
+    return mapDppToSimpleProductDetail(foundMockDpp);
+  }
+  
+  if (productId !== canonicalLookupId) {
+    const foundMockDppOriginalId = MOCK_DPPS.find(dpp => dpp.id === productId);
+    if (foundMockDppOriginalId) {
+      return mapDppToSimpleProductDetail(foundMockDppOriginalId);
+    }
+  }
+
   return null;
 }
-    
 
-    

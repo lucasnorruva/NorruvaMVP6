@@ -16,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { ProductFormData } from "@/components/products/ProductForm";
-// AiIndicator and AI helper imports are not needed for this initial version.
+// AiIndicator and AI helper imports are not needed for this initial version as SCIP data is highly specific.
 
 interface ScipNotificationFormSectionProps {
   form: UseFormReturn<ProductFormData>;
@@ -125,3 +125,4 @@ export default function ScipNotificationFormSection({
     </div>
   );
 }
+

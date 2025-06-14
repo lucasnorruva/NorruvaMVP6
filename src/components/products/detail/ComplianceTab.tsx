@@ -8,7 +8,7 @@ import ProductComplianceHeader from "./ProductComplianceHeader";
 import ComplianceDetailItemDisplay, { type ComplianceDetailItemProps } from "./ComplianceDetailItemDisplay"; // Import the new component and its props type
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, Fingerprint, Database, Anchor, BatteryCharging } from "lucide-react"; // Added BatteryCharging
+import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, Fingerprint, Database, Anchor, BatteryCharging, ShieldCheck } from "lucide-react"; // Added BatteryCharging & ShieldCheck
 import Link from "next/link";
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -94,9 +94,9 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
       title: "ECHA SCIP Notification",
       icon: Database,
       status: summary.scip.status || "N/A",
-      lastChecked: summary.scip.lastChecked || product.lastUpdated,
+      lastChecked: summary.scip.lastChecked || product.lastUpdated || new Date().toISOString(),
       id: summary.scip.notificationId,
-      notes: scipNotesParts.join(' | ') || "Details not fully specified.",
+      notes: scipNotesParts.join(' | ') || undefined,
       url: summary.scip.safeUseInstructionsLink,
     });
   }
@@ -115,9 +115,9 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
       title: "EU Customs Data",
       icon: Anchor,
       status: summary.euCustomsData.status || "N/A",
-      lastChecked: summary.euCustomsData.lastChecked || product.lastUpdated,
+      lastChecked: summary.euCustomsData.lastChecked || product.lastUpdated || new Date().toISOString(),
       id: summary.euCustomsData.declarationId,
-      notes: customsNotesParts.join(' | ') || "Details not fully specified.",
+      notes: customsNotesParts.join(' | ') || undefined,
     });
   }
 
@@ -146,7 +146,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
       title: "EU Battery Regulation",
       icon: BatteryCharging,
       status: summary.battery.status || "N/A",
-      lastChecked: product.lastUpdated, 
+      lastChecked: product.lastUpdated || new Date().toISOString(), 
       id: summary.battery.batteryPassportId,
       url: summary.battery.vcId ? `#vc-${summary.battery.vcId}` : undefined, 
       notes: batteryNotesParts.join(' | ') || "Detailed battery passport information available.",
@@ -158,7 +158,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     summary.specificRegulations.forEach(reg => {
       allComplianceItems.push({
         title: reg.regulationName,
-        icon: ListChecks, // Default icon for other regulations
+        icon: ShieldCheck, // Using ShieldCheck for general compliance
         status: reg.status,
         lastChecked: reg.lastChecked,
         id: reg.verificationId, 
@@ -172,7 +172,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     <div className="space-y-6">
       <ProductComplianceHeader
         overallStatusText={summary.overallStatus}
-        // notifications={product.notifications} // Assuming product.notifications exists and is passed down
+        // notifications={product.notifications} // This prop does not exist on SimpleProductDetail
       />
 
       {allComplianceItems.length > 0 && (
@@ -194,3 +194,4 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     </div>
   );
 }
+

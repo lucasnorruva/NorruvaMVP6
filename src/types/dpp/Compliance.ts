@@ -32,7 +32,7 @@ export interface ScipNotificationDetails {
   articleName?: string;
   primaryArticleId?: string;
   safeUseInstructionsLink?: string; // Should be a URL
-  lastChecked?: string; // Not a form field, for display
+  lastChecked?: string; 
 }
 
 export interface EuCustomsDataDetails {
@@ -46,57 +46,57 @@ export interface EuCustomsDataDetails {
     value?: number | null;
     currency?: string; // ISO 4217
   };
-  lastChecked?: string; // Not a form field, for display
+  lastChecked?: string; 
 }
 
 export interface CarbonFootprintData {
-  value?: number | null; // Total manufacturing CF or relevant scope value
-  unit?: string; // e.g., kg CO2e/kWh, kg CO2e/battery
-  calculationMethod?: string; // e.g., PEFCR, ISO 14067
-  scope1Emissions?: number | null; // tCO2e
-  scope2Emissions?: number | null; // tCO2e (location-based)
-  scope3Emissions?: number | null; // tCO2e (relevant categories)
-  dataSource?: string; // e.g., "Primary data from factory", "Ecoinvent 3.8"
+  value?: number | null; 
+  unit?: string; 
+  calculationMethod?: string; 
+  scope1Emissions?: number | null;
+  scope2Emissions?: number | null;
+  scope3Emissions?: number | null;
+  dataSource?: string;
   vcId?: string;
 }
 
 export interface RecycledContentData {
-  material?: 'Cobalt' | 'Lead' | 'Lithium' | 'Nickel' | 'Other' | string; // Specific materials for battery reg
+  material?: string; 
   percentage?: number | null;
-  source?: 'Pre-consumer' | 'Post-consumer' | 'Mixed';
+  source?: 'Pre-consumer' | 'Post-consumer' | 'Mixed' | string;
   vcId?: string;
 }
 
 export interface StateOfHealthData {
-  value?: number | null; // Typically percentage
-  unit?: string; // e.g., "%"
-  measurementDate?: string; // ISO Date string
-  measurementMethod?: string; // e.g., "Direct Measurement", "Estimation Algorithm v1.2"
+  value?: number | null; 
+  unit?: string; 
+  measurementDate?: string; 
+  measurementMethod?: string;
   vcId?: string;
 }
 
 export interface BatteryRegulationDetails {
   status?: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable' | string;
   batteryChemistry?: string;
-  batteryPassportId?: string; // Unique ID for the battery passport
-  ratedCapacityAh?: number | null; // Ampere-hours
-  nominalVoltage?: number | null; // Volts
-  expectedLifetimeCycles?: number | null; // e.g., at 80% DoD
-  manufacturingDate?: string; // ISO Date string
-  manufacturerName?: string; // Could be different from overall product manufacturer
+  batteryPassportId?: string; 
+  ratedCapacityAh?: number | null;
+  nominalVoltage?: number | null;
+  expectedLifetimeCycles?: number | null;
+  manufacturingDate?: string; 
+  manufacturerName?: string;
   carbonFootprint?: CarbonFootprintData;
   recycledContent?: RecycledContentData[];
   stateOfHealth?: StateOfHealthData;
-  recyclingEfficiencyRate?: number | null; // Percentage
-  materialRecoveryRates?: { // Recovery rates for specific materials
-    cobalt?: number | null; // Percentage
-    lead?: number | null;   // Percentage
-    lithium?: number | null; // Percentage
-    nickel?: number | null;  // Percentage
+  recyclingEfficiencyRate?: number | null;
+  materialRecoveryRates?: { 
+    cobalt?: number | null; 
+    lead?: number | null;   
+    lithium?: number | null; 
+    nickel?: number | null;  
   };
   dismantlingInformationUrl?: string;
   safetyInformationUrl?: string;
-  vcId?: string; // Overall VC for battery regulation compliance
+  vcId?: string; 
 }
 
 
@@ -115,13 +115,13 @@ export interface ProductComplianceSummary {
     id?: string;
     status: string;
     url?: string;
-    lastChecked: string; // ISO Date string
+    lastChecked: string; 
   };
   ebsi?: {
     status: 'Verified' | 'Pending' | 'Not Verified' | 'Error' | 'N/A' | string;
     verificationId?: string;
     transactionUrl?: string;
-    lastChecked: string; // ISO Date string
+    lastChecked: string; 
   };
   scip?: ScipNotificationDetails;
   euCustomsData?: EuCustomsDataDetails;
@@ -130,12 +130,12 @@ export interface ProductComplianceSummary {
 }
 
 export interface SimpleCertification {
-  id: string; // Made non-optional
+  id: string; 
   name: string;
   authority: string;
   standard?: string;
-  issueDate: string; // ISO Date string
-  expiryDate?: string; // ISO Date string
+  issueDate: string; 
+  expiryDate?: string; 
   documentUrl?: string;
   isVerified?: boolean;
   vcId?: string;
@@ -155,7 +155,7 @@ export interface PublicCertification {
 
 export interface FiberCompositionEntry {
   fiberName: string;
-  percentage: number | null; // Allow null for form input
+  percentage: number | null; 
 }
 
 export interface TextileInformation {

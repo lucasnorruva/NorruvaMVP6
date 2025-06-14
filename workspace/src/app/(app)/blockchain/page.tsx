@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState, FormEvent, useCallback, useMemo } from "react";
@@ -212,18 +213,12 @@ export default function BlockchainPage() {
   const [isUpdatingLifecycleStageLoading, setIsUpdatingLifecycleStageLoading] = useState(false);
   const [isRegisteringVcHashLoading, setIsRegisteringVcHashLoading] = useState(false);
 
-  const [authVcProductId, setAuthVcProductId] = useState<string>("");
-  const [nftProductId, setNftProductId] = useState<string>("");
-  const [nftRegistryUrl, setNftRegistryUrl] = useState<string>("");
-  const [nftContractAddress, setNftContractAddress] = useState<string>("");
-  const [nftTokenId, setNftTokenId] = useState<string>("");
-  const [nftChainName, setNftChainName] = useState<string>("");
-
-  // New states for DAO Transfer
-  const [daoTransferTokenId, setDaoTransferTokenId] = useState<string>("");
-  const [daoTransferFromAddress, setDaoTransferFromAddress] = useState<string>("");
-  const [daoTransferToAddress, setDaoTransferToAddress] = useState<string>("");
-  const [isDaoTransferLoading, setIsDaoTransferLoading] = useState(false);
+  const [authVcProductId, setAuthVcProductId] = useState<string>(""); // For Task 31
+  const [nftProductId, setNftProductId] = useState<string>(""); // For Task 31
+  const [nftRegistryUrl, setNftRegistryUrl] = useState<string>(""); // For Task 31
+  const [nftContractAddress, setNftContractAddress] = useState<string>(""); // For Task 31
+  const [nftTokenId, setNftTokenId] = useState<string>(""); // For Task 31
+  const [nftChainName, setNftChainName] = useState<string>(""); // For Task 31
 
 
   const lifecycleStageOptions = ["Design", "Manufacturing", "QualityAssurance", "Distribution", "InUse", "Maintenance", "EndOfLife"];
@@ -288,41 +283,30 @@ export default function BlockchainPage() {
       setViewTokenId(tokenId || "");
       setMintMetadataUri(tokenId ? `ipfs://dpp_metadata_for_${tokenId}` : `ipfs://dpp_metadata_for_${dpp.id}`);
       
-      setAuthVcProductId(dpp.id);
-      setNftProductId(dpp.id);
+      setAuthVcProductId(dpp.id); // Task 31: Pre-fill product ID
+      setNftProductId(dpp.id); // Task 31: Pre-fill product ID
       setNftRegistryUrl(dpp.ownershipNftLink?.registryUrl || "");
       setNftContractAddress(dpp.ownershipNftLink?.contractAddress || contractAddr || "");
       setNftTokenId(dpp.ownershipNftLink?.tokenId || tokenId || "");
       setNftChainName(dpp.ownershipNftLink?.chainName || dpp.blockchainIdentifiers?.platform || "");
-
-      setDaoTransferTokenId(tokenId || ""); // Pre-fill for DAO transfer
-      // Fetch current owner if token status is known (conceptual, would ideally come from a call)
-      if (parsedTokenStatus && parsedTokenStatus.tokenId === tokenId) {
-        setDaoTransferFromAddress(parsedTokenStatus.ownerAddress);
-      } else {
-        setDaoTransferFromAddress(""); // Clear if different token or no status known
-      }
 
     } else {
       setUpdateTokenId("");
       setStatusTokenId("");
       setViewTokenId("");
       setMintMetadataUri("");
-      setAuthVcProductId("");
-      setNftProductId("");
+      setAuthVcProductId(""); // Task 31: Clear product ID
+      setNftProductId(""); // Task 31: Clear product ID
       setNftRegistryUrl("");
       setNftContractAddress("");
       setNftTokenId("");
       setNftChainName("");
-      setDaoTransferTokenId("");
-      setDaoTransferFromAddress("");
-      setDaoTransferToAddress("");
     }
     setFetchedCredential(null);
     setMintResponse(null);
     setUpdateTokenResponse(null);
-    // setStatusTokenResponse(null); // Keep statusTokenResponse to see raw json
-    // setParsedTokenStatus(null); // Keep parsedTokenStatus to see details
+    setStatusTokenResponse(null);
+    setParsedTokenStatus(null);
     setViewTokenMetadataResponse(null);
   };
 
@@ -335,8 +319,8 @@ export default function BlockchainPage() {
           setUpdateTokenId(tokenId);
           setStatusTokenId(tokenId);
           setViewTokenId(tokenId);
-          setDaoTransferTokenId(tokenId);
       }
+       // Update NFT form fields if ownership link was part of the update
       if (updated.ownershipNftLink) {
         setNftRegistryUrl(updated.ownershipNftLink.registryUrl || "");
         setNftContractAddress(updated.ownershipNftLink.contractAddress);
@@ -528,9 +512,6 @@ export default function BlockchainPage() {
         setStatusTokenResponse(JSON.stringify(data, null, 2));
         if (res.ok) {
           setParsedTokenStatus(data); 
-          if (selected && selected.blockchainIdentifiers?.tokenId === statusTokenId) {
-             setDaoTransferFromAddress(data.ownerAddress);
-          }
           toast({ title: "Token Status Retrieved (Mock)", description: `Status for token ${statusTokenId} displayed.` });
         } else {
           handleApiError(res, "Getting Token Status");
@@ -584,10 +565,10 @@ export default function BlockchainPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
         body: JSON.stringify({ status: onChainStatusUpdate }),
       });
-      const data: DigitalProductPassport = await res.json();
-      if (res.ok) {
-        updateDppLocally(data);
-        toast({ title: "On-Chain Status Update (Mock)", description: `Conceptual status for ${selected.productName} updated to '${onChainStatusUpdate}'. Mock Tx: ${data.lifecycleEvents?.slice(-1)[0]?.transactionHash || 'N/A'}` });
+      const data = await res.json(); // Explicitly type data if available in response
+      if (res.ok && data.updatedProduct) {
+        updateDppLocally(data.updatedProduct as DigitalProductPassport); // Cast as DigitalProductPassport
+        toast({ title: "On-Chain Status Update (Mock)", description: data.message || `Conceptual status for ${selected.productName} updated to '${onChainStatusUpdate}'.` });
       } else {
         handleApiError(res, "Updating On-Chain Status");
       }
@@ -610,10 +591,10 @@ export default function BlockchainPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
         body: JSON.stringify({ eventDescription: criticalEventLog, severity: "High" }), // Mock severity
       });
-      const data: DigitalProductPassport = await res.json();
-      if (res.ok) {
-        updateDppLocally(data);
-        toast({ title: "Critical Event Logged (Mock)", description: `Event logged for ${selected.productName}. Mock Tx: ${data.lifecycleEvents?.slice(-1)[0]?.transactionHash || 'N/A'}` });
+      const data = await res.json();
+      if (res.ok && data.updatedProduct) {
+        updateDppLocally(data.updatedProduct as DigitalProductPassport);
+        toast({ title: "Critical Event Logged (Mock)", description: data.message || `Event logged for ${selected.productName}.` });
         setCriticalEventLog("");
       } else {
         handleApiError(res, "Logging Critical Event");
@@ -634,10 +615,10 @@ export default function BlockchainPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
         body: JSON.stringify({ lifecycleStage: onChainLifecycleStage }),
       });
-      const data: DigitalProductPassport = await res.json();
-      if (res.ok) {
-        updateDppLocally(data);
-        toast({ title: "Lifecycle Stage Update (Mock)", description: `Conceptual stage for ${selected.productName} updated to '${onChainLifecycleStage}'. Mock Tx: ${data.lifecycleEvents?.slice(-1)[0]?.transactionHash || 'N/A'}` });
+      const data = await res.json();
+      if (res.ok && data.updatedProduct) {
+        updateDppLocally(data.updatedProduct as DigitalProductPassport);
+        toast({ title: "Lifecycle Stage Update (Mock)", description: data.message || `Conceptual stage for ${selected.productName} updated to '${onChainLifecycleStage}'.` });
       } else {
         handleApiError(res, "Updating Lifecycle Stage");
       }
@@ -660,10 +641,10 @@ export default function BlockchainPage() {
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${MOCK_API_KEY}` },
         body: JSON.stringify({ vcId: vcIdToRegister, vcHash: vcHashToRegister }),
       });
-       const data: DigitalProductPassport = await res.json();
-      if (res.ok) {
-        updateDppLocally(data);
-        toast({ title: "VC Hash Registered (Mock)", description: `VC Hash for ID '${vcIdToRegister}' registered for ${selected.productName}. Mock Tx: ${data.lifecycleEvents?.slice(-1)[0]?.transactionHash || 'N/A'}` });
+       const data = await res.json();
+      if (res.ok && data.updatedProduct) {
+        updateDppLocally(data.updatedProduct as DigitalProductPassport);
+        toast({ title: "VC Hash Registered (Mock)", description: data.message || `VC Hash for ID '${vcIdToRegister}' registered for ${selected.productName}.` });
         setVcIdToRegister("");
         setVcHashToRegister("");
       } else {
@@ -733,33 +714,6 @@ export default function BlockchainPage() {
         toast({ title: "Linking NFT Failed", description: errorMsg, variant: "destructive" });
     }
     setIsActionLoading(false);
-  };
-
-  const handleDaoTokenTransfer = async (e: FormEvent) => {
-    e.preventDefault();
-    if (!daoTransferTokenId || !daoTransferFromAddress || !daoTransferToAddress) {
-      toast({ title: "Missing Information", description: "Please provide Token ID, From Address, and To Address for DAO transfer.", variant: "destructive" });
-      return;
-    }
-    setIsDaoTransferLoading(true);
-    await new Promise(resolve => setTimeout(resolve, MOCK_TRANSACTION_DELAY));
-    
-    const mockTxHash = `0xdao_transfer_mock_${Date.now().toString(16)}`;
-    toast({
-      title: "DAO Token Transfer Simulated",
-      description: `Conceptual transfer of token ${daoTransferTokenId} from ${daoTransferFromAddress.substring(0,10)}... to ${daoTransferToAddress.substring(0,10)}... executed by DAO. Tx: ${mockTxHash}`
-    });
-
-    // If the currently displayed token status is for the token being "transferred", update its owner visually
-    if (parsedTokenStatus && parsedTokenStatus.tokenId === daoTransferTokenId) {
-      setParsedTokenStatus(prev => prev ? { ...prev, ownerAddress: daoTransferToAddress } : null);
-      setStatusTokenResponse(JSON.stringify({...parsedTokenStatus, ownerAddress: daoTransferToAddress}, null, 2)); // Update raw response too
-    }
-
-    setDaoTransferTokenId("");
-    setDaoTransferFromAddress("");
-    setDaoTransferToAddress("");
-    setIsDaoTransferLoading(false);
   };
 
 
@@ -833,7 +787,6 @@ export default function BlockchainPage() {
             <li><strong>DPP Token Operations:</strong> Conceptual minting, metadata updates, and status checks for DPP tokens.</li>
             <li><strong>Smart Contract Actions:</strong> Conceptual interactions for on-chain status updates and event logging.</li>
             <li><strong>Authenticity & Ownership:</strong> Issuing conceptual VCs for authenticity and linking NFTs for ownership.</li>
-            <li><strong>DAO Controlled Actions:</strong> Simulating DAO-approved token transfers.</li>
           </ul>
           <p className="mt-2">
             These operations interact with mock API endpoints. For technical details, refer to the 
@@ -1200,27 +1153,6 @@ export default function BlockchainPage() {
                                             </form>
                                         </CardContent>
                                     </Card>
-
-                                     {/* New DAO Controlled Token Transfer Card */}
-                                    <Card className="bg-background md:col-span-2">
-                                      <CardHeader>
-                                        <CardTitle className="text-md flex items-center"><DaoIcon className="h-4 w-4 mr-1.5 text-primary"/>DAO Controlled Token Transfer (Mock)</CardTitle>
-                                        <CardDescription className="text-xs">Simulate a token transfer executed by the DAO after a governance proposal. This bypasses standard soulbound restrictions.</CardDescription>
-                                      </CardHeader>
-                                      <CardContent>
-                                        <form onSubmit={handleDaoTokenTransfer} className="space-y-3">
-                                          <Input value={daoTransferTokenId} onChange={e => setDaoTransferTokenId(e.target.value)} placeholder="Token ID to Transfer (e.g., from above)" />
-                                          <Input value={daoTransferFromAddress} onChange={e => setDaoTransferFromAddress(e.target.value)} placeholder="Current Owner Address (e.g., 0x...)" />
-                                          <Input value={daoTransferToAddress} onChange={e => setDaoTransferToAddress(e.target.value)} placeholder="New Owner Address (e.g., 0x...)" />
-                                          <Button type="submit" size="sm" disabled={isDaoTransferLoading || !selected || !daoTransferTokenId || !daoTransferFromAddress || !daoTransferToAddress}>
-                                            {isDaoTransferLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                                            {isDaoTransferLoading ? "Processing..." : "Simulate DAO Transfer"}
-                                          </Button>
-                                          <p className="text-xs text-muted-foreground">Note: This is a UI simulation. If "Get Token Status" was run for this Token ID, the owner will visually update there.</p>
-                                        </form>
-                                      </CardContent>
-                                    </Card>
-
                                 </div>
                             </div>
                           </div>
@@ -1244,3 +1176,5 @@ export default function BlockchainPage() {
     </div>
   );
 }
+      
+    

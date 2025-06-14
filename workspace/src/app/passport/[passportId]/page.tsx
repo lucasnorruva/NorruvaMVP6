@@ -13,10 +13,9 @@ import { Button } from '@/components/ui/button';
 import * as LucideIcons from 'lucide-react'; // Import all icons as LucideIcons
 import {
   Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint,
-  ServerIcon as ServerIconLucide, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
-  KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, Sigma, Layers as LayersIconShadcn, Shirt, Construction,
-  BatteryCharging, Thermometer, Weight, Hash, CalendarDays as CalendarIcon, FileText as FileTextIcon, SigmaSquare,
-  BookmarkPlus, BookmarkCheck, Handshake // Added Handshake
+  ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
+  KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, SigmaSquare, Handshake, Database, Layers as LayersIconShadcn, // Added Handshake
+  CalendarDays as CalendarIcon, FileText as FileTextIcon, Heart, Thermometer, User, Factory, Truck, ShoppingCart
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
@@ -27,7 +26,7 @@ import { MOCK_PUBLIC_PASSPORTS } from '@/data';
 import RoleSpecificCard from '@/components/passport/RoleSpecificCard';
 import { getAiHintForImage } from '@/utils/imageUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
-import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { useToast } from "@/hooks/use-toast"; 
 
 const STORY_TRUNCATE_LENGTH = 250;
 const TRACKED_PRODUCTS_STORAGE_KEY = 'norruvaTrackedProductIds';
@@ -38,9 +37,9 @@ export default function PublicPassportPage() {
   const [product, setProduct] = useState<PublicProductInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
-  const [isTracked, setIsTracked] = useState(false); // State for tracking
+  const [isTracked, setIsTracked] = useState(false); 
   const { currentRole } = useRole();
-  const { toast } = useToast(); // Initialize toast
+  const { toast } = useToast(); 
 
   const updateTrackedStatus = useCallback(() => {
     const storedIdsString = localStorage.getItem(TRACKED_PRODUCTS_STORAGE_KEY);
@@ -57,11 +56,11 @@ export default function PublicPassportPage() {
         documents: fetchedProduct.documents || [],
         authenticationVcId: fetchedProduct.authenticationVcId,
         ownershipNftLink: fetchedProduct.ownershipNftLink,
-        conflictMineralsReportUrl: fetchedProduct.conflictMineralsReportUrl, // Added Task 19
-        fairTradeCertificationId: fetchedProduct.fairTradeCertificationId, // Added Task 19
-        ethicalSourcingPolicyUrl: fetchedProduct.ethicalSourcingPolicyUrl, // Added Task 19
+        conflictMineralsReportUrl: fetchedProduct.conflictMineralsReportUrl, 
+        fairTradeCertificationId: fetchedProduct.fairTradeCertificationId, 
+        ethicalSourcingPolicyUrl: fetchedProduct.ethicalSourcingPolicyUrl, 
       });
-      updateTrackedStatus(); // Check tracking status on product load
+      updateTrackedStatus(); 
     }
     setIsLoading(false);
   }, [passportId, updateTrackedStatus]);
@@ -72,14 +71,14 @@ export default function PublicPassportPage() {
     const productIndex = trackedIds.indexOf(passportId);
 
     if (productIndex > -1) {
-      trackedIds.splice(productIndex, 1); // Untrack
+      trackedIds.splice(productIndex, 1); 
       toast({ title: "Product Untracked", description: `${product?.productName || passportId} removed from your list.` });
     } else {
-      trackedIds.push(passportId); // Track
+      trackedIds.push(passportId); 
       toast({ title: "Product Tracked", description: `${product?.productName || passportId} added to your list.` });
     }
     localStorage.setItem(TRACKED_PRODUCTS_STORAGE_KEY, JSON.stringify(trackedIds));
-    updateTrackedStatus(); // Update UI
+    updateTrackedStatus(); 
   };
 
 
@@ -139,7 +138,7 @@ export default function PublicPassportPage() {
           </Link>
           <div className="flex items-center gap-2">
              <Button variant={isTracked ? "default" : "outline"} size="sm" onClick={handleToggleTrackProduct} className="text-xs">
-              {isTracked ? <BookmarkCheck className="mr-1.5 h-4 w-4" /> : <BookmarkPlus className="mr-1.5 h-4 w-4" />}
+              {isTracked ? <LucideIcons.BookmarkCheck className="mr-1.5 h-4 w-4" /> : <LucideIcons.BookmarkPlus className="mr-1.5 h-4 w-4" />}
               {isTracked ? "Untrack Product" : "Track This Product"}
             </Button>
             <Badge variant="outline" className="border-primary text-primary text-sm">Digital Product Passport</Badge>
@@ -345,7 +344,7 @@ export default function PublicPassportPage() {
               </Card>
             </div>
 
-            {hasEthicalSourcingInfo && ( // Task 19: Display Ethical Sourcing Card
+            {hasEthicalSourcingInfo && ( 
               <div className="mt-8 pt-6 border-t border-border">
                 <Card className="border-0 shadow-none">
                   <CardHeader className="px-0 pt-0 pb-4">
@@ -438,7 +437,7 @@ export default function PublicPassportPage() {
               </div>
             )}
 
-             {product.batteryRegulation && product.batteryRegulation.status !== 'not_applicable' && (
+             {product.batteryRegulation && product.batteryRegulation.status && product.batteryRegulation.status.toLowerCase() !== 'not_applicable' && (
                 <div className="mt-8 pt-6 border-t border-border">
                     <Card className="border-0 shadow-none">
                         <CardHeader className="px-0 pt-0 pb-4">
@@ -454,7 +453,14 @@ export default function PublicPassportPage() {
                                     <strong className="text-muted-foreground flex items-center"><Zap className="mr-1.5 h-4 w-4 text-orange-500" />Carbon Footprint:</strong>
                                     <p className="pl-5">Value: {product.batteryRegulation.carbonFootprint.value} {product.batteryRegulation.carbonFootprint.unit || ''}</p>
                                     {product.batteryRegulation.carbonFootprint.calculationMethod && <p className="pl-5">Method: {product.batteryRegulation.carbonFootprint.calculationMethod}</p>}
-                                    {product.batteryRegulation.carbonFootprint.vcId && <p className="pl-5">VC ID: <span className="font-mono text-xs">{product.batteryRegulation.carbonFootprint.vcId}</span></p>}
+                                    {(product.batteryRegulation.carbonFootprint.scope1Emissions || product.batteryRegulation.carbonFootprint.scope2Emissions || product.batteryRegulation.carbonFootprint.scope3Emissions) && (
+                                        <ul className="list-disc list-inside ml-4 text-xs">
+                                            {product.batteryRegulation.carbonFootprint.scope1Emissions && <li>Scope 1: {product.batteryRegulation.carbonFootprint.scope1Emissions} {product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')}</li>}
+                                            {product.batteryRegulation.carbonFootprint.scope2Emissions && <li>Scope 2: {product.batteryRegulation.carbonFootprint.scope2Emissions} {product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')}</li>}
+                                            {product.batteryRegulation.carbonFootprint.scope3Emissions && <li>Scope 3: {product.batteryRegulation.carbonFootprint.scope3Emissions} {product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')}</li>}
+                                        </ul>
+                                     )}
+                                     {product.batteryRegulation.carbonFootprint.dataSource && <p className="text-xs text-muted-foreground pl-5">Data Source: {product.batteryRegulation.carbonFootprint.dataSource}</p>}
                                 </div>
                             )}
 
@@ -463,7 +469,7 @@ export default function PublicPassportPage() {
                                     <strong className="text-muted-foreground flex items-center"><Recycle className="mr-1.5 h-4 w-4 text-green-600" />Recycled Content:</strong>
                                     <ul className="list-disc list-inside ml-5">
                                         {product.batteryRegulation.recycledContent.map((rc, idx) => (
-                                            <li key={idx}>{rc.material}: {rc.percentage ?? 'N/A'}% {rc.vcId && <span className="text-xs text-muted-foreground">(VC: {rc.vcId.substring(0,10)}...)</span>}</li>
+                                            <li key={idx}>{rc.material}: {rc.percentage ?? 'N/A'}% {rc.source && `(Source: ${rc.source})`}</li>
                                         ))}
                                     </ul>
                                 </div>
@@ -471,7 +477,7 @@ export default function PublicPassportPage() {
 
                             {product.batteryRegulation.stateOfHealth && (product.batteryRegulation.stateOfHealth.value !== null && product.batteryRegulation.stateOfHealth.value !== undefined) && (
                                 <div className="mt-2 pt-2 border-t border-border/30">
-                                    <strong className="text-muted-foreground flex items-center"><LucideIcons.Heart className="mr-1.5 h-4 w-4 text-red-500" />State of Health:</strong>
+                                    <strong className="text-muted-foreground flex items-center"><Heart className="mr-1.5 h-4 w-4 text-red-500" />State of Health:</strong>
                                     <p className="pl-5">Value: {product.batteryRegulation.stateOfHealth.value}{product.batteryRegulation.stateOfHealth.unit || '%'}</p>
                                     {product.batteryRegulation.stateOfHealth.measurementDate && <p className="pl-5">Measured: {new Date(product.batteryRegulation.stateOfHealth.measurementDate).toLocaleDateString()}</p>}
                                     {product.batteryRegulation.stateOfHealth.vcId && <p className="pl-5">VC ID: <span className="font-mono text-xs">{product.batteryRegulation.stateOfHealth.vcId}</span></p>}
@@ -498,7 +504,7 @@ export default function PublicPassportPage() {
                         <p><strong className="text-muted-foreground flex items-center"><FileCog className="mr-1.5 h-4 w-4 text-teal-600"/>Contract Address:</strong> 
                             <TooltipProvider><Tooltip><TooltipTrigger asChild>
                                <span className="font-mono text-xs break-all ml-1">{product.contractAddress}</span>
-                            </TooltipTrigger><TooltipContent><p>{product.contractAddress}</p></TooltipContent></Tooltip></Tooltip></TooltipProvider>
+                            </TooltipTrigger><TooltipContent><p>{product.contractAddress}</p></TooltipContent></Tooltip></TooltipProvider>
                         </p>
                     )}
                     {product.tokenId && (
@@ -525,7 +531,7 @@ export default function PublicPassportPage() {
                         </Link>
                       )}
                     {product.ebsiStatus && (
-                        <div className="mt-2 pt-2 border-t border-border/50">
+                        <div className="mt-1.5 pt-1.5 border-t border-border/50">
                             <strong className="text-muted-foreground flex items-center"><LucideIcons.Database className="mr-1.5 h-4 w-4 text-indigo-500"/>EBSI Status:</strong>
                             <div className="flex items-center mt-0.5">{getEbsiStatusBadge(product.ebsiStatus)}</div>
                             {product.ebsiVerificationId && product.ebsiStatus === 'verified' && (
@@ -623,4 +629,5 @@ export default function PublicPassportPage() {
     </div>
   );
 }
+
 

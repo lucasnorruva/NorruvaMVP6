@@ -54,6 +54,13 @@ export interface DocumentReference {
   addedTimestamp: string;
 }
 
+export interface OwnershipNftLink {
+  registryUrl?: string;
+  contractAddress: string;
+  tokenId: string;
+  chainName?: string;
+}
+
 export interface DigitalProductPassport {
   id: string;
   version?: number;
@@ -88,13 +95,8 @@ export interface DigitalProductPassport {
     anchorTransactionHash?: string;
   };
 
-  authenticationVcId?: string;
-  ownershipNftLink?: {
-    registryUrl?: string;
-    contractAddress: string;
-    tokenId: string;
-    chainName?: string;
-  };
+  authenticationVcId?: string; // Added for Task 31
+  ownershipNftLink?: OwnershipNftLink; // Added for Task 31
 
   productDetails?: {
     description?: string;
@@ -110,7 +112,7 @@ export interface DigitalProductPassport {
     conflictMineralsReportUrl?: string; 
     fairTradeCertificationId?: string; 
     ethicalSourcingPolicyUrl?: string; 
-    keyCompliancePoints?: string; // Added for Task 21
+    keyCompliancePoints?: string; 
   };
 
   textileInformation?: TextileInformation;
@@ -179,7 +181,7 @@ export interface SimpleProductDetail {
   imageUrl?: string;
   imageHint?: string;
   keySustainabilityPoints?: string[];
-  keyCompliancePoints?: string; // Added for Task 21
+  keyCompliancePoints?: string; 
   specifications?: string; 
   customAttributes?: CustomAttribute[];
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
@@ -191,8 +193,8 @@ export interface SimpleProductDetail {
   lifecycleEvents?: SimpleLifecycleEvent[];
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; // Added for Task 31
+  ownershipNftLink?: OwnershipNftLink; // Added for Task 31
   blockchainPlatform?: string;
   contractAddress?: string;
   tokenId?: string;
@@ -245,8 +247,8 @@ export interface StoredUserProduct {
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
   customAttributesJsonString?: string;
-  keyCompliancePoints?: string; // Added for Task 21
-  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual'; // Added for Task 21
+  keyCompliancePoints?: string; 
+  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual'; 
   complianceData?: { 
     eprel?: Partial<DigitalProductPassport['compliance']['eprel']>;
     esprConformity?: Partial<DigitalProductPassport['compliance']['esprConformity']>;
@@ -255,8 +257,8 @@ export interface StoredUserProduct {
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; // Added for Task 31
+  ownershipNftLink?: OwnershipNftLink; // Added for Task 31
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: Partial<TextileInformation>;
@@ -281,8 +283,8 @@ export interface RichMockProduct {
   imageUrl?: string;
   imageHint?: string;
   materials?: string;
-  sustainabilityClaims?: string; // This is the form field, maps to PublicProductInfo.sustainabilityHighlights
-  keyCompliancePoints?: string; // Added for Task 21
+  sustainabilityClaims?: string; 
+  keyCompliancePoints?: string; 
   energyLabel?: string;
   specifications?: string; 
   lifecycleEvents?: SimpleLifecycleEvent[];
@@ -297,8 +299,8 @@ export interface RichMockProduct {
   supplyChainLinks?: ProductSupplyChainLink[];
   customAttributes?: CustomAttribute[];
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; // Added for Task 31
+  ownershipNftLink?: OwnershipNftLink; // Added for Task 31
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
@@ -316,7 +318,7 @@ export interface PublicProductInfo {
   imageHint?: string;
   productStory: string;
   sustainabilityHighlights: Array<{ iconName?: LucideIconName; text: string }>;
-  keyCompliancePoints?: string; // Added for Task 21
+  keyCompliancePoints?: string; 
   manufacturerName: string;
   manufacturerWebsite?: string;
   brandLogoUrl?: string;
@@ -335,8 +337,8 @@ export interface PublicProductInfo {
   certifications?: PublicCertification[];
   customAttributes?: CustomAttribute[];
   documents?: DocumentReference[];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; // Added for Task 31
+  ownershipNftLink?: OwnershipNftLink; // Added for Task 31
   contractAddress?: string;
   tokenId?: string;
   onChainStatus?: string;
@@ -379,7 +381,7 @@ export interface DisplayableProduct {
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
   materials?: string;
   sustainabilityClaims?: string;
-  keyCompliancePoints?: string; // Added for Task 21
+  keyCompliancePoints?: string; 
   energyLabel?: string;
   specifications?: string; 
   lifecycleEvents?: SimpleLifecycleEvent[];
@@ -395,8 +397,8 @@ export interface DisplayableProduct {
   customAttributes?: CustomAttribute[];
   customAttributesJsonString?: string;
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; // Added for Task 31
+  ownershipNftLink?: OwnershipNftLink; // Added for Task 31
   metadata?: Partial<DigitalProductPassport['metadata']>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
@@ -439,4 +441,5 @@ export interface TokenStatusResponse {
   status: string; 
   message?: string;
 }
+
 

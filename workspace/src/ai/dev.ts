@@ -14,4 +14,7 @@ import '@/ai/flows/generate-product-description-flow.ts';
 import '@/ai/flows/generate-product-specifications-flow.ts';
 import '@/ai/flows/generate-custom-attributes-flow.ts';
 import '@/ai/flows/suggest-battery-details-flow.ts';
-import '@/ai/flows/suggest-maintenance-schedule.ts'; // Added import for the new flow
+import '@/ai/flows/suggest-maintenance-schedule.ts';
+import '@/ai/flows/suggest-key-sustainability-points.ts'; // Added Task 21
+import '@/ai/flows/suggest-key-compliance-points.ts'; // Added Task 21
+

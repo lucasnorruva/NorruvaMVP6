@@ -70,6 +70,7 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
   energyLabelOrigin?: AiOrigin;
   specificationsOrigin?: AiOrigin;
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual' | undefined;
+  keyCompliancePointsOrigin?: AiOrigin; // Added for Task 21
   batteryRegulation?: Partial<BatteryRegulationDetails>;
   batteryRegulationOrigin?: BatteryRegulationOrigin;
   compliance?: {
@@ -83,9 +84,9 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
   constructionProductInformation?: Partial<ConstructionProductInformation>; 
   onChainStatus?: string; 
   onChainLifecycleStage?: string; 
-  conflictMineralsReportUrl?: string; // Added for Task 19
-  fairTradeCertificationId?: string; // Added for Task 19
-  ethicalSourcingPolicyUrl?: string; // Added for Task 19
+  conflictMineralsReportUrl?: string; 
+  fairTradeCertificationId?: string; 
+  ethicalSourcingPolicyUrl?: string; 
 }
 
 
@@ -95,8 +96,9 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
   compliance: string; 
   lastUpdated: string;
   productCategory?: string;
-  keySustainabilityPoints?: string[];
-  keyCompliancePoints?: string[];
+  keySustainabilityPoints?: string[]; // Maps to sustainabilityClaims in form
+  keyCompliancePoints?: string; // Added for Task 21, maps to keyCompliancePoints in form
+  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual'; // Added for Task 21
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
   repairability?: { score: number; scale: number; detailsUrl?: string };
@@ -110,7 +112,7 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
     esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
     scipNotification?: Partial<ScipNotificationDetails>;
     euCustomsData?: Partial<EuCustomsDataDetails>;
-    battery_regulation?: Partial<BatteryRegulationDetails>;
+    battery_regulation?: Partial<ProductFormData['compliance']['battery_regulation']>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
   textileInformation?: Partial<TextileInformation>; 
@@ -123,9 +125,9 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
     status?: string;
     dppStandardVersion?: string;
   };
-  conflictMineralsReportUrl?: string; // Added for Task 19
-  fairTradeCertificationId?: string; // Added for Task 19
-  ethicalSourcingPolicyUrl?: string; // Added for Task 19
+  conflictMineralsReportUrl?: string; 
+  fairTradeCertificationId?: string; 
+  ethicalSourcingPolicyUrl?: string; 
 }
 
 const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -201,9 +203,11 @@ export default function AddNewProductPage() {
     imageUrl: "", imageHint: "", imageUrlOrigin: undefined,
     onChainStatus: "Unknown", 
     onChainLifecycleStage: "Unknown", 
-    conflictMineralsReportUrl: "", // Task 19
-    fairTradeCertificationId: "", // Task 19
-    ethicalSourcingPolicyUrl: "", // Task 19
+    conflictMineralsReportUrl: "", 
+    fairTradeCertificationId: "", 
+    ethicalSourcingPolicyUrl: "", 
+    keyCompliancePoints: "", // Added for Task 21
+    keyCompliancePointsOrigin: undefined, // Added for Task 21
     batteryRegulation: { ...defaultBatteryRegulationState },
     customAttributesJsonString: "",
     productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined,
@@ -233,9 +237,11 @@ export default function AddNewProductPage() {
           ...productToEdit,
           onChainStatus: productToEdit.metadata?.onChainStatus || "Unknown", 
           onChainLifecycleStage: productToEdit.metadata?.onChainLifecycleStage || "Unknown", 
-          conflictMineralsReportUrl: productToEdit.conflictMineralsReportUrl || "", // Task 19
-          fairTradeCertificationId: productToEdit.fairTradeCertificationId || "", // Task 19
-          ethicalSourcingPolicyUrl: productToEdit.ethicalSourcingPolicyUrl || "", // Task 19
+          conflictMineralsReportUrl: productToEdit.conflictMineralsReportUrl || "", 
+          fairTradeCertificationId: productToEdit.fairTradeCertificationId || "", 
+          ethicalSourcingPolicyUrl: productToEdit.ethicalSourcingPolicyUrl || "", 
+          keyCompliancePoints: productToEdit.keyCompliancePoints || "", // Added for Task 21
+          keyCompliancePointsOrigin: productToEdit.keyCompliancePointsOrigin || undefined, // Added for Task 21
           batteryRegulation: {
             ...defaultBatteryRegulationState,
             ...(productToEdit.batteryRegulation || {}),
@@ -428,6 +434,8 @@ export default function AddNewProductPage() {
       aiInitialFormData.customAttributesJsonString = "";
       aiInitialFormData.onChainStatus = "Unknown";
       aiInitialFormData.onChainLifecycleStage = "Unknown";
+      aiInitialFormData.keyCompliancePoints = ""; // Initialize new field
+      aiInitialFormData.keyCompliancePointsOrigin = undefined; // Initialize new field
 
       setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData}));
       setAiExtractionAppliedSuccessfully(true);
@@ -466,7 +474,8 @@ export default function AddNewProductPage() {
         lastUpdated: new Date().toISOString(),
         supplyChainLinks: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.supplyChainLinks) || [] : [],
         lifecycleEvents: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.lifecycleEvents) || [] : [],
-        
+        keyCompliancePoints: formDataFromForm.keyCompliancePoints, // Added for Task 21
+        keyCompliancePointsOrigin: formDataFromForm.keyCompliancePointsOrigin, // Added for Task 21
         complianceData: {
           eprel: formDataFromForm.compliance?.eprel,
           esprConformity: formDataFromForm.compliance?.esprConformity,
@@ -505,9 +514,9 @@ export default function AddNewProductPage() {
             batteryChemistry: formDataFromForm.compliance.battery_regulation.batteryChemistry,
           } : undefined,
         },
-        conflictMineralsReportUrl: formDataFromForm.conflictMineralsReportUrl, // Task 19
-        fairTradeCertificationId: formDataFromForm.fairTradeCertificationId, // Task 19
-        ethicalSourcingPolicyUrl: formDataFromForm.ethicalSourcingPolicyUrl, // Task 19
+        conflictMineralsReportUrl: formDataFromForm.conflictMineralsReportUrl, 
+        fairTradeCertificationId: formDataFromForm.fairTradeCertificationId, 
+        ethicalSourcingPolicyUrl: formDataFromForm.ethicalSourcingPolicyUrl, 
       };
 
 

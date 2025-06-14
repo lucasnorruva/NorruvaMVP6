@@ -17,17 +17,20 @@ import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIcon, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction, Handshake } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import BasicInfoFormSection from "@/components/products/form/BasicInfoFormSection";
-import ProductImageFormSection from "@/components/products/form/ProductImageFormSection";
-import BatteryDetailsFormSection from "@/components/products/form/BatteryDetailsFormSection";
-import SustainabilityComplianceFormSection from "@/components/products/form/SustainabilityComplianceFormSection";
-import TechnicalSpecificationsFormSection from "@/components/products/form/TechnicalSpecificationsFormSection";
-import CustomAttributesFormSection from "@/components/products/form/CustomAttributesFormSection";
-import ScipNotificationFormSection from "@/components/products/form/ScipNotificationFormSection";
-import EuCustomsDataFormSection from "@/components/products/form/EuCustomsDataFormSection";
-import TextileInformationFormSection from "@/components/products/form/TextileInformationFormSection";
-import ConstructionProductInformationFormSection from "@/components/products/form/ConstructionProductInformationFormSection";
-import EthicalSourcingFormSection from "@/components/products/form/EthicalSourcingFormSection";
+// Corrected imports to use the barrel file from @/components/products/form
+import {
+  BasicInfoFormSection,
+  ProductImageFormSection,
+  BatteryDetailsFormSection,
+  SustainabilityComplianceFormSection,
+  TechnicalSpecificationsFormSection,
+  CustomAttributesFormSection,
+  ScipNotificationFormSection,
+  EuCustomsDataFormSection,
+  TextileInformationFormSection,
+  ConstructionProductInformationFormSection,
+  EthicalSourcingFormSection,
+} from "@/components/products/form";
 import {
   handleGenerateImageAI,
 } from "@/utils/aiFormHelpers";
@@ -620,10 +623,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         </AccordionContent>
       </AccordionItem>
 
-      <AccordionItem value="item-12">
-        <AccordionTrigger className="text-lg font-semibold flex items-center">
-          <Handshake className="mr-2 h-5 w-5 text-primary" />Ethical Sourcing & Supply Chain
-        </AccordionTrigger>
+      <AccordionItem value="item-13">
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><Handshake className="mr-2 h-5 w-5 text-primary" />Ethical Sourcing</AccordionTrigger>
         <AccordionContent>
           <EthicalSourcingFormSection form={form} />
         </AccordionContent>
@@ -771,3 +772,4 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
+

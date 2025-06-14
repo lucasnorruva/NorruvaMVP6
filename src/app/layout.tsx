@@ -1,3 +1,4 @@
+
 import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster"
@@ -8,6 +9,7 @@ import ServiceWorkerRegister from '@/components/ServiceWorkerRegister';
 export const metadata: Metadata = {
   title: 'Norruva Digital Product Passport',
   description: 'Secure and Compliant Product Data Management',
+  manifest: '/manifest.json', // Ensure manifest is linked
 };
 
 export default function RootLayout({
@@ -27,6 +29,8 @@ export default function RootLayout({
         />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
         <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#29ABE2" /> {/* Using primary color for theme-color */}
       </head>
       <body className="font-body antialiased">
         <SkipToContent />
@@ -39,3 +43,4 @@ export default function RootLayout({
     </html>
   );
 }
+

@@ -15,19 +15,22 @@ import {
   Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint,
   ServerIcon as ServerIconLucide, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
   KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, Sigma, Layers as LayersIconShadcn, Shirt, Construction,
-  BatteryCharging, Thermometer, Weight, Hash, CalendarDays as CalendarIcon, FileText as FileTextIcon, SigmaSquare
+  BatteryCharging, Thermometer, Weight, Hash, CalendarDays as CalendarIcon, FileText as FileTextIcon, SigmaSquare,
+  BookmarkPlus, BookmarkCheck // Icons for tracking
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
 import { cn } from '@/lib/utils';
 import { useRole } from '@/contexts/RoleContext';
 import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification, CustomAttribute, BatteryRegulationDetails, RecycledContentData } from '@/types/dpp';
 import { MOCK_PUBLIC_PASSPORTS } from '@/data';
 import RoleSpecificCard from '@/components/passport/RoleSpecificCard';
 import { getAiHintForImage } from '@/utils/imageUtils';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // For tooltips
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
+import { useToast } from "@/hooks/use-toast"; // Import useToast
 
 const STORY_TRUNCATE_LENGTH = 250;
+const TRACKED_PRODUCTS_STORAGE_KEY = 'norruvaTrackedProductIds';
 
 export default function PublicPassportPage() {
   const params = useParams();
@@ -35,10 +38,18 @@ export default function PublicPassportPage() {
   const [product, setProduct] = useState<PublicProductInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isStoryExpanded, setIsStoryExpanded] = useState(false);
+  const [isTracked, setIsTracked] = useState(false); // State for tracking
   const { currentRole } = useRole();
+  const { toast } = useToast(); // Initialize toast
+
+  const updateTrackedStatus = useCallback(() => {
+    const storedIdsString = localStorage.getItem(TRACKED_PRODUCTS_STORAGE_KEY);
+    const trackedIds: string[] = storedIdsString ? JSON.parse(storedIdsString) : [];
+    setIsTracked(trackedIds.includes(passportId));
+  }, [passportId]);
 
   useEffect(() => {
-    const fetchedProduct = MOCK_PUBLIC_PASSPORTS[passportId];
+    const fetchedProduct = MOCK_PUBLIC_PASSPORTS[passportId] || MOCK_PUBLIC_PASSPORTS[`PROD${passportId.replace('DPP','')}`];
     if (fetchedProduct) {
       setProduct({
         ...fetchedProduct,
@@ -47,9 +58,27 @@ export default function PublicPassportPage() {
         authenticationVcId: fetchedProduct.authenticationVcId,
         ownershipNftLink: fetchedProduct.ownershipNftLink,
       });
+      updateTrackedStatus(); // Check tracking status on product load
     }
     setIsLoading(false);
-  }, [passportId]);
+  }, [passportId, updateTrackedStatus]);
+
+  const handleToggleTrackProduct = () => {
+    const storedIdsString = localStorage.getItem(TRACKED_PRODUCTS_STORAGE_KEY);
+    let trackedIds: string[] = storedIdsString ? JSON.parse(storedIdsString) : [];
+    const productIndex = trackedIds.indexOf(passportId);
+
+    if (productIndex > -1) {
+      trackedIds.splice(productIndex, 1); // Untrack
+      toast({ title: "Product Untracked", description: `${product?.productName || passportId} removed from your list.` });
+    } else {
+      trackedIds.push(passportId); // Track
+      toast({ title: "Product Tracked", description: `${product?.productName || passportId} added to your list.` });
+    }
+    localStorage.setItem(TRACKED_PRODUCTS_STORAGE_KEY, JSON.stringify(trackedIds));
+    updateTrackedStatus(); // Update UI
+  };
+
 
   if (isLoading) {
     return (
@@ -102,7 +131,13 @@ export default function PublicPassportPage() {
           <Link href="/" passHref>
             <Logo className="h-10 w-auto text-primary" />
           </Link>
-          <Badge variant="outline" className="border-primary text-primary text-sm">Digital Product Passport</Badge>
+          <div className="flex items-center gap-2">
+             <Button variant={isTracked ? "default" : "outline"} size="sm" onClick={handleToggleTrackProduct} className="text-xs">
+              {isTracked ? <BookmarkCheck className="mr-1.5 h-4 w-4" /> : <BookmarkPlus className="mr-1.5 h-4 w-4" />}
+              {isTracked ? "Untrack Product" : "Track This Product"}
+            </Button>
+            <Badge variant="outline" className="border-primary text-primary text-sm">Digital Product Passport</Badge>
+          </div>
         </div>
       </header>
 
@@ -358,7 +393,7 @@ export default function PublicPassportPage() {
                     <CardTitle className="text-xl text-primary flex items-center"><Construction className="mr-2 h-6 w-6" />Construction Product Information</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 text-sm px-0 pb-0">
-                    {product.constructionProductInformation.declarationOfPerformanceId && <p><strong className="text-muted-foreground">Declaration of Performance ID:</strong> {product.constructionProductInformation.declarationOfPerformanceId}</p>}
+                    {product.constructionProductInformation.declarationOfPerformanceId && <p><strong className="text-muted-foreground">DoP ID:</strong> {product.constructionProductInformation.declarationOfPerformanceId}</p>}
                     {product.constructionProductInformation.ceMarkingDetailsUrl && <p><strong className="text-muted-foreground">CE Marking:</strong> <Link href={product.constructionProductInformation.ceMarkingDetailsUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">View Details</Link></p>}
                     {product.constructionProductInformation.intendedUseDescription && <p><strong className="text-muted-foreground">Intended Use:</strong> {product.constructionProductInformation.intendedUseDescription}</p>}
                     {product.constructionProductInformation.essentialCharacteristics && product.constructionProductInformation.essentialCharacteristics.length > 0 && (
@@ -385,7 +420,7 @@ export default function PublicPassportPage() {
                         <CardContent className="space-y-3 text-sm px-0 pb-0">
                             <p><strong className="text-muted-foreground flex items-center"><InfoIcon className="mr-1.5 h-4 w-4 text-blue-500" />Status:</strong> <Badge variant="outline" className="capitalize">{product.batteryRegulation.status?.replace('_', ' ') || 'N/A'}</Badge></p>
                             {product.batteryRegulation.batteryChemistry && <p><strong className="text-muted-foreground flex items-center"><Thermometer className="mr-1.5 h-4 w-4 text-blue-500" />Chemistry:</strong> {product.batteryRegulation.batteryChemistry}</p>}
-                            {product.batteryRegulation.batteryPassportId && <p><strong className="text-muted-foreground flex items-center"><Barcode className="mr-1.5 h-4 w-4 text-blue-500" />Passport ID:</strong> <span className="font-mono">{product.batteryRegulation.batteryPassportId}</span></p>}
+                            {product.batteryRegulation.batteryPassportId && <p><strong className="text-muted-foreground flex items-center"><Barcode className="mr-1.5 h-4 w-4 text-blue-500" />Passport ID:</strong> <span className="font-mono text-xs">{product.batteryRegulation.batteryPassportId}</span></p>}
                             
                             {product.batteryRegulation.carbonFootprint && (product.batteryRegulation.carbonFootprint.value !== null && product.batteryRegulation.carbonFootprint.value !== undefined) && (
                                 <div className="mt-2 pt-2 border-t border-border/30">
@@ -443,19 +478,19 @@ export default function PublicPassportPage() {
                         <p><strong className="text-muted-foreground flex items-center"><Tag className="mr-1.5 h-4 w-4 text-teal-600"/>Token ID:</strong> 
                              <TooltipProvider><Tooltip><TooltipTrigger asChild>
                                <span className="font-mono text-xs break-all ml-1">{product.tokenId}</span>
-                             </TooltipTrigger><TooltipContent><p>{product.tokenId}</p></TooltipContent></Tooltip></Tooltip></TooltipProvider>
+                             </TooltipTrigger><TooltipContent><p>{product.tokenId}</p></TooltipContent></Tooltip></TooltipProvider>
                         </p>
                     )}
                     {product.anchorTransactionHash && (
-                        <div>
-                            <strong className="text-muted-foreground flex items-center"><Anchor className="mr-1.5 h-4 w-4 text-teal-600"/>Anchor Tx Hash:</strong> 
-                            <TooltipProvider><Tooltip><TooltipTrigger asChild>
-                               <span className="font-mono text-xs break-all">{product.anchorTransactionHash}</span>
-                            </TooltipTrigger><TooltipContent><p>{product.anchorTransactionHash}</p></TooltipContent></Tooltip></TooltipProvider>
-                            <Link href={`https://mock-token-explorer.example.com/tx/${product.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs ml-2">
-                            View Anchor Tx <ExternalLink className="ml-1 h-3 w-3" />
-                            </Link>
-                        </div>
+                      <div>
+                        <strong className="text-muted-foreground flex items-center"><Anchor className="mr-1.5 h-4 w-4 text-teal-600"/>Anchor Tx Hash:</strong> 
+                        <TooltipProvider><Tooltip><TooltipTrigger asChild>
+                            <span className="font-mono text-xs break-all">{product.anchorTransactionHash}</span>
+                        </TooltipTrigger><TooltipContent><p>{product.anchorTransactionHash}</p></TooltipContent></Tooltip></TooltipProvider>
+                        <Link href={`https://mock-token-explorer.example.com/tx/${product.anchorTransactionHash}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs ml-2">
+                        View Anchor Tx <ExternalLink className="ml-1 h-3 w-3" />
+                        </Link>
+                      </div>
                     )}
                      {(product.contractAddress && product.tokenId) && (
                         <Link href={`https://mock-token-explorer.example.com/token/${product.contractAddress}/${product.tokenId}`} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline inline-flex items-center text-xs mt-1">
@@ -563,3 +598,4 @@ export default function PublicPassportPage() {
 }
 
     
+

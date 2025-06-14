@@ -7,12 +7,20 @@ from 'next/navigation';
 import { SidebarTrigger } from "@/components/ui/sidebar/Sidebar";
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input"; // Import Input
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, UserCircle, LogOut, User, Settings as SettingsIcon, Bell, Briefcase } from "lucide-react"; // Added Briefcase for role
+import { Menu, UserCircle, LogOut, User, Settings as SettingsIcon, Bell, Briefcase, Search } from "lucide-react"; // Added Briefcase and Search
 import AppSidebarContent from "./AppSidebarContent";
 import { Logo } from "@/components/icons/Logo";
-import { useRole, type UserRole } from '@/contexts/RoleContext'; // Import useRole
-import { roleDashboardPaths } from '@/config/navConfig'; // Import roleDashboardPaths
+import { useRole, type UserRole } from '@/contexts/RoleContext'; 
+import { roleDashboardPaths } from '@/config/navConfig'; 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +32,8 @@ import {
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast"; 
+import { Label } from "@/components/ui/label"; // Added Label for mobile role switcher
 
 interface AppNotification {
   id: string;
@@ -39,7 +49,6 @@ const generateMockNotifications = (role: UserRole): AppNotification[] => {
     { id: `gen_sec_${now+2}`, title: "Security Tip: Rotate API Keys", description: "Remember to periodically rotate your API keys for enhanced security.", time: "3d ago" },
   ];
 
-  // Simplified example, can be expanded with role-specific notifications
    const roleSpecificMessages: Record<UserRole, AppNotification[]> = {
     admin: [
         { id: `admin_rev_${now}`, title: "Review Queue Update", description: "5 new products are awaiting compliance review.", time: "15m ago" },
@@ -73,19 +82,19 @@ const generateMockNotifications = (role: UserRole): AppNotification[] => {
 export default function AppHeader() {
   const router = useRouter();
   const { isMobile } = useSidebar();
-  const { currentRole, setCurrentRole, availableRoles } = useRole(); // Get currentRole from context
+  const { currentRole, setCurrentRole, availableRoles } = useRole(); 
   const [notifications, setNotifications] = useState<AppNotification[]>([]);
+  const { toast } = useToast(); 
 
   useEffect(() => {
     setNotifications(generateMockNotifications(currentRole));
   }, [currentRole]);
 
-  const currentRoleDashboardPath = roleDashboardPaths[currentRole] || '/dashboard'; // Get role-specific path
+  const currentRoleDashboardPath = roleDashboardPaths[currentRole] || '/dashboard'; 
 
   const handleLogout = () => {
     alert("Mock Logout: User logged out!");
-    // In a real app, you'd clear session/token and then redirect
-    router.push('/'); // Redirect to homepage after logout
+    router.push('/'); 
   };
   
   const formatRoleNameForDisplay = (role: UserRole): string => {
@@ -93,6 +102,15 @@ export default function AppHeader() {
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
+  };
+  
+  const handleGlobalSearchSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    const searchInput = (e.currentTarget.elements.namedItem('globalSearch') as HTMLInputElement)?.value;
+    toast({
+        title: "Global Search (Conceptual)",
+        description: `Search for "${searchInput}" initiated. This feature is coming soon!`,
+    });
   };
 
   return (
@@ -113,7 +131,6 @@ export default function AppHeader() {
         ) : (
           <>
             <SidebarTrigger className="hidden md:flex" />
-            {/* Logo now links to the current role's specific dashboard */}
             <Link href={currentRoleDashboardPath} className="flex items-center text-primary">
               <Logo className="h-8 w-auto" />
             </Link>
@@ -121,14 +138,27 @@ export default function AppHeader() {
         )}
       </div>
       
-      {/* Display Current Role */}
-      <div className="hidden md:flex items-center gap-2 text-sm text-muted-foreground">
-        <Briefcase className="h-4 w-4 text-primary" />
-        <span>Viewing as: <span className="font-semibold text-foreground">{formatRoleNameForDisplay(currentRole)}</span></span>
+      {/* Global Search Bar */}
+      <div className="flex-1 flex justify-center px-2 sm:px-4">
+        <form onSubmit={handleGlobalSearchSubmit} className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg relative">
+          <Input
+            type="search"
+            name="globalSearch"
+            placeholder="Search DPPs, products..."
+            className="h-9 pl-10 pr-4 w-full bg-muted/50 border-border focus:bg-background text-sm"
+            aria-label="Global search"
+          />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        </form>
       </div>
 
 
-      <div className="flex items-center gap-3 md:gap-4">
+      <div className="flex items-center gap-2 md:gap-3">
+        <div className="hidden lg:flex items-center gap-2 text-sm text-muted-foreground"> 
+          <Briefcase className="h-4 w-4 text-primary" />
+          <span>Viewing as: <span className="font-semibold text-foreground">{formatRoleNameForDisplay(currentRole)}</span></span>
+        </div>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon" className="relative rounded-full">
@@ -190,6 +220,22 @@ export default function AppHeader() {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
+            <div className="px-2 py-1.5 lg:hidden"> {/* Role switcher for smaller screens */}
+              <Label htmlFor="role-switcher-mobile" className="text-xs text-muted-foreground mb-1 block">Current Role</Label>
+              <Select value={currentRole} onValueChange={(value) => setCurrentRole(value as UserRole)}>
+                <SelectTrigger id="role-switcher-mobile" className="w-full h-9 text-xs focus:ring-primary">
+                  <SelectValue placeholder="Select Role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableRoles.map(role => (
+                    <SelectItem key={`mobile-role-${role}`} value={role} className="capitalize text-xs">
+                      {formatRoleNameForDisplay(role)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <DropdownMenuSeparator className="lg:hidden"/> {/* Separator only for mobile dropdown */}
             <DropdownMenuItem onClick={() => alert("Mock: View Profile clicked")}>
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>

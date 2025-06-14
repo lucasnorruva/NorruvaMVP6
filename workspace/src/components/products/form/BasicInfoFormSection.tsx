@@ -1,4 +1,3 @@
-
 // --- File: BasicInfoFormSection.tsx ---
 // Description: Form section component for basic product information.
 "use client";
@@ -18,7 +17,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import AiIndicator from "./AiIndicator";
 import { Loader2, Sparkles } from "lucide-react";
-import type { ProductFormData } from "@/components/products/ProductForm";
+import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 import type { ToastInput } from "@/hooks/use-toast";
 import { handleSuggestNameAI, handleSuggestDescriptionAI } from "@/utils/aiFormHelpers"; // Import helpers
@@ -166,5 +165,3 @@ export default function BasicInfoFormSection({
     </div>
   );
 }
-
-    

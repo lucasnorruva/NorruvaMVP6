@@ -1,5 +1,3 @@
-
-
 // --- File: SustainabilityComplianceFormSection.tsx ---
 // Description: Form section component for sustainability and compliance details.
 "use client";
@@ -20,10 +18,10 @@ import { Button } from "@/components/ui/button";
 import AiIndicator from "./AiIndicator"; 
 import AiSuggestionDisplay from "./AiSuggestionDisplay";
 import { Loader2, Sparkles } from "lucide-react";
-import type { ProductFormData } from "@/components/products/ProductForm";
+import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 import type { ToastInput } from "@/hooks/use-toast"; 
-import { handleSuggestClaimsAI, handleSuggestKeyCompliancePointsAI } from "@/utils/aiFormHelpers"; // Import helpers
+import { handleSuggestClaimsAI, handleSuggestKeyCompliancePointsAI } from "@/utils/aiFormHelpers"; // Import helper
 
 type ToastFn = (input: ToastInput) => void;
 
@@ -33,8 +31,8 @@ interface SustainabilityComplianceFormSectionProps {
   suggestedClaims: string[]; 
   setSuggestedClaims: React.Dispatch<React.SetStateAction<string[]>>; 
   handleClaimClick: (claim: string) => void;
-  suggestedKeyCompliancePoints: string[]; // New prop for Task 21
-  setSuggestedKeyCompliancePoints: React.Dispatch<React.SetStateAction<string[]>>; // New prop for Task 21
+  suggestedKeyCompliancePoints: string[]; 
+  setSuggestedKeyCompliancePoints: React.Dispatch<React.SetStateAction<string[]>>; 
   isSubmittingForm?: boolean;
   toast: ToastFn; 
 }
@@ -45,13 +43,13 @@ export default function SustainabilityComplianceFormSection({
   suggestedClaims,
   setSuggestedClaims, 
   handleClaimClick,
-  suggestedKeyCompliancePoints, // Destructure new prop
-  setSuggestedKeyCompliancePoints, // Destructure new prop
+  suggestedKeyCompliancePoints, 
+  setSuggestedKeyCompliancePoints, 
   isSubmittingForm,
   toast, 
 }: SustainabilityComplianceFormSectionProps) {
   const [isSuggestingClaimsInternal, setIsSuggestingClaimsInternal] = useState(false);
-  const [isSuggestingComplianceInternal, setIsSuggestingComplianceInternal] = useState(false); // New state for Task 21
+  const [isSuggestingComplianceInternal, setIsSuggestingComplianceInternal] = useState(false); 
 
   const callSuggestClaimsAIInternal = async () => {
     const claims = await handleSuggestClaimsAI(form, toast, setIsSuggestingClaimsInternal);
@@ -62,7 +60,6 @@ export default function SustainabilityComplianceFormSection({
     }
   };
 
-  // New handler for Task 21
   const callSuggestKeyCompliancePointsAIInternal = async () => {
     const points = await handleSuggestKeyCompliancePointsAI(form, toast, setIsSuggestingComplianceInternal);
     if (points) {
@@ -136,7 +133,6 @@ export default function SustainabilityComplianceFormSection({
         itemNoun="claim"
       />
 
-      {/* New Key Compliance Points Field - Task 21 */}
       <FormField
         control={form.control}
         name="keyCompliancePoints"
@@ -201,5 +197,3 @@ export default function SustainabilityComplianceFormSection({
     </div>
   );
 }
-
-

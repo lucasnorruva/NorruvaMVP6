@@ -1,4 +1,3 @@
-
 // --- File: BatteryDetailsFormSection.tsx ---
 // Description: Form section component for battery-specific details in the product form.
 "use client";
@@ -11,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import AiIndicator from "./AiIndicator";
-import type { ProductFormData } from "@/components/products/ProductForm";
+import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 import { suggestBatteryDetails } from "@/ai/flows/suggest-battery-details-flow";
 import type { ToastInput } from "@/hooks/use-toast";
@@ -48,7 +47,7 @@ export default function BatteryDetailsFormSection({ form, initialData, isSubmitt
       });
 
       let suggestionsMade = false;
-      const originPath = "batteryRegulationOrigin";
+      const originPath = "batteryRegulationOrigin"; // Base path for origin tracking
 
       if (result.suggestedBatteryChemistry) {
         form.setValue("batteryRegulation.batteryChemistry", result.suggestedBatteryChemistry, { shouldValidate: true });
@@ -84,10 +83,11 @@ export default function BatteryDetailsFormSection({ form, initialData, isSubmitt
         suggestionsMade = true;
       }
       
+
       if (suggestionsMade) {
         toast({ title: "Battery Details Suggested", description: "AI has provided suggestions for some battery fields.", variant: "default" });
       } else {
-        toast({ title: "No Battery Details Suggested", description: "AI did not find relevant battery information to suggest.", variant: "default" });
+        toast({ title: "No Battery Details Suggested", description: "AI did not find relevant battery information to suggest for this product.", variant: "default" });
       }
 
     } catch (error) {
@@ -103,6 +103,7 @@ export default function BatteryDetailsFormSection({ form, initialData, isSubmitt
       setIsSuggestingBatteryDetails(false);
     }
   };
+
 
   const batteryStatusOptions = ['compliant', 'non_compliant', 'pending', 'not_applicable'];
   const recycledContentSourceOptions = ['Pre-consumer', 'Post-consumer', 'Mixed', 'Unknown'];
@@ -164,7 +165,7 @@ export default function BatteryDetailsFormSection({ form, initialData, isSubmitt
         render={({ field }) => (
           <FormItem>
             <FormLabel className="flex items-center">Battery Passport ID <AiIndicator fieldOrigin={initialData?.batteryRegulationOrigin?.batteryPassportIdOrigin} fieldName="Battery Passport ID" /></FormLabel>
-            <FormControl><Input placeholder="Unique ID for the battery passport" {...field} onChange={(e) => { field.onChange(e); form.setValue("batteryRegulationOrigin.batteryPassportIdOrigin" as any, "manual"); }} /></FormControl>
+            <FormControl><Input placeholder="Unique ID for the battery passport itself" {...field} onChange={(e) => { field.onChange(e); form.setValue("batteryRegulationOrigin.batteryPassportIdOrigin" as any, "manual"); }} /></FormControl>
             <FormMessage />
           </FormItem>
         )} />
@@ -189,7 +190,6 @@ export default function BatteryDetailsFormSection({ form, initialData, isSubmitt
             render={({ field }) => ( <FormItem><FormLabel>Scope 2 Emissions</FormLabel><FormControl><Input type="number" placeholder="tCO2e" {...field} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem> )}/>
           <FormField control={form.control} name="batteryRegulation.carbonFootprint.scope3Emissions"
             render={({ field }) => ( <FormItem><FormLabel>Scope 3 Emissions</FormLabel><FormControl><Input type="number" placeholder="tCO2e" {...field} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem> )}/>
-        </div>
         <FormField control={form.control} name="batteryRegulation.carbonFootprint.vcId"
           render={({ field }) => ( <FormItem><FormLabel>Carbon Footprint VC ID (Optional)</FormLabel><FormControl><Input placeholder="VC ID for carbon footprint data" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem> )}/>
       </div>

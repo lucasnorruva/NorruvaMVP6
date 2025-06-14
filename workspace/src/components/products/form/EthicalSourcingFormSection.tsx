@@ -1,5 +1,3 @@
-
-
 // --- File: EthicalSourcingFormSection.tsx ---
 // Description: Form section component for ethical sourcing details.
 "use client";
@@ -15,7 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import type { ProductFormData } from "@/components/products/ProductForm";
+import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
 
 interface EthicalSourcingFormSectionProps {
   form: UseFormReturn<ProductFormData>;
@@ -72,5 +70,3 @@ export default function EthicalSourcingFormSection({
     </div>
   );
 }
-
-

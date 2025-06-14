@@ -1,0 +1,174 @@
+// --- File: src/types/productFormTypes.ts ---
+// Description: Type definitions and Zod schemas for the product form.
+"use client";
+
+import { z } from "zod";
+import type { BatteryRegulationDetails, CarbonFootprintData, StateOfHealthData, RecycledContentData, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from '@/types/dpp';
+
+// Schemas previously in ProductForm.tsx
+export const carbonFootprintSchema = z.object({
+  value: z.coerce.number().nullable().optional(),
+  unit: z.string().optional(),
+  calculationMethod: z.string().optional(),
+  scope1Emissions: z.coerce.number().nullable().optional(),
+  scope2Emissions: z.coerce.number().nullable().optional(),
+  scope3Emissions: z.coerce.number().nullable().optional(),
+  dataSource: z.string().optional(),
+  vcId: z.string().optional(),
+});
+
+export const recycledContentSchema = z.object({
+  material: z.string().optional(),
+  percentage: z.coerce.number().nullable().optional(),
+  source: z.string().optional(),
+  vcId: z.string().optional(),
+});
+
+export const stateOfHealthSchema = z.object({
+  value: z.coerce.number().nullable().optional(),
+  unit: z.string().optional(),
+  measurementDate: z.string().optional(),
+  measurementMethod: z.string().optional(),
+  vcId: z.string().optional(),
+});
+
+export const batteryRegulationDetailsSchema = z.object({
+  status: z.string().optional(),
+  batteryChemistry: z.string().optional(),
+  batteryPassportId: z.string().optional(),
+  ratedCapacityAh: z.coerce.number().nullable().optional(),
+  nominalVoltage: z.coerce.number().nullable().optional(),
+  expectedLifetimeCycles: z.coerce.number().nullable().optional(),
+  manufacturingDate: z.string().optional(),
+  manufacturerName: z.string().optional(),
+  carbonFootprint: carbonFootprintSchema.optional(),
+  recycledContent: z.array(recycledContentSchema).optional(),
+  stateOfHealth: stateOfHealthSchema.optional(),
+  recyclingEfficiencyRate: z.coerce.number().nullable().optional(),
+  materialRecoveryRates: z.object({
+    cobalt: z.coerce.number().nullable().optional(),
+    lead: z.coerce.number().nullable().optional(),
+    lithium: z.coerce.number().nullable().optional(),
+    nickel: z.coerce.number().nullable().optional(),
+  }).optional(),
+  dismantlingInformationUrl: z.string().url().or(z.literal("")).optional(),
+  safetyInformationUrl: z.string().url().or(z.literal("")).optional(),
+  vcId: z.string().optional(),
+});
+
+export const scipNotificationSchema = z.object({
+  status: z.string().optional(),
+  notificationId: z.string().optional(),
+  svhcListVersion: z.string().optional(),
+  submittingLegalEntity: z.string().optional(),
+  articleName: z.string().optional(),
+  primaryArticleId: z.string().optional(),
+  safeUseInstructionsLink: z.string().url().or(z.literal("")).optional(),
+});
+
+export const customsValuationSchema = z.object({
+  value: z.coerce.number().nullable().optional(),
+  currency: z.string().optional(),
+});
+
+export const euCustomsDataSchema = z.object({
+  status: z.string().optional(),
+  declarationId: z.string().optional(),
+  hsCode: z.string().optional(),
+  countryOfOrigin: z.string().optional(),
+  netWeightKg: z.coerce.number().nullable().optional(),
+  grossWeightKg: z.coerce.number().nullable().optional(),
+  customsValuation: customsValuationSchema.optional(),
+  cbamGoodsIdentifier: z.string().optional(), // Added for CBAM
+});
+
+export const fiberCompositionEntrySchema = z.object({
+  fiberName: z.string().min(1, "Fiber name is required."),
+  percentage: z.coerce.number().min(0).max(100).nullable(),
+});
+
+export const textileInformationSchema = z.object({
+  fiberComposition: z.array(fiberCompositionEntrySchema).optional(),
+  countryOfOriginLabeling: z.string().optional(),
+  careInstructionsUrl: z.string().url().or(z.literal("")).optional(),
+  isSecondHand: z.boolean().optional(),
+});
+
+export const essentialCharacteristicSchema = z.object({
+  characteristicName: z.string().min(1, "Characteristic name is required."),
+  value: z.string().min(1, "Value is required."),
+  unit: z.string().optional(),
+  testMethod: z.string().optional(),
+});
+
+export const constructionProductInformationSchema = z.object({
+  declarationOfPerformanceId: z.string().optional(),
+  ceMarkingDetailsUrl: z.string().url().or(z.literal("")).optional(),
+  intendedUseDescription: z.string().optional(),
+  essentialCharacteristics: z.array(essentialCharacteristicSchema).optional(),
+});
+
+export const formSchema = z.object({
+  productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
+  gtin: z.string().optional().describe("Global Trade Item Number"),
+  productDescription: z.string().optional(),
+  manufacturer: z.string().optional(),
+  modelNumber: z.string().optional(),
+  sku: z.string().optional(),
+  nfcTagId: z.string().optional(),
+  rfidTagId: z.string().optional(),
+  materials: z.string().optional().describe("Key materials used in the product, e.g., Cotton, Recycled Polyester, Aluminum."),
+  sustainabilityClaims: z.string().optional().describe("Brief sustainability claims, e.g., 'Made with 50% recycled content', 'Carbon neutral production'."),
+  keyCompliancePoints: z.string().optional().describe("Key compliance points summary."),
+  specifications: z.string().optional(),
+  energyLabel: z.string().optional(),
+  productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
+  imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")),
+  imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(),
+  
+  batteryRegulation: batteryRegulationDetailsSchema.optional(),
+  customAttributesJsonString: z.string().optional(),
+
+  compliance: z.object({
+    eprel: z.object({ 
+        id: z.string().optional(),
+        status: z.string().optional(),
+        url: z.string().url().or(z.literal("")).optional(),
+        lastChecked: z.string().optional(), 
+    }).optional(),
+    esprConformity: z.object({
+        assessmentId: z.string().optional(),
+        status: z.string().optional(), 
+        assessmentDate: z.string().optional(), 
+        vcId: z.string().optional(),
+    }).optional(),
+    scipNotification: scipNotificationSchema.optional(),
+    euCustomsData: euCustomsDataSchema.optional(),
+    battery_regulation: batteryRegulationDetailsSchema.optional(),
+  }).optional(),
+  
+  textileInformation: textileInformationSchema.optional(), 
+  constructionProductInformation: constructionProductInformationSchema.optional(), 
+  onChainStatus: z.string().optional(), 
+  onChainLifecycleStage: z.string().optional(), 
+
+  // Ethical Sourcing Fields
+  conflictMineralsReportUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+  fairTradeCertificationId: z.string().optional(),
+  ethicalSourcingPolicyUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+
+  // AI Origin tracking fields
+  productNameOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  productDescriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  manufacturerOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  modelNumberOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  materialsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  sustainabilityClaimsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  keyCompliancePointsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  specificationsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  batteryRegulationOrigin: z.any().optional(), 
+});
+
+export type ProductFormData = z.infer<typeof formSchema>;

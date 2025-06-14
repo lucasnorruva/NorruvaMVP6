@@ -101,7 +101,7 @@ export default function BasicInfoFormSection({
               />
             </FormControl>
             <FormDescription>
-              Specify a relevant category. This helps in organizing products, applying category-specific rules (e.g., for Textiles or Construction), and enabling tailored AI suggestions.
+              Specify a relevant category. This helps in organizing products, applying category-specific rules (e.g., for "Textiles" or "Construction Materials" sections below), and enabling tailored AI suggestions.
             </FormDescription>
             <FormMessage />
           </FormItem>

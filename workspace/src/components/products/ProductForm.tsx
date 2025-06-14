@@ -17,17 +17,17 @@ import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIcon, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction, Handshake } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import BasicInfoFormSection from "./form/BasicInfoFormSection";
-import ProductImageFormSection from "./form/ProductImageFormSection";
-import BatteryDetailsFormSection from "./form/BatteryDetailsFormSection";
-import SustainabilityComplianceFormSection from "./form/SustainabilityComplianceFormSection";
-import TechnicalSpecificationsFormSection from "./form/TechnicalSpecificationsFormSection";
-import CustomAttributesFormSection from "./form/CustomAttributesFormSection";
-import ScipNotificationFormSection from "./form/ScipNotificationFormSection";
-import EuCustomsDataFormSection from "./form/EuCustomsDataFormSection";
-import TextileInformationFormSection from "./form/TextileInformationFormSection";
-import ConstructionProductInformationFormSection from "@/components/products/form/ConstructionProductInformationFormSection"; // Corrected import path
-import EthicalSourcingFormSection from "./form/EthicalSourcingFormSection";
+import BasicInfoFormSection from "@/components/products/form/BasicInfoFormSection";
+import ProductImageFormSection from "@/components/products/form/ProductImageFormSection";
+import BatteryDetailsFormSection from "@/components/products/form/BatteryDetailsFormSection";
+import SustainabilityComplianceFormSection from "@/components/products/form/SustainabilityComplianceFormSection";
+import TechnicalSpecificationsFormSection from "@/components/products/form/TechnicalSpecificationsFormSection";
+import CustomAttributesFormSection from "@/components/products/form/CustomAttributesFormSection";
+import ScipNotificationFormSection from "@/components/products/form/ScipNotificationFormSection";
+import EuCustomsDataFormSection from "@/components/products/form/EuCustomsDataFormSection";
+import TextileInformationFormSection from "@/components/products/form/TextileInformationFormSection";
+import ConstructionProductInformationFormSection from "@/components/products/form/ConstructionProductInformationFormSection";
+import EthicalSourcingFormSection from "@/components/products/form/EthicalSourcingFormSection";
 import {
   handleGenerateImageAI,
 } from "@/utils/aiFormHelpers";
@@ -771,4 +771,3 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
-    

@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useEffect, useState, FormEvent, useCallback, useMemo } from "react";
@@ -13,7 +14,7 @@ import {
     KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, 
     PlusCircle, CalendarDays, Sigma, Layers3, Tag, CheckCircle as CheckCircleLucide, 
     Server as ServerIcon, Link as LinkIconPath, FileCog, BookOpen, CircleDot, Clock, Share2, Users, Factory, Truck, ShoppingCart, Recycle as RecycleIconLucide, Upload, MessageSquare,
-    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers, FileLock, Users2 as DaoIcon, ThumbsUp, ThumbsDown
+    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers, FileLock, Users2 as DaoIcon, ThumbsUp, ThumbsDown, Zap
 } from "lucide-react";
 import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse, OwnershipNftLink } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
@@ -757,8 +758,6 @@ export default function BlockchainPage() {
     setIsSubmittingProposal(true);
     await new Promise(resolve => setTimeout(resolve, 700)); // Simulate network delay
 
-    // In a real app, this would interact with the Governor contract.
-    // Here, we just show a toast.
     const newProposal: MockDaoProposal = {
         id: `PROP${(daoProposals.length + 1).toString().padStart(3,'0')}`,
         title: `${proposalActionType.replace(/([A-Z])/g, ' $1').trim()} for ${proposalActionType.includes("ROLE") ? proposalTargetAddress.substring(0,10) + "..." : "Token " + proposalTargetTokenId}`,
@@ -774,8 +773,7 @@ export default function BlockchainPage() {
       description: `Proposal "${newProposal.title}" submitted successfully. It is now in 'Voting Active' state (conceptual).`,
       duration: 7000,
     });
-    setProposalTargetTokenId(selected?.id || ""); // Reset to selected product or clear
-    // setProposalActionType("enableTransfer"); // Keep current for potentially more proposals of same type
+    setProposalTargetTokenId(selected?.id || ""); 
     setProposalTargetAddress("");
     setProposalDescription("");
     setIsSubmittingProposal(false);
@@ -866,11 +864,15 @@ export default function BlockchainPage() {
             <li><strong>DPP Token Operations:</strong> Conceptual minting, metadata updates, and status checks for DPP tokens.</li>
             <li><strong>Smart Contract Actions:</strong> Conceptual interactions for on-chain status updates and event logging.</li>
             <li><strong>Authenticity & Ownership:</strong> Issuing conceptual VCs for authenticity and linking NFTs for ownership.</li>
+            <li><strong>DAO Governance:</strong> Simulating DAO proposals for token management.</li>
           </ul>
           <p className="mt-2">
             These operations interact with mock API endpoints. For technical details, refer to the 
             <Link href="/openapi.yaml" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline font-medium ml-1">
               OpenAPI Specification <ExternalLink className="inline h-3.5 w-3.5 ml-0.5" />
+            </Link> and the conceptual {" "}
+            <Link href="/developer/docs/smart-contract-interactions" className="text-primary hover:underline font-medium">
+              Smart Contract Interactions documentation <ExternalLink className="inline h-3.5 w-3.5 ml-0.5" />
             </Link>.
           </p>
         </CardContent>
@@ -1153,8 +1155,8 @@ export default function BlockchainPage() {
                                 <p className="text-sm text-muted-foreground mb-4">
                                 These operations simulate interactions with smart contracts related to DPP tokens. For details on the
                                 underlying design, refer to the project's{" "}
-                                <Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline">
-                                    blockchain architecture documentation
+                                <Link href="/developer/docs/smart-contract-interactions" className="text-primary hover:underline">
+                                    smart contract interactions documentation
                                 </Link>.
                                 </p>
                                 <div className="grid md:grid-cols-2 gap-6">
@@ -1246,7 +1248,7 @@ export default function BlockchainPage() {
                             <Card className="bg-background mt-6 md:col-span-2">
                                 <CardHeader>
                                     <CardTitle className="text-md flex items-center">
-                                        <DaoIcon className="mr-2 h-5 w-5 text-primary" /> DAO Governance &amp; Proposals (Conceptual)
+                                        <DaoIcon className="mr-2 h-5 w-5 text-primary" /> DAO Governance & Proposals (Conceptual)
                                     </CardTitle>
                                     <CardDescription className="text-xs">Simulate creating and interacting with DAO proposals for DPPToken management.</CardDescription>
                                 </CardHeader>
@@ -1348,3 +1350,4 @@ export default function BlockchainPage() {
     </div>
   );
 }
+

@@ -28,7 +28,8 @@ import {
     History,
     Layers3, 
     Zap,
-    Globe 
+    Globe,
+    Zap as ZapIconLucide // Alias if Zap is already used
 } from "lucide-react";
 
 export default function DeveloperDocumentationHubPage() {
@@ -83,6 +84,7 @@ export default function DeveloperDocumentationHubPage() {
               <li><Link href="/developer/docs/zkp-layer-concepts" className="text-primary hover:underline flex items-center"><Zap className="mr-2 h-4 w-4" />ZKP Layer Concepts</Link></li> 
               <li><Link href="/developer/docs/regulatory-alignment" className="text-primary hover:underline flex items-center"><Scale className="mr-2 h-4 w-4" />Regulatory Alignment (ESPR, EPREL)</Link></li>
               <li><Link href="/developer/docs/cbam-concepts" className="text-primary hover:underline flex items-center"><Globe className="mr-2 h-4 w-4" />CBAM Concepts Guide</Link></li> 
+              <li><Link href="/developer/docs/smart-contract-interactions" className="text-primary hover:underline flex items-center"><ZapIconLucide className="mr-2 h-4 w-4" />Smart Contract Interactions</Link></li>
               <li><Link href="/developer/docs/data-management-best-practices" className="text-primary hover:underline flex items-center"><LayersIcon className="mr-2 h-4 w-4" />Data Management Best Practices</Link></li>
               <li><Link href="/developer/docs/qr-code-embedding" className="text-primary hover:underline flex items-center"><QrCode className="mr-2 h-4 w-4" />QR Code Generation &amp; Embedding</Link></li>
               <li><Link href="/developer/guides/auditor-integration" className="text-primary hover:underline flex items-center"><ShieldCheck className="mr-2 h-4 w-4" />Auditor Integration</Link></li>
@@ -121,3 +123,4 @@ export default function DeveloperDocumentationHubPage() {
 }
 
     
+

@@ -1,3 +1,4 @@
+
 // --- File: ProductImageFormSection.tsx ---
 // Description: Component for displaying and generating product image in a form.
 "use client";
@@ -10,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { FormDescription, FormField, FormItem, FormControl, FormMessage, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import AiIndicator from "./AiIndicator"; // Import shared component
+import { AiIndicator } from "@/components/products/form"; // Import from barrel
 import { ImagePlus, ImageIcon, Loader2 } from "lucide-react";
 import type { ToastInput } from "@/hooks/use-toast";
 

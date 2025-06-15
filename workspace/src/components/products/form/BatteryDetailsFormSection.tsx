@@ -1,3 +1,4 @@
+
 // --- File: BatteryDetailsFormSection.tsx ---
 // Description: Form section component for battery-specific details in the product form.
 "use client";
@@ -9,7 +10,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescripti
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import AiIndicator from "./AiIndicator";
+import { AiIndicator } from "@/components/products/form"; // Import from barrel
 import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
 import { suggestBatteryDetails } from "@/ai/flows/suggest-battery-details-flow";
@@ -61,19 +62,23 @@ export default function BatteryDetailsFormSection({ form, initialData, isSubmitt
       }
       if (result.suggestedCarbonFootprint) {
         const cf = result.suggestedCarbonFootprint;
-        if (cf.value !== undefined) { form.setValue("batteryRegulation.carbonFootprint.value", cf.value, { shouldValidate: true }); form.setValue(`${originPath}.carbonFootprintOrigin.valueOrigin` as any, 'AI_EXTRACTED'); suggestionsMade = true; }
+        if (cf.value !== undefined && cf.value !== null) { form.setValue("batteryRegulation.carbonFootprint.value", cf.value, { shouldValidate: true }); form.setValue(`${originPath}.carbonFootprintOrigin.valueOrigin` as any, 'AI_EXTRACTED'); suggestionsMade = true; }
         if (cf.unit) { form.setValue("batteryRegulation.carbonFootprint.unit", cf.unit); form.setValue(`${originPath}.carbonFootprintOrigin.unitOrigin` as any, 'AI_EXTRACTED'); suggestionsMade = true; }
         if (cf.calculationMethod) { form.setValue("batteryRegulation.carbonFootprint.calculationMethod", cf.calculationMethod); form.setValue(`${originPath}.carbonFootprintOrigin.calculationMethodOrigin` as any, 'AI_EXTRACTED'); suggestionsMade = true; }
       }
       if (result.suggestedRecycledContent && result.suggestedRecycledContent.length > 0) {
         const currentRecycledContent = form.getValues("batteryRegulation.recycledContent") || [];
-        form.setValue("batteryRegulation.recycledContent", [...currentRecycledContent, ...result.suggestedRecycledContent.filter(s => s.material && s.percentage !== undefined)]);
+        const newContent = result.suggestedRecycledContent
+          .filter(s => s.material && s.percentage !== undefined && s.percentage !== null)
+          .map(s => ({ material: s.material!, percentage: s.percentage!, source: s.source || "Unknown", vcId: s.vcId || "" })); // Ensure source is always a string
+          
+        form.setValue("batteryRegulation.recycledContent", [...currentRecycledContent, ...newContent]);
         // This origin marking is conceptual; more complex for arrays
         suggestionsMade = true;
       }
       if (result.suggestedStateOfHealth) {
         const soh = result.suggestedStateOfHealth;
-        if (soh.value !== undefined) { form.setValue("batteryRegulation.stateOfHealth.value", soh.value, { shouldValidate: true }); form.setValue(`${originPath}.stateOfHealthOrigin.valueOrigin` as any, 'AI_EXTRACTED'); suggestionsMade = true; }
+        if (soh.value !== undefined && soh.value !== null) { form.setValue("batteryRegulation.stateOfHealth.value", soh.value, { shouldValidate: true }); form.setValue(`${originPath}.stateOfHealthOrigin.valueOrigin` as any, 'AI_EXTRACTED'); suggestionsMade = true; }
         if (soh.unit) { form.setValue("batteryRegulation.stateOfHealth.unit", soh.unit); form.setValue(`${originPath}.stateOfHealthOrigin.unitOrigin` as any, 'AI_EXTRACTED'); suggestionsMade = true; }
         if (soh.measurementDate) { form.setValue("batteryRegulation.stateOfHealth.measurementDate", soh.measurementDate); form.setValue(`${originPath}.stateOfHealthOrigin.measurementDateOrigin` as any, 'AI_EXTRACTED'); suggestionsMade = true; }
       }
@@ -190,6 +195,7 @@ export default function BatteryDetailsFormSection({ form, initialData, isSubmitt
             render={({ field }) => ( <FormItem><FormLabel>Scope 2 Emissions</FormLabel><FormControl><Input type="number" placeholder="tCO2e" {...field} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem> )}/>
           <FormField control={form.control} name="batteryRegulation.carbonFootprint.scope3Emissions"
             render={({ field }) => ( <FormItem><FormLabel>Scope 3 Emissions</FormLabel><FormControl><Input type="number" placeholder="tCO2e" {...field} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} value={field.value ?? ""} /></FormControl><FormMessage /></FormItem> )}/>
+        </div>
         <FormField control={form.control} name="batteryRegulation.carbonFootprint.vcId"
           render={({ field }) => ( <FormItem><FormLabel>Carbon Footprint VC ID (Optional)</FormLabel><FormControl><Input placeholder="VC ID for carbon footprint data" {...field} value={field.value || ""} /></FormControl><FormMessage /></FormItem> )}/>
       </div>

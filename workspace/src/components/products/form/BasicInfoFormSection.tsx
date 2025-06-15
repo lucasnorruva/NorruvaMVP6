@@ -1,3 +1,4 @@
+
 // --- File: BasicInfoFormSection.tsx ---
 // Description: Form section component for basic product information.
 "use client";
@@ -15,7 +16,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import AiIndicator from "./AiIndicator";
+import { AiIndicator } from "@/components/products/form"; // Import from barrel
 import { Loader2, Sparkles } from "lucide-react";
 import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";

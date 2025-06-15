@@ -1,7 +1,8 @@
+
 "use client";
 // --- File: ProductForm.tsx ---
 // Description: Main form component for creating or editing product DPPs.
-// AI loading states for text suggestions are now managed within individual section components.
+// Imports for form sections now use the barrel file. Type imports from centralized types file.
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormReturn } from "react-hook-form";
@@ -17,15 +18,15 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIconLucide, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction as ConstructionIcon, Handshake } from "lucide-react"; // Renamed ImageIcon & Construction
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIconLucide, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction as ConstructionIcon, Handshake } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-// Types & Schemas from the centralized types file
+// Import Zod schema and form data type from the centralized types file
 import type { ProductFormData } from "@/types/productFormTypes";
 import { formSchema } from "@/types/productFormTypes";
 
-// Custom Form Sections - All using aliased paths from the barrel file
+// Import form sections from the barrel file
 import {
   AiIndicator,
   BasicInfoFormSection,
@@ -39,14 +40,9 @@ import {
   TextileInformationFormSection,
   ConstructionProductInformationFormSection,
   EthicalSourcingFormSection
-} from "@/components/products/form";
+} from "@/components/products/form"; // Single import from barrel
 
-
-// AI Helper Utils
-import {
-  handleGenerateImageAI,
-} from "@/utils/aiFormHelpers";
-
+import { handleGenerateImageAI } from "@/utils/aiFormHelpers";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { CustomAttribute, BatteryRegulationDetails, CarbonFootprintData, StateOfHealthData, RecycledContentData, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from "@/types/dpp";
@@ -82,9 +78,9 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       imageHint: initialData?.imageHint || "",
       onChainStatus: initialData?.onChainStatus || "Unknown", 
       onChainLifecycleStage: initialData?.onChainLifecycleStage || "Unknown", 
-      conflictMineralsReportUrl: initialData?.conflictMineralsReportUrl || "",
-      fairTradeCertificationId: initialData?.fairTradeCertificationId || "",
-      ethicalSourcingPolicyUrl: initialData?.ethicalSourcingPolicyUrl || "",
+      conflictMineralsReportUrl: initialData?.conflictMineralsReportUrl || "", 
+      fairTradeCertificationId: initialData?.fairTradeCertificationId || "", 
+      ethicalSourcingPolicyUrl: initialData?.ethicalSourcingPolicyUrl || "", 
       
       batteryRegulation: initialData?.batteryRegulation ? {
         status: initialData.batteryRegulation.status || "not_applicable",

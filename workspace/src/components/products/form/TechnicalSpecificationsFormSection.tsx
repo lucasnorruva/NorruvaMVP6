@@ -1,3 +1,4 @@
+
 // --- File: TechnicalSpecificationsFormSection.tsx ---
 // Description: Form section component for technical specifications.
 "use client";
@@ -14,7 +15,7 @@ import {
 } from "@/components/ui/form";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
-import AiIndicator from "./AiIndicator";
+import { AiIndicator } from "@/components/products/form"; // Import from barrel
 import { Loader2, Sparkles } from "lucide-react";
 import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";

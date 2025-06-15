@@ -1,3 +1,4 @@
+
 // --- File: SustainabilityComplianceFormSection.tsx ---
 // Description: Form section component for sustainability and compliance details.
 "use client";
@@ -15,12 +16,11 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import AiIndicator from "./AiIndicator"; 
-import AiSuggestionDisplay from "./AiSuggestionDisplay";
+import { AiIndicator, AiSuggestionDisplay } from "@/components/products/form"; // Import from barrel
 import { Loader2, Sparkles } from "lucide-react";
 import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import type { ToastInput } from "@/hooks/use-toast"; 
+import type { ToastInput } from "@/hooks/use-toast"; // Simplified toast type
 import { handleSuggestClaimsAI, handleSuggestKeyCompliancePointsAI } from "@/utils/aiFormHelpers"; // Import helper
 
 type ToastFn = (input: ToastInput) => void;
@@ -28,25 +28,25 @@ type ToastFn = (input: ToastInput) => void;
 interface SustainabilityComplianceFormSectionProps {
   form: UseFormReturn<ProductFormData>;
   initialData?: Partial<InitialProductFormData>;
-  suggestedClaims: string[]; 
-  setSuggestedClaims: React.Dispatch<React.SetStateAction<string[]>>; 
+  suggestedClaims: string[]; // Keep this prop as ProductForm will manage this list
+  setSuggestedClaims: React.Dispatch<React.SetStateAction<string[]>>; // Allow ProductForm to set claims
   handleClaimClick: (claim: string) => void;
   suggestedKeyCompliancePoints: string[]; 
   setSuggestedKeyCompliancePoints: React.Dispatch<React.SetStateAction<string[]>>; 
   isSubmittingForm?: boolean;
-  toast: ToastFn; 
+  toast: ToastFn; // Added toast prop
 }
 
 export default function SustainabilityComplianceFormSection({
   form,
   initialData,
   suggestedClaims,
-  setSuggestedClaims, 
+  setSuggestedClaims, // Destructure setSuggestedClaims
   handleClaimClick,
   suggestedKeyCompliancePoints, 
   setSuggestedKeyCompliancePoints, 
   isSubmittingForm,
-  toast, 
+  toast, // Destructure toast
 }: SustainabilityComplianceFormSectionProps) {
   const [isSuggestingClaimsInternal, setIsSuggestingClaimsInternal] = useState(false);
   const [isSuggestingComplianceInternal, setIsSuggestingComplianceInternal] = useState(false); 

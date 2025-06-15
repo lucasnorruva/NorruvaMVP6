@@ -1,12 +1,9 @@
+
 // --- File: src/types/productFormTypes.ts ---
 // Description: Type definitions and Zod schemas for the product form.
 "use client";
 
 import { z } from "zod";
-// Ensure any necessary types from '@/types/dpp' are imported if used directly in schemas,
-// though typically the form schema is self-contained or uses basic Zod types.
-// For example, if BatteryRegulationDetails itself was a Zod schema, you'd import it.
-// But here, we are defining new Zod schemas.
 
 export const carbonFootprintSchema = z.object({
   value: z.coerce.number().nullable().optional(),
@@ -174,9 +171,3 @@ export const formSchema = z.object({
 });
 
 export type ProductFormData = z.infer<typeof formSchema>;
-
-// Also, the types that might be imported by ProductForm.tsx from new/page.tsx
-// should be moved here or ProductForm.tsx should import them directly from their original source (types/dpp)
-// For now, InitialProductFormData and StoredUserProduct are used in new/page.tsx.
-// If ProductForm needs them, they would also ideally be defined here or imported directly from their original definition.
-// The types from types/dpp are more canonical.

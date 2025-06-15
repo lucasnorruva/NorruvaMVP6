@@ -1,3 +1,4 @@
+
 // --- File: EuCustomsDataFormSection.tsx ---
 // Description: Form section component for EU Customs Data details.
 "use client";
@@ -14,7 +15,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
+// Corrected: Import from the centralized types file
+import type { ProductFormData } from "@/types/productFormTypes";
 
 interface EuCustomsDataFormSectionProps {
   form: UseFormReturn<ProductFormData>;
@@ -151,3 +153,5 @@ export default function EuCustomsDataFormSection({
     </div>
   );
 }
+
+    

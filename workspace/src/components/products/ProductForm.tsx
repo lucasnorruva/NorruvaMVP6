@@ -2,15 +2,19 @@
 "use client";
 // --- File: ProductForm.tsx ---
 // Description: Main form component for creating or editing product DPPs.
-// AI loading states for text suggestions are now managed within individual section components.
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormReturn } from "react-hook-form";
-// Import Zod schema and type from the new types file
 import { formSchema, type ProductFormData } from "@/types/productFormTypes"; 
 import { Button } from "@/components/ui/button";
 import {
   Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -19,7 +23,7 @@ import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCir
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-// Use direct path aliases for all form sections
+// Corrected imports for all form sections using path aliases
 import BasicInfoFormSection from "@/components/products/form/BasicInfoFormSection";
 import ProductImageFormSection from "@/components/products/form/ProductImageFormSection";
 import BatteryDetailsFormSection from "@/components/products/form/BatteryDetailsFormSection";
@@ -32,15 +36,12 @@ import TextileInformationFormSection from "@/components/products/form/TextileInf
 import ConstructionProductInformationFormSection from "@/components/products/form/ConstructionProductInformationFormSection";
 import EthicalSourcingFormSection from "@/components/products/form/EthicalSourcingFormSection";
 
-
 import {
   handleGenerateImageAI, 
 } from "@/utils/aiFormHelpers";
-import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { CustomAttribute } from "@/types/dpp"; // Keep this if CustomAttribute type is directly used in ProductForm
+import type { CustomAttribute } from "@/types/dpp"; 
 
 interface AiIndicatorPropsUi { 
   fieldOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -158,7 +159,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           status: "N/A", declarationId: "", hsCode: "", countryOfOrigin: "",
           netWeightKg: null, grossWeightKg: null,
           customsValuation: { value: null, currency: "" },
-          cbamGoodsIdentifier: ""
+          cbamGoodsIdentifier: "",
         },
         battery_regulation: initialData?.compliance?.battery_regulation || { 
           status: "not_applicable", batteryChemistry: "", batteryPassportId: "",
@@ -567,7 +568,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
                 <Select onValueChange={field.onChange} defaultValue={field.value || "Unknown"} value={field.value || "Unknown"}>
                     <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                     <SelectContent>
-                    {["Unknown", "Design", "Manufacturing", "Quality Assurance", "Distribution", "In Use", "Maintenance", "End of Life"].map(s => <SelectItem key={`ocls-${s}`} value={s}>{s}</SelectItem)}
+                    {["Unknown", "Design", "Manufacturing", "Quality Assurance", "Distribution", "In Use", "Maintenance", "End of Life"].map(s => <SelectItem key={`ocls-${s}`} value={s}>{s}</SelectItem>)}
                     </SelectContent>
                 </Select>
                 <FormMessage />

@@ -14,11 +14,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
+// Corrected: Import from the centralized types file
+import type { ProductFormData } from "@/types/productFormTypes"; 
 
 interface EthicalSourcingFormSectionProps {
   form: UseFormReturn<ProductFormData>;
-  // No AI suggestions for these fields yet
 }
 
 export default function EthicalSourcingFormSection({
@@ -71,3 +71,5 @@ export default function EthicalSourcingFormSection({
     </div>
   );
 }
+
+    

@@ -1,3 +1,4 @@
+
 // --- File: TextileInformationFormSection.tsx ---
 // Description: Form section component for Textile Product Information.
 "use client";
@@ -17,7 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Trash2, PlusCircle } from "lucide-react";
-import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
+// Corrected: Import from the centralized types file
+import type { ProductFormData } from "@/types/productFormTypes";
 
 interface TextileInformationFormSectionProps {
   form: UseFormReturn<ProductFormData>;
@@ -27,7 +29,7 @@ export default function TextileInformationFormSection({
   form,
 }: TextileInformationFormSectionProps) {
   const { fields, append, remove } = useFieldArray({
-    control: form.control as Control<ProductFormData>, // Ensure correct Control type
+    control: form.control as Control<ProductFormData>, 
     name: "textileInformation.fiberComposition",
   });
 
@@ -126,3 +128,5 @@ export default function TextileInformationFormSection({
     </div>
   );
 }
+
+    

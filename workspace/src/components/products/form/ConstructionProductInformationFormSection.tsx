@@ -18,7 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2, PlusCircle } from "lucide-react";
-import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
+// Corrected: Import from the centralized types file
+import type { ProductFormData } from "@/types/productFormTypes";
 
 interface ConstructionProductInformationFormSectionProps {
   form: UseFormReturn<ProductFormData>;
@@ -28,7 +29,7 @@ export default function ConstructionProductInformationFormSection({
   form,
 }: ConstructionProductInformationFormSectionProps) {
   const { fields, append, remove } = useFieldArray({
-    control: form.control as Control<ProductFormData>, // Ensure correct Control type
+    control: form.control as Control<ProductFormData>, 
     name: "constructionProductInformation.essentialCharacteristics",
   });
 
@@ -140,3 +141,5 @@ export default function ConstructionProductInformationFormSection({
     </div>
   );
 }
+
+    

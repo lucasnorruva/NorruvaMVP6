@@ -1,3 +1,4 @@
+
 // --- File: ScipNotificationFormSection.tsx ---
 // Description: Form section component for ECHA SCIP Notification details.
 "use client";
@@ -14,7 +15,8 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
+// Corrected: Import from the centralized types file
+import type { ProductFormData } from "@/types/productFormTypes";
 
 interface ScipNotificationFormSectionProps {
   form: UseFormReturn<ProductFormData>;
@@ -121,3 +123,5 @@ export default function ScipNotificationFormSection({
     </div>
   );
 }
+
+    

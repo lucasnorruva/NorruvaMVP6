@@ -1,3 +1,4 @@
+
 // --- File: page.tsx (DPP Live Dashboard) ---
 // Description: Main page component for the Digital Product Passport Live Dashboard.
 "use client";
@@ -6,7 +7,7 @@ import React, { useState, useCallback } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { PlusCircle } from "lucide-react"; // Renamed Trash2 to avoid conflict
+import { PlusCircle, ScanLine } from "lucide-react"; 
 import {
   AlertDialog,
   AlertDialogAction,
@@ -20,7 +21,7 @@ import {
 import { DashboardFiltersComponent } from "@/components/dpp-dashboard/DashboardFiltersComponent";
 import { DPPTable } from "@/components/dpp-dashboard/DPPTable";
 import { DashboardMetrics } from "@/components/dpp-live-dashboard/DashboardMetrics";
-import { ScanProductDialog } from "@/components/dpp-live-dashboard/ScanProductDialog"; // Import new component
+import { ScanProductDialog } from "@/components/dpp-live-dashboard/ScanProductDialog"; 
 import { AiSummaryDialog } from "@/components/dpp-live-dashboard/AiSummaryDialog";
 import { useDPPLiveData } from '@/hooks/useDPPLiveData';
 import { generateProductSummary } from '@/ai/flows/generate-product-summary.ts';
@@ -35,13 +36,13 @@ const availableRegulations = [
 
 export default function DPPLiveDashboardPage() {
   const {
-    dpps, // Full list of DPPs from the hook
+    dpps, 
     filters,
     sortConfig,
     productToDeleteId,
     isDeleteDialogOpen,
     availableCategories,
-    sortedAndFilteredDPPs, // This is the list to render
+    sortedAndFilteredDPPs, 
     metrics,
     handleFiltersChange,
     handleSort,
@@ -124,11 +125,13 @@ export default function DPPLiveDashboardPage() {
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-headline font-semibold text-primary">Live DPP Dashboard</h1>
+        <h1 className="text-3xl font-headline font-semibold text-primary flex items-center">
+          <ScanLine className="mr-2 h-7 w-7" /> Live DPP Dashboard
+        </h1>
         <div className="flex gap-2">
-          <ScanProductDialog allDpps={dpps} /> {/* Use the dpps state from the hook */}
+          <ScanProductDialog allDpps={dpps} /> 
           <Link href="/products/new" passHref>
-            <Button variant="secondary"><PlusCircle className="mr-2 h-5 w-5" />Create New DPP</Button>
+            <Button variant="default"><PlusCircle className="mr-2 h-5 w-5" />Create New DPP</Button>
           </Link>
         </div>
       </div>
@@ -186,4 +189,3 @@ export default function DPPLiveDashboardPage() {
     </div>
   );
 }
-

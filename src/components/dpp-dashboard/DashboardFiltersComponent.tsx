@@ -11,7 +11,7 @@ import type { DashboardFiltersState } from "@/types/dpp";
 import { Filter, ListFilter, Search, Link as LinkIcon, SlidersHorizontal, XCircle } from "lucide-react";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button"; // Added Button import
+import { Button } from "@/components/ui/button";
 
 interface DashboardFiltersComponentProps {
   filters: DashboardFiltersState;
@@ -208,5 +208,3 @@ export const DashboardFiltersComponent: React.FC<DashboardFiltersComponentProps>
     </Card>
   );
 };
-
-    

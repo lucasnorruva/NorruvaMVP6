@@ -29,6 +29,10 @@ export function ScanProductDialog({ allDpps }: ScanProductDialogProps) {
       if (productExists) {
         router.push(`/passport/${manualProductId.trim()}`);
         setIsScanDialogOpen(false); // Close dialog on success
+        toast({ // Added toast for successful scan
+          title: "Product Found!",
+          description: `Navigating to passport for ${manualProductId.trim()}. You can track this product from its passport page.`,
+        });
         setManualProductId(""); // Reset input
       } else {
         toast({

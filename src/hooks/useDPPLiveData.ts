@@ -9,7 +9,6 @@ import type { DigitalProductPassport, DashboardFiltersState, SortConfig, Sortabl
 import { MOCK_DPPS } from '@/data';
 import { getSortValue } from '@/utils/sortUtils';
 import { useToast } from '@/hooks/use-toast';
-
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
 
 export function useDPPLiveData() {
@@ -29,8 +28,17 @@ export function useDPPLiveData() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
   useEffect(() => {
+    // Load initial DPPs (combining mocks and localStorage)
     const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
-    const userAddedProducts: DigitalProductPassport[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+    let userAddedProducts: DigitalProductPassport[] = [];
+    if (storedProductsString) {
+      try {
+        userAddedProducts = JSON.parse(storedProductsString);
+      } catch (e) {
+        console.error("Failed to parse user products from localStorage", e);
+        // Optionally, clear corrupted data: localStorage.removeItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
+      }
+    }
     
     const combinedProducts = [
       ...MOCK_DPPS.filter(mockDpp => !userAddedProducts.find(userDpp => userDpp.id === mockDpp.id)),
@@ -48,10 +56,20 @@ export function useDPPLiveData() {
     let filtered = dpps.filter((dpp) => {
       if (filters.searchQuery && !dpp.productName.toLowerCase().includes(filters.searchQuery.toLowerCase())) return false;
       if (filters.status !== "all" && dpp.metadata.status !== filters.status) return false;
+      
       if (filters.regulation !== "all") {
-        const complianceData = dpp.compliance[filters.regulation as keyof typeof dpp.compliance];
-        if (!complianceData || (typeof complianceData === 'object' && 'status' in complianceData && complianceData.status !== 'compliant')) return false;
+        const complianceSection = dpp.compliance;
+        let isCompliantForRegulation = false;
+        if (filters.regulation === 'eu_espr') {
+          isCompliantForRegulation = complianceSection.eu_espr?.status === 'compliant' || complianceSection.esprConformity?.status === 'conformant';
+        } else if (filters.regulation === 'us_scope3') {
+          isCompliantForRegulation = complianceSection.us_scope3?.status === 'compliant';
+        } else if (filters.regulation === 'battery_regulation') {
+          isCompliantForRegulation = complianceSection.battery_regulation?.status === 'compliant';
+        }
+        if (!isCompliantForRegulation) return false;
       }
+
       if (filters.category !== "all" && dpp.category !== filters.category) return false;
       if (filters.blockchainAnchored === 'anchored' && !dpp.blockchainIdentifiers?.anchorTransactionHash) return false;
       if (filters.blockchainAnchored === 'not_anchored' && dpp.blockchainIdentifiers?.anchorTransactionHash) return false;
@@ -86,10 +104,25 @@ export function useDPPLiveData() {
   const metrics = useMemo(() => {
     const totalDPPs = dpps.length;
     const fullyCompliantDPPsCount = dpps.filter(dpp => {
-        const regulationChecks = Object.values(dpp.compliance).filter(Boolean);
-        if (regulationChecks.length === 0 && Object.keys(dpp.compliance).length > 0) return false; 
-        if (regulationChecks.length === 0 && Object.keys(dpp.compliance).length === 0) return true; 
-        return regulationChecks.every(r => typeof r === 'object' && r !== null && 'status' in r && r.status === 'compliant');
+        // Consider a DPP compliant if all its *defined* compliance sections are 'compliant' or 'verified' etc.
+        const relevantComplianceSections = Object.values(dpp.compliance).filter(
+          (section): section is { status: string } => 
+            typeof section === 'object' && section !== null && 'status' in section && section.status !== 'not_applicable' && section.status !== 'N/A'
+        );
+        if (relevantComplianceSections.length === 0 && Object.keys(dpp.compliance).filter(k => dpp.compliance[k as keyof typeof dpp.compliance] !== undefined).length > 0) return false; // If compliance sections exist but all are N/A
+        if (relevantComplianceSections.length === 0 && Object.keys(dpp.compliance).filter(k => dpp.compliance[k as keyof typeof dpp.compliance] !== undefined).length === 0) return true; // No applicable regulations, considered compliant
+        
+        const isEbsiCompliant = !dpp.ebsiVerification || dpp.ebsiVerification.status === 'verified' || dpp.ebsiVerification.status === 'N/A';
+        
+        return isEbsiCompliant && relevantComplianceSections.every(section => 
+            section.status.toLowerCase() === 'compliant' || 
+            section.status.toLowerCase() === 'conformant' || 
+            section.status.toLowerCase() === 'registered' || 
+            section.status.toLowerCase() === 'verified' ||
+            section.status.toLowerCase() === 'synced successfully' ||
+            section.status.toLowerCase() === 'notified' ||
+            section.status.toLowerCase() === 'cleared'
+        );
     }).length;
     const compliantPercentage = totalDPPs > 0 ? ((fullyCompliantDPPsCount / totalDPPs) * 100).toFixed(1) + "%" : "0%";
     const pendingReviewDPPs = dpps.filter(d => d.metadata.status === 'pending_review').length;
@@ -145,7 +178,7 @@ export function useDPPLiveData() {
     handleDeleteRequest,
     confirmDeleteProduct,
     setIsDeleteDialogOpen,
-    router, // exposing router for navigation if needed by dialogs
-    toast   // exposing toast for dialogs
+    router,
+    toast
   };
 }

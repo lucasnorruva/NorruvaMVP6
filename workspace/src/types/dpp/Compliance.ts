@@ -1,7 +1,6 @@
-
 // --- File: Compliance.ts ---
 // Description: Compliance related type definitions.
-import type React from 'react'; // Ensure React is imported for React.ElementType
+import type React from 'react'; 
 
 export interface Certification {
   id: string;
@@ -37,7 +36,7 @@ export interface ScipNotificationDetails {
 }
 
 export interface EuCustomsDataDetails {
-  status?: 'Verified' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'N/A' | 'CBAM Relevant - Verified' | 'CBAM Relevant - Pending' | string; // Added CBAM status
+  status?: 'Verified' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'N/A' | 'CBAM Relevant - Verified' | 'CBAM Relevant - Pending' | string;
   declarationId?: string;
   hsCode?: string;
   countryOfOrigin?: string; // ISO 3166-1 Alpha-2
@@ -107,6 +106,13 @@ export interface EsprSpecifics {
   recycledContentSummary?: string;
   energyEfficiencySummary?: string;
   substanceOfConcernSummary?: string;
+}
+
+export interface DigitalTwinData { 
+  uri?: string; 
+  sensorDataEndpoint?: string; 
+  realTimeStatus?: string; 
+  predictiveMaintenanceAlerts?: string; 
 }
 
 
@@ -219,4 +225,3 @@ export interface InspectionEvent {
   status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
   badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
 }
-```

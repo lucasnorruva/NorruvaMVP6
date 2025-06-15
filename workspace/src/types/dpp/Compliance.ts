@@ -100,6 +100,13 @@ export interface BatteryRegulationDetails {
   vcId?: string;
 }
 
+export interface EsprSpecifics { // Added for Task 1
+  durabilityInformation?: string;
+  repairabilityInformation?: string;
+  recycledContentSummary?: string;
+  energyEfficiencySummary?: string;
+  substanceOfConcernSummary?: string;
+}
 
 export interface ComplianceDetailItem {
   regulationName: string;
@@ -183,6 +190,7 @@ export interface ConstructionProductInformation {
 export interface TransitProduct {
   id: string;
   name: string;
+  category?: string; // Added category to TransitProduct
   stage: string;
   eta: string;
   dppStatus: ProductComplianceSummary['overallStatus'];
@@ -206,4 +214,7 @@ export interface InspectionEvent {
   title: string;
   timestamp: string;
   description: string;
-  status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "
+  status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
+  badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
+}
+

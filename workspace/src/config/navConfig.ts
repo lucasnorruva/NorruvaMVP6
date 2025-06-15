@@ -7,7 +7,7 @@ import type { UserRole } from '@/contexts/RoleContext';
 import {
   LayoutDashboard, Package, ScanLine, Users, FileText, BarChartHorizontal,
   ListChecks, Bot, ShieldCheck, Fingerprint, ClipboardList, Globe2, Code2, Settings, LineChart, Wrench,
-  Bookmark // Added Bookmark icon
+  Bookmark // Existing Bookmark icon
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -58,4 +58,3 @@ export const ALL_NAV_ITEMS: NavItemConfig[] = [
   { href: "/audit-log", label: "Audit Log", icon: ListChecks, group: 'secondary', requiredRoles: ['admin'] },
   { href: "/settings", label: "Settings", icon: Settings, group: 'secondary', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider'] },
 ];
-

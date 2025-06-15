@@ -9,5 +9,6 @@ export const MOCK_CUSTOMS_ALERTS: CustomsAlert[] = [
   { id: "ALERT004", productId: "PROD333", message: "Incomplete safety certification for machinery parts. Documentation required.", severity: "Medium", timestamp: "5 hours ago", regulation: "Machinery Directive"},
   { id: "ALERT005", productId: "DPP001", message: "EORI number mismatch for importer. Awaiting clarification. Shipment on hold.", severity: "Medium", timestamp: "1 hour ago", regulation: "Customs Union Tariff" },
   { id: "ALERT006", productId: "DPP005", message: "High-value battery shipment. Requires additional safety & transport documentation verification.", severity: "Medium", timestamp: "Pending Arrival", regulation: "ADR / Battery Safety" },
-  { id: "ALERT007", productId: "DPP005", message: "Carbon Footprint declaration for EV Battery (DPP005) under review.", severity: "Low", timestamp: "Upon Pre-Arrival Submission", regulation: "EU Battery Regulation" },
+  { id: "ALERT007", productId: "DPP005", message: "Carbon Footprint declaration for EV Battery (DPP005) under review. CBAM ID: CBAM_BATTERY_EV_001", severity: "Low", timestamp: "Upon Pre-Arrival Submission", regulation: "EU Battery Regulation / CBAM" },
 ];
+

@@ -1,3 +1,4 @@
+
 // --- File: aiFormHelpers.tsx ---
 // Description: Utility functions for handling AI-powered suggestions in product forms.
 
@@ -8,7 +9,7 @@ import type { ProductFormData } from "@/types/productFormTypes";
 import { generateProductName } from "@/ai/flows/generate-product-name-flow";
 import { generateProductDescription } from "@/ai/flows/generate-product-description-flow";
 import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow";
-import { suggestKeyCompliancePoints } from "@/ai/flows/suggest-key-compliance-points"; // Added for Task 21
+import { suggestKeyCompliancePoints } from "@/ai/flows/suggest-key-compliance-points"; 
 import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
 import { generateProductSpecifications } from "@/ai/flows/generate-product-specifications-flow";
 import { generateCustomAttributes } from "@/ai/flows/generate-custom-attributes-flow"; 
@@ -59,15 +60,15 @@ export async function handleSuggestNameAI(
   toast: ToastFn,
   setLoadingState: (loading: boolean) => void
 ): Promise<string | null> {
-  const { productDescription, productCategory } = form.getValues();
-  if (!productDescription && !productCategory) {
+  const { productDetails, productCategory } = form.getValues();
+  if (!productDetails?.description && !productCategory) {
     toast({ title: "Input Required", description: "Please provide a product description or category to suggest a name.", variant: "destructive" });
-    setLoadingState(false); // Ensure loading state is reset
+    setLoadingState(false); 
     return null;
   }
   const result = await withAiHandling({
     aiCall: () => generateProductName({
-      productDescription: productDescription || "",
+      productDescription: productDetails?.description || "",
       productCategory: productCategory || undefined,
     }),
     toast,
@@ -87,7 +88,7 @@ export async function handleSuggestDescriptionAI(
   toast: ToastFn,
   setLoadingState: (loading: boolean) => void
 ): Promise<string | null> {
-  const { productName, productCategory, materials } = form.getValues();
+  const { productName, productCategory, productDetails } = form.getValues();
   if (!productName) {
     toast({ title: "Product Name Required", description: "Please provide a product name to suggest a description.", variant: "destructive" });
     setLoadingState(false);
@@ -98,7 +99,7 @@ export async function handleSuggestDescriptionAI(
       generateProductDescription({
         productName: productName,
         productCategory: productCategory || undefined,
-        keyFeatures: materials || undefined,
+        keyFeatures: productDetails?.materials || undefined,
       }),
     toast,
     setLoadingState,
@@ -118,7 +119,7 @@ export async function handleSuggestClaimsAI(
   setLoadingState: (loading: boolean) => void
 ): Promise<string[] | null> {
   const formData = form.getValues();
-  if (!formData.productCategory && !formData.productName && !formData.materials) {
+  if (!formData.productCategory && !formData.productName && !formData.productDetails?.materials) {
     toast({ title: "Input Required", description: "Please provide product category, name, or materials to suggest claims.", variant: "destructive" });
     setLoadingState(false);
     return null;
@@ -128,8 +129,8 @@ export async function handleSuggestClaimsAI(
       suggestSustainabilityClaims({
         productCategory: formData.productCategory || "General Product",
         productName: formData.productName,
-        productDescription: formData.productDescription,
-        materials: formData.materials,
+        productDescription: formData.productDetails?.description,
+        materials: formData.productDetails?.materials,
       }),
     toast,
     setLoadingState,
@@ -216,7 +217,7 @@ export async function handleGenerateImageAI(
       generateProductImage({
         productName: formData.productName,
         productCategory: formData.productCategory,
-        imageHint: formData.imageHint,
+        imageHint: formData.productDetails?.imageHint,
       }),
     toast,
     setLoadingState,
@@ -234,8 +235,8 @@ export async function handleSuggestSpecificationsAI(
   toast: ToastFn,
   setLoadingState: (loading: boolean) => void
 ): Promise<string | null> {
-  const { productName, productDescription, productCategory } = form.getValues();
-  if (!productName && !productDescription && !productCategory) {
+  const { productName, productDetails, productCategory } = form.getValues();
+  if (!productName && !productDetails?.description && !productCategory) {
     toast({ title: "Input Required", description: "Please provide product name, description, or category to suggest specifications.", variant: "destructive" });
     setLoadingState(false);
     return null;
@@ -244,7 +245,7 @@ export async function handleSuggestSpecificationsAI(
     aiCall: () =>
       generateProductSpecifications({
         productName: productName || "",
-        productDescription: productDescription || undefined,
+        productDescription: productDetails?.description || undefined,
         productCategory: productCategory || undefined,
       }),
     toast,
@@ -264,9 +265,9 @@ export async function handleSuggestCustomAttributesAI(
   toast: ToastFn,
   setLoadingState: (loading: boolean) => void
 ): Promise<CustomAttribute[] | null> {
-  const { productName, productCategory, productDescription } = form.getValues();
+  const { productName, productCategory, productDetails } = form.getValues();
 
-  if (!productName && !productCategory && !productDescription) {
+  if (!productName && !productCategory && !productDetails?.description) {
     toast({
       title: "Input Required",
       description:
@@ -282,7 +283,7 @@ export async function handleSuggestCustomAttributesAI(
       generateCustomAttributes({
         productName: productName || "",
         productCategory: productCategory || undefined,
-        productDescription: productDescription || undefined,
+        productDescription: productDetails?.description || undefined,
       }),
     toast,
     setLoadingState,

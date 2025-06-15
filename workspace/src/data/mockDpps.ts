@@ -1,3 +1,4 @@
+
 import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from '@/types/dpp'; // Added EbsiVerificationDetails
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
@@ -41,6 +42,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         {key: "Country of Origin", value: "Germany"}
       ],
       ethicalSourcingPolicyUrl: "https://greentech.com/ethics/sourcing-policy.pdf", 
+      esprSpecifics: { 
+        durabilityInformation: "Expected lifespan of 15+ years with proper maintenance. Key components tested for 20,000+ hours of operation.",
+        repairabilityInformation: "Modular design. Spare parts (compressor, shelves, door seals) available for 10 years. Repair manual accessible via QR code.",
+        recycledContentSummary: "Over 70% of steel used is certified post-consumer recycled content. Internal plastic components incorporate 25% recycled polymers.",
+        energyEfficiencySummary: "A+++ EU Energy Label. Smart defrost and adaptive cooling technology minimize energy use. Annual consumption approx. 150 kWh.",
+        substanceOfConcernSummary: "Fully RoHS compliant. All components screened for SVHCs above 0.1% w/w as per REACH, none present requiring SCIP notification for the main unit. Control panel assembly details in SCIP."
+      }
     },
     compliance: {
       eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" },
@@ -79,8 +87,9 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     blockchainIdentifiers: { 
       platform: "MockChain", 
       anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef", 
-      contractAddress: "0xMOCK_CONTRACT_FOR_DPP001", 
-      tokenId: "MOCK_TOKENID_FOR_DPP001_mock1"
+      contractAddress: "0xNFTContractForDPP001", 
+      tokenId: "1",
+      chainName: "MockEthereum",
     },
     consumerScans: 1250,
     lifecycleEvents: [
@@ -186,6 +195,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         netWeightKg: 0.15,
         grossWeightKg: 0.2,
         customsValuation: { value: 8.50, currency: "USD" },
+        cbamGoodsIdentifier: "CBAM_TEXTILE_COTTON_002",
         lastChecked: "2024-07-25T00:00:00Z" 
       },
     },
@@ -414,6 +424,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         netWeightKg: 450.0,
         grossWeightKg: 465.0,
         customsValuation: { value: 8500.00, currency: "USD" },
+        cbamGoodsIdentifier: "CBAM_BATTERY_EV_001", // Added CBAM ID
         lastChecked: "2024-07-29T00:00:00Z" 
       },
     },
@@ -481,7 +492,14 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       customAttributes: [
         {key: "Recycled Content Source", value: "Post-consumer paper"},
         {key: "VOC Emissions", value: "Low (A+)"}
-      ]
+      ],
+      esprSpecifics: {
+        durabilityInformation: "Expected service life of 50+ years when installed according to guidelines. Resistant to mould and pests.",
+        repairabilityInformation: "Individual panels can be replaced if damaged. Standard fixing methods apply.",
+        recycledContentSummary: "Primarily composed of 85% post-consumer recycled cellulose fibers.",
+        energyEfficiencySummary: "Contributes significantly to building energy efficiency due to high R-50 thermal resistance.",
+        substanceOfConcernSummary: "Does not contain added formaldehyde. Non-halogenated fire retardants used, below SVHC thresholds."
+      }
     },
     constructionProductInformation: {
       declarationOfPerformanceId: "DoP_ESP-R50-1200_001",
@@ -503,6 +521,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         declarationId: "CUST_CPR_DPP006",
         hsCode: "68061000", 
         countryOfOrigin: "BE",
+        cbamGoodsIdentifier: "CBAM_INSULATION_MINERALWOOL_003", // Added CBAM ID
         lastChecked: "2024-07-20T00:00:00Z"
       }
     },
@@ -515,3 +534,4 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ],
   }
 ];
+

@@ -52,33 +52,7 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
     }
 
     const complianceOverallStatusDetails = getOverallComplianceDetails(dpp);
-    const keyCompliancePointsPopulated: string[] = [];
-    if (complianceOverallStatusDetails.text && complianceOverallStatusDetails.text.toLowerCase() !== 'n/a' && complianceOverallStatusDetails.text.toLowerCase() !== 'no data') {
-        keyCompliancePointsPopulated.push(`Overall Status: ${complianceOverallStatusDetails.text}`);
-    }
-    if (dpp.ebsiVerification?.status && dpp.ebsiVerification.status.toLowerCase() !== 'n/a') {
-        const ebsiStatusText = dpp.ebsiVerification.status.replace(/_/g, ' ');
-        const capitalizedEbsiStatus = ebsiStatusText.charAt(0).toUpperCase() + ebsiStatusText.slice(1);
-        keyCompliancePointsPopulated.push(`EBSI Status: ${capitalizedEbsiStatus}`);
-    }
-    if (dpp.compliance.battery_regulation?.status && dpp.compliance.battery_regulation.status.toLowerCase() !== 'not_applicable' && dpp.compliance.battery_regulation.status.toLowerCase() !== 'n/a' && keyCompliancePointsPopulated.length < 3) {
-        const batteryStatusText = dpp.compliance.battery_regulation.status.replace(/_/g, ' ');
-        const capitalizedBatteryStatus = batteryStatusText.charAt(0).toUpperCase() + batteryStatusText.slice(1);
-        keyCompliancePointsPopulated.push(`Battery Reg: ${capitalizedBatteryStatus}`);
-    }
     
-    specificRegulations.forEach(reg => {
-        if (keyCompliancePointsPopulated.length < 3 && reg.status && reg.status.toLowerCase() !== 'n/a' && reg.status.toLowerCase() !== 'not applicable' && reg.status.toLowerCase() !== 'not required') {
-            const regStatusText = reg.status.replace(/_/g, ' ');
-            const capitalizedRegStatus = regStatusText.charAt(0).toUpperCase() + regStatusText.slice(1);
-            keyCompliancePointsPopulated.push(`${reg.regulationName}: ${capitalizedRegStatus}`);
-        }
-    });
-    if (keyCompliancePointsPopulated.length === 0 && (specificRegulations.length > 0 || dpp.compliance.battery_regulation)) {
-        keyCompliancePointsPopulated.push("Review Compliance tab for regulation details.");
-    }
-
-
     const customAttributes = dpp.productDetails?.customAttributes || [];
     const mappedCertifications: SimpleCertification[] = dpp.certifications?.map(cert => ({
         id: cert.id, 
@@ -108,9 +82,16 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         imageUrl: dpp.productDetails?.imageUrl,
         imageHint: dpp.productDetails?.imageHint,
         keySustainabilityPoints: dpp.productDetails?.sustainabilityClaims?.map(c => c.claim).filter(Boolean) || [],
-        keyCompliancePoints: dpp.productDetails?.keyCompliancePoints, // Added for Task 21
+        keyCompliancePoints: dpp.productDetails?.keyCompliancePoints, 
         specifications: dpp.productDetails?.specifications,
         customAttributes: customAttributes,
+        productDetails: { 
+            esprSpecifics: dpp.productDetails?.esprSpecifics,
+            carbonFootprint: dpp.productDetails?.carbonFootprint, // Added for Task 3
+            conflictMineralsReportUrl: dpp.productDetails?.conflictMineralsReportUrl,
+            fairTradeCertificationId: dpp.productDetails?.fairTradeCertificationId,
+            ethicalSourcingPolicyUrl: dpp.productDetails?.ethicalSourcingPolicyUrl,
+        },
         complianceSummary: {
             overallStatus: complianceOverallStatusDetails.text,
             eprel: dpp.compliance.eprel ? {
@@ -178,9 +159,9 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
     const userProductData = userProducts.find(p => p.id === productId);
     if (userProductData) {
       let parsedCustomAttributes: CustomAttribute[] = [];
-      if (userProductData.customAttributesJsonString) {
+      if (userProductData.productDetails?.customAttributesJsonString) { 
           try {
-              const parsed = JSON.parse(userProductData.customAttributesJsonString);
+              const parsed = JSON.parse(userProductData.productDetails.customAttributesJsonString);
               if (Array.isArray(parsed)) parsedCustomAttributes = parsed;
           } catch (e) { console.error("Failed to parse customAttributesJsonString from localStorage for USER_PROD:", e); }
       }
@@ -218,18 +199,20 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           dppStandardVersion: userProductData.metadata?.dppStandardVersion,
         },
         productDetails: {
-          description: userProductData.productDescription,
-          imageUrl: userProductData.imageUrl,
-          imageHint: userProductData.imageHint,
-          sustainabilityClaims: userProductData.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
-          keyCompliancePoints: userProductData.keyCompliancePoints, // Added for Task 21
-          materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [],
-          energyLabel: userProductData.energyLabel,
-          specifications: userProductData.specifications,
+          description: userProductData.productDetails?.description, 
+          imageUrl: userProductData.productDetails?.imageUrl,
+          imageHint: userProductData.productDetails?.imageHint,
+          sustainabilityClaims: userProductData.productDetails?.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
+          keyCompliancePoints: userProductData.productDetails?.keyCompliancePoints, 
+          materials: userProductData.productDetails?.materials?.split(',').map(m => ({ name: m.trim() })) || [],
+          energyLabel: userProductData.productDetails?.energyLabel,
+          specifications: userProductData.productDetails?.specifications,
           customAttributes: parsedCustomAttributes,
-          conflictMineralsReportUrl: userProductData.conflictMineralsReportUrl, 
-          fairTradeCertificationId: userProductData.fairTradeCertificationId, 
-          ethicalSourcingPolicyUrl: userProductData.ethicalSourcingPolicyUrl, 
+          conflictMineralsReportUrl: userProductData.productDetails?.conflictMineralsReportUrl, 
+          fairTradeCertificationId: userProductData.productDetails?.fairTradeCertificationId, 
+          ethicalSourcingPolicyUrl: userProductData.productDetails?.ethicalSourcingPolicyUrl, 
+          esprSpecifics: userProductData.productDetails?.esprSpecifics,
+          carbonFootprint: userProductData.productDetails?.carbonFootprint, // Added for Task 3
         },
         compliance: { 
           eprel: userProductData.complianceData?.eprel || complianceSummaryFromStorage.eprel,
@@ -281,4 +264,5 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
 
   return null;
 }
+
 

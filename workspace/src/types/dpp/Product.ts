@@ -10,7 +10,7 @@ import type {
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
-export const TRACKED_PRODUCTS_STORAGE_KEY = 'norruvaTrackedProductIds'; // New constant
+export const TRACKED_PRODUCTS_STORAGE_KEY = 'norruvaTrackedProductIds';
 
 export interface SupplyChainStep {
   stepName: string;
@@ -115,7 +115,7 @@ export interface DigitalProductPassport {
     ethicalSourcingPolicyUrl?: string; 
     keyCompliancePoints?: string; 
     esprSpecifics?: EsprSpecifics; 
-    carbonFootprint?: CarbonFootprintData;
+    carbonFootprint?: CarbonFootprintData; // Added for Task 3
   };
 
   textileInformation?: TextileInformation;
@@ -215,7 +215,7 @@ export interface SimpleProductDetail {
   ethicalSourcingPolicyUrl?: string; 
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
-    carbonFootprint?: CarbonFootprintData;
+    carbonFootprint?: CarbonFootprintData; // Added for Task 3
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -231,6 +231,10 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
   keySustainabilityPoints?: string[]; 
   keyCompliancePoints?: string;
   keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
+  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
+  energyLabelRating?: string;
+  repairability?: { score: number; scale: number; detailsUrl?: string };
+  recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary; 
@@ -262,7 +266,7 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
   energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
   specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  productDetailsOrigin?: { // Added for Task 1
+  productDetailsOrigin?: { 
     descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
     materialsOrigin?: 'AI_EXTRACTED' | 'manual';
     sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -303,7 +307,7 @@ export interface RichMockProduct {
   manufacturer?: string;
   modelNumber?: string;
   description?: string;
-  productDescription?: string; // Ensure this is present
+  productDescription?: string; 
   imageUrl?: string;
   imageHint?: string;
   materials?: string;
@@ -338,7 +342,7 @@ export interface RichMockProduct {
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
-    description?: string; // Ensure description is also in productDetails for consistency
+    description?: string; 
     imageUrl?: string;
     imageHint?: string;
     materials?: Array<{ name: string; percentage?: number; origin?: string; isRecycled?: boolean; recycledContentPercentage?: number }>;
@@ -394,7 +398,7 @@ export interface PublicProductInfo {
   ethicalSourcingPolicyUrl?: string; 
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
-    carbonFootprint?: CarbonFootprintData; 
+    carbonFootprint?: CarbonFootprintData; // Added for Task 3
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -458,7 +462,7 @@ export interface DisplayableProduct {
   ethicalSourcingPolicyUrl?: string; 
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
-    carbonFootprint?: CarbonFootprintData; 
+    carbonFootprint?: CarbonFootprintData; // Added for Task 3
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -498,4 +502,22 @@ export interface TokenStatusResponse {
   status: string; 
   message?: string;
 }
+
+// Extended for Task 23
+export type InitialProductFormData = Omit<ProductFormData, 'productDetailsOrigin' | 'batteryRegulationOrigin'> & {
+  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
+  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
+  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
+  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
+  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  batteryRegulationOrigin?: any; 
+  productDetailsOrigin?: any;
+  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
+};
+
 

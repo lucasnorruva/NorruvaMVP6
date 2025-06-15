@@ -4,7 +4,7 @@
 import type { ReactNode } from 'react';
 import { createContext, useContext, useState, useMemo } from 'react';
 
-export type UserRole = 'admin' | 'manufacturer' | 'supplier' | 'retailer' | 'recycler' | 'verifier' | 'service_provider';
+export type UserRole = 'admin' | 'manufacturer' | 'supplier' | 'retailer' | 'recycler' | 'verifier' | 'service_provider' | 'business_analyst'; // Added business_analyst
 
 interface RoleContextType {
   currentRole: UserRole;
@@ -16,14 +16,13 @@ const RoleContext = createContext<RoleContextType | undefined>(undefined);
 
 export function RoleProvider({ children }: { children: ReactNode }) {
   const [currentRole, setCurrentRole] = useState<UserRole>('admin');
-  // Ensure service_provider is in this list
-  const availableRoles: UserRole[] = ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider'];
+  const availableRoles: UserRole[] = ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider', 'business_analyst']; // Added business_analyst
 
   const contextValue = useMemo(() => ({
     currentRole,
     setCurrentRole,
     availableRoles,
-  }), [currentRole]); // currentRole is the dependency for re-memoizing
+  }), [currentRole]);
 
   return (
     <RoleContext.Provider value={contextValue}>
@@ -39,4 +38,3 @@ export function useRole(): RoleContextType {
   }
   return context;
 }
-

@@ -1,6 +1,7 @@
 
-// --- File: Compliance.ts ---
+// --- File: src/types/dpp/Compliance.ts ---
 // Description: Compliance related type definitions.
+import React from 'react'; // Ensure React is imported for React.ElementType
 
 export interface Certification {
   id: string;
@@ -100,13 +101,14 @@ export interface BatteryRegulationDetails {
   vcId?: string;
 }
 
-export interface EsprSpecifics { // Added for Task 1
+export interface EsprSpecifics { 
   durabilityInformation?: string;
   repairabilityInformation?: string;
   recycledContentSummary?: string;
   energyEfficiencySummary?: string;
   substanceOfConcernSummary?: string;
 }
+
 
 export interface ComplianceDetailItem {
   regulationName: string;
@@ -132,7 +134,7 @@ export interface ProductComplianceSummary {
     lastChecked: string;
   };
   scip?: ScipNotificationDetails;
-  euCustomsData?: EuCustomsDataDetails; // Will now include cbamGoodsIdentifier
+  euCustomsData?: EuCustomsDataDetails; 
   battery?: BatteryRegulationDetails;
   specificRegulations?: ComplianceDetailItem[];
 }
@@ -190,7 +192,7 @@ export interface ConstructionProductInformation {
 export interface TransitProduct {
   id: string;
   name: string;
-  category?: string; // Added category to TransitProduct
+  category?: string; 
   stage: string;
   eta: string;
   dppStatus: ProductComplianceSummary['overallStatus'];
@@ -217,4 +219,3 @@ export interface InspectionEvent {
   status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
   badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
 }
-

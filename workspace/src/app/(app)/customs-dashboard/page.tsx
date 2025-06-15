@@ -12,7 +12,7 @@ import { BarChart3, AlertTriangle, ShieldCheck, Package, CheckCircle, Clock, Tru
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from 'next/navigation';
-import { MOCK_TRANSIT_PRODUCTS, MOCK_CUSTOMS_ALERTS, MOCK_DPPS } from '@/data'; // Corrected import
+import { MOCK_TRANSIT_PRODUCTS, MOCK_CUSTOMS_ALERTS, MOCK_DPPS } from '@/data'; // Import from central data index
 import type { TransitProduct, CustomsAlert, InspectionEvent, DigitalProductPassport } from '@/types/dpp'; 
 import SelectedProductCustomsInfoCard from '@/components/dpp-tracker/SelectedProductCustomsInfoCard';
 import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; 
@@ -23,10 +23,10 @@ const MetricCardWidget: React.FC<{title: string, value: string | number, icon: R
 
   if (trendDirection === "up") {
     TrendIconComponent = ArrowUp;
-    trendColor = "text-success";
+    trendColor = "text-green-600"; // Use Tailwind success color
   } else if (trendDirection === "down") {
     TrendIconComponent = ArrowDown;
-    trendColor = "text-danger";
+    trendColor = "text-red-600"; // Use Tailwind danger color
   }
 
   return (

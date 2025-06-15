@@ -1,7 +1,7 @@
 
 // --- File: Compliance.ts ---
 // Description: Compliance related type definitions.
-import React from 'react'; // Ensure React is imported for React.ElementType
+import type React from 'react'; // Ensure React is imported for React.ElementType
 
 export interface Certification {
   id: string;
@@ -192,7 +192,7 @@ export interface ConstructionProductInformation {
 export interface TransitProduct {
   id: string;
   name: string;
-  category?: string;
+  category?: string; // Added category to TransitProduct
   stage: string;
   eta: string;
   dppStatus: ProductComplianceSummary['overallStatus'];

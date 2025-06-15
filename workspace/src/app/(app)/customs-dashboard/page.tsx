@@ -293,26 +293,3 @@ export default function CustomsDashboardPage() {
     </div>
   );
 }
-
-    
-```
-
-I've re-provided the file content for `src/data/mockCustomsAlerts.ts` and `src/data/index.ts` along with the dependent `src/types/dpp/Compliance.ts`, `src/types/dpp/index.ts`, and the two pages that import from the data barrel. This comprehensive update should cover any potential discrepancies.
-
-**If this error *still* persists after applying these changes, here are other things to consider that I cannot directly fix via code changes:**
-
-1.  **Caching:**
-    *   The Next.js dev server (especially with Turbopack) can sometimes have aggressive caching. A **full stop and restart of the `npm run dev` process** is highly recommended.
-    *   Clear browser cache.
-    *   If in a cloud IDE, there might be an environment-level cache. Restarting the entire workspace/container could help.
-
-2.  **File System Latency/Sync Issues:**
-    *   In some cloud IDEs or networked file systems, there can be a delay before file changes are fully recognized by the build system. A brief pause after changes are applied, followed by a dev server restart, might be needed.
-
-3.  **Typos in Your Manual File Structure (if applicable):**
-    *   If you had manually created these files before, double-check that the filename `mockCustomsAlerts.ts` is *exactly* correct in your `src/data/` folder, including case.
-
-4.  **Turbopack Specifics:**
-    *   Turbopack is newer. While usually very fast, there might be rare edge cases or bugs related to its module resolution or HMR that are specific to the environment. Trying `next dev` (without `--turbopack`) once to see if it resolves differently could be a diagnostic step (though slower).
-
-I'm hoping this comprehensive file refresh does the trick!

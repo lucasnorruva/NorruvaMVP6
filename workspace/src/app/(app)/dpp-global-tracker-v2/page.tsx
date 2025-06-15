@@ -12,7 +12,8 @@ import { Button } from '@/components/ui/button';
 import { Select, SelectTrigger, SelectContent, SelectItem, SelectValue } from '@/components/ui/select';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'; 
 import { MOCK_DPPS } from '@/data'; 
-import { MOCK_TRANSIT_PRODUCTS, MOCK_CUSTOMS_ALERTS, type TransitProduct, type CustomsAlert } from '@/data'; 
+import { MOCK_TRANSIT_PRODUCTS, MOCK_CUSTOMS_ALERTS } from '@/data'; // Corrected import
+import type { TransitProduct, CustomsAlert } from '@/types/dpp'; 
 import SelectedProductCustomsInfoCard from '@/components/dpp-tracker/SelectedProductCustomsInfoCard'; 
 
 
@@ -291,11 +292,22 @@ export default function GlobeV2Page() {
     );
   }
 
+  const GlobeComponent = dynamic(() => import('react-globe.gl'), { 
+    ssr: false,
+    loading: () => (
+      <div className="flex items-center justify-center h-full w-full bg-white">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="ml-4 text-lg text-muted-foreground">Loading Globe...</p>
+      </div>
+    )
+  });
+
+
   return (
     <>
       <div style={{ width: '100%', height: `calc(100vh - ${HEADER_HEIGHT}px)`, position: 'relative', background: 'white' }}>
         {typeof window !== 'undefined' && dimensions.width > 0 && dimensions.height > 0 && (
-          <Globe
+          <GlobeComponent
             ref={globeEl} globeImageUrl={null} globeMaterial={globeMaterial} backgroundColor="rgba(255, 255, 255, 1)"
             arcsData={arcsData} arcColor={'color'} arcDashLength={0.4} arcDashGap={0.1} arcDashAnimateTime={2000} arcStroke={0.5}
             showAtmosphere={false} polygonsData={filteredLandPolygons} polygonCapColor={getPolygonCapColor}
@@ -392,4 +404,366 @@ export default function GlobeV2Page() {
     </div>
   </>
   );
+}
+
+
+```
+- workspace/src/public/manifest.json:
+```json
+{
+  "name": "Norruva Digital Product Passport",
+  "short_name": "Norruva DPP",
+  "description": "Secure and Compliant Product Data Management with AI.",
+  "icons": [
+    {
+      "src": "/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "theme_color": "#29ABE2",
+  "background_color": "#E5F6FD",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait"
+}
+
+```
+- workspace/src/public/sw.js:
+```javascript
+// Service Worker for Norruva DPP Platform (Conceptual)
+
+const CACHE_NAME = 'norruva-dpp-cache-v1';
+const OFFLINE_URL = '/offline.html'; // Conceptual offline fallback page
+
+const urlsToCache = [
+  OFFLINE_URL,
+  '/', // Cache the main entry point
+  // Add key static assets (CSS, JS bundles) - Next.js handles this well, but good for PWA
+  // e.g., '/_next/static/css/main.css', '/_next/static/chunks/main-app.js'
+  // These paths change with builds, so dynamic caching or a build step is better for these.
+  '/icons/icon-192x192.png',
+  '/icons/icon-512x512.png',
+  '/manifest.json'
+];
+
+// Install event: cache core assets
+self.addEventListener('install', (event) => {
+  console.log('[Service Worker] Install event in progress.');
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('[Service Worker] Opened cache:', CACHE_NAME);
+        return cache.addAll(urlsToCache);
+      })
+      .then(() => {
+        console.log('[Service Worker] All core assets cached successfully.');
+        return self.skipWaiting(); // Activate worker immediately
+      })
+      .catch(error => {
+        console.error('[Service Worker] Caching failed during install:', error);
+      })
+  );
+});
+
+// Activate event: clean up old caches
+self.addEventListener('activate', (event) => {
+  console.log('[Service Worker] Activate event in progress.');
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          if (cacheName !== CACHE_NAME) {
+            console.log('[Service Worker] Deleting old cache:', cacheName);
+            return caches.delete(cacheName);
+          }
+        })
+      );
+    }).then(() => {
+      console.log('[Service Worker] Activated and old caches cleaned.');
+      return self.clients.claim(); // Take control of all open clients
+    })
+  );
+});
+
+// Fetch event: serve cached assets or fetch from network, provide offline fallback
+self.addEventListener('fetch', (event) => {
+  // We only want to handle navigation requests for offline fallback for now
+  // Other assets are usually handled well by browser cache + Next.js optimizations
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      (async () => {
+        try {
+          // Try to fetch from network first
+          const networkResponse = await fetch(event.request);
+          return networkResponse;
+        } catch (error) {
+          // Network fetch failed, try to serve from cache
+          console.log('[Service Worker] Network request failed, trying cache for:', event.request.url);
+          const cache = await caches.open(CACHE_NAME);
+          const cachedResponse = await cache.match(event.request);
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // If not in cache and network failed, serve the offline page for navigation requests
+          const offlinePageResponse = await cache.match(OFFLINE_URL);
+          if (offlinePageResponse) {
+            return offlinePageResponse;
+          }
+          // If offline page is not cached either (should not happen if install worked)
+          // return a basic response
+          return new Response("You are offline and the requested page isn't cached.", {
+            headers: { 'Content-Type': 'text/html' }
+          });
+        }
+      })()
+    );
+  }
+  // For non-navigation requests (assets like CSS, JS, images),
+  // let the browser handle them or implement a more specific caching strategy if needed.
+  // Example: Stale-while-revalidate for assets
+  // else if (event.request.destination === 'style' || event.request.destination === 'script' || event.request.destination === 'image') {
+  //   event.respondWith(
+  //     caches.open(CACHE_NAME).then(async (cache) => {
+  //       const cachedResponse = await cache.match(event.request);
+  //       const fetchedResponsePromise = fetch(event.request).then((networkResponse) => {
+  //         cache.put(event.request, networkResponse.clone());
+  //         return networkResponse;
+  //       });
+  //       return cachedResponse || fetchedResponsePromise;
+  //     })
+  //   );
+  // }
+});
+
+```
+- workspace/src/types/dpp/Compliance.ts:
+```ts
+
+// --- File: Compliance.ts ---
+// Description: Compliance related type definitions.
+import type React from 'react'; // Ensure React is imported for React.ElementType
+
+export interface Certification {
+  id: string;
+  name: string;
+  issuer: string;
+  issueDate: string; // ISO Date string
+  expiryDate?: string; // ISO Date string
+  vcId?: string;
+  documentUrl?: string;
+  standard?: string;
+  transactionHash?: string;
+}
+
+export interface EbsiVerificationDetails {
+  status: 'verified' | 'pending_verification' | 'not_verified' | 'error' | 'N/A';
+  verificationId?: string;
+  issuerDid?: string;
+  schema?: string;
+  issuanceDate?: string; // ISO Date string
+  lastChecked: string; // ISO Date string
+  message?: string;
+}
+
+export interface ScipNotificationDetails {
+  status?: 'Notified' | 'Pending Notification' | 'Not Required' | 'Error' | 'N/A' | string;
+  notificationId?: string;
+  svhcListVersion?: string;
+  submittingLegalEntity?: string;
+  articleName?: string;
+  primaryArticleId?: string;
+  safeUseInstructionsLink?: string; // Should be a URL
+  lastChecked?: string;
+}
+
+export interface EuCustomsDataDetails {
+  status?: 'Verified' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'N/A' | 'CBAM Relevant - Verified' | 'CBAM Relevant - Pending' | string; // Added CBAM status
+  declarationId?: string;
+  hsCode?: string;
+  countryOfOrigin?: string; // ISO 3166-1 Alpha-2
+  netWeightKg?: number | null;
+  grossWeightKg?: number | null;
+  customsValuation?: {
+    value?: number | null;
+    currency?: string; // ISO 4217
+  };
+  cbamGoodsIdentifier?: string;
+  lastChecked?: string;
+}
+
+export interface CarbonFootprintData {
+  value?: number | null;
+  unit?: string;
+  calculationMethod?: string;
+  scope1Emissions?: number | null;
+  scope2Emissions?: number | null;
+  scope3Emissions?: number | null;
+  dataSource?: string;
+  vcId?: string;
+}
+
+export interface RecycledContentData {
+  material?: string;
+  percentage?: number | null;
+  source?: 'Pre-consumer' | 'Post-consumer' | 'Mixed' | 'Unknown' | string;
+  vcId?: string;
+}
+
+export interface StateOfHealthData {
+  value?: number | null;
+  unit?: string;
+  measurementDate?: string;
+  measurementMethod?: string;
+  vcId?: string;
+}
+
+export interface BatteryRegulationDetails {
+  status?: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable' | string;
+  batteryChemistry?: string;
+  batteryPassportId?: string;
+  ratedCapacityAh?: number | null;
+  nominalVoltage?: number | null;
+  expectedLifetimeCycles?: number | null;
+  manufacturingDate?: string;
+  manufacturerName?: string;
+  carbonFootprint?: CarbonFootprintData;
+  recycledContent?: RecycledContentData[];
+  stateOfHealth?: StateOfHealthData;
+  recyclingEfficiencyRate?: number | null;
+  materialRecoveryRates?: {
+    cobalt?: number | null;
+    lead?: number | null;
+    lithium?: number | null;
+    nickel?: number | null;
+  };
+  dismantlingInformationUrl?: string;
+  safetyInformationUrl?: string;
+  vcId?: string;
+}
+
+export interface EsprSpecifics {
+  durabilityInformation?: string;
+  repairabilityInformation?: string;
+  recycledContentSummary?: string;
+  energyEfficiencySummary?: string;
+  substanceOfConcernSummary?: string;
+}
+
+
+export interface ComplianceDetailItem {
+  regulationName: string;
+  status: 'Compliant' | 'Non-Compliant' | 'Pending' | 'Not Applicable' | 'In Progress' | 'Data Incomplete' | 'Registered' | 'Verified' | 'Notified' | 'Pending Notification' | 'Not Required' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'Conformant' | 'Non-Conformant' | 'Pending Assessment' | 'Error' | 'Data Mismatch' | 'Product Not Found in EPREL' | 'Synced Successfully' | string;
+  detailsUrl?: string;
+  verificationId?: string;
+  lastChecked: string; // ISO Date string
+  notes?: string;
+}
+
+export interface ProductComplianceSummary {
+  overallStatus: 'Compliant' | 'Non-Compliant' | 'Pending Review' | 'N/A' | 'Data Incomplete' | 'Flagged' | string;
+  eprel?: {
+    id?: string;
+    status: string;
+    url?: string;
+    lastChecked: string;
+  };
+  ebsi?: {
+    status: 'Verified' | 'Pending' | 'Not Verified' | 'Error' | 'N/A' | string;
+    verificationId?: string;
+    transactionUrl?: string;
+    lastChecked: string;
+  };
+  scip?: ScipNotificationDetails;
+  euCustomsData?: EuCustomsDataDetails;
+  battery?: BatteryRegulationDetails;
+  specificRegulations?: ComplianceDetailItem[];
+}
+
+export interface SimpleCertification {
+  id: string;
+  name: string;
+  authority: string;
+  standard?: string;
+  issueDate: string;
+  expiryDate?: string;
+  documentUrl?: string;
+  isVerified?: boolean;
+  vcId?: string;
+  transactionHash?: string;
+}
+
+export interface PublicCertification {
+  name: string;
+  authority: string;
+  expiryDate?: string;
+  isVerified?: boolean;
+  link?: string;
+  standard?: string;
+  vcId?: string;
+  transactionHash?: string;
+}
+
+export interface FiberCompositionEntry {
+  fiberName: string;
+  percentage: number | null;
+}
+
+export interface TextileInformation {
+  fiberComposition?: FiberCompositionEntry[];
+  countryOfOriginLabeling?: string;
+  careInstructionsUrl?: string;
+  isSecondHand?: boolean;
+}
+
+export interface EssentialCharacteristic {
+  characteristicName: string;
+  value: string;
+  unit?: string;
+  testMethod?: string;
+}
+
+export interface ConstructionProductInformation {
+  declarationOfPerformanceId?: string;
+  ceMarkingDetailsUrl?: string;
+  intendedUseDescription?: string;
+  essentialCharacteristics?: EssentialCharacteristic[];
+}
+
+export interface TransitProduct {
+  id: string;
+  name: string;
+  category?: string; 
+  stage: string;
+  eta: string;
+  dppStatus: ProductComplianceSummary['overallStatus'];
+  transport: "Ship" | "Truck" | "Plane";
+  origin: string;
+  destination: string;
+}
+
+export interface CustomsAlert {
+  id: string;
+  productId: string;
+  message: string;
+  severity: "High" | "Medium" | "Low";
+  timestamp: string;
+  regulation?: string;
+}
+
+export interface InspectionEvent {
+  id: string;
+  icon: React.ElementType;
+  title: string;
+  timestamp: string;
+  description: string;
+  status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
+  badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
 }

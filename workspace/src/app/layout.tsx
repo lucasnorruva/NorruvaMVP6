@@ -42,7 +42,3 @@ export default function RootLayout({
         </RoleProvider>
         <Toaster />
       </body>
-    </html>
-  );
-}
-

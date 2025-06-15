@@ -1,91 +1,122 @@
-const CACHE_NAME = 'norruva-dpp-cache-v1';
+
+// --- Service Worker: public/sw.js ---
+
+const CACHE_NAME = 'norruva-dpp-cache-v1.2'; // Incremented version for cache busting
 const PRECACHE_ASSETS = [
   '/',
-  '/dashboard',
-  '/globals.css',
-  // Consider adding logo URL if stable and desired for offline:
-  // 'https://firebasestorage.googleapis.com/v0/b/norruva.firebasestorage.app/o/Norruva%20Logo.png?alt=media&token=08d8ede9-1121-433b-bfa5-7ccb4497a09f'
+  '/manifest.json',
+  // Add key static assets that are part of the shell, like logo, global CSS if not inlined
+  // '/icons/icon-192x192.png', // Example, actual paths to your icons
+  // '/icons/icon-512x512.png',
+  // '/offline.html' // A dedicated offline fallback page (optional but good practice)
 ];
 
+// Install event: precache core assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      console.log('[ServiceWorker] Pre-caching offline page and assets:', PRECACHE_ASSETS);
-      return cache.addAll(PRECACHE_ASSETS);
-    }).catch(error => {
-      console.error('[ServiceWorker] Pre-caching failed:', error);
-    })
+    caches.open(CACHE_NAME)
+      .then((cache) => {
+        console.log('[ServiceWorker] Pre-caching core assets:', PRECACHE_ASSETS);
+        return cache.addAll(PRECACHE_ASSETS);
+      })
+      .then(() => {
+        console.log('[ServiceWorker] Core assets pre-cached successfully.');
+        return self.skipWaiting(); // Activate worker immediately
+      })
+      .catch(error => {
+        console.error('[ServiceWorker] Pre-caching failed:', error);
+      })
   );
-  self.skipWaiting();
 });
 
+// Activate event: clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('[ServiceWorker] Old cache removed:', cacheName);
+            console.log('[ServiceWorker] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
+    }).then(() => {
+      console.log('[ServiceWorker] Activated and old caches cleaned.');
+      return self.clients.claim(); // Take control of all open clients
     })
   );
-  self.clients.claim();
 });
 
+// Fetch event: serve assets from cache if available, otherwise fetch from network
+// Basic cache-first strategy for precached assets, network-first for others.
 self.addEventListener('fetch', (event) => {
-  if (event.request.method !== 'GET') {
-    return;
-  }
-
   const requestUrl = new URL(event.request.url);
 
-  // Cache-first for pre-cached assets (matching by pathname)
-  if (PRECACHE_ASSETS.includes(requestUrl.pathname)) {
+  // For API calls or Next.js data routes, always go to network first
+  if (event.request.method === 'POST' || requestUrl.pathname.startsWith('/api/') || requestUrl.pathname.startsWith('/_next/data/')) {
     event.respondWith(
-      caches.open(CACHE_NAME).then(async (cache) => {
-        const cachedResponse = await cache.match(event.request);
-        if (cachedResponse) {
-          return cachedResponse;
+      fetch(event.request).catch(() => {
+        // Optional: provide a generic JSON error for API offline scenarios
+        if (requestUrl.pathname.startsWith('/api/')) {
+          return new Response(JSON.stringify({ error: 'Network error' }), {
+            headers: { 'Content-Type': 'application/json' }
+          });
         }
-        return fetch(event.request).then((networkResponse) => {
-          // Optionally cache if it was missed during initial pre-cache
-          // cache.put(event.request, networkResponse.clone());
-          return networkResponse;
-        });
+        // For Next.js data routes, might be harder to provide a meaningful fallback
       })
     );
     return;
   }
 
-  // Network-first for other GET requests, then cache
+  // For other GET requests (static assets, pages)
   event.respondWith(
-    fetch(event.request)
-      .then((networkResponse) => {
-        if (networkResponse && networkResponse.status === 200 && networkResponse.type === 'basic') {
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(event.request, responseToCache);
-          });
-        }
-        return networkResponse;
-      })
-      .catch(async () => {
-        const cachedResponse = await caches.match(event.request);
+    caches.match(event.request)
+      .then((cachedResponse) => {
+        // Cache hit - return response from cache
         if (cachedResponse) {
+          // console.log('[ServiceWorker] Serving from cache:', event.request.url);
           return cachedResponse;
         }
-        // Optional: Generic fallback for navigation requests. 
-        // Requires an 'offline.html' to be pre-cached.
-        // if (event.request.mode === 'navigate') {
-        //   return caches.match('/offline.html');
-        // }
-        return new Response("Network error and resource not found in cache.", {
-            status: 408, // Request Timeout
-            headers: { 'Content-Type': 'text/plain' },
+
+        // Not in cache - fetch from network
+        // console.log('[ServiceWorker] Fetching from network:', event.request.url);
+        return fetch(event.request).then(
+          (networkResponse) => {
+            // Check if we received a valid response
+            if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
+              return networkResponse;
+            }
+
+            // IMPORTANT: Clone the response. A response is a stream
+            // and because we want the browser to consume the response
+            // as well as the cache consuming the response, we need
+            // to clone it so we have two streams.
+            const responseToCache = networkResponse.clone();
+
+            caches.open(CACHE_NAME)
+              .then((cache) => {
+                // console.log('[ServiceWorker] Caching new asset:', event.request.url);
+                cache.put(event.request, responseToCache);
+              });
+
+            return networkResponse;
+          }
+        ).catch(() => {
+          // If both cache and network fail (e.g., offline)
+          // console.log('[ServiceWorker] Fetch failed, serving offline fallback for:', event.request.url);
+          // You could return a custom offline fallback page here
+          // For example: if (event.request.mode === 'navigate') return caches.match('/offline.html');
+          // For this prototype, we'll just let the browser handle the offline error page
+          // to avoid needing an `offline.html` page.
         });
       })
   );
+});
+
+// Optional: Listen for messages from client
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });

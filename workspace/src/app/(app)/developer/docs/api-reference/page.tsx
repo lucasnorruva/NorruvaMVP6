@@ -9,7 +9,7 @@ import ApiReferenceComplianceEndpoints from '@/components/developer/docs/ApiRefe
 import ApiReferenceTokenEndpoints from '@/components/developer/docs/ApiReferenceTokenEndpoints';
 import ApiReferencePrivateLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferencePrivateLayerEndpoints';
 import ApiReferenceZkpLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferenceZkpLayerEndpoints';
-import { BatchUpdateDpps, ExportDpps } from '@/components/developer/docs/api-reference'; // Import new components
+import { BatchUpdateDpps, ExportDpps } from '@/components/developer/docs/api-reference'; 
 import type { DigitalProductPassport } from "@/types/dpp";
 
 export default function ApiReferencePage() {
@@ -339,7 +339,6 @@ export default function ApiReferencePage() {
     checksPerformed: ["Mock Data Integrity Check", "Mock EBSI Anchor Verification"]
   }, null, 2);
 
-  // Examples for new on-chain endpoints
   const exampleUpdateOnChainStatusRequestBody = JSON.stringify({ status: "recalled" }, null, 2);
   const exampleUpdateOnChainLifecycleStageRequestBody = JSON.stringify({ lifecycleStage: "Distribution" }, null, 2);
   const exampleLogCriticalEventRequestBody = JSON.stringify({ eventDescription: "Major defect discovered in Batch XYZ.", severity: "High" }, null, 2);
@@ -358,6 +357,32 @@ export default function ApiReferencePage() {
         { id: "evt_onchain_mock", type: "OnChainStatusUpdate", timestamp: new Date().toISOString(), data: { newStatus: "recalled", mockTxHash: "0xmock..."}}
     ]
   }, null, 2);
+
+  const exampleB2BComponentTransferRequestBody = JSON.stringify({
+    componentId: "COMP_XYZ_123",
+    quantity: 100,
+    transferDate: new Date().toISOString(),
+    fromParty: { participantId: "SUP001", role: "Supplier" },
+    toParty: { participantId: "MFG001", role: "Manufacturer" }
+  }, null, 2);
+  const exampleB2BComponentTransferResponseBody = JSON.stringify({
+    transferId: "transfer_comp_xyz_123_mock123",
+    productId: "DPP001",
+    componentId: "COMP_XYZ_123",
+    quantity: 100,
+    transferDate: new Date().toISOString(),
+    fromParty: { participantId: "SUP001", role: "Supplier" },
+    toParty: { participantId: "MFG001", role: "Manufacturer" },
+    message: "Component transfer recorded successfully."
+  }, null, 2);
+
+  const exampleGetSupplierAttestationsResponseBody = JSON.stringify([
+    { attestationId: "attest_sup001_compA_batchXYZ_mock1", productId: "DPP001", componentId: "COMP_A_BATTERY_CELL", supplierId: "SUP001", attestationType: "EthicalSourcingCompliance", attestationStatement: "Component sourced ethically.", issuanceDate: new Date().toISOString() }
+  ], null, 2);
+  
+  const exampleGetConfidentialMaterialsResponseBody = JSON.stringify(
+    { confidentialMaterialId: "cm_dpp001_alloy_X1", productId: "DPP001", materialName: "Proprietary Alloy X1", composition: [{ substanceName: "Titanium", percentageByWeight: "75%" }] }, null, 2
+  );
 
 
   return (
@@ -418,7 +443,6 @@ export default function ApiReferencePage() {
         error404={error404}
         error500={error500}
       />
-      {/* Add new section for Batch Operations */}
       <BatchUpdateDpps
         error400={error400_general}
         error401={error401}
@@ -430,7 +454,16 @@ export default function ApiReferencePage() {
         error404={error404}
         error500={error500}
       />
+      <ApiReferencePrivateLayerEndpoints
+        exampleB2BComponentTransferRequestBody={exampleB2BComponentTransferRequestBody}
+        exampleB2BComponentTransferResponseBody={exampleB2BComponentTransferResponseBody}
+        exampleGetSupplierAttestationsResponseBody={exampleGetSupplierAttestationsResponseBody}
+        exampleGetConfidentialMaterialsResponseBody={exampleGetConfidentialMaterialsResponseBody}
+        error400General={error400_general}
+        error401={error401}
+        error404={error404}
+        error500={error500}
+      />
     </DocsPageLayout>
   );
 }
-

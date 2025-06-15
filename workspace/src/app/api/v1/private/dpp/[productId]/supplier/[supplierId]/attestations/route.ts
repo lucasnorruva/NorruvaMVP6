@@ -88,7 +88,7 @@ export async function GET(
           metricName: "CO2ePerUnit_ComponentA",
           value: 0.45,
           unit: "kg CO2e",
-          calculationMethodology: "ISO 14064-1, Supplier Specific LCA (Mocked)"
+          verificationMethod: "ISO 14064-1, Supplier Specific LCA (Mocked)" // Corrected: 'calculationMethodology' to 'verificationMethod' for consistency or define a new field
         }
       ],
       confidentialNotes: "This is a mock attestation for demonstration purposes only. Access restricted."
@@ -118,16 +118,5 @@ export async function GET(
     }
   ];
 
-  // Conceptually, if either productId or supplierId didn't match something known,
-  // we might return 404 or an empty array. For this mock, we always return data if IDs are provided.
-  // Example check (if we had MOCK_DPPS and MOCK_SUPPLIERS accessible here):
-  // const productExists = MOCK_DPPS.some(d => d.id === productId);
-  // const supplierExists = MOCK_SUPPLIERS.some(s => s.id === supplierId);
-  // if (!productExists || !supplierExists) {
-  //   return NextResponse.json({ attestations: [] }); // Or a 404 if appropriate
-  // }
-
-
   return NextResponse.json(mockAttestations, { status: 200 });
 }
-    

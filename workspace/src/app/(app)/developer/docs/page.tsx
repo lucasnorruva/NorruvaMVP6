@@ -28,7 +28,7 @@ import {
     History,
     Layers3, 
     Zap,
-    Globe // Added Globe icon
+    Globe 
 } from "lucide-react";
 
 export default function DeveloperDocumentationHubPage() {
@@ -80,9 +80,9 @@ export default function DeveloperDocumentationHubPage() {
               <li><Link href="/developer/docs/ebsi-integration" className="text-primary hover:underline flex items-center"><Share2 className="mr-2 h-4 w-4" />EBSI Integration Overview</Link></li>
               <li><Link href="/developer/docs/public-layer-ebsi" className="text-primary hover:underline flex items-center"><Share2 className="mr-2 h-4 w-4" />Public Layer & EBSI Alignment</Link></li>
               <li><Link href="/developer/docs/private-layer-architecture" className="text-primary hover:underline flex items-center"><Layers3 className="mr-2 h-4 w-4" />Private Layer Architecture</Link></li>
-              <li><Link href="/developer/docs/zkp-layer-concepts" className="text-primary hover:underline flex items-center"><Zap className="mr-2 h-4 w-4" />ZKP Layer Concepts</Link></li>
+              <li><Link href="/developer/docs/zkp-layer-concepts" className="text-primary hover:underline flex items-center"><Zap className="mr-2 h-4 w-4" />ZKP Layer Concepts</Link></li> 
               <li><Link href="/developer/docs/regulatory-alignment" className="text-primary hover:underline flex items-center"><Scale className="mr-2 h-4 w-4" />Regulatory Alignment (ESPR, EPREL)</Link></li>
-              <li><Link href="/developer/docs/cbam-concepts" className="text-primary hover:underline flex items-center"><Globe className="mr-2 h-4 w-4" />CBAM Concepts Guide</Link></li> {/* Added CBAM link */}
+              <li><Link href="/developer/docs/cbam-concepts" className="text-primary hover:underline flex items-center"><Globe className="mr-2 h-4 w-4" />CBAM Concepts Guide</Link></li> 
               <li><Link href="/developer/docs/data-management-best-practices" className="text-primary hover:underline flex items-center"><LayersIcon className="mr-2 h-4 w-4" />Data Management Best Practices</Link></li>
               <li><Link href="/developer/docs/qr-code-embedding" className="text-primary hover:underline flex items-center"><QrCode className="mr-2 h-4 w-4" />QR Code Generation &amp; Embedding</Link></li>
               <li><Link href="/developer/guides/auditor-integration" className="text-primary hover:underline flex items-center"><ShieldCheck className="mr-2 h-4 w-4" />Auditor Integration</Link></li>

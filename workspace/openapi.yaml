@@ -1287,7 +1287,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
 
-  /api/v1/dpp/{productId}/register-vc-hash:
+  /api/v1/dpp/{productId}/register-vc-hash: # New endpoint
     post:
       operationId: registerDppVcHash
       summary: Register Verifiable Credential Hash (Conceptual)
@@ -2938,7 +2938,7 @@ components:
           nullable: true
           description: Severity of the event. Defaults to "High" if not provided by API.
           example: "High"
-    RegisterVcHashRequest: 
+    RegisterVcHashRequest: # New Schema
       type: object
       required:
         - vcId
@@ -3035,7 +3035,7 @@ components:
         metadataUri: "ipfs://dpp_metadata_for_DPP001"
         lastTransactionHash: "0xlast_tx_mock_randomhash"
         status: "active"
-    DetailedSupplierAttestation: # Conceptual Schema for Private Layer
+    DetailedSupplierAttestation: 
       type: object
       properties:
         attestationId: { type: string, example: "attest_sup001_compA_batchXYZ_20240815" }
@@ -3045,10 +3045,10 @@ components:
         supplierDid: { type: string, example: "did:example:supplier:greenpartsinc" }
         attestationType: { type: string, example: "EthicalSourcingCompliance" }
         attestationStatement: { type: string, example: "Component COMP_A_BATTERY_CELL sourced in compliance..." }
-        evidence: { type: array, items: { type: object, properties: { type: { type: string }, documentId: { type: string }, documentHash: { type: string }, vcId: { type: string, nullable: true } } } }
+        evidence: { type: array, items: { type: object, properties: { type: { type: string }, documentId: { type: string, nullable: true }, documentHash: { type: string, nullable: true }, vcId: { type: string, nullable: true }, description: { type: string, nullable: true } } } }
         issuanceDate: { type: string, format: "date-time" }
         expiryDate: { type: string, format: "date-time", nullable: true }
-        specificMetrics: { type: array, items: { type: object, properties: { metricName: {type: string}, value: {type: "string"}, unit: {type: "string"}, verificationMethod: {type: "string"}}} }
+        specificMetrics: { type: array, items: { type: object, properties: { metricName: {type: string}, value: {type: "string"}, unit: {type: "string", nullable: true}, verificationMethod: {type: "string", nullable: true}}}, nullable: true }
         confidentialNotes: { type: string, nullable: true }
       required:
         - attestationId
@@ -3057,39 +3057,38 @@ components:
         - supplierId
         - attestationType
         - attestationStatement
-    B2BComponentTransferRecord: # Conceptual Schema for Private Layer
+    B2BComponentTransferRecord: 
       type: object
       properties:
         transferId: { type: string, example: "transfer_compA_sup001_to_mfg002_20240820" }
+        productId: { type: string, example: "DPP001", description: "The product this component transfer is related to."}
         componentId: { type: string, example: "COMP_A_BATTERY_CELL_PACK" }
-        batchOrSerialNumbers: { type: array, items: { type: string }, example: ["batch_xyz789-001"] }
+        batchOrSerialNumbers: { type: array, items: { type: string }, example: ["batch_xyz789-001"], nullable: true }
         quantity: { type: number, example: 200 }
-        unit: { type: string, example: "units" }
+        unit: { type: string, example: "units", nullable: true }
         transferDate: { type: string, format: "date-time" }
-        fromParty: { type: object, properties: { participantId: {type: string}, participantDid: {type: string}, role: {type: string} } }
-        toParty: { type: object, properties: { participantId: {type: string}, participantDid: {type: string}, role: {type: string} } }
-        transactionDetails: { type: object, properties: { type: {type: string}, referenceId: {type: string}, privateLedgerTxHash: {type: string, nullable: true} } }
-        accompanyingDocuments: { type: array, items: { type: object, properties: { type: {type: string}, documentId: {type: string}, documentHash: {type: string} } } }
+        fromParty: { type: object, properties: { participantId: {type: string, nullable: true}, participantDid: {type: string, nullable: true}, role: {type: string, nullable: true} }, nullable: true }
+        toParty: { type: object, properties: { participantId: {type: string, nullable: true}, participantDid: {type: string, nullable: true}, role: {type: string, nullable: true} }, nullable: true }
+        transactionDetails: { type: object, properties: { type: {type: string, nullable: true}, referenceId: {type: string, nullable: true}, privateLedgerTxHash: {type: string, nullable: true} }, nullable: true }
+        accompanyingDocuments: { type: array, items: { type: object, properties: { type: {type: string, nullable: true}, documentId: {type: string, nullable: true}, documentHash: {type: string, nullable: true} } }, nullable: true }
         notes: { type: string, nullable: true }
       required:
-        - transferId
+        - productId
         - componentId
         - quantity
         - transferDate
-        - fromParty
-        - toParty
-    ConfidentialMaterialComposition: # Conceptual Schema for Private Layer
+    ConfidentialMaterialComposition: 
       type: object
       properties:
         confidentialMaterialId: { type: string, example: "cm_dpp001_proprietary_alloy_X1" }
         productId: { type: string, example: "DPP001" }
         componentName: { type: string, example: "ProtectiveCoating_LayerA" }
         materialName: { type: string, example: "Proprietary Alloy X1-Alpha" }
-        composition: { type: array, items: { type: object, properties: { substanceName: {type: string}, casNumber: {type: string}, percentageByWeight: {type: string}, role: {type: string}, notes: {type: string, nullable: true}} } }
-        supplierInformation: { type: object, properties: { supplierId: {type: string}, materialBatchId: {type: string} }, nullable: true }
-        accessControlList: { type: array, items: { type: string }, example: ["did:example:manufacturer:greentech#internal_rd"] }
+        composition: { type: array, items: { type: object, properties: { substanceName: {type: string}, casNumber: {type: string, nullable: true}, percentageByWeight: {type: string, nullable: true}, role: {type: string, nullable: true}, notes: {type: string, nullable: true}} } }
+        supplierInformation: { type: object, properties: { supplierId: {type: string, nullable: true}, materialBatchId: {type: string, nullable: true} }, nullable: true }
+        accessControlList: { type: array, items: { type: string }, example: ["did:example:manufacturer:greentech#internal_rd"], nullable: true }
         lastUpdated: { type: string, format: "date-time" }
-        version: { type: integer }
+        version: { type: integer, nullable: true }
       required:
         - confidentialMaterialId
         - productId
@@ -3287,6 +3286,7 @@ components:
     
 
     
+
 
 
 

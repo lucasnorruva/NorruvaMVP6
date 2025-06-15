@@ -82,7 +82,7 @@ export default function PrivateLayerArchitecturePage() {
               <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">POST /api/v1/private/dpp/{"{productId}"}/component-transfer</code>: Records a private transfer of a component. (A mock of this endpoint is also implemented and available for testing in the <Link href="/developer#playground" className="text-primary hover:underline">API Playground</Link> under "Private Layer Endpoints").
             </li>
             <li>
-              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">GET /api/v1/private/dpp/{"{productId}"}/confidential-materials</code>: Fetches confidential material composition data.
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">GET /api/v1/private/dpp/{"{productId}"}/confidential-materials</code>: Fetches confidential material composition data. (A mock of this is implemented).
             </li>
           </ul>
           <Button variant="link" asChild className="p-0 h-auto text-sm">
@@ -118,5 +118,3 @@ export default function PrivateLayerArchitecturePage() {
     </DocsPageLayout>
   );
 }
-
-

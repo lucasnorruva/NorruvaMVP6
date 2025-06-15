@@ -18,6 +18,6 @@ import '@/ai/flows/suggest-battery-details-flow.ts';
 import '@/ai/flows/suggest-maintenance-schedule.ts';
 import '@/ai/flows/generate-compliance-summary-for-category.ts';
 import '@/ai/flows/suggest-key-compliance-points.ts';
-import '@/ai/flows/suggest-cbam-identifier-flow.ts'; // Added for Task 22
+import '@/ai/flows/suggest-cbam-identifier-flow.ts'; 
 
     

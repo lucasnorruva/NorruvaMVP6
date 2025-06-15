@@ -13,6 +13,7 @@ import { suggestKeyCompliancePoints } from "@/ai/flows/suggest-key-compliance-po
 import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
 import { generateProductSpecifications } from "@/ai/flows/generate-product-specifications-flow";
 import { generateCustomAttributes } from "@/ai/flows/generate-custom-attributes-flow"; 
+import { suggestCbamIdentifier, type SuggestCbamIdentifierOutput } from "@/ai/flows/suggest-cbam-identifier-flow"; // Added for CBAM
 import type { CustomAttribute } from "@/types/dpp"; 
 import type { ToastInput } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";
@@ -167,7 +168,7 @@ export async function handleSuggestKeyCompliancePointsAI(
   if (compliance?.battery_regulation?.status && compliance.battery_regulation.status !== 'not_applicable') {
     applicableRegs.push("EU Battery Regulation");
   }
-  if (compliance?.esprConformity?.status && compliance.esprConformity.status !== 'not_applicable') { // Check against esprConformity
+  if (compliance?.esprConformity?.status && compliance.esprConformity.status !== 'not_applicable') { 
     applicableRegs.push("EU ESPR");
   }
   if (compliance?.scipNotification?.status && compliance.scipNotification.status !== 'N/A' && compliance.scipNotification.status !== 'Not Required') {
@@ -302,4 +303,34 @@ export async function handleSuggestCustomAttributesAI(
   });
 
   return result ? result.customAttributes : null;
+}
+
+export async function handleSuggestCbamIdentifierAI(
+  form: UseFormReturn<ProductFormData>,
+  toast: ToastFn,
+  setLoadingState: (loading: boolean) => void
+): Promise<SuggestCbamIdentifierOutput | null> {
+  const { productCategory, productDetails } = form.getValues();
+  if (!productCategory) {
+    toast({ title: "Category Required", description: "Please provide a product category to suggest a CBAM identifier.", variant: "destructive" });
+    setLoadingState(false);
+    return null;
+  }
+  const result = await withAiHandling({
+    aiCall: () =>
+      suggestCbamIdentifier({
+        productCategory: productCategory,
+        productDescription: productDetails?.description || undefined,
+      }),
+    toast,
+    setLoadingState,
+    successToast: (res) => ({
+      title: "CBAM Identifier Suggested!",
+      description: `AI suggested: "${res.suggestedIdentifier}". Reasoning: ${res.reasoning}`,
+      variant: "default",
+      duration: 7000,
+    }),
+    errorTitle: "Error Suggesting CBAM ID",
+  });
+  return result;
 }

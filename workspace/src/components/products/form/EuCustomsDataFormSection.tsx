@@ -1,9 +1,8 @@
-
 // --- File: EuCustomsDataFormSection.tsx ---
 // Description: Form section component for EU Customs Data details.
 "use client";
 
-import React from "react";
+import React, { useState } from "react"; // Added useState
 import type { UseFormReturn } from "react-hook-form";
 import {
   FormField,
@@ -14,8 +13,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button"; // Added Button
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { ProductFormData } from "@/types/productFormTypes";
+import { Sparkles, Loader2, AlertTriangle } from "lucide-react"; // Added icons
+import { useToast } from "@/hooks/use-toast"; // Added useToast
+import { handleSuggestCbamIdentifierAI } from "@/utils/aiFormHelpers"; // Added AI helper
 
 interface EuCustomsDataFormSectionProps {
   form: UseFormReturn<ProductFormData>;
@@ -25,6 +28,19 @@ export default function EuCustomsDataFormSection({
   form,
 }: EuCustomsDataFormSectionProps) {
   const customsStatusOptions = ['Verified', 'Pending Documents', 'Mismatch', 'Cleared', 'N/A'];
+  const { toast } = useToast();
+  const [isSuggestingCbamId, setIsSuggestingCbamId] = useState(false);
+  const [cbamSuggestionReasoning, setCbamSuggestionReasoning] = useState<string | null>(null);
+
+  const callSuggestCbamIdentifier = async () => {
+    const result = await handleSuggestCbamIdentifierAI(form, toast, setIsSuggestingCbamId);
+    if (result) {
+      form.setValue("compliance.euCustomsData.cbamGoodsIdentifier", result.suggestedIdentifier, { shouldValidate: true });
+      setCbamSuggestionReasoning(result.reasoning);
+    } else {
+      setCbamSuggestionReasoning(null);
+    }
+  };
 
   return (
     <div className="space-y-6 pt-4">
@@ -91,10 +107,21 @@ export default function EuCustomsDataFormSection({
         name="compliance.euCustomsData.cbamGoodsIdentifier"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>CBAM Goods Identifier / Reference (Optional)</FormLabel>
-            <FormControl><Input placeholder="e.g., CBAM_REF_123 or relevant CN code" {...field} value={field.value || ""} /></FormControl>
-            <FormDescription>Identifier relevant for Carbon Border Adjustment Mechanism reporting, if applicable. Often the Combined Nomenclature (CN) code.</FormDescription>
+            <div className="flex items-center justify-between">
+              <FormLabel>CBAM Goods Identifier / CN Code (Optional)</FormLabel>
+              <Button type="button" variant="ghost" size="sm" onClick={callSuggestCbamIdentifier} disabled={isSuggestingCbamId || form.formState.isSubmitting}>
+                {isSuggestingCbamId ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
+                <span className="ml-2">{isSuggestingCbamId ? "Suggesting..." : "Suggest CBAM ID"}</span>
+              </Button>
+            </div>
+            <FormControl><Input placeholder="e.g., 72081000 or N/A" {...field} value={field.value || ""} /></FormControl>
+            <FormDescription>Identifier for Carbon Border Adjustment Mechanism reporting, often the Combined Nomenclature (CN) code. AI can suggest this based on category.</FormDescription>
             <FormMessage />
+            {cbamSuggestionReasoning && (
+              <p className="text-xs text-muted-foreground mt-1 p-2 bg-blue-500/10 border border-blue-500/20 rounded-md">
+                <strong className="text-blue-600">AI Reasoning:</strong> {cbamSuggestionReasoning}
+              </p>
+            )}
           </FormItem>
         )}
       />

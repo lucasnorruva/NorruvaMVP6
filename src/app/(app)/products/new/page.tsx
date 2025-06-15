@@ -14,6 +14,7 @@ import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSum
 import { fileToDataUri } from '@/utils/fileUtils';
 import AiExtractionSection from "@/components/products/new/AiExtractionSection";
 import ProductDetailsSection from "@/components/products/new/ProductDetailsSection";
+import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
 
 type AiOrigin = 'AI_EXTRACTED' | 'manual' | undefined;
 

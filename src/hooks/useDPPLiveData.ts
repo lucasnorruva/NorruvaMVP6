@@ -10,7 +10,7 @@ import { MOCK_DPPS } from '@/data';
 import { getSortValue } from '@/utils/sortUtils';
 import { useToast } from '@/hooks/use-toast';
 
-const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
+import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
 
 export function useDPPLiveData() {
   const router = useRouter();

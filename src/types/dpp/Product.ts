@@ -5,7 +5,7 @@
 import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle';
 import type {
   Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification,
-  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation
+  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, EsprSpecifics
 } from './Compliance'; 
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -61,13 +61,7 @@ export interface OwnershipNftLink {
   chainName?: string;
 }
 
-export interface EsprSpecifics { // New interface for ESPR details
-  durabilityInformation?: string;
-  repairabilityInformation?: string;
-  recycledContentSummary?: string;
-  energyEfficiencySummary?: string;
-  substanceOfConcernSummary?: string;
-}
+// EsprSpecifics is already defined in Compliance.ts, ensuring it's used correctly here.
 
 export interface DigitalProductPassport {
   id: string;
@@ -121,7 +115,7 @@ export interface DigitalProductPassport {
     fairTradeCertificationId?: string; 
     ethicalSourcingPolicyUrl?: string; 
     keyCompliancePoints?: string; 
-    esprSpecifics?: EsprSpecifics; // Added ESPR specifics here
+    esprSpecifics?: EsprSpecifics; 
   };
 
   textileInformation?: TextileInformation;
@@ -219,8 +213,12 @@ export interface SimpleProductDetail {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
-  productDetails?: { // Ensure productDetails is part of SimpleProductDetail if esprSpecifics is nested
-    esprSpecifics?: EsprSpecifics; // Added ESPR specifics here
+  productDetails?: { 
+    esprSpecifics?: EsprSpecifics;
+    // Add ethical sourcing fields here if they are part of productDetails in SimpleProductDetail
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
   };
 }
 
@@ -278,9 +276,29 @@ export interface StoredUserProduct {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
-  productDetails?: { // Added productDetails to StoredUserProduct
+  productDetails?: { 
     esprSpecifics?: EsprSpecifics;
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
   };
+  productDetailsOrigin?: {
+    esprSpecificsOrigin?: {
+      durabilityInformationOrigin?: 'AI_EXTRACTED' | 'manual';
+      repairabilityInformationOrigin?: 'AI_EXTRACTED' | 'manual';
+      recycledContentSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+      energyEfficiencySummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+      substanceOfConcernSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
+    descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+    materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+    sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+    keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
+    specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+    energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+    imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  };
+  batteryRegulationOrigin?: any; // Kept for existing structure, can be refined
 }
 
 export interface RichMockProduct {
@@ -323,8 +341,11 @@ export interface RichMockProduct {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
-  productDetails?: { // Added productDetails to RichMockProduct
+  productDetails?: { 
     esprSpecifics?: EsprSpecifics;
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
   };
 }
 
@@ -368,8 +389,11 @@ export interface PublicProductInfo {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
-  productDetails?: { // Added productDetails to PublicProductInfo
+  productDetails?: { 
     esprSpecifics?: EsprSpecifics;
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
   };
 }
 
@@ -428,8 +452,11 @@ export interface DisplayableProduct {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
-  productDetails?: { // Added productDetails to DisplayableProduct
+  productDetails?: { 
     esprSpecifics?: EsprSpecifics;
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
   };
 }
 
@@ -462,7 +489,4 @@ export interface TokenStatusResponse {
   ownerAddress: string;
   mintedAt: string; 
   metadataUri?: string | null;
-  lastTransactionHash?: string | null;
-  status: string; 
-  message?: string;
-}
+  last

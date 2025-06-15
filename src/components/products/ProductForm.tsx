@@ -18,7 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, ImageIcon as ImageIconLucide, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction as ConstructionIcon, Handshake, Recycle } from "lucide-react"; // Renamed ImageIcon, Added Recycle
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, ImageIcon as ImageIconLucide, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction as ConstructionIcon, Handshake, Recycle } from "lucide-react"; 
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -40,8 +40,8 @@ import {
   EuCustomsDataFormSection,
   TextileInformationFormSection,
   ConstructionProductInformationFormSection,
-  EthicalSourcingFormSection,
-  EsprSpecificsFormSection, // Import new section
+  EthicalSourcingFormSection, 
+  EsprSpecificsFormSection, 
 } from "@/components/products/form"; 
 
 import { handleGenerateImageAI } from "@/utils/aiFormHelpers";
@@ -64,7 +64,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     defaultValues: {
       productName: initialData?.productName || "",
       gtin: initialData?.gtin || "",
-      productDetails: { // Ensure productDetails and its nested esprSpecifics are initialized
+      productDetails: { 
         description: initialData?.productDetails?.description || "",
         materials: initialData?.productDetails?.materials || "",
         sustainabilityClaims: initialData?.productDetails?.sustainabilityClaims || "",
@@ -81,6 +81,9 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           energyEfficiencySummary: initialData?.productDetails?.esprSpecifics?.energyEfficiencySummary || "",
           substanceOfConcernSummary: initialData?.productDetails?.esprSpecifics?.substanceOfConcernSummary || "",
         },
+        conflictMineralsReportUrl: initialData?.productDetails?.conflictMineralsReportUrl || "",
+        fairTradeCertificationId: initialData?.productDetails?.fairTradeCertificationId || "",
+        ethicalSourcingPolicyUrl: initialData?.productDetails?.ethicalSourcingPolicyUrl || "",
       },
       manufacturer: initialData?.manufacturer || "",
       modelNumber: initialData?.modelNumber || "",
@@ -90,9 +93,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       productCategory: initialData?.productCategory || "",
       onChainStatus: initialData?.onChainStatus || "Unknown", 
       onChainLifecycleStage: initialData?.onChainLifecycleStage || "Unknown", 
-      conflictMineralsReportUrl: initialData?.conflictMineralsReportUrl || "", 
-      fairTradeCertificationId: initialData?.fairTradeCertificationId || "", 
-      ethicalSourcingPolicyUrl: initialData?.ethicalSourcingPolicyUrl || "", 
+      
       batteryRegulation: initialData?.batteryRegulation ? {
         status: initialData.batteryRegulation.status || "not_applicable",
         batteryChemistry: initialData.batteryRegulation.batteryChemistry || "",
@@ -161,26 +162,12 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       },
       textileInformation: initialData?.textileInformation || { fiberComposition: [], isSecondHand: false }, 
       constructionProductInformation: initialData?.constructionProductInformation || { essentialCharacteristics: [] }, 
-      onChainStatus: initialData?.onChainStatus || "Unknown", 
-      onChainLifecycleStage: initialData?.onChainLifecycleStage || "Unknown", 
-
-      conflictMineralsReportUrl: initialData?.conflictMineralsReportUrl || "",
-      fairTradeCertificationId: initialData?.fairTradeCertificationId || "",
-      ethicalSourcingPolicyUrl: initialData?.ethicalSourcingPolicyUrl || "",
-
-      // AI Origin tracking fields - These are for internal form state, not part of DPP data model
+      
       productNameOrigin: initialData?.productNameOrigin,
-      productDescriptionOrigin: initialData?.productDetailsOrigin?.descriptionOrigin,
       manufacturerOrigin: initialData?.manufacturerOrigin,
       modelNumberOrigin: initialData?.modelNumberOrigin,
-      materialsOrigin: initialData?.productDetailsOrigin?.materialsOrigin,
-      sustainabilityClaimsOrigin: initialData?.productDetailsOrigin?.sustainabilityClaimsOrigin,
-      keyCompliancePointsOrigin: initialData?.productDetailsOrigin?.keyCompliancePointsOrigin,
-      specificationsOrigin: initialData?.productDetailsOrigin?.specificationsOrigin,
-      energyLabelOrigin: initialData?.productDetailsOrigin?.energyLabelOrigin,
-      imageUrlOrigin: initialData?.productDetailsOrigin?.imageUrlOrigin,
-      batteryRegulationOrigin: initialData?.batteryRegulationOrigin,
       productDetailsOrigin: initialData?.productDetailsOrigin,
+      batteryRegulationOrigin: initialData?.batteryRegulationOrigin,
     },
   });
 
@@ -222,9 +209,6 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         productCategory: initialData.productCategory || "",
         onChainStatus: initialData.onChainStatus || "Unknown", 
         onChainLifecycleStage: initialData.onChainLifecycleStage || "Unknown", 
-        conflictMineralsReportUrl: initialData.conflictMineralsReportUrl || "",
-        fairTradeCertificationId: initialData.fairTradeCertificationId || "",
-        ethicalSourcingPolicyUrl: initialData.ethicalSourcingPolicyUrl || "",
 
         productDetails: {
           description: initialData.productDetails?.description || "",
@@ -243,6 +227,9 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             energyEfficiencySummary: initialData.productDetails?.esprSpecifics?.energyEfficiencySummary || "",
             substanceOfConcernSummary: initialData.productDetails?.esprSpecifics?.substanceOfConcernSummary || "",
           },
+          conflictMineralsReportUrl: initialData.productDetails?.conflictMineralsReportUrl || "",
+          fairTradeCertificationId: initialData.productDetails?.fairTradeCertificationId || "",
+          ethicalSourcingPolicyUrl: initialData.productDetails?.ethicalSourcingPolicyUrl || "",
         },
         
         batteryRegulation: initialData.batteryRegulation ? {
@@ -314,17 +301,10 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         textileInformation: initialData.textileInformation || { fiberComposition: [], isSecondHand: false }, 
         constructionProductInformation: initialData.constructionProductInformation || { essentialCharacteristics: [] }, 
         productNameOrigin: initialData.productNameOrigin,
-        productDescriptionOrigin: initialData.productDetailsOrigin?.descriptionOrigin,
         manufacturerOrigin: initialData.manufacturerOrigin,
         modelNumberOrigin: initialData.modelNumberOrigin,
-        materialsOrigin: initialData.productDetailsOrigin?.materialsOrigin,
-        sustainabilityClaimsOrigin: initialData.productDetailsOrigin?.sustainabilityClaimsOrigin,
-        keyCompliancePointsOrigin: initialData.productDetailsOrigin?.keyCompliancePointsOrigin,
-        specificationsOrigin: initialData.productDetailsOrigin?.specificationsOrigin,
-        energyLabelOrigin: initialData.productDetailsOrigin?.energyLabelOrigin,
-        imageUrlOrigin: initialData.productDetailsOrigin?.imageUrlOrigin,
-        batteryRegulationOrigin: initialData.batteryRegulationOrigin,
         productDetailsOrigin: initialData.productDetailsOrigin,
+        batteryRegulationOrigin: initialData.batteryRegulationOrigin,
       });
     }
   }, [initialData, form]);
@@ -335,7 +315,6 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
   const handleFormSubmit = (data: ProductFormData) => {
     const transformedData = { ...data };
-    // Ensure numeric fields are null if empty, not NaN
     if (transformedData.batteryRegulation) {
         const br = transformedData.batteryRegulation;
         if (br.carbonFootprint) {
@@ -630,10 +609,93 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     );
   }
 
-  // This part is for when the form is embedded and not a standalone page
   return (
      <Form {...form}>
         <form id={id} onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">{formContent}</form>
     </Form>
   );
 }
+```
+- workspace/src/components/products/form/EthicalSourcingFormSection.tsx:
+```tsx
+// --- File: EthicalSourcingFormSection.tsx ---
+// Description: Form section component for ethical sourcing details.
+"use client";
+
+import React from "react";
+import type { UseFormReturn } from "react-hook-form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormDescription,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import type { ProductFormData } from "@/types/productFormTypes";
+
+interface EthicalSourcingFormSectionProps {
+  form: UseFormReturn<ProductFormData>;
+}
+
+export default function EthicalSourcingFormSection({
+  form,
+}: EthicalSourcingFormSectionProps) {
+  return (
+    <div className="space-y-6 pt-4">
+      <FormDescription>
+        Provide links or identifiers related to ethical sourcing practices for this product.
+      </FormDescription>
+
+      <FormField
+        control={form.control}
+        name="productDetails.conflictMineralsReportUrl"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Conflict Minerals Report URL (Optional)</FormLabel>
+            <FormControl><Input type="url" placeholder="https://example.com/reports/conflict-minerals.pdf" {...field} value={field.value || ""} /></FormControl>
+            <FormDescription>Link to your company's conflict minerals disclosure or report.</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="productDetails.fairTradeCertificationId"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Fair Trade Certification ID/Link (Optional)</FormLabel>
+            <FormControl><Input placeholder="e.g., FLOID 12345 or link to certificate" {...field} value={field.value || ""} /></FormControl>
+            <FormDescription>Identifier or URL for any Fair Trade certifications relevant to the product or its components.</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <FormField
+        control={form.control}
+        name="productDetails.ethicalSourcingPolicyUrl"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Ethical Sourcing Policy URL (Optional)</FormLabel>
+            <FormControl><Input type="url" placeholder="https://example.com/ethics/sourcing-policy.pdf" {...field} value={field.value || ""} /></FormControl>
+            <FormDescription>Link to your company's broader ethical sourcing or supplier code of conduct policy.</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+    </div>
+  );
+}
+
+```
+
+I've updated the necessary type definitions (`DigitalProductPassport`, `SimpleProductDetail`, `StoredUserProduct`, `RichMockProduct`, `PublicProductInfo`, `InitialProductFormData`) to include `conflictMineralsReportUrl`, `fairTradeCertificationId`, and `ethicalSourcingPolicyUrl` within the `productDetails` object. The Zod schema in `src/types/productFormTypes.ts` has also been updated.
+
+A new form section component, `EthicalSourcingFormSection.tsx`, has been created and added to the barrel file. This section is now integrated into the main `ProductForm.tsx` accordion.
+
+The `SustainabilityTab.tsx` and public passport viewer `src/app/passport/[passportId]/page.tsx` have been updated to display this new information. Mock data in `mockDpps.ts` and `mockPublicPassports.ts` has also been augmented with examples for these fields. Finally, `AddNewProductPage` and `productDetailUtils` have been adjusted to handle these new fields.
+
+This should allow users to input and view ethical sourcing information for their products.

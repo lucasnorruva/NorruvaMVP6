@@ -20,7 +20,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      {/* Font links directly under <html>. Next.js will move them to the generated <head>. */}
+      {/*
+        Next.js will automatically manage the <head> tag.
+        Font links are direct children of <html> and Next.js will optimize them.
+        Manifest and theme-color are handled by the metadata object.
+      */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link
@@ -30,8 +34,6 @@ export default function RootLayout({
       />
       <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
       <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
-      {/* The manifest and theme-color meta tags are handled by the metadata object. */}
-      {/* No explicit <head> tag should be here. */}
       <body className="font-body antialiased">
         <SkipToContent />
         <ServiceWorkerRegister />
@@ -43,3 +45,4 @@ export default function RootLayout({
     </html>
   );
 }
+

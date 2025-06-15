@@ -2,10 +2,9 @@
 "use client";
 // --- File: ProductForm.tsx ---
 // Description: Main form component for creating or editing product DPPs.
-// Imports for form sections now use the barrel file. Type imports from centralized types file.
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type UseFormReturn } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -40,12 +39,12 @@ import {
   TextileInformationFormSection,
   ConstructionProductInformationFormSection,
   EthicalSourcingFormSection
-} from "@/components/products/form"; // Single import from barrel
+} from "@/components/products/form"; 
 
 import { handleGenerateImageAI } from "@/utils/aiFormHelpers";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { CustomAttribute, BatteryRegulationDetails, CarbonFootprintData, StateOfHealthData, RecycledContentData, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from "@/types/dpp";
+import type { CustomAttribute } from "@/types/dpp";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ProductFormProps {

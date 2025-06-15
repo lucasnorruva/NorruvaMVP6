@@ -6,7 +6,7 @@
 import type { SimpleProductDetail } from "@/types/dpp";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Leaf, Zap, Recycle, Wrench, CheckCircle, AlertCircle, Info, Users, Handshake, ExternalLink, FileText, BarChart3, BookText } from "lucide-react"; // Added BookText
+import { Leaf, Zap, Recycle, Wrench, CheckCircle, AlertCircle, Info, Users, Handshake, ExternalLink, FileText, BarChart3, BookText, Cloud, Sun, Wind } from "lucide-react"; // Added Cloud, Sun, Wind
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -43,8 +43,7 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
 
   const hasEthicalSourcingInfo = product.conflictMineralsReportUrl || product.fairTradeCertificationId || product.ethicalSourcingPolicyUrl;
   const esprSpecifics = product.productDetails?.esprSpecifics;
-  const hasEsprSpecifics = esprSpecifics && Object.values(esprSpecifics).some(value => !!value);
-
+  const generalCarbonFootprint = product.productDetails?.carbonFootprint;
 
   return (
     <div className="grid md:grid-cols-2 gap-6">
@@ -96,10 +95,31 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
         </CardContent>
       </Card>
 
+      {generalCarbonFootprint && (generalCarbonFootprint.value !== null && generalCarbonFootprint.value !== undefined) && (
+        <Card className="shadow-sm md:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center">
+              <Cloud className="mr-2 h-5 w-5 text-sky-600" /> General Product Carbon Footprint
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <DetailItem label="Total Value" value={generalCarbonFootprint.value} unit={generalCarbonFootprint.unit} />
+            <DetailItem label="Calculation Method" value={generalCarbonFootprint.calculationMethod} />
+            <DetailItem label="Primary Data Source" value={generalCarbonFootprint.dataSource} />
+            <div className="grid md:grid-cols-3 gap-2 pt-2 border-t border-border/30 mt-2">
+                <DetailItem label="Scope 1" value={generalCarbonFootprint.scope1Emissions} unit={generalCarbonFootprint.unit?.replace('/kWh','')} />
+                <DetailItem label="Scope 2" value={generalCarbonFootprint.scope2Emissions} unit={generalCarbonFootprint.unit?.replace('/kWh','')} />
+                <DetailItem label="Scope 3" value={generalCarbonFootprint.scope3Emissions} unit={generalCarbonFootprint.unit?.replace('/kWh','')} />
+            </div>
+            {generalCarbonFootprint.vcId && <DetailItem label="Carbon Footprint VC ID" value={generalCarbonFootprint.vcId} />}
+          </CardContent>
+        </Card>
+      )}
+
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center">
-            <Zap className="mr-2 h-5 w-5 text-warning" /> Energy Efficiency
+            <Zap className="mr-2 h-5 w-5 text-yellow-500" /> Energy Efficiency
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-2">
@@ -151,24 +171,8 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
         </CardContent>
       </Card>
 
-      {hasEsprSpecifics && (
-        <Card className="shadow-sm md:col-span-2">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold flex items-center">
-              <BookText className="mr-2 h-5 w-5 text-purple-600" /> ESPR Ecodesign Parameters
-            </CardTitle>
-             <CardDescription>Narrative summaries for specific Ecodesign requirements.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <DetailItem label="Durability Information" value={esprSpecifics?.durabilityInformation} />
-            <DetailItem label="Substance of Concern Summary" value={esprSpecifics?.substanceOfConcernSummary} />
-            {/* Other ESPR fields already integrated or can be added as DetailItem here */}
-          </CardContent>
-        </Card>
-      )}
-
       {hasEthicalSourcingInfo && (
-        <Card className="shadow-sm md:col-span-2"> {/* Span full width on md screens */}
+        <Card className="shadow-sm md:col-span-2"> 
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
               <Handshake className="mr-2 h-5 w-5 text-purple-600" /> Ethical Sourcing & Supply Chain Transparency
@@ -189,16 +193,16 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
         <Card className="shadow-sm">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
-              <BarChart3 className="mr-2 h-5 w-5 text-red-500" /> Carbon Footprint (Battery)
+              <BarChart3 className="mr-2 h-5 w-5 text-red-500" /> Carbon Footprint (Battery Specific)
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
             <DetailItem label="Value" value={product.batteryRegulation.carbonFootprint.value} unit={product.batteryRegulation.carbonFootprint.unit} />
             <DetailItem label="Calculation Method" value={product.batteryRegulation.carbonFootprint.calculationMethod} />
             <DetailItem label="Data Source" value={product.batteryRegulation.carbonFootprint.dataSource} />
-            {product.batteryRegulation.carbonFootprint.scope1Emissions !== null && product.batteryRegulation.carbonFootprint.scope1Emissions !== undefined && <DetailItem label="Scope 1 Emissions" value={product.batteryRegulation.carbonFootprint.scope1Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh', '')} />}
-            {product.batteryRegulation.carbonFootprint.scope2Emissions !== null && product.batteryRegulation.carbonFootprint.scope2Emissions !== undefined &&  <DetailItem label="Scope 2 Emissions" value={product.batteryRegulation.carbonFootprint.scope2Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh', '')} />}
-            {product.batteryRegulation.carbonFootprint.scope3Emissions !== null && product.batteryRegulation.carbonFootprint.scope3Emissions !== undefined &&  <DetailItem label="Scope 3 Emissions" value={product.batteryRegulation.carbonFootprint.scope3Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh', '')} />}
+            {product.batteryRegulation.carbonFootprint.scope1Emissions !== null && product.batteryRegulation.carbonFootprint.scope1Emissions !== undefined && <DetailItem label="Scope 1 Emissions" value={product.batteryRegulation.carbonFootprint.scope1Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')} />}
+            {product.batteryRegulation.carbonFootprint.scope2Emissions !== null && product.batteryRegulation.carbonFootprint.scope2Emissions !== undefined &&  <DetailItem label="Scope 2 Emissions" value={product.batteryRegulation.carbonFootprint.scope2Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')} />}
+            {product.batteryRegulation.carbonFootprint.scope3Emissions !== null && product.batteryRegulation.carbonFootprint.scope3Emissions !== undefined &&  <DetailItem label="Scope 3 Emissions" value={product.batteryRegulation.carbonFootprint.scope3Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')} />}
             <DetailItem label="Carbon Footprint VC ID" value={product.batteryRegulation.carbonFootprint.vcId} />
           </CardContent>
         </Card>

@@ -1,5 +1,5 @@
 
-import type { PublicProductInfo, EsprSpecifics } from '@/types/dpp'; // Added EsprSpecifics
+import type { PublicProductInfo, CarbonFootprintData } from '@/types/dpp';
 
 export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
   "PROD001": {
@@ -61,13 +61,18 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
         chainName: "MockEthereum",
     },
     ethicalSourcingPolicyUrl: "https://greentech.com/ethics/sourcing-policy.pdf", 
-    productDetails: {
+    productDetails: { 
         esprSpecifics: {
             durabilityInformation: "Expected lifespan of 15+ years with proper maintenance. Key components tested for 20,000+ hours of operation.",
             repairabilityInformation: "Modular design. Spare parts (compressor, shelves, door seals) available for 10 years. Repair manual accessible via QR code.",
             recycledContentSummary: "Over 70% of steel used is certified post-consumer recycled content. Internal plastic components incorporate 25% recycled polymers.",
             energyEfficiencySummary: "A+++ EU Energy Label. Smart defrost and adaptive cooling technology minimize energy use. Annual consumption approx. 150 kWh.",
             substanceOfConcernSummary: "Fully RoHS compliant. All components screened for SVHCs above 0.1% w/w as per REACH, none present requiring SCIP notification for the main unit. Control panel assembly details in SCIP."
+        },
+        carbonFootprint: {
+          value: 350, unit: "kg CO2e/unit", calculationMethod: "ISO 14067",
+          scope1Emissions: 50, scope2Emissions: 100, scope3Emissions: 200,
+          dataSource: "Product LCA Study 2024", vcId: "vc:cf:dpp001:total:2024"
         }
     }
   },
@@ -96,6 +101,12 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ebsiStatus: 'pending',
     onChainStatus: "Pending Activation", 
     onChainLifecycleStage: "Manufacturing", 
+    productDetails: {
+      carbonFootprint: {
+        value: 2.5, unit: "kg CO2e/item", calculationMethod: "Higg MSI",
+        dataSource: "Internal Assessment 2024", vcId: "vc:cf:dpp002:total:2024"
+      }
+    },
     lifecycleHighlights: [
       { stage: "Manufacturing", date: "2024-03-01", details: "Produced in India, Fair Trade facility.", isEbsiVerified: true, iconName: "Factory" },
       { stage: "Imported to EU", date: "2024-03-15", details: "Cleared customs at Rotterdam Port, Netherlands.", isEbsiVerified: false, iconName: "Anchor" },
@@ -145,7 +156,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ebsiStatus: 'pending_verification',
     onChainStatus: "Active",
     onChainLifecycleStage: "InUse",
-    productDetails: {
+    productDetails: { 
         esprSpecifics: {
             durabilityInformation: "Expected service life of 50+ years when installed according to guidelines. Resistant to mould and pests.",
             repairabilityInformation: "Individual panels can be replaced if damaged. Standard fixing methods apply.",
@@ -210,7 +221,7 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
         tokenId: "101",
         chainName: "MockUserChain",
     },
-    productDetails: { // Ensure productDetails and esprSpecifics exists
+    productDetails: { 
         esprSpecifics: {
             durabilityInformation: "Handcrafted for longevity, joints reinforced. Oak wood chosen for its natural strength.",
             repairabilityInformation: "Can be re-sanded and re-oiled. Standard woodworking repairs possible."

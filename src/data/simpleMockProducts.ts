@@ -1,5 +1,5 @@
 
-import type { SimpleProductDetail, EsprSpecifics } from '@/types/dpp'; // Added EsprSpecifics
+import type { SimpleProductDetail, EsprSpecifics, CarbonFootprintData } from '@/types/dpp';
 
 export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
   {
@@ -45,7 +45,8 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
         { regulationName: "EU Ecodesign 2019/2019", status: "Compliant", verificationId: "ECOD001", lastChecked: "2024-06-15T00:00:00Z", detailsUrl: "#ecodesign-report" },
         { regulationName: "RoHS Directive 2011/65/EU", status: "Compliant", lastChecked: "2024-06-10T00:00:00Z" },
         { regulationName: "WEEE Directive 2012/19/EU", status: "Compliant", lastChecked: "2024-06-10T00:00:00Z" },
-      ]
+      ],
+      euCustomsData: { cbamGoodsIdentifier: "CBAM_REF_FRIDGE_STEEL_ALUM_001" },
     },
     lifecycleEvents: [
       { id: "lc001", eventName: "Manufacturing Complete", date: "2024-01-15T00:00:00Z", location: "EcoFactory, Germany", status: "Completed", iconName: "Factory" },
@@ -81,13 +82,18 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
         chainName: "MockEthereum",
     },
     ethicalSourcingPolicyUrl: "https://greentech.com/ethics/sourcing-policy.pdf",
-    productDetails: { // Added productDetails to ensure esprSpecifics can be nested
+    productDetails: { 
         esprSpecifics: {
             durabilityInformation: "Expected lifespan of 15+ years.",
             repairabilityInformation: "Modular design, spare parts available for 10 years.",
             recycledContentSummary: "Over 70% recycled steel used.",
             energyEfficiencySummary: "A+++ EU Energy Label. Smart defrost technology.",
             substanceOfConcernSummary: "RoHS compliant. No SVHCs above 0.1% w/w in main unit."
+        },
+        carbonFootprint: {
+          value: 350, unit: "kg CO2e/unit", calculationMethod: "ISO 14067",
+          scope1Emissions: 50, scope2Emissions: 100, scope3Emissions: 200,
+          dataSource: "Product LCA Study 2024", vcId: "vc:cf:dpp001:total:2024"
         }
     }
   }

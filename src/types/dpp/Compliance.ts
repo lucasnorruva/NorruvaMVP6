@@ -32,7 +32,7 @@ export interface ScipNotificationDetails {
   articleName?: string;
   primaryArticleId?: string;
   safeUseInstructionsLink?: string; // Should be a URL
-  lastChecked?: string; 
+  lastChecked?: string;
 }
 
 export interface EuCustomsDataDetails {
@@ -46,13 +46,14 @@ export interface EuCustomsDataDetails {
     value?: number | null;
     currency?: string; // ISO 4217
   };
-  lastChecked?: string; 
+  cbamGoodsIdentifier?: string; // Added for CBAM
+  lastChecked?: string;
 }
 
 export interface CarbonFootprintData {
-  value?: number | null; 
-  unit?: string; 
-  calculationMethod?: string; 
+  value?: number | null;
+  unit?: string;
+  calculationMethod?: string;
   scope1Emissions?: number | null;
   scope2Emissions?: number | null;
   scope3Emissions?: number | null;
@@ -61,16 +62,16 @@ export interface CarbonFootprintData {
 }
 
 export interface RecycledContentData {
-  material?: string; 
+  material?: string;
   percentage?: number | null;
-  source?: 'Pre-consumer' | 'Post-consumer' | 'Mixed' | string;
+  source?: 'Pre-consumer' | 'Post-consumer' | 'Mixed' | 'Unknown' | string;
   vcId?: string;
 }
 
 export interface StateOfHealthData {
-  value?: number | null; 
-  unit?: string; 
-  measurementDate?: string; 
+  value?: number | null;
+  unit?: string;
+  measurementDate?: string;
   measurementMethod?: string;
   vcId?: string;
 }
@@ -78,27 +79,34 @@ export interface StateOfHealthData {
 export interface BatteryRegulationDetails {
   status?: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable' | string;
   batteryChemistry?: string;
-  batteryPassportId?: string; 
+  batteryPassportId?: string;
   ratedCapacityAh?: number | null;
   nominalVoltage?: number | null;
   expectedLifetimeCycles?: number | null;
-  manufacturingDate?: string; 
+  manufacturingDate?: string;
   manufacturerName?: string;
-  carbonFootprint?: CarbonFootprintData;
+  carbonFootprint?: CarbonFootprintData; // Specific to battery
   recycledContent?: RecycledContentData[];
   stateOfHealth?: StateOfHealthData;
   recyclingEfficiencyRate?: number | null;
-  materialRecoveryRates?: { 
-    cobalt?: number | null; 
-    lead?: number | null;   
-    lithium?: number | null; 
-    nickel?: number | null;  
+  materialRecoveryRates?: {
+    cobalt?: number | null;
+    lead?: number | null;
+    lithium?: number | null;
+    nickel?: number | null;
   };
   dismantlingInformationUrl?: string;
   safetyInformationUrl?: string;
-  vcId?: string; 
+  vcId?: string;
 }
 
+export interface EsprSpecifics {
+  durabilityInformation?: string;
+  repairabilityInformation?: string;
+  recycledContentSummary?: string;
+  energyEfficiencySummary?: string;
+  substanceOfConcernSummary?: string;
+}
 
 export interface ComplianceDetailItem {
   regulationName: string;
@@ -115,27 +123,27 @@ export interface ProductComplianceSummary {
     id?: string;
     status: string;
     url?: string;
-    lastChecked: string; 
+    lastChecked: string;
   };
   ebsi?: {
     status: 'Verified' | 'Pending' | 'Not Verified' | 'Error' | 'N/A' | string;
     verificationId?: string;
     transactionUrl?: string;
-    lastChecked: string; 
+    lastChecked: string;
   };
   scip?: ScipNotificationDetails;
-  euCustomsData?: EuCustomsDataDetails;
+  euCustomsData?: EuCustomsDataDetails; // Will now include cbamGoodsIdentifier
   battery?: BatteryRegulationDetails;
   specificRegulations?: ComplianceDetailItem[];
 }
 
 export interface SimpleCertification {
-  id: string; 
+  id: string;
   name: string;
   authority: string;
   standard?: string;
-  issueDate: string; 
-  expiryDate?: string; 
+  issueDate: string;
+  expiryDate?: string;
   documentUrl?: string;
   isVerified?: boolean;
   vcId?: string;
@@ -155,7 +163,7 @@ export interface PublicCertification {
 
 export interface FiberCompositionEntry {
   fiberName: string;
-  percentage: number | null; 
+  percentage: number | null;
 }
 
 export interface TextileInformation {
@@ -183,11 +191,11 @@ export interface TransitProduct {
   id: string;
   name: string;
   stage: string;
-  eta: string; 
+  eta: string;
   dppStatus: ProductComplianceSummary['overallStatus'];
   transport: "Ship" | "Truck" | "Plane";
-  origin: string; 
-  destination: string; 
+  origin: string;
+  destination: string;
 }
 
 export interface CustomsAlert {
@@ -195,7 +203,7 @@ export interface CustomsAlert {
   productId: string;
   message: string;
   severity: "High" | "Medium" | "Low";
-  timestamp: string; 
+  timestamp: string;
   regulation?: string;
 }
 
@@ -203,9 +211,8 @@ export interface InspectionEvent {
   id: string;
   icon: React.ElementType;
   title: string;
-  timestamp: string; 
+  timestamp: string;
   description: string;
   status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
   badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
 }
-

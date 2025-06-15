@@ -4,9 +4,9 @@
 "use client";
 
 import { z } from "zod";
-import type { BatteryRegulationDetails, TextileInformation, ConstructionProductInformation, ScipNotificationDetails, EuCustomsDataDetails, EsprSpecifics } from './dpp';
+import type { BatteryRegulationDetails, TextileInformation, ConstructionProductInformation, ScipNotificationDetails, EuCustomsDataDetails, EsprSpecifics, CarbonFootprintData } from './dpp';
 
-export const carbonFootprintSchema = z.object({
+export const carbonFootprintSchema: z.ZodType<Partial<CarbonFootprintData>> = z.object({
   value: z.coerce.number().nullable().optional(),
   unit: z.string().optional(),
   calculationMethod: z.string().optional(),
@@ -41,7 +41,7 @@ export const batteryRegulationDetailsSchema: z.ZodType<Partial<BatteryRegulation
   expectedLifetimeCycles: z.coerce.number().nullable().optional(),
   manufacturingDate: z.string().optional(),
   manufacturerName: z.string().optional(),
-  carbonFootprint: carbonFootprintSchema.optional(),
+  carbonFootprint: carbonFootprintSchema.optional(), // Already uses the refined schema
   recycledContent: z.array(recycledContentSchema).optional(),
   stateOfHealth: stateOfHealthSchema.optional(),
   recyclingEfficiencyRate: z.coerce.number().nullable().optional(),
@@ -76,7 +76,7 @@ export const euCustomsDataFormSchema: z.ZodType<Partial<EuCustomsDataDetails>> =
   declarationId: z.string().optional(),
   hsCode: z.string().optional(),
   countryOfOrigin: z.string().optional(),
-  cbamGoodsIdentifier: z.string().optional(),
+  cbamGoodsIdentifier: z.string().optional(), // Added for CBAM
   netWeightKg: z.coerce.number().nullable().optional(),
   grossWeightKg: z.coerce.number().nullable().optional(),
   customsValuation: customsValuationSchema.optional(),
@@ -130,6 +130,7 @@ export const productDetailsSchema = z.object({
     conflictMineralsReportUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
     fairTradeCertificationId: z.string().optional(),
     ethicalSourcingPolicyUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+    carbonFootprint: carbonFootprintSchema.optional(), // Added general carbon footprint
 });
 
 export const formSchema = z.object({
@@ -160,7 +161,7 @@ export const formSchema = z.object({
         vcId: z.string().optional(),
     }).optional(),
     scipNotification: scipNotificationFormSchema.optional(),
-    euCustomsData: euCustomsDataFormSchema.optional(),
+    euCustomsData: euCustomsDataFormSchema.optional(), // Will include cbamGoodsIdentifier
     battery_regulation: batteryRegulationDetailsSchema.optional(), 
   }).optional(),
   
@@ -169,18 +170,22 @@ export const formSchema = z.object({
   onChainStatus: z.string().optional(), 
   onChainLifecycleStage: z.string().optional(), 
 
+  conflictMineralsReportUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+  fairTradeCertificationId: z.string().optional(),
+  ethicalSourcingPolicyUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+
+  // AI Origin tracking fields
   productNameOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  productDescriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   manufacturerOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   modelNumberOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  materialsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  sustainabilityClaimsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  keyCompliancePointsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  specificationsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  batteryRegulationOrigin: z.any().optional(), 
-  productDetailsOrigin: z.object({ 
+  productDetailsOrigin: z.object({
+    descriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    materialsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    sustainabilityClaimsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    keyCompliancePointsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    specificationsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     esprSpecificsOrigin: z.object({
       durabilityInformationOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
       repairabilityInformationOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
@@ -188,15 +193,18 @@ export const formSchema = z.object({
       energyEfficiencySummaryOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
       substanceOfConcernSummaryOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     }).optional(),
-    // Add origin tracking for ethical sourcing fields if needed, e.g.:
-    // conflictMineralsReportUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-    // fairTradeCertificationIdOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-    // ethicalSourcingPolicyUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    carbonFootprintOrigin: z.object({ // Added for general carbon footprint
+      valueOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      unitOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      calculationMethodOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      scope1EmissionsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      scope2EmissionsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      scope3EmissionsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      dataSourceOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      vcIdOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    }).optional(),
   }).optional(),
+  batteryRegulationOrigin: z.any().optional(), 
 });
 
 export type ProductFormData = z.infer<typeof formSchema>;
-```
-  </change>
-  <change>
-    <file>/src/components/products/form/EthicalSourcingFormSection

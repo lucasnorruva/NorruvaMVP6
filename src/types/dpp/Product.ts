@@ -5,7 +5,7 @@
 import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle';
 import type {
   Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification,
-  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, EsprSpecifics
+  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, EsprSpecifics, CarbonFootprintData
 } from './Compliance'; 
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -61,8 +61,6 @@ export interface OwnershipNftLink {
   chainName?: string;
 }
 
-// EsprSpecifics is already defined in Compliance.ts, ensuring it's used correctly here.
-
 export interface DigitalProductPassport {
   id: string;
   version?: number;
@@ -116,6 +114,7 @@ export interface DigitalProductPassport {
     ethicalSourcingPolicyUrl?: string; 
     keyCompliancePoints?: string; 
     esprSpecifics?: EsprSpecifics; 
+    carbonFootprint?: CarbonFootprintData; // Added general carbon footprint
   };
 
   textileInformation?: TextileInformation;
@@ -142,7 +141,7 @@ export interface DigitalProductPassport {
     us_scope3?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
     battery_regulation?: BatteryRegulationDetails; 
     scipNotification?: ScipNotificationDetails;
-    euCustomsData?: EuCustomsDataDetails;
+    euCustomsData?: EuCustomsDataDetails; // Will include cbamGoodsIdentifier
   };
 
   ebsiVerification?: EbsiVerificationDetails;
@@ -215,7 +214,7 @@ export interface SimpleProductDetail {
   ethicalSourcingPolicyUrl?: string; 
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
-    // Add ethical sourcing fields here if they are part of productDetails in SimpleProductDetail
+    carbonFootprint?: CarbonFootprintData; // Added general carbon footprint
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -263,7 +262,7 @@ export interface StoredUserProduct {
     eprel?: Partial<DigitalProductPassport['compliance']['eprel']>;
     esprConformity?: Partial<DigitalProductPassport['compliance']['esprConformity']>;
     scipNotification?: Partial<ScipNotificationDetails>;
-    euCustomsData?: Partial<EuCustomsDataDetails>;
+    euCustomsData?: Partial<EuCustomsDataDetails>; // Will include cbamGoodsIdentifier
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
@@ -278,6 +277,7 @@ export interface StoredUserProduct {
   ethicalSourcingPolicyUrl?: string; 
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
+    carbonFootprint?: CarbonFootprintData; // Added general carbon footprint
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -289,6 +289,16 @@ export interface StoredUserProduct {
       recycledContentSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
       energyEfficiencySummaryOrigin?: 'AI_EXTRACTED' | 'manual';
       substanceOfConcernSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
+    carbonFootprintOrigin?: { // Added for general carbon footprint
+        valueOrigin?: 'AI_EXTRACTED' | 'manual';
+        unitOrigin?: 'AI_EXTRACTED' | 'manual';
+        calculationMethodOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope1EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope2EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope3EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        dataSourceOrigin?: 'AI_EXTRACTED' | 'manual';
+        vcIdOrigin?: 'AI_EXTRACTED' | 'manual';
     };
     descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
     materialsOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -343,6 +353,7 @@ export interface RichMockProduct {
   ethicalSourcingPolicyUrl?: string; 
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
+    carbonFootprint?: CarbonFootprintData; // Added general carbon footprint
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -391,6 +402,7 @@ export interface PublicProductInfo {
   ethicalSourcingPolicyUrl?: string; 
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
+    carbonFootprint?: CarbonFootprintData; // Added general carbon footprint
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -454,6 +466,7 @@ export interface DisplayableProduct {
   ethicalSourcingPolicyUrl?: string; 
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
+    carbonFootprint?: CarbonFootprintData; // Added general carbon footprint
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -489,4 +502,7 @@ export interface TokenStatusResponse {
   ownerAddress: string;
   mintedAt: string; 
   metadataUri?: string | null;
-  last
+  lastTransactionHash?: string | null;
+  status: string; 
+  message?: string;
+}

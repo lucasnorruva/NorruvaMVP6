@@ -14,4 +14,4 @@ export { default as SustainabilityComplianceFormSection } from './Sustainability
 export { default as TechnicalSpecificationsFormSection } from './TechnicalSpecificationsFormSection';
 export { default as TextileInformationFormSection } from './TextileInformationFormSection';
 export { default as EsprSpecificsFormSection } from './EsprSpecificsFormSection';
-```
+export { default as CarbonFootprintFormSection } from './CarbonFootprintFormSection';

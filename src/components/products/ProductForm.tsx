@@ -18,7 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, ImageIcon as ImageIconLucide, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction as ConstructionIcon, Handshake, Recycle } from "lucide-react"; 
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, ImageIcon as ImageIconLucide, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction as ConstructionIcon, Handshake, Cloud } from "lucide-react"; 
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -42,6 +42,7 @@ import {
   ConstructionProductInformationFormSection,
   EthicalSourcingFormSection, 
   EsprSpecificsFormSection, 
+  CarbonFootprintFormSection, // Added CarbonFootprintFormSection
 } from "@/components/products/form"; 
 
 import { handleGenerateImageAI } from "@/utils/aiFormHelpers";
@@ -80,6 +81,11 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           recycledContentSummary: initialData?.productDetails?.esprSpecifics?.recycledContentSummary || "",
           energyEfficiencySummary: initialData?.productDetails?.esprSpecifics?.energyEfficiencySummary || "",
           substanceOfConcernSummary: initialData?.productDetails?.esprSpecifics?.substanceOfConcernSummary || "",
+        },
+        carbonFootprint: initialData?.productDetails?.carbonFootprint || { // Initialize carbonFootprint
+            value: null, unit: "", calculationMethod: "",
+            scope1Emissions: null, scope2Emissions: null, scope3Emissions: null,
+            dataSource: "", vcId: ""
         },
         conflictMineralsReportUrl: initialData?.productDetails?.conflictMineralsReportUrl || "",
         fairTradeCertificationId: initialData?.productDetails?.fairTradeCertificationId || "",
@@ -227,6 +233,11 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             energyEfficiencySummary: initialData.productDetails?.esprSpecifics?.energyEfficiencySummary || "",
             substanceOfConcernSummary: initialData.productDetails?.esprSpecifics?.substanceOfConcernSummary || "",
           },
+          carbonFootprint: initialData.productDetails?.carbonFootprint || { // Initialize carbonFootprint
+            value: null, unit: "", calculationMethod: "",
+            scope1Emissions: null, scope2Emissions: null, scope3Emissions: null,
+            dataSource: "", vcId: ""
+          },
           conflictMineralsReportUrl: initialData.productDetails?.conflictMineralsReportUrl || "",
           fairTradeCertificationId: initialData.productDetails?.fairTradeCertificationId || "",
           ethicalSourcingPolicyUrl: initialData.productDetails?.ethicalSourcingPolicyUrl || "",
@@ -340,6 +351,13 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             if (br.materialRecoveryRates.nickel === undefined || String(br.materialRecoveryRates.nickel).trim() === "") br.materialRecoveryRates.nickel = null;
         }
     }
+    if (transformedData.productDetails?.carbonFootprint) { // Ensure productDetails.carbonFootprint is also handled
+        const pcf = transformedData.productDetails.carbonFootprint;
+        if (pcf.value === undefined || String(pcf.value).trim() === "") pcf.value = null;
+        if (pcf.scope1Emissions === undefined || String(pcf.scope1Emissions).trim() === "") pcf.scope1Emissions = null;
+        if (pcf.scope2Emissions === undefined || String(pcf.scope2Emissions).trim() === "") pcf.scope2Emissions = null;
+        if (pcf.scope3Emissions === undefined || String(pcf.scope3Emissions).trim() === "") pcf.scope3Emissions = null;
+    }
     if (transformedData.compliance?.euCustomsData) {
         const cd = transformedData.compliance.euCustomsData;
         if(cd.netWeightKg === undefined || String(cd.netWeightKg).trim() === "") cd.netWeightKg = null;
@@ -412,7 +430,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   };
 
   const formContent = (
-    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-12', 'item-13', 'item-4', 'item-5', 'item-6', 'item-7', 'item-8', 'item-9', 'item-10', 'item-11']} className="w-full">
+    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-12', 'item-13', 'item-14', 'item-4', 'item-5', 'item-6', 'item-7', 'item-8', 'item-9', 'item-10', 'item-11']} className="w-full">
       <AccordionItem value="item-1">
         <AccordionTrigger className="text-lg font-semibold flex items-center"><FileText className="mr-2 h-5 w-5 text-primary" />Basic Information</AccordionTrigger>
         <AccordionContent>
@@ -455,6 +473,17 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             setSuggestedKeyCompliancePoints={setSuggestedKeyCompliancePoints}
             isSubmittingForm={!!isSubmitting}
             toast={toast}
+          />
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="item-14"> {/* New AccordionItem for Carbon Footprint */}
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><Cloud className="mr-2 h-5 w-5 text-primary" />Product Carbon Footprint</AccordionTrigger>
+        <AccordionContent>
+          <CarbonFootprintFormSection
+            form={form}
+            initialData={initialData}
+            // Pass other relevant props if needed, like AI suggestion helpers
           />
         </AccordionContent>
       </AccordionItem>
@@ -512,7 +541,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       </AccordionItem>
       
       <AccordionItem value="item-12">
-        <AccordionTrigger className="text-lg font-semibold flex items-center"><Recycle className="mr-2 h-5 w-5 text-primary" />ESPR Specifics (Ecodesign)</AccordionTrigger>
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><Leaf className="mr-2 h-5 w-5 text-green-600" />ESPR Specifics (Ecodesign)</AccordionTrigger>
         <AccordionContent>
           <EsprSpecificsFormSection form={form} initialData={initialData} />
         </AccordionContent>
@@ -615,87 +644,3 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
-```
-- workspace/src/components/products/form/EthicalSourcingFormSection.tsx:
-```tsx
-// --- File: EthicalSourcingFormSection.tsx ---
-// Description: Form section component for ethical sourcing details.
-"use client";
-
-import React from "react";
-import type { UseFormReturn } from "react-hook-form";
-import {
-  FormField,
-  FormItem,
-  FormLabel,
-  FormControl,
-  FormDescription,
-  FormMessage,
-} from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
-import type { ProductFormData } from "@/types/productFormTypes";
-
-interface EthicalSourcingFormSectionProps {
-  form: UseFormReturn<ProductFormData>;
-}
-
-export default function EthicalSourcingFormSection({
-  form,
-}: EthicalSourcingFormSectionProps) {
-  return (
-    <div className="space-y-6 pt-4">
-      <FormDescription>
-        Provide links or identifiers related to ethical sourcing practices for this product.
-      </FormDescription>
-
-      <FormField
-        control={form.control}
-        name="productDetails.conflictMineralsReportUrl"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Conflict Minerals Report URL (Optional)</FormLabel>
-            <FormControl><Input type="url" placeholder="https://example.com/reports/conflict-minerals.pdf" {...field} value={field.value || ""} /></FormControl>
-            <FormDescription>Link to your company's conflict minerals disclosure or report.</FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="productDetails.fairTradeCertificationId"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Fair Trade Certification ID/Link (Optional)</FormLabel>
-            <FormControl><Input placeholder="e.g., FLOID 12345 or link to certificate" {...field} value={field.value || ""} /></FormControl>
-            <FormDescription>Identifier or URL for any Fair Trade certifications relevant to the product or its components.</FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="productDetails.ethicalSourcingPolicyUrl"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Ethical Sourcing Policy URL (Optional)</FormLabel>
-            <FormControl><Input type="url" placeholder="https://example.com/ethics/sourcing-policy.pdf" {...field} value={field.value || ""} /></FormControl>
-            <FormDescription>Link to your company's broader ethical sourcing or supplier code of conduct policy.</FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    </div>
-  );
-}
-
-```
-
-I've updated the necessary type definitions (`DigitalProductPassport`, `SimpleProductDetail`, `StoredUserProduct`, `RichMockProduct`, `PublicProductInfo`, `InitialProductFormData`) to include `conflictMineralsReportUrl`, `fairTradeCertificationId`, and `ethicalSourcingPolicyUrl` within the `productDetails` object. The Zod schema in `src/types/productFormTypes.ts` has also been updated.
-
-A new form section component, `EthicalSourcingFormSection.tsx`, has been created and added to the barrel file. This section is now integrated into the main `ProductForm.tsx` accordion.
-
-The `SustainabilityTab.tsx` and public passport viewer `src/app/passport/[passportId]/page.tsx` have been updated to display this new information. Mock data in `mockDpps.ts` and `mockPublicPassports.ts` has also been augmented with examples for these fields. Finally, `AddNewProductPage` and `productDetailUtils` have been adjusted to handle these new fields.
-
-This should allow users to input and view ethical sourcing information for their products.

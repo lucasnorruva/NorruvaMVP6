@@ -15,13 +15,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { ProductFormData } from "@/components/products/ProductForm";
-// AiIndicator and AI helper imports are not needed for this initial version.
+import type { ProductFormData } from "@/types/productFormTypes";
 
 interface EuCustomsDataFormSectionProps {
   form: UseFormReturn<ProductFormData>;
-  // initialData?: Partial<InitialProductFormData>; // Not used in this simple version yet
-  // isSubmittingForm?: boolean; // Not used in this simple version yet
 }
 
 export default function EuCustomsDataFormSection({
@@ -89,6 +86,18 @@ export default function EuCustomsDataFormSection({
           </FormItem>
         )}
       />
+      <FormField
+        control={form.control}
+        name="compliance.euCustomsData.cbamGoodsIdentifier"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>CBAM Goods Identifier / Reference (Optional)</FormLabel>
+            <FormControl><Input placeholder="e.g., CBAM-REF-123" {...field} value={field.value || ""} /></FormControl>
+            <FormDescription>Identifier relevant for Carbon Border Adjustment Mechanism reporting, if applicable.</FormDescription>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
@@ -143,4 +152,3 @@ export default function EuCustomsDataFormSection({
     </div>
   );
 }
-

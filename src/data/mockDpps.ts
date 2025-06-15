@@ -1,5 +1,5 @@
 
-import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, EsprSpecifics } from '@/types/dpp'; // Added EsprSpecifics
+import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, CarbonFootprintData } from '@/types/dpp';
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
   {
@@ -42,12 +42,22 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         {key: "Country of Origin", value: "Germany"}
       ],
       ethicalSourcingPolicyUrl: "https://greentech.com/ethics/sourcing-policy.pdf", 
-      esprSpecifics: { // Added ESPR Specifics data for DPP001
+      esprSpecifics: { 
         durabilityInformation: "Expected lifespan of 15+ years with proper maintenance. Key components tested for 20,000+ hours of operation.",
         repairabilityInformation: "Modular design. Spare parts (compressor, shelves, door seals) available for 10 years. Repair manual accessible via QR code.",
         recycledContentSummary: "Over 70% of steel used is certified post-consumer recycled content. Internal plastic components incorporate 25% recycled polymers.",
         energyEfficiencySummary: "A+++ EU Energy Label. Smart defrost and adaptive cooling technology minimize energy use. Annual consumption approx. 150 kWh.",
         substanceOfConcernSummary: "Fully RoHS compliant. All components screened for SVHCs above 0.1% w/w as per REACH, none present requiring SCIP notification for the main unit. Control panel assembly details in SCIP."
+      },
+      carbonFootprint: { // General Product Carbon Footprint for DPP001
+        value: 350,
+        unit: "kg CO2e/unit",
+        calculationMethod: "ISO 14067",
+        scope1Emissions: 50,
+        scope2Emissions: 100,
+        scope3Emissions: 200,
+        dataSource: "Product LCA Study 2024",
+        vcId: "vc:cf:dpp001:total:2024"
       },
     },
     compliance: {
@@ -146,7 +156,6 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       { supplierId: "SUP002", suppliedItem: "Recycled Steel Panels (70%)", notes: "Certified post-consumer recycled content." }
     ]
   },
-  // ... (other products remain unchanged but would also benefit from having an esprSpecifics field if applicable)
   {
     id: "DPP002",
     productName: "Sustainable Cotton T-Shirt",
@@ -173,6 +182,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       conflictMineralsReportUrl: "https://ecothreads.com/reports/conflict-minerals-na.pdf", 
       fairTradeCertificationId: "FLOID12345", 
       ethicalSourcingPolicyUrl: "https://ecothreads.com/ethics/sourcing-policy.pdf", 
+      carbonFootprint: { // General Product Carbon Footprint for DPP002
+        value: 2.5,
+        unit: "kg CO2e/item",
+        calculationMethod: "Higg MSI",
+        dataSource: "Internal Assessment 2024",
+        vcId: "vc:cf:dpp002:total:2024"
+      },
     },
     textileInformation: {
       fiberComposition: [
@@ -240,6 +256,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
        { supplierId: "SUP003", suppliedItem: "Organic Cotton Yarn", notes: "GOTS Certified Supplier for all global production." }
     ]
   },
+  // ... (other products remain unchanged but would also benefit from having an esprSpecifics field if applicable and a productDetails.carbonFootprint field)
   {
     id: "DPP003",
     productName: "Recycled Polymer Phone Case",

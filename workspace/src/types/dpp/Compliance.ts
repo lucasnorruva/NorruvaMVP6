@@ -1,5 +1,5 @@
 
-// --- File: src/types/dpp/Compliance.ts ---
+// --- File: Compliance.ts ---
 // Description: Compliance related type definitions.
 import React from 'react'; // Ensure React is imported for React.ElementType
 
@@ -47,7 +47,7 @@ export interface EuCustomsDataDetails {
     value?: number | null;
     currency?: string; // ISO 4217
   };
-  cbamGoodsIdentifier?: string; // Added for CBAM
+  cbamGoodsIdentifier?: string;
   lastChecked?: string;
 }
 
@@ -101,7 +101,7 @@ export interface BatteryRegulationDetails {
   vcId?: string;
 }
 
-export interface EsprSpecifics { 
+export interface EsprSpecifics {
   durabilityInformation?: string;
   repairabilityInformation?: string;
   recycledContentSummary?: string;
@@ -134,7 +134,7 @@ export interface ProductComplianceSummary {
     lastChecked: string;
   };
   scip?: ScipNotificationDetails;
-  euCustomsData?: EuCustomsDataDetails; 
+  euCustomsData?: EuCustomsDataDetails;
   battery?: BatteryRegulationDetails;
   specificRegulations?: ComplianceDetailItem[];
 }
@@ -192,7 +192,7 @@ export interface ConstructionProductInformation {
 export interface TransitProduct {
   id: string;
   name: string;
-  category?: string; 
+  category?: string;
   stage: string;
   eta: string;
   dppStatus: ProductComplianceSummary['overallStatus'];
@@ -208,7 +208,7 @@ export interface CustomsAlert {
   severity: "High" | "Medium" | "Low";
   timestamp: string;
   regulation?: string;
-}
+} // <--- Ensured this closing brace is present
 
 export interface InspectionEvent {
   id: string;

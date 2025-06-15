@@ -1,3 +1,4 @@
+
 "use client";
 
 import React from "react";
@@ -29,14 +30,6 @@ export default function ConstructionProductInformationFormSection({
     control: form.control as Control<ProductFormData>, // Cast control type
     name: "constructionProductInformation.essentialCharacteristics",
   });
-
-  const addEssentialCharacteristic = () => {
-    append({ characteristicName: "", value: "", unit: "", testMethod: "" });
-  };
-
-  const removeEssentialCharacteristic = (index: number) => {
-    remove(index);
-  };
 
   return (
     <div className="space-y-6 pt-4"> {/* Added pt-4 for consistency */}
@@ -114,7 +107,7 @@ export default function ConstructionProductInformationFormSection({
             type="button"
             variant="outline"
             size="sm"
-            onClick={addEssentialCharacteristic}
+            onClick={() => append({ characteristicName: "", value: "", unit: "", testMethod: "" })}
           >
             <PlusCircle className="mr-2 h-4 w-4" />
             Add Characteristic
@@ -204,7 +197,7 @@ export default function ConstructionProductInformationFormSection({
                         type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => removeEssentialCharacteristic(index)}
+                        onClick={() => remove(index)}
                         className="ml-2"
                       >
                         <Trash2 className="h-4 w-4" />

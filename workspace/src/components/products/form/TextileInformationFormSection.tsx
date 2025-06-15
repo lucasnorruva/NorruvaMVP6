@@ -1,35 +1,33 @@
 
-// --- File: TextileInformationFormSection.tsx ---
-// Description: Form section component for Textile Product Information.
 "use client";
 
 import React from "react";
 import type { UseFormReturn, Control } from "react-hook-form"; // Added Control
 import { useFieldArray } from "react-hook-form"; // Added useFieldArray
+import { Button } from "@/components/ui/button";
 import {
   FormField,
   FormItem,
   FormLabel,
   FormControl,
-  FormDescription,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash2, PlusCircle } from "lucide-react";
-// Corrected: Import from the centralized types file
+import { Card, CardContent } from "@/components/ui/card";
+import { PlusCircle, Trash2, Shirt } from "lucide-react";
 import type { ProductFormData } from "@/types/productFormTypes";
 
 interface TextileInformationFormSectionProps {
   form: UseFormReturn<ProductFormData>;
 }
 
-export default function TextileInformationFormSection({
-  form,
+export default function TextileInformationFormSection({ 
+  form 
 }: TextileInformationFormSectionProps) {
-  const { fields, append, remove } = useFieldArray({
-    control: form.control as Control<ProductFormData>, 
+  const { fields, append, remove } = useFieldArray({ // Destructure from useFieldArray
+    control: form.control as Control<ProductFormData>, // Cast control type
     name: "textileInformation.fiberComposition",
   });
 

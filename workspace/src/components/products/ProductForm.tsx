@@ -18,9 +18,10 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, ImageIcon as ImageIconLucide, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction as ConstructionIcon, Handshake } from "lucide-react";
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, ImageIcon as ImageIconLucide, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction as ConstructionIcon, Handshake } from "lucide-react"; // Renamed ImageIcon
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Ensured Select is imported
 
 // Import types and schema from the centralized types file
 import type { ProductFormData } from "@/types/productFormTypes";
@@ -46,7 +47,7 @@ import { handleGenerateImageAI } from "@/utils/aiFormHelpers";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import type { CustomAttribute } from "@/types/dpp";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
 
 interface ProductFormProps {
   id?: string; 
@@ -582,6 +583,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     );
   }
 
+  // This part is for when the form is embedded and not a standalone page
   return (
      <Form {...form}>
         <form id={id} onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">{formContent}</form>

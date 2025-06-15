@@ -14,7 +14,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
+import { Checkbox } from "@/components/ui/checkbox"; // Ensured Checkbox is imported
 import { Card, CardContent } from "@/components/ui/card";
 import { PlusCircle, Trash2, Shirt } from "lucide-react";
 import type { ProductFormData } from "@/types/productFormTypes";
@@ -31,8 +31,14 @@ export default function TextileInformationFormSection({
     name: "textileInformation.fiberComposition",
   });
 
+  // Calculate total percentage
+  const totalPercentage = (fields || []).reduce((sum, fiberItem: any) => { // Cast fiberItem to any or proper type
+    const percentage = fiberItem.percentage || 0;
+    return sum + Number(percentage);
+  }, 0);
+
   return (
-    <div className="space-y-6 pt-4"> {/* Added pt-4 for consistency */}
+    <div className="space-y-6 pt-4"> 
       <FormDescription>
         Provide details specific to textile products, including fiber composition and care instructions.
       </FormDescription>
@@ -78,6 +84,26 @@ export default function TextileInformationFormSection({
           <PlusCircle className="mr-2 h-4 w-4" /> Add Fiber
         </Button>
       </div>
+      
+      {fields.length === 0 && (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+              <Shirt className="h-8 w-8 text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground">
+                No fiber composition defined yet.
+                <br />
+                Click "Add Fiber" to specify the textile composition.
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
+        {totalPercentage > 0 && totalPercentage !== 100 && (
+          <p className="text-sm text-amber-600">
+            Note: Total percentage should equal 100%. Current total: {totalPercentage}%
+          </p>
+        )}
+
 
       <FormField
         control={form.control}
@@ -126,3 +152,4 @@ export default function TextileInformationFormSection({
     </div>
   );
 }
+```

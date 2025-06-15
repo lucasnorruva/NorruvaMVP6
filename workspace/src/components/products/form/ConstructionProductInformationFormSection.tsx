@@ -14,7 +14,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea"; // Ensured Textarea is imported
 import { Card, CardContent } from "@/components/ui/card";
 import { PlusCircle, Trash2, FileText } from "lucide-react";
 import type { ProductFormData } from "@/types/productFormTypes";
@@ -32,7 +32,7 @@ export default function ConstructionProductInformationFormSection({
   });
 
   return (
-    <div className="space-y-6 pt-4"> {/* Added pt-4 for consistency */}
+    <div className="space-y-6 pt-4"> 
       <FormDescription>
         Provide details specific to construction products, such as Declaration of Performance (DoP) and CE marking.
       </FormDescription>
@@ -116,8 +116,8 @@ export default function ConstructionProductInformationFormSection({
 
         {fields.length > 0 && (
           <div className="space-y-4">
-            {fields.map((item, index) => ( // Changed _ to item
-              <Card key={item.id}> {/* Use item.id for key */}
+            {fields.map((item, index) => ( 
+              <Card key={item.id}> 
                 <CardContent className="pt-6">
                   <div className="grid gap-4">
                     <div className="flex items-start justify-between">
@@ -226,3 +226,4 @@ export default function ConstructionProductInformationFormSection({
     </div>
   );
 }
+```

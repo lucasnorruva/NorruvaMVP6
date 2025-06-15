@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import type { ProductFormData } from "@/types/productFormTypes";
+import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
 
 interface EthicalSourcingFormSectionProps {
   form: UseFormReturn<ProductFormData>;
@@ -70,3 +70,4 @@ export default function EthicalSourcingFormSection({
     </div>
   );
 }
+```

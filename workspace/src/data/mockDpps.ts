@@ -1,5 +1,5 @@
 
-import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, CarbonFootprintData } from '@/types/dpp';
+import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, CarbonFootprintData, DigitalTwinData } from '@/types/dpp';
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
   {
@@ -59,6 +59,12 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         dataSource: "Product LCA Study 2024",
         vcId: "vc:cf:dpp001:total:2024"
       },
+      digitalTwin: { // Added Digital Twin data
+        uri: "https://twins.greentech.com/refrigerator/X500-ECO/SN12345",
+        sensorDataEndpoint: "https://api.greentech.com/iot/X500-ECO/SN12345/data",
+        realTimeStatus: "Operational - Optimal Performance. Current Temp: 3°C. Energy Use: Low.",
+        predictiveMaintenanceAlerts: "- Compressor efficiency slightly reduced (5%), monitor.\n- Door seal integrity check recommended at next service."
+      }
     },
     compliance: {
       eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" },
@@ -294,7 +300,13 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       },
     },
     consumerScans: 2100,
-     productDetails: { description: "A recycled phone case."},
+     productDetails: { 
+      description: "A recycled phone case.",
+      digitalTwin: { // Added Digital Twin data
+        uri: "https://twins.recaseit.com/phonecase/RC-POLY-IP15/SN9876",
+        realTimeStatus: "In Use - No issues detected."
+      }
+    },
      blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0x789polymerAnchorHash000333"},
     documents: [],
     traceability: {
@@ -391,6 +403,12 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         {key: "Thermal Management", value: "Liquid Cooled"}
       ],
       conflictMineralsReportUrl: "https://powervolt.com/reports/conflict-minerals-2023.pdf", 
+      digitalTwin: { // Added Digital Twin data
+        uri: "https://twins.powervolt.com/evbattery/PV-EVB-75KWH/SN001",
+        sensorDataEndpoint: "https://api.powervolt.com/iot/evbattery/SN001/data",
+        realTimeStatus: "Charging - 75% SoC. Cell Temps Nominal.",
+        predictiveMaintenanceAlerts: "- Cooling fan #2 showing reduced RPM. Monitor.\n- Cell group 5 voltage slightly lower than average."
+      }
     },
     compliance: {
       eprel: { status: "Not Applicable", lastChecked: "2024-07-28T00:00:00Z" }, 

@@ -15,8 +15,9 @@ import SupplyChainTab from './SupplyChainTab';
 import CertificationsTab from './CertificationsTab';
 import QrCodeTab from './QrCodeTab';
 import HistoryTab from './HistoryTab';
+import DigitalTwinTab from './DigitalTwinTab'; // Added DigitalTwinTab
 
-import { Package, Leaf, ShieldCheck, History as HistoryIcon, Layers, Award, QrCode, Handshake } from 'lucide-react';
+import { Package, Leaf, ShieldCheck, History as HistoryIcon, Layers, Award, QrCode, Cpu } from 'lucide-react'; // Added Cpu icon
 
 
 interface ProductContainerProps {
@@ -47,6 +48,7 @@ export default function ProductContainer({
     { value: "certifications", label: "Certifications", icon: Award },
     { value: "lifecycle", label: "Lifecycle", icon: HistoryIcon },
     { value: "supplyChain", label: "Supply Chain", icon: Layers },
+    { value: "digitalTwin", label: "Digital Twin", icon: Cpu }, // Added Digital Twin tab
     { value: "history", label: "History", icon: HistoryIcon },
     { value: "qrCode", label: "QR Code", icon: QrCode },
   ];
@@ -56,12 +58,12 @@ export default function ProductContainer({
       <ProductHeader product={product} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-8 gap-2 h-auto p-1.5">
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-1 h-auto p-1.5"> {/* Adjusted grid cols for more tabs */}
           {tabItems.map(tab => (
             <TabsTrigger 
               key={tab.value} 
               value={tab.value} 
-              className="flex items-center gap-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm"
+              className="flex items-center gap-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm text-xs sm:text-sm"
             >
               <tab.icon className="h-4 w-4" /> {tab.label}
             </TabsTrigger>
@@ -96,15 +98,20 @@ export default function ProductContainer({
          <TabsContent value="supplyChain" className="mt-6">
           <SupplyChainTab product={product} onSupplyChainLinksChange={onSupplyChainUpdate} />
         </TabsContent>
+        
+        <TabsContent value="digitalTwin" className="mt-6"> {/* Added TabsContent for Digital Twin */}
+          <DigitalTwinTab product={product} />
+        </TabsContent>
 
         <TabsContent value="history" className="mt-6">
           <HistoryTab productId={product.id} />
         </TabsContent>
 
-        <TabsContent value="qrCode" className="mt-6">
+        <TabsContent value="qrCode" className="mt-6"> 
           <QrCodeTab productId={product.id} productName={product.productName} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
+    

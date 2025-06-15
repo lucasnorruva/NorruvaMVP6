@@ -62,6 +62,13 @@ export interface OwnershipNftLink {
   chainName?: string;
 }
 
+export interface DigitalTwinData {
+  uri?: string; // URI to the digital twin platform or specific twin instance
+  sensorDataEndpoint?: string; // Endpoint to fetch live sensor data (conceptual)
+  realTimeStatus?: string; // Textual description of the current operational status
+  predictiveMaintenanceAlerts?: string; // Textual list of current maintenance alerts
+}
+
 export interface DigitalProductPassport {
   id: string;
   version?: number;
@@ -116,6 +123,7 @@ export interface DigitalProductPassport {
     keyCompliancePoints?: string; 
     esprSpecifics?: EsprSpecifics; 
     carbonFootprint?: CarbonFootprintData; 
+    digitalTwin?: DigitalTwinData; // Added digitalTwin
   };
 
   textileInformation?: TextileInformation;
@@ -216,9 +224,21 @@ export interface SimpleProductDetail {
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
     carbonFootprint?: CarbonFootprintData; 
+    digitalTwin?: DigitalTwinData; // Added digitalTwin
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
+    description?: string; 
+    imageUrl?: string;
+    imageHint?: string;
+    materials?: Array<{ name: string; percentage?: number; origin?: string; isRecycled?: boolean; recycledContentPercentage?: number }>;
+    sustainabilityClaims?: Array<{ claim: string; evidenceVcId?: string; verificationDetails?: string }>;
+    energyLabel?: string;
+    repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
+    recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
+    specifications?: string; 
+    customAttributes?: CustomAttribute[];
+    keyCompliancePoints?: string; 
   };
 }
 
@@ -291,6 +311,12 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
         dataSourceOrigin?: 'AI_EXTRACTED' | 'manual';
         vcIdOrigin?: 'AI_EXTRACTED' | 'manual';
     };
+    digitalTwinOrigin?: { // Added digitalTwinOrigin
+        uriOrigin?: 'AI_EXTRACTED' | 'manual';
+        sensorDataEndpointOrigin?: 'AI_EXTRACTED' | 'manual';
+        realTimeStatusOrigin?: 'AI_EXTRACTED' | 'manual';
+        predictiveMaintenanceAlertsOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
   };
   batteryRegulationOrigin?: any; 
 }
@@ -339,6 +365,7 @@ export interface RichMockProduct {
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
     carbonFootprint?: CarbonFootprintData; 
+    digitalTwin?: DigitalTwinData; // Added digitalTwin
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -399,11 +426,11 @@ export interface PublicProductInfo {
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
     carbonFootprint?: CarbonFootprintData; 
+    digitalTwin?: DigitalTwinData; // Added digitalTwin
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
   };
-  // Added for Task 24
   status?: DigitalProductPassport['metadata']['status']; 
   lastUpdated?: string; 
 }
@@ -466,6 +493,7 @@ export interface DisplayableProduct {
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
     carbonFootprint?: CarbonFootprintData; 
+    digitalTwin?: DigitalTwinData; // Added digitalTwin
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -542,6 +570,12 @@ export type InitialProductFormData = Omit<ProductFormData, 'productDetailsOrigin
         scope3EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
         dataSourceOrigin?: 'AI_EXTRACTED' | 'manual';
         vcIdOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
+    digitalTwinOrigin?: { // Added digitalTwinOrigin
+        uriOrigin?: 'AI_EXTRACTED' | 'manual';
+        sensorDataEndpointOrigin?: 'AI_EXTRACTED' | 'manual';
+        realTimeStatusOrigin?: 'AI_EXTRACTED' | 'manual';
+        predictiveMaintenanceAlertsOrigin?: 'AI_EXTRACTED' | 'manual';
     };
   };
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];

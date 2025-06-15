@@ -1,5 +1,5 @@
 
-import type { PublicProductInfo } from '@/types/dpp';
+import type { PublicProductInfo, CarbonFootprintData, DigitalTwinData } from '@/types/dpp'; // Added DigitalTwinData
 
 export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
   "PROD001": {
@@ -33,8 +33,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ebsiVerificationId: "EBSI-VC-XYZ-00123",
     onChainStatus: "Active", 
     onChainLifecycleStage: "InUse", 
-    status: "published", // Added for Task 24
-    lastUpdated: "2024-07-30T10:00:00Z", // Added for Task 24
+    status: "published", 
+    lastUpdated: "2024-07-30T10:00:00Z", 
     lifecycleHighlights: [
       { stage: "Manufacturing", date: "Jan 2024", details: "Produced in our green-certified facility in Germany.", isEbsiVerified: true, iconName: "Factory" },
       { stage: "Shipped", date: "Feb 2024", details: "Transported via low-emission logistics partners to EU distribution centers.", isEbsiVerified: false, iconName: "Truck" },
@@ -75,7 +75,16 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
           value: 350, unit: "kg CO2e/unit", calculationMethod: "ISO 14067",
           scope1Emissions: 50, scope2Emissions: 100, scope3Emissions: 200,
           dataSource: "Product LCA Study 2024", vcId: "vc:cf:dpp001:total:2024"
+        },
+        digitalTwin: { // Added Digital Twin data
+            uri: "https://twins.greentech.com/refrigerator/X500-ECO/SN12345",
+            sensorDataEndpoint: "https://api.greentech.com/iot/X500-ECO/SN12345/data",
+            realTimeStatus: "Operational - Optimal Performance. Current Temp: 3°C. Energy Use: Low.",
+            predictiveMaintenanceAlerts: "- Compressor efficiency slightly reduced (5%), monitor.\n- Door seal integrity check recommended at next service."
         }
+    },
+    compliance: { // Added for Task 21
+      euCustomsData: { cbamGoodsIdentifier: "CBAM_REF_FRIDGE_STEEL_ALUM_001" }
     }
   },
   "PROD002": {
@@ -103,8 +112,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ebsiStatus: 'pending',
     onChainStatus: "Pending Activation", 
     onChainLifecycleStage: "Manufacturing", 
-    status: "draft", // Added for Task 24
-    lastUpdated: "2024-07-25T14:30:00Z", // Added for Task 24
+    status: "draft", 
+    lastUpdated: "2024-07-25T14:30:00Z", 
     productDetails: {
       carbonFootprint: {
         value: 2.5, unit: "kg CO2e/item", calculationMethod: "Higg MSI",
@@ -137,6 +146,9 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     conflictMineralsReportUrl: "https://ecothreads.com/reports/conflict-minerals-na.pdf", 
     fairTradeCertificationId: "FLOID12345 (Fair Trade International)", 
     ethicalSourcingPolicyUrl: "https://ecothreads.com/ethics/sourcing-policy.pdf", 
+    compliance: { // Added for Task 21
+      euCustomsData: { cbamGoodsIdentifier: "CBAM_TEXTILE_COTTON_002" }
+    }
   },
   "PROD006": { 
     passportId: "PROD006",
@@ -160,8 +172,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ebsiStatus: 'pending_verification',
     onChainStatus: "Active",
     onChainLifecycleStage: "InUse",
-    status: "published", // Added for Task 24
-    lastUpdated: "2024-08-01T10:00:00Z", // Added for Task 24
+    status: "published", 
+    lastUpdated: "2024-08-01T10:00:00Z", 
     productDetails: { 
         esprSpecifics: {
             durabilityInformation: "Expected service life of 50+ years when installed according to guidelines. Resistant to mould and pests.",
@@ -169,6 +181,11 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
             recycledContentSummary: "Primarily composed of 85% post-consumer recycled cellulose fibers.",
             energyEfficiencySummary: "Contributes significantly to building energy efficiency due to high R-50 thermal resistance.",
             substanceOfConcernSummary: "Does not contain added formaldehyde. Non-halogenated fire retardants used, below SVHC thresholds."
+        },
+        digitalTwin: { // Added Digital Twin data
+            uri: "https://twins.buildgreen.com/insulation/ESP-R50/Lot789",
+            realTimeStatus: "Installed. Performance monitoring active.",
+            predictiveMaintenanceAlerts: "- No alerts."
         }
     },
     lifecycleHighlights: [
@@ -188,6 +205,9 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
         { characteristicName: "Reaction to Fire", value: "Euroclass B-s1, d0", testMethod: "EN 13501-1" },
       ]
     },
+    compliance: { // Added for Task 21
+      euCustomsData: { cbamGoodsIdentifier: "CBAM_INSULATION_MINERALWOOL_003" }
+    }
   },
   "USER_PROD123456": {
     passportId: "USER_PROD123456",
@@ -213,8 +233,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     tokenId: "UP_TOKEN_123",
     onChainStatus: "Draft", 
     onChainLifecycleStage: "Design", 
-    status: "draft", // Added for Task 24
-    lastUpdated: new Date().toISOString(), // Added for Task 24
+    status: "draft", 
+    lastUpdated: new Date().toISOString(), 
     certifications: [], 
     documents: [],
     customAttributes: [

@@ -42,7 +42,8 @@ import {
   ConstructionProductInformationFormSection,
   EthicalSourcingFormSection, 
   EsprSpecificsFormSection, 
-  CarbonFootprintFormSection, 
+  CarbonFootprintFormSection,
+  DigitalTwinFormSection, // Added DigitalTwinFormSection
 } from "@/components/products/form"; 
 
 import { handleGenerateImageAI } from "@/utils/aiFormHelpers";
@@ -57,9 +58,9 @@ interface ProductFormProps {
   onSubmit: (data: ProductFormData) => Promise<void>;
   isSubmitting?: boolean;
   isStandalonePage?: boolean;
-  categoryComplianceSummary?: string | null; // Task 12
-  isLoadingCategoryCompliance?: boolean; // Task 12
-  onFetchCategoryComplianceSummary?: (category: string, focusedRegulations?: string) => void; // Task 12
+  categoryComplianceSummary?: string | null; 
+  isLoadingCategoryCompliance?: boolean; 
+  onFetchCategoryComplianceSummary?: (category: string, focusedRegulations?: string) => void; 
 }
 
 export default function ProductForm({ id, initialData, onSubmit, isSubmitting, isStandalonePage = true, categoryComplianceSummary, isLoadingCategoryCompliance, onFetchCategoryComplianceSummary }: ProductFormProps) {
@@ -89,6 +90,9 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             value: null, unit: "", calculationMethod: "",
             scope1Emissions: null, scope2Emissions: null, scope3Emissions: null,
             dataSource: "", vcId: ""
+        },
+        digitalTwin: initialData?.productDetails?.digitalTwin || { // Added digitalTwin default
+          uri: "", sensorDataEndpoint: "", realTimeStatus: "", predictiveMaintenanceAlerts: ""
         },
         conflictMineralsReportUrl: initialData?.productDetails?.conflictMineralsReportUrl || "",
         fairTradeCertificationId: initialData?.productDetails?.fairTradeCertificationId || "",
@@ -171,6 +175,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       },
       textileInformation: initialData?.textileInformation || { fiberComposition: [], isSecondHand: false }, 
       constructionProductInformation: initialData?.constructionProductInformation || { essentialCharacteristics: [] }, 
+      onChainStatus: initialData?.onChainStatus || "Unknown", 
+      onChainLifecycleStage: initialData?.onChainLifecycleStage || "Unknown", 
       
       productNameOrigin: initialData?.productNameOrigin,
       manufacturerOrigin: initialData?.manufacturerOrigin,
@@ -240,6 +246,9 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             value: null, unit: "", calculationMethod: "",
             scope1Emissions: null, scope2Emissions: null, scope3Emissions: null,
             dataSource: "", vcId: ""
+          },
+          digitalTwin: initialData.productDetails?.digitalTwin || { // Added digitalTwin default
+            uri: "", sensorDataEndpoint: "", realTimeStatus: "", predictiveMaintenanceAlerts: ""
           },
           conflictMineralsReportUrl: initialData.productDetails?.conflictMineralsReportUrl || "",
           fairTradeCertificationId: initialData.productDetails?.fairTradeCertificationId || "",
@@ -433,7 +442,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   };
 
   const formContent = (
-    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-12', 'item-13', 'item-4', 'item-14', 'item-5', 'item-6', 'item-7', 'item-8', 'item-9', 'item-10', 'item-11']} className="w-full">
+    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-12', 'item-13', 'item-4', 'item-14', 'item-15', 'item-5', 'item-6', 'item-7', 'item-8', 'item-9', 'item-10', 'item-11']} className="w-full">
       <AccordionItem value="item-1">
         <AccordionTrigger className="text-lg font-semibold flex items-center"><FileText className="mr-2 h-5 w-5 text-primary" />Basic Information</AccordionTrigger>
         <AccordionContent>
@@ -504,6 +513,15 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         <AccordionTrigger className="text-lg font-semibold flex items-center"><Leaf className="mr-2 h-5 w-5 text-green-600" />ESPR Specifics (Ecodesign)</AccordionTrigger>
         <AccordionContent>
           <EsprSpecificsFormSection form={form} initialData={initialData} />
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="item-15"> {/* Added for Digital Twin */}
+        <AccordionTrigger className="text-lg font-semibold flex items-center">
+          <Cpu className="mr-2 h-5 w-5 text-primary" /> Digital Twin (Conceptual)
+        </AccordionTrigger>
+        <AccordionContent>
+          <DigitalTwinFormSection form={form} initialData={initialData} />
         </AccordionContent>
       </AccordionItem>
 

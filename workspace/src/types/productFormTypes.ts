@@ -1,9 +1,10 @@
+
 // --- File: src/types/productFormTypes.ts ---
 // Description: Type definitions and Zod schemas for the product form.
 "use client";
 
 import { z } from "zod";
-import type { EsprSpecifics, CarbonFootprintData, BatteryRegulationDetails, TextileInformation, ConstructionProductInformation, ScipNotificationDetails, EuCustomsDataDetails } from './dpp'; // Ensure EsprSpecifics and CarbonFootprintData are imported
+import type { EsprSpecifics, CarbonFootprintData, BatteryRegulationDetails, TextileInformation, ConstructionProductInformation, ScipNotificationDetails, EuCustomsDataDetails, DigitalTwinData } from './dpp'; // Added DigitalTwinData
 
 export const carbonFootprintSchema: z.ZodType<Partial<CarbonFootprintData>> = z.object({
   value: z.coerce.number().nullable().optional(),
@@ -78,7 +79,7 @@ export const euCustomsDataFormSchema: z.ZodType<Partial<EuCustomsDataDetails>> =
   netWeightKg: z.coerce.number().nullable().optional(),
   grossWeightKg: z.coerce.number().nullable().optional(),
   customsValuation: customsValuationSchema.optional(),
-  cbamGoodsIdentifier: z.string().optional(), // Ensure this is present
+  cbamGoodsIdentifier: z.string().optional(),
 });
 
 export const fiberCompositionEntrySchema = z.object({
@@ -115,6 +116,13 @@ export const esprSpecificsSchema: z.ZodType<Partial<EsprSpecifics>> = z.object({
   substanceOfConcernSummary: z.string().optional(),
 });
 
+export const digitalTwinSchema: z.ZodType<Partial<DigitalTwinData>> = z.object({ // Added schema
+  uri: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+  sensorDataEndpoint: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+  realTimeStatus: z.string().optional(),
+  predictiveMaintenanceAlerts: z.string().optional(), // Stored as a string, UI can handle newlines
+});
+
 export const productDetailsSchema = z.object({
     description: z.string().optional(),
     imageUrl: z.string().url("Must be a valid URL or Data URI, or empty").or(z.literal("")).optional(),
@@ -130,6 +138,7 @@ export const productDetailsSchema = z.object({
     fairTradeCertificationId: z.string().optional(),
     ethicalSourcingPolicyUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
     carbonFootprint: carbonFootprintSchema.optional(),
+    digitalTwin: digitalTwinSchema.optional(), // Added digitalTwin
 });
 
 export const formSchema = z.object({
@@ -160,7 +169,7 @@ export const formSchema = z.object({
         vcId: z.string().optional(),
     }).optional(),
     scipNotification: scipNotificationFormSchema.optional(),
-    euCustomsData: euCustomsDataFormSchema.optional(), // Uses the updated schema
+    euCustomsData: euCustomsDataFormSchema.optional(),
     battery_regulation: batteryRegulationDetailsSchema.optional(), 
   }).optional(),
   
@@ -169,12 +178,10 @@ export const formSchema = z.object({
   onChainStatus: z.string().optional(), 
   onChainLifecycleStage: z.string().optional(), 
 
-  // AI Origin tracking fields are directly on ProductFormData, not nested in productDetails for top-level fields
   productNameOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   manufacturerOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   modelNumberOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   
-  // AI Origin tracking for fields within productDetails
   productDetailsOrigin: z.object({
     descriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     materialsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
@@ -200,10 +207,15 @@ export const formSchema = z.object({
         dataSourceOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
         vcIdOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     }).optional(),
+    digitalTwinOrigin: z.object({ // Added digitalTwinOrigin
+        uriOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+        sensorDataEndpointOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+        realTimeStatusOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+        predictiveMaintenanceAlertsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    }).optional(),
   }).optional(),
   
-  // AI Origin tracking for fields within batteryRegulation
-  batteryRegulationOrigin: z.any().optional(), // Kept as any for simplicity, can be detailed if needed
+  batteryRegulationOrigin: z.any().optional(), 
 });
 
 export type ProductFormData = z.infer<typeof formSchema>;

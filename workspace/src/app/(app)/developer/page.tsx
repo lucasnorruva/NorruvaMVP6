@@ -1,4 +1,3 @@
-
 // --- File: page.tsx (Developer Portal) ---
 // Description: Main page for the Developer Portal, providing access to API keys, documentation, and tools.
 "use client";
@@ -43,10 +42,10 @@ import QuickActionsCard from '@/components/developer/dashboard/QuickActionsCard'
 
 
 const initialMockApiKeys: ApiKey[] = [
-  { id: "key_sandbox_1", key: "SANDBOX_KEY_123", type: "Sandbox", created: "2024-07-01", lastUsed: "2024-07-28", status: "Active" },
-  { id: "key_prod_req_1", key: "N/A (Request Pending)", type: "Production", created: "2024-07-25", lastUsed: "N/A", status: "Pending Approval" },
-  { id: "key_prod_active_1", key: "PROD_KEY_456", type: "Production", created: "2024-06-15", lastUsed: "2024-07-29", status: "Active" },
-  { id: "key_sandbox_revoked_1", key: "sand_sk_xxxxWXYZrevoked", type: "Sandbox", created: "2024-05-10", lastUsed: "2024-05-12", status: "Revoked" },
+  { id: "key_sandbox_1", key: "SANDBOX_KEY_123", type: "Sandbox", created: "2024-07-01", lastUsed: "2024-07-28", status: "Active", scopes: ["dpp:read", "dpp:write:sandbox", "qr:validate", "compliance:read"] },
+  { id: "key_prod_req_1", key: "N/A (Request Pending)", type: "Production", created: "2024-07-25", lastUsed: "N/A", status: "Pending Approval", scopes: ["pending_activation"] },
+  { id: "key_prod_active_1", key: "PROD_KEY_456", type: "Production", created: "2024-06-15", lastUsed: "2024-07-29", status: "Active", scopes: ["dpp:read", "dpp:write:production", "compliance:read", "ebsi:verify"] },
+  { id: "key_sandbox_revoked_1", key: "sand_sk_xxxxWXYZrevoked", type: "Sandbox", created: "2024-05-10", lastUsed: "2024-05-12", status: "Revoked", scopes: [] },
 ];
 
 const initialMockWebhooks: WebhookEntry[] = [
@@ -354,7 +353,8 @@ export default function DeveloperPortalPage() {
       type: "Sandbox",
       created: new Date().toISOString().split('T')[0],
       lastUsed: "Never",
-      status: "Active"
+      status: "Active",
+      scopes: ["dpp:read", "dpp:write:sandbox"] 
     };
     setApiKeys(prevKeys => [newKey, ...prevKeys]);
     toast({ title: "Sandbox Key Generated", description: `New key ${newKey.key.substring(0,12)}... created.` });
@@ -368,7 +368,8 @@ export default function DeveloperPortalPage() {
       type: "Production",
       created: new Date().toISOString().split('T')[0],
       lastUsed: "N/A",
-      status: "Pending Approval"
+      status: "Pending Approval",
+      scopes: ["pending_activation"] 
     };
     setApiKeys(prevKeys => [newRequest, ...prevKeys]);
     toast({ title: "Production Key Requested", description: "Your request for a production key has been submitted (mock)." });
@@ -418,7 +419,7 @@ export default function DeveloperPortalPage() {
     setLoading(true);
     setResponse(null);
     
-    const apiKeyToUse = apiKeys.find(k => k.type.toLowerCase() === currentEnvironment && k.status === 'Active')?.key || 'SANDBOX_KEY_123'; // Fallback to static key if none found
+    const apiKeyToUse = apiKeys.find(k => k.type.toLowerCase() === currentEnvironment && k.status === 'Active')?.key || 'SANDBOX_KEY_123'; 
 
     toast({ 
       title: `Sending API Request (via Playground)...`, 
@@ -481,7 +482,7 @@ export default function DeveloperPortalPage() {
   const handleMockZkpSubmitProof = () => { updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet); makeApiCall(`/api/v1/zkp/submit-proof/${zkpSubmitDppId}`, 'POST', zkpSubmitBody, setIsZkpSubmitLoading, setZkpSubmitResponse); }
   const handleMockZkpVerifyClaim = () => { updateSnippet("zkpVerifyClaim", "GET", zkpVerifySnippetLang, { dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType }, null, setZkpVerifyCodeSnippet); makeApiCall(`/api/v1/zkp/verify-claim/${zkpVerifyDppId}?claimType=${encodeURIComponent(zkpVerifyClaimType)}`, 'GET', null, setIsZkpVerifyLoading, setZkpVerifyResponse); }
 
-  const handleMockMintToken = () => { updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet); makeApiCall(`/api/v1/token/mint/${mintTokenProductId}`, 'POST', mintTokenBody, setIsMintTokenLoading, setMintTokenResponsePlayground); }
+  const handleMockMintToken = () => { updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenResponsePlayground); makeApiCall(`/api/v1/token/mint/${mintTokenProductId}`, 'POST', mintTokenBody, setIsMintTokenLoading, setMintTokenResponsePlayground); }
   const handleMockUpdateTokenMetadata = () => { updateSnippet("updateTokenMetadata", "PATCH", updateTokenMetaSnippetLang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet); makeApiCall(`/api/v1/token/metadata/${updateTokenMetaTokenId}`, 'PATCH', updateTokenMetaBody, setIsUpdateTokenMetaLoading, setUpdateTokenMetaResponse); }
   const handleMockGetTokenStatus = () => { updateSnippet("getTokenStatus", "GET", getTokenStatusSnippetLang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet); makeApiCall(`/api/v1/token/status/${getTokenStatusTokenId}`, 'GET', null, setIsGetTokenStatusLoading, setGetTokenStatusResponse); }
 
@@ -1169,7 +1170,7 @@ export default function DeveloperPortalPage() {
             <AlertTitle className="font-semibold text-info">API Playground Environment</AlertTitle>
             <AlertDescription>
               This playground interacts with the application's <strong>mock API backend</strong>. Responses are simulated based on predefined data (like MOCK_DPPS) and the logic in your <code className="text-xs bg-info/20 p-0.5 rounded-sm">/api/v1/...</code> routes.
-              Using API Key: <Badge variant="outline" className="capitalize bg-info/20 border-info/40">SANDBOX_KEY_123</Badge> (This is used for all playground requests regardless of the environment dropdown above).
+              Using API Key: <Badge variant="outline" className="capitalize bg-info/20 border-info/40">{apiKeys.find(k => k.type.toLowerCase() === currentEnvironment && k.status === 'Active')?.key || 'SANDBOX_KEY_123'}</Badge>
             </AlertDescription>
           </Alert>
           <Card className="shadow-xl border-primary/20">
@@ -1230,7 +1231,7 @@ export default function DeveloperPortalPage() {
                 <AccordionItem value="private-layer">
                   <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline flex items-center">
                     <Layers3 className="mr-2 h-5 w-5" /> Private Layer Endpoints (Conceptual)
-                  </AccordionTrigger>
+                  </AccordionContent>
                   <AccordionContent className="pt-4 space-y-6">
                     {endpointConfigs.filter(e => e.section === 'private').map(ep => (
                       <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
@@ -1357,22 +1358,3 @@ export default function DeveloperPortalPage() {
   );
 }
 
-```
-```
-
-I've implemented the enhancements for the Developer Portal Dashboard (Task 15).
-
-Key changes include:
-1.  Created five new functional components in `src/components/developer/dashboard/`:
-    *   `ApiMetricsCard.tsx`
-    *   `PlatformNewsCard.tsx`
-    *   `ServiceStatusCard.tsx`
-    *   `DataFlowKpisCard.tsx`
-    *   `QuickActionsCard.tsx`
-2.  Integrated these components into the "Dashboard" tab of the Developer Portal page (`src/app/(app)/developer/page.tsx`).
-3.  Added mock data arrays within `src/app/(app)/developer/page.tsx` to populate these new dashboard cards.
-4.  The `ApiMetricsCard` now shows conceptual API usage based on the selected `currentEnvironment`.
-5.  The `ServiceStatusCard` includes a mock "Refresh" button and displays a "Last Checked" time.
-6.  The `QuickActionsCard` buttons are now functional for tab switching within the Developer Portal using a new handler `handleDashboardQuickActionTabChange`.
-
-The Developer Portal dashboard should now be much more informative and provide a better overview for developers.

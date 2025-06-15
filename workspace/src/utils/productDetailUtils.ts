@@ -1,11 +1,9 @@
-
 // --- File: src/utils/productDetailUtils.ts ---
 // Description: Utilities for fetching and preparing product details for display.
 
-
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
 import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification, ScipNotificationDetails, EuCustomsDataDetails, BatteryRegulationDetails, TextileInformation, ConstructionProductInformation } from '@/types/dpp';
+import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification, ScipNotificationDetails, EuCustomsDataDetails, BatteryRegulationDetails, EsprSpecifics, DigitalTwinData } from '@/types/dpp';
 import { getOverallComplianceDetails } from '@/utils/dppDisplayUtils';
 
 // Helper function to map DigitalProductPassport to SimpleProductDetail
@@ -87,7 +85,8 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         customAttributes: customAttributes,
         productDetails: { 
             esprSpecifics: dpp.productDetails?.esprSpecifics,
-            carbonFootprint: dpp.productDetails?.carbonFootprint, // Added for Task 3
+            carbonFootprint: dpp.productDetails?.carbonFootprint,
+            digitalTwin: dpp.productDetails?.digitalTwin, // Include digitalTwin
             conflictMineralsReportUrl: dpp.productDetails?.conflictMineralsReportUrl,
             fairTradeCertificationId: dpp.productDetails?.fairTradeCertificationId,
             ethicalSourcingPolicyUrl: dpp.productDetails?.ethicalSourcingPolicyUrl,
@@ -213,6 +212,7 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           ethicalSourcingPolicyUrl: userProductData.productDetails?.ethicalSourcingPolicyUrl, 
           esprSpecifics: userProductData.productDetails?.esprSpecifics,
           carbonFootprint: userProductData.productDetails?.carbonFootprint, // Added for Task 3
+          digitalTwin: userProductData.productDetails?.digitalTwin, // Added for Task 25
         },
         compliance: { 
           eprel: userProductData.complianceData?.eprel || complianceSummaryFromStorage.eprel,

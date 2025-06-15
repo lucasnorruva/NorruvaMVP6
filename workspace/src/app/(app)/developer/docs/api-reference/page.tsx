@@ -359,6 +359,7 @@ export default function ApiReferencePage() {
   }, null, 2);
 
   const exampleB2BComponentTransferRequestBody = JSON.stringify({
+    productId: "DPP001",
     componentId: "COMP_XYZ_123",
     quantity: 100,
     transferDate: new Date().toISOString(),
@@ -384,6 +385,26 @@ export default function ApiReferencePage() {
     { confidentialMaterialId: "cm_dpp001_alloy_X1", productId: "DPP001", materialName: "Proprietary Alloy X1", composition: [{ substanceName: "Titanium", percentageByWeight: "75%" }] }, null, 2
   );
 
+  const exampleZkpSubmitRequestBody = JSON.stringify({
+    claimType: "material_compliance_svhc_lead_less_0.1",
+    proofData: "0xMockProofData...",
+    publicInputs: { "productBatchId": "BATCH_XYZ123", "svhcCasNumber": "7439-92-1" }
+  }, null, 2);
+  const exampleZkpSubmitResponseBody = JSON.stringify({
+    dppId: "DPP001",
+    proofId: "zkp_proof_mock_123abc",
+    status: "acknowledged",
+    message: "ZKP submission received and queued for conceptual verification.",
+    timestamp: new Date().toISOString()
+  }, null, 2);
+  const exampleZkpVerifyResponseBody = JSON.stringify({
+    dppId: "DPP001",
+    claimType: "material_compliance_svhc_lead_less_0.1",
+    isVerified: true,
+    proofId: "zkp_proof_mock_123abc",
+    verifiedAt: new Date().toISOString(),
+    message: "Mock ZKP for claim 'material_compliance_svhc_lead_less_0.1' is considered valid for this DPP."
+  }, null, 2);
 
   return (
     <DocsPageLayout
@@ -459,6 +480,15 @@ export default function ApiReferencePage() {
         exampleB2BComponentTransferResponseBody={exampleB2BComponentTransferResponseBody}
         exampleGetSupplierAttestationsResponseBody={exampleGetSupplierAttestationsResponseBody}
         exampleGetConfidentialMaterialsResponseBody={exampleGetConfidentialMaterialsResponseBody}
+        error400General={error400_general}
+        error401={error401}
+        error404={error404}
+        error500={error500}
+      />
+      <ApiReferenceZkpLayerEndpoints
+        exampleZkpSubmitRequestBody={exampleZkpSubmitRequestBody}
+        exampleZkpSubmitResponseBody={exampleZkpSubmitResponseBody}
+        exampleZkpVerifyResponseBody={exampleZkpVerifyResponseBody}
         error400General={error400_general}
         error401={error401}
         error404={error404}

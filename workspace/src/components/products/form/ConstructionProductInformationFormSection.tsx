@@ -1,38 +1,45 @@
-// --- File: ConstructionProductInformationFormSection.tsx ---
-// Description: Form section component for Construction Product Information.
 "use client";
 
 import React from "react";
-import type { UseFormReturn, Control } from "react-hook-form";
-import { useFieldArray } from "react-hook-form";
+import type { UseFormReturn, Control } from "react-hook-form"; // Added Control
+import { useFieldArray } from "react-hook-form"; // Added useFieldArray
+import { Button } from "@/components/ui/button";
 import {
   FormField,
   FormItem,
   FormLabel,
   FormControl,
-  FormDescription,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Trash2, PlusCircle } from "lucide-react";
-import type { ProductFormData } from "@/types/productFormTypes"; // Import from centralized types file
+import { Card, CardContent } from "@/components/ui/card";
+import { PlusCircle, Trash2, FileText } from "lucide-react";
+import type { ProductFormData } from "@/types/productFormTypes";
 
 interface ConstructionProductInformationFormSectionProps {
   form: UseFormReturn<ProductFormData>;
 }
 
-export default function ConstructionProductInformationFormSection({
-  form,
+export default function ConstructionProductInformationFormSection({ 
+  form 
 }: ConstructionProductInformationFormSectionProps) {
-  const { fields, append, remove } = useFieldArray({
-    control: form.control as Control<ProductFormData>, 
+  const { fields, append, remove } = useFieldArray({ // Destructure from useFieldArray
+    control: form.control as Control<ProductFormData>, // Cast control type
     name: "constructionProductInformation.essentialCharacteristics",
   });
 
+  const addEssentialCharacteristic = () => {
+    append({ characteristicName: "", value: "", unit: "", testMethod: "" });
+  };
+
+  const removeEssentialCharacteristic = (index: number) => {
+    remove(index);
+  };
+
   return (
-    <div className="space-y-6 pt-4">
+    <div className="space-y-6 pt-4"> {/* Added pt-4 for consistency */}
       <FormDescription>
         Provide details specific to construction products, such as Declaration of Performance (DoP) and CE marking.
       </FormDescription>
@@ -43,98 +50,185 @@ export default function ConstructionProductInformationFormSection({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Declaration of Performance (DoP) ID</FormLabel>
-            <FormControl><Input placeholder="e.g., DoP-XYZ-001-2024" {...field} value={field.value || ""} /></FormControl>
+            <FormControl>
+              <Input placeholder="e.g., DoP-XYZ-001-2024" {...field} value={field.value || ""} />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}
       />
+
       <FormField
         control={form.control}
         name="constructionProductInformation.ceMarkingDetailsUrl"
         render={({ field }) => (
           <FormItem>
             <FormLabel>CE Marking Details URL</FormLabel>
-            <FormControl><Input type="url" placeholder="https://example.com/certs/ce_marking_product123.pdf" {...field} value={field.value || ""} /></FormControl>
-            <FormDescription>Link to document or page detailing CE marking conformity.</FormDescription>
+            <FormControl>
+              <Input 
+                type="url" 
+                placeholder="https://example.com/certs/ce_marking_product123.pdf" 
+                {...field} 
+                value={field.value || ""}
+              />
+            </FormControl>
+            <FormDescription>
+              Link to document or page detailing CE marking conformity.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
       />
+
       <FormField
         control={form.control}
         name="constructionProductInformation.intendedUseDescription"
         render={({ field }) => (
           <FormItem>
             <FormLabel>Intended Use Description</FormLabel>
-            <FormControl><Textarea placeholder="Describe the intended use of the construction product..." {...field} value={field.value || ""} rows={3} /></FormControl>
+            <FormControl>
+              <Textarea 
+                placeholder="Describe the intended use of this construction product..."
+                className="min-h-[100px]"
+                {...field} 
+                value={field.value || ""}
+              />
+            </FormControl>
+            <FormDescription>
+              Detailed description of how this product is intended to be used in construction.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
       />
-      <div>
-        <FormLabel>Essential Characteristics</FormLabel>
-        {fields.map((item, index) => (
-          <div key={item.id} className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_80px_80px_auto] gap-2 mt-2 p-3 border rounded-md bg-muted/50 relative items-end">
-            <FormField
-              control={form.control}
-              name={`constructionProductInformation.essentialCharacteristics.${index}.characteristicName`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor={`charName-${index}`} className="text-xs">Characteristic Name</FormLabel>
-                  <FormControl>
-                    <Input id={`charName-${index}`} placeholder="e.g., Thermal Resistance" {...field} value={field.value || ""} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name={`constructionProductInformation.essentialCharacteristics.${index}.value`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor={`charValue-${index}`} className="text-xs">Value</FormLabel>
-                  <FormControl>
-                    <Input id={`charValue-${index}`} placeholder="e.g., 5.0" {...field} value={field.value || ""} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-             <FormField
-              control={form.control}
-              name={`constructionProductInformation.essentialCharacteristics.${index}.unit`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor={`charUnit-${index}`} className="text-xs">Unit</FormLabel>
-                  <FormControl>
-                    <Input id={`charUnit-${index}`} placeholder="e.g., m²K/W" {...field} value={field.value || ""} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name={`constructionProductInformation.essentialCharacteristics.${index}.testMethod`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel htmlFor={`charTestMethod-${index}`} className="text-xs">Test Method</FormLabel>
-                  <FormControl>
-                    <Input id={`charTestMethod-${index}`} placeholder="e.g., EN 12667" {...field} value={field.value || ""} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <Button type="button" variant="ghost" size="icon" onClick={() => remove(index)} className="text-destructive hover:text-destructive h-8 w-8">
-              <Trash2 className="h-4 w-4" />
-            </Button>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h4 className="text-sm font-medium">Essential Characteristics</h4>
+            <p className="text-sm text-muted-foreground">
+              Define the essential characteristics and their declared performance values.
+            </p>
           </div>
-        ))}
-        <Button type="button" variant="outline" size="sm" onClick={() => append({ characteristicName: "", value: "", unit: "", testMethod: "" })} className="mt-2">
-          <PlusCircle className="mr-2 h-4 w-4" /> Add Characteristic
-        </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={addEssentialCharacteristic}
+          >
+            <PlusCircle className="mr-2 h-4 w-4" />
+            Add Characteristic
+          </Button>
+        </div>
+
+        {fields.length > 0 && (
+          <div className="space-y-4">
+            {fields.map((item, index) => ( // Changed _ to item
+              <Card key={item.id}> {/* Use item.id for key */}
+                <CardContent className="pt-6">
+                  <div className="grid gap-4">
+                    <div className="flex items-start justify-between">
+                      <div className="grid gap-4 flex-1">
+                        <FormField
+                          control={form.control}
+                          name={`constructionProductInformation.essentialCharacteristics.${index}.characteristicName`}
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Characteristic Name</FormLabel>
+                              <FormControl>
+                                <Input 
+                                  placeholder="e.g., Compressive strength, Fire resistance" 
+                                  {...field} 
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                          <FormField
+                            control={form.control}
+                            name={`constructionProductInformation.essentialCharacteristics.${index}.value`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Value</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="e.g., 25, Class A1" 
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`constructionProductInformation.essentialCharacteristics.${index}.unit`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Unit (Optional)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="e.g., N/mm², min" 
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+
+                          <FormField
+                            control={form.control}
+                            name={`constructionProductInformation.essentialCharacteristics.${index}.testMethod`}
+                            render={({ field }) => (
+                              <FormItem>
+                                <FormLabel>Test Method (Optional)</FormLabel>
+                                <FormControl>
+                                  <Input 
+                                    placeholder="e.g., EN 12390-3" 
+                                    {...field} 
+                                  />
+                                </FormControl>
+                                <FormMessage />
+                              </FormItem>
+                            )}
+                          />
+                        </div>
+                      </div>
+
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeEssentialCharacteristic(index)}
+                        className="ml-2"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {fields.length === 0 && (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-6 text-center">
+              <FileText className="h-8 w-8 text-muted-foreground mb-2" />
+              <p className="text-sm text-muted-foreground">
+                No essential characteristics defined yet.
+                <br />
+                Click "Add Characteristic" to define performance characteristics.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

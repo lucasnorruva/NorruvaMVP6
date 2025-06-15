@@ -4,8 +4,8 @@
 "use client";
 
 import React from "react";
-import type { UseFormReturn, Control } from "react-hook-form";
-import { useFieldArray } from "react-hook-form";
+import type { UseFormReturn, Control } from "react-hook-form"; // Added Control
+import { useFieldArray } from "react-hook-form"; // Added useFieldArray
 import {
   FormField,
   FormItem,
@@ -34,7 +34,7 @@ export default function TextileInformationFormSection({
   });
 
   return (
-    <div className="space-y-6 pt-4">
+    <div className="space-y-6 pt-4"> {/* Added pt-4 for consistency */}
       <FormDescription>
         Provide details specific to textile products, including fiber composition and care instructions.
       </FormDescription>

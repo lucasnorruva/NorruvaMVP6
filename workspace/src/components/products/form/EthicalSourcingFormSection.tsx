@@ -13,7 +13,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import type { ProductFormData } from "@/types/productFormTypes"; // Import from the centralized types file
+import type { ProductFormData } from "@/types/productFormTypes";
 
 interface EthicalSourcingFormSectionProps {
   form: UseFormReturn<ProductFormData>;

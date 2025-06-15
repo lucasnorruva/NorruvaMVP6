@@ -11,19 +11,15 @@ import { Button } from "@/components/ui/button";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
 import { FormDescription, FormField, FormItem, FormControl, FormMessage, FormLabel } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { AiIndicator } from "@/components/products/form"; // Import from barrel
-import { ImagePlus, ImageIcon, Loader2 } from "lucide-react";
+import { AiIndicator, AiSuggestionDisplay } from "@/components/products/form"; // Import from barrel
+import { ImagePlus, ImageIcon, Loader2, Sparkles } from "lucide-react"; // Added Sparkles
 import type { ToastInput } from "@/hooks/use-toast";
+import { handleGenerateImageAI, handleSuggestImageHintsAI } from "@/utils/aiFormHelpers"; // Added handleSuggestImageHintsAI
 
 type ToastFn = (input: ToastInput) => void;
 
 interface ProductImageFormSectionProps {
   form: UseFormReturn<ProductFormData>;
-  aiImageHelper: (
-    form: UseFormReturn<ProductFormData>,
-    toast: ToastFn,
-    setLoadingState: (loading: boolean) => void
-  ) => Promise<string | null>;
   initialImageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
   toast: ToastFn;
   isGeneratingImageState: boolean;
@@ -33,7 +29,6 @@ interface ProductImageFormSectionProps {
 
 export default function ProductImageFormSection({
   form,
-  aiImageHelper,
   initialImageUrlOrigin,
   toast,
   isGeneratingImageState,
@@ -42,30 +37,49 @@ export default function ProductImageFormSection({
 }: ProductImageFormSectionProps) {
 
   const [currentImageUrl, setCurrentImageUrl] = useState<string | null>(initialImageUrl || null);
+  const [isSuggestingHints, setIsSuggestingHints] = useState(false);
+  const [suggestedHints, setSuggestedHints] = useState<string[]>([]);
 
   useEffect(() => {
     const subscription = form.watch((value, { name }) => {
-      if (name === "imageUrl") {
-        setCurrentImageUrl(value.imageUrl || null);
+      if (name === "productDetails.imageUrl") { // Corrected path
+        setCurrentImageUrl(value.productDetails?.imageUrl || null);
       }
     });
-    const formImageUrl = form.getValues("imageUrl");
+    // Ensure correct path when getting initial value
+    const formImageUrl = form.getValues("productDetails.imageUrl");
     setCurrentImageUrl(formImageUrl || initialImageUrl || null);
     return () => subscription.unsubscribe();
   }, [form, initialImageUrl]);
 
 
   const triggerImageGeneration = async () => {
-    const newImageUrl = await aiImageHelper(form, toast, setIsGeneratingImageState);
+    const newImageUrl = await handleGenerateImageAI(form, toast, setIsGeneratingImageState);
     if (newImageUrl) {
-      form.setValue("imageUrl", newImageUrl, { shouldValidate: true });
-      form.setValue("imageUrlOrigin", "AI_EXTRACTED");
+      form.setValue("productDetails.imageUrl", newImageUrl, { shouldValidate: true }); // Corrected path
+      form.setValue("productDetailsOrigin.imageUrlOrigin" as any, "AI_EXTRACTED"); // Corrected path
     }
   };
 
+  const callSuggestImageHints = async () => {
+    const hints = await handleSuggestImageHintsAI(form, toast, setIsSuggestingHints);
+    if (hints) {
+      setSuggestedHints(hints);
+    } else {
+      setSuggestedHints([]);
+    }
+  };
+
+  const handleHintClick = (hint: string) => {
+    form.setValue("productDetails.imageHint", hint, { shouldValidate: true }); // Corrected path
+    // No origin tracking for image hint as it's user-selected from AI suggestions or manual
+    setSuggestedHints([]); // Clear suggestions after one is chosen
+  };
+
+
   const productNameForHint = form.getValues("productName") || "product";
   const categoryForHint = form.getValues("productCategory") || "";
-  const userProvidedHint = form.getValues("imageHint");
+  const userProvidedHint = form.getValues("productDetails.imageHint"); // Corrected path
 
   const imageHintForDataAttr = userProvidedHint
     ? userProvidedHint.trim().split(" ").slice(0,2).join(" ")
@@ -88,7 +102,7 @@ export default function ProductImageFormSection({
                 data-ai-hint={imageHintForDataAttr}
               />
             </AspectRatio>
-            {(form.getValues("imageUrlOrigin") === 'AI_EXTRACTED' || (initialImageUrlOrigin === 'AI_EXTRACTED' && form.getValues("imageUrl") === initialImageUrl)) && (
+            {(form.getValues("productDetailsOrigin.imageUrlOrigin") === 'AI_EXTRACTED' || (initialImageUrlOrigin === 'AI_EXTRACTED' && form.getValues("productDetails.imageUrl") === initialImageUrl)) && (
                  <AiIndicator fieldOrigin="AI_EXTRACTED" fieldName="Image" className="text-xs text-info text-center py-1.5 flex items-center justify-center" />
             )}
           </div>
@@ -102,12 +116,12 @@ export default function ProductImageFormSection({
 
        <FormField
             control={form.control}
-            name="imageUrl"
+            name="productDetails.imageUrl" // Corrected path
             render={({ field }) => (
               <FormItem>
                 <FormLabel className="flex items-center">
                   Image URL
-                  <AiIndicator fieldOrigin={form.getValues("imageUrlOrigin") || initialImageUrlOrigin} fieldName="Image URL" />
+                  <AiIndicator fieldOrigin={form.getValues("productDetailsOrigin.imageUrlOrigin") || initialImageUrlOrigin} fieldName="Image URL" />
                 </FormLabel>
                 <FormControl>
                   <Input
@@ -116,7 +130,7 @@ export default function ProductImageFormSection({
                     {...field}
                     onChange={(e) => {
                       field.onChange(e);
-                      form.setValue("imageUrlOrigin", "manual");
+                      form.setValue("productDetailsOrigin.imageUrlOrigin" as any, "manual"); // Corrected path
                     }}
                   />
                 </FormControl>
@@ -124,23 +138,36 @@ export default function ProductImageFormSection({
               </FormItem>
             )}
           />
-      <FormField
-        control={form.control}
-        name="imageHint"
-        render={({ field }) => (
-          <FormItem className="mt-3">
-            <FormLabel className="text-sm">Image Hint (for AI Generation)</FormLabel>
-            <FormControl><Input placeholder="e.g., minimalist, studio shot" {...field} /></FormControl>
-            <FormDescription className="text-xs">Optional. Provide keywords to guide AI image generation (max 2 words).</FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
+      <div className="flex items-end gap-2">
+        <FormField
+            control={form.control}
+            name="productDetails.imageHint" // Corrected path
+            render={({ field }) => (
+            <FormItem className="flex-grow">
+                <FormLabel className="text-sm">Image Hint (for AI Generation)</FormLabel>
+                <FormControl><Input placeholder="e.g., minimalist, studio shot" {...field} /></FormControl>
+                <FormDescription className="text-xs">Optional. Provide keywords to guide AI image generation (max 2 words).</FormDescription>
+                <FormMessage />
+            </FormItem>
+            )}
+        />
+        <Button type="button" variant="ghost" size="sm" onClick={callSuggestImageHints} disabled={isSuggestingHints || form.formState.isSubmitting || isGeneratingImageState} className="shrink-0">
+            {isSuggestingHints ? <Loader2 className="h-4 w-4 animate-spin"/> : <Sparkles className="h-4 w-4 text-info" />}
+            <span className="ml-2 hidden sm:inline">{isSuggestingHints ? "Suggesting..." : "Suggest Hints"}</span>
+            <span className="sr-only sm:hidden">Suggest Hints</span>
+        </Button>
+      </div>
+      <AiSuggestionDisplay
+        suggestions={suggestedHints}
+        onAddSuggestion={handleHintClick}
+        title="Suggested Image Hints:"
+        itemNoun="hint"
       />
       <Button
         type="button"
         variant="secondary"
         onClick={triggerImageGeneration}
-        disabled={isGeneratingImageState || form.formState.isSubmitting}
+        disabled={isGeneratingImageState || form.formState.isSubmitting || isSuggestingHints}
         className="w-full sm:w-auto"
       >
         {isGeneratingImageState ? <Loader2 className="h-4 w-4 animate-spin" /> : <ImagePlus className="h-4 w-4" />}

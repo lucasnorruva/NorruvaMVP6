@@ -19,5 +19,6 @@ import '@/ai/flows/suggest-maintenance-schedule.ts';
 import '@/ai/flows/generate-compliance-summary-for-category.ts';
 import '@/ai/flows/suggest-key-compliance-points.ts';
 import '@/ai/flows/suggest-cbam-identifier-flow.ts'; 
+import '@/ai/flows/suggest-image-hints-flow.ts'; // Added new flow
 
     

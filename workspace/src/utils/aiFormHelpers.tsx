@@ -13,7 +13,8 @@ import { suggestKeyCompliancePoints } from "@/ai/flows/suggest-key-compliance-po
 import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
 import { generateProductSpecifications } from "@/ai/flows/generate-product-specifications-flow";
 import { generateCustomAttributes } from "@/ai/flows/generate-custom-attributes-flow"; 
-import { suggestCbamIdentifier, type SuggestCbamIdentifierOutput } from "@/ai/flows/suggest-cbam-identifier-flow"; // Added for CBAM
+import { suggestCbamIdentifier, type SuggestCbamIdentifierOutput } from "@/ai/flows/suggest-cbam-identifier-flow"; 
+import { suggestImageHints } from "@/ai/flows/suggest-image-hints-flow"; // New import
 import type { CustomAttribute } from "@/types/dpp"; 
 import type { ToastInput } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";
@@ -334,3 +335,43 @@ export async function handleSuggestCbamIdentifierAI(
   });
   return result;
 }
+
+export async function handleSuggestImageHintsAI(
+  form: UseFormReturn<ProductFormData>,
+  toast: ToastFn,
+  setLoadingState: (loading: boolean) => void
+): Promise<string[] | null> {
+  const { productName, productCategory } = form.getValues();
+  if (!productName && !productCategory) {
+    toast({
+      title: "Input Required",
+      description: "Please provide product name or category to suggest image hints.",
+      variant: "destructive",
+    });
+    setLoadingState(false);
+    return null;
+  }
+  const result = await withAiHandling({
+    aiCall: () =>
+      suggestImageHints({
+        productName: productName || "",
+        productCategory: productCategory || undefined,
+      }),
+    toast,
+    setLoadingState,
+    successToast: (res) =>
+      res.imageHints.length === 0
+        ? {
+            title: "No specific image hints suggested.",
+            description: "Ensure product name or category is provided.",
+          }
+        : {
+            title: "Image Hints Suggested!",
+            description: `${res.imageHints.length} hint(s) suggested by AI.`,
+            variant: "default",
+          },
+    errorTitle: "Error Suggesting Image Hints",
+  });
+  return result ? result.imageHints : null;
+}
+

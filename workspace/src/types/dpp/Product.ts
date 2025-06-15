@@ -1,16 +1,15 @@
-
 // --- File: Product.ts ---
 // Description: Product related type definitions and mock data.
 
 import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle';
 import type {
   Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification,
-  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, EsprSpecifics, CarbonFootprintData
+  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, EsprSpecifics, CarbonFootprintData, DigitalTwinData
 } from './Compliance'; 
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
-export const TRACKED_PRODUCTS_STORAGE_KEY = 'norruvaTrackedProductIds';
+export const TRACKED_PRODUCTS_STORAGE_KEY = 'norruvaTrackedProductIds'; // Defined key for tracked products
 
 export interface SupplyChainStep {
   stepName: string;
@@ -62,12 +61,6 @@ export interface OwnershipNftLink {
   chainName?: string;
 }
 
-export interface DigitalTwinData {
-  uri?: string; // URI to the digital twin platform or specific twin instance
-  sensorDataEndpoint?: string; // Endpoint to fetch live sensor data (conceptual)
-  realTimeStatus?: string; // Textual description of the current operational status
-  predictiveMaintenanceAlerts?: string; // Textual list of current maintenance alerts
-}
 
 export interface DigitalProductPassport {
   id: string;
@@ -123,7 +116,7 @@ export interface DigitalProductPassport {
     keyCompliancePoints?: string; 
     esprSpecifics?: EsprSpecifics; 
     carbonFootprint?: CarbonFootprintData; 
-    digitalTwin?: DigitalTwinData; // Added digitalTwin
+    digitalTwin?: DigitalTwinData; 
   };
 
   textileInformation?: TextileInformation;
@@ -224,7 +217,7 @@ export interface SimpleProductDetail {
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
     carbonFootprint?: CarbonFootprintData; 
-    digitalTwin?: DigitalTwinData; // Added digitalTwin
+    digitalTwin?: DigitalTwinData; 
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -311,7 +304,7 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
         dataSourceOrigin?: 'AI_EXTRACTED' | 'manual';
         vcIdOrigin?: 'AI_EXTRACTED' | 'manual';
     };
-    digitalTwinOrigin?: { // Added digitalTwinOrigin
+    digitalTwinOrigin?: { 
         uriOrigin?: 'AI_EXTRACTED' | 'manual';
         sensorDataEndpointOrigin?: 'AI_EXTRACTED' | 'manual';
         realTimeStatusOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -365,7 +358,7 @@ export interface RichMockProduct {
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
     carbonFootprint?: CarbonFootprintData; 
-    digitalTwin?: DigitalTwinData; // Added digitalTwin
+    digitalTwin?: DigitalTwinData; 
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -397,6 +390,7 @@ export interface PublicProductInfo {
   brandLogoUrl?: string;
   learnMoreLink?: string;
   complianceSummary: string;
+  compliance?: DigitalProductPassport['compliance'];
   category: string;
   modelNumber: string;
   sku?: string;
@@ -426,7 +420,7 @@ export interface PublicProductInfo {
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
     carbonFootprint?: CarbonFootprintData; 
-    digitalTwin?: DigitalTwinData; // Added digitalTwin
+    digitalTwin?: DigitalTwinData; 
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -493,7 +487,7 @@ export interface DisplayableProduct {
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
     carbonFootprint?: CarbonFootprintData; 
-    digitalTwin?: DigitalTwinData; // Added digitalTwin
+    digitalTwin?: DigitalTwinData; 
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -571,7 +565,7 @@ export type InitialProductFormData = Omit<ProductFormData, 'productDetailsOrigin
         dataSourceOrigin?: 'AI_EXTRACTED' | 'manual';
         vcIdOrigin?: 'AI_EXTRACTED' | 'manual';
     };
-    digitalTwinOrigin?: { // Added digitalTwinOrigin
+    digitalTwinOrigin?: { 
         uriOrigin?: 'AI_EXTRACTED' | 'manual';
         sensorDataEndpointOrigin?: 'AI_EXTRACTED' | 'manual';
         realTimeStatusOrigin?: 'AI_EXTRACTED' | 'manual';

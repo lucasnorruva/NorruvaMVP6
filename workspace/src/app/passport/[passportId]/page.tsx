@@ -1,4 +1,3 @@
-
 "use client";
 
 // --- File: page.tsx (Public Product Passport Viewer) ---
@@ -19,7 +18,7 @@ import {
   Construction, Shirt, Cloud, Wind, Sun, BookmarkPlus, BookmarkCheck, AlertTriangle as AlertTriangleIcon, Globe
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
-import React, { useState, useEffect, useCallback, useMemo } from 'react'; // Added useMemo
+import React, { useState, useEffect, useCallback, useMemo } from 'react'; 
 import { cn } from '@/lib/utils';
 import { useRole } from '@/contexts/RoleContext';
 import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification, CustomAttribute, BatteryRegulationDetails, RecycledContentData, CarbonFootprintData } from '@/types/dpp';
@@ -29,7 +28,7 @@ import { getAiHintForImage } from '@/utils/imageUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 import { useToast } from "@/hooks/use-toast"; 
 import { TRACKED_PRODUCTS_STORAGE_KEY } from '@/types/dpp'; 
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend } from 'recharts'; // Added Recharts imports
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend } from 'recharts'; 
 
 const STORY_TRUNCATE_LENGTH = 250;
 
@@ -52,7 +51,7 @@ export default function PublicPassportPage() {
   }, [passportId]);
 
   useEffect(() => {
-    const fetchedProduct = MOCK_PUBLIC_PASSPORTS[passportId] || MOCK_PUBLIC_PASSPORTS[`PROD${passportId.replace('DPP','')}`];
+    const fetchedProduct = MOCK_PUBLIC_PASSPORTS[passportId] || MOCK_PUBLIC_PASSPORTS[`PROD${passportId.replace('DPP','')}`] ; 
     if (fetchedProduct) {
       setProduct({
         ...fetchedProduct,
@@ -705,8 +704,3 @@ export default function PublicPassportPage() {
     </div>
   );
 }
-
-```
-  </change>
-  <change>
-    <file>/workspace

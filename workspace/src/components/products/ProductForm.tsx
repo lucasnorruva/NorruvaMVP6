@@ -1,3 +1,4 @@
+
 "use client";
 // --- File: ProductForm.tsx ---
 // Description: Main form component for creating or editing product DPPs.
@@ -18,20 +19,19 @@ import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCir
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-// Import form sections using aliases from the barrel file
-import {
-  BasicInfoFormSection,
-  ProductImageFormSection,
-  BatteryDetailsFormSection,
-  SustainabilityComplianceFormSection,
-  TechnicalSpecificationsFormSection,
-  CustomAttributesFormSection,
-  ScipNotificationFormSection,
-  EuCustomsDataFormSection,
-  TextileInformationFormSection,
-  ConstructionProductInformationFormSection,
-  EthicalSourcingFormSection
-} from "@/components/products/form";
+// Use direct path aliases for all form sections
+import BasicInfoFormSection from "@/components/products/form/BasicInfoFormSection";
+import ProductImageFormSection from "@/components/products/form/ProductImageFormSection";
+import BatteryDetailsFormSection from "@/components/products/form/BatteryDetailsFormSection";
+import SustainabilityComplianceFormSection from "@/components/products/form/SustainabilityComplianceFormSection";
+import TechnicalSpecificationsFormSection from "@/components/products/form/TechnicalSpecificationsFormSection";
+import CustomAttributesFormSection from "@/components/products/form/CustomAttributesFormSection";
+import ScipNotificationFormSection from "@/components/products/form/ScipNotificationFormSection";
+import EuCustomsDataFormSection from "@/components/products/form/EuCustomsDataFormSection";
+import TextileInformationFormSection from "@/components/products/form/TextileInformationFormSection";
+import ConstructionProductInformationFormSection from "@/components/products/form/ConstructionProductInformationFormSection";
+import EthicalSourcingFormSection from "@/components/products/form/EthicalSourcingFormSection";
+
 
 import {
   handleGenerateImageAI, 
@@ -40,14 +40,13 @@ import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessa
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { CustomAttribute, BatteryRegulationDetails, CarbonFootprintData, StateOfHealthData, RecycledContentData, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from "@/types/dpp"; // This import might need adjustment if these types are now derived from productFormTypes.ts
+import type { CustomAttribute } from "@/types/dpp"; // Keep this if CustomAttribute type is directly used in ProductForm
 
 interface AiIndicatorPropsUi { 
   fieldOrigin?: 'AI_EXTRACTED' | 'manual';
   fieldName: string;
 }
 
-// Renamed to avoid conflict with imported AiIndicator
 const AiIndicatorUi: React.FC<AiIndicatorPropsUi> = ({ fieldOrigin, fieldName }) => {
   if (fieldOrigin === 'AI_EXTRACTED') {
     return (
@@ -77,7 +76,7 @@ interface ProductFormProps {
 
 export default function ProductForm({ id, initialData, onSubmit, isSubmitting, isStandalonePage = true }: ProductFormProps) {
   const form = useForm<ProductFormData>({
-    resolver: zodResolver(formSchema), // Use formSchema imported from productFormTypes.ts
+    resolver: zodResolver(formSchema),
     defaultValues: {
       productName: initialData?.productName || "",
       gtin: initialData?.gtin || "",
@@ -159,7 +158,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           status: "N/A", declarationId: "", hsCode: "", countryOfOrigin: "",
           netWeightKg: null, grossWeightKg: null,
           customsValuation: { value: null, currency: "" },
-          cbamGoodsIdentifier: "" // Added for CBAM
+          cbamGoodsIdentifier: ""
         },
         battery_regulation: initialData?.compliance?.battery_regulation || { 
           status: "not_applicable", batteryChemistry: "", batteryPassportId: "",
@@ -292,7 +291,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             status: "N/A", declarationId: "", hsCode: "", countryOfOrigin: "",
             netWeightKg: null, grossWeightKg: null,
             customsValuation: { value: null, currency: "" },
-            cbamGoodsIdentifier: "" // Added for CBAM
+            cbamGoodsIdentifier: "",
           },
           battery_regulation: initialData.compliance?.battery_regulation || { 
             status: "not_applicable", batteryChemistry: "", batteryPassportId: "",
@@ -568,7 +567,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
                 <Select onValueChange={field.onChange} defaultValue={field.value || "Unknown"} value={field.value || "Unknown"}>
                     <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
                     <SelectContent>
-                    {["Unknown", "Design", "Manufacturing", "Quality Assurance", "Distribution", "In Use", "Maintenance", "End of Life"].map(s => <SelectItem key={`ocls-${s}`} value={s}>{s}</SelectItem>)}
+                    {["Unknown", "Design", "Manufacturing", "Quality Assurance", "Distribution", "In Use", "Maintenance", "End of Life"].map(s => <SelectItem key={`ocls-${s}`} value={s}>{s}</SelectItem)}
                     </SelectContent>
                 </Select>
                 <FormMessage />

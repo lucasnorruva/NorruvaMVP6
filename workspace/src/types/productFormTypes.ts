@@ -1,11 +1,14 @@
+
 // --- File: src/types/productFormTypes.ts ---
 // Description: Type definitions and Zod schemas for the product form.
 "use client";
 
 import { z } from "zod";
-import type { BatteryRegulationDetails, CarbonFootprintData, StateOfHealthData, RecycledContentData, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from '@/types/dpp';
+// Ensure any necessary types from '@/types/dpp' are imported if used directly in schemas,
+// though typically the form schema is self-contained or uses basic Zod types.
+// For example, if BatteryRegulationDetails itself was a Zod schema, you'd import it.
+// But here, we are defining new Zod schemas.
 
-// Schemas previously in ProductForm.tsx
 export const carbonFootprintSchema = z.object({
   value: z.coerce.number().nullable().optional(),
   unit: z.string().optional(),
@@ -20,7 +23,7 @@ export const carbonFootprintSchema = z.object({
 export const recycledContentSchema = z.object({
   material: z.string().optional(),
   percentage: z.coerce.number().nullable().optional(),
-  source: z.string().optional(),
+  source: z.string().optional(), // Could be enum: z.enum(['Pre-consumer', 'Post-consumer', 'Mixed', 'Unknown']).optional(),
   vcId: z.string().optional(),
 });
 
@@ -51,8 +54,8 @@ export const batteryRegulationDetailsSchema = z.object({
     lithium: z.coerce.number().nullable().optional(),
     nickel: z.coerce.number().nullable().optional(),
   }).optional(),
-  dismantlingInformationUrl: z.string().url().or(z.literal("")).optional(),
-  safetyInformationUrl: z.string().url().or(z.literal("")).optional(),
+  dismantlingInformationUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+  safetyInformationUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
   vcId: z.string().optional(),
 });
 
@@ -63,7 +66,7 @@ export const scipNotificationSchema = z.object({
   submittingLegalEntity: z.string().optional(),
   articleName: z.string().optional(),
   primaryArticleId: z.string().optional(),
-  safeUseInstructionsLink: z.string().url().or(z.literal("")).optional(),
+  safeUseInstructionsLink: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
 });
 
 export const customsValuationSchema = z.object({
@@ -79,18 +82,18 @@ export const euCustomsDataSchema = z.object({
   netWeightKg: z.coerce.number().nullable().optional(),
   grossWeightKg: z.coerce.number().nullable().optional(),
   customsValuation: customsValuationSchema.optional(),
-  cbamGoodsIdentifier: z.string().optional(), // Added for CBAM
+  cbamGoodsIdentifier: z.string().optional(),
 });
 
 export const fiberCompositionEntrySchema = z.object({
   fiberName: z.string().min(1, "Fiber name is required."),
-  percentage: z.coerce.number().min(0).max(100).nullable(),
+  percentage: z.coerce.number().min(0,"Percentage cannot be negative").max(100, "Percentage cannot exceed 100").nullable(),
 });
 
 export const textileInformationSchema = z.object({
   fiberComposition: z.array(fiberCompositionEntrySchema).optional(),
   countryOfOriginLabeling: z.string().optional(),
-  careInstructionsUrl: z.string().url().or(z.literal("")).optional(),
+  careInstructionsUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
   isSecondHand: z.boolean().optional(),
 });
 
@@ -103,7 +106,7 @@ export const essentialCharacteristicSchema = z.object({
 
 export const constructionProductInformationSchema = z.object({
   declarationOfPerformanceId: z.string().optional(),
-  ceMarkingDetailsUrl: z.string().url().or(z.literal("")).optional(),
+  ceMarkingDetailsUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
   intendedUseDescription: z.string().optional(),
   essentialCharacteristics: z.array(essentialCharacteristicSchema).optional(),
 });
@@ -123,7 +126,7 @@ export const formSchema = z.object({
   specifications: z.string().optional(),
   energyLabel: z.string().optional(),
   productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
-  imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")),
+  imageUrl: z.string().url("Must be a valid URL or Data URI, or empty").or(z.literal("")).optional(),
   imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(),
   
   batteryRegulation: batteryRegulationDetailsSchema.optional(),
@@ -133,7 +136,7 @@ export const formSchema = z.object({
     eprel: z.object({ 
         id: z.string().optional(),
         status: z.string().optional(),
-        url: z.string().url().or(z.literal("")).optional(),
+        url: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
         lastChecked: z.string().optional(), 
     }).optional(),
     esprConformity: z.object({
@@ -144,7 +147,7 @@ export const formSchema = z.object({
     }).optional(),
     scipNotification: scipNotificationSchema.optional(),
     euCustomsData: euCustomsDataSchema.optional(),
-    battery_regulation: batteryRegulationDetailsSchema.optional(),
+    battery_regulation: batteryRegulationDetailsSchema.optional(), // Mirrored for consistent handling
   }).optional(),
   
   textileInformation: textileInformationSchema.optional(), 
@@ -153,9 +156,9 @@ export const formSchema = z.object({
   onChainLifecycleStage: z.string().optional(), 
 
   // Ethical Sourcing Fields
-  conflictMineralsReportUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+  conflictMineralsReportUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
   fairTradeCertificationId: z.string().optional(),
-  ethicalSourcingPolicyUrl: z.string().url("Must be a valid URL").or(z.literal("")).optional(),
+  ethicalSourcingPolicyUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
 
   // AI Origin tracking fields
   productNameOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
@@ -172,3 +175,9 @@ export const formSchema = z.object({
 });
 
 export type ProductFormData = z.infer<typeof formSchema>;
+
+// Also, the types that might be imported by ProductForm.tsx from new/page.tsx
+// should be moved here or ProductForm.tsx should import them directly from their original source (types/dpp)
+// For now, InitialProductFormData and StoredUserProduct are used in new/page.tsx.
+// If ProductForm needs them, they would also ideally be defined here or imported directly from their original definition.
+// The types from types/dpp are more canonical.

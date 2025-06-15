@@ -208,7 +208,7 @@ export interface CustomsAlert {
   severity: "High" | "Medium" | "Low";
   timestamp: string;
   regulation?: string;
-} // <--- Ensured this closing brace is present
+}
 
 export interface InspectionEvent {
   id: string;

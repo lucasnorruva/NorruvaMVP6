@@ -57,7 +57,7 @@ Digital Product Passports can be a crucial tool for collecting, managing, and ve
 
 ## How DPPs Support CBAM Compliance
 
-- **Data Collection:** DPPs can act as a central repository for manufacturers to input and update emissions data throughout the product lifecycle, especially at the manufacturing gate.
+- **Data Collection:** DPPs can act as a central repository for manufacturers to input and update emissions data throughout the product lifecycle, especially at the manufacturing gate. The Norruva platform includes fields like `productDetails.carbonFootprint` and `compliance.euCustomsData.cbamGoodsIdentifier`.
 - **Supply Chain Transparency:** For complex products, DPPs can help trace embedded emissions through the supply chain by linking component DPPs.
 - **Verification & Auditability:** Verifiable Credentials (VCs) within or linked to the DPP can provide trusted attestations for emissions data and carbon prices paid, potentially simplifying verification for CBAM declarants and authorities.
 - **Standardization:** DPPs can promote standardized reporting formats for emissions data, aligning with CBAM requirements.
@@ -67,7 +67,7 @@ Digital Product Passports can be a crucial tool for collecting, managing, and ve
 
 1.  **Manufacturer (Exporter to EU):**
     *   Calculates embedded emissions for their product according to CBAM rules.
-    *   Records this data (direct, indirect emissions, methodology, origin) in the product's DPP within the Norruva platform, potentially under a dedicated CBAM section or within customs/sustainability data.
+    *   Records this data (direct, indirect emissions, methodology, origin) in the product's DPP within the Norruva platform, potentially under a dedicated CBAM section or within customs/sustainability data (e.g., `productDetails.carbonFootprint`, `compliance.euCustomsData.cbamGoodsIdentifier`).
     *   Obtains verification of this emissions data from an accredited verifier. A VC attesting to this verification could be linked to the DPP.
     *   If applicable, records proof of carbon price paid in the country of origin within the DPP.
 

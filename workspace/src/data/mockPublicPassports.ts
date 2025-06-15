@@ -33,6 +33,8 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ebsiVerificationId: "EBSI-VC-XYZ-00123",
     onChainStatus: "Active", 
     onChainLifecycleStage: "InUse", 
+    status: "published", // Added for Task 24
+    lastUpdated: "2024-07-30T10:00:00Z", // Added for Task 24
     lifecycleHighlights: [
       { stage: "Manufacturing", date: "Jan 2024", details: "Produced in our green-certified facility in Germany.", isEbsiVerified: true, iconName: "Factory" },
       { stage: "Shipped", date: "Feb 2024", details: "Transported via low-emission logistics partners to EU distribution centers.", isEbsiVerified: false, iconName: "Truck" },
@@ -60,7 +62,21 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
         tokenId: "1",
         chainName: "MockEthereum",
     },
-    ethicalSourcingPolicyUrl: "https://greentech.com/ethics/sourcing-policy.pdf", // Task 19
+    ethicalSourcingPolicyUrl: "https://greentech.com/ethics/sourcing-policy.pdf", 
+    productDetails: { 
+        esprSpecifics: {
+            durabilityInformation: "Expected lifespan of 15+ years with proper maintenance. Key components tested for 20,000+ hours of operation.",
+            repairabilityInformation: "Modular design. Spare parts (compressor, shelves, door seals) available for 10 years. Repair manual accessible via QR code.",
+            recycledContentSummary: "Over 70% of steel used is certified post-consumer recycled content. Internal plastic components incorporate 25% recycled polymers.",
+            energyEfficiencySummary: "A+++ EU Energy Label. Smart defrost and adaptive cooling technology minimize energy use. Annual consumption approx. 150 kWh.",
+            substanceOfConcernSummary: "Fully RoHS compliant. All components screened for SVHCs above 0.1% w/w as per REACH, none present requiring SCIP notification for the main unit. Control panel assembly details in SCIP."
+        },
+        carbonFootprint: {
+          value: 350, unit: "kg CO2e/unit", calculationMethod: "ISO 14067",
+          scope1Emissions: 50, scope2Emissions: 100, scope3Emissions: 200,
+          dataSource: "Product LCA Study 2024", vcId: "vc:cf:dpp001:total:2024"
+        }
+    }
   },
   "PROD002": {
     passportId: "PROD002",
@@ -87,6 +103,14 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ebsiStatus: 'pending',
     onChainStatus: "Pending Activation", 
     onChainLifecycleStage: "Manufacturing", 
+    status: "draft", // Added for Task 24
+    lastUpdated: "2024-07-25T14:30:00Z", // Added for Task 24
+    productDetails: {
+      carbonFootprint: {
+        value: 2.5, unit: "kg CO2e/item", calculationMethod: "Higg MSI",
+        dataSource: "Internal Assessment 2024", vcId: "vc:cf:dpp002:total:2024"
+      }
+    },
     lifecycleHighlights: [
       { stage: "Manufacturing", date: "2024-03-01", details: "Produced in India, Fair Trade facility.", isEbsiVerified: true, iconName: "Factory" },
       { stage: "Imported to EU", date: "2024-03-15", details: "Cleared customs at Rotterdam Port, Netherlands.", isEbsiVerified: false, iconName: "Anchor" },
@@ -110,9 +134,9 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
       isSecondHand: false,
     },
     authenticationVcId: "vc_auth_DPP002_mock456",
-    conflictMineralsReportUrl: "https://ecothreads.com/reports/conflict-minerals-na.pdf", // Task 19
-    fairTradeCertificationId: "FLOID12345 (Fair Trade International)", // Task 19
-    ethicalSourcingPolicyUrl: "https://ecothreads.com/ethics/sourcing-policy.pdf", // Task 19
+    conflictMineralsReportUrl: "https://ecothreads.com/reports/conflict-minerals-na.pdf", 
+    fairTradeCertificationId: "FLOID12345 (Fair Trade International)", 
+    ethicalSourcingPolicyUrl: "https://ecothreads.com/ethics/sourcing-policy.pdf", 
   },
   "PROD006": { 
     passportId: "PROD006",
@@ -136,12 +160,23 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ebsiStatus: 'pending_verification',
     onChainStatus: "Active",
     onChainLifecycleStage: "InUse",
+    status: "published", // Added for Task 24
+    lastUpdated: "2024-08-01T10:00:00Z", // Added for Task 24
+    productDetails: { 
+        esprSpecifics: {
+            durabilityInformation: "Expected service life of 50+ years when installed according to guidelines. Resistant to mould and pests.",
+            repairabilityInformation: "Individual panels can be replaced if damaged. Standard fixing methods apply.",
+            recycledContentSummary: "Primarily composed of 85% post-consumer recycled cellulose fibers.",
+            energyEfficiencySummary: "Contributes significantly to building energy efficiency due to high R-50 thermal resistance.",
+            substanceOfConcernSummary: "Does not contain added formaldehyde. Non-halogenated fire retardants used, below SVHC thresholds."
+        }
+    },
     lifecycleHighlights: [
       { stage: "Manufacturing", date: "July 2024", details: "Produced in Belgium adhering to EN 13163.", iconName: "Factory" },
       { stage: "CE Marking Achieved", date: "July 2024", details: "Conformity assessment completed.", iconName: "Award" },
     ],
     certifications: [
-      { name: "CE Marking (CPR)", authority: "Notified Body 1234", isVerified: true, standard: "EN 13163" },
+      { name: "CE Marking (CPR)", authority: "Notified Body 1234 (BE)", isVerified: true, standard: "EN 13163" },
       { name: "Environmental Product Declaration (EPD)", authority: "EPD Program Operator XYZ", issueDate: "2024-07-20", documentUrl: "https://buildgreen.com/epd/esp-r50.pdf", standard: "ISO 14025" }
     ],
     constructionProductInformation: {
@@ -174,10 +209,12 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
     ebsiStatus: 'not_verified',
     anchorTransactionHash: "0xuserProductAnchorHash123", 
     blockchainPlatform: "UserMockNet",
-    contractAddress: "0xUserProductContract",
+    contractAddress: "0xUserProdNFTContract",
     tokenId: "UP_TOKEN_123",
     onChainStatus: "Draft", 
     onChainLifecycleStage: "Design", 
+    status: "draft", // Added for Task 24
+    lastUpdated: new Date().toISOString(), // Added for Task 24
     certifications: [], 
     documents: [],
     customAttributes: [
@@ -192,5 +229,11 @@ export const MOCK_PUBLIC_PASSPORTS: Record<string, PublicProductInfo> = {
         tokenId: "101",
         chainName: "MockUserChain",
     },
+    productDetails: { 
+        esprSpecifics: {
+            durabilityInformation: "Handcrafted for longevity, joints reinforced. Oak wood chosen for its natural strength.",
+            repairabilityInformation: "Can be re-sanded and re-oiled. Standard woodworking repairs possible."
+        }
+    }
   }
 };

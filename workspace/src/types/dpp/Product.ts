@@ -403,6 +403,9 @@ export interface PublicProductInfo {
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
   };
+  // Added for Task 24
+  status?: DigitalProductPassport['metadata']['status']; 
+  lastUpdated?: string; 
 }
 
 export interface Supplier {

@@ -25,7 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import type { ProductFormData } from "@/types/productFormTypes";
 import { formSchema } from "@/types/productFormTypes";
 
-// Import form sections from the barrel file
+// Import form sections and AiIndicator from the barrel file
 import {
   AiIndicator,
   BasicInfoFormSection,
@@ -587,3 +587,5 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
+
+    

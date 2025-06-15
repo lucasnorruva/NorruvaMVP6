@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import type { ProductFormData } from "@/types/productFormTypes"; // Import from the new types file
+import type { ProductFormData } from "@/types/productFormTypes"; // Import from the centralized types file
 
 interface EthicalSourcingFormSectionProps {
   form: UseFormReturn<ProductFormData>;
@@ -70,3 +70,5 @@ export default function EthicalSourcingFormSection({
     </div>
   );
 }
+
+    

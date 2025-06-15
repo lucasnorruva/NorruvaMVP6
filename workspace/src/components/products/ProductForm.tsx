@@ -1,11 +1,10 @@
-
 "use client";
 // --- File: ProductForm.tsx ---
 // Description: Main form component for creating or editing product DPPs.
+// AI loading states for text suggestions are now managed within individual section components.
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, type UseFormReturn } from "react-hook-form";
-import { formSchema, type ProductFormData } from "@/types/productFormTypes"; 
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -13,59 +12,45 @@ import {
   FormItem,
   FormLabel,
   FormControl,
-  FormDescription,
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIcon, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction, Handshake } from "lucide-react";
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIconLucide, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction as ConstructionIcon, Handshake } from "lucide-react"; // Renamed ImageIcon & Construction
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-// Corrected imports for all form sections using path aliases
-import BasicInfoFormSection from "@/components/products/form/BasicInfoFormSection";
-import ProductImageFormSection from "@/components/products/form/ProductImageFormSection";
-import BatteryDetailsFormSection from "@/components/products/form/BatteryDetailsFormSection";
-import SustainabilityComplianceFormSection from "@/components/products/form/SustainabilityComplianceFormSection";
-import TechnicalSpecificationsFormSection from "@/components/products/form/TechnicalSpecificationsFormSection";
-import CustomAttributesFormSection from "@/components/products/form/CustomAttributesFormSection";
-import ScipNotificationFormSection from "@/components/products/form/ScipNotificationFormSection";
-import EuCustomsDataFormSection from "@/components/products/form/EuCustomsDataFormSection";
-import TextileInformationFormSection from "@/components/products/form/TextileInformationFormSection";
-import ConstructionProductInformationFormSection from "@/components/products/form/ConstructionProductInformationFormSection";
-import EthicalSourcingFormSection from "@/components/products/form/EthicalSourcingFormSection";
+// Types & Schemas from the centralized types file
+import type { ProductFormData } from "@/types/productFormTypes";
+import { formSchema } from "@/types/productFormTypes";
 
+// Custom Form Sections - All using aliased paths from the barrel file
 import {
-  handleGenerateImageAI, 
+  AiIndicator,
+  BasicInfoFormSection,
+  ProductImageFormSection,
+  BatteryDetailsFormSection,
+  SustainabilityComplianceFormSection,
+  TechnicalSpecificationsFormSection,
+  CustomAttributesFormSection,
+  ScipNotificationFormSection,
+  EuCustomsDataFormSection,
+  TextileInformationFormSection,
+  ConstructionProductInformationFormSection,
+  EthicalSourcingFormSection
+} from "@/components/products/form";
+
+
+// AI Helper Utils
+import {
+  handleGenerateImageAI,
 } from "@/utils/aiFormHelpers";
+
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { CustomAttribute } from "@/types/dpp"; 
-
-interface AiIndicatorPropsUi { 
-  fieldOrigin?: 'AI_EXTRACTED' | 'manual';
-  fieldName: string;
-}
-
-const AiIndicatorUi: React.FC<AiIndicatorPropsUi> = ({ fieldOrigin, fieldName }) => {
-  if (fieldOrigin === 'AI_EXTRACTED') {
-    return (
-      <TooltipProvider>
-        <Tooltip delayDuration={100}>
-          <TooltipTrigger type="button" className="ml-1.5 cursor-help align-middle">
-            <Cpu className="h-4 w-4 text-info" />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-  return null;
-};
-
+import type { CustomAttribute, BatteryRegulationDetails, CarbonFootprintData, StateOfHealthData, RecycledContentData, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from "@/types/dpp";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface ProductFormProps {
   id?: string; 
@@ -426,7 +411,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
       <AccordionItem value="item-2">
         <AccordionTrigger className="text-lg font-semibold flex items-center">
-          <ImageIcon className="mr-2 h-5 w-5 text-primary" /> Product Image
+          <ImageIconLucide className="mr-2 h-5 w-5 text-primary" /> Product Image
         </AccordionTrigger>
         <AccordionContent>
           <ProductImageFormSection
@@ -532,7 +517,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       </AccordionItem>
 
       <AccordionItem value="item-10">
-        <AccordionTrigger className="text-lg font-semibold flex items-center"><Construction className="mr-2 h-5 w-5 text-primary" />Construction Product Information (if applicable)</AccordionTrigger>
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><ConstructionIcon className="mr-2 h-5 w-5 text-primary" />Construction Product Information (if applicable)</AccordionTrigger>
         <AccordionContent>
           <ConstructionProductInformationFormSection form={form} />
         </AccordionContent>

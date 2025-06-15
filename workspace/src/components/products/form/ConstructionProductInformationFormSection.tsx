@@ -1,4 +1,3 @@
-
 // --- File: ConstructionProductInformationFormSection.tsx ---
 // Description: Form section component for Construction Product Information.
 "use client";

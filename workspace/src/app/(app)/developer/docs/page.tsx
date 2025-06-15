@@ -30,7 +30,8 @@ import {
     Zap,
     Globe,
     Zap as ZapIconLucide,
-    Cpu // Added Cpu for Digital Twin
+    Cpu,
+    AppWindow // Added AppWindow for PWA guide
 } from "lucide-react";
 
 export default function DeveloperDocumentationHubPage() {
@@ -86,7 +87,7 @@ export default function DeveloperDocumentationHubPage() {
               <li><Link href="/developer/docs/regulatory-alignment" className="text-primary hover:underline flex items-center"><Scale className="mr-2 h-4 w-4" />Regulatory Alignment (ESPR, EPREL)</Link></li>
               <li><Link href="/developer/docs/cbam-concepts" className="text-primary hover:underline flex items-center"><Globe className="mr-2 h-4 w-4" />CBAM Concepts Guide</Link></li> 
               <li><Link href="/developer/docs/smart-contract-interactions" className="text-primary hover:underline flex items-center"><ZapIconLucide className="mr-2 h-4 w-4" />Smart Contract Interactions</Link></li>
-              <li><Link href="/developer/docs/digital-twin-guide" className="text-primary hover:underline flex items-center"><Cpu className="mr-2 h-4 w-4" />Digital Twin Guide (Conceptual)</Link></li> {/* Added Digital Twin Guide Link */}
+              <li><Link href="/developer/docs/digital-twin-guide" className="text-primary hover:underline flex items-center"><Cpu className="mr-2 h-4 w-4" />Digital Twin Guide (Conceptual)</Link></li> 
               <li><Link href="/developer/docs/data-management-best-practices" className="text-primary hover:underline flex items-center"><LayersIcon className="mr-2 h-4 w-4" />Data Management Best Practices</Link></li>
               <li><Link href="/developer/docs/qr-code-embedding" className="text-primary hover:underline flex items-center"><QrCode className="mr-2 h-4 w-4" />QR Code Generation &amp; Embedding</Link></li>
               <li><Link href="/developer/guides/auditor-integration" className="text-primary hover:underline flex items-center"><ShieldCheck className="mr-2 h-4 w-4" />Auditor Integration</Link></li>
@@ -107,6 +108,7 @@ export default function DeveloperDocumentationHubPage() {
               </h4>
               <ul className="list-none space-y-1.5 text-sm">
                 <li><Link href="/developer/docs/deployment-monitoring" className="text-primary hover:underline flex items-center"><ServerIconShadcn className="mr-2 h-4 w-4" />Deployment &amp; Monitoring Guide</Link></li>
+                <li><Link href="/developer/docs/pwa-guide" className="text-primary hover:underline flex items-center"><AppWindow className="mr-2 h-4 w-4" />PWA & Service Worker Guide</Link></li> {/* New Link */}
               </ul>
             </div>
             <div className="space-y-3">

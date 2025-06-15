@@ -1,87 +1,99 @@
-const CACHE_NAME = 'norruva-dpp-cache-v1.6'; // Incremented cache version
-const OFFLINE_URL = 'offline.html';
-const urlsToCache = [
+const CACHE_NAME = 'norruva-dpp-cache-v1.3'; // Incremented version
+const OFFLINE_URL = '/offline.html';
+const CORE_ASSETS = [
   '/',
   '/manifest.json',
   '/icons/icon-192x192.png',
   '/icons/icon-512x512.png',
-  '/offline.html',
-  // Add other critical static assets if known, e.g., global CSS, logo.
-  // Next.js assets (_next/static/...) are usually versioned and handled by its own caching,
-  // but core PWA assets are good to cache here.
+  OFFLINE_URL,
+  // Add paths to your main CSS and JS bundles if they are consistently named
+  // e.g., '/_next/static/css/main.css', '/_next/static/chunks/main-app.js'
+  // Be cautious with aggressively caching Next.js dynamic chunks as their names change.
 ];
 
 self.addEventListener('install', (event) => {
+  console.log('[Service Worker] Install event in progress.');
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('Opened cache');
-        // Add offline.html to cache during install
-        return cache.addAll(urlsToCache.concat(OFFLINE_URL));
-      })
+    caches.open(CACHE_NAME).then((cache) => {
+      console.log('[Service Worker] Caching core assets:', CORE_ASSETS);
+      return cache.addAll(CORE_ASSETS);
+    }).catch(error => {
+      console.error('[Service Worker] Failed to cache core assets:', error);
+    })
   );
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
+  console.log('[Service Worker] Activate event in progress.');
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
+            console.log('[Service Worker] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
     })
   );
-  self.clients.claim();
+  self.clients.claim(); // Ensure new SW takes control immediately
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.mode === 'navigate') {
+  const request = event.request;
+
+  // For navigation requests, try network first, then cache, then offline page.
+  if (request.mode === 'navigate') {
     event.respondWith(
       (async () => {
         try {
-          const preloadResponse = await event.preloadResponse;
-          if (preloadResponse) {
-            return preloadResponse;
-          }
-
-          const networkResponse = await fetch(event.request);
+          const networkResponse = await fetch(request);
           return networkResponse;
         } catch (error) {
-          console.log('Fetch failed; returning offline page instead.', error);
-
+          console.log('[Service Worker] Network request failed, trying cache for navigation:', request.url);
           const cache = await caches.open(CACHE_NAME);
-          const cachedResponse = await cache.match(OFFLINE_URL);
-          return cachedResponse;
+          const cachedResponse = await cache.match(request);
+          if (cachedResponse) {
+            return cachedResponse;
+          }
+          // If both network and cache fail, serve the offline page.
+          console.log('[Service Worker] Serving offline page for navigation failure.');
+          return await cache.match(OFFLINE_URL);
         }
       })()
     );
-  } else if (urlsToCache.includes(event.request.url) || event.request.destination === 'image' || event.request.destination === 'style' || event.request.destination === 'script') {
-    // Cache-first strategy for specified URLs and common asset types
-    event.respondWith(
-      caches.match(event.request).then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        return fetch(event.request).then((networkResponse) => {
-          // Optionally, add successfully fetched assets to cache
-          // if (networkResponse && networkResponse.status === 200) {
-          //   const responseToCache = networkResponse.clone();
-          //   caches.open(CACHE_NAME).then((cache) => {
-          //     cache.put(event.request, responseToCache);
-          //   });
-          // }
-          return networkResponse;
-        }).catch(error => {
-            console.log('Fetch failed for asset; no cache fallback.', event.request.url, error);
-            // For assets, if they are not in cache and network fails, let it fail.
-            // Alternatively, you could return a placeholder for images.
-        });
-      })
-    );
+    return;
   }
+
+  // For other requests (CSS, JS, images), use a cache-first strategy.
+  // If it's a core asset, it should be in the cache.
+  // For other assets, try cache, then network.
+  event.respondWith(
+    caches.match(request).then((cachedResponse) => {
+      if (cachedResponse) {
+        // console.log('[Service Worker] Serving from cache:', request.url);
+        return cachedResponse;
+      }
+      // console.log('[Service Worker] Fetching from network:', request.url);
+      return fetch(request).then((networkResponse) => {
+        // Optionally, cache new assets dynamically here if desired
+        // Be careful not to cache everything, especially API responses that change frequently.
+        // For example, cache only if it's a GET request and from your own origin or a known CDN.
+        if (request.method === 'GET' && 
+            (request.url.startsWith(self.origin) || request.url.startsWith('https://fonts.gstatic.com'))) {
+          // console.log('[Service Worker] Caching new asset:', request.url);
+          // const cache = await caches.open(CACHE_NAME);
+          // cache.put(request, networkResponse.clone());
+        }
+        return networkResponse;
+      }).catch(() => {
+        // For non-navigation requests, if network fails and not in cache,
+        // just let it fail (browser default behavior).
+        // Specific offline fallbacks for images/data can be added if needed.
+        // console.warn('[Service Worker] Failed to fetch from network or cache:', request.url);
+      });
+    })
+  );
 });

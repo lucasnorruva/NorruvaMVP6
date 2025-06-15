@@ -1,3 +1,4 @@
+
 // --- File: Product.ts ---
 // Description: Product related type definitions and mock data.
 
@@ -83,8 +84,8 @@ export interface DigitalProductPassport {
     status: 'draft' | 'published' | 'archived' | 'pending_review' | 'revoked' | 'flagged';
     dppStandardVersion?: string;
     dataSchemaVersion?: string;
-    onChainStatus?: string; // Added for Task 32
-    onChainLifecycleStage?: string; // Added for Task 32
+    onChainStatus?: string; 
+    onChainLifecycleStage?: string; 
   };
 
   blockchainIdentifiers?: {
@@ -158,7 +159,7 @@ export interface DashboardFiltersState {
   blockchainAnchored?: 'all' | 'anchored' | 'not_anchored';
 }
 
-export type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status' | 'metadata.onChainStatus'; // Added metadata.onChainStatus for Task 32
+export type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status' | 'metadata.onChainStatus';
 
 export interface SortConfig {
   key: SortableKeys | null;
@@ -200,8 +201,8 @@ export interface SimpleProductDetail {
   anchorTransactionHash?: string;
   ebsiStatus?: EbsiVerificationDetails['status']; 
   ebsiVerificationId?: string; 
-  onChainStatus?: string; // Added for Task 32
-  onChainLifecycleStage?: string; // Added for Task 32
+  onChainStatus?: string; 
+  onChainLifecycleStage?: string; 
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
@@ -238,6 +239,8 @@ export interface StoredUserProduct {
   modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
   materialsOrigin?: 'AI_EXTRACTED' | 'manual';
   sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+  keyCompliancePoints?: string;
+  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
   energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
   specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
   supplyChainLinks?: ProductSupplyChainLink[];
@@ -246,8 +249,6 @@ export interface StoredUserProduct {
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
   customAttributesJsonString?: string;
-  keyCompliancePoints?: string; 
-  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual'; 
   complianceData?: { 
     eprel?: Partial<DigitalProductPassport['compliance']['eprel']>;
     esprConformity?: Partial<DigitalProductPassport['compliance']['esprConformity']>;
@@ -259,7 +260,7 @@ export interface StoredUserProduct {
   authenticationVcId?: string; 
   ownershipNftLink?: OwnershipNftLink; 
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  metadata?: Partial<DigitalProductPassport['metadata']>; // Includes onChainStatus, onChainLifecycleStage
+  metadata?: Partial<DigitalProductPassport['metadata']>; 
   textileInformation?: Partial<TextileInformation>;
   constructionProductInformation?: Partial<ConstructionProductInformation>;
   conflictMineralsReportUrl?: string; 
@@ -300,7 +301,7 @@ export interface RichMockProduct {
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
   authenticationVcId?: string; 
   ownershipNftLink?: OwnershipNftLink; 
-  metadata?: Partial<DigitalProductPassport['metadata']>; // Includes onChainStatus, onChainLifecycleStage
+  metadata?: Partial<DigitalProductPassport['metadata']>; 
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
@@ -326,6 +327,7 @@ export interface PublicProductInfo {
   category: string;
   modelNumber: string;
   sku?: string;
+  gtin?: string; 
   nfcTagId?: string;
   rfidTagId?: string;
   anchorTransactionHash?: string;
@@ -340,8 +342,8 @@ export interface PublicProductInfo {
   ownershipNftLink?: OwnershipNftLink; 
   contractAddress?: string;
   tokenId?: string;
-  onChainStatus?: string; // Added for Task 32
-  onChainLifecycleStage?: string; // Added for Task 32
+  onChainStatus?: string; 
+  onChainLifecycleStage?: string; 
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
@@ -398,7 +400,7 @@ export interface DisplayableProduct {
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
   authenticationVcId?: string; 
   ownershipNftLink?: OwnershipNftLink; 
-  metadata?: Partial<DigitalProductPassport['metadata']>; // Includes onChainStatus, onChainLifecycleStage
+  metadata?: Partial<DigitalProductPassport['metadata']>; 
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
@@ -440,4 +442,3 @@ export interface TokenStatusResponse {
   status: string; 
   message?: string;
 }
-

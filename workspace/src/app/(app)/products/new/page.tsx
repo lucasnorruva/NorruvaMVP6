@@ -1,15 +1,17 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import type { ProductFormData } from "@/components/products/ProductForm";
+import type { ProductFormData } from "@/types/productFormTypes";
 import { extractProductData } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, Info, Edit, Compass, Wand2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, CarbonFootprintData, StateOfHealthData, RecycledContentData } from "@/types/dpp"; 
+import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, CarbonFootprintData, StateOfHealthData, RecycledContentData } from '@/types/dpp';
+import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp'; // Correctly import the constant
 import { fileToDataUri } from '@/utils/fileUtils';
 import AiExtractionSection from "@/components/products/new/AiExtractionSection";
 import ProductDetailsSection from "@/components/products/new/ProductDetailsSection";
@@ -59,6 +61,7 @@ interface BatteryRegulationOrigin {
   vcIdOrigin?: AiOrigin;
 }
 
+// Extended to include detailed compliance sections matching ProductForm
 export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRegulation' | 'compliance'> {
   productNameOrigin?: AiOrigin;
   productDescriptionOrigin?: AiOrigin;
@@ -69,63 +72,61 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
   energyLabelOrigin?: AiOrigin;
   specificationsOrigin?: AiOrigin;
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual' | undefined;
-  keyCompliancePointsOrigin?: AiOrigin; 
+  keyCompliancePoints?: string;
+  keyCompliancePointsOrigin?: AiOrigin;
   batteryRegulation?: Partial<BatteryRegulationDetails>;
   batteryRegulationOrigin?: BatteryRegulationOrigin;
   compliance?: {
     eprel?: Partial<ProductFormData['compliance']['eprel']>;
     esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
     scipNotification?: Partial<ScipNotificationDetails>;
-    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>; 
+    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>;
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
-  textileInformation?: Partial<TextileInformation>; 
-  constructionProductInformation?: Partial<ConstructionProductInformation>; 
-  onChainStatus?: string; // Added for Task 32
-  onChainLifecycleStage?: string; // Added for Task 32
-  conflictMineralsReportUrl?: string; 
-  fairTradeCertificationId?: string; 
-  ethicalSourcingPolicyUrl?: string; 
+  textileInformation?: Partial<TextileInformation>;
+  constructionProductInformation?: Partial<ConstructionProductInformation>;
+  onChainStatus?: string;
+  onChainLifecycleStage?: string;
+  conflictMineralsReportUrl?: string;
+  fairTradeCertificationId?: string;
+  ethicalSourcingPolicyUrl?: string;
 }
 
 
 export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulation' | 'compliance'> {
   id: string;
-  status: string; 
-  compliance: string; 
+  status: string;
+  compliance: string;
   lastUpdated: string;
   productCategory?: string;
-  keySustainabilityPoints?: string[]; 
-  keyCompliancePoints?: string; 
-  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual'; 
+  keySustainabilityPoints?: string[];
+  keyCompliancePoints?: string;
+  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
   energyLabelRating?: string;
   repairability?: { score: number; scale: number; detailsUrl?: string };
   recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[];
-  complianceSummary?: ProductComplianceSummary; 
-  
-  complianceData?: { 
+  complianceSummary?: ProductComplianceSummary;
+  complianceData?: {
     eprel?: Partial<ProductFormData['compliance']['eprel']>;
     esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
     scipNotification?: Partial<ScipNotificationDetails>;
-    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>; 
+    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>;
     battery_regulation?: Partial<ProductFormData['compliance']['battery_regulation']>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
-  textileInformation?: Partial<TextileInformation>; 
-  constructionProductInformation?: Partial<ConstructionProductInformation>; 
-  metadata?: Partial<InitialProductFormData>; // This should be the correct type for metadata storage
-  authenticationVcId?: string; 
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; 
-  blockchainIdentifiers?: InitialProductFormData['blockchainIdentifiers']; 
-  conflictMineralsReportUrl?: string; 
-  fairTradeCertificationId?: string; 
-  ethicalSourcingPolicyUrl?: string; 
+  textileInformation?: Partial<TextileInformation>;
+  constructionProductInformation?: Partial<ConstructionProductInformation>;
+  metadata?: Partial<InitialProductFormData>;
+  authenticationVcId?: string;
+  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  blockchainIdentifiers?: InitialProductFormData['blockchainIdentifiers'];
+  conflictMineralsReportUrl?: string;
+  fairTradeCertificationId?: string;
+  ethicalSourcingPolicyUrl?: string;
 }
-
-const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 
 const defaultBatteryRegulationState: BatteryRegulationDetails = {
   status: "not_applicable", batteryChemistry: "", batteryPassportId: "",
@@ -160,7 +161,7 @@ const defaultEuCustomsDataState: Partial<EuCustomsDataDetails> = {
   status: "N/A", declarationId: "", hsCode: "", countryOfOrigin: "",
   netWeightKg: null, grossWeightKg: null,
   customsValuation: { value: null, currency: "" },
-  cbamGoodsIdentifier: "", 
+  cbamGoodsIdentifier: "",
 };
 
 const defaultTextileInformationState: Partial<TextileInformation> = {
@@ -197,13 +198,13 @@ export default function AddNewProductPage() {
     productName: "", gtin: "", sku: "", nfcTagId: "", rfidTagId: "", productDescription: "", manufacturer: "", modelNumber: "",
     materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
     imageUrl: "", imageHint: "", imageUrlOrigin: undefined,
-    onChainStatus: "Unknown", // Added for Task 32
-    onChainLifecycleStage: "Unknown", // Added for Task 32
-    conflictMineralsReportUrl: "", 
-    fairTradeCertificationId: "", 
-    ethicalSourcingPolicyUrl: "", 
-    keyCompliancePoints: "", 
-    keyCompliancePointsOrigin: undefined, 
+    onChainStatus: "Unknown",
+    onChainLifecycleStage: "Unknown",
+    conflictMineralsReportUrl: "",
+    fairTradeCertificationId: "",
+    ethicalSourcingPolicyUrl: "",
+    keyCompliancePoints: "",
+    keyCompliancePointsOrigin: undefined,
     batteryRegulation: { ...defaultBatteryRegulationState },
     customAttributesJsonString: "",
     productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined,
@@ -217,8 +218,8 @@ export default function AddNewProductPage() {
       euCustomsData: { ...defaultEuCustomsDataState },
       battery_regulation: { ...defaultBatteryRegulationState },
     },
-    textileInformation: { ...defaultTextileInformationState }, 
-    constructionProductInformation: { ...defaultConstructionProductInformationState }, 
+    textileInformation: { ...defaultTextileInformationState },
+    constructionProductInformation: { ...defaultConstructionProductInformationState },
   };
 
   const [currentProductDataForForm, setCurrentProductDataForForm] = useState<InitialProductFormData>(defaultFormState);
@@ -231,13 +232,13 @@ export default function AddNewProductPage() {
       if (productToEdit) {
         const editData: InitialProductFormData = {
           ...productToEdit,
-          onChainStatus: productToEdit.metadata?.onChainStatus || "Unknown", // Map from metadata for Task 32
-          onChainLifecycleStage: productToEdit.metadata?.onChainLifecycleStage || "Unknown", // Map from metadata for Task 32
-          conflictMineralsReportUrl: productToEdit.conflictMineralsReportUrl || "", 
-          fairTradeCertificationId: productToEdit.fairTradeCertificationId || "", 
-          ethicalSourcingPolicyUrl: productToEdit.ethicalSourcingPolicyUrl || "", 
-          keyCompliancePoints: productToEdit.keyCompliancePoints || "", 
-          keyCompliancePointsOrigin: productToEdit.keyCompliancePointsOrigin || undefined, 
+          onChainStatus: productToEdit.metadata?.onChainStatus || "Unknown",
+          onChainLifecycleStage: productToEdit.metadata?.onChainLifecycleStage || "Unknown",
+          conflictMineralsReportUrl: productToEdit.conflictMineralsReportUrl || "",
+          fairTradeCertificationId: productToEdit.fairTradeCertificationId || "",
+          ethicalSourcingPolicyUrl: productToEdit.ethicalSourcingPolicyUrl || "",
+          keyCompliancePoints: productToEdit.keyCompliancePoints || "",
+          keyCompliancePointsOrigin: productToEdit.keyCompliancePointsOrigin || undefined,
           batteryRegulation: {
             ...defaultBatteryRegulationState,
             ...(productToEdit.batteryRegulation || {}),
@@ -279,9 +280,9 @@ export default function AddNewProductPage() {
                     : [],
             }
           },
-          textileInformation: { ...defaultTextileInformationState, ...(productToEdit.textileInformation || {}) }, 
-          constructionProductInformation: { ...defaultConstructionProductInformationState, ...(productToEdit.constructionProductInformation || {}) }, 
-          batteryRegulationOrigin: { ...defaultBatteryRegulationOriginState }, 
+          textileInformation: { ...defaultTextileInformationState, ...(productToEdit.textileInformation || {}) },
+          constructionProductInformation: { ...defaultConstructionProductInformationState, ...(productToEdit.constructionProductInformation || {}) },
+          batteryRegulationOrigin: { ...defaultBatteryRegulationOriginState },
           productNameOrigin: productToEdit.productNameOrigin || undefined,
           productDescriptionOrigin: productToEdit.productDescriptionOrigin || undefined,
           manufacturerOrigin: productToEdit.manufacturerOrigin || undefined,
@@ -311,12 +312,12 @@ export default function AddNewProductPage() {
     if (event.target.files && event.target.files[0]) {
       setFile(event.target.files[0]);
       setCurrentProductDataForForm(prev => ({
-        ...defaultFormState, 
+        ...defaultFormState,
         gtin: prev.gtin,
         productCategory: prev.productCategory,
-        compliance: { ...defaultFormState.compliance }, 
-        textileInformation: { ...defaultTextileInformationState }, 
-        constructionProductInformation: { ...defaultConstructionProductInformationState }, 
+        compliance: { ...defaultFormState.compliance },
+        textileInformation: { ...defaultTextileInformationState },
+        constructionProductInformation: { ...defaultConstructionProductInformationState },
       }));
       setError(null);
       setAiExtractionAppliedSuccessfully(false);
@@ -339,15 +340,15 @@ export default function AddNewProductPage() {
       const aiInitialFormData: Partial<InitialProductFormData> = {
         batteryRegulation: { ...defaultBatteryRegulationState },
         batteryRegulationOrigin: { ...defaultBatteryRegulationOriginState },
-        compliance: { 
+        compliance: {
           eprel: defaultFormState.compliance?.eprel,
           esprConformity: defaultFormState.compliance?.esprConformity,
           scipNotification: { ...defaultScipNotificationState },
           euCustomsData: { ...defaultEuCustomsDataState },
           battery_regulation: { ...defaultBatteryRegulationState },
         },
-        textileInformation: { ...defaultTextileInformationState }, 
-        constructionProductInformation: { ...defaultConstructionProductInformationState }, 
+        textileInformation: { ...defaultTextileInformationState },
+        constructionProductInformation: { ...defaultConstructionProductInformationState },
       };
 
       if (result.productName) { aiInitialFormData.productName = result.productName; aiInitialFormData.productNameOrigin = 'AI_EXTRACTED'; }
@@ -365,7 +366,7 @@ export default function AddNewProductPage() {
 
       if (result.energyLabel) { aiInitialFormData.energyLabel = result.energyLabel; aiInitialFormData.energyLabelOrigin = 'AI_EXTRACTED'; }
       
-      if (aiInitialFormData.batteryRegulation) { 
+      if (aiInitialFormData.batteryRegulation) {
         if (result.batteryRegulation?.batteryChemistry) {
             aiInitialFormData.batteryRegulation.batteryChemistry = result.batteryRegulation.batteryChemistry;
             if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.batteryChemistryOrigin = 'AI_EXTRACTED';
@@ -374,6 +375,7 @@ export default function AddNewProductPage() {
             aiInitialFormData.batteryRegulation.batteryPassportId = result.batteryRegulation.batteryPassportId;
             if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.batteryPassportIdOrigin = 'AI_EXTRACTED';
         }
+        
         if (result.batteryRegulation?.carbonFootprint) {
             aiInitialFormData.batteryRegulation.carbonFootprint = {
                 value: result.batteryRegulation.carbonFootprint.value ?? null,
@@ -387,6 +389,7 @@ export default function AddNewProductPage() {
             };
             if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.carbonFootprintOrigin = { valueOrigin: 'AI_EXTRACTED', unitOrigin: 'AI_EXTRACTED', calculationMethodOrigin: 'AI_EXTRACTED', scope1EmissionsOrigin: 'AI_EXTRACTED', scope2EmissionsOrigin: 'AI_EXTRACTED', scope3EmissionsOrigin: 'AI_EXTRACTED', dataSourceOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED' };
         }
+        
         if (result.batteryRegulation?.recycledContent) {
             aiInitialFormData.batteryRegulation.recycledContent = result.batteryRegulation.recycledContent.map(rc => ({
                 material: rc.material || "",
@@ -396,6 +399,7 @@ export default function AddNewProductPage() {
             }));
             if (aiInitialFormData.batteryRegulationOrigin) aiInitialFormData.batteryRegulationOrigin.recycledContentOrigin = result.batteryRegulation.recycledContent.map(() => ({ materialOrigin: 'AI_EXTRACTED', percentageOrigin: 'AI_EXTRACTED', sourceOrigin: 'AI_EXTRACTED', vcIdOrigin: 'AI_EXTRACTED' }));
         }
+        
         if (result.batteryRegulation?.stateOfHealth) {
             aiInitialFormData.batteryRegulation.stateOfHealth = {
                 value: result.batteryRegulation.stateOfHealth.value ?? null,
@@ -430,8 +434,8 @@ export default function AddNewProductPage() {
       aiInitialFormData.customAttributesJsonString = "";
       aiInitialFormData.onChainStatus = "Unknown";
       aiInitialFormData.onChainLifecycleStage = "Unknown";
-      aiInitialFormData.keyCompliancePoints = ""; 
-      aiInitialFormData.keyCompliancePointsOrigin = undefined; 
+      aiInitialFormData.keyCompliancePoints = "";
+      aiInitialFormData.keyCompliancePointsOrigin = undefined;
 
       setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData}));
       setAiExtractionAppliedSuccessfully(true);
@@ -463,15 +467,17 @@ export default function AddNewProductPage() {
 
       const productCoreData: StoredUserProduct = {
         id: isEditMode && editProductId ? editProductId : `USER_PROD_${Date.now().toString().slice(-6)}`,
-        ...formDataFromForm, 
+        ...formDataFromForm,
         productName: formDataFromForm.productName || "Unnamed Product",
         status: (isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.status) : "Draft") || "Draft",
-        compliance: (isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.compliance) : "N/A") || "N/A", 
+        compliance: (isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.compliance) : "N/A") || "N/A",
         lastUpdated: new Date().toISOString(),
+        
         supplyChainLinks: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.supplyChainLinks) || [] : [],
         lifecycleEvents: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.lifecycleEvents) || [] : [],
-        keyCompliancePoints: formDataFromForm.keyCompliancePoints, 
-        keyCompliancePointsOrigin: formDataFromForm.keyCompliancePointsOrigin, 
+        keyCompliancePoints: formDataFromForm.keyCompliancePoints,
+        keyCompliancePointsOrigin: formDataFromForm.keyCompliancePointsOrigin,
+        
         complianceData: {
           eprel: formDataFromForm.compliance?.eprel,
           esprConformity: formDataFromForm.compliance?.esprConformity,
@@ -480,40 +486,43 @@ export default function AddNewProductPage() {
           battery_regulation: formDataFromForm.compliance?.battery_regulation,
         },
         batteryRegulation: formDataFromForm.batteryRegulation,
-        textileInformation: formDataFromForm.textileInformation, 
-        constructionProductInformation: formDataFromForm.constructionProductInformation, 
-        metadata: { 
-          onChainStatus: formDataFromForm.onChainStatus, // Save from form for Task 32
-          onChainLifecycleStage: formDataFromForm.onChainLifecycleStage, // Save from form for Task 32
-          ...(isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata : {}), // Preserve other metadata
+        textileInformation: formDataFromForm.textileInformation,
+        constructionProductInformation: formDataFromForm.constructionProductInformation,
+        metadata: {
+          onChainStatus: formDataFromForm.onChainStatus,
+          onChainLifecycleStage: formDataFromForm.onChainLifecycleStage,
+          ...(isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata : {}),
           created_at: (isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata?.created_at : undefined) || new Date().toISOString(),
           last_updated: new Date().toISOString(),
           status: (isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata?.status as StoredUserProduct['status'] : 'draft') || 'draft',
           dppStandardVersion: (isEditMode && editProductId ? userProducts.find(p => p.id === editProductId)?.metadata?.dppStandardVersion : "CIRPASS v1.0 Draft") || "CIRPASS v1.0 Draft",
         },
-        complianceSummary: { 
-          overallStatus: 'Pending Review', 
+        
+        complianceSummary: {
+          overallStatus: 'Pending Review',
           eprel: { status: formDataFromForm.compliance?.eprel?.status || 'N/A', lastChecked: new Date().toISOString() },
-          ebsi: { status: 'N/A', lastChecked: new Date().toISOString() }, 
+          ebsi: { status: 'N/A', lastChecked: new Date().toISOString() },
           scip: formDataFromForm.compliance?.scipNotification ? {
             status: formDataFromForm.compliance.scipNotification.status || 'N/A',
             notificationId: formDataFromForm.compliance.scipNotification.notificationId,
+            
             lastChecked: new Date().toISOString(),
           } : undefined,
           euCustomsData: formDataFromForm.compliance?.euCustomsData ? {
             status: formDataFromForm.compliance.euCustomsData.status || 'N/A',
             declarationId: formDataFromForm.compliance.euCustomsData.declarationId,
-            cbamGoodsIdentifier: formDataFromForm.compliance.euCustomsData.cbamGoodsIdentifier, 
+            cbamGoodsIdentifier: formDataFromForm.compliance.euCustomsData.cbamGoodsIdentifier,
             lastChecked: new Date().toISOString(),
           } : undefined,
-          battery: formDataFromForm.compliance?.battery_regulation ? { 
+          battery: formDataFromForm.compliance?.battery_regulation ? {
             status: formDataFromForm.compliance.battery_regulation.status || 'not_applicable',
             batteryChemistry: formDataFromForm.compliance.battery_regulation.batteryChemistry,
+            
           } : undefined,
         },
-        conflictMineralsReportUrl: formDataFromForm.conflictMineralsReportUrl, 
-        fairTradeCertificationId: formDataFromForm.fairTradeCertificationId, 
-        ethicalSourcingPolicyUrl: formDataFromForm.ethicalSourcingPolicyUrl, 
+        conflictMineralsReportUrl: formDataFromForm.conflictMineralsReportUrl,
+        fairTradeCertificationId: formDataFromForm.fairTradeCertificationId,
+        ethicalSourcingPolicyUrl: formDataFromForm.ethicalSourcingPolicyUrl,
       };
 
 
@@ -521,8 +530,8 @@ export default function AddNewProductPage() {
         const productIndex = userProducts.findIndex(p => p.id === editProductId);
         if (productIndex > -1) {
           userProducts[productIndex] = {
-            ...userProducts[productIndex], 
-            ...productCoreData, 
+            ...userProducts[productIndex],
+            ...productCoreData,
           };
           localStorage.setItem(USER_PRODUCTS_LOCAL_STORAGE_KEY, JSON.stringify(userProducts));
           toast({ title: "Product Updated", description: `${productCoreData.productName} has been updated.`, variant: "default", action: <CheckCircle2 className="text-success" /> });
@@ -632,4 +641,3 @@ export default function AddNewProductPage() {
     </div>
   );
 }
-

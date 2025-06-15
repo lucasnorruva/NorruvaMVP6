@@ -1,4 +1,3 @@
-
 // --- File: Product.ts ---
 // Description: Product related type definitions and mock data.
 
@@ -54,6 +53,13 @@ export interface DocumentReference {
   addedTimestamp: string;
 }
 
+export interface OwnershipNftLink {
+  registryUrl?: string;
+  contractAddress: string;
+  tokenId: string;
+  chainName?: string;
+}
+
 export interface DigitalProductPassport {
   id: string;
   version?: number;
@@ -77,8 +83,8 @@ export interface DigitalProductPassport {
     status: 'draft' | 'published' | 'archived' | 'pending_review' | 'revoked' | 'flagged';
     dppStandardVersion?: string;
     dataSchemaVersion?: string;
-    onChainStatus?: string;
-    onChainLifecycleStage?: string;
+    onChainStatus?: string; 
+    onChainLifecycleStage?: string; 
   };
 
   blockchainIdentifiers?: {
@@ -89,12 +95,7 @@ export interface DigitalProductPassport {
   };
 
   authenticationVcId?: string;
-  ownershipNftLink?: {
-    registryUrl?: string;
-    contractAddress: string;
-    tokenId: string;
-    chainName?: string;
-  };
+  ownershipNftLink?: OwnershipNftLink;
 
   productDetails?: {
     description?: string;
@@ -107,6 +108,10 @@ export interface DigitalProductPassport {
     recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
     specifications?: string; 
     customAttributes?: CustomAttribute[];
+    conflictMineralsReportUrl?: string; 
+    fairTradeCertificationId?: string; 
+    ethicalSourcingPolicyUrl?: string; 
+    keyCompliancePoints?: string; 
   };
 
   textileInformation?: TextileInformation;
@@ -175,7 +180,7 @@ export interface SimpleProductDetail {
   imageUrl?: string;
   imageHint?: string;
   keySustainabilityPoints?: string[];
-  keyCompliancePoints?: string[];
+  keyCompliancePoints?: string; 
   specifications?: string; 
   customAttributes?: CustomAttribute[];
   materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
@@ -187,20 +192,23 @@ export interface SimpleProductDetail {
   lifecycleEvents?: SimpleLifecycleEvent[];
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   blockchainPlatform?: string;
   contractAddress?: string;
   tokenId?: string;
   anchorTransactionHash?: string;
   ebsiStatus?: EbsiVerificationDetails['status']; 
   ebsiVerificationId?: string; 
-  onChainStatus?: string;
-  onChainLifecycleStage?: string;
+  onChainStatus?: string; 
+  onChainLifecycleStage?: string; 
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
   lastUpdated?: string; 
+  conflictMineralsReportUrl?: string; 
+  fairTradeCertificationId?: string; 
+  ethicalSourcingPolicyUrl?: string; 
 }
 
 export interface StoredUserProduct {
@@ -238,20 +246,25 @@ export interface StoredUserProduct {
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
   customAttributesJsonString?: string;
+  keyCompliancePoints?: string; 
+  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual'; 
   complianceData?: { 
     eprel?: Partial<DigitalProductPassport['compliance']['eprel']>;
     esprConformity?: Partial<DigitalProductPassport['compliance']['esprConformity']>;
     scipNotification?: Partial<ScipNotificationDetails>;
-    euCustomsData?: Partial<EuCustomsDataDetails>;
+    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>;
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
-  textileInformation?: Partial<TextileInformation>; 
-  constructionProductInformation?: Partial<ConstructionProductInformation>; 
-  metadata?: Partial<DigitalProductPassport['metadata']>;
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
+  metadata?: Partial<DigitalProductPassport['metadata']>; 
+  textileInformation?: Partial<TextileInformation>;
+  constructionProductInformation?: Partial<ConstructionProductInformation>;
+  conflictMineralsReportUrl?: string; 
+  fairTradeCertificationId?: string; 
+  ethicalSourcingPolicyUrl?: string; 
 }
 
 export interface RichMockProduct {
@@ -269,7 +282,8 @@ export interface RichMockProduct {
   imageUrl?: string;
   imageHint?: string;
   materials?: string;
-  sustainabilityClaims?: string;
+  sustainabilityClaims?: string; 
+  keyCompliancePoints?: string; 
   energyLabel?: string;
   specifications?: string; 
   lifecycleEvents?: SimpleLifecycleEvent[];
@@ -284,12 +298,15 @@ export interface RichMockProduct {
   supplyChainLinks?: ProductSupplyChainLink[];
   customAttributes?: CustomAttribute[];
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
-  metadata?: Partial<DigitalProductPassport['metadata']>;
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
+  metadata?: Partial<DigitalProductPassport['metadata']>; 
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
+  conflictMineralsReportUrl?: string; 
+  fairTradeCertificationId?: string; 
+  ethicalSourcingPolicyUrl?: string; 
 }
 
 export interface PublicProductInfo {
@@ -300,6 +317,7 @@ export interface PublicProductInfo {
   imageHint?: string;
   productStory: string;
   sustainabilityHighlights: Array<{ iconName?: LucideIconName; text: string }>;
+  keyCompliancePoints?: string; 
   manufacturerName: string;
   manufacturerWebsite?: string;
   brandLogoUrl?: string;
@@ -308,6 +326,7 @@ export interface PublicProductInfo {
   category: string;
   modelNumber: string;
   sku?: string;
+  gtin?: string; // Added GTIN from ProductForm/DigitalProductPassport
   nfcTagId?: string;
   rfidTagId?: string;
   anchorTransactionHash?: string;
@@ -318,15 +337,18 @@ export interface PublicProductInfo {
   certifications?: PublicCertification[];
   customAttributes?: CustomAttribute[];
   documents?: DocumentReference[];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
   contractAddress?: string;
   tokenId?: string;
-  onChainStatus?: string;
-  onChainLifecycleStage?: string;
+  onChainStatus?: string; 
+  onChainLifecycleStage?: string; 
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
+  conflictMineralsReportUrl?: string; 
+  fairTradeCertificationId?: string; 
+  ethicalSourcingPolicyUrl?: string; 
 }
 
 export interface Supplier {
@@ -359,6 +381,7 @@ export interface DisplayableProduct {
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
   materials?: string;
   sustainabilityClaims?: string;
+  keyCompliancePoints?: string; 
   energyLabel?: string;
   specifications?: string; 
   lifecycleEvents?: SimpleLifecycleEvent[];
@@ -374,12 +397,15 @@ export interface DisplayableProduct {
   customAttributes?: CustomAttribute[];
   customAttributesJsonString?: string;
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string;
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; };
-  metadata?: Partial<DigitalProductPassport['metadata']>;
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
+  metadata?: Partial<DigitalProductPassport['metadata']>; 
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
   batteryRegulation?: BatteryRegulationDetails; 
+  conflictMineralsReportUrl?: string; 
+  fairTradeCertificationId?: string; 
+  ethicalSourcingPolicyUrl?: string; 
 }
 
 export interface AnchorResult {
@@ -415,4 +441,3 @@ export interface TokenStatusResponse {
   status: string; 
   message?: string;
 }
-

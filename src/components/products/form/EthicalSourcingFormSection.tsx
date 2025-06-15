@@ -70,7 +70,3 @@ export default function EthicalSourcingFormSection({
     </div>
   );
 }
-```
-  </change>
-  <change>
-    <file>/src/components/products/form/

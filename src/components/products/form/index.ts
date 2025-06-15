@@ -15,3 +15,4 @@ export { default as TechnicalSpecificationsFormSection } from './TechnicalSpecif
 export { default as TextileInformationFormSection } from './TextileInformationFormSection';
 export { default as EsprSpecificsFormSection } from './EsprSpecificsFormSection';
 export { default as CarbonFootprintFormSection } from './CarbonFootprintFormSection';
+export { default as DigitalTwinFormSection } from './DigitalTwinFormSection';

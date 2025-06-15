@@ -10,7 +10,7 @@ export const metadata: Metadata = {
   title: 'Norruva Digital Product Passport',
   description: 'Secure and Compliant Product Data Management',
   manifest: '/manifest.json', 
-  themeColor: '#29ABE2', // Corrected theme-color to Saturated Blue
+  themeColor: '#29ABE2',
 };
 
 export default function RootLayout({
@@ -20,11 +20,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      {/*
-        Next.js will automatically manage the <head> tag.
-        Font links are direct children of <html> and Next.js will optimize them.
-        Manifest and theme-color are handled by the metadata object.
-      */}
       <link rel="preconnect" href="https://fonts.googleapis.com" />
       <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
       <link
@@ -42,3 +37,6 @@ export default function RootLayout({
         </RoleProvider>
         <Toaster />
       </body>
+    </html>
+  );
+}

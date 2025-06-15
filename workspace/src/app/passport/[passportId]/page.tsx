@@ -1,3 +1,4 @@
+
 "use client";
 
 // --- File: page.tsx (Public Product Passport Viewer) ---
@@ -59,14 +60,14 @@ export default function PublicPassportPage() {
         documents: fetchedProduct.documents || [],
         authenticationVcId: fetchedProduct.authenticationVcId,
         ownershipNftLink: fetchedProduct.ownershipNftLink,
-        conflictMineralsReportUrl: fetchedProduct.conflictMineralsReportUrl, 
-        fairTradeCertificationId: fetchedProduct.fairTradeCertificationId, 
-        ethicalSourcingPolicyUrl: fetchedProduct.ethicalSourcingPolicyUrl, 
         productDetails: { 
             ...(fetchedProduct.productDetails || {}), 
             esprSpecifics: fetchedProduct.productDetails?.esprSpecifics,
             carbonFootprint: fetchedProduct.productDetails?.carbonFootprint, 
             digitalTwin: fetchedProduct.productDetails?.digitalTwin,
+            conflictMineralsReportUrl: fetchedProduct.productDetails?.conflictMineralsReportUrl,
+            fairTradeCertificationId: fetchedProduct.productDetails?.fairTradeCertificationId,
+            ethicalSourcingPolicyUrl: fetchedProduct.productDetails?.ethicalSourcingPolicyUrl,
         }
       });
       updateTrackedStatus(); 

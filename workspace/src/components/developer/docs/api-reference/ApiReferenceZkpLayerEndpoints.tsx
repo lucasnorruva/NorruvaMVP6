@@ -43,14 +43,14 @@ export default function ApiReferenceZkpLayerEndpoints({
               <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/zkp/submit-proof/{"{dppId}"}</code>
             </span>
             <br />
-            Submits a ZKP to attest to a specific claim about data within the DPP, without revealing the underlying data itself.
+            [ZKP Layer - Highly Conceptual] Allows a prover (e.g., manufacturer, supplier) to submit a Zero-Knowledge Proof (ZKP) related to a specific DPP. This endpoint is a placeholder for a complex ZKP system interaction.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <section>
             <h4 className="font-semibold mb-1">Path Parameters</h4>
             <ul className="list-disc list-inside text-sm space-y-1">
-              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">dppId</code> (string, required): The unique identifier of the Digital Product Passport.</li>
+              <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">dppId</code> (string, required): The unique identifier of the Digital Product Passport this proof relates to.</li>
             </ul>
           </section>
           <section>
@@ -58,7 +58,7 @@ export default function ApiReferenceZkpLayerEndpoints({
             <p className="text-sm mb-1">Details of the ZKP submission. This would be highly specific to the claim type and ZKP circuit being used. Includes <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">claimType</code>, <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">proofData</code>, and optional <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">publicInputs</code>.</p>
             <details className="border rounded-md">
               <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
-                <FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Request
+                <FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Request Body
               </summary>
               <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
                 <code>{exampleZkpSubmitRequestBody}</code>
@@ -91,14 +91,14 @@ export default function ApiReferenceZkpLayerEndpoints({
 
       <Card className="shadow-lg mt-6">
         <CardHeader>
-          <CardTitle className="text-lg">Verify ZKP Claim for a DPP</CardTitle>
+          <CardTitle className="text-lg">Verify Claim with ZKP for a DPP</CardTitle>
           <CardDescription>
             <span className="inline-flex items-center font-mono text-sm">
               <Badge variant="outline" className="bg-sky-100 text-sky-700 border-sky-300 mr-2 font-semibold">GET</Badge>
               <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/zkp/verify-claim/{"{dppId}"}?claimType=...</code>
             </span>
             <br />
-            Verifies a conceptual ZKP for a specific claim related to a DPP.
+            [ZKP Layer - Highly Conceptual] Allows a verifier to check if a specific claim for a DPP has a valid (mock) Zero-Knowledge Proof associated with it.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">

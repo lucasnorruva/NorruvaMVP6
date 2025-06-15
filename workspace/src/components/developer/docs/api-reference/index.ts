@@ -10,5 +10,3 @@ export { default as ApiReferencePrivateLayerEndpoints } from './ApiReferencePriv
 export { default as ApiReferenceZkpLayerEndpoints } from './ApiReferenceZkpLayerEndpoints'; 
 export { default as BatchUpdateDpps } from './BatchUpdateDpps'; 
 export { default as ExportDpps } from './ExportDpps'; 
-
-    

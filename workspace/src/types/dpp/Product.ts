@@ -4,7 +4,7 @@
 import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle';
 import type {
   Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification,
-  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, EsprSpecifics, CarbonFootprintData, DigitalTwinData
+  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, EsprSpecifics, CarbonFootprintData
 } from './Compliance'; 
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -61,6 +61,12 @@ export interface OwnershipNftLink {
   chainName?: string;
 }
 
+export interface DigitalTwinData { // Conceptual Data for Digital Twin
+  uri?: string; 
+  sensorDataEndpoint?: string; 
+  realTimeStatus?: string; 
+  predictiveMaintenanceAlerts?: string; 
+}
 
 export interface DigitalProductPassport {
   id: string;

@@ -15,37 +15,15 @@ import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
 import { ServiceProviderQuickActionsCard } from "./ServiceProviderQuickActionsCard";
 import { 
     Wrench, CheckCircle, AlertTriangle, Clock, Search, MoreHorizontal, Eye, MessageSquare, ListChecks, BarChart3,
-    UserCircle, Tool, ArrowUp, ArrowDown, ChevronsUpDown, Filter as FilterIcon, Settings, PackageSearch, FileText as FileTextIcon
+    UserCircle, Tool, ArrowUp, ArrowDown, ChevronsUpDown, Filter as FilterIcon, Settings, PackageSearch, FileText as FileTextIcon, Loader2, Bot
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from '@/lib/utils';
-import { useToast } from "@/hooks/use-toast"; // Import useToast
+import { useToast } from '@/hooks/use-toast'; // Import useToast
 import { useRouter } from 'next/navigation';
-
-interface ServiceJob {
-  id: string;
-  productId: string;
-  productName: string;
-  customerName: string;
-  location: string;
-  issue: string;
-  status: 'Scheduled' | 'In Progress' | 'Completed' | 'On Hold' | 'Cancelled';
-  priority: 'High' | 'Medium' | 'Low';
-  scheduledDate: string; // ISO string
-  assignedTechnician?: string;
-  notes?: string;
-}
-
-const mockServiceJobs: ServiceJob[] = [
-  { id: "JOB001", productId: "PROD001", productName: "EcoFriendly Refrigerator X2000", customerName: "Alice Smith", location: "123 Main St, Anytown", issue: "Cooling unit malfunction, not cooling below 10°C.", status: "Scheduled", priority: "High", scheduledDate: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(), assignedTechnician: "John Doe", notes: "Customer reports loud humming noise." },
-  { id: "JOB002", productId: "DPP005", productName: "High-Performance EV Battery", customerName: "Bob Johnson Motors", location: "456 Industrial Rd, Techville", issue: "Requires full diagnostic check and State of Health (SoH) report.", status: "In Progress", priority: "Medium", scheduledDate: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000).toISOString(), assignedTechnician: "Jane Roe", notes: "Vehicle is on-site. Follow Protocol 7-B for diagnostics." },
-  { id: "JOB003", productId: "USER_PROD123456", productName: "Custom Craft Wooden Chair", customerName: "Charlie Brown Furnishings", location: "789 Artisan Way, Craftburg", issue: "One leg attachment loose, requires re-securing.", status: "Completed", priority: "Low", scheduledDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000).toISOString(), assignedTechnician: "John Doe", notes: "Reinforced with L-bracket. Customer satisfied." },
-  { id: "JOB004", productId: "PROD002", productName: "Smart LED Bulb (4-Pack)", customerName: "Diana Prince Home", location: "101 Century Ave, Metrocity", issue: "Connectivity issues with smart home hub.", status: "On Hold", priority: "Medium", scheduledDate: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(), notes: "Waiting for customer to provide hub details. Followed up on 2024-08-09." },
-  { id: "JOB005", productId: "DPP001", productName: "EcoFriendly Refrigerator X2000", customerName: "Edward Green", location: "22 Park Lane, Greenside", issue: "Annual maintenance check.", status: "Scheduled", priority: "Low", scheduledDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), assignedTechnician: "Sarah Lee" },
-  { id: "JOB006", productId: "DPP006", productName: "EcoSmart Insulation Panel R50", customerName: "BuildIt Construction", location: "Site Alpha, New Development Zone", issue: "Post-installation inspection and thermal performance check.", status: "Scheduled", priority: "High", scheduledDate: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString(), assignedTechnician: "Jane Roe", notes: "Bring thermal camera." },
-  { id: "JOB007", productId: "DPP001", productName: "EcoFriendly Refrigerator X2000", customerName: "Retro Coolers Ltd.", location: "Vintage Appliance Expo", issue: "Display model setup and calibration.", status: "Completed", priority: "Medium", scheduledDate: new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString(), assignedTechnician: "John Doe" },
-  { id: "JOB008", productId: "DPP005", productName: "High-Performance EV Battery", customerName: "Future Auto R&D", location: "Tech Park, Suite 300", issue: "Investigate reported BMS error code P0A80.", status: "In Progress", priority: "High", scheduledDate: new Date().toISOString(), assignedTechnician: "Mike Brown", notes: "Error intermittent. Check diagnostic logs on arrival." },
-];
+import { MOCK_SERVICE_JOBS, MOCK_DPPS } from '@/data'; // Import mock data
+import type { ServiceJob } from '@/types/dpp'; // Import type
+import { suggestMaintenanceSchedule, type MaintenanceSuggestion } from "@/ai/flows/suggest-maintenance-schedule";
 
 
 interface JobFilters {
@@ -80,9 +58,15 @@ const SortableJobHeader: React.FC<{ columnKey: SortableJobKeys, title: string, o
 
 export const ServiceProviderDashboard = () => {
   const router = useRouter();
-  const { toast } = useToast(); // Initialize toast
+  const { toast } = useToast(); 
   const [filters, setFilters] = useState<JobFilters>({ search: '', status: 'All', priority: 'All', dateFrom: undefined, dateTo: undefined });
   const [sortConfig, setSortConfig] = useState<JobSortConfig>({ key: 'scheduledDate', direction: 'ascending' });
+  
+  const [aiProductId, setAiProductId] = useState("");
+  const [aiMaintenanceSuggestion, setAiMaintenanceSuggestion] = useState<MaintenanceSuggestion | null>(null);
+  const [isLoadingAiMaintenance, setIsLoadingAiMaintenance] = useState(false);
+  const [aiMaintenanceError, setAiMaintenanceError] = useState<string | null>(null);
+
 
   const handleSort = (key: SortableJobKeys) => {
     let direction: 'ascending' | 'descending' = 'ascending';
@@ -113,7 +97,7 @@ export const ServiceProviderDashboard = () => {
   };
 
   const filteredAndSortedJobs = useMemo(() => {
-    let tempJobs = [...mockServiceJobs];
+    let tempJobs = [...MOCK_SERVICE_JOBS];
     if (filters.search) {
       const searchLower = filters.search.toLowerCase();
       tempJobs = tempJobs.filter(job =>
@@ -144,7 +128,7 @@ export const ServiceProviderDashboard = () => {
             let valA = a[sortConfig.key!];
             let valB = b[sortConfig.key!];
 
-            if (valA === undefined || valA === null) valA = ""; // Handle undefined/null for sorting
+            if (valA === undefined || valA === null) valA = ""; 
             if (valB === undefined || valB === null) valB = "";
 
             if (sortConfig.key === 'scheduledDate') {
@@ -167,7 +151,7 @@ export const ServiceProviderDashboard = () => {
   const jobsOverdue = useMemo(() => {
     const today = new Date();
     today.setHours(0,0,0,0);
-    return mockServiceJobs.filter(j => new Date(j.scheduledDate) < today && j.status !== 'Completed' && j.status !== 'Cancelled').length;
+    return MOCK_SERVICE_JOBS.filter(j => new Date(j.scheduledDate) < today && j.status !== 'Completed' && j.status !== 'Cancelled').length;
   }, []);
 
   const performanceKPIs = [
@@ -176,17 +160,98 @@ export const ServiceProviderDashboard = () => {
     { title: "Customer Satisfaction (CSAT)", value: "4.8/5", icon: UserCircle, trend: "+0.1", trendDirection: "up" as const, description: "Based on recent surveys" },
   ];
 
+  const handleGetAiMaintenanceTips = async () => {
+    if (!aiProductId.trim()) {
+      toast({ title: "Product ID Required", description: "Please enter a Product ID.", variant: "destructive" });
+      return;
+    }
+    const product = MOCK_DPPS.find(p => p.id === aiProductId.trim());
+    if (!product) {
+      toast({ title: "Product Not Found", description: `Product with ID "${aiProductId}" not found.`, variant: "destructive" });
+      return;
+    }
+
+    setIsLoadingAiMaintenance(true);
+    setAiMaintenanceSuggestion(null);
+    setAiMaintenanceError(null);
+
+    const usageData = `Servicing product ID: ${product.id}. Category: ${product.category}. Current status: ${product.metadata.status}.`;
+    try {
+      const suggestion = await suggestMaintenanceSchedule({
+        productId: product.id,
+        productName: product.productName,
+        productCategory: product.category,
+        usageData: usageData,
+      });
+      setAiMaintenanceSuggestion(suggestion);
+      toast({ title: "AI Maintenance Tips Received", description: `Suggestions generated for ${product.productName}.` });
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+      setAiMaintenanceError(errorMessage);
+      toast({ title: "AI Suggestion Error", description: errorMessage, variant: "destructive" });
+    } finally {
+      setIsLoadingAiMaintenance(false);
+    }
+  };
+
+
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6"> {/* Adjusted grid for 5 items */}
-        <MetricCard title="Active Jobs" value={mockServiceJobs.filter(j => j.status === 'In Progress' || j.status === 'Scheduled').length} icon={Wrench} />
-        <MetricCard title="Jobs Due Today" value={mockServiceJobs.filter(j => new Date(j.scheduledDate).toDateString() === new Date().toDateString() && j.status !== 'Completed' && j.status !== 'Cancelled').length} icon={CalendarDays} trendDirection="neutral" />
-        <MetricCard title="High Priority Open" value={mockServiceJobs.filter(j => j.priority === 'High' && (j.status === 'Scheduled' || j.status === 'In Progress')).length} icon={AlertTriangle} trendDirection="up" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6"> 
+        <MetricCard title="Active Jobs" value={MOCK_SERVICE_JOBS.filter(j => j.status === 'In Progress' || j.status === 'Scheduled').length} icon={Wrench} />
+        <MetricCard title="Jobs Due Today" value={MOCK_SERVICE_JOBS.filter(j => new Date(j.scheduledDate).toDateString() === new Date().toDateString() && j.status !== 'Completed' && j.status !== 'Cancelled').length} icon={CalendarDays} trendDirection="neutral" />
+        <MetricCard title="High Priority Open" value={MOCK_SERVICE_JOBS.filter(j => j.priority === 'High' && (j.status === 'Scheduled' || j.status === 'In Progress')).length} icon={AlertTriangle} trendDirection="up" />
         <MetricCard title="Jobs Overdue" value={jobsOverdue} icon={AlertTriangle} trendDirection={jobsOverdue > 0 ? "up" : "neutral"} className={jobsOverdue > 0 ? "border-destructive" : ""} />
-        <MetricCard title="Completed This Month" value={mockServiceJobs.filter(j => j.status === 'Completed' && new Date(j.scheduledDate).getMonth() === new Date().getMonth()).length} icon={CheckCircle} />
+        <MetricCard title="Completed This Month" value={MOCK_SERVICE_JOBS.filter(j => j.status === 'Completed' && new Date(j.scheduledDate).getMonth() === new Date().getMonth()).length} icon={CheckCircle} />
       </div>
       
       <ServiceProviderQuickActionsCard />
+
+      <Card className="shadow-lg">
+        <CardHeader>
+          <CardTitle className="font-headline flex items-center"><Tool className="mr-2 h-5 w-5 text-primary" />Product Technical Data & AI Maintenance Advisor</CardTitle>
+          <CardDescription>Enter a Product ID to view its details and get AI-powered maintenance suggestions.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex items-end gap-2">
+            <div className="flex-grow">
+              <Label htmlFor="aiProductIdInput">Product ID</Label>
+              <Input 
+                id="aiProductIdInput" 
+                placeholder="Enter Product ID (e.g., DPP001)"
+                value={aiProductId}
+                onChange={(e) => setAiProductId(e.target.value)}
+              />
+            </div>
+            <Button onClick={handleGetAiMaintenanceTips} disabled={isLoadingAiMaintenance || !aiProductId.trim()}>
+              {isLoadingAiMaintenance ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Bot className="mr-2 h-4 w-4" />}
+              Get AI Tips
+            </Button>
+          </div>
+          {isLoadingAiMaintenance && <p className="text-sm text-muted-foreground">Fetching AI suggestions...</p>}
+          {aiMaintenanceError && <p className="text-sm text-destructive">Error: {aiMaintenanceError}</p>}
+          {aiMaintenanceSuggestion && (
+            <div className="p-4 border rounded-lg bg-muted/30 space-y-3 mt-3">
+              <div>
+                <h5 className="font-semibold text-primary">Next Recommended Checkup:</h5>
+                <p className="text-sm text-foreground">{aiMaintenanceSuggestion.nextCheckupDate}</p>
+              </div>
+              <div>
+                <h5 className="font-semibold text-primary">Suggested Actions:</h5>
+                <ul className="list-disc list-inside text-sm text-foreground space-y-1 pl-4">
+                  {aiMaintenanceSuggestion.suggestedActions.map((action, idx) => (
+                    <li key={idx}>{action}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h5 className="font-semibold text-primary">Reasoning:</h5>
+                <p className="text-sm text-foreground italic">{aiMaintenanceSuggestion.reasoning}</p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <Card className="shadow-lg">
         <CardHeader>
@@ -308,4 +373,3 @@ export const ServiceProviderDashboard = () => {
     </div>
   );
 };
-

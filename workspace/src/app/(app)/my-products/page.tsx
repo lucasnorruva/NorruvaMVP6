@@ -10,7 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Badge } from '@/components/ui/badge';
 import { Bookmark, Eye, Trash2, Info, ShoppingBag, Briefcase, CalendarDays, CheckCircle, AlertTriangle, PackageSearch } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { MOCK_PUBLIC_PASSPORTS } from '@/data'; 
+import { MOCK_PUBLIC_PASSPORTS, MOCK_DPPS } from '@/data'; 
 import type { PublicProductInfo, DigitalProductPassport } from '@/types/dpp';
 import { TRACKED_PRODUCTS_STORAGE_KEY } from '@/types/dpp'; 
 import { cn } from "@/lib/utils";
@@ -65,6 +65,8 @@ export default function MyTrackedProductsPage() {
     
     const productsToDisplay: TrackedProductDisplayInfo[] = trackedIds.map(id => {
       const publicInfo = MOCK_PUBLIC_PASSPORTS[id] || MOCK_PUBLIC_PASSPORTS[`PROD${id.replace('DPP','')}`] ; 
+      const dppInfo = MOCK_DPPS.find(dpp => dpp.id === id); 
+
       if (publicInfo) {
         return {
           passportId: publicInfo.passportId,
@@ -73,8 +75,21 @@ export default function MyTrackedProductsPage() {
           category: publicInfo.category,
           imageHint: publicInfo.imageHint,
           manufacturerName: publicInfo.manufacturerName,
-          status: publicInfo.status,
-          lastUpdated: publicInfo.lastUpdated,
+          status: dppInfo?.metadata.status,
+          lastUpdated: dppInfo?.metadata.last_updated,
+        };
+      }
+      
+      if (dppInfo) {
+        return {
+          passportId: dppInfo.id,
+          productName: dppInfo.productName,
+          imageUrl: dppInfo.productDetails?.imageUrl || "https://placehold.co/300x225.png?text=N/A",
+          category: dppInfo.category,
+          imageHint: dppInfo.productDetails?.imageHint,
+          manufacturerName: dppInfo.manufacturer?.name,
+          status: dppInfo.metadata.status,
+          lastUpdated: dppInfo.metadata.last_updated,
         };
       }
       return {
@@ -200,4 +215,3 @@ export default function MyTrackedProductsPage() {
     </div>
   );
 }
-

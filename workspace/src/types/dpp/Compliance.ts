@@ -37,7 +37,7 @@ export interface ScipNotificationDetails {
 }
 
 export interface EuCustomsDataDetails {
-  status?: 'Verified' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'N/A' | string;
+  status?: 'Verified' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'N/A' | 'CBAM Relevant - Verified' | 'CBAM Relevant - Pending' | string; // Added CBAM status
   declarationId?: string;
   hsCode?: string;
   countryOfOrigin?: string; // ISO 3166-1 Alpha-2
@@ -192,7 +192,7 @@ export interface ConstructionProductInformation {
 export interface TransitProduct {
   id: string;
   name: string;
-  category?: string; // Added category to TransitProduct
+  category?: string; 
   stage: string;
   eta: string;
   dppStatus: ProductComplianceSummary['overallStatus'];

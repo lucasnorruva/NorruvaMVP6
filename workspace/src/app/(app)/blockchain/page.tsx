@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useEffect, useState, FormEvent, useCallback, useMemo } from "react";
@@ -14,7 +13,7 @@ import {
     KeyRound, FileText, Send, Loader2, HelpCircle, ExternalLink, FileJson, PlayCircle, Package, 
     PlusCircle, CalendarDays, Sigma, Layers3, Tag, CheckCircle as CheckCircleLucide, 
     Server as ServerIcon, Link as LinkIconPath, FileCog, BookOpen, CircleDot, Clock, Share2, Users, Factory, Truck, ShoppingCart, Recycle as RecycleIconLucide, Upload, MessageSquare,
-    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers, FileLock, Users2 as DaoIcon
+    FileEdit, MessageSquareWarning, ListCollapse, Hash, Layers, FileLock, Users2 as DaoIcon, ThumbsUp, ThumbsDown
 } from "lucide-react";
 import type { DigitalProductPassport, VerifiableCredentialReference, MintTokenResponse, UpdateTokenMetadataResponse, TokenStatusResponse, OwnershipNftLink } from "@/types/dpp";
 import { useToast } from "@/hooks/use-toast";
@@ -168,6 +167,21 @@ const getTokenStatusVisuals = (status?: string) => {
   return { icon: InfoIconLucide, color: "text-muted-foreground", badge: "secondary" as const };
 };
 
+interface MockDaoProposal {
+  id: string;
+  title: string;
+  description: string;
+  status: 'Voting Active' | 'Succeeded & Executed' | 'Defeated' | 'Queued';
+  votesFor?: number;
+  votesAgainst?: number;
+}
+
+const initialMockDaoProposals: MockDaoProposal[] = [
+  { id: "PROP001", title: "Enable Transfer for Token DPP001", description: "Owner request for resale of EcoSmart Refrigerator X500.", status: "Voting Active", votesFor: 250, votesAgainst: 50 },
+  { id: "PROP002", title: "Grant MINTER_ROLE to 0xNewMinterAddr...", description: "Onboarding a new manufacturing partner for smart bulb production.", status: "Succeeded & Executed" },
+  { id: "PROP003", title: "Adjust Voting Quorum to 3%", description: "Proposal to lower the quorum threshold for faster decision-making.", status: "Defeated", votesFor: 120, votesAgainst: 300 },
+  { id: "PROP004", title: "Pause DPPToken Contract for Maintenance", description: "Scheduled upgrade of DPPToken logic requires temporary pause.", status: "Queued" },
+];
 
 export default function BlockchainPage() {
   const [filter, setFilter] = useState<"all" | "anchored" | "not_anchored">("all");
@@ -203,7 +217,7 @@ export default function BlockchainPage() {
   const [isViewingTokenMetadata, setIsViewingTokenMetadata] = useState(false);
 
   const [onChainStatusUpdate, setOnChainStatusUpdate] = useState<string>("active");
-  const [criticalEventDescription, setCriticalEventDescription] = useState<string>(""); // Renamed from criticalEventLog
+  const [criticalEventDescription, setCriticalEventDescription] = useState<string>("");
   const [criticalEventSeverity, setCriticalEventSeverity] = useState<'High' | 'Medium' | 'Low'>("High");
   const [isUpdatingOnChainStatusLoading, setIsUpdatingOnChainStatusLoading] = useState(false);
   const [isLoggingCriticalEventLoading, setIsLoggingCriticalEventLoading] = useState(false);
@@ -220,6 +234,13 @@ export default function BlockchainPage() {
   const [nftContractAddress, setNftContractAddress] = useState<string>("");
   const [nftTokenId, setNftTokenId] = useState<string>("");
   const [nftChainName, setNftChainName] = useState<string>("");
+
+  const [proposalTargetTokenId, setProposalTargetTokenId] = useState<string>("");
+  const [proposalActionType, setProposalActionType] = useState<string>("enableTransfer");
+  const [proposalTargetAddress, setProposalTargetAddress] = useState<string>("");
+  const [proposalDescription, setProposalDescription] = useState<string>("");
+  const [isSubmittingProposal, setIsSubmittingProposal] = useState(false);
+  const [daoProposals, setDaoProposals] = useState<MockDaoProposal[]>(initialMockDaoProposals);
 
 
   const lifecycleStageOptions = ["Design", "Manufacturing", "QualityAssurance", "Distribution", "InUse", "Maintenance", "EndOfLife"];
@@ -290,6 +311,7 @@ export default function BlockchainPage() {
       setNftContractAddress(dpp.ownershipNftLink?.contractAddress || contractAddr || "");
       setNftTokenId(dpp.ownershipNftLink?.tokenId || tokenId || "");
       setNftChainName(dpp.ownershipNftLink?.chainName || dpp.blockchainIdentifiers?.platform || "");
+      setProposalTargetTokenId(dpp.id); // Pre-fill for DAO proposal
 
     } else {
       setUpdateTokenId("");
@@ -302,6 +324,7 @@ export default function BlockchainPage() {
       setNftContractAddress("");
       setNftTokenId("");
       setNftChainName("");
+      setProposalTargetTokenId("");
     }
     setFetchedCredential(null);
     setMintResponse(null);
@@ -321,7 +344,6 @@ export default function BlockchainPage() {
           setStatusTokenId(tokenId);
           setViewTokenId(tokenId);
       }
-       // Update NFT form fields if ownership link was part of the update
       if (updated.ownershipNftLink) {
         setNftRegistryUrl(updated.ownershipNftLink.registryUrl || "");
         setNftContractAddress(updated.ownershipNftLink.contractAddress);
@@ -715,6 +737,62 @@ export default function BlockchainPage() {
         toast({ title: "Linking NFT Failed", description: errorMsg, variant: "destructive" });
     }
     setIsActionLoading(false);
+  };
+
+  const handleSubmitMockProposal = async (e: FormEvent) => {
+    e.preventDefault();
+    if (!proposalTargetTokenId && (proposalActionType === 'enableTransfer')) {
+      toast({ title: "Token ID Required", description: "Please specify a Target Token ID for 'Enable Transfer' action.", variant: "destructive" });
+      return;
+    }
+    if (!proposalTargetAddress && (proposalActionType.includes("ROLE"))) {
+      toast({ title: "Target Address Required", description: "Please specify a Target Address for role management actions.", variant: "destructive" });
+      return;
+    }
+    if (!proposalDescription.trim()) {
+      toast({ title: "Proposal Description Required", description: "Please provide a rationale for the proposal.", variant: "destructive" });
+      return;
+    }
+
+    setIsSubmittingProposal(true);
+    await new Promise(resolve => setTimeout(resolve, 700)); // Simulate network delay
+
+    // In a real app, this would interact with the Governor contract.
+    // Here, we just show a toast.
+    const newProposal: MockDaoProposal = {
+        id: `PROP${(daoProposals.length + 1).toString().padStart(3,'0')}`,
+        title: `${proposalActionType.replace(/([A-Z])/g, ' $1').trim()} for ${proposalActionType.includes("ROLE") ? proposalTargetAddress.substring(0,10) + "..." : "Token " + proposalTargetTokenId}`,
+        description: proposalDescription,
+        status: 'Voting Active',
+        votesFor: 0,
+        votesAgainst: 0
+    };
+    setDaoProposals(prev => [newProposal, ...prev]);
+
+    toast({
+      title: "Mock DAO Proposal Submitted",
+      description: `Proposal "${newProposal.title}" submitted successfully. It is now in 'Voting Active' state (conceptual).`,
+      duration: 7000,
+    });
+    setProposalTargetTokenId(selected?.id || ""); // Reset to selected product or clear
+    // setProposalActionType("enableTransfer"); // Keep current for potentially more proposals of same type
+    setProposalTargetAddress("");
+    setProposalDescription("");
+    setIsSubmittingProposal(false);
+  };
+  
+  const handleVoteOnProposal = (proposalId: string, voteType: 'for' | 'against') => {
+    setDaoProposals(prev => prev.map(p => {
+      if (p.id === proposalId && p.status === 'Voting Active') {
+        return {
+          ...p,
+          votesFor: voteType === 'for' ? (p.votesFor || 0) + (Math.floor(Math.random() * 50) + 10) : p.votesFor,
+          votesAgainst: voteType === 'against' ? (p.votesAgainst || 0) + (Math.floor(Math.random() * 20) + 5) : p.votesAgainst,
+        };
+      }
+      return p;
+    }));
+    toast({title: "Vote Recorded (Mock)", description: `Your vote on proposal ${proposalId} has been conceptually recorded.`});
   };
 
 
@@ -1164,6 +1242,91 @@ export default function BlockchainPage() {
                                     </Card>
                                 </div>
                             </div>
+                             {/* DAO Governance Section */}
+                            <Card className="bg-background mt-6 md:col-span-2">
+                                <CardHeader>
+                                    <CardTitle className="text-md flex items-center">
+                                        <DaoIcon className="mr-2 h-5 w-5 text-primary" /> DAO Governance &amp; Proposals (Conceptual)
+                                    </CardTitle>
+                                    <CardDescription className="text-xs">Simulate creating and interacting with DAO proposals for DPPToken management.</CardDescription>
+                                </CardHeader>
+                                <CardContent className="space-y-6">
+                                    <form onSubmit={handleSubmitMockProposal} className="p-4 border rounded-md space-y-4 bg-muted/30">
+                                        <h4 className="font-medium text-sm text-foreground">Create New Mock Proposal</h4>
+                                        <div>
+                                            <Label htmlFor="proposalTokenId">Target Token ID (for 'Enable Transfer')</Label>
+                                            <Input id="proposalTokenId" value={proposalTargetTokenId} onChange={e => setProposalTargetTokenId(e.target.value)} placeholder="e.g., DPP001" disabled={proposalActionType !== 'enableTransfer'} />
+                                        </div>
+                                        <div>
+                                            <Label htmlFor="proposalActionType">Action Type</Label>
+                                            <Select value={proposalActionType} onValueChange={setProposalActionType}>
+                                                <SelectTrigger id="proposalActionType"><SelectValue /></SelectTrigger>
+                                                <SelectContent>
+                                                    <SelectItem value="enableTransfer">Enable Transfer for Token</SelectItem>
+                                                    <SelectItem value="grantMinterRole">Grant MINTER_ROLE</SelectItem>
+                                                    <SelectItem value="grantUpdaterRole">Grant UPDATER_ROLE</SelectItem>
+                                                    <SelectItem value="revokeMinterRole">Revoke MINTER_ROLE</SelectItem>
+                                                </SelectContent>
+                                            </Select>
+                                        </div>
+                                        {proposalActionType.includes("ROLE") && (
+                                          <div>
+                                            <Label htmlFor="proposalTargetAddress">Target Address (for Role Action)</Label>
+                                            <Input id="proposalTargetAddress" value={proposalTargetAddress} onChange={e => setProposalTargetAddress(e.target.value)} placeholder="0x..." />
+                                          </div>
+                                        )}
+                                        <div>
+                                            <Label htmlFor="proposalDescription">Proposal Description / Rationale</Label>
+                                            <Textarea id="proposalDescription" value={proposalDescription} onChange={e => setProposalDescription(e.target.value)} placeholder="Explain the purpose of this proposal..." rows={2} />
+                                        </div>
+                                        <Button type="submit" size="sm" disabled={isSubmittingProposal}>
+                                            {isSubmittingProposal ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
+                                            {isSubmittingProposal ? "Submitting..." : "Submit Mock Proposal"}
+                                        </Button>
+                                    </form>
+                                    <div>
+                                        <h4 className="font-medium text-sm text-foreground mb-2">Mock Proposal List</h4>
+                                        <div className="space-y-3 max-h-60 overflow-y-auto">
+                                            {daoProposals.map(prop => (
+                                                <Card key={prop.id} className="p-3 bg-background/70">
+                                                    <div className="flex justify-between items-start">
+                                                        <h5 className="font-semibold text-xs text-primary">{prop.id}: {prop.title}</h5>
+                                                        <Badge variant={
+                                                            prop.status === 'Voting Active' ? 'outline' :
+                                                            prop.status === 'Succeeded & Executed' ? 'default' :
+                                                            prop.status === 'Defeated' ? 'destructive' : 'secondary'
+                                                        } className={cn(
+                                                            "text-[0.65rem] px-1.5 py-0.5",
+                                                            prop.status === 'Voting Active' && "border-yellow-500 text-yellow-600 bg-yellow-500/10",
+                                                            prop.status === 'Succeeded & Executed' && "border-green-500 text-green-700 bg-green-500/10",
+                                                            prop.status === 'Defeated' && "border-red-500 text-red-700 bg-red-500/10",
+                                                            prop.status === 'Queued' && "border-blue-500 text-blue-700 bg-blue-500/10",
+                                                        )}>
+                                                            {prop.status}
+                                                        </Badge>
+                                                    </div>
+                                                    <p className="text-xs text-muted-foreground mt-0.5 mb-1.5">{prop.description}</p>
+                                                    {prop.status === 'Voting Active' && (
+                                                        <div className="flex items-center justify-between text-xs">
+                                                            <div className="flex gap-2">
+                                                                <Button variant="ghost" size="sm" className="text-green-600 hover:bg-green-500/10 h-auto p-1 text-xs" onClick={() => handleVoteOnProposal(prop.id, 'for')}>
+                                                                    <ThumbsUp className="h-3 w-3 mr-1"/> For ({prop.votesFor || 0})
+                                                                </Button>
+                                                                <Button variant="ghost" size="sm" className="text-red-600 hover:bg-red-500/10 h-auto p-1 text-xs" onClick={() => handleVoteOnProposal(prop.id, 'against')}>
+                                                                    <ThumbsDown className="h-3 w-3 mr-1"/> Against ({prop.votesAgainst || 0})
+                                                                </Button>
+                                                            </div>
+                                                            <span className="text-muted-foreground">Voting Ends: Mock 5 days</span>
+                                                        </div>
+                                                    )}
+                                                </Card>
+                                            ))}
+                                            {daoProposals.length === 0 && <p className="text-xs text-muted-foreground text-center py-2">No DAO proposals yet.</p>}
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+
                           </div>
                         </TableCell>
                       </TableRow>
@@ -1185,5 +1348,3 @@ export default function BlockchainPage() {
     </div>
   );
 }
-      
-    

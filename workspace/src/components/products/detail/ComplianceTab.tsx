@@ -1,16 +1,20 @@
+
 // --- File: ComplianceTab.tsx ---
 // Description: Displays compliance-related information for a product.
 "use client";
 
 import type { SimpleProductDetail, ComplianceDetailItem as SpecificComplianceDetailItemFromDPP } from "@/types/dpp";
 import ProductComplianceHeader from "./ProductComplianceHeader";
-import ComplianceDetailItemDisplay, { type ComplianceDetailItemProps } from "./ComplianceDetailItemDisplay"; // Import the new component and its props type
+import ComplianceDetailItemDisplay, { type ComplianceDetailItemProps } from "./ComplianceDetailItemDisplay"; 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, Fingerprint, Database, Anchor, BatteryCharging, ShieldCheck } from "lucide-react"; // Added BatteryCharging & ShieldCheck
+import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, Fingerprint, Database, Anchor, BatteryCharging, ShieldCheck, Bot, AlertTriangle } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+import React, { useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { generateComplianceSummaryForCategory } from "@/ai/flows/generate-compliance-summary-for-category"; // Task 12 import
+import { useToast } from "@/hooks/use-toast"; // Task 12 import
 
 
 interface ComplianceTabProps {
@@ -22,6 +26,11 @@ interface ComplianceTabProps {
 
 export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, canSyncEprel }: ComplianceTabProps) {
   const summary = product.complianceSummary;
+  const { toast } = useToast(); // Task 12
+
+  const [categoryComplianceSummaryForTab, setCategoryComplianceSummaryForTab] = useState<string | null>(null); // Task 12 State
+  const [isLoadingCategoryComplianceForTab, setIsLoadingCategoryComplianceForTab] = useState(false); // Task 12 State
+  const [categoryComplianceErrorForTab, setCategoryComplianceErrorForTab] = useState<string | null>(null); // Task 12 State
 
   if (!summary) {
     return <p className="text-muted-foreground p-4">Compliance summary not available for this product.</p>;
@@ -29,7 +38,6 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
 
   const allComplianceItems: ComplianceDetailItemProps[] = [];
 
-  // Handle EPREL explicitly
   if (summary.eprel) {
     const eprelSyncButton = (
       <TooltipProvider delayDuration={100}>
@@ -70,7 +78,6 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     });
   }
 
-  // Handle EBSI explicitly
   if (summary.ebsi) {
     allComplianceItems.push({
       title: "EBSI Blockchain Verification",
@@ -82,7 +89,6 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     });
   }
   
-  // Handle SCIP explicitly
   if (summary.scip) {
     const scipNotesParts = [];
     if (summary.scip.articleName) scipNotesParts.push(`Article: ${summary.scip.articleName}`);
@@ -100,7 +106,6 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     });
   }
 
-  // Handle EU Customs Data explicitly
   if (summary.euCustomsData) {
     const customsNotesParts = [];
     if (summary.euCustomsData.hsCode) customsNotesParts.push(`HS Code: ${summary.euCustomsData.hsCode}`);
@@ -109,7 +114,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     if (summary.euCustomsData.customsValuation?.value !== undefined && summary.euCustomsData.customsValuation.value !== null) {
         customsNotesParts.push(`Value: ${summary.euCustomsData.customsValuation.value} ${summary.euCustomsData.customsValuation.currency || ''}`);
     }
-    if (summary.euCustomsData.cbamGoodsIdentifier) { // Added for CBAM
+    if (summary.euCustomsData.cbamGoodsIdentifier) { 
         customsNotesParts.push(`CBAM ID: ${summary.euCustomsData.cbamGoodsIdentifier}`);
     }
     
@@ -123,7 +128,6 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     });
   }
 
-  // Handle Battery Regulation explicitly
   if (summary.battery) {
     const batteryNotesParts: string[] = [];
     if (summary.battery.batteryChemistry) batteryNotesParts.push(`Chemistry: ${summary.battery.batteryChemistry}`);
@@ -155,12 +159,11 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     });
   }
 
-  // Handle other specific regulations
   if (summary.specificRegulations) {
     summary.specificRegulations.forEach(reg => {
       allComplianceItems.push({
         title: reg.regulationName,
-        icon: ShieldCheck, // Using ShieldCheck for general compliance
+        icon: ShieldCheck, 
         status: reg.status,
         lastChecked: reg.lastChecked,
         id: reg.verificationId, 
@@ -169,13 +172,74 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
       });
     });
   }
+
+  const handleFetchComplianceInsightsForTab = async () => {
+    if (!product.category) {
+      toast({ title: "Category Missing", description: "Product category is needed to fetch compliance insights.", variant: "destructive" });
+      return;
+    }
+    setIsLoadingCategoryComplianceForTab(true);
+    setCategoryComplianceErrorForTab(null);
+    setCategoryComplianceSummaryForTab(null);
+    try {
+      const result = await generateComplianceSummaryForCategory({ productCategory: product.category });
+      setCategoryComplianceSummaryForTab(result.categoryComplianceSummary);
+      toast({
+        title: `AI Insights for "${product.category}" Category`,
+        description: "Compliance summary generated successfully.",
+      });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to fetch AI compliance insights.";
+      setCategoryComplianceErrorForTab(msg);
+      toast({ title: "AI Insight Error", description: msg, variant: "destructive" });
+    } finally {
+      setIsLoadingCategoryComplianceForTab(false);
+    }
+  };
   
   return (
     <div className="space-y-6">
       <ProductComplianceHeader
         overallStatusText={summary.overallStatus}
-        // notifications={product.notifications} // This prop does not exist on SimpleProductDetail
       />
+
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold flex items-center">
+            <Bot className="mr-2 h-5 w-5 text-primary" />
+            AI Compliance Insights for Category: {product.category || "N/A"}
+          </CardTitle>
+          <CardDescription>Get AI-powered insights on key compliance considerations for this product's category.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <Button onClick={handleFetchComplianceInsightsForTab} disabled={isLoadingCategoryComplianceForTab || !product.category}>
+            {isLoadingCategoryComplianceForTab ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <InfoIconFromLucide className="mr-2 h-4 w-4" />}
+            {isLoadingCategoryComplianceForTab ? "Loading Insights..." : "Get AI Insights"}
+          </Button>
+          {isLoadingCategoryComplianceForTab && (
+            <div className="flex items-center text-sm text-muted-foreground p-2">
+              <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              Fetching insights...
+            </div>
+          )}
+          {categoryComplianceErrorForTab && !isLoadingCategoryComplianceForTab && (
+            <Alert variant="destructive" className="mt-2">
+              <AlertTriangle className="h-4 w-4" />
+              <AlertTitle>Insight Error</AlertTitle>
+              <AlertDescription>{categoryComplianceErrorForTab}</AlertDescription>
+            </Alert>
+          )}
+          {categoryComplianceSummaryForTab && !isLoadingCategoryComplianceForTab && (
+            <Alert className="mt-2 bg-blue-500/10 border-blue-500/30 text-blue-700 dark:text-blue-300">
+              <InfoIconFromLucide className="h-4 w-4 !text-blue-600 dark:!text-blue-400" />
+              <AlertTitle className="font-semibold !text-blue-700 dark:!text-blue-300">AI Compliance Summary for "{product.category}"</AlertTitle>
+              <AlertDescription className="whitespace-pre-line !text-blue-600/90 dark:!text-blue-300/90 text-xs">
+                {categoryComplianceSummaryForTab}
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
 
       {allComplianceItems.length > 0 && (
         <Card className="shadow-sm">
@@ -196,3 +260,5 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     </div>
   );
 }
+
+    

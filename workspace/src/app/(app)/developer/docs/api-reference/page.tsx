@@ -9,6 +9,7 @@ import ApiReferenceComplianceEndpoints from '@/components/developer/docs/ApiRefe
 import ApiReferenceTokenEndpoints from '@/components/developer/docs/ApiReferenceTokenEndpoints';
 import ApiReferencePrivateLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferencePrivateLayerEndpoints';
 import ApiReferenceZkpLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferenceZkpLayerEndpoints';
+import { BatchUpdateDpps, ExportDpps } from '@/components/developer/docs/api-reference'; // Import new components
 import type { DigitalProductPassport } from "@/types/dpp";
 
 export default function ApiReferencePage() {
@@ -338,6 +339,7 @@ export default function ApiReferencePage() {
     checksPerformed: ["Mock Data Integrity Check", "Mock EBSI Anchor Verification"]
   }, null, 2);
 
+  // Examples for new on-chain endpoints
   const exampleUpdateOnChainStatusRequestBody = JSON.stringify({ status: "recalled" }, null, 2);
   const exampleUpdateOnChainLifecycleStageRequestBody = JSON.stringify({ lifecycleStage: "Distribution" }, null, 2);
   const exampleLogCriticalEventRequestBody = JSON.stringify({ eventDescription: "Major defect discovered in Batch XYZ.", severity: "High" }, null, 2);
@@ -355,81 +357,6 @@ export default function ApiReferencePage() {
         ...(dppForOnChainOps.lifecycleEvents || []),
         { id: "evt_onchain_mock", type: "OnChainStatusUpdate", timestamp: new Date().toISOString(), data: { newStatus: "recalled", mockTxHash: "0xmock..."}}
     ]
-  }, null, 2);
-
-  const exampleB2BComponentTransferRequestBody = JSON.stringify({
-    componentId: "COMP_XYZ_123",
-    batchOrSerialNumbers: ["BATCH_A001", "BATCH_A002"],
-    quantity: 200,
-    unit: "units",
-    transferDate: new Date().toISOString(),
-    fromParty: {
-      participantId: "SUP001",
-      participantDid: "did:example:supplier:greenpartsinc",
-      role: "Component Supplier"
-    },
-    toParty: {
-      participantId: "MFG002_ASSEMBLY",
-      participantDid: "did:example:manufacturer:acmeassembly",
-      role: "Pack Assembler"
-    },
-    transactionDetails: {
-      type: "InternalStockTransfer",
-      referenceId: "ERP_PO_67890"
-    },
-    notes: "Transfer of tested battery cells for EV pack assembly."
-  }, null, 2);
-
-  const exampleB2BComponentTransferResponseBody = JSON.stringify({
-    transferId: "transfer_comp_xyz_123_mock123",
-    componentId: "COMP_XYZ_123",
-    quantity: 200,
-    transferDate: new Date().toISOString(),
-    fromParty: { participantId: "SUP001", role: "Supplier" },
-    toParty: { participantId: "MFG001", role: "Manufacturer" },
-    productId: "DPP001" 
-  }, null, 2);
-
-  const exampleGetSupplierAttestationsResponseBody = JSON.stringify([
-    {
-      attestationId: "attest_sup001_compA_batchXYZ_20240815",
-      productId: "DPP001",
-      componentId: "COMP_A_BATTERY_CELL",
-      supplierId: "SUP001",
-      attestationType: "EthicalSourcingCompliance",
-      attestationStatement: "Component COMP_A_BATTERY_CELL sourced in compliance with OECD Due Diligence Guidance.",
-      issuanceDate: "2024-08-15T10:00:00Z"
-    }
-  ], null, 2);
-
-  const exampleGetConfidentialMaterialsResponseBody = JSON.stringify({
-    confidentialMaterialId: "cm_dpp001_proprietary_alloy_X1",
-    productId: "DPP001",
-    materialName: "Proprietary Alloy X1-Alpha",
-    composition: [{ substanceName: "Titanium", percentageByWeight: "75-78%" }]
-  }, null, 2);
-
-  const exampleZkpSubmitRequestBody = JSON.stringify({
-    claimType: "material_compliance_svhc_lead_less_0.1",
-    proofData: "0xMockProofDataStringForLeadCompliance...",
-    publicInputs: { productBatchId: "BATCH_XYZ123", svhcCasNumber: "7439-92-1" }
-  }, null, 2);
-
-  const exampleZkpSubmitResponseBody = JSON.stringify({
-    dppId: "DPP001",
-    proofId: "zkp_proof_mock_abcdef123",
-    status: "acknowledged",
-    message: "ZKP submission received and queued for conceptual verification.",
-    timestamp: new Date().toISOString()
-  }, null, 2);
-
-  const exampleZkpVerifyResponseBody = JSON.stringify({
-    dppId: "DPP001",
-    claimType: "material_compliance_svhc_lead_less_0.1",
-    isVerified: true,
-    proofId: "zkp_proof_mock_abcdef123",
-    verifiedAt: new Date().toISOString(),
-    message: "Mock ZKP for claim 'material_compliance_svhc_lead_less_0.1' is considered valid for this DPP."
   }, null, 2);
 
 
@@ -491,21 +418,14 @@ export default function ApiReferencePage() {
         error404={error404}
         error500={error500}
       />
-      <ApiReferencePrivateLayerEndpoints
-        exampleB2BComponentTransferRequestBody={exampleB2BComponentTransferRequestBody}
-        exampleB2BComponentTransferResponseBody={exampleB2BComponentTransferResponseBody}
-        exampleGetSupplierAttestationsResponseBody={exampleGetSupplierAttestationsResponseBody}
-        exampleGetConfidentialMaterialsResponseBody={exampleGetConfidentialMaterialsResponseBody}
-        error400General={error400_general}
+      {/* Add new section for Batch Operations */}
+      <BatchUpdateDpps
+        error400={error400_general}
         error401={error401}
-        error404={error404}
         error500={error500}
       />
-      <ApiReferenceZkpLayerEndpoints
-        exampleZkpSubmitRequestBody={exampleZkpSubmitRequestBody}
-        exampleZkpSubmitResponseBody={exampleZkpSubmitResponseBody}
-        exampleZkpVerifyResponseBody={exampleZkpVerifyResponseBody}
-        error400General={error400_general}
+      <ExportDpps
+        error400={error400_general}
         error401={error401}
         error404={error404}
         error500={error500}
@@ -513,3 +433,4 @@ export default function ApiReferencePage() {
     </DocsPageLayout>
   );
 }
+

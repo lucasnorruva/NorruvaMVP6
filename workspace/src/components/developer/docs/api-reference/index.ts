@@ -8,6 +8,8 @@ export { default as AddLifecycleEventToDpp } from './AddLifecycleEventToDpp';
 export { default as ArchiveDigitalProductPassport } from './ArchiveDigitalProductPassport';
 export { default as ApiReferencePrivateLayerEndpoints } from './ApiReferencePrivateLayerEndpoints';
 export { default as ApiReferenceZkpLayerEndpoints } from './ApiReferenceZkpLayerEndpoints'; 
+export { default as BatchUpdateDpps } from './BatchUpdateDpps'; // Added export
+export { default as ExportDpps } from './ExportDpps'; // Added export
 
 // Ensure ApiReferenceDppEndpoints is also exported if it's the main aggregator,
 // or export the new components directly if they are separate files.

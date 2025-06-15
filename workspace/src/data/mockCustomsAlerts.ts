@@ -1,4 +1,3 @@
-
 // --- File: src/data/mockCustomsAlerts.ts ---
 import type { CustomsAlert } from '@/types/dpp'; // Import type from new location
 
@@ -11,4 +10,3 @@ export const MOCK_CUSTOMS_ALERTS: CustomsAlert[] = [
   { id: "ALERT006", productId: "DPP005", message: "High-value battery shipment. Requires additional safety & transport documentation verification.", severity: "Medium", timestamp: "Pending Arrival", regulation: "ADR / Battery Safety" },
   { id: "ALERT007", productId: "DPP005", message: "Carbon Footprint declaration for EV Battery (DPP005) under review. CBAM ID: CBAM_BATTERY_EV_001", severity: "Low", timestamp: "Upon Pre-Arrival Submission", regulation: "EU Battery Regulation / CBAM" },
 ];
-

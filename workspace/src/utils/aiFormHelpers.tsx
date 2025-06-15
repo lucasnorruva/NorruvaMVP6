@@ -374,4 +374,3 @@ export async function handleSuggestImageHintsAI(
   });
   return result ? result.imageHints : null;
 }
-

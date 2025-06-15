@@ -42,10 +42,10 @@ import QuickActionsCard from '@/components/developer/dashboard/QuickActionsCard'
 
 
 const initialMockApiKeys: ApiKey[] = [
-  { id: "key_sandbox_1", key: "SANDBOX_KEY_123", type: "Sandbox", created: "2024-07-01", lastUsed: "2024-07-28", status: "Active", scopes: ["dpp:read", "dpp:write:sandbox", "qr:validate", "compliance:read"] },
+  { id: "key_sandbox_1", key: "SANDBOX_KEY_123", type: "Sandbox", created: "2024-07-01", lastUsed: "2024-07-28", status: "Active", scopes: ["dpp:read", "dpp:write:sandbox", "qr:validate", "compliance:read", "ai:extract", "ai:summarize"] },
   { id: "key_prod_req_1", key: "N/A (Request Pending)", type: "Production", created: "2024-07-25", lastUsed: "N/A", status: "Pending Approval", scopes: ["pending_activation"] },
-  { id: "key_prod_active_1", key: "PROD_KEY_456", type: "Production", created: "2024-06-15", lastUsed: "2024-07-29", status: "Active", scopes: ["dpp:read", "dpp:write:production", "compliance:read", "ebsi:verify"] },
-  { id: "key_sandbox_revoked_1", key: "sand_sk_xxxxWXYZrevoked", type: "Sandbox", created: "2024-05-10", lastUsed: "2024-05-12", status: "Revoked", scopes: [] },
+  { id: "key_prod_active_1", key: "PROD_KEY_456", type: "Production", created: "2024-06-15", lastUsed: "2024-07-29", status: "Active", scopes: ["dpp:read", "dpp:write:production", "compliance:read", "ebsi:verify", "token:mint"] },
+  { id: "key_sandbox_revoked_1", key: "sand_sk_xxxxWXYZrevoked", type: "Sandbox", created: "2024-05-10", lastUsed: "2024-05-12", status: "Revoked", scopes: ["revoked_access"] },
 ];
 
 const initialMockWebhooks: WebhookEntry[] = [
@@ -323,7 +323,7 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet), [zkpSubmitDppId, zkpSubmitBody, zkpSubmitSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("zkpVerifyClaim", "GET", zkpVerifySnippetLang, { dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType }, null, setZkpVerifyCodeSnippet), [zkpVerifyDppId, zkpVerifyClaimType, zkpVerifySnippetLang, updateSnippet]);
 
-  useEffect(() => updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet), [mintTokenProductId, mintTokenBody, mintTokenSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenResponsePlayground), [mintTokenProductId, mintTokenBody, mintTokenSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("updateTokenMetadata", "PATCH", updateTokenMetaSnippetLang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet), [updateTokenMetaTokenId, updateTokenMetaBody, updateTokenMetaSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getTokenStatus", "GET", getTokenStatusSnippetLang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet), [getTokenStatusTokenId, getTokenStatusSnippetLang, updateSnippet]);
 
@@ -354,7 +354,7 @@ export default function DeveloperPortalPage() {
       created: new Date().toISOString().split('T')[0],
       lastUsed: "Never",
       status: "Active",
-      scopes: ["dpp:read", "dpp:write:sandbox"] 
+      scopes: ["dpp:read", "dpp:write:sandbox", "qr:validate"] 
     };
     setApiKeys(prevKeys => [newKey, ...prevKeys]);
     toast({ title: "Sandbox Key Generated", description: `New key ${newKey.key.substring(0,12)}... created.` });
@@ -1231,7 +1231,7 @@ export default function DeveloperPortalPage() {
                 <AccordionItem value="private-layer">
                   <AccordionTrigger className="text-lg font-semibold text-primary hover:no-underline flex items-center">
                     <Layers3 className="mr-2 h-5 w-5" /> Private Layer Endpoints (Conceptual)
-                  </AccordionContent>
+                  </AccordionTrigger>
                   <AccordionContent className="pt-4 space-y-6">
                     {endpointConfigs.filter(e => e.section === 'private').map(ep => (
                       <DeveloperEndpointCard key={ep.id} {...ep} codeSampleLanguages={codeSampleLanguages}>
@@ -1358,3 +1358,6 @@ export default function DeveloperPortalPage() {
   );
 }
 
+
+
+    

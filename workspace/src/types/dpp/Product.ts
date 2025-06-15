@@ -115,7 +115,7 @@ export interface DigitalProductPassport {
     ethicalSourcingPolicyUrl?: string; 
     keyCompliancePoints?: string; 
     esprSpecifics?: EsprSpecifics; 
-    carbonFootprint?: CarbonFootprintData; // Added for Task 3
+    carbonFootprint?: CarbonFootprintData; 
   };
 
   textileInformation?: TextileInformation;
@@ -215,7 +215,7 @@ export interface SimpleProductDetail {
   ethicalSourcingPolicyUrl?: string; 
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
-    carbonFootprint?: CarbonFootprintData; // Added for Task 3
+    carbonFootprint?: CarbonFootprintData; 
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -250,7 +250,7 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
   batteryRegulation?: Partial<BatteryRegulationDetails>; 
   textileInformation?: Partial<TextileInformation>; 
   constructionProductInformation?: Partial<ConstructionProductInformation>; 
-  metadata?: Partial<InitialProductFormData>; // Re-using this for metadata structure if needed
+  metadata?: Partial<InitialProductFormData>; 
   authenticationVcId?: string; 
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; 
   blockchainIdentifiers?: InitialProductFormData['blockchainIdentifiers']; 
@@ -281,7 +281,7 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
       energyEfficiencySummaryOrigin?: 'AI_EXTRACTED' | 'manual';
       substanceOfConcernSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
     };
-    carbonFootprintOrigin?: { // Added for Task 3
+    carbonFootprintOrigin?: { 
         valueOrigin?: 'AI_EXTRACTED' | 'manual';
         unitOrigin?: 'AI_EXTRACTED' | 'manual';
         calculationMethodOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -398,7 +398,7 @@ export interface PublicProductInfo {
   ethicalSourcingPolicyUrl?: string; 
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
-    carbonFootprint?: CarbonFootprintData; // Added for Task 3
+    carbonFootprint?: CarbonFootprintData; 
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -462,7 +462,7 @@ export interface DisplayableProduct {
   ethicalSourcingPolicyUrl?: string; 
   productDetails?: { 
     esprSpecifics?: EsprSpecifics;
-    carbonFootprint?: CarbonFootprintData; // Added for Task 3
+    carbonFootprint?: CarbonFootprintData; 
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -503,7 +503,6 @@ export interface TokenStatusResponse {
   message?: string;
 }
 
-// Extended for Task 23
 export type InitialProductFormData = Omit<ProductFormData, 'productDetailsOrigin' | 'batteryRegulationOrigin'> & {
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -516,8 +515,31 @@ export type InitialProductFormData = Omit<ProductFormData, 'productDetailsOrigin
   energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
   batteryRegulationOrigin?: any; 
-  productDetailsOrigin?: any;
+  productDetailsOrigin?: {
+    descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+    materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+    sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+    keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
+    specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+    energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+    imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+    esprSpecificsOrigin?: {
+      durabilityInformationOrigin?: 'AI_EXTRACTED' | 'manual';
+      repairabilityInformationOrigin?: 'AI_EXTRACTED' | 'manual';
+      recycledContentSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+      energyEfficiencySummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+      substanceOfConcernSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
+    carbonFootprintOrigin?: { 
+        valueOrigin?: 'AI_EXTRACTED' | 'manual';
+        unitOrigin?: 'AI_EXTRACTED' | 'manual';
+        calculationMethodOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope1EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope2EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope3EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        dataSourceOrigin?: 'AI_EXTRACTED' | 'manual';
+        vcIdOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
+  };
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
 };
-
-

@@ -130,27 +130,18 @@ export const productDetailsSchema = z.object({
     conflictMineralsReportUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
     fairTradeCertificationId: z.string().optional(),
     ethicalSourcingPolicyUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
-    carbonFootprint: carbonFootprintSchema.optional(), // Added for Task 3
+    carbonFootprint: carbonFootprintSchema.optional(),
 });
 
 export const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
   gtin: z.string().optional().describe("Global Trade Item Number"),
-  productDescription: z.string().optional(), // Moved from productDetails for consistency
   manufacturer: z.string().optional(),
   modelNumber: z.string().optional(),
   sku: z.string().optional(),
   nfcTagId: z.string().optional(),
   rfidTagId: z.string().optional(),
-  materials: z.string().optional().describe("Key materials used in the product, e.g., Cotton, Recycled Polyester, Aluminum."), // Moved from productDetails
-  sustainabilityClaims: z.string().optional().describe("Brief sustainability claims, e.g., 'Made with 50% recycled content', 'Carbon neutral production'."), // Moved from productDetails
-  keyCompliancePoints: z.string().optional().describe("Key compliance points summary."), // Moved from productDetails
-  specifications: z.string().optional(), // Moved from productDetails
-  energyLabel: z.string().optional(), // Moved from productDetails
   productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
-  imageUrl: z.string().url("Must be a valid URL or Data URI, or empty").or(z.literal("")).optional(), // Moved from productDetails
-  imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(), // Moved from productDetails
-  customAttributesJsonString: z.string().optional(), // Moved from productDetails
   
   productDetails: productDetailsSchema.optional(),
 
@@ -170,8 +161,8 @@ export const formSchema = z.object({
         vcId: z.string().optional(),
     }).optional(),
     scipNotification: scipNotificationFormSchema.optional(),
-    euCustomsData: euCustomsDataSchema.optional(),
-    battery_regulation: batteryRegulationDetailsSchema.optional(), // Mirrored for consistent handling
+    euCustomsData: euCustomsDataFormSchema.optional(),
+    battery_regulation: batteryRegulationDetailsSchema.optional(), 
   }).optional(),
   
   textileInformation: textileInformationSchema.optional(), 
@@ -179,23 +170,8 @@ export const formSchema = z.object({
   onChainStatus: z.string().optional(), 
   onChainLifecycleStage: z.string().optional(), 
 
-  conflictMineralsReportUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
-  fairTradeCertificationId: z.string().optional(),
-  ethicalSourcingPolicyUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
-
-  // AI Origin tracking fields
   productNameOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  productDescriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  manufacturerOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  modelNumberOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  materialsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  sustainabilityClaimsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  keyCompliancePointsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  specificationsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  batteryRegulationOrigin: z.any().optional(), 
-  productDetailsOrigin: z.object({ // Added for origin tracking of ProductDetails sub-fields
+  productDetailsOrigin: z.object({
     descriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     materialsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     sustainabilityClaimsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
@@ -210,7 +186,7 @@ export const formSchema = z.object({
       energyEfficiencySummaryOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
       substanceOfConcernSummaryOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     }).optional(),
-    carbonFootprintOrigin: z.object({ // Added for Task 3 origin tracking
+    carbonFootprintOrigin: z.object({ 
         valueOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
         unitOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
         calculationMethodOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
@@ -221,6 +197,9 @@ export const formSchema = z.object({
         vcIdOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     }).optional(),
   }).optional(),
+  manufacturerOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  modelNumberOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  batteryRegulationOrigin: z.any().optional(), 
 });
 
 export type ProductFormData = z.infer<typeof formSchema>;

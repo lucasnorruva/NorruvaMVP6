@@ -1,5 +1,5 @@
 
-import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from '@/types/dpp'; // Added EbsiVerificationDetails
+import type { DigitalProductPassport, EbsiVerificationDetails, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, CarbonFootprintData } from '@/types/dpp';
 
 export const MOCK_DPPS: DigitalProductPassport[] = [
   {
@@ -32,8 +32,8 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       imageUrl: "https://placehold.co/600x400.png",
       imageHint: "refrigerator appliance",
       materials: [{name: "Recycled Steel", percentage: 70, isRecycled: true}],
-      sustainabilityClaims: [{claim: "Energy Star Certified"}, {claim: "Made with 70% recycled materials"}], // Updated to match type
-      keyCompliancePoints: "EU Ecodesign Compliant\nEU Energy Labelling Compliant\nEPREL Registered\nRoHS Compliant", // Added for Task 21
+      sustainabilityClaims: [{claim: "Energy Star Certified"}, {claim: "Made with 70% recycled materials"}], 
+      keyCompliancePoints: "EU Ecodesign Compliant\nEU Energy Labelling Compliant\nEPREL Registered\nRoHS Compliant", 
       specifications: JSON.stringify({ "Capacity (Liters)": "400", "Annual Energy Consumption (kWh)": "150", "Noise Level (dB)": "38", "Dimensions (HxWxD cm)": "180x70x65", "Color": "Stainless Steel" }, null, 2),
       customAttributes: [
         {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
@@ -48,7 +48,17 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         recycledContentSummary: "Over 70% of steel used is certified post-consumer recycled content. Internal plastic components incorporate 25% recycled polymers.",
         energyEfficiencySummary: "A+++ EU Energy Label. Smart defrost and adaptive cooling technology minimize energy use. Annual consumption approx. 150 kWh.",
         substanceOfConcernSummary: "Fully RoHS compliant. All components screened for SVHCs above 0.1% w/w as per REACH, none present requiring SCIP notification for the main unit. Control panel assembly details in SCIP."
-      }
+      },
+      carbonFootprint: { 
+        value: 350,
+        unit: "kg CO2e/unit",
+        calculationMethod: "ISO 14067",
+        scope1Emissions: 50,
+        scope2Emissions: 100,
+        scope3Emissions: 200,
+        dataSource: "Product LCA Study 2024",
+        vcId: "vc:cf:dpp001:total:2024"
+      },
     },
     compliance: {
       eprel: { id: "EPREL_REG_12345", status: "Registered", url: "#eprel-link", lastChecked: "2024-01-18T00:00:00Z" },
@@ -89,7 +99,6 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef", 
       contractAddress: "0xNFTContractForDPP001", 
       tokenId: "1",
-      chainName: "MockEthereum",
     },
     consumerScans: 1250,
     lifecycleEvents: [
@@ -166,13 +175,17 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       imageUrl: "https://placehold.co/600x400.png",
       imageHint: "cotton t-shirt apparel",
       materials: [{name: "Organic Cotton", percentage: 100}],
-      sustainabilityClaims: [{claim: "GOTS Certified"}, {claim:"Fair Trade Certified Production"}], // Updated to match type
-      keyCompliancePoints: "Textile Labelling Compliant\nSVHC Free (as per REACH)\nFair Wear Foundation Member", // Added for Task 21
+      sustainabilityClaims: [{claim: "GOTS Certified"}, {claim:"Fair Trade Certified Production"}], 
+      keyCompliancePoints: "Textile Labelling Compliant\nSVHC Free (as per REACH)\nFair Wear Foundation Member", 
       specifications: JSON.stringify({ "Fit": "Regular", "GSM": "180", "Origin": "India", "Care": "Machine wash cold" }, null, 2),
       customAttributes: [{key: "Certifications", value: "GOTS, Fair Trade"}, {key: "Care Instructions", value: "Machine wash cold, tumble dry low"}],
       conflictMineralsReportUrl: "https://ecothreads.com/reports/conflict-minerals-na.pdf", 
       fairTradeCertificationId: "FLOID12345", 
       ethicalSourcingPolicyUrl: "https://ecothreads.com/ethics/sourcing-policy.pdf", 
+      carbonFootprint: { 
+        value: 2.5, unit: "kg CO2e/item", calculationMethod: "Higg MSI",
+        dataSource: "Internal Assessment 2024", vcId: "vc:cf:dpp002:total:2024"
+      },
     },
     textileInformation: {
       fiberComposition: [
@@ -424,7 +437,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         netWeightKg: 450.0,
         grossWeightKg: 465.0,
         customsValuation: { value: 8500.00, currency: "USD" },
-        cbamGoodsIdentifier: "CBAM_BATTERY_EV_001", // Added CBAM ID
+        cbamGoodsIdentifier: "CBAM_BATTERY_EV_001", 
         lastChecked: "2024-07-29T00:00:00Z" 
       },
     },
@@ -521,7 +534,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         declarationId: "CUST_CPR_DPP006",
         hsCode: "68061000", 
         countryOfOrigin: "BE",
-        cbamGoodsIdentifier: "CBAM_INSULATION_MINERALWOOL_003", // Added CBAM ID
+        cbamGoodsIdentifier: "CBAM_INSULATION_MINERALWOOL_003", 
         lastChecked: "2024-07-20T00:00:00Z"
       }
     },
@@ -534,4 +547,3 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ],
   }
 ];
-

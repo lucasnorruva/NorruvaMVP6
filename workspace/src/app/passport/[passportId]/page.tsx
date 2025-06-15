@@ -280,7 +280,7 @@ export default function PublicPassportPage() {
                     </Link>
                   )}
                   {currentRole === 'manufacturer' && (
-                    <Button variant="link" size="sm" className="p-0 h-auto mt-1 text-primary block" onClick={() => alert("Mock: View Internal Details for " + product.passportId)}>View Internal Details (Mock)</Button>
+                    <Button variant="link" size="sm" className="p-0 h-auto mt-1 text-primary block" onClick={() => alert('Mock: View Internal Details for ' + product.passportId)}>View Internal Details (Mock)</Button>
                   )}
                 </CardContent>
               </Card>
@@ -663,4 +663,3 @@ export default function PublicPassportPage() {
     </div>
   );
 }
-

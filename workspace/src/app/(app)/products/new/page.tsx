@@ -1,3 +1,4 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
@@ -6,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import type { ProductFormData } from "@/types/productFormTypes";
 import { extractProductData } from "@/ai/flows/extract-product-data";
-import { generateComplianceSummaryForCategory } from "@/ai/flows/generate-compliance-summary-for-category"; // Task 12 import
+import { generateComplianceSummaryForCategory } from "@/ai/flows/generate-compliance-summary-for-category"; 
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, Info, Edit, Compass, Wand2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -222,6 +223,7 @@ const defaultProductDetailsOriginState: ProductDetailsOrigin = {
     repairabilityInformationOrigin: undefined,
     recycledContentSummaryOrigin: undefined,
     energyEfficiencySummaryOrigin: undefined,
+    substanceOfConcernSummaryOrigin: undefined,
   },
   carbonFootprintOrigin: {
     valueOrigin: undefined, unitOrigin: undefined, calculationMethodOrigin: undefined,
@@ -246,8 +248,8 @@ export default function AddNewProductPage() {
   const [activeTab, setActiveTab] = useState(isEditMode ? "manual" : "ai-extraction");
   const [aiExtractionAppliedSuccessfully, setAiExtractionAppliedSuccessfully] = useState(false);
 
-  const [categoryComplianceSummary, setCategoryComplianceSummary] = useState<string | null>(null); // Task 12 State
-  const [isLoadingCategoryCompliance, setIsLoadingCategoryCompliance] = useState(false); // Task 12 State
+  const [categoryComplianceSummary, setCategoryComplianceSummary] = useState<string | null>(null); 
+  const [isLoadingCategoryCompliance, setIsLoadingCategoryCompliance] = useState(false); 
 
   const defaultFormState: InitialProductFormData = {
     productName: "", gtin: "", sku: "", nfcTagId: "", rfidTagId: "", manufacturer: "", modelNumber: "",
@@ -263,7 +265,7 @@ export default function AddNewProductPage() {
         imageHint: "",
         customAttributesJsonString: "",
         esprSpecifics: { ...defaultEsprSpecificsState },
-        carbonFootprint: { // Initialize carbonFootprint
+        carbonFootprint: { 
             value: null, unit: "", calculationMethod: "",
             scope1Emissions: null, scope2Emissions: null, scope3Emissions: null,
             dataSource: "", vcId: ""
@@ -680,8 +682,8 @@ export default function AddNewProductPage() {
         description: `AI insights for '${category}' category displayed.`,
       });
     } catch (err) {
-      const errorMsg = err instanceof Error ? err.message : "Failed to fetch compliance insights.";
-      toast({ title: "Error Loading Insights", description: errorMsg, variant: "destructive" });
+      const msg = err instanceof Error ? err.message : "Failed to fetch compliance insights.";
+      toast({ title: "Error Loading Insights", description: msg, variant: "destructive" });
       setCategoryComplianceSummary("Could not load compliance insights at this time.");
     } finally {
       setIsLoadingCategoryCompliance(false);
@@ -740,9 +742,9 @@ export default function AddNewProductPage() {
             isSubmitting={isSubmittingProduct}
             onSubmit={handleProductFormSubmit}
             editProductId={editProductId}
-            categoryComplianceSummary={categoryComplianceSummary} // Pass state
-            isLoadingCategoryCompliance={isLoadingCategoryCompliance} // Pass state
-            onFetchCategoryComplianceSummary={handleFetchCategoryComplianceSummary} // Pass handler
+            categoryComplianceSummary={categoryComplianceSummary} 
+            isLoadingCategoryCompliance={isLoadingCategoryCompliance} 
+            onFetchCategoryComplianceSummary={handleFetchCategoryComplianceSummary} 
           />
         </TabsContent>
 
@@ -773,4 +775,3 @@ export default function AddNewProductPage() {
     </div>
   );
 }
-

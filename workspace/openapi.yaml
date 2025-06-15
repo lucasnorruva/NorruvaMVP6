@@ -2365,6 +2365,9 @@ components:
             esprSpecifics: # Added for Task 1
                 $ref: '#/components/schemas/EsprSpecifics'
                 nullable: true
+            digitalTwin: # Added for Task 25
+                $ref: '#/components/schemas/DigitalTwinData'
+                nullable: true
         lifecycleEvents:
           type: array
           nullable: true
@@ -3264,6 +3267,13 @@ components:
         }
         cbamGoodsIdentifier: { type: string, nullable: true } # Added for CBAM
         lastChecked: { type: string, format: 'date-time', nullable: true }
+    DigitalTwinData: # Added for Task 25
+      type: object
+      properties:
+        uri: { type: string, format: 'url', nullable: true }
+        sensorDataEndpoint: { type: string, format: 'url', nullable: true }
+        realTimeStatus: { type: string, nullable: true }
+        predictiveMaintenanceAlerts: { type: string, nullable: true }
 security:
   - ApiKeyAuth: []
 components:
@@ -3297,3 +3307,6 @@ components:
 
 
 
+
+
+    

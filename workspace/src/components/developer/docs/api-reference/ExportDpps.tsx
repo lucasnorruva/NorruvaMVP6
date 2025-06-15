@@ -45,7 +45,7 @@ export default function ExportDpps({
         <CardDescription>
           <span className="inline-flex items-center font-mono text-sm">
             <Badge variant="outline" className="bg-sky-100 text-sky-700 border-sky-300 mr-2 font-semibold">GET</Badge>
-            <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/dpp/export</code>
+            <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/v1/dpp/export</code>
           </span>
           <br />
           Allows for exporting DPP data in various formats. This is a conceptual endpoint.
@@ -120,3 +120,5 @@ export default function ExportDpps({
     </Card>
   );
 }
+
+    

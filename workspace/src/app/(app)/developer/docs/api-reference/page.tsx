@@ -2,13 +2,13 @@
 import { BookText } from "lucide-react";
 import { MOCK_DPPS } from "@/data";
 import DocsPageLayout from '@/components/developer/DocsPageLayout';
-import ApiReferenceIntro from '@/components/developer/docs/ApiReferenceIntro';
-import ApiReferenceDppEndpoints from '@/components/developer/docs/ApiReferenceDppEndpoints';
-import ApiReferenceQrEndpoints from '@/components/developer/docs/ApiReferenceQrEndpoints';
-import ApiReferenceComplianceEndpoints from '@/components/developer/docs/ApiReferenceComplianceEndpoints';
-import ApiReferenceTokenEndpoints from '@/components/developer/docs/ApiReferenceTokenEndpoints';
-import ApiReferencePrivateLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferencePrivateLayerEndpoints';
-import ApiReferenceZkpLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferenceZkpLayerEndpoints';
+import ApiReferenceIntro from '@/components/developer/DocsPageLayout';
+import ApiReferenceDppEndpoints from '@/components/developer/docs/ApiReferenceIntro';
+import ApiReferenceQrEndpoints from '@/components/developer/docs/ApiReferenceDppEndpoints';
+import ApiReferenceComplianceEndpoints from '@/components/developer/docs/ApiReferenceQrEndpoints';
+import ApiReferenceTokenEndpoints from '@/components/developer/docs/ApiReferenceComplianceEndpoints';
+import ApiReferencePrivateLayerEndpoints from '@/components/developer/docs/ApiReferenceTokenEndpoints';
+import ApiReferenceZkpLayerEndpoints from '@/components/developer/docs/api-reference/ApiReferencePrivateLayerEndpoints';
 import { BatchUpdateDpps, ExportDpps } from '@/components/developer/docs/api-reference'; 
 import type { DigitalProductPassport } from "@/types/dpp";
 
@@ -82,7 +82,7 @@ export default function ApiReferencePage() {
   }, null, 2);
 
   const error401 = JSON.stringify({ error: { code: 401, message: "API key missing or invalid." } }, null, 2);
-  const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }); 
+  const error404 = JSON.stringify({ error: { code: 404, message: "Resource not found." } }, { status: 404 }); 
   const error400_general = JSON.stringify({ error: { code: 400, message: "Invalid request payload or parameters." } }, null, 2);
   const error400_qr = JSON.stringify({ error: { code: 400, message: "Invalid request body. 'qrIdentifier' is required." } }, null, 2);
   const error500 = JSON.stringify({ error: { code: 500, message: "An unexpected error occurred on the server." } }, null, 2);
@@ -406,6 +406,7 @@ export default function ApiReferencePage() {
     message: "Mock ZKP for claim 'material_compliance_svhc_lead_less_0.1' is considered valid for this DPP."
   }, null, 2);
 
+
   return (
     <DocsPageLayout
       pageTitle="API Reference (Conceptual)"
@@ -497,3 +498,5 @@ export default function ApiReferencePage() {
     </DocsPageLayout>
   );
 }
+
+    

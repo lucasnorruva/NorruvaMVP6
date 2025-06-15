@@ -30,7 +30,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
       description: "An eco friendly fridge.",
       energyLabel: "A++",
       imageUrl: "https://placehold.co/600x400.png",
-      imageHint: "refrigerator appliance",
+      imageHint: "refrigerator kitchen",
       materials: [{name: "Recycled Steel", percentage: 70, isRecycled: true}],
       sustainabilityClaims: [{claim: "Energy Star Certified"}, {claim: "Made with 70% recycled materials"}], 
       keyCompliancePoints: "EU Ecodesign Compliant\nEU Energy Labelling Compliant\nEPREL Registered\nRoHS Compliant", 
@@ -59,7 +59,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         dataSource: "Product LCA Study 2024",
         vcId: "vc:cf:dpp001:total:2024"
       },
-      digitalTwin: { // Added Digital Twin data
+      digitalTwin: { 
         uri: "https://twins.greentech.com/refrigerator/X500-ECO/SN12345",
         sensorDataEndpoint: "https://api.greentech.com/iot/X500-ECO/SN12345/data",
         realTimeStatus: "Operational - Optimal Performance. Current Temp: 3°C. Energy Use: Low.",
@@ -302,7 +302,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     consumerScans: 2100,
      productDetails: { 
       description: "A recycled phone case.",
-      digitalTwin: { // Added Digital Twin data
+      digitalTwin: { 
         uri: "https://twins.recaseit.com/phonecase/RC-POLY-IP15/SN9876",
         realTimeStatus: "In Use - No issues detected."
       }
@@ -403,7 +403,7 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         {key: "Thermal Management", value: "Liquid Cooled"}
       ],
       conflictMineralsReportUrl: "https://powervolt.com/reports/conflict-minerals-2023.pdf", 
-      digitalTwin: { // Added Digital Twin data
+      digitalTwin: { 
         uri: "https://twins.powervolt.com/evbattery/PV-EVB-75KWH/SN001",
         sensorDataEndpoint: "https://api.powervolt.com/iot/evbattery/SN001/data",
         realTimeStatus: "Charging - 75% SoC. Cell Temps Nominal.",
@@ -530,6 +530,11 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
         recycledContentSummary: "Primarily composed of 85% post-consumer recycled cellulose fibers.",
         energyEfficiencySummary: "Contributes significantly to building energy efficiency due to high R-50 thermal resistance.",
         substanceOfConcernSummary: "Does not contain added formaldehyde. Non-halogenated fire retardants used, below SVHC thresholds."
+      },
+      digitalTwin: { 
+        uri: "https://twins.buildgreen.com/insulation/ESP-R50/Lot789",
+        realTimeStatus: "Installed. Performance monitoring active.",
+        predictiveMaintenanceAlerts: "- No alerts."
       }
     },
     constructionProductInformation: {
@@ -565,3 +570,1179 @@ export const MOCK_DPPS: DigitalProductPassport[] = [
     ],
   }
 ];
+
+```
+- workspace/src/types/dpp/Product.ts:
+```ts
+
+// --- File: Product.ts ---
+// Description: Product related type definitions and mock data.
+
+import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle';
+import type {
+  Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification,
+  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, EsprSpecifics, CarbonFootprintData
+} from './Compliance'; 
+
+export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
+export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
+export const TRACKED_PRODUCTS_STORAGE_KEY = 'norruvaTrackedProductIds';
+
+export interface SupplyChainStep {
+  stepName: string;
+  actorDid?: string;
+  timestamp: string;
+  location?: string;
+  transactionHash?: string;
+}
+
+export interface TraceabilityInfo {
+  batchId?: string;
+  originCountry?: string;
+  supplyChainSteps?: SupplyChainStep[];
+}
+
+export interface VerifiableCredentialReference {
+  id: string;
+  type: string[];
+  name?: string;
+  issuer: string;
+  issuanceDate: string;
+  credentialSubject: Record<string, any>;
+  proof?: any;
+  verificationMethod?: string;
+}
+
+export interface ProductSupplyChainLink {
+  supplierId: string;
+  suppliedItem: string;
+  notes?: string;
+}
+
+export interface CustomAttribute {
+  key: string;
+  value: string;
+}
+
+export interface DocumentReference {
+  name: string;
+  url: string;
+  type: string;
+  addedTimestamp: string;
+}
+
+export interface OwnershipNftLink {
+  registryUrl?: string;
+  contractAddress: string;
+  tokenId: string;
+  chainName?: string;
+}
+
+export interface DigitalTwinData { // Conceptual Data for Digital Twin
+  uri?: string; 
+  sensorDataEndpoint?: string; 
+  realTimeStatus?: string; 
+  predictiveMaintenanceAlerts?: string; 
+}
+
+export interface DigitalProductPassport {
+  id: string;
+  version?: number;
+  productName: string;
+  category: string;
+  gtin?: string;
+  modelNumber?: string;
+  sku?: string;
+  nfcTagId?: string;
+  rfidTagId?: string;
+  manufacturer?: {
+    name: string;
+    did?: string;
+    address?: string;
+    eori?: string;
+  };
+
+  metadata: {
+    created_at?: string;
+    last_updated: string;
+    status: 'draft' | 'published' | 'archived' | 'pending_review' | 'revoked' | 'flagged';
+    dppStandardVersion?: string;
+    dataSchemaVersion?: string;
+    onChainStatus?: string; 
+    onChainLifecycleStage?: string; 
+  };
+
+  blockchainIdentifiers?: {
+    platform?: string;
+    contractAddress?: string;
+    tokenId?: string;
+    anchorTransactionHash?: string;
+  };
+
+  authenticationVcId?: string;
+  ownershipNftLink?: OwnershipNftLink;
+
+  productDetails?: {
+    description?: string;
+    imageUrl?: string;
+    imageHint?: string;
+    materials?: Array<{ name: string; percentage?: number; origin?: string; isRecycled?: boolean; recycledContentPercentage?: number }>;
+    sustainabilityClaims?: Array<{ claim: string; evidenceVcId?: string; verificationDetails?: string }>;
+    energyLabel?: string;
+    repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
+    recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
+    specifications?: string; 
+    customAttributes?: CustomAttribute[];
+    conflictMineralsReportUrl?: string; 
+    fairTradeCertificationId?: string; 
+    ethicalSourcingPolicyUrl?: string; 
+    keyCompliancePoints?: string; 
+    esprSpecifics?: EsprSpecifics; 
+    carbonFootprint?: CarbonFootprintData; 
+    digitalTwin?: DigitalTwinData; 
+  };
+
+  textileInformation?: TextileInformation;
+  constructionProductInformation?: ConstructionProductInformation;
+  lifecycleEvents?: LifecycleEvent[];
+  certifications?: Certification[];
+  documents?: DocumentReference[];
+  traceability?: TraceabilityInfo;
+
+  compliance: {
+    eprel?: {
+      id?: string;
+      status: string;
+      url?: string;
+      lastChecked: string;
+    };
+    esprConformity?: {
+      assessmentId?: string;
+      status: 'conformant' | 'non_conformant' | 'pending_assessment';
+      assessmentDate?: string;
+      vcId?: string;
+    };
+    eu_espr?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
+    us_scope3?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
+    battery_regulation?: BatteryRegulationDetails; 
+    scipNotification?: ScipNotificationDetails;
+    euCustomsData?: EuCustomsDataDetails;
+  };
+
+  ebsiVerification?: EbsiVerificationDetails;
+  verifiableCredentials?: VerifiableCredentialReference[];
+  consumerScans?: number;
+  dataController?: string;
+  accessControlPolicyUrl?: string;
+  privacyPolicyUrl?: string;
+  supplyChainLinks?: ProductSupplyChainLink[];
+}
+
+export interface DashboardFiltersState {
+  status: 'all' | 'draft' | 'published' | 'archived' | 'pending_review' | 'revoked' | 'flagged';
+  regulation: 'all' | 'eu_espr' | 'us_scope3' | 'battery_regulation';
+  category: 'all' | string;
+  searchQuery?: string;
+  blockchainAnchored?: 'all' | 'anchored' | 'not_anchored';
+}
+
+export type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status' | 'metadata.onChainStatus';
+
+export interface SortConfig {
+  key: SortableKeys | null;
+  direction: 'ascending' | 'descending' | null;
+}
+
+export interface SimpleProductDetail {
+  id: string;
+  productName: string;
+  category: string;
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged';
+  manufacturer?: string;
+  gtin?: string;
+  modelNumber?: string;
+  sku?: string;
+  nfcTagId?: string;
+  rfidTagId?: string;
+  description?: string;
+  imageUrl?: string;
+  imageHint?: string;
+  keySustainabilityPoints?: string[];
+  keyCompliancePoints?: string; 
+  specifications?: string; 
+  customAttributes?: CustomAttribute[];
+  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
+  energyLabelRating?: string;
+  repairability?: { score: number; scale: number; detailsUrl?: string };
+  recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
+  supplyChainLinks?: ProductSupplyChainLink[];
+  complianceSummary?: ProductComplianceSummary;
+  lifecycleEvents?: SimpleLifecycleEvent[];
+  certifications?: SimpleCertification[];
+  documents?: DocumentReference[];
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
+  blockchainPlatform?: string;
+  contractAddress?: string;
+  tokenId?: string;
+  anchorTransactionHash?: string;
+  ebsiStatus?: EbsiVerificationDetails['status']; 
+  ebsiVerificationId?: string; 
+  onChainStatus?: string; 
+  onChainLifecycleStage?: string; 
+  textileInformation?: TextileInformation;
+  constructionProductInformation?: ConstructionProductInformation;
+  batteryRegulation?: BatteryRegulationDetails; 
+  lastUpdated?: string; 
+  conflictMineralsReportUrl?: string; 
+  fairTradeCertificationId?: string; 
+  ethicalSourcingPolicyUrl?: string; 
+  productDetails?: { 
+    esprSpecifics?: EsprSpecifics;
+    carbonFootprint?: CarbonFootprintData; 
+    digitalTwin?: DigitalTwinData; 
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
+    description?: string; 
+    imageUrl?: string;
+    imageHint?: string;
+    materials?: Array<{ name: string; percentage?: number; origin?: string; isRecycled?: boolean; recycledContentPercentage?: number }>;
+    sustainabilityClaims?: Array<{ claim: string; evidenceVcId?: string; verificationDetails?: string }>;
+    energyLabel?: string;
+    repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
+    recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
+    specifications?: string; 
+    customAttributes?: CustomAttribute[];
+    keyCompliancePoints?: string; 
+  };
+}
+
+export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulation' | 'compliance' | 'productDetails'> {
+  id: string;
+  status: string; 
+  compliance: string; 
+  lastUpdated: string;
+  productCategory?: string;
+  keySustainabilityPoints?: string[]; 
+  keyCompliancePoints?: string;
+  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
+  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
+  energyLabelRating?: string;
+  repairability?: { score: number; scale: number; detailsUrl?: string };
+  recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
+  supplyChainLinks?: ProductSupplyChainLink[];
+  lifecycleEvents?: SimpleLifecycleEvent[];
+  complianceSummary?: ProductComplianceSummary; 
+  
+  productDetails?: Partial<ProductFormData['productDetails']>; 
+  complianceData?: { 
+    eprel?: Partial<ProductFormData['compliance']['eprel']>;
+    esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
+    scipNotification?: Partial<ScipNotificationDetails>;
+    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>;
+    battery_regulation?: Partial<ProductFormData['compliance']['battery_regulation']>;
+  };
+  batteryRegulation?: Partial<BatteryRegulationDetails>; 
+  textileInformation?: Partial<TextileInformation>; 
+  constructionProductInformation?: Partial<ConstructionProductInformation>; 
+  metadata?: Partial<InitialProductFormData>; 
+  authenticationVcId?: string; 
+  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; 
+  blockchainIdentifiers?: InitialProductFormData['blockchainIdentifiers']; 
+  conflictMineralsReportUrl?: string; 
+  fairTradeCertificationId?: string; 
+  ethicalSourcingPolicyUrl?: string; 
+  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
+  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
+  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
+  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  productDetailsOrigin?: { 
+    descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+    materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+    sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+    keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
+    specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+    energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+    imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+    esprSpecificsOrigin?: {
+      durabilityInformationOrigin?: 'AI_EXTRACTED' | 'manual';
+      repairabilityInformationOrigin?: 'AI_EXTRACTED' | 'manual';
+      recycledContentSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+      energyEfficiencySummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+      substanceOfConcernSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
+    carbonFootprintOrigin?: { 
+        valueOrigin?: 'AI_EXTRACTED' | 'manual';
+        unitOrigin?: 'AI_EXTRACTED' | 'manual';
+        calculationMethodOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope1EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope2EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope3EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        dataSourceOrigin?: 'AI_EXTRACTED' | 'manual';
+        vcIdOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
+    digitalTwinOrigin?: { 
+        uriOrigin?: 'AI_EXTRACTED' | 'manual';
+        sensorDataEndpointOrigin?: 'AI_EXTRACTED' | 'manual';
+        realTimeStatusOrigin?: 'AI_EXTRACTED' | 'manual';
+        predictiveMaintenanceAlertsOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
+  };
+  batteryRegulationOrigin?: any; 
+}
+
+export interface RichMockProduct {
+  id: string;
+  productId: string;
+  productName: string;
+  category?: string;
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | 'published' | 'pending_review' | 'revoked';
+  compliance: string;
+  lastUpdated: string;
+  gtin?: string;
+  manufacturer?: string;
+  modelNumber?: string;
+  description?: string;
+  productDescription?: string; 
+  imageUrl?: string;
+  imageHint?: string;
+  materials?: string;
+  sustainabilityClaims?: string; 
+  keyCompliancePoints?: string; 
+  energyLabel?: string;
+  specifications?: string; 
+  lifecycleEvents?: SimpleLifecycleEvent[];
+  complianceSummary?: ProductComplianceSummary;
+  batteryChemistry?: string; 
+  stateOfHealth?: number | null; 
+  carbonFootprintManufacturing?: number | null; 
+  recycledContentPercentage?: number | null; 
+  ebsiVerification?: EbsiVerificationDetails;
+  certifications?: Certification[];
+  documents?: DocumentReference[];
+  supplyChainLinks?: ProductSupplyChainLink[];
+  customAttributes?: CustomAttribute[];
+  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
+  metadata?: Partial<DigitalProductPassport['metadata']>; 
+  textileInformation?: TextileInformation;
+  constructionProductInformation?: ConstructionProductInformation;
+  batteryRegulation?: BatteryRegulationDetails; 
+  conflictMineralsReportUrl?: string; 
+  fairTradeCertificationId?: string; 
+  ethicalSourcingPolicyUrl?: string; 
+  productDetails?: { 
+    esprSpecifics?: EsprSpecifics;
+    carbonFootprint?: CarbonFootprintData; 
+    digitalTwin?: DigitalTwinData; 
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
+    description?: string; 
+    imageUrl?: string;
+    imageHint?: string;
+    materials?: Array<{ name: string; percentage?: number; origin?: string; isRecycled?: boolean; recycledContentPercentage?: number }>;
+    sustainabilityClaims?: Array<{ claim: string; evidenceVcId?: string; verificationDetails?: string }>;
+    energyLabel?: string;
+    repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
+    recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
+    specifications?: string; 
+    customAttributes?: CustomAttribute[];
+    keyCompliancePoints?: string; 
+  };
+}
+
+export interface PublicProductInfo {
+  passportId: string;
+  productName: string;
+  tagline: string;
+  imageUrl: string;
+  imageHint?: string;
+  productStory: string;
+  sustainabilityHighlights: Array<{ iconName?: LucideIconName; text: string }>;
+  keyCompliancePoints?: string; 
+  manufacturerName: string;
+  manufacturerWebsite?: string;
+  brandLogoUrl?: string;
+  learnMoreLink?: string;
+  complianceSummary: string;
+  compliance?: DigitalProductPassport['compliance']; // Added for CBAM ID on public page
+  category: string;
+  modelNumber: string;
+  sku?: string;
+  gtin?: string; 
+  nfcTagId?: string;
+  rfidTagId?: string;
+  anchorTransactionHash?: string;
+  blockchainPlatform?: string;
+  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error';
+  ebsiVerificationId?: string;
+  lifecycleHighlights?: LifecycleHighlight[];
+  certifications?: PublicCertification[];
+  customAttributes?: CustomAttribute[];
+  documents?: DocumentReference[];
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
+  contractAddress?: string;
+  tokenId?: string;
+  onChainStatus?: string; 
+  onChainLifecycleStage?: string; 
+  textileInformation?: TextileInformation;
+  constructionProductInformation?: ConstructionProductInformation;
+  batteryRegulation?: BatteryRegulationDetails; 
+  conflictMineralsReportUrl?: string; 
+  fairTradeCertificationId?: string; 
+  ethicalSourcingPolicyUrl?: string; 
+  productDetails?: { 
+    esprSpecifics?: EsprSpecifics;
+    carbonFootprint?: CarbonFootprintData; 
+    digitalTwin?: DigitalTwinData; 
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
+  };
+  status?: DigitalProductPassport['metadata']['status']; 
+  lastUpdated?: string; 
+}
+
+export interface Supplier {
+  id: string;
+  name: string;
+  contactPerson?: string;
+  email?: string;
+  location?: string;
+  materialsSupplied: string;
+  status: 'Active' | 'Inactive' | 'Pending Review';
+  lastUpdated: string;
+}
+
+export interface DisplayableProduct {
+  id: string;
+  productId?: string;
+  productName?: string;
+  category?: string;
+  productCategory?: string;
+  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string;
+  compliance: string;
+  lastUpdated: string;
+  gtin?: string;
+  manufacturer?: string;
+  modelNumber?: string;
+  description?: string;
+  productDescription?: string;
+  imageUrl?: string;
+  imageHint?: string;
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  materials?: string;
+  sustainabilityClaims?: string;
+  keyCompliancePoints?: string; 
+  energyLabel?: string;
+  specifications?: string; 
+  lifecycleEvents?: SimpleLifecycleEvent[];
+  complianceSummary?: ProductComplianceSummary;
+  batteryChemistry?: string;
+  stateOfHealth?: number | null;
+  carbonFootprintManufacturing?: number | null;
+  recycledContentPercentage?: number | null;
+  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A';
+  supplyChainLinks?: ProductSupplyChainLink[];
+  certifications?: SimpleCertification[];
+  documents?: DocumentReference[];
+  customAttributes?: CustomAttribute[];
+  customAttributesJsonString?: string;
+  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
+  authenticationVcId?: string; 
+  ownershipNftLink?: OwnershipNftLink; 
+  metadata?: Partial<DigitalProductPassport['metadata']>; 
+  textileInformation?: TextileInformation;
+  constructionProductInformation?: ConstructionProductInformation;
+  batteryRegulation?: BatteryRegulationDetails; 
+  conflictMineralsReportUrl?: string; 
+  fairTradeCertificationId?: string; 
+  ethicalSourcingPolicyUrl?: string; 
+  productDetails?: { 
+    esprSpecifics?: EsprSpecifics;
+    carbonFootprint?: CarbonFootprintData; 
+    digitalTwin?: DigitalTwinData; 
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
+  };
+}
+
+export interface AnchorResult {
+  productId: string;
+  anchorTransactionHash: string;
+  platform?: string;
+}
+
+// Token Operation Response Types
+export interface MintTokenResponse {
+  tokenId: string;
+  contractAddress: string;
+  transactionHash: string;
+  message?: string;
+  error?: string; 
+}
+
+export interface UpdateTokenMetadataResponse {
+  tokenId: string;
+  contractAddress: string;
+  transactionHash: string;
+  message?: string;
+  error?: string; 
+}
+
+export interface TokenStatusResponse {
+  tokenId: string;
+  contractAddress: string;
+  ownerAddress: string;
+  mintedAt: string; 
+  metadataUri?: string | null;
+  lastTransactionHash?: string | null;
+  status: string; 
+  message?: string;
+}
+
+export type InitialProductFormData = Omit<ProductFormData, 'productDetailsOrigin' | 'batteryRegulationOrigin'> & {
+  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
+  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
+  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
+  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
+  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  batteryRegulationOrigin?: any; 
+  productDetailsOrigin?: {
+    descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+    materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+    sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+    keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
+    specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+    energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+    imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+    esprSpecificsOrigin?: {
+      durabilityInformationOrigin?: 'AI_EXTRACTED' | 'manual';
+      repairabilityInformationOrigin?: 'AI_EXTRACTED' | 'manual';
+      recycledContentSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+      energyEfficiencySummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+      substanceOfConcernSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
+    carbonFootprintOrigin?: { 
+        valueOrigin?: 'AI_EXTRACTED' | 'manual';
+        unitOrigin?: 'AI_EXTRACTED' | 'manual';
+        calculationMethodOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope1EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope2EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope3EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        dataSourceOrigin?: 'AI_EXTRACTED' | 'manual';
+        vcIdOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
+    digitalTwinOrigin?: { 
+        uriOrigin?: 'AI_EXTRACTED' | 'manual';
+        sensorDataEndpointOrigin?: 'AI_EXTRACTED' | 'manual';
+        realTimeStatusOrigin?: 'AI_EXTRACTED' | 'manual';
+        predictiveMaintenanceAlertsOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
+  };
+  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
+};
+
+
+```
+- workspace/src/types/dpp/index.ts:
+```ts
+export * from './Lifecycle';
+export * from './Compliance';
+export * from './Product';
+export { USER_PRODUCTS_LOCAL_STORAGE_KEY, USER_SUPPLIERS_LOCAL_STORAGE_KEY, TRACKED_PRODUCTS_STORAGE_KEY } from './Product';
+```
+- workspace/src/types/productFormTypes.ts:
+```ts
+
+// --- File: src/types/productFormTypes.ts ---
+// Description: Type definitions and Zod schemas for the product form.
+"use client";
+
+import { z } from "zod";
+import type { EsprSpecifics, CarbonFootprintData, BatteryRegulationDetails, TextileInformation, ConstructionProductInformation, ScipNotificationDetails, EuCustomsDataDetails } from './dpp'; 
+
+export const carbonFootprintSchema: z.ZodType<Partial<CarbonFootprintData>> = z.object({
+  value: z.coerce.number().nullable().optional(),
+  unit: z.string().optional(),
+  calculationMethod: z.string().optional(),
+  scope1Emissions: z.coerce.number().nullable().optional(),
+  scope2Emissions: z.coerce.number().nullable().optional(),
+  scope3Emissions: z.coerce.number().nullable().optional(),
+  dataSource: z.string().optional(),
+  vcId: z.string().optional(),
+});
+
+export const recycledContentSchema = z.object({
+  material: z.string().optional(),
+  percentage: z.coerce.number().nullable().optional(),
+  source: z.string().optional(), // Could be enum: z.enum(['Pre-consumer', 'Post-consumer', 'Mixed', 'Unknown']).optional(),
+  vcId: z.string().optional(),
+});
+
+export const stateOfHealthSchema = z.object({
+  value: z.coerce.number().nullable().optional(),
+  unit: z.string().optional(),
+  measurementDate: z.string().optional(),
+  measurementMethod: z.string().optional(),
+  vcId: z.string().optional(),
+});
+
+export const batteryRegulationDetailsSchema: z.ZodType<Partial<BatteryRegulationDetails>> = z.object({
+  status: z.string().optional(),
+  batteryChemistry: z.string().optional(),
+  batteryPassportId: z.string().optional(),
+  ratedCapacityAh: z.coerce.number().nullable().optional(),
+  nominalVoltage: z.coerce.number().nullable().optional(),
+  expectedLifetimeCycles: z.coerce.number().nullable().optional(),
+  manufacturingDate: z.string().optional(),
+  manufacturerName: z.string().optional(),
+  carbonFootprint: carbonFootprintSchema.optional(),
+  recycledContent: z.array(recycledContentSchema).optional(),
+  stateOfHealth: stateOfHealthSchema.optional(),
+  recyclingEfficiencyRate: z.coerce.number().nullable().optional(),
+  materialRecoveryRates: z.object({
+    cobalt: z.coerce.number().nullable().optional(),
+    lead: z.coerce.number().nullable().optional(),
+    lithium: z.coerce.number().nullable().optional(),
+    nickel: z.coerce.number().nullable().optional(),
+  }).optional(),
+  dismantlingInformationUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+  safetyInformationUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+  vcId: z.string().optional(),
+});
+
+export const scipNotificationFormSchema: z.ZodType<Partial<ScipNotificationDetails>> = z.object({
+  status: z.string().optional(),
+  notificationId: z.string().optional(),
+  svhcListVersion: z.string().optional(),
+  submittingLegalEntity: z.string().optional(),
+  articleName: z.string().optional(),
+  primaryArticleId: z.string().optional(),
+  safeUseInstructionsLink: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+});
+
+export const customsValuationSchema = z.object({
+  value: z.coerce.number().nullable().optional(),
+  currency: z.string().optional(),
+});
+
+export const euCustomsDataFormSchema: z.ZodType<Partial<EuCustomsDataDetails>> = z.object({
+  status: z.string().optional(),
+  declarationId: z.string().optional(),
+  hsCode: z.string().optional(),
+  countryOfOrigin: z.string().optional(),
+  netWeightKg: z.coerce.number().nullable().optional(),
+  grossWeightKg: z.coerce.number().nullable().optional(),
+  customsValuation: customsValuationSchema.optional(),
+  cbamGoodsIdentifier: z.string().optional(),
+});
+
+export const fiberCompositionEntrySchema = z.object({
+  fiberName: z.string().min(1, "Fiber name is required."),
+  percentage: z.coerce.number().min(0,"Percentage cannot be negative").max(100, "Percentage cannot exceed 100").nullable(),
+});
+
+export const textileInformationSchema: z.ZodType<Partial<TextileInformation>> = z.object({
+  fiberComposition: z.array(fiberCompositionEntrySchema).optional(),
+  countryOfOriginLabeling: z.string().optional(),
+  careInstructionsUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+  isSecondHand: z.boolean().optional(),
+});
+
+export const essentialCharacteristicSchema = z.object({
+  characteristicName: z.string().min(1, "Characteristic name is required."),
+  value: z.string().min(1, "Value is required."),
+  unit: z.string().optional(),
+  testMethod: z.string().optional(),
+});
+
+export const constructionProductInformationSchema: z.ZodType<Partial<ConstructionProductInformation>> = z.object({
+  declarationOfPerformanceId: z.string().optional(),
+  ceMarkingDetailsUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+  intendedUseDescription: z.string().optional(),
+  essentialCharacteristics: z.array(essentialCharacteristicSchema).optional(),
+});
+
+export const esprSpecificsSchema: z.ZodType<Partial<EsprSpecifics>> = z.object({
+  durabilityInformation: z.string().optional(),
+  repairabilityInformation: z.string().optional(),
+  recycledContentSummary: z.string().optional(),
+  energyEfficiencySummary: z.string().optional(),
+  substanceOfConcernSummary: z.string().optional(),
+});
+
+export const digitalTwinSchema: z.ZodType<Partial<DigitalTwinData>> = z.object({
+  uri: z.string().url("Must be a valid URI or empty").or(z.literal("")).optional(),
+  sensorDataEndpoint: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+  realTimeStatus: z.string().optional(),
+  predictiveMaintenanceAlerts: z.string().optional(),
+});
+
+export const productDetailsSchema = z.object({
+    description: z.string().optional(),
+    imageUrl: z.string().url("Must be a valid URL or Data URI, or empty").or(z.literal("")).optional(),
+    imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(),
+    materials: z.string().optional(),
+    sustainabilityClaims: z.string().optional(),
+    energyLabel: z.string().optional(),
+    specifications: z.string().optional(),
+    customAttributesJsonString: z.string().optional(),
+    keyCompliancePoints: z.string().optional(),
+    esprSpecifics: esprSpecificsSchema.optional(),
+    conflictMineralsReportUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+    fairTradeCertificationId: z.string().optional(),
+    ethicalSourcingPolicyUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+    carbonFootprint: carbonFootprintSchema.optional(),
+    digitalTwin: digitalTwinSchema.optional(),
+});
+
+export const formSchema = z.object({
+  productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
+  gtin: z.string().optional().describe("Global Trade Item Number"),
+  manufacturer: z.string().optional(),
+  modelNumber: z.string().optional(),
+  sku: z.string().optional(),
+  nfcTagId: z.string().optional(),
+  rfidTagId: z.string().optional(),
+  productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
+  
+  productDetails: productDetailsSchema.optional(),
+
+  batteryRegulation: batteryRegulationDetailsSchema.optional(),
+  
+  compliance: z.object({
+    eprel: z.object({
+        id: z.string().optional(),
+        status: z.string().optional(),
+        url: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
+        lastChecked: z.string().optional(), 
+    }).optional(),
+    esprConformity: z.object({
+        assessmentId: z.string().optional(),
+        status: z.string().optional(), 
+        assessmentDate: z.string().optional(), 
+        vcId: z.string().optional(),
+    }).optional(),
+    scipNotification: scipNotificationFormSchema.optional(),
+    euCustomsData: euCustomsDataFormSchema.optional(),
+    battery_regulation: batteryRegulationDetailsSchema.optional(), 
+  }).optional(),
+  
+  textileInformation: textileInformationSchema.optional(), 
+  constructionProductInformation: constructionProductInformationSchema.optional(), 
+  onChainStatus: z.string().optional(), 
+  onChainLifecycleStage: z.string().optional(), 
+
+  // AI Origin tracking fields (these are for form-level, nested origins are handled separately)
+  productNameOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  manufacturerOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  modelNumberOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  
+  productDetailsOrigin: z.object({
+    descriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    materialsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    sustainabilityClaimsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    keyCompliancePointsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(), 
+    specificationsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    esprSpecificsOrigin: z.object({
+      durabilityInformationOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      repairabilityInformationOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      recycledContentSummaryOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      energyEfficiencySummaryOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      substanceOfConcernSummaryOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    }).optional(),
+    carbonFootprintOrigin: z.object({ 
+        valueOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+        unitOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+        calculationMethodOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+        scope1EmissionsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+        scope2EmissionsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+        scope3EmissionsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+        dataSourceOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+        vcIdOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    }).optional(),
+    digitalTwinOrigin: z.object({
+        uriOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+        sensorDataEndpointOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+        realTimeStatusOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+        predictiveMaintenanceAlertsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    }).optional(),
+  }).optional(),
+  
+  batteryRegulationOrigin: z.any().optional(), // Keep as any for deeply nested origin marking flexibility
+});
+
+export type ProductFormData = z.infer<typeof formSchema>;
+
+```
+- workspace/src/utils/aiFormHelpers.tsx:
+```tsx
+
+// --- File: aiFormHelpers.tsx ---
+// Description: Utility functions for handling AI-powered suggestions in product forms.
+
+
+import React from "react"; 
+import type { UseFormReturn } from "react-hook-form";
+import type { ProductFormData } from "@/types/productFormTypes"; 
+import { generateProductName } from "@/ai/flows/generate-product-name-flow";
+import { generateProductDescription } from "@/ai/flows/generate-product-description-flow";
+import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow";
+import { suggestKeyCompliancePoints } from "@/ai/flows/suggest-key-compliance-points"; 
+import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
+import { generateProductSpecifications } from "@/ai/flows/generate-product-specifications-flow";
+import { generateCustomAttributes } from "@/ai/flows/generate-custom-attributes-flow"; 
+import { suggestCbamIdentifier, type SuggestCbamIdentifierOutput } from "@/ai/flows/suggest-cbam-identifier-flow"; 
+import type { CustomAttribute } from "@/types/dpp"; 
+import type { ToastInput } from "@/hooks/use-toast";
+import { AlertTriangle } from "lucide-react";
+
+type ToastFn = (input: ToastInput) => void;
+
+interface AiHandlerOptions<T> {
+  aiCall: () => Promise<T>;
+  toast: ToastFn;
+  setLoadingState: (loading: boolean) => void;
+  successToast?: ToastInput | ((result: T) => ToastInput);
+  errorTitle: string;
+}
+
+async function withAiHandling<T>(options: AiHandlerOptions<T>): Promise<T | null> {
+  const { aiCall, toast, setLoadingState, successToast, errorTitle } = options;
+  setLoadingState(true);
+  try {
+    const result = await aiCall();
+    if (successToast) {
+      const toastInput =
+        typeof successToast === "function" ? successToast(result) : successToast;
+      toast(toastInput);
+    }
+    return result;
+  } catch (error) {
+    console.error(`${errorTitle}:`, error);
+    const iconElement = <AlertTriangle className="text-white" />;
+    toast({
+      title: errorTitle,
+      description: error instanceof Error
+        ? error.message
+        : "An unknown error occurred.",
+      variant: "destructive",
+      action: iconElement,
+    });
+    return null;
+  } finally {
+    setLoadingState(false);
+  }
+}
+
+export async function handleSuggestNameAI(
+  form: UseFormReturn<ProductFormData>,
+  toast: ToastFn,
+  setLoadingState: (loading: boolean) => void
+): Promise<string | null> {
+  const { productDetails, productCategory } = form.getValues();
+  if (!productDetails?.description && !productCategory) {
+    toast({ title: "Input Required", description: "Please provide a product description or category to suggest a name.", variant: "destructive" });
+    setLoadingState(false); 
+    return null;
+  }
+  const result = await withAiHandling({
+    aiCall: () => generateProductName({
+      productDescription: productDetails?.description || "",
+      productCategory: productCategory || undefined,
+    }),
+    toast,
+    setLoadingState,
+    successToast: (res) => ({
+      title: "Product Name Suggested!",
+      description: `AI suggested: \"${res.productName}\"`,
+      variant: "default",
+    }),
+    errorTitle: "Error Suggesting Name",
+  });
+  return result ? result.productName : null;
+}
+
+export async function handleSuggestDescriptionAI(
+  form: UseFormReturn<ProductFormData>,
+  toast: ToastFn,
+  setLoadingState: (loading: boolean) => void
+): Promise<string | null> {
+  const { productName, productCategory, productDetails } = form.getValues();
+  if (!productName) {
+    toast({ title: "Product Name Required", description: "Please provide a product name to suggest a description.", variant: "destructive" });
+    setLoadingState(false);
+    return null;
+  }
+  const result = await withAiHandling({
+    aiCall: () =>
+      generateProductDescription({
+        productName: productName,
+        productCategory: productCategory || undefined,
+        keyFeatures: productDetails?.materials || undefined,
+      }),
+    toast,
+    setLoadingState,
+    successToast: {
+      title: "Product Description Suggested!",
+      description: "AI has generated a product description.",
+      variant: "default",
+    },
+    errorTitle: "Error Suggesting Description",
+  });
+  return result ? result.productDescription : null;
+}
+
+export async function handleSuggestClaimsAI(
+  form: UseFormReturn<ProductFormData>,
+  toast: ToastFn,
+  setLoadingState: (loading: boolean) => void
+): Promise<string[] | null> {
+  const formData = form.getValues();
+  if (!formData.productCategory && !formData.productName && !formData.productDetails?.materials) {
+    toast({ title: "Input Required", description: "Please provide product category, name, or materials to suggest claims.", variant: "destructive" });
+    setLoadingState(false);
+    return null;
+  }
+  const result = await withAiHandling({
+    aiCall: () =>
+      suggestSustainabilityClaims({
+        productCategory: formData.productCategory || "General Product",
+        productName: formData.productName,
+        productDescription: formData.productDetails?.description,
+        materials: formData.productDetails?.materials,
+      }),
+    toast,
+    setLoadingState,
+    successToast: (res) =>
+      res.claims.length === 0
+        ? {
+            title: "No specific claims suggested.",
+            description:
+              "Try adding more product details like category or materials.",
+          }
+        : {
+            title: "Sustainability Claims Suggested!",
+            description: `${res.claims.length} claims suggested by AI.`,
+            variant: "default",
+          },
+    errorTitle: "Error Suggesting Claims",
+  });
+  return result ? result.claims : null;
+}
+
+export async function handleSuggestKeyCompliancePointsAI(
+  form: UseFormReturn<ProductFormData>,
+  toast: ToastFn,
+  setLoadingState: (loading: boolean) => void
+): Promise<string[] | null> {
+  const { productName, productCategory, compliance } = form.getValues();
+  if (!productCategory) {
+    toast({ title: "Category Required", description: "Please provide a product category to suggest compliance points.", variant: "destructive" });
+    setLoadingState(false);
+    return null;
+  }
+  
+  const applicableRegs: string[] = [];
+  if (compliance?.battery_regulation?.status && compliance.battery_regulation.status !== 'not_applicable') {
+    applicableRegs.push("EU Battery Regulation");
+  }
+  if (compliance?.esprConformity?.status && compliance.esprConformity.status !== 'not_applicable') { 
+    applicableRegs.push("EU ESPR");
+  }
+  if (compliance?.scipNotification?.status && compliance.scipNotification.status !== 'N/A' && compliance.scipNotification.status !== 'Not Required') {
+    applicableRegs.push("SCIP Database");
+  }
+  
+  const result = await withAiHandling({
+    aiCall: () =>
+      suggestKeyCompliancePoints({
+        productName: productName || undefined,
+        productCategory: productCategory,
+        regulationsApplicable: applicableRegs.join(', ') || undefined,
+      }),
+    toast,
+    setLoadingState,
+    successToast: (res) =>
+      res.compliancePoints.length === 0
+        ? {
+            title: "No specific compliance points suggested.",
+            description:
+              "Ensure product category and relevant regulations are selected.",
+          }
+        : {
+            title: "Key Compliance Points Suggested!",
+            description: `${res.compliancePoints.length} points suggested by AI.`,
+            variant: "default",
+          },
+    errorTitle: "Error Suggesting Compliance Points",
+  });
+  return result ? result.compliancePoints : null;
+}
+
+
+export async function handleGenerateImageAI(
+  form: UseFormReturn<ProductFormData>,
+  toast: ToastFn,
+  setLoadingState: (loading: boolean) => void
+): Promise<string | null> {
+  const formData = form.getValues();
+  if (!formData.productName) {
+    toast({ title: "Product Name Required", description: "Please enter a product name before generating an image.", variant: "destructive" });
+    setLoadingState(false);
+    return null;
+  }
+  const result = await withAiHandling({
+    aiCall: () =>
+      generateProductImage({
+        productName: formData.productName,
+        productCategory: formData.productCategory,
+        imageHint: formData.productDetails?.imageHint,
+      }),
+    toast,
+    setLoadingState,
+    successToast: {
+      title: "Image Generated Successfully",
+      description: "The product image has been generated.",
+    },
+    errorTitle: "Error Generating Image",
+  });
+  return result ? result.imageUrl : null;
+}
+
+export async function handleSuggestSpecificationsAI(
+  form: UseFormReturn<ProductFormData>,
+  toast: ToastFn,
+  setLoadingState: (loading: boolean) => void
+): Promise<string | null> {
+  const { productName, productDetails, productCategory } = form.getValues();
+  if (!productName && !productDetails?.description && !productCategory) {
+    toast({ title: "Input Required", description: "Please provide product name, description, or category to suggest specifications.", variant: "destructive" });
+    setLoadingState(false);
+    return null;
+  }
+  const result = await withAiHandling({
+    aiCall: () =>
+      generateProductSpecifications({
+        productName: productName || "",
+        productDescription: productDetails?.description || undefined,
+        productCategory: productCategory || undefined,
+      }),
+    toast,
+    setLoadingState,
+    successToast: {
+      title: "Specifications Suggested!",
+      description: `AI suggested specifications for "${productName || 'the product'}".`,
+      variant: "default",
+    },
+    errorTitle: "Error Suggesting Specifications",
+  });
+  return result ? result.specificationsJsonString : null;
+}
+
+export async function handleSuggestCustomAttributesAI(
+  form: UseFormReturn<ProductFormData>,
+  toast: ToastFn,
+  setLoadingState: (loading: boolean) => void
+): Promise<CustomAttribute[] | null> {
+  const { productName, productCategory, productDetails } = form.getValues();
+
+  if (!productName && !productCategory && !productDetails?.description) {
+    toast({
+      title: "Input Required",
+      description:
+        "Please provide product name, category, or description to suggest custom attributes.",
+      variant: "destructive",
+    });
+    setLoadingState(false);
+    return null;
+  }
+
+  const result = await withAiHandling({
+    aiCall: () =>
+      generateCustomAttributes({
+        productName: productName || "",
+        productCategory: productCategory || undefined,
+        productDescription: productDetails?.description || undefined,
+      }),
+    toast,
+    setLoadingState,
+    successToast: (res) =>
+      res.customAttributes.length === 0
+        ? {
+            title: "No specific attributes suggested.",
+            description: "Try adding more product details.",
+          }
+        : {
+            title: "Custom Attributes Suggested!",
+            description: `${res.customAttributes.length} custom attribute(s) suggested by AI.`,
+            variant: "default",
+          },
+    errorTitle: "Error Suggesting Attributes",
+  });
+
+  return result ? result.customAttributes : null;
+}
+
+export async function handleSuggestCbamIdentifierAI(
+  form: UseFormReturn<ProductFormData>,
+  toast: ToastFn,
+  setLoadingState: (loading: boolean) => void
+): Promise<SuggestCbamIdentifierOutput | null> {
+  const { productCategory, productDetails } = form.getValues();
+  if (!productCategory) {
+    toast({ title: "Category Required", description: "Please provide a product category to suggest a CBAM identifier.", variant: "destructive" });
+    setLoadingState(false);
+    return null;
+  }
+  const result = await withAiHandling({
+    aiCall: () =>
+      suggestCbamIdentifier({
+        productCategory: productCategory,
+        productDescription: productDetails?.description || undefined,
+      }),
+    toast,
+    setLoadingState,
+    successToast: (res) => ({
+      title: "CBAM Identifier Suggested!",
+      description: `AI suggested: "${res.suggestedIdentifier}". Reasoning: ${res.reasoning}`,
+      variant: "default",
+      duration: 7000,
+    }),
+    errorTitle: "Error Suggesting CBAM ID",
+  });
+  return result;
+}
+
+```
+
+The CBAM Goods Identifier suggestion AI flow and its integration into the product form are now complete.
+
+I've:
+1.  Created `src/ai/flows/suggest-cbam-identifier-flow.ts` with the necessary Genkit logic.
+2.  Registered this new flow in `src/ai/dev.ts`.
+3.  Added `handleSuggestCbamIdentifierAI` to `src/utils/aiFormHelpers.tsx`.
+4.  Updated `src/components/products/form/EuCustomsDataFormSection.tsx` to include:
+    *   State for managing the AI suggestion loading state and reasoning display.
+    *   A "Suggest CBAM ID with AI" button.
+    *   An `onClick` handler that calls `handleSuggestCbamIdentifierAI` and updates the form field with the suggested ID and displays the reasoning.
+
+Users can now get AI assistance in determining a conceptual CBAM Goods Identifier for their products.

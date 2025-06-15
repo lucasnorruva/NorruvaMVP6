@@ -16,10 +16,10 @@ import {
   ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
   KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, SigmaSquare, Handshake, Database, Layers as LayersIconShadcn, 
   CalendarDays as CalendarIcon, FileText as FileTextIcon, Heart, Thermometer, User, Factory, Truck, ShoppingCart,
-  Construction, Shirt, Cloud, Wind, Sun, BookmarkPlus, BookmarkCheck, AlertTriangle as AlertTriangleIcon, Globe // Added Globe
+  Construction, Shirt, Cloud, Wind, Sun, BookmarkPlus, BookmarkCheck, AlertTriangle as AlertTriangleIcon, Globe
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react'; // Added useMemo
 import { cn } from '@/lib/utils';
 import { useRole } from '@/contexts/RoleContext';
 import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification, CustomAttribute, BatteryRegulationDetails, RecycledContentData, CarbonFootprintData } from '@/types/dpp';
@@ -29,6 +29,7 @@ import { getAiHintForImage } from '@/utils/imageUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 import { useToast } from "@/hooks/use-toast"; 
 import { TRACKED_PRODUCTS_STORAGE_KEY } from '@/types/dpp'; 
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, Legend } from 'recharts'; // Added Recharts imports
 
 const STORY_TRUNCATE_LENGTH = 250;
 
@@ -43,7 +44,7 @@ export default function PublicPassportPage() {
   const { toast } = useToast(); 
 
   const updateTrackedStatus = useCallback(() => {
-    if (typeof window !== 'undefined') { // Ensure localStorage is available
+    if (typeof window !== 'undefined') { 
       const storedIdsString = localStorage.getItem(TRACKED_PRODUCTS_STORAGE_KEY);
       const trackedIds: string[] = storedIdsString ? JSON.parse(storedIdsString) : [];
       setIsTracked(trackedIds.includes(passportId));
@@ -66,6 +67,7 @@ export default function PublicPassportPage() {
             ...(fetchedProduct.productDetails || {}), 
             esprSpecifics: fetchedProduct.productDetails?.esprSpecifics,
             carbonFootprint: fetchedProduct.productDetails?.carbonFootprint, 
+            digitalTwin: fetchedProduct.productDetails?.digitalTwin,
         }
       });
       updateTrackedStatus(); 
@@ -74,7 +76,7 @@ export default function PublicPassportPage() {
   }, [passportId, updateTrackedStatus]);
 
   const handleToggleTrackProduct = () => {
-    if (typeof window === 'undefined') return; // Guard against localStorage not being available
+    if (typeof window === 'undefined') return; 
 
     const storedIdsString = localStorage.getItem(TRACKED_PRODUCTS_STORAGE_KEY);
     let trackedIds: string[] = storedIdsString ? JSON.parse(storedIdsString) : [];
@@ -139,6 +141,16 @@ export default function PublicPassportPage() {
   const hasEthicalSourcingInfo = product.conflictMineralsReportUrl || product.fairTradeCertificationId || product.ethicalSourcingPolicyUrl;
   const generalCarbonFootprint = product.productDetails?.carbonFootprint;
   const cbamGoodsIdentifier = product.compliance?.euCustomsData?.cbamGoodsIdentifier;
+
+  const carbonFootprintChartData = useMemo(() => {
+    if (!generalCarbonFootprint) return null;
+    const { scope1Emissions, scope2Emissions, scope3Emissions, unit } = generalCarbonFootprint;
+    const data = [];
+    if (typeof scope1Emissions === 'number') data.push({ name: 'Scope 1', emissions: scope1Emissions, fill: 'hsl(var(--chart-1))' });
+    if (typeof scope2Emissions === 'number') data.push({ name: 'Scope 2', emissions: scope2Emissions, fill: 'hsl(var(--chart-2))' });
+    if (typeof scope3Emissions === 'number') data.push({ name: 'Scope 3', emissions: scope3Emissions, fill: 'hsl(var(--chart-3))' });
+    return data.length > 0 ? { data, unit: unit?.replace('/kWh','').replace('/unit','') || 'kg CO2e' } : null;
+  }, [generalCarbonFootprint]);
 
 
   return (
@@ -393,17 +405,39 @@ export default function PublicPassportPage() {
                             <CardTitle className="text-xl text-primary flex items-center"><Cloud className="mr-2 h-6 w-6" />Product Carbon Footprint</CardTitle>
                         </CardHeader>
                         <CardContent className="space-y-2 text-sm px-0 pb-0">
-                            <p><strong className="text-muted-foreground">Value:</strong> {generalCarbonFootprint.value} {generalCarbonFootprint.unit}</p>
+                            <p><strong className="text-muted-foreground">Total Value:</strong> {generalCarbonFootprint.value} {generalCarbonFootprint.unit}</p>
                             {generalCarbonFootprint.calculationMethod && <p><strong className="text-muted-foreground">Method:</strong> {generalCarbonFootprint.calculationMethod}</p>}
-                             {(generalCarbonFootprint.scope1Emissions || generalCarbonFootprint.scope2Emissions || generalCarbonFootprint.scope3Emissions) && (
-                                <div className="mt-1 pt-1 border-t border-border/30"><strong className="text-muted-foreground">GHG Emissions by Scope:</strong>
-                                    <ul className="list-disc list-inside ml-4 text-xs">
-                                        {generalCarbonFootprint.scope1Emissions && <li>Scope 1: {generalCarbonFootprint.scope1Emissions} {generalCarbonFootprint.unit?.replace('/kWh','')}</li>}
-                                        {generalCarbonFootprint.scope2Emissions && <li>Scope 2: {generalCarbonFootprint.scope2Emissions} {generalCarbonFootprint.unit?.replace('/kWh','')}</li>}
-                                        {generalCarbonFootprint.scope3Emissions && <li>Scope 3: {generalCarbonFootprint.scope3Emissions} {generalCarbonFootprint.unit?.replace('/kWh','')}</li>}
-                                    </ul>
+                            {(carbonFootprintChartData && carbonFootprintChartData.data.length > 0) ? (
+                                <div className="mt-3">
+                                    <h4 className="text-sm font-semibold mb-1">GHG Emissions by Scope ({carbonFootprintChartData.unit}):</h4>
+                                    <div className="h-48 w-full max-w-md">
+                                        <ResponsiveContainer width="100%" height="100%">
+                                            <BarChart data={carbonFootprintChartData.data} layout="vertical" margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
+                                                <CartesianGrid strokeDasharray="3 3" />
+                                                <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={10} />
+                                                <YAxis dataKey="name" type="category" stroke="hsl(var(--muted-foreground))" fontSize={10} width={60} />
+                                                <RechartsTooltip 
+                                                    cursor={{fill: 'hsl(var(--muted))'}}
+                                                    contentStyle={{backgroundColor: 'hsl(var(--popover))', borderRadius: 'var(--radius)', border: '1px solid hsl(var(--border))'}}
+                                                    labelStyle={{color: 'hsl(var(--popover-foreground))'}}
+                                                    formatter={(value: any, name: any, props: any) => [`${value} ${carbonFootprintChartData.unit}`, props.payload.name ]}
+                                                />
+                                                <Bar dataKey="emissions" name="Emissions" radius={[0, 4, 4, 0]} />
+                                            </BarChart>
+                                        </ResponsiveContainer>
+                                    </div>
                                 </div>
-                             )}
+                            ) : (
+                                (generalCarbonFootprint.scope1Emissions || generalCarbonFootprint.scope2Emissions || generalCarbonFootprint.scope3Emissions) && (
+                                    <div className="mt-1 pt-1 border-t border-border/30"><strong className="text-muted-foreground">GHG Emissions by Scope:</strong>
+                                        <ul className="list-disc list-inside ml-4 text-xs">
+                                            {generalCarbonFootprint.scope1Emissions && <li>Scope 1: {generalCarbonFootprint.scope1Emissions} {generalCarbonFootprint.unit?.replace('/kWh','')}</li>}
+                                            {generalCarbonFootprint.scope2Emissions && <li>Scope 2: {generalCarbonFootprint.scope2Emissions} {generalCarbonFootprint.unit?.replace('/kWh','')}</li>}
+                                            {generalCarbonFootprint.scope3Emissions && <li>Scope 3: {generalCarbonFootprint.scope3Emissions} {generalCarbonFootprint.unit?.replace('/kWh','')}</li>}
+                                        </ul>
+                                    </div>
+                                 )
+                            )}
                             {generalCarbonFootprint.dataSource && <p><strong className="text-muted-foreground">Data Source:</strong> {generalCarbonFootprint.dataSource}</p>}
                             {generalCarbonFootprint.vcId && <p><strong className="text-muted-foreground">VC ID:</strong> <span className="font-mono text-xs">{generalCarbonFootprint.vcId}</span></p>}
                         </CardContent>
@@ -673,7 +707,6 @@ export default function PublicPassportPage() {
 }
 
 ```
-
-I've added the CBAM Goods Identifier field to the EU Customs Data section of the product form. This field is also now displayed in the Compliance Tab on the product detail page and on the public passport viewer page if the data exists. Mock data for relevant products has been updated to include sample `cbamGoodsIdentifier` values.
-
-Task 21 is complete. We are ready to proceed with **Task 22: AI Flow to Suggest CBAM Goods Identifier (Conceptual)**.
+  </change>
+  <change>
+    <file>/workspace

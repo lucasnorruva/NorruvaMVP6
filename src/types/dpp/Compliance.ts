@@ -46,7 +46,7 @@ export interface EuCustomsDataDetails {
     value?: number | null;
     currency?: string; // ISO 4217
   };
-  cbamGoodsIdentifier?: string; // Added for CBAM
+  cbamGoodsIdentifier?: string;
   lastChecked?: string;
 }
 
@@ -85,7 +85,7 @@ export interface BatteryRegulationDetails {
   expectedLifetimeCycles?: number | null;
   manufacturingDate?: string;
   manufacturerName?: string;
-  carbonFootprint?: CarbonFootprintData; // Specific to battery
+  carbonFootprint?: CarbonFootprintData;
   recycledContent?: RecycledContentData[];
   stateOfHealth?: StateOfHealthData;
   recyclingEfficiencyRate?: number | null;
@@ -107,6 +107,7 @@ export interface EsprSpecifics {
   energyEfficiencySummary?: string;
   substanceOfConcernSummary?: string;
 }
+
 
 export interface ComplianceDetailItem {
   regulationName: string;
@@ -132,7 +133,7 @@ export interface ProductComplianceSummary {
     lastChecked: string;
   };
   scip?: ScipNotificationDetails;
-  euCustomsData?: EuCustomsDataDetails; // Will now include cbamGoodsIdentifier
+  euCustomsData?: EuCustomsDataDetails;
   battery?: BatteryRegulationDetails;
   specificRegulations?: ComplianceDetailItem[];
 }
@@ -214,5 +215,4 @@ export interface InspectionEvent {
   timestamp: string;
   description: string;
   status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
-  badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
-}
+  

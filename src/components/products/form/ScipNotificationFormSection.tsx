@@ -1,4 +1,3 @@
-
 // --- File: ScipNotificationFormSection.tsx ---
 // Description: Form section component for ECHA SCIP Notification details.
 "use client";
@@ -15,13 +14,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import type { ProductFormData } from "@/components/products/ProductForm";
-// AiIndicator and AI helper imports are not needed for this initial version as SCIP data is highly specific.
+import type { ProductFormData } from "@/types/productFormTypes";
 
 interface ScipNotificationFormSectionProps {
   form: UseFormReturn<ProductFormData>;
-  // initialData?: Partial<InitialProductFormData>; // Not used in this simple version yet
-  // isSubmittingForm?: boolean; // Not used in this simple version yet
 }
 
 export default function ScipNotificationFormSection({
@@ -125,4 +121,3 @@ export default function ScipNotificationFormSection({
     </div>
   );
 }
-

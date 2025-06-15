@@ -6,7 +6,7 @@
 import type { SimpleProductDetail } from "@/types/dpp";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Leaf, Zap, Recycle, Wrench, CheckCircle, AlertCircle, Info, Users, Handshake, ExternalLink, FileText, BarChart3, BookText, Cloud, Sun, Wind } from "lucide-react"; // Added Cloud, Sun, Wind
+import { Leaf, Zap, Recycle, Wrench, CheckCircle, AlertCircle, Info, Users, Handshake, ExternalLink, FileText, BarChart3, BookText, Cloud, Sun, Wind } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -132,7 +132,7 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center">
-            <Wrench className="mr-2 h-5 w-5 text-blue-600" /> Repair &amp; Recyclability
+            <Wrench className="mr-2 h-5 w-5 text-blue-600" /> Repair & Recyclability
           </CardTitle>
           <CardDescription>Information on product end-of-life and maintenance.</CardDescription>
         </CardHeader>
@@ -172,10 +172,10 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
       </Card>
 
       {hasEthicalSourcingInfo && (
-        <Card className="shadow-sm md:col-span-2"> 
+        <Card className="shadow-sm md:col-span-2">
           <CardHeader>
             <CardTitle className="text-lg font-semibold flex items-center">
-              <Handshake className="mr-2 h-5 w-5 text-purple-600" /> Ethical Sourcing & Supply Chain Transparency
+              <Handshake className="mr-2 h-5 w-5 text-purple-600" /> Ethical Sourcing & Transparency
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2">
@@ -189,6 +189,7 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
         </Card>
       )}
 
+      {/* Battery Specific Carbon Footprint Display */}
       {product.batteryRegulation?.carbonFootprint && (product.batteryRegulation.carbonFootprint.value !== null && product.batteryRegulation.carbonFootprint.value !== undefined) && (
         <Card className="shadow-sm">
           <CardHeader>
@@ -199,15 +200,12 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
           <CardContent className="space-y-2">
             <DetailItem label="Value" value={product.batteryRegulation.carbonFootprint.value} unit={product.batteryRegulation.carbonFootprint.unit} />
             <DetailItem label="Calculation Method" value={product.batteryRegulation.carbonFootprint.calculationMethod} />
-            <DetailItem label="Data Source" value={product.batteryRegulation.carbonFootprint.dataSource} />
-            {product.batteryRegulation.carbonFootprint.scope1Emissions !== null && product.batteryRegulation.carbonFootprint.scope1Emissions !== undefined && <DetailItem label="Scope 1 Emissions" value={product.batteryRegulation.carbonFootprint.scope1Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')} />}
-            {product.batteryRegulation.carbonFootprint.scope2Emissions !== null && product.batteryRegulation.carbonFootprint.scope2Emissions !== undefined &&  <DetailItem label="Scope 2 Emissions" value={product.batteryRegulation.carbonFootprint.scope2Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')} />}
-            {product.batteryRegulation.carbonFootprint.scope3Emissions !== null && product.batteryRegulation.carbonFootprint.scope3Emissions !== undefined &&  <DetailItem label="Scope 3 Emissions" value={product.batteryRegulation.carbonFootprint.scope3Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')} />}
-            <DetailItem label="Carbon Footprint VC ID" value={product.batteryRegulation.carbonFootprint.vcId} />
+            <DetailItem label="Primary Data Source" value={product.batteryRegulation.carbonFootprint.dataSource} />
+            <div className="grid md:grid-cols-3 gap-2 pt-2 border-t border-border/30 mt-2">
+                <DetailItem label="Scope 1" value={product.batteryRegulation.carbonFootprint.scope1Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')} />
+                <DetailItem label="Scope 2" value={product.batteryRegulation.carbonFootprint.scope2Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')} />
+                <DetailItem label="Scope 3" value={product.batteryRegulation.carbonFootprint.scope3Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')} />
+            </div>
+            {product.batteryRegulation.carbonFootprint.vcId && <DetailItem label="Carbon Footprint VC ID" value={product.batteryRegulation.carbonFootprint.vcId} />}
           </CardContent>
         </Card>
-      )}
-
-    </div>
-  );
-}

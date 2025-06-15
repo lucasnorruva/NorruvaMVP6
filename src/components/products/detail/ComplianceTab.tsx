@@ -1,4 +1,3 @@
-
 // --- File: ComplianceTab.tsx ---
 // Description: Displays compliance-related information for a product.
 "use client";
@@ -8,7 +7,7 @@ import ProductComplianceHeader from "./ProductComplianceHeader";
 import ComplianceDetailItemDisplay, { type ComplianceDetailItemProps } from "./ComplianceDetailItemDisplay"; // Import the new component and its props type
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, Fingerprint, Database, Anchor, BatteryCharging, ShieldCheck } from "lucide-react"; // Added BatteryCharging & ShieldCheck
+import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, Fingerprint, Database, Anchor, BatteryCharging, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import React from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -107,8 +106,12 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     if (summary.euCustomsData.hsCode) customsNotesParts.push(`HS Code: ${summary.euCustomsData.hsCode}`);
     if (summary.euCustomsData.countryOfOrigin) customsNotesParts.push(`Origin: ${summary.euCustomsData.countryOfOrigin}`);
     if (summary.euCustomsData.netWeightKg !== undefined && summary.euCustomsData.netWeightKg !== null) customsNotesParts.push(`Net Wt: ${summary.euCustomsData.netWeightKg}kg`);
+    if (summary.euCustomsData.grossWeightKg !== undefined && summary.euCustomsData.grossWeightKg !== null) customsNotesParts.push(`Gross Wt: ${summary.euCustomsData.grossWeightKg}kg`);
     if (summary.euCustomsData.customsValuation?.value !== undefined && summary.euCustomsData.customsValuation.value !== null) {
         customsNotesParts.push(`Value: ${summary.euCustomsData.customsValuation.value} ${summary.euCustomsData.customsValuation.currency || ''}`);
+    }
+    if (summary.euCustomsData.cbamGoodsIdentifier) {
+        customsNotesParts.push(`CBAM ID: ${summary.euCustomsData.cbamGoodsIdentifier}`);
     }
     
     allComplianceItems.push({
@@ -146,9 +149,9 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
       title: "EU Battery Regulation",
       icon: BatteryCharging,
       status: summary.battery.status || "N/A",
-      lastChecked: product.lastUpdated || new Date().toISOString(), 
+      lastChecked: product.lastUpdated || new Date().toISOString(),
       id: summary.battery.batteryPassportId,
-      url: summary.battery.vcId ? `#vc-${summary.battery.vcId}` : undefined, 
+      url: summary.battery.vcId ? `#vc-${summary.battery.vcId}` : undefined,
       notes: batteryNotesParts.join(' | ') || "Detailed battery passport information available.",
     });
   }
@@ -161,7 +164,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
         icon: ShieldCheck, // Using ShieldCheck for general compliance
         status: reg.status,
         lastChecked: reg.lastChecked,
-        id: reg.verificationId, 
+        id: reg.verificationId,
         url: reg.detailsUrl,
         notes: reg.notes,
       });
@@ -194,4 +197,3 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     </div>
   );
 }
-

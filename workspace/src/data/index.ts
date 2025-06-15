@@ -8,3 +8,4 @@ export * from './mockTransitProducts';
 export * from './mockCustomsAlerts'; // Ensures this is present
 export * from './mockServiceJobs'; // Added export for service jobs
 export type { TransitProduct, CustomsAlert, InspectionEvent } from '@/types/dpp';
+```

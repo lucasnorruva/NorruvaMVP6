@@ -219,3 +219,4 @@ export interface InspectionEvent {
   status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
   badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
 }
+```

@@ -1,4 +1,3 @@
-
 // --- File: EthicalSourcingFormSection.tsx ---
 // Description: Form section component for ethical sourcing details.
 "use client";
@@ -70,5 +69,3 @@ export default function EthicalSourcingFormSection({
     </div>
   );
 }
-
-    

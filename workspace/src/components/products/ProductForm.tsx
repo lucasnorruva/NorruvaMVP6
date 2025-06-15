@@ -1,10 +1,10 @@
-
 "use client";
 // --- File: ProductForm.tsx ---
 // Description: Main form component for creating or editing product DPPs.
+// Imports all section components from the barrel file.
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, type UseFormReturn } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -17,15 +17,15 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIconLucide, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction as ConstructionIcon, Handshake } from "lucide-react";
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, ImageIcon as ImageIconLucide, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction as ConstructionIcon, Handshake } from "lucide-react";
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 
-// Import Zod schema and form data type from the centralized types file
+// Import types and schema from the centralized types file
 import type { ProductFormData } from "@/types/productFormTypes";
 import { formSchema } from "@/types/productFormTypes";
 
-// Import form sections and AiIndicator from the barrel file
+// Import all form section components from the barrel file
 import {
   AiIndicator,
   BasicInfoFormSection,
@@ -587,5 +587,3 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     </Form>
   );
 }
-
-    

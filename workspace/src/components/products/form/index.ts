@@ -1,4 +1,3 @@
-
 // src/components/products/form/index.ts
 export { default as AiIndicator } from './AiIndicator';
 export { default as AiSuggestionDisplay } from './AiSuggestionDisplay';
@@ -13,5 +12,3 @@ export { default as ScipNotificationFormSection } from './ScipNotificationFormSe
 export { default as SustainabilityComplianceFormSection } from './SustainabilityComplianceFormSection';
 export { default as TechnicalSpecificationsFormSection } from './TechnicalSpecificationsFormSection';
 export { default as TextileInformationFormSection } from './TextileInformationFormSection';
-
-    

@@ -1,4 +1,3 @@
-
 // --- File: src/types/productFormTypes.ts ---
 // Description: Type definitions and Zod schemas for the product form.
 "use client";
@@ -171,5 +170,3 @@ export const formSchema = z.object({
 });
 
 export type ProductFormData = z.infer<typeof formSchema>;
-
-    

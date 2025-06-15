@@ -1,4 +1,3 @@
-
 // --- File: ConstructionProductInformationFormSection.tsx ---
 // Description: Form section component for Construction Product Information.
 "use client";
@@ -18,7 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Trash2, PlusCircle } from "lucide-react";
-import type { ProductFormData } from "@/types/productFormTypes"; // Import from the centralized types file
+import type { ProductFormData } from "@/types/productFormTypes"; // Import from centralized types file
 
 interface ConstructionProductInformationFormSectionProps {
   form: UseFormReturn<ProductFormData>;
@@ -140,5 +139,3 @@ export default function ConstructionProductInformationFormSection({
     </div>
   );
 }
-
-    

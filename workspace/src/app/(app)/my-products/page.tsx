@@ -11,8 +11,7 @@ import { Bookmark, Eye, Trash2, Info, ShoppingBag } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { MOCK_PUBLIC_PASSPORTS } from '@/data'; // Using public passport data for display
 import type { PublicProductInfo } from '@/types/dpp';
-
-const TRACKED_PRODUCTS_STORAGE_KEY = 'norruvaTrackedProductIds';
+import { TRACKED_PRODUCTS_STORAGE_KEY } from '@/types/dpp'; // Import the constant
 
 interface TrackedProductDisplayInfo extends Pick<PublicProductInfo, 'passportId' | 'productName' | 'imageUrl' | 'category' | 'imageHint'> {}
 
@@ -138,3 +137,4 @@ export default function MyTrackedProductsPage() {
     </div>
   );
 }
+

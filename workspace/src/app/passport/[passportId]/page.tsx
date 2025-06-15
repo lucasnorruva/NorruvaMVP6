@@ -10,26 +10,27 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import * as LucideIcons from 'lucide-react'; // Import all icons as LucideIcons
+import * as LucideIcons from 'lucide-react'; 
 import {
   Leaf, Recycle, ShieldCheck, Cpu, ExternalLink, Building, Zap, ChevronDown, ChevronUp, Fingerprint,
   ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
-  KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, SigmaSquare, Handshake, Database, Layers as LayersIconShadcn, // Added Handshake
-  CalendarDays as CalendarIcon, FileText as FileTextIcon, Heart, Thermometer, User, Factory, Truck, ShoppingCart
+  KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, SigmaSquare, Handshake, Database, Layers as LayersIconShadcn, 
+  CalendarDays as CalendarIcon, FileText as FileTextIcon, Heart, Thermometer, User, Factory, Truck, ShoppingCart,
+  Construction, Shirt, Cloud, Wind, Sun, BookmarkPlus, BookmarkCheck
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
-import React, { useState, useEffect, useCallback } from 'react'; // Added useCallback
+import React, { useState, useEffect, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { useRole } from '@/contexts/RoleContext';
-import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification, CustomAttribute, BatteryRegulationDetails, RecycledContentData } from '@/types/dpp';
+import type { PublicProductInfo, IconName, LifecycleHighlight, PublicCertification, CustomAttribute, BatteryRegulationDetails, RecycledContentData, CarbonFootprintData } from '@/types/dpp';
 import { MOCK_PUBLIC_PASSPORTS } from '@/data';
 import RoleSpecificCard from '@/components/passport/RoleSpecificCard';
 import { getAiHintForImage } from '@/utils/imageUtils';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; 
 import { useToast } from "@/hooks/use-toast"; 
+import { TRACKED_PRODUCTS_STORAGE_KEY } from '@/types/dpp'; 
 
 const STORY_TRUNCATE_LENGTH = 250;
-const TRACKED_PRODUCTS_STORAGE_KEY = 'norruvaTrackedProductIds';
 
 export default function PublicPassportPage() {
   const params = useParams();
@@ -42,9 +43,11 @@ export default function PublicPassportPage() {
   const { toast } = useToast(); 
 
   const updateTrackedStatus = useCallback(() => {
-    const storedIdsString = localStorage.getItem(TRACKED_PRODUCTS_STORAGE_KEY);
-    const trackedIds: string[] = storedIdsString ? JSON.parse(storedIdsString) : [];
-    setIsTracked(trackedIds.includes(passportId));
+    if (typeof window !== 'undefined') { // Ensure localStorage is available
+      const storedIdsString = localStorage.getItem(TRACKED_PRODUCTS_STORAGE_KEY);
+      const trackedIds: string[] = storedIdsString ? JSON.parse(storedIdsString) : [];
+      setIsTracked(trackedIds.includes(passportId));
+    }
   }, [passportId]);
 
   useEffect(() => {
@@ -59,6 +62,11 @@ export default function PublicPassportPage() {
         conflictMineralsReportUrl: fetchedProduct.conflictMineralsReportUrl, 
         fairTradeCertificationId: fetchedProduct.fairTradeCertificationId, 
         ethicalSourcingPolicyUrl: fetchedProduct.ethicalSourcingPolicyUrl, 
+        productDetails: { 
+            ...(fetchedProduct.productDetails || {}), 
+            esprSpecifics: fetchedProduct.productDetails?.esprSpecifics,
+            carbonFootprint: fetchedProduct.productDetails?.carbonFootprint, 
+        }
       });
       updateTrackedStatus(); 
     }
@@ -66,6 +74,8 @@ export default function PublicPassportPage() {
   }, [passportId, updateTrackedStatus]);
 
   const handleToggleTrackProduct = () => {
+    if (typeof window === 'undefined') return; // Guard against localStorage not being available
+
     const storedIdsString = localStorage.getItem(TRACKED_PRODUCTS_STORAGE_KEY);
     let trackedIds: string[] = storedIdsString ? JSON.parse(storedIdsString) : [];
     const productIndex = trackedIds.indexOf(passportId);
@@ -127,6 +137,7 @@ export default function PublicPassportPage() {
   });
 
   const hasEthicalSourcingInfo = product.conflictMineralsReportUrl || product.fairTradeCertificationId || product.ethicalSourcingPolicyUrl;
+  const generalCarbonFootprint = product.productDetails?.carbonFootprint;
 
 
   return (
@@ -138,7 +149,7 @@ export default function PublicPassportPage() {
           </Link>
           <div className="flex items-center gap-2">
              <Button variant={isTracked ? "default" : "outline"} size="sm" onClick={handleToggleTrackProduct} className="text-xs">
-              {isTracked ? <LucideIcons.BookmarkCheck className="mr-1.5 h-4 w-4" /> : <LucideIcons.BookmarkPlus className="mr-1.5 h-4 w-4" />}
+              {isTracked ? <BookmarkCheck className="mr-1.5 h-4 w-4" /> : <BookmarkPlus className="mr-1.5 h-4 w-4" />}
               {isTracked ? "Untrack Product" : "Track This Product"}
             </Button>
             <Badge variant="outline" className="border-primary text-primary text-sm">Digital Product Passport</Badge>
@@ -198,7 +209,7 @@ export default function PublicPassportPage() {
                 </CardContent>
               </Card>
 
-              {(product.sku || product.nfcTagId || product.rfidTagId) && ( 
+              {(product.sku || product.nfcTagId || product.rfidTagId) && (
                 <Card className="border-accent/50">
                   <CardHeader>
                     <CardTitle className="text-xl text-accent flex items-center">
@@ -367,6 +378,30 @@ export default function PublicPassportPage() {
               </div>
             )}
 
+            {generalCarbonFootprint && (generalCarbonFootprint.value !== null && generalCarbonFootprint.value !== undefined) && (
+                <div className="mt-8 pt-6 border-t border-border">
+                    <Card className="border-0 shadow-none">
+                        <CardHeader className="px-0 pt-0 pb-4">
+                            <CardTitle className="text-xl text-primary flex items-center"><Cloud className="mr-2 h-6 w-6" />Product Carbon Footprint</CardTitle>
+                        </CardHeader>
+                        <CardContent className="space-y-2 text-sm px-0 pb-0">
+                            <p><strong className="text-muted-foreground">Value:</strong> {generalCarbonFootprint.value} {generalCarbonFootprint.unit}</p>
+                            {generalCarbonFootprint.calculationMethod && <p><strong className="text-muted-foreground">Method:</strong> {generalCarbonFootprint.calculationMethod}</p>}
+                             {(generalCarbonFootprint.scope1Emissions || generalCarbonFootprint.scope2Emissions || generalCarbonFootprint.scope3Emissions) && (
+                                <div className="mt-1 pt-1 border-t border-border/30"><strong className="text-muted-foreground">GHG Emissions by Scope:</strong>
+                                    <ul className="list-disc list-inside ml-4 text-xs">
+                                        {generalCarbonFootprint.scope1Emissions && <li>Scope 1: {generalCarbonFootprint.scope1Emissions} {generalCarbonFootprint.unit?.replace('/kWh','')}</li>}
+                                        {generalCarbonFootprint.scope2Emissions && <li>Scope 2: {generalCarbonFootprint.scope2Emissions} {generalCarbonFootprint.unit?.replace('/kWh','')}</li>}
+                                        {generalCarbonFootprint.scope3Emissions && <li>Scope 3: {generalCarbonFootprint.scope3Emissions} {generalCarbonFootprint.unit?.replace('/kWh','')}</li>}
+                                    </ul>
+                                </div>
+                             )}
+                            {generalCarbonFootprint.dataSource && <p><strong className="text-muted-foreground">Data Source:</strong> {generalCarbonFootprint.dataSource}</p>}
+                            {generalCarbonFootprint.vcId && <p><strong className="text-muted-foreground">VC ID:</strong> <span className="font-mono text-xs">{generalCarbonFootprint.vcId}</span></p>}
+                        </CardContent>
+                    </Card>
+                </div>
+            )}
 
             {(product.customAttributes && product.customAttributes.length > 0) && (
               <div className="mt-8 pt-6 border-t border-border">
@@ -436,7 +471,6 @@ export default function PublicPassportPage() {
                 </Card>
               </div>
             )}
-
              {product.batteryRegulation && product.batteryRegulation.status && product.batteryRegulation.status.toLowerCase() !== 'not_applicable' && (
                 <div className="mt-8 pt-6 border-t border-border">
                     <Card className="border-0 shadow-none">
@@ -450,10 +484,10 @@ export default function PublicPassportPage() {
                             
                             {product.batteryRegulation.carbonFootprint && (product.batteryRegulation.carbonFootprint.value !== null && product.batteryRegulation.carbonFootprint.value !== undefined) && (
                                 <div className="mt-2 pt-2 border-t border-border/30">
-                                    <strong className="text-muted-foreground flex items-center"><Zap className="mr-1.5 h-4 w-4 text-orange-500" />Carbon Footprint:</strong>
+                                    <strong className="text-muted-foreground flex items-center"><Cloud className="mr-1.5 h-4 w-4 text-orange-500" />Carbon Footprint:</strong>
                                     <p className="pl-5">Value: {product.batteryRegulation.carbonFootprint.value} {product.batteryRegulation.carbonFootprint.unit || ''}</p>
                                     {product.batteryRegulation.carbonFootprint.calculationMethod && <p className="pl-5">Method: {product.batteryRegulation.carbonFootprint.calculationMethod}</p>}
-                                    {(product.batteryRegulation.carbonFootprint.scope1Emissions || product.batteryRegulation.carbonFootprint.scope2Emissions || product.batteryRegulation.carbonFootprint.scope3Emissions) && (
+                                     {(product.batteryRegulation.carbonFootprint.scope1Emissions || product.batteryRegulation.carbonFootprint.scope2Emissions || product.batteryRegulation.carbonFootprint.scope3Emissions) && (
                                         <ul className="list-disc list-inside ml-4 text-xs">
                                             {product.batteryRegulation.carbonFootprint.scope1Emissions && <li>Scope 1: {product.batteryRegulation.carbonFootprint.scope1Emissions} {product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')}</li>}
                                             {product.batteryRegulation.carbonFootprint.scope2Emissions && <li>Scope 2: {product.batteryRegulation.carbonFootprint.scope2Emissions} {product.batteryRegulation.carbonFootprint.unit?.replace('/kWh','')}</li>}
@@ -629,5 +663,4 @@ export default function PublicPassportPage() {
     </div>
   );
 }
-
 

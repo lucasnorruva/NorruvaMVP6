@@ -59,17 +59,3 @@ export const ALL_NAV_ITEMS: NavItemConfig[] = [
   { href: "/settings", label: "Settings", icon: Settings, group: 'secondary', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider'] },
 ];
 
-```
-  </change>
-  <change>
-    <file>/workspace/src/data/index.ts</file>
-    <content><![CDATA[
-export * from './mockDpps';
-export * from './simpleMockProducts';
-export * from './mockSuppliers';
-export * from './mockPublicPassports';
-export * from './mockImportJobs';
-export * from './mockTransitProducts'; 
-export * from './mockCustomsAlerts'; 
-export type { TransitProduct, CustomsAlert, InspectionEvent } from '@/types/dpp'; 
-

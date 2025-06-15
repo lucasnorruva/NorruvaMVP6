@@ -5,11 +5,12 @@
 import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle';
 import type {
   Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification,
-  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation
+  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, EsprSpecifics, CarbonFootprintData
 } from './Compliance'; 
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
+export const TRACKED_PRODUCTS_STORAGE_KEY = 'norruvaTrackedProductIds'; // New constant
 
 export interface SupplyChainStep {
   stepName: string;
@@ -113,6 +114,8 @@ export interface DigitalProductPassport {
     fairTradeCertificationId?: string; 
     ethicalSourcingPolicyUrl?: string; 
     keyCompliancePoints?: string; 
+    esprSpecifics?: EsprSpecifics; 
+    carbonFootprint?: CarbonFootprintData;
   };
 
   textileInformation?: TextileInformation;
@@ -210,62 +213,82 @@ export interface SimpleProductDetail {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
+  productDetails?: { 
+    esprSpecifics?: EsprSpecifics;
+    carbonFootprint?: CarbonFootprintData;
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
+  };
 }
 
-export interface StoredUserProduct {
+export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulation' | 'compliance' | 'productDetails'> {
   id: string;
-  productName?: string;
-  gtin?: string;
-  productDescription?: string;
-  manufacturer?: string;
-  modelNumber?: string;
-  sku?: string;
-  nfcTagId?: string;
-  rfidTagId?: string;
-  materials?: string;
-  sustainabilityClaims?: string;
-  specifications?: string; 
-  energyLabel?: string;
-  productCategory?: string;
-  imageUrl?: string;
-  imageHint?: string;
-  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string;
+  status: string; 
   compliance: string; 
   lastUpdated: string;
+  productCategory?: string;
+  keySustainabilityPoints?: string[]; 
+  keyCompliancePoints?: string;
+  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
+  supplyChainLinks?: ProductSupplyChainLink[];
+  lifecycleEvents?: SimpleLifecycleEvent[];
+  complianceSummary?: ProductComplianceSummary; 
+  
+  productDetails?: Partial<ProductFormData['productDetails']>; 
+  complianceData?: { 
+    eprel?: Partial<ProductFormData['compliance']['eprel']>;
+    esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
+    scipNotification?: Partial<ScipNotificationDetails>;
+    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>;
+    battery_regulation?: Partial<ProductFormData['compliance']['battery_regulation']>;
+  };
+  batteryRegulation?: Partial<BatteryRegulationDetails>; 
+  textileInformation?: Partial<TextileInformation>; 
+  constructionProductInformation?: Partial<ConstructionProductInformation>; 
+  metadata?: Partial<InitialProductFormData>; // Re-using this for metadata structure if needed
+  authenticationVcId?: string; 
+  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; 
+  blockchainIdentifiers?: InitialProductFormData['blockchainIdentifiers']; 
+  conflictMineralsReportUrl?: string; 
+  fairTradeCertificationId?: string; 
+  ethicalSourcingPolicyUrl?: string; 
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
   productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
   manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
   modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
   materialsOrigin?: 'AI_EXTRACTED' | 'manual';
   sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
-  keyCompliancePoints?: string;
-  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
   energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
   specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
-  supplyChainLinks?: ProductSupplyChainLink[];
-  lifecycleEvents?: SimpleLifecycleEvent[];
-  complianceSummary?: ProductComplianceSummary;
-  certifications?: SimpleCertification[];
-  documents?: DocumentReference[];
-  customAttributesJsonString?: string;
-  complianceData?: { 
-    eprel?: Partial<DigitalProductPassport['compliance']['eprel']>;
-    esprConformity?: Partial<DigitalProductPassport['compliance']['esprConformity']>;
-    scipNotification?: Partial<ScipNotificationDetails>;
-    euCustomsData?: Partial<EuCustomsDataDetails>;
-    battery_regulation?: Partial<BatteryRegulationDetails>;
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  productDetailsOrigin?: { // Added for Task 1
+    descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+    materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+    sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+    keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
+    specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+    energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+    imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+    esprSpecificsOrigin?: {
+      durabilityInformationOrigin?: 'AI_EXTRACTED' | 'manual';
+      repairabilityInformationOrigin?: 'AI_EXTRACTED' | 'manual';
+      recycledContentSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+      energyEfficiencySummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+      substanceOfConcernSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
+    carbonFootprintOrigin?: { // Added for Task 3
+        valueOrigin?: 'AI_EXTRACTED' | 'manual';
+        unitOrigin?: 'AI_EXTRACTED' | 'manual';
+        calculationMethodOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope1EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope2EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        scope3EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
+        dataSourceOrigin?: 'AI_EXTRACTED' | 'manual';
+        vcIdOrigin?: 'AI_EXTRACTED' | 'manual';
+    };
   };
-  batteryRegulation?: Partial<BatteryRegulationDetails>;
-  authenticationVcId?: string; 
-  ownershipNftLink?: OwnershipNftLink; 
-  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  metadata?: Partial<DigitalProductPassport['metadata']>; 
-  textileInformation?: Partial<TextileInformation>;
-  constructionProductInformation?: Partial<ConstructionProductInformation>;
-  conflictMineralsReportUrl?: string; 
-  fairTradeCertificationId?: string; 
-  ethicalSourcingPolicyUrl?: string; 
+  batteryRegulationOrigin?: any; 
 }
 
 export interface RichMockProduct {
@@ -280,6 +303,7 @@ export interface RichMockProduct {
   manufacturer?: string;
   modelNumber?: string;
   description?: string;
+  productDescription?: string; // Ensure this is present
   imageUrl?: string;
   imageHint?: string;
   materials?: string;
@@ -308,6 +332,24 @@ export interface RichMockProduct {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
+  productDetails?: { 
+    esprSpecifics?: EsprSpecifics;
+    carbonFootprint?: CarbonFootprintData; 
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
+    description?: string; // Ensure description is also in productDetails for consistency
+    imageUrl?: string;
+    imageHint?: string;
+    materials?: Array<{ name: string; percentage?: number; origin?: string; isRecycled?: boolean; recycledContentPercentage?: number }>;
+    sustainabilityClaims?: Array<{ claim: string; evidenceVcId?: string; verificationDetails?: string }>;
+    energyLabel?: string;
+    repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
+    recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
+    specifications?: string; 
+    customAttributes?: CustomAttribute[];
+    keyCompliancePoints?: string; 
+  };
 }
 
 export interface PublicProductInfo {
@@ -350,6 +392,13 @@ export interface PublicProductInfo {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
+  productDetails?: { 
+    esprSpecifics?: EsprSpecifics;
+    carbonFootprint?: CarbonFootprintData; 
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
+  };
 }
 
 export interface Supplier {
@@ -407,6 +456,13 @@ export interface DisplayableProduct {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
+  productDetails?: { 
+    esprSpecifics?: EsprSpecifics;
+    carbonFootprint?: CarbonFootprintData; 
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
+  };
 }
 
 export interface AnchorResult {
@@ -442,3 +498,4 @@ export interface TokenStatusResponse {
   status: string; 
   message?: string;
 }
+

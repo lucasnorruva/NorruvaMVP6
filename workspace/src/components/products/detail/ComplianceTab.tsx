@@ -1,4 +1,3 @@
-
 // --- File: ComplianceTab.tsx ---
 // Description: Displays compliance-related information for a product.
 "use client";
@@ -13,8 +12,8 @@ import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, F
 import Link from "next/link";
 import React, { useState } from "react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { generateComplianceSummaryForCategory } from "@/ai/flows/generate-compliance-summary-for-category"; // Task 12 import
-import { useToast } from "@/hooks/use-toast"; // Task 12 import
+import { generateComplianceSummaryForCategory } from "@/ai/flows/generate-compliance-summary-for-category"; 
+import { useToast } from "@/hooks/use-toast"; 
 
 
 interface ComplianceTabProps {
@@ -26,11 +25,11 @@ interface ComplianceTabProps {
 
 export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, canSyncEprel }: ComplianceTabProps) {
   const summary = product.complianceSummary;
-  const { toast } = useToast(); // Task 12
+  const { toast } = useToast(); 
 
-  const [categoryComplianceSummaryForTab, setCategoryComplianceSummaryForTab] = useState<string | null>(null); // Task 12 State
-  const [isLoadingCategoryComplianceForTab, setIsLoadingCategoryComplianceForTab] = useState(false); // Task 12 State
-  const [categoryComplianceErrorForTab, setCategoryComplianceErrorForTab] = useState<string | null>(null); // Task 12 State
+  const [categoryComplianceSummaryForTab, setCategoryComplianceSummaryForTab] = useState<string | null>(null); 
+  const [isLoadingCategoryComplianceForTab, setIsLoadingCategoryComplianceForTab] = useState(false); 
+  const [categoryComplianceErrorForTab, setCategoryComplianceErrorForTab] = useState<string | null>(null); 
 
   if (!summary) {
     return <p className="text-muted-foreground p-4">Compliance summary not available for this product.</p>;
@@ -114,8 +113,8 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     if (summary.euCustomsData.customsValuation?.value !== undefined && summary.euCustomsData.customsValuation.value !== null) {
         customsNotesParts.push(`Value: ${summary.euCustomsData.customsValuation.value} ${summary.euCustomsData.customsValuation.currency || ''}`);
     }
-    if (summary.euCustomsData.cbamGoodsIdentifier) { 
-        customsNotesParts.push(`CBAM ID: ${summary.euCustomsData.cbamGoodsIdentifier}`);
+    if (summary.euCustomsData.cbamGoodsIdentifier) { // Display CBAM Goods Identifier
+        customsNotesParts.push(`CBAM Goods ID: ${summary.euCustomsData.cbamGoodsIdentifier}`);
     }
     
     allComplianceItems.push({
@@ -260,5 +259,3 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
     </div>
   );
 }
-
-    

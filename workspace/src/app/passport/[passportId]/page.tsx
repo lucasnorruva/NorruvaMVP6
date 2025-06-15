@@ -16,7 +16,7 @@ import {
   ServerIcon, AlertCircle, Info as InfoIcon, ListChecks, History as HistoryIcon, Award, Bot, Barcode,
   KeyRound, FileLock, Anchor, Layers3, FileCog, Tag, SigmaSquare, Handshake, Database, Layers as LayersIconShadcn, 
   CalendarDays as CalendarIcon, FileText as FileTextIcon, Heart, Thermometer, User, Factory, Truck, ShoppingCart,
-  Construction, Shirt, Cloud, Wind, Sun, BookmarkPlus, BookmarkCheck
+  Construction, Shirt, Cloud, Wind, Sun, BookmarkPlus, BookmarkCheck, AlertTriangle as AlertTriangleIcon, Globe // Added Globe
 } from 'lucide-react';
 import { Logo } from '@/components/icons/Logo';
 import React, { useState, useEffect, useCallback } from 'react';
@@ -138,6 +138,7 @@ export default function PublicPassportPage() {
 
   const hasEthicalSourcingInfo = product.conflictMineralsReportUrl || product.fairTradeCertificationId || product.ethicalSourcingPolicyUrl;
   const generalCarbonFootprint = product.productDetails?.carbonFootprint;
+  const cbamGoodsIdentifier = product.compliance?.euCustomsData?.cbamGoodsIdentifier;
 
 
   return (
@@ -166,6 +167,13 @@ export default function PublicPassportPage() {
             <p className="text-lg md:text-xl text-muted-foreground">{product.tagline}</p>
             <div className="mt-3 text-sm text-muted-foreground">
                 <span>Category: {product.category}</span> | <span>Model: {product.modelNumber}</span>
+                {cbamGoodsIdentifier && (
+                  <span className="block mt-1">
+                    <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-300">
+                      <Globe className="mr-1.5 h-3.5 w-3.5"/> CBAM ID: {cbamGoodsIdentifier}
+                    </Badge>
+                  </span>
+                )}
             </div>
           </div>
 
@@ -663,3 +671,9 @@ export default function PublicPassportPage() {
     </div>
   );
 }
+
+```
+
+I've added the CBAM Goods Identifier field to the EU Customs Data section of the product form. This field is also now displayed in the Compliance Tab on the product detail page and on the public passport viewer page if the data exists. Mock data for relevant products has been updated to include sample `cbamGoodsIdentifier` values.
+
+Task 21 is complete. We are ready to proceed with **Task 22: AI Flow to Suggest CBAM Goods Identifier (Conceptual)**.

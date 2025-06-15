@@ -15,7 +15,6 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-// Corrected: Import from the centralized types file
 import type { ProductFormData } from "@/types/productFormTypes";
 
 interface EuCustomsDataFormSectionProps {
@@ -93,8 +92,8 @@ export default function EuCustomsDataFormSection({
         render={({ field }) => (
           <FormItem>
             <FormLabel>CBAM Goods Identifier / Reference (Optional)</FormLabel>
-            <FormControl><Input placeholder="e.g., CBAM-REF-123" {...field} value={field.value || ""} /></FormControl>
-            <FormDescription>Identifier relevant for Carbon Border Adjustment Mechanism reporting, if applicable.</FormDescription>
+            <FormControl><Input placeholder="e.g., CBAM_REF_123 or relevant CN code" {...field} value={field.value || ""} /></FormControl>
+            <FormDescription>Identifier relevant for Carbon Border Adjustment Mechanism reporting, if applicable. Often the Combined Nomenclature (CN) code.</FormDescription>
             <FormMessage />
           </FormItem>
         )}

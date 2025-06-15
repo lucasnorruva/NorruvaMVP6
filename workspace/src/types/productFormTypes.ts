@@ -1,4 +1,3 @@
-
 // --- File: src/types/productFormTypes.ts ---
 // Description: Type definitions and Zod schemas for the product form.
 "use client";
@@ -79,7 +78,7 @@ export const euCustomsDataFormSchema: z.ZodType<Partial<EuCustomsDataDetails>> =
   netWeightKg: z.coerce.number().nullable().optional(),
   grossWeightKg: z.coerce.number().nullable().optional(),
   customsValuation: customsValuationSchema.optional(),
-  cbamGoodsIdentifier: z.string().optional(),
+  cbamGoodsIdentifier: z.string().optional(), // Ensure this is present
 });
 
 export const fiberCompositionEntrySchema = z.object({
@@ -161,7 +160,7 @@ export const formSchema = z.object({
         vcId: z.string().optional(),
     }).optional(),
     scipNotification: scipNotificationFormSchema.optional(),
-    euCustomsData: euCustomsDataFormSchema.optional(),
+    euCustomsData: euCustomsDataFormSchema.optional(), // Uses the updated schema
     battery_regulation: batteryRegulationDetailsSchema.optional(), 
   }).optional(),
   
@@ -180,7 +179,7 @@ export const formSchema = z.object({
     descriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     materialsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     sustainabilityClaimsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-    keyCompliancePointsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(), // Added this line
+    keyCompliancePointsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(), 
     specificationsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
@@ -208,4 +207,3 @@ export const formSchema = z.object({
 });
 
 export type ProductFormData = z.infer<typeof formSchema>;
-

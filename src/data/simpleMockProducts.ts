@@ -1,5 +1,5 @@
 
-import type { SimpleProductDetail } from '@/types/dpp';
+import type { SimpleProductDetail, EsprSpecifics } from '@/types/dpp'; // Added EsprSpecifics
 
 export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
   {
@@ -17,7 +17,7 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
     imageUrl: "https://placehold.co/600x400.png",
     imageHint: "modern refrigerator kitchen",
     keySustainabilityPoints: ["Energy Star Certified", "Made with 70% recycled steel", "95% recyclable at end-of-life", "Low Global Warming Potential (GWP) refrigerant"],
-    keyCompliancePoints: ["EU Ecodesign Compliant", "EU Energy Labelling Compliant", "EPREL Registered"],
+    keyCompliancePoints: "EU Ecodesign Compliant\nEU Energy Labelling Compliant\nEPREL Registered\nRoHS Compliant",
     specifications: JSON.stringify({ "Capacity (Liters)": "400", "Annual Energy Consumption (kWh)": "150", "Noise Level (dB)": "38", "Dimensions (HxWxD cm)": "180x70x65", "Color": "Stainless Steel" }, null, 2),
     customAttributes: [
         {key: "Eco Rating", value: "Gold Star (Self-Assessed)"},
@@ -66,8 +66,8 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
       { id: "lc005", eventName: "Scheduled Maintenance", date: "2025-02-15T00:00:00Z", notes: "Filter replacement due.", status: "Upcoming", iconName: "Wrench" },
     ],
     certifications: [
-      { name: "Energy Star", authority: "EPA", issueDate: "2024-01-01", documentUrl: "#", isVerified: true, standard: "Energy Star Program Requirements for Refrigerators v6.0", transactionHash: "0xcertAnchor1" },
-      { name: "ISO 14001", authority: "TUV Rheinland", issueDate: "2023-11-15", expiryDate: "2026-11-14", documentUrl: "#iso14001", isVerified: true, vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015" }
+      { id: "cert1", name: "Energy Star", authority: "EPA", issueDate: "2024-01-01", documentUrl: "#", isVerified: true, standard: "Energy Star Program Requirements for Refrigerators v6.0", transactionHash: "0xcertAnchor1" },
+      { id: "cert2", name: "ISO 14001", authority: "TUV Rheinland", issueDate: "2023-11-15", expiryDate: "2026-11-14", documentUrl: "#iso14001", isVerified: true, vcId: "vc:iso:14001:greentech:dpp001", standard: "ISO 14001:2015" }
     ],
     documents: [
       { name: "User Manual v1.2", url: "#manual_v1.2.pdf", type: "User Manual", addedTimestamp: "2024-01-15T00:00:00Z" },
@@ -80,7 +80,15 @@ export const SIMPLE_MOCK_PRODUCTS: SimpleProductDetail[] = [
         tokenId: "1",
         chainName: "MockEthereum",
     },
+    ethicalSourcingPolicyUrl: "https://greentech.com/ethics/sourcing-policy.pdf",
+    productDetails: { // Added productDetails to ensure esprSpecifics can be nested
+        esprSpecifics: {
+            durabilityInformation: "Expected lifespan of 15+ years.",
+            repairabilityInformation: "Modular design, spare parts available for 10 years.",
+            recycledContentSummary: "Over 70% recycled steel used.",
+            energyEfficiencySummary: "A+++ EU Energy Label. Smart defrost technology.",
+            substanceOfConcernSummary: "RoHS compliant. No SVHCs above 0.1% w/w in main unit."
+        }
+    }
   }
 ];
-
-    

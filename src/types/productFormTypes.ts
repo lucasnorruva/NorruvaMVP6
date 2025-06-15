@@ -1,9 +1,10 @@
+
 // --- File: src/types/productFormTypes.ts ---
 // Description: Type definitions and Zod schemas for the product form.
 "use client";
 
 import { z } from "zod";
-import type { BatteryRegulationDetails, TextileInformation, ConstructionProductInformation, ScipNotificationDetails, EuCustomsDataDetails } from './dpp'; // Ensure path is correct for dpp types
+import type { BatteryRegulationDetails, TextileInformation, ConstructionProductInformation, ScipNotificationDetails, EuCustomsDataDetails, EsprSpecifics } from './dpp'; // Ensure path is correct for dpp types
 
 export const carbonFootprintSchema = z.object({
   value: z.coerce.number().nullable().optional(),
@@ -107,27 +108,41 @@ export const constructionProductInformationFormSchema: z.ZodType<Partial<Constru
   essentialCharacteristics: z.array(essentialCharacteristicSchema).optional(),
 });
 
+export const esprSpecificsSchema: z.ZodType<Partial<EsprSpecifics>> = z.object({ // New schema for ESPR specifics
+  durabilityInformation: z.string().optional(),
+  repairabilityInformation: z.string().optional(),
+  recycledContentSummary: z.string().optional(),
+  energyEfficiencySummary: z.string().optional(),
+  substanceOfConcernSummary: z.string().optional(),
+});
+
+export const productDetailsSchema = z.object({ // Define productDetails explicitly
+    description: z.string().optional(),
+    imageUrl: z.string().url("Must be a valid URL or Data URI, or empty").or(z.literal("")).optional(),
+    imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(),
+    materials: z.string().optional(),
+    sustainabilityClaims: z.string().optional(),
+    energyLabel: z.string().optional(),
+    specifications: z.string().optional(),
+    customAttributesJsonString: z.string().optional(), // Note: This is how we'll pass customAttributes from form
+    keyCompliancePoints: z.string().optional(),
+    esprSpecifics: esprSpecificsSchema.optional(), // Added ESPR specifics here
+});
+
 export const formSchema = z.object({
   productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
   gtin: z.string().optional().describe("Global Trade Item Number"),
-  productDescription: z.string().optional(),
   manufacturer: z.string().optional(),
   modelNumber: z.string().optional(),
   sku: z.string().optional(),
   nfcTagId: z.string().optional(),
   rfidTagId: z.string().optional(),
-  materials: z.string().optional().describe("Key materials used in the product, e.g., Cotton, Recycled Polyester, Aluminum."),
-  sustainabilityClaims: z.string().optional().describe("Brief sustainability claims, e.g., 'Made with 50% recycled content', 'Carbon neutral production'."),
-  keyCompliancePoints: z.string().optional().describe("Key compliance points summary."),
-  specifications: z.string().optional(),
-  energyLabel: z.string().optional(),
   productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
-  imageUrl: z.string().url("Must be a valid URL or Data URI, or empty").or(z.literal("")).optional(),
-  imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(),
   
-  batteryRegulation: batteryRegulationDetailsSchema.optional(),
-  customAttributesJsonString: z.string().optional(),
+  productDetails: productDetailsSchema.optional(), // Use the defined productDetailsSchema
 
+  batteryRegulation: batteryRegulationDetailsSchema.optional(),
+  
   compliance: z.object({
     eprel: z.object({ 
         id: z.string().optional(),
@@ -151,12 +166,11 @@ export const formSchema = z.object({
   onChainStatus: z.string().optional(), 
   onChainLifecycleStage: z.string().optional(), 
 
-  // Ethical Sourcing Fields
   conflictMineralsReportUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
   fairTradeCertificationId: z.string().optional(),
   ethicalSourcingPolicyUrl: z.string().url("Must be a valid URL or empty").or(z.literal("")).optional(),
 
-  // AI Origin tracking fields
+  // AI Origin tracking fields - These are for internal form state, not part of DPP data model
   productNameOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   productDescriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   manufacturerOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
@@ -168,6 +182,16 @@ export const formSchema = z.object({
   energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
   batteryRegulationOrigin: z.any().optional(), 
+  productDetailsOrigin: z.object({ // Origin tracking for new esprSpecifics fields
+    esprSpecificsOrigin: z.object({
+      durabilityInformationOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      repairabilityInformationOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      recycledContentSummaryOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      energyEfficiencySummaryOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+      substanceOfConcernSummaryOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    }).optional(),
+  }).optional(),
 });
 
+// Renaming to avoid conflict, ProductFormData is now the main one
 export type ProductFormData = z.infer<typeof formSchema>;

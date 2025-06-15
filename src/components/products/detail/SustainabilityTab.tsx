@@ -6,7 +6,7 @@
 import type { SimpleProductDetail } from "@/types/dpp";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Leaf, Zap, Recycle, Wrench, CheckCircle, AlertCircle, Info, Users } from "lucide-react";
+import { Leaf, Zap, Recycle, Wrench, CheckCircle, AlertCircle, Info, Users, Handshake, ExternalLink, FileText, BarChart3, BookText } from "lucide-react"; // Added BookText
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -14,18 +14,24 @@ interface SustainabilityTabProps {
   product: SimpleProductDetail;
 }
 
-const DetailItem: React.FC<{ label: string; value?: string | number | null; unit?: string; link?: string }> = ({ label, value, unit, link }) => {
-  if (value === undefined || value === null || value === "") return null;
+const DetailItem: React.FC<{ label: string; value?: string | number | null; unit?: string; link?: string; isUrl?: boolean }> = ({ label, value, unit, link, isUrl }) => {
+  if (value === undefined || value === null || String(value).trim() === "") return null;
   return (
     <div className="flex justify-between items-center text-sm py-1.5 border-b border-border/50 last:border-b-0">
       <span className="text-muted-foreground">{label}:</span>
-      <span className="font-medium text-foreground/90">
-        {value}
-        {unit && <span className="ml-0.5 text-xs text-muted-foreground">{unit}</span>}
-        {link && (
-          <Link href={link} target="_blank" rel="noopener noreferrer" className="ml-1.5 text-primary hover:underline text-xs">(Details)</Link>
-        )}
-      </span>
+      {isUrl && typeof value === 'string' && value.startsWith('http') ? (
+        <Link href={value} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline truncate max-w-[60%]">
+          View Document/Policy <ExternalLink className="inline h-3 w-3 ml-1" />
+        </Link>
+      ) : (
+        <span className="font-medium text-foreground/90 text-right truncate max-w-[60%]">
+          {value}
+          {unit && <span className="ml-0.5 text-xs text-muted-foreground">{unit}</span>}
+          {link && (
+            <Link href={link} target="_blank" rel="noopener noreferrer" className="ml-1.5 text-primary hover:underline text-xs">(Details)</Link>
+          )}
+        </span>
+      )}
     </div>
   );
 };
@@ -34,6 +40,11 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
   if (!product) {
     return <p className="text-muted-foreground p-4">Sustainability data not available.</p>;
   }
+
+  const hasEthicalSourcingInfo = product.conflictMineralsReportUrl || product.fairTradeCertificationId || product.ethicalSourcingPolicyUrl;
+  const esprSpecifics = product.productDetails?.esprSpecifics;
+  const hasEsprSpecifics = esprSpecifics && Object.values(esprSpecifics).some(value => !!value);
+
 
   return (
     <div className="grid md:grid-cols-2 gap-6">
@@ -93,8 +104,8 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
         </CardHeader>
         <CardContent className="space-y-2">
           <DetailItem label="Energy Label Rating" value={product.energyLabelRating} />
-          {/* Add more energy-related details here if available in SimpleProductDetail */}
-          {!product.energyLabelRating && <p className="text-sm text-muted-foreground">Energy label information not specified.</p>}
+          {esprSpecifics?.energyEfficiencySummary && <DetailItem label="ESPR Energy Summary" value={esprSpecifics.energyEfficiencySummary} />}
+          {!product.energyLabelRating && !esprSpecifics?.energyEfficiencySummary && <p className="text-sm text-muted-foreground">Energy information not specified.</p>}
         </CardContent>
       </Card>
 
@@ -119,8 +130,9 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
               </p>
             </div>
           )}
+           {esprSpecifics?.repairabilityInformation && <DetailItem label="ESPR Repairability Info" value={esprSpecifics.repairabilityInformation} />}
           {product.recyclabilityInfo && (
-            <div>
+            <div className="mt-2">
               <h4 className="text-sm font-medium mb-1">Recyclability:</h4>
                <DetailItem label="Recyclable Content" value={product.recyclabilityInfo.percentage} unit="%" />
                {product.recyclabilityInfo.instructionsUrl && (
@@ -132,11 +144,66 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
                )}
             </div>
           )}
-          {!product.repairability && !product.recyclabilityInfo && (
+           {esprSpecifics?.recycledContentSummary && <DetailItem label="ESPR Recycled Content Summary" value={esprSpecifics.recycledContentSummary} />}
+          {!product.repairability && !product.recyclabilityInfo && !esprSpecifics?.repairabilityInformation && !esprSpecifics?.recycledContentSummary &&(
              <p className="text-sm text-muted-foreground">Repair and recyclability information not specified.</p>
           )}
         </CardContent>
       </Card>
+
+      {hasEsprSpecifics && (
+        <Card className="shadow-sm md:col-span-2">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center">
+              <BookText className="mr-2 h-5 w-5 text-purple-600" /> ESPR Ecodesign Parameters
+            </CardTitle>
+             <CardDescription>Narrative summaries for specific Ecodesign requirements.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <DetailItem label="Durability Information" value={esprSpecifics?.durabilityInformation} />
+            <DetailItem label="Substance of Concern Summary" value={esprSpecifics?.substanceOfConcernSummary} />
+            {/* Other ESPR fields already integrated or can be added as DetailItem here */}
+          </CardContent>
+        </Card>
+      )}
+
+      {hasEthicalSourcingInfo && (
+        <Card className="shadow-sm md:col-span-2"> {/* Span full width on md screens */}
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center">
+              <Handshake className="mr-2 h-5 w-5 text-purple-600" /> Ethical Sourcing & Supply Chain Transparency
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <DetailItem label="Conflict Minerals Report" value={product.conflictMineralsReportUrl} isUrl />
+            <DetailItem label="Fair Trade Certification ID/Link" value={product.fairTradeCertificationId} isUrl={product.fairTradeCertificationId?.startsWith('http')} />
+            <DetailItem label="Ethical Sourcing Policy" value={product.ethicalSourcingPolicyUrl} isUrl />
+            {!product.conflictMineralsReportUrl && !product.fairTradeCertificationId && !product.ethicalSourcingPolicyUrl && (
+                 <p className="text-sm text-muted-foreground">No specific ethical sourcing information provided.</p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {product.batteryRegulation?.carbonFootprint && (product.batteryRegulation.carbonFootprint.value !== null && product.batteryRegulation.carbonFootprint.value !== undefined) && (
+        <Card className="shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold flex items-center">
+              <BarChart3 className="mr-2 h-5 w-5 text-red-500" /> Carbon Footprint (Battery)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            <DetailItem label="Value" value={product.batteryRegulation.carbonFootprint.value} unit={product.batteryRegulation.carbonFootprint.unit} />
+            <DetailItem label="Calculation Method" value={product.batteryRegulation.carbonFootprint.calculationMethod} />
+            <DetailItem label="Data Source" value={product.batteryRegulation.carbonFootprint.dataSource} />
+            {product.batteryRegulation.carbonFootprint.scope1Emissions !== null && product.batteryRegulation.carbonFootprint.scope1Emissions !== undefined && <DetailItem label="Scope 1 Emissions" value={product.batteryRegulation.carbonFootprint.scope1Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh', '')} />}
+            {product.batteryRegulation.carbonFootprint.scope2Emissions !== null && product.batteryRegulation.carbonFootprint.scope2Emissions !== undefined &&  <DetailItem label="Scope 2 Emissions" value={product.batteryRegulation.carbonFootprint.scope2Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh', '')} />}
+            {product.batteryRegulation.carbonFootprint.scope3Emissions !== null && product.batteryRegulation.carbonFootprint.scope3Emissions !== undefined &&  <DetailItem label="Scope 3 Emissions" value={product.batteryRegulation.carbonFootprint.scope3Emissions} unit={product.batteryRegulation.carbonFootprint.unit?.replace('/kWh', '')} />}
+            <DetailItem label="Carbon Footprint VC ID" value={product.batteryRegulation.carbonFootprint.vcId} />
+          </CardContent>
+        </Card>
+      )}
+
     </div>
   );
 }

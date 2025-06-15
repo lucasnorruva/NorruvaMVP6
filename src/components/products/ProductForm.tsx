@@ -2,221 +2,52 @@
 "use client";
 // --- File: ProductForm.tsx ---
 // Description: Main form component for creating or editing product DPPs.
-// AI loading states for text suggestions are now managed within individual section components.
+// Imports all section components from the barrel file.
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, type UseFormReturn } from "react-hook-form";
-import { z } from "zod";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import {
   Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import type { InitialProductFormData } from "@/app/(app)/products/new/page";
-import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, Image as ImageIcon, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction } from "lucide-react";
+import { Cpu, BatteryCharging, Loader2, Sparkles, PlusCircle, Info, Trash2, XCircle, ImageIcon as ImageIconLucide, FileText, Leaf, Settings2, Tag, Anchor, Database, Shirt, Construction as ConstructionIcon, Handshake, Recycle } from "lucide-react"; // Renamed ImageIcon, Added Recycle
 import React, { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
-import BasicInfoFormSection from "./form/BasicInfoFormSection";
-import ProductImageFormSection from "./form/ProductImageFormSection";
-import BatteryDetailsFormSection from "./form/BatteryDetailsFormSection";
-import SustainabilityComplianceFormSection from "./form/SustainabilityComplianceFormSection";
-import TechnicalSpecificationsFormSection from "./form/TechnicalSpecificationsFormSection";
-import CustomAttributesFormSection from "./form/CustomAttributesFormSection";
-import ScipNotificationFormSection from "./form/ScipNotificationFormSection"; 
-import EuCustomsDataFormSection from "./form/EuCustomsDataFormSection"; 
-import TextileInformationFormSection from "./form/TextileInformationFormSection"; 
-import ConstructionProductInformationFormSection from "./form/ConstructionProductInformationFormSection"; 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+
+// Import types and schema from the centralized types file
+import type { ProductFormData } from "@/types/productFormTypes";
+import { formSchema } from "@/types/productFormTypes";
+
+// Import all form section components from the barrel file
 import {
-  handleGenerateImageAI, 
-} from "@/utils/aiFormHelpers";
-import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
+  AiIndicator,
+  BasicInfoFormSection,
+  ProductImageFormSection,
+  BatteryDetailsFormSection,
+  SustainabilityComplianceFormSection,
+  TechnicalSpecificationsFormSection,
+  CustomAttributesFormSection,
+  ScipNotificationFormSection,
+  EuCustomsDataFormSection,
+  TextileInformationFormSection,
+  ConstructionProductInformationFormSection,
+  EthicalSourcingFormSection,
+  EsprSpecificsFormSection, // Import new section
+} from "@/components/products/form"; 
+
+import { handleGenerateImageAI } from "@/utils/aiFormHelpers";
 import { Input } from "@/components/ui/input";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import type { CustomAttribute, BatteryRegulationDetails, CarbonFootprintData, StateOfHealthData, RecycledContentData, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation } from "@/types/dpp";
-
-
-const carbonFootprintSchema = z.object({
-  value: z.coerce.number().nullable().optional(),
-  unit: z.string().optional(),
-  calculationMethod: z.string().optional(),
-  scope1Emissions: z.coerce.number().nullable().optional(),
-  scope2Emissions: z.coerce.number().nullable().optional(),
-  scope3Emissions: z.coerce.number().nullable().optional(),
-  dataSource: z.string().optional(),
-  vcId: z.string().optional(),
-});
-
-const recycledContentSchema = z.object({
-  material: z.string().optional(),
-  percentage: z.coerce.number().nullable().optional(),
-  source: z.string().optional(),
-  vcId: z.string().optional(),
-});
-
-const stateOfHealthSchema = z.object({
-  value: z.coerce.number().nullable().optional(),
-  unit: z.string().optional(),
-  measurementDate: z.string().optional(),
-  measurementMethod: z.string().optional(),
-  vcId: z.string().optional(),
-});
-
-const batteryRegulationDetailsSchema = z.object({
-  status: z.string().optional(),
-  batteryChemistry: z.string().optional(),
-  batteryPassportId: z.string().optional(),
-  ratedCapacityAh: z.coerce.number().nullable().optional(),
-  nominalVoltage: z.coerce.number().nullable().optional(),
-  expectedLifetimeCycles: z.coerce.number().nullable().optional(),
-  manufacturingDate: z.string().optional(),
-  manufacturerName: z.string().optional(),
-  carbonFootprint: carbonFootprintSchema.optional(),
-  recycledContent: z.array(recycledContentSchema).optional(),
-  stateOfHealth: stateOfHealthSchema.optional(),
-  recyclingEfficiencyRate: z.coerce.number().nullable().optional(),
-  materialRecoveryRates: z.object({
-    cobalt: z.coerce.number().nullable().optional(),
-    lead: z.coerce.number().nullable().optional(),
-    lithium: z.coerce.number().nullable().optional(),
-    nickel: z.coerce.number().nullable().optional(),
-  }).optional(),
-  dismantlingInformationUrl: z.string().url().or(z.literal("")).optional(),
-  safetyInformationUrl: z.string().url().or(z.literal("")).optional(),
-  vcId: z.string().optional(),
-});
-
-const scipNotificationSchema = z.object({
-  status: z.string().optional(),
-  notificationId: z.string().optional(),
-  svhcListVersion: z.string().optional(),
-  submittingLegalEntity: z.string().optional(),
-  articleName: z.string().optional(),
-  primaryArticleId: z.string().optional(),
-  safeUseInstructionsLink: z.string().url().or(z.literal("")).optional(),
-});
-
-const customsValuationSchema = z.object({
-  value: z.coerce.number().nullable().optional(),
-  currency: z.string().optional(),
-});
-
-const euCustomsDataSchema = z.object({
-  status: z.string().optional(),
-  declarationId: z.string().optional(),
-  hsCode: z.string().optional(),
-  countryOfOrigin: z.string().optional(),
-  netWeightKg: z.coerce.number().nullable().optional(),
-  grossWeightKg: z.coerce.number().nullable().optional(),
-  customsValuation: customsValuationSchema.optional(),
-});
-
-const fiberCompositionEntrySchema = z.object({
-  fiberName: z.string().min(1, "Fiber name is required."),
-  percentage: z.coerce.number().min(0).max(100).nullable(),
-});
-
-const textileInformationSchema = z.object({
-  fiberComposition: z.array(fiberCompositionEntrySchema).optional(),
-  countryOfOriginLabeling: z.string().optional(),
-  careInstructionsUrl: z.string().url().or(z.literal("")).optional(),
-  isSecondHand: z.boolean().optional(),
-});
-
-const essentialCharacteristicSchema = z.object({
-  characteristicName: z.string().min(1, "Characteristic name is required."),
-  value: z.string().min(1, "Value is required."),
-  unit: z.string().optional(),
-  testMethod: z.string().optional(),
-});
-
-const constructionProductInformationSchema = z.object({
-  declarationOfPerformanceId: z.string().optional(),
-  ceMarkingDetailsUrl: z.string().url().or(z.literal("")).optional(),
-  intendedUseDescription: z.string().optional(),
-  essentialCharacteristics: z.array(essentialCharacteristicSchema).optional(),
-});
-
-const formSchema = z.object({
-  productName: z.string().min(2, "Product name must be at least 2 characters.").optional(),
-  gtin: z.string().optional().describe("Global Trade Item Number"),
-  productDescription: z.string().optional(),
-  manufacturer: z.string().optional(),
-  modelNumber: z.string().optional(),
-  sku: z.string().optional(),
-  nfcTagId: z.string().optional(),
-  rfidTagId: z.string().optional(),
-  materials: z.string().optional().describe("Key materials used in the product, e.g., Cotton, Recycled Polyester, Aluminum."),
-  sustainabilityClaims: z.string().optional().describe("Brief sustainability claims, e.g., 'Made with 50% recycled content', 'Carbon neutral production'."),
-  specifications: z.string().optional(),
-  energyLabel: z.string().optional(),
-  productCategory: z.string().optional().describe("Category of the product, e.g., Electronics, Apparel."),
-  imageUrl: z.string().url("Must be a valid URL or Data URI").optional().or(z.literal("")),
-  imageHint: z.string().max(60, "Hint should be concise, max 2-3 keywords or 60 chars.").optional(),
-  
-  batteryRegulation: batteryRegulationDetailsSchema.optional(),
-  customAttributesJsonString: z.string().optional(),
-
-  compliance: z.object({
-    eprel: z.object({ 
-        id: z.string().optional(),
-        status: z.string().optional(),
-        url: z.string().url().or(z.literal("")).optional(),
-        lastChecked: z.string().optional(), 
-    }).optional(),
-    esprConformity: z.object({
-        assessmentId: z.string().optional(),
-        status: z.string().optional(), 
-        assessmentDate: z.string().optional(), 
-        vcId: z.string().optional(),
-    }).optional(),
-    scipNotification: scipNotificationSchema.optional(),
-    euCustomsData: euCustomsDataSchema.optional(),
-    battery_regulation: batteryRegulationDetailsSchema.optional(),
-  }).optional(),
-  
-  textileInformation: textileInformationSchema.optional(), 
-  constructionProductInformation: constructionProductInformationSchema.optional(), 
-  onChainStatus: z.string().optional(), 
-  onChainLifecycleStage: z.string().optional(), 
-
-  productNameOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  productDescriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  manufacturerOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  modelNumberOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  materialsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  sustainabilityClaimsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  specificationsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  batteryRegulationOrigin: z.any().optional(), 
-});
-
-export type ProductFormData = z.infer<typeof formSchema>;
-
-interface AiIndicatorProps {
-  fieldOrigin?: 'AI_EXTRACTED' | 'manual';
-  fieldName: string;
-}
-
-const AiIndicator: React.FC<AiIndicatorProps> = ({ fieldOrigin, fieldName }) => {
-  if (fieldOrigin === 'AI_EXTRACTED') {
-    return (
-      <TooltipProvider>
-        <Tooltip delayDuration={100}>
-          <TooltipTrigger type="button" className="ml-1.5 cursor-help align-middle">
-            <Cpu className="h-4 w-4 text-info" />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>This {fieldName.toLowerCase()} was suggested by AI.</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
-  }
-  return null;
-};
+import type { CustomAttribute } from "@/types/dpp";
 
 
 interface ProductFormProps {
@@ -233,22 +64,35 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     defaultValues: {
       productName: initialData?.productName || "",
       gtin: initialData?.gtin || "",
-      productDescription: initialData?.productDescription || "",
+      productDetails: { // Ensure productDetails and its nested esprSpecifics are initialized
+        description: initialData?.productDetails?.description || "",
+        materials: initialData?.productDetails?.materials || "",
+        sustainabilityClaims: initialData?.productDetails?.sustainabilityClaims || "",
+        keyCompliancePoints: initialData?.productDetails?.keyCompliancePoints || "",
+        specifications: initialData?.productDetails?.specifications ? (typeof initialData.productDetails.specifications === 'string' ? initialData.productDetails.specifications : JSON.stringify(initialData.productDetails.specifications, null, 2)) : "",
+        energyLabel: initialData?.productDetails?.energyLabel || "",
+        imageUrl: initialData?.productDetails?.imageUrl || "",
+        imageHint: initialData?.productDetails?.imageHint || "",
+        customAttributesJsonString: initialData?.productDetails?.customAttributesJsonString || "",
+        esprSpecifics: {
+          durabilityInformation: initialData?.productDetails?.esprSpecifics?.durabilityInformation || "",
+          repairabilityInformation: initialData?.productDetails?.esprSpecifics?.repairabilityInformation || "",
+          recycledContentSummary: initialData?.productDetails?.esprSpecifics?.recycledContentSummary || "",
+          energyEfficiencySummary: initialData?.productDetails?.esprSpecifics?.energyEfficiencySummary || "",
+          substanceOfConcernSummary: initialData?.productDetails?.esprSpecifics?.substanceOfConcernSummary || "",
+        },
+      },
       manufacturer: initialData?.manufacturer || "",
       modelNumber: initialData?.modelNumber || "",
       sku: initialData?.sku || "",
       nfcTagId: initialData?.nfcTagId || "",
       rfidTagId: initialData?.rfidTagId || "",
-      materials: initialData?.materials || "",
-      sustainabilityClaims: initialData?.sustainabilityClaims || "",
-      specifications: initialData?.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
-      energyLabel: initialData?.energyLabel || "",
       productCategory: initialData?.productCategory || "",
-      imageUrl: initialData?.imageUrl || "",
-      imageHint: initialData?.imageHint || "",
       onChainStatus: initialData?.onChainStatus || "Unknown", 
       onChainLifecycleStage: initialData?.onChainLifecycleStage || "Unknown", 
-      
+      conflictMineralsReportUrl: initialData?.conflictMineralsReportUrl || "", 
+      fairTradeCertificationId: initialData?.fairTradeCertificationId || "", 
+      ethicalSourcingPolicyUrl: initialData?.ethicalSourcingPolicyUrl || "", 
       batteryRegulation: initialData?.batteryRegulation ? {
         status: initialData.batteryRegulation.status || "not_applicable",
         batteryChemistry: initialData.batteryRegulation.batteryChemistry || "",
@@ -294,8 +138,6 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         stateOfHealth: { value: null, unit: "", measurementDate: "", measurementMethod: "", vcId: "" },
         recyclingEfficiencyRate: null, materialRecoveryRates: {}, dismantlingInformationUrl: "", safetyInformationUrl: "", vcId: "",
       },
-      customAttributesJsonString: initialData?.customAttributesJsonString || "",
-      
       compliance: { 
         eprel: initialData?.compliance?.eprel || { status: "N/A", id: "", url: ""},
         esprConformity: initialData?.compliance?.esprConformity || { status: "pending_assessment" },
@@ -306,7 +148,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         euCustomsData: initialData?.compliance?.euCustomsData || {
           status: "N/A", declarationId: "", hsCode: "", countryOfOrigin: "",
           netWeightKg: null, grossWeightKg: null,
-          customsValuation: { value: null, currency: "" }
+          customsValuation: { value: null, currency: "" },
+          cbamGoodsIdentifier: "",
         },
         battery_regulation: initialData?.compliance?.battery_regulation || { 
           status: "not_applicable", batteryChemistry: "", batteryPassportId: "",
@@ -318,22 +161,32 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       },
       textileInformation: initialData?.textileInformation || { fiberComposition: [], isSecondHand: false }, 
       constructionProductInformation: initialData?.constructionProductInformation || { essentialCharacteristics: [] }, 
+      onChainStatus: initialData?.onChainStatus || "Unknown", 
+      onChainLifecycleStage: initialData?.onChainLifecycleStage || "Unknown", 
 
+      conflictMineralsReportUrl: initialData?.conflictMineralsReportUrl || "",
+      fairTradeCertificationId: initialData?.fairTradeCertificationId || "",
+      ethicalSourcingPolicyUrl: initialData?.ethicalSourcingPolicyUrl || "",
+
+      // AI Origin tracking fields - These are for internal form state, not part of DPP data model
       productNameOrigin: initialData?.productNameOrigin,
-      productDescriptionOrigin: initialData?.productDescriptionOrigin,
+      productDescriptionOrigin: initialData?.productDetailsOrigin?.descriptionOrigin,
       manufacturerOrigin: initialData?.manufacturerOrigin,
       modelNumberOrigin: initialData?.modelNumberOrigin,
-      materialsOrigin: initialData?.materialsOrigin,
-      sustainabilityClaimsOrigin: initialData?.sustainabilityClaimsOrigin,
-      specificationsOrigin: initialData?.specificationsOrigin,
-      energyLabelOrigin: initialData?.energyLabelOrigin,
-      imageUrlOrigin: initialData?.imageUrlOrigin,
+      materialsOrigin: initialData?.productDetailsOrigin?.materialsOrigin,
+      sustainabilityClaimsOrigin: initialData?.productDetailsOrigin?.sustainabilityClaimsOrigin,
+      keyCompliancePointsOrigin: initialData?.productDetailsOrigin?.keyCompliancePointsOrigin,
+      specificationsOrigin: initialData?.productDetailsOrigin?.specificationsOrigin,
+      energyLabelOrigin: initialData?.productDetailsOrigin?.energyLabelOrigin,
+      imageUrlOrigin: initialData?.productDetailsOrigin?.imageUrlOrigin,
       batteryRegulationOrigin: initialData?.batteryRegulationOrigin,
+      productDetailsOrigin: initialData?.productDetailsOrigin,
     },
   });
 
   const { toast } = useToast();
   const [suggestedClaims, setSuggestedClaims] = useState<string[]>([]);
+  const [suggestedKeyCompliancePoints, setSuggestedKeyCompliancePoints] = useState<string[]>([]);
   const [suggestedCustomAttributes, setSuggestedCustomAttributes] = useState<CustomAttribute[]>([]);
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
   const [customAttributes, setCustomAttributes] = useState<CustomAttribute[]>([]);
@@ -341,9 +194,9 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   const [currentCustomValue, setCurrentCustomValue] = useState("");
 
   useEffect(() => {
-    if (initialData?.customAttributesJsonString) {
+    if (initialData?.productDetails?.customAttributesJsonString) {
       try {
-        const parsedAttributes = JSON.parse(initialData.customAttributesJsonString);
+        const parsedAttributes = JSON.parse(initialData.productDetails.customAttributesJsonString);
         if (Array.isArray(parsedAttributes)) {
           setCustomAttributes(parsedAttributes);
         }
@@ -351,31 +204,47 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         console.error("Failed to parse custom attributes JSON:", e);
         setCustomAttributes([]);
       }
-    } else if (initialData && !initialData.customAttributesJsonString) {
+    } else if (initialData && !initialData.productDetails?.customAttributesJsonString) {
         setCustomAttributes([]);
     }
-  }, [initialData?.customAttributesJsonString]);
+  }, [initialData?.productDetails?.customAttributesJsonString]);
 
   useEffect(() => {
     if (initialData) {
       form.reset({
         productName: initialData.productName || "",
         gtin: initialData.gtin || "",
-        productDescription: initialData.productDescription || "",
         manufacturer: initialData.manufacturer || "",
         modelNumber: initialData.modelNumber || "",
         sku: initialData.sku || "",
         nfcTagId: initialData.nfcTagId || "",
         rfidTagId: initialData.rfidTagId || "",
-        materials: initialData.materials || "",
-        sustainabilityClaims: initialData.sustainabilityClaims || "",
-        specifications: initialData.specifications ? (typeof initialData.specifications === 'string' ? initialData.specifications : JSON.stringify(initialData.specifications, null, 2)) : "",
-        energyLabel: initialData.energyLabel || "",
         productCategory: initialData.productCategory || "",
-        imageUrl: initialData.imageUrl || "",
-        imageHint: initialData.imageHint || "",
         onChainStatus: initialData.onChainStatus || "Unknown", 
         onChainLifecycleStage: initialData.onChainLifecycleStage || "Unknown", 
+        conflictMineralsReportUrl: initialData.conflictMineralsReportUrl || "",
+        fairTradeCertificationId: initialData.fairTradeCertificationId || "",
+        ethicalSourcingPolicyUrl: initialData.ethicalSourcingPolicyUrl || "",
+
+        productDetails: {
+          description: initialData.productDetails?.description || "",
+          materials: initialData.productDetails?.materials || "",
+          sustainabilityClaims: initialData.productDetails?.sustainabilityClaims || "",
+          keyCompliancePoints: initialData.productDetails?.keyCompliancePoints || "",
+          specifications: initialData.productDetails?.specifications ? (typeof initialData.productDetails.specifications === 'string' ? initialData.productDetails.specifications : JSON.stringify(initialData.productDetails.specifications, null, 2)) : "",
+          energyLabel: initialData.productDetails?.energyLabel || "",
+          imageUrl: initialData.productDetails?.imageUrl || "",
+          imageHint: initialData.productDetails?.imageHint || "",
+          customAttributesJsonString: initialData.productDetails?.customAttributesJsonString || "",
+          esprSpecifics: {
+            durabilityInformation: initialData.productDetails?.esprSpecifics?.durabilityInformation || "",
+            repairabilityInformation: initialData.productDetails?.esprSpecifics?.repairabilityInformation || "",
+            recycledContentSummary: initialData.productDetails?.esprSpecifics?.recycledContentSummary || "",
+            energyEfficiencySummary: initialData.productDetails?.esprSpecifics?.energyEfficiencySummary || "",
+            substanceOfConcernSummary: initialData.productDetails?.esprSpecifics?.substanceOfConcernSummary || "",
+          },
+        },
+        
         batteryRegulation: initialData.batteryRegulation ? {
           status: initialData.batteryRegulation.status || "not_applicable",
           batteryChemistry: initialData.batteryRegulation.batteryChemistry || "",
@@ -421,7 +290,6 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           stateOfHealth: { value: null, unit: "", measurementDate: "", measurementMethod: "", vcId: "" },
           recyclingEfficiencyRate: null, materialRecoveryRates: {}, dismantlingInformationUrl: "", safetyInformationUrl: "", vcId: "",
         },
-        customAttributesJsonString: initialData.customAttributesJsonString || "",
         compliance: {
           eprel: initialData.compliance?.eprel || { status: "N/A", id: "", url: ""},
           esprConformity: initialData.compliance?.esprConformity || { status: "pending_assessment" },
@@ -432,7 +300,8 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           euCustomsData: initialData.compliance?.euCustomsData || {
             status: "N/A", declarationId: "", hsCode: "", countryOfOrigin: "",
             netWeightKg: null, grossWeightKg: null,
-            customsValuation: { value: null, currency: "" }
+            customsValuation: { value: null, currency: "" },
+            cbamGoodsIdentifier: "",
           },
           battery_regulation: initialData.compliance?.battery_regulation || { 
             status: "not_applicable", batteryChemistry: "", batteryPassportId: "",
@@ -445,48 +314,59 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
         textileInformation: initialData.textileInformation || { fiberComposition: [], isSecondHand: false }, 
         constructionProductInformation: initialData.constructionProductInformation || { essentialCharacteristics: [] }, 
         productNameOrigin: initialData.productNameOrigin,
-        productDescriptionOrigin: initialData.productDescriptionOrigin,
+        productDescriptionOrigin: initialData.productDetailsOrigin?.descriptionOrigin,
         manufacturerOrigin: initialData.manufacturerOrigin,
         modelNumberOrigin: initialData.modelNumberOrigin,
-        materialsOrigin: initialData.materialsOrigin,
-        sustainabilityClaimsOrigin: initialData.sustainabilityClaimsOrigin,
-        specificationsOrigin: initialData.specificationsOrigin,
-        energyLabelOrigin: initialData.energyLabelOrigin,
-        imageUrlOrigin: initialData.imageUrlOrigin,
+        materialsOrigin: initialData.productDetailsOrigin?.materialsOrigin,
+        sustainabilityClaimsOrigin: initialData.productDetailsOrigin?.sustainabilityClaimsOrigin,
+        keyCompliancePointsOrigin: initialData.productDetailsOrigin?.keyCompliancePointsOrigin,
+        specificationsOrigin: initialData.productDetailsOrigin?.specificationsOrigin,
+        energyLabelOrigin: initialData.productDetailsOrigin?.energyLabelOrigin,
+        imageUrlOrigin: initialData.productDetailsOrigin?.imageUrlOrigin,
         batteryRegulationOrigin: initialData.batteryRegulationOrigin,
+        productDetailsOrigin: initialData.productDetailsOrigin,
       });
     }
   }, [initialData, form]);
   
   useEffect(() => {
-    form.setValue("customAttributesJsonString", JSON.stringify(customAttributes), { shouldValidate: true });
+    form.setValue("productDetails.customAttributesJsonString", JSON.stringify(customAttributes), { shouldValidate: true });
   }, [customAttributes, form]);
 
   const handleFormSubmit = (data: ProductFormData) => {
     const transformedData = { ...data };
+    // Ensure numeric fields are null if empty, not NaN
     if (transformedData.batteryRegulation) {
-      if (transformedData.batteryRegulation.carbonFootprint) {
-        if (transformedData.batteryRegulation.carbonFootprint.value === undefined || String(transformedData.batteryRegulation.carbonFootprint.value).trim() === "") {
-          transformedData.batteryRegulation.carbonFootprint.value = null;
+        const br = transformedData.batteryRegulation;
+        if (br.carbonFootprint) {
+            if (br.carbonFootprint.value === undefined || String(br.carbonFootprint.value).trim() === "") br.carbonFootprint.value = null;
+            if (br.carbonFootprint.scope1Emissions === undefined || String(br.carbonFootprint.scope1Emissions).trim() === "") br.carbonFootprint.scope1Emissions = null;
+            if (br.carbonFootprint.scope2Emissions === undefined || String(br.carbonFootprint.scope2Emissions).trim() === "") br.carbonFootprint.scope2Emissions = null;
+            if (br.carbonFootprint.scope3Emissions === undefined || String(br.carbonFootprint.scope3Emissions).trim() === "") br.carbonFootprint.scope3Emissions = null;
         }
-      }
-      if (transformedData.batteryRegulation.stateOfHealth) {
-         if (transformedData.batteryRegulation.stateOfHealth.value === undefined || String(transformedData.batteryRegulation.stateOfHealth.value).trim() === "") {
-          transformedData.batteryRegulation.stateOfHealth.value = null;
+        if (br.stateOfHealth) {
+            if (br.stateOfHealth.value === undefined || String(br.stateOfHealth.value).trim() === "") br.stateOfHealth.value = null;
         }
-      }
-      if (transformedData.batteryRegulation.recycledContent) {
-        transformedData.batteryRegulation.recycledContent = transformedData.batteryRegulation.recycledContent.map(item => ({
-          ...item,
-          percentage: (item.percentage === undefined || String(item.percentage).trim() === "") ? null : item.percentage,
-        }));
-      }
+        if (br.recycledContent) {
+            br.recycledContent = br.recycledContent.map(item => ({ ...item, percentage: (item.percentage === undefined || String(item.percentage).trim() === "") ? null : item.percentage }));
+        }
+        if (br.ratedCapacityAh === undefined || String(br.ratedCapacityAh).trim() === "") br.ratedCapacityAh = null;
+        if (br.nominalVoltage === undefined || String(br.nominalVoltage).trim() === "") br.nominalVoltage = null;
+        if (br.expectedLifetimeCycles === undefined || String(br.expectedLifetimeCycles).trim() === "") br.expectedLifetimeCycles = null;
+        if (br.recyclingEfficiencyRate === undefined || String(br.recyclingEfficiencyRate).trim() === "") br.recyclingEfficiencyRate = null;
+        if (br.materialRecoveryRates) {
+            if (br.materialRecoveryRates.cobalt === undefined || String(br.materialRecoveryRates.cobalt).trim() === "") br.materialRecoveryRates.cobalt = null;
+            if (br.materialRecoveryRates.lead === undefined || String(br.materialRecoveryRates.lead).trim() === "") br.materialRecoveryRates.lead = null;
+            if (br.materialRecoveryRates.lithium === undefined || String(br.materialRecoveryRates.lithium).trim() === "") br.materialRecoveryRates.lithium = null;
+            if (br.materialRecoveryRates.nickel === undefined || String(br.materialRecoveryRates.nickel).trim() === "") br.materialRecoveryRates.nickel = null;
+        }
     }
     if (transformedData.compliance?.euCustomsData) {
-        if(transformedData.compliance.euCustomsData.netWeightKg === undefined || String(transformedData.compliance.euCustomsData.netWeightKg).trim() === "") transformedData.compliance.euCustomsData.netWeightKg = null;
-        if(transformedData.compliance.euCustomsData.grossWeightKg === undefined || String(transformedData.compliance.euCustomsData.grossWeightKg).trim() === "") transformedData.compliance.euCustomsData.grossWeightKg = null;
-        if(transformedData.compliance.euCustomsData.customsValuation && (transformedData.compliance.euCustomsData.customsValuation.value === undefined || String(transformedData.compliance.euCustomsData.customsValuation.value).trim() === "")) {
-            transformedData.compliance.euCustomsData.customsValuation.value = null;
+        const cd = transformedData.compliance.euCustomsData;
+        if(cd.netWeightKg === undefined || String(cd.netWeightKg).trim() === "") cd.netWeightKg = null;
+        if(cd.grossWeightKg === undefined || String(cd.grossWeightKg).trim() === "") cd.grossWeightKg = null;
+        if(cd.customsValuation && (cd.customsValuation.value === undefined || String(cd.customsValuation.value).trim() === "")) {
+            cd.customsValuation.value = null;
         }
     }
     if (transformedData.textileInformation?.fiberComposition) {
@@ -498,15 +378,18 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     
     const dataToSubmit = {
       ...transformedData,
-      customAttributesJsonString: JSON.stringify(customAttributes)
+      productDetails: {
+        ...transformedData.productDetails,
+        customAttributesJsonString: JSON.stringify(customAttributes)
+      }
     };
     onSubmit(dataToSubmit);
   };
 
   const handleClaimClick = (claim: string) => {
-    const currentClaimsValue = form.getValues("sustainabilityClaims") || "";
+    const currentClaimsValue = form.getValues("productDetails.sustainabilityClaims") || "";
     const newClaimsValue = currentClaimsValue ? `${currentClaimsValue}\n- ${claim}` : `- ${claim}`;
-    form.setValue("sustainabilityClaims", newClaimsValue, { shouldValidate: true });
+    form.setValue("productDetails.sustainabilityClaims", newClaimsValue, { shouldValidate: true });
   };
 
   const handleAddCustomAttribute = () => {
@@ -550,7 +433,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
   };
 
   const formContent = (
-    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-4', 'item-5', 'item-6', 'item-7', 'item-8', 'item-9', 'item-10', 'item-11']} className="w-full">
+    <Accordion type="multiple" defaultValue={['item-1', 'item-2', 'item-3', 'item-12', 'item-13', 'item-4', 'item-5', 'item-6', 'item-7', 'item-8', 'item-9', 'item-10', 'item-11']} className="w-full">
       <AccordionItem value="item-1">
         <AccordionTrigger className="text-lg font-semibold flex items-center"><FileText className="mr-2 h-5 w-5 text-primary" />Basic Information</AccordionTrigger>
         <AccordionContent>
@@ -565,23 +448,23 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
 
       <AccordionItem value="item-2">
         <AccordionTrigger className="text-lg font-semibold flex items-center">
-          <ImageIcon className="mr-2 h-5 w-5 text-primary" /> Product Image
+          <ImageIconLucide className="mr-2 h-5 w-5 text-primary" /> Product Image
         </AccordionTrigger>
         <AccordionContent>
           <ProductImageFormSection
             form={form}
             aiImageHelper={handleGenerateImageAI} 
-            initialImageUrlOrigin={initialData?.imageUrlOrigin}
+            initialImageUrlOrigin={initialData?.productDetailsOrigin?.imageUrlOrigin}
             toast={toast}
             isGeneratingImageState={isGeneratingImage}
             setIsGeneratingImageState={setIsGeneratingImage}
-            initialImageUrl={initialData?.imageUrl}
+            initialImageUrl={initialData?.productDetails?.imageUrl}
           />
         </AccordionContent>
       </AccordionItem>
 
       <AccordionItem value="item-3">
-        <AccordionTrigger className="text-lg font-semibold flex items-center"><Leaf className="mr-2 h-5 w-5 text-primary" />Sustainability</AccordionTrigger>
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><Leaf className="mr-2 h-5 w-5 text-primary" />Sustainability & Compliance Points</AccordionTrigger>
         <AccordionContent>
           <SustainabilityComplianceFormSection
             form={form}
@@ -589,9 +472,18 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             suggestedClaims={suggestedClaims}
             setSuggestedClaims={setSuggestedClaims}
             handleClaimClick={handleClaimClick}
+            suggestedKeyCompliancePoints={suggestedKeyCompliancePoints}
+            setSuggestedKeyCompliancePoints={setSuggestedKeyCompliancePoints}
             isSubmittingForm={!!isSubmitting}
             toast={toast}
           />
+        </AccordionContent>
+      </AccordionItem>
+
+      <AccordionItem value="item-13">
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><Handshake className="mr-2 h-5 w-5 text-primary" />Ethical Sourcing</AccordionTrigger>
+        <AccordionContent>
+          <EthicalSourcingFormSection form={form} />
         </AccordionContent>
       </AccordionItem>
 
@@ -639,6 +531,13 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
           />
         </AccordionContent>
       </AccordionItem>
+      
+      <AccordionItem value="item-12">
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><Recycle className="mr-2 h-5 w-5 text-primary" />ESPR Specifics (Ecodesign)</AccordionTrigger>
+        <AccordionContent>
+          <EsprSpecificsFormSection form={form} initialData={initialData} />
+        </AccordionContent>
+      </AccordionItem>
 
       <AccordionItem value="item-7">
         <AccordionTrigger className="text-lg font-semibold flex items-center"><Database className="mr-2 h-5 w-5 text-primary" />SCIP Notification (if applicable)</AccordionTrigger>
@@ -662,7 +561,7 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
       </AccordionItem>
 
       <AccordionItem value="item-10">
-        <AccordionTrigger className="text-lg font-semibold flex items-center"><Construction className="mr-2 h-5 w-5 text-primary" />Construction Product Information (if applicable)</AccordionTrigger>
+        <AccordionTrigger className="text-lg font-semibold flex items-center"><ConstructionIcon className="mr-2 h-5 w-5 text-primary" />Construction Product Information (if applicable)</AccordionTrigger>
         <AccordionContent>
           <ConstructionProductInformationFormSection form={form} />
         </AccordionContent>
@@ -731,10 +630,10 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
     );
   }
 
+  // This part is for when the form is embedded and not a standalone page
   return (
      <Form {...form}>
         <form id={id} onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">{formContent}</form>
     </Form>
   );
 }
-

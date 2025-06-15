@@ -1,3 +1,4 @@
+
 // --- File: Product.ts ---
 // Description: Product related type definitions and mock data.
 
@@ -60,6 +61,14 @@ export interface OwnershipNftLink {
   chainName?: string;
 }
 
+export interface EsprSpecifics { // New interface for ESPR details
+  durabilityInformation?: string;
+  repairabilityInformation?: string;
+  recycledContentSummary?: string;
+  energyEfficiencySummary?: string;
+  substanceOfConcernSummary?: string;
+}
+
 export interface DigitalProductPassport {
   id: string;
   version?: number;
@@ -112,6 +121,7 @@ export interface DigitalProductPassport {
     fairTradeCertificationId?: string; 
     ethicalSourcingPolicyUrl?: string; 
     keyCompliancePoints?: string; 
+    esprSpecifics?: EsprSpecifics; // Added ESPR specifics here
   };
 
   textileInformation?: TextileInformation;
@@ -209,6 +219,9 @@ export interface SimpleProductDetail {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
+  productDetails?: { // Ensure productDetails is part of SimpleProductDetail if esprSpecifics is nested
+    esprSpecifics?: EsprSpecifics; // Added ESPR specifics here
+  };
 }
 
 export interface StoredUserProduct {
@@ -238,6 +251,8 @@ export interface StoredUserProduct {
   modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
   materialsOrigin?: 'AI_EXTRACTED' | 'manual';
   sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+  keyCompliancePoints?: string;
+  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
   energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
   specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
   supplyChainLinks?: ProductSupplyChainLink[];
@@ -246,13 +261,11 @@ export interface StoredUserProduct {
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
   customAttributesJsonString?: string;
-  keyCompliancePoints?: string; 
-  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual'; 
   complianceData?: { 
     eprel?: Partial<DigitalProductPassport['compliance']['eprel']>;
     esprConformity?: Partial<DigitalProductPassport['compliance']['esprConformity']>;
     scipNotification?: Partial<ScipNotificationDetails>;
-    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>;
+    euCustomsData?: Partial<EuCustomsDataDetails>;
     battery_regulation?: Partial<BatteryRegulationDetails>;
   };
   batteryRegulation?: Partial<BatteryRegulationDetails>;
@@ -265,6 +278,9 @@ export interface StoredUserProduct {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
+  productDetails?: { // Added productDetails to StoredUserProduct
+    esprSpecifics?: EsprSpecifics;
+  };
 }
 
 export interface RichMockProduct {
@@ -307,6 +323,9 @@ export interface RichMockProduct {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
+  productDetails?: { // Added productDetails to RichMockProduct
+    esprSpecifics?: EsprSpecifics;
+  };
 }
 
 export interface PublicProductInfo {
@@ -326,7 +345,7 @@ export interface PublicProductInfo {
   category: string;
   modelNumber: string;
   sku?: string;
-  gtin?: string; // Added GTIN from ProductForm/DigitalProductPassport
+  gtin?: string; 
   nfcTagId?: string;
   rfidTagId?: string;
   anchorTransactionHash?: string;
@@ -349,6 +368,9 @@ export interface PublicProductInfo {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
+  productDetails?: { // Added productDetails to PublicProductInfo
+    esprSpecifics?: EsprSpecifics;
+  };
 }
 
 export interface Supplier {
@@ -406,6 +428,9 @@ export interface DisplayableProduct {
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
+  productDetails?: { // Added productDetails to DisplayableProduct
+    esprSpecifics?: EsprSpecifics;
+  };
 }
 
 export interface AnchorResult {

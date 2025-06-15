@@ -1,21 +1,40 @@
+
 "use client";
 
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
+import type { ProductFormData } from "@/types/productFormTypes";
 import { extractProductData } from "@/ai/flows/extract-product-data";
 import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, Info, Edit, Compass, Wand2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, CarbonFootprintData, StateOfHealthData, RecycledContentData } from '@/types/dpp';
-import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp'; // Import the constant
+import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, CarbonFootprintData, StateOfHealthData, RecycledContentData, EsprSpecifics } from '@/types/dpp'; // Added EsprSpecifics
+import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
 import { fileToDataUri } from '@/utils/fileUtils';
 import AiExtractionSection from "@/components/products/new/AiExtractionSection";
 import ProductDetailsSection from "@/components/products/new/ProductDetailsSection";
 
 type AiOrigin = 'AI_EXTRACTED' | 'manual' | undefined;
+
+interface ProductDetailsOrigin { // New interface for origin tracking of productDetails sub-objects
+  descriptionOrigin?: AiOrigin;
+  materialsOrigin?: AiOrigin;
+  sustainabilityClaimsOrigin?: AiOrigin;
+  keyCompliancePointsOrigin?: AiOrigin;
+  specificationsOrigin?: AiOrigin;
+  energyLabelOrigin?: AiOrigin;
+  imageUrlOrigin?: AiOrigin;
+  esprSpecificsOrigin?: {
+    durabilityInformationOrigin?: AiOrigin;
+    repairabilityInformationOrigin?: AiOrigin;
+    recycledContentSummaryOrigin?: AiOrigin;
+    energyEfficiencySummaryOrigin?: AiOrigin;
+    substanceOfConcernSummaryOrigin?: AiOrigin;
+  };
+}
+
 
 interface BatteryRegulationOrigin {
   batteryChemistryOrigin?: AiOrigin;
@@ -60,19 +79,12 @@ interface BatteryRegulationOrigin {
   vcIdOrigin?: AiOrigin;
 }
 
-// Extended to include detailed compliance sections matching ProductForm
-export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRegulation' | 'compliance'> {
+export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRegulation' | 'compliance' | 'productDetails'> {
   productNameOrigin?: AiOrigin;
-  productDescriptionOrigin?: AiOrigin;
   manufacturerOrigin?: AiOrigin;
   modelNumberOrigin?: AiOrigin;
-  materialsOrigin?: AiOrigin;
-  sustainabilityClaimsOrigin?: AiOrigin;
-  keyCompliancePoints?: string; 
-  keyCompliancePointsOrigin?: AiOrigin; 
-  energyLabelOrigin?: AiOrigin;
-  specificationsOrigin?: AiOrigin;
-  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual' | undefined;
+  productDetails?: Partial<ProductFormData['productDetails']>; // Keep this for structure
+  productDetailsOrigin?: ProductDetailsOrigin; // For origin tracking of productDetails fields
   batteryRegulation?: Partial<BatteryRegulationDetails>; 
   batteryRegulationOrigin?: BatteryRegulationOrigin;
   compliance?: { 
@@ -92,23 +104,18 @@ export interface InitialProductFormData extends Omit<ProductFormData, 'batteryRe
 }
 
 
-export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulation' | 'compliance'> {
+export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulation' | 'compliance' | 'productDetails'> {
   id: string;
   status: string; 
   compliance: string; 
   lastUpdated: string;
   productCategory?: string;
   keySustainabilityPoints?: string[]; 
-  keyCompliancePoints?: string; 
-  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual'; 
-  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
-  energyLabelRating?: string;
-  repairability?: { score: number; scale: number; detailsUrl?: string };
-  recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary; 
   
+  productDetails?: Partial<ProductFormData['productDetails']>; // Includes esprSpecifics
   complianceData?: { 
     eprel?: Partial<ProductFormData['compliance']['eprel']>;
     esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
@@ -119,16 +126,19 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
   batteryRegulation?: Partial<BatteryRegulationDetails>; 
   textileInformation?: Partial<TextileInformation>; 
   constructionProductInformation?: Partial<ConstructionProductInformation>; 
-  metadata?: Partial<InitialProductFormData>; 
+  metadata?: Partial<InitialProductFormData>; // Re-using this for metadata structure if needed
   authenticationVcId?: string; 
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; 
   blockchainIdentifiers?: InitialProductFormData['blockchainIdentifiers']; 
   conflictMineralsReportUrl?: string; 
   fairTradeCertificationId?: string; 
   ethicalSourcingPolicyUrl?: string; 
+  productNameOrigin?: AiOrigin;
+  productDetailsOrigin?: ProductDetailsOrigin; // For AI origin tracking
+  manufacturerOrigin?: AiOrigin;
+  modelNumberOrigin?: AiOrigin;
+  batteryRegulationOrigin?: BatteryRegulationOrigin;
 }
-
-// const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts'; // Removed duplicate definition
 
 const defaultBatteryRegulationState: BatteryRegulationDetails = {
   status: "not_applicable", batteryChemistry: "", batteryPassportId: "",
@@ -180,6 +190,31 @@ const defaultConstructionProductInformationState: Partial<ConstructionProductInf
   essentialCharacteristics: [],
 };
 
+const defaultEsprSpecificsState: EsprSpecifics = {
+  durabilityInformation: "",
+  repairabilityInformation: "",
+  recycledContentSummary: "",
+  energyEfficiencySummary: "",
+  substanceOfConcernSummary: "",
+};
+
+const defaultProductDetailsOriginState: ProductDetailsOrigin = {
+  descriptionOrigin: undefined,
+  materialsOrigin: undefined,
+  sustainabilityClaimsOrigin: undefined,
+  keyCompliancePointsOrigin: undefined,
+  specificationsOrigin: undefined,
+  energyLabelOrigin: undefined,
+  imageUrlOrigin: undefined,
+  esprSpecificsOrigin: {
+    durabilityInformationOrigin: undefined,
+    repairabilityInformationOrigin: undefined,
+    recycledContentSummaryOrigin: undefined,
+    energyEfficiencySummaryOrigin: undefined,
+    substanceOfConcernSummaryOrigin: undefined,
+  }
+};
+
 
 export default function AddNewProductPage() {
   const router = useRouter();
@@ -197,21 +232,30 @@ export default function AddNewProductPage() {
   const [aiExtractionAppliedSuccessfully, setAiExtractionAppliedSuccessfully] = useState(false);
 
   const defaultFormState: InitialProductFormData = {
-    productName: "", gtin: "", sku: "", nfcTagId: "", rfidTagId: "", productDescription: "", manufacturer: "", modelNumber: "",
-    materials: "", sustainabilityClaims: "", specifications: "", energyLabel: "", productCategory: "",
-    imageUrl: "", imageHint: "", imageUrlOrigin: undefined,
+    productName: "", gtin: "", sku: "", nfcTagId: "", rfidTagId: "", manufacturer: "", modelNumber: "",
+    productCategory: "",
+    productDetails: {
+        description: "",
+        materials: "",
+        sustainabilityClaims: "",
+        keyCompliancePoints: "",
+        specifications: "",
+        energyLabel: "",
+        imageUrl: "",
+        imageHint: "",
+        customAttributesJsonString: "",
+        esprSpecifics: { ...defaultEsprSpecificsState },
+    },
     onChainStatus: "Unknown", 
     onChainLifecycleStage: "Unknown", 
     conflictMineralsReportUrl: "", 
     fairTradeCertificationId: "", 
     ethicalSourcingPolicyUrl: "", 
-    keyCompliancePoints: "", 
-    keyCompliancePointsOrigin: undefined, 
     batteryRegulation: { ...defaultBatteryRegulationState },
-    customAttributesJsonString: "",
-    productNameOrigin: undefined, productDescriptionOrigin: undefined, manufacturerOrigin: undefined,
-    modelNumberOrigin: undefined, materialsOrigin: undefined, sustainabilityClaimsOrigin: undefined,
-    energyLabelOrigin: undefined, specificationsOrigin: undefined,
+    productNameOrigin: undefined, 
+    manufacturerOrigin: undefined,
+    modelNumberOrigin: undefined,
+    productDetailsOrigin: { ...defaultProductDetailsOriginState },
     batteryRegulationOrigin: { ...defaultBatteryRegulationOriginState },
     compliance: {
       eprel: { status: "N/A", id: "", url: ""},
@@ -233,14 +277,34 @@ export default function AddNewProductPage() {
       const productToEdit = userProducts.find(p => p.id === editProductId);
       if (productToEdit) {
         const editData: InitialProductFormData = {
-          ...productToEdit,
-          onChainStatus: productToEdit.metadata?.onChainStatus || "Unknown", 
-          onChainLifecycleStage: productToEdit.metadata?.onChainLifecycleStage || "Unknown", 
-          conflictMineralsReportUrl: productToEdit.conflictMineralsReportUrl || "", 
-          fairTradeCertificationId: productToEdit.fairTradeCertificationId || "", 
-          ethicalSourcingPolicyUrl: productToEdit.ethicalSourcingPolicyUrl || "", 
-          keyCompliancePoints: productToEdit.keyCompliancePoints || "", 
-          keyCompliancePointsOrigin: productToEdit.keyCompliancePointsOrigin || undefined, 
+          productName: productToEdit.productName || "",
+          gtin: productToEdit.gtin || "",
+          manufacturer: productToEdit.manufacturer || "",
+          modelNumber: productToEdit.modelNumber || "",
+          sku: productToEdit.sku || "",
+          nfcTagId: productToEdit.nfcTagId || "",
+          rfidTagId: productToEdit.rfidTagId || "",
+          productCategory: productToEdit.productCategory || "",
+          onChainStatus: productToEdit.metadata?.onChainStatus || "Unknown",
+          onChainLifecycleStage: productToEdit.metadata?.onChainLifecycleStage || "Unknown",
+          conflictMineralsReportUrl: productToEdit.conflictMineralsReportUrl || "",
+          fairTradeCertificationId: productToEdit.fairTradeCertificationId || "",
+          ethicalSourcingPolicyUrl: productToEdit.ethicalSourcingPolicyUrl || "",
+          productDetails: {
+            description: productToEdit.productDescription || "",
+            materials: productToEdit.materials || "",
+            sustainabilityClaims: productToEdit.sustainabilityClaims || "",
+            keyCompliancePoints: productToEdit.keyCompliancePoints || "",
+            specifications: productToEdit.specifications || "",
+            energyLabel: productToEdit.energyLabel || "",
+            imageUrl: productToEdit.imageUrl || "",
+            imageHint: productToEdit.imageHint || "",
+            customAttributesJsonString: productToEdit.customAttributesJsonString || "",
+            esprSpecifics: { 
+                ...defaultEsprSpecificsState, 
+                ...(productToEdit.productDetails?.esprSpecifics || {}) 
+            },
+          },
           batteryRegulation: {
             ...defaultBatteryRegulationState,
             ...(productToEdit.batteryRegulation || {}),
@@ -284,17 +348,11 @@ export default function AddNewProductPage() {
           },
           textileInformation: { ...defaultTextileInformationState, ...(productToEdit.textileInformation || {}) }, 
           constructionProductInformation: { ...defaultConstructionProductInformationState, ...(productToEdit.constructionProductInformation || {}) }, 
-          batteryRegulationOrigin: { ...defaultBatteryRegulationOriginState }, 
-          
           productNameOrigin: productToEdit.productNameOrigin || undefined,
-          productDescriptionOrigin: productToEdit.productDescriptionOrigin || undefined,
           manufacturerOrigin: productToEdit.manufacturerOrigin || undefined,
           modelNumberOrigin: productToEdit.modelNumberOrigin || undefined,
-          materialsOrigin: productToEdit.materialsOrigin || undefined,
-          sustainabilityClaimsOrigin: productToEdit.sustainabilityClaimsOrigin || undefined,
-          energyLabelOrigin: productToEdit.energyLabelOrigin || undefined,
-          specificationsOrigin: productToEdit.specificationsOrigin || undefined,
-          imageUrlOrigin: productToEdit.imageUrlOrigin || undefined,
+          productDetailsOrigin: productToEdit.productDetailsOrigin || { ...defaultProductDetailsOriginState },
+          batteryRegulationOrigin: productToEdit.batteryRegulationOrigin || { ...defaultBatteryRegulationOriginState },
         };
         setCurrentProductDataForForm(editData);
         setActiveTab("manual");
@@ -341,8 +399,10 @@ export default function AddNewProductPage() {
       const result = await extractProductData({ documentDataUri, documentType });
 
       const aiInitialFormData: Partial<InitialProductFormData> = {
+        productDetails: { esprSpecifics: { ...defaultEsprSpecificsState } },
         batteryRegulation: { ...defaultBatteryRegulationState },
         batteryRegulationOrigin: { ...defaultBatteryRegulationOriginState },
+        productDetailsOrigin: { ...defaultProductDetailsOriginState },
         compliance: { 
           eprel: defaultFormState.compliance?.eprel,
           esprConformity: defaultFormState.compliance?.esprConformity,
@@ -355,19 +415,19 @@ export default function AddNewProductPage() {
       };
 
       if (result.productName) { aiInitialFormData.productName = result.productName; aiInitialFormData.productNameOrigin = 'AI_EXTRACTED'; }
-      if (result.productDescription) { aiInitialFormData.productDescription = result.productDescription; aiInitialFormData.productDescriptionOrigin = 'AI_EXTRACTED'; }
+      if (aiInitialFormData.productDetails && result.productDescription) { aiInitialFormData.productDetails.description = result.productDescription; if(aiInitialFormData.productDetailsOrigin) aiInitialFormData.productDetailsOrigin.descriptionOrigin = 'AI_EXTRACTED'; }
       if (result.manufacturer) { aiInitialFormData.manufacturer = result.manufacturer; aiInitialFormData.manufacturerOrigin = 'AI_EXTRACTED'; }
       if (result.modelNumber) { aiInitialFormData.modelNumber = result.modelNumber; aiInitialFormData.modelNumberOrigin = 'AI_EXTRACTED'; }
 
       if (result.specifications && Object.keys(result.specifications).length > 0) {
-        aiInitialFormData.specifications = JSON.stringify(result.specifications, null, 2);
-        aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED';
+        if (aiInitialFormData.productDetails) aiInitialFormData.productDetails.specifications = JSON.stringify(result.specifications, null, 2);
+        if (aiInitialFormData.productDetailsOrigin) aiInitialFormData.productDetailsOrigin.specificationsOrigin = 'AI_EXTRACTED';
       } else {
-        aiInitialFormData.specifications = "";
-        if (result.specifications) aiInitialFormData.specificationsOrigin = 'AI_EXTRACTED';
+        if (aiInitialFormData.productDetails) aiInitialFormData.productDetails.specifications = "";
+        if (result.specifications && aiInitialFormData.productDetailsOrigin) aiInitialFormData.productDetailsOrigin.specificationsOrigin = 'AI_EXTRACTED';
       }
 
-      if (result.energyLabel) { aiInitialFormData.energyLabel = result.energyLabel; aiInitialFormData.energyLabelOrigin = 'AI_EXTRACTED'; }
+      if (result.energyLabel && aiInitialFormData.productDetails) { aiInitialFormData.productDetails.energyLabel = result.energyLabel; if(aiInitialFormData.productDetailsOrigin) aiInitialFormData.productDetailsOrigin.energyLabelOrigin = 'AI_EXTRACTED'; }
       
       if (aiInitialFormData.batteryRegulation) { 
         if (result.batteryRegulation?.batteryChemistry) {
@@ -431,14 +491,14 @@ export default function AddNewProductPage() {
           if(result.customsData.countryOfOrigin) aiInitialFormData.compliance.euCustomsData.countryOfOrigin = result.customsData.countryOfOrigin;
       }
 
-      aiInitialFormData.imageUrl = "";
-      aiInitialFormData.imageHint = "";
-      aiInitialFormData.imageUrlOrigin = undefined;
-      aiInitialFormData.customAttributesJsonString = "";
+      if (aiInitialFormData.productDetails) {
+        aiInitialFormData.productDetails.imageUrl = "";
+        aiInitialFormData.productDetails.imageHint = "";
+        if(aiInitialFormData.productDetailsOrigin) aiInitialFormData.productDetailsOrigin.imageUrlOrigin = undefined;
+        aiInitialFormData.productDetails.customAttributesJsonString = "";
+      }
       aiInitialFormData.onChainStatus = "Unknown"; 
       aiInitialFormData.onChainLifecycleStage = "Unknown"; 
-      aiInitialFormData.keyCompliancePoints = ""; 
-      aiInitialFormData.keyCompliancePointsOrigin = undefined; 
 
       setCurrentProductDataForForm(prev => ({...prev, ...aiInitialFormData}));
       setAiExtractionAppliedSuccessfully(true);
@@ -478,9 +538,21 @@ export default function AddNewProductPage() {
         
         supplyChainLinks: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.supplyChainLinks) || [] : [],
         lifecycleEvents: isEditMode && editProductId ? (userProducts.find(p => p.id === editProductId)?.lifecycleEvents) || [] : [],
-        keyCompliancePoints: formDataFromForm.keyCompliancePoints, 
-        keyCompliancePointsOrigin: formDataFromForm.keyCompliancePointsOrigin, 
         
+        productDetails: {
+            description: formDataFromForm.productDetails?.description,
+            materials: formDataFromForm.productDetails?.materials,
+            sustainabilityClaims: formDataFromForm.productDetails?.sustainabilityClaims,
+            keyCompliancePoints: formDataFromForm.productDetails?.keyCompliancePoints,
+            specifications: formDataFromForm.productDetails?.specifications,
+            energyLabel: formDataFromForm.productDetails?.energyLabel,
+            imageUrl: formDataFromForm.productDetails?.imageUrl,
+            imageHint: formDataFromForm.productDetails?.imageHint,
+            customAttributesJsonString: formDataFromForm.productDetails?.customAttributesJsonString,
+            esprSpecifics: formDataFromForm.productDetails?.esprSpecifics,
+        },
+        productDetailsOrigin: formDataFromForm.productDetailsOrigin,
+
         complianceData: {
           eprel: formDataFromForm.compliance?.eprel,
           esprConformity: formDataFromForm.compliance?.esprConformity,

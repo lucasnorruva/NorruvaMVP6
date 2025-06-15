@@ -5,7 +5,7 @@
 
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
 import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification, ScipNotificationDetails, EuCustomsDataDetails, BatteryRegulationDetails } from '@/types/dpp';
+import type { DigitalProductPassport, StoredUserProduct, SimpleProductDetail, ComplianceDetailItem, EbsiVerificationDetails, CustomAttribute, SimpleCertification, Certification, ScipNotificationDetails, EuCustomsDataDetails, BatteryRegulationDetails, EsprSpecifics } from '@/types/dpp';
 import { getOverallComplianceDetails } from '@/utils/dppDisplayUtils';
 
 // Helper function to map DigitalProductPassport to SimpleProductDetail
@@ -53,29 +53,33 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
 
     const complianceOverallStatusDetails = getOverallComplianceDetails(dpp);
     const keyCompliancePointsPopulated: string[] = [];
-    if (complianceOverallStatusDetails.text && complianceOverallStatusDetails.text.toLowerCase() !== 'n/a' && complianceOverallStatusDetails.text.toLowerCase() !== 'no data') {
-        keyCompliancePointsPopulated.push(`Overall Status: ${complianceOverallStatusDetails.text}`);
-    }
-    if (dpp.ebsiVerification?.status && dpp.ebsiVerification.status.toLowerCase() !== 'n/a') {
-        const ebsiStatusText = dpp.ebsiVerification.status.replace(/_/g, ' ');
-        const capitalizedEbsiStatus = ebsiStatusText.charAt(0).toUpperCase() + ebsiStatusText.slice(1);
-        keyCompliancePointsPopulated.push(`EBSI Status: ${capitalizedEbsiStatus}`);
-    }
-    if (dpp.compliance.battery_regulation?.status && dpp.compliance.battery_regulation.status.toLowerCase() !== 'not_applicable' && dpp.compliance.battery_regulation.status.toLowerCase() !== 'n/a' && keyCompliancePointsPopulated.length < 3) {
-        const batteryStatusText = dpp.compliance.battery_regulation.status.replace(/_/g, ' ');
-        const capitalizedBatteryStatus = batteryStatusText.charAt(0).toUpperCase() + batteryStatusText.slice(1);
-        keyCompliancePointsPopulated.push(`Battery Reg: ${capitalizedBatteryStatus}`);
-    }
-    
-    specificRegulations.forEach(reg => {
-        if (keyCompliancePointsPopulated.length < 3 && reg.status && reg.status.toLowerCase() !== 'n/a' && reg.status.toLowerCase() !== 'not applicable' && reg.status.toLowerCase() !== 'not required') {
-            const regStatusText = reg.status.replace(/_/g, ' ');
-            const capitalizedRegStatus = regStatusText.charAt(0).toUpperCase() + regStatusText.slice(1);
-            keyCompliancePointsPopulated.push(`${reg.regulationName}: ${capitalizedRegStatus}`);
+    if (dpp.productDetails?.keyCompliancePoints) { // Use directly if populated
+        keyCompliancePointsPopulated.push(...dpp.productDetails.keyCompliancePoints.split('\n').map(s => s.trim()).filter(Boolean));
+    } else { // Fallback to generating them
+        if (complianceOverallStatusDetails.text && complianceOverallStatusDetails.text.toLowerCase() !== 'n/a' && complianceOverallStatusDetails.text.toLowerCase() !== 'no data') {
+            keyCompliancePointsPopulated.push(`Overall Status: ${complianceOverallStatusDetails.text}`);
         }
-    });
-    if (keyCompliancePointsPopulated.length === 0 && (specificRegulations.length > 0 || dpp.compliance.battery_regulation)) {
-        keyCompliancePointsPopulated.push("Review Compliance tab for regulation details.");
+        if (dpp.ebsiVerification?.status && dpp.ebsiVerification.status.toLowerCase() !== 'n/a') {
+            const ebsiStatusText = dpp.ebsiVerification.status.replace(/_/g, ' ');
+            const capitalizedEbsiStatus = ebsiStatusText.charAt(0).toUpperCase() + ebsiStatusText.slice(1);
+            keyCompliancePointsPopulated.push(`EBSI Status: ${capitalizedEbsiStatus}`);
+        }
+        if (dpp.compliance.battery_regulation?.status && dpp.compliance.battery_regulation.status.toLowerCase() !== 'not_applicable' && dpp.compliance.battery_regulation.status.toLowerCase() !== 'n/a' && keyCompliancePointsPopulated.length < 3) {
+            const batteryStatusText = dpp.compliance.battery_regulation.status.replace(/_/g, ' ');
+            const capitalizedBatteryStatus = batteryStatusText.charAt(0).toUpperCase() + batteryStatusText.slice(1);
+            keyCompliancePointsPopulated.push(`Battery Reg: ${capitalizedBatteryStatus}`);
+        }
+        
+        specificRegulations.forEach(reg => {
+            if (keyCompliancePointsPopulated.length < 3 && reg.status && reg.status.toLowerCase() !== 'n/a' && reg.status.toLowerCase() !== 'not applicable' && reg.status.toLowerCase() !== 'not required') {
+                const regStatusText = reg.status.replace(/_/g, ' ');
+                const capitalizedRegStatus = regStatusText.charAt(0).toUpperCase() + regStatusText.slice(1);
+                keyCompliancePointsPopulated.push(`${reg.regulationName}: ${capitalizedRegStatus}`);
+            }
+        });
+        if (keyCompliancePointsPopulated.length === 0 && (specificRegulations.length > 0 || dpp.compliance.battery_regulation)) {
+            keyCompliancePointsPopulated.push("Review Compliance tab for regulation details.");
+        }
     }
 
 
@@ -108,9 +112,12 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         imageUrl: dpp.productDetails?.imageUrl,
         imageHint: dpp.productDetails?.imageHint,
         keySustainabilityPoints: dpp.productDetails?.sustainabilityClaims?.map(c => c.claim).filter(Boolean) || [],
-        keyCompliancePoints: keyCompliancePointsPopulated,
+        keyCompliancePoints: keyCompliancePointsPopulated.join('\n'), // Store as a single string or keep as array
         specifications: dpp.productDetails?.specifications,
         customAttributes: customAttributes,
+        productDetails: { // Pass through productDetails which now contains esprSpecifics
+            esprSpecifics: dpp.productDetails?.esprSpecifics,
+        },
         complianceSummary: {
             overallStatus: complianceOverallStatusDetails.text,
             eprel: dpp.compliance.eprel ? {
@@ -162,6 +169,9 @@ function mapDppToSimpleProductDetail(dpp: DigitalProductPassport): SimpleProduct
         constructionProductInformation: dpp.constructionProductInformation, 
         batteryRegulation: dpp.compliance.battery_regulation, 
         lastUpdated: dpp.metadata.last_updated,
+        conflictMineralsReportUrl: dpp.productDetails?.conflictMineralsReportUrl, 
+        fairTradeCertificationId: dpp.productDetails?.fairTradeCertificationId, 
+        ethicalSourcingPolicyUrl: dpp.productDetails?.ethicalSourcingPolicyUrl, 
     };
 }
 
@@ -175,9 +185,9 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
     const userProductData = userProducts.find(p => p.id === productId);
     if (userProductData) {
       let parsedCustomAttributes: CustomAttribute[] = [];
-      if (userProductData.customAttributesJsonString) {
+      if (userProductData.productDetails?.customAttributesJsonString) { // Check inside productDetails
           try {
-              const parsed = JSON.parse(userProductData.customAttributesJsonString);
+              const parsed = JSON.parse(userProductData.productDetails.customAttributesJsonString);
               if (Array.isArray(parsed)) parsedCustomAttributes = parsed;
           } catch (e) { console.error("Failed to parse customAttributesJsonString from localStorage for USER_PROD:", e); }
       }
@@ -215,14 +225,19 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           dppStandardVersion: userProductData.metadata?.dppStandardVersion,
         },
         productDetails: {
-          description: userProductData.productDescription,
-          imageUrl: userProductData.imageUrl,
-          imageHint: userProductData.imageHint,
-          sustainabilityClaims: userProductData.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
-          materials: userProductData.materials?.split(',').map(m => ({ name: m.trim() })) || [],
-          energyLabel: userProductData.energyLabel,
-          specifications: userProductData.specifications,
+          description: userProductData.productDetails?.description, // Access from productDetails
+          imageUrl: userProductData.productDetails?.imageUrl,
+          imageHint: userProductData.productDetails?.imageHint,
+          sustainabilityClaims: userProductData.productDetails?.sustainabilityClaims?.split('\n').map(s => ({ claim: s.trim() })).filter(c => c.claim) || [],
+          keyCompliancePoints: userProductData.productDetails?.keyCompliancePoints,
+          materials: userProductData.productDetails?.materials?.split(',').map(m => ({ name: m.trim() })) || [],
+          energyLabel: userProductData.productDetails?.energyLabel,
+          specifications: userProductData.productDetails?.specifications,
           customAttributes: parsedCustomAttributes,
+          conflictMineralsReportUrl: userProductData.productDetails?.conflictMineralsReportUrl, 
+          fairTradeCertificationId: userProductData.productDetails?.fairTradeCertificationId, 
+          ethicalSourcingPolicyUrl: userProductData.productDetails?.ethicalSourcingPolicyUrl, 
+          esprSpecifics: userProductData.productDetails?.esprSpecifics, // Pass through esprSpecifics
         },
         compliance: { 
           eprel: userProductData.complianceData?.eprel || complianceSummaryFromStorage.eprel,
@@ -274,4 +289,3 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
 
   return null;
 }
-

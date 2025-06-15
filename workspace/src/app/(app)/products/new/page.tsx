@@ -11,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AlertTriangle, CheckCircle2, Info, Edit, Compass, Wand2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { ProductSupplyChainLink, SimpleLifecycleEvent, ProductComplianceSummary, CustomAttribute, BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, CarbonFootprintData, StateOfHealthData, RecycledContentData } from '@/types/dpp';
-import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp'; // Correctly import the constant
+import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp'; // Import the constant
 import { fileToDataUri } from '@/utils/fileUtils';
 import AiExtractionSection from "@/components/products/new/AiExtractionSection";
 import ProductDetailsSection from "@/components/products/new/ProductDetailsSection";

@@ -7,7 +7,7 @@ import { useEffect, useState } from 'react';
 import { notFound, useParams } from 'next/navigation';
 import ProductContainer from '@/components/products/detail/ProductContainer';
 import type { SimpleProductDetail, ProductSupplyChainLink, StoredUserProduct, DigitalProductPassport } from '@/types/dpp';
-import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
+import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp'; // Corrected import
 import { MOCK_DPPS } from '@/data';
 import { Loader2 } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
@@ -168,5 +168,3 @@ export default function ProductDetailPage() {
     />
   );
 }
-
-    

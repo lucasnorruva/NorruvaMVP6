@@ -29,43 +29,34 @@ import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
 import { ProductListRow } from "@/components/products/ProductListRow";
 import { calculateDppCompletenessForList } from "@/utils/dppDisplayUtils";
 import { cn } from "@/lib/utils";
+import { MOCK_DPPS as InitialMockDppsData } from '@/data';
 
-const initialMockProductsData: RichMockProduct[] = [
-  {
-    id: "PROD001", productId: "PROD001", productName: "EcoFriendly Refrigerator X2000", category: "Appliances", status: "Active", compliance: "Compliant", lastUpdated: "2024-07-20",
-    gtin: "01234567890123", manufacturer: "GreenTech Appliances", modelNumber: "X2000-ECO", description: "State-of-the-art energy efficient refrigerator.", imageUrl: "https://placehold.co/400x300.png", imageHint: "refrigerator appliance", materials: "Recycled Steel, Bio-polymers", sustainabilityClaims: "Energy Star Certified", energyLabel: "A+++", specifications: { "Capacity": "400L", "Warranty": "5 years" }, lifecycleEvents: [{id:"lc_mfg_001", eventName:"Manufacturing Complete", date: "2024-01-01", status: "Completed"}], complianceSummary: { overallStatus: "Compliant", eprel: {id: "EPREL123", status: "Registered", lastChecked: "2024-07-01"}, ebsi: {status: "Verified", lastChecked: "2024-07-01"} },
-    supplyChainLinks: [
-      { supplierId: "SUP001", suppliedItem: "Compressor Unit XJ-500", notes: "Primary compressor supplier for EU market. Audited for ethical sourcing." },
-      { supplierId: "SUP002", suppliedItem: "Recycled Steel Panels (70%)", notes: "Certified post-consumer recycled content." }
-    ],
-    blockchainIdentifiers: { platform: "MockChain", anchorTransactionHash: "0x123abc456def789ghi012jkl345mno678pqr901stu234vwx567yz890abcdef"}, // Added for PROD001
-  },
-  {
-    id: "PROD002", productId: "PROD002", productName: "Smart LED Bulb Pack (4-pack)", category: "Electronics", status: "Active", compliance: "Pending", lastUpdated: "2024-07-18",
-    gtin: "98765432109876", manufacturer: "BrightSpark Electronics", modelNumber: "BS-LED-S04B", description: "Tunable white and color smart LED bulbs.", imageUrl: "https://placehold.co/400x300.png", imageHint: "led bulbs", materials: "Polycarbonate, Aluminum", sustainabilityClaims: "Uses 85% less energy", energyLabel: "A+", specifications: { "Lumens": "800lm", "Connectivity": "Wi-Fi" }, batteryChemistry: "Li-ion", stateOfHealth: 99, carbonFootprintManufacturing: 5, recycledContentPercentage: 10,
-    lifecycleEvents: [{id:"lc_mfg_002", eventName:"Manufacturing Complete", date: "2024-03-01", status: "Completed"}], complianceSummary: { overallStatus: "Pending Review", eprel: {status: "Pending", lastChecked: "2024-07-10"}, ebsi: {status: "Pending", lastChecked: "2024-07-10"} },
-    supplyChainLinks: [
-       { supplierId: "SUP004", suppliedItem: "LED Chips & Drivers", notes: "Specialized electronics supplier from Shanghai." }
-    ]
-    // PROD002 does not have blockchainIdentifiers to test "Not Anchored" filter
-  },
-  {
-    id: "PROD003", productId: "PROD003", productName: "Organic Cotton T-Shirt", category: "Apparel", status: "Archived", compliance: "Compliant", lastUpdated: "2024-06-10",
-    description: "100% organic cotton t-shirt.", materials: "Organic Cotton", sustainabilityClaims: "GOTS Certified", imageUrl: "https://placehold.co/400x300.png", imageHint: "cotton t-shirt", manufacturer: "EcoThreads",
-    specifications: {"Fit": "Regular", "Origin": "India"}, lifecycleEvents: [], complianceSummary: { overallStatus: "Compliant", eprel: {status: "N/A", lastChecked: "2024-06-01"}, ebsi: {status: "N/A", lastChecked: "2024-06-01"} }, supplyChainLinks: [],
-    blockchainIdentifiers: { platform: "OtherChain", anchorTransactionHash: "0xProd003CottonAnchorHash"}, // Added for PROD003
-  },
-  {
-    id: "PROD004", productId: "PROD004", productName: "Recycled Plastic Water Bottle", category: "Homeware", status: "Active", compliance: "Non-Compliant", lastUpdated: "2024-07-21",
-    description: "Made from 100% recycled ocean-bound plastic.", materials: "Recycled PET", sustainabilityClaims: "Reduces ocean plastic", imageUrl: "https://placehold.co/400x300.png", imageHint: "water bottle", manufacturer: "RePurpose Inc.",
-    specifications: {"Volume": "500ml", "BPA-Free": "Yes"}, lifecycleEvents: [], complianceSummary: { overallStatus: "Non-Compliant", eprel: {status: "N/A", lastChecked: "2024-07-01"}, ebsi: {status: "N/A", lastChecked: "2024-07-01"} }, supplyChainLinks: []
-  },
-  {
-    id: "PROD005", productId: "PROD005", productName: "Solar Powered Garden Light", category: "Outdoor", status: "Draft", compliance: "N/A", lastUpdated: "2024-07-22",
-    description: "Solar-powered LED light for gardens.", materials: "Aluminum, Solar Panel", energyLabel: "N/A", imageUrl: "https://placehold.co/400x300.png", imageHint: "garden light", manufacturer: "SunBeam",
-    specifications: {"Brightness": "100 lumens", "Battery life": "8 hours"}, lifecycleEvents: [], complianceSummary: { overallStatus: "N/A", eprel: {status: "N/A", lastChecked: "2024-07-01"}, ebsi: {status: "N/A", lastChecked: "2024-07-01"} }, supplyChainLinks: []
-  },
-];
+const initialMockProductsData: RichMockProduct[] = InitialMockDppsData.map(dpp => ({
+  ...dpp,
+  productId: dpp.id,
+  status: dpp.metadata.status as RichMockProduct['status'], 
+  compliance: dpp.complianceSummary?.overallStatus || "N/A", 
+  lastUpdated: dpp.metadata.last_updated,
+  description: dpp.productDetails?.description,
+  imageUrl: dpp.productDetails?.imageUrl,
+  imageHint: dpp.productDetails?.imageHint,
+  materials: dpp.productDetails?.materials?.map(m => m.name).join(', '),
+  sustainabilityClaims: dpp.productDetails?.sustainabilityClaims?.map(c => c.claim).join(', '),
+  energyLabel: dpp.productDetails?.energyLabel,
+  specifications: dpp.productDetails?.specifications,
+  lifecycleEvents: dpp.lifecycleEvents?.map(e => ({ id: e.id, eventName: e.type, date: e.timestamp, status: 'Completed' })),
+  complianceSummary: dpp.complianceSummary,
+  ebsiVerification: dpp.ebsiVerification,
+  certifications: dpp.certifications,
+  documents: dpp.documents,
+  supplyChainLinks: dpp.supplyChainLinks,
+  customAttributes: dpp.productDetails?.customAttributes,
+  blockchainIdentifiers: dpp.blockchainIdentifiers,
+  authenticationVcId: dpp.authenticationVcId,
+  ownershipNftLink: dpp.ownershipNftLink,
+  metadata: dpp.metadata, 
+}));
+
 
 type SortableProductKeys = keyof Pick<DisplayableProduct, 'id' | 'productName' | 'status' | 'compliance' | 'lastUpdated' | 'manufacturer'> | 'category' | 'completenessScore';
 
@@ -348,3 +339,4 @@ export default function ProductsPage() {
     </div>
   );
 }
+

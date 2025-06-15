@@ -10,7 +10,7 @@ import type {
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
 export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
-export const TRACKED_PRODUCTS_STORAGE_KEY = 'norruvaTrackedProductIds'; // New constant
+export const TRACKED_PRODUCTS_STORAGE_KEY = 'norruvaTrackedProductIds';
 
 export interface SupplyChainStep {
   stepName: string;
@@ -115,7 +115,7 @@ export interface DigitalProductPassport {
     ethicalSourcingPolicyUrl?: string; 
     keyCompliancePoints?: string; 
     esprSpecifics?: EsprSpecifics; 
-    carbonFootprint?: CarbonFootprintData;
+    carbonFootprint?: CarbonFootprintData; 
   };
 
   textileInformation?: TextileInformation;
@@ -250,7 +250,7 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
   batteryRegulation?: Partial<BatteryRegulationDetails>; 
   textileInformation?: Partial<TextileInformation>; 
   constructionProductInformation?: Partial<ConstructionProductInformation>; 
-  metadata?: Partial<InitialProductFormData>; // Re-using this for metadata structure if needed
+  metadata?: Partial<InitialProductFormData>; 
   authenticationVcId?: string; 
   ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; 
   blockchainIdentifiers?: InitialProductFormData['blockchainIdentifiers']; 
@@ -266,7 +266,7 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
   energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
   specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  productDetailsOrigin?: { // Added for Task 1
+  productDetailsOrigin?: { 
     descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
     materialsOrigin?: 'AI_EXTRACTED' | 'manual';
     sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -281,7 +281,7 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
       energyEfficiencySummaryOrigin?: 'AI_EXTRACTED' | 'manual';
       substanceOfConcernSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
     };
-    carbonFootprintOrigin?: { // Added for Task 3
+    carbonFootprintOrigin?: { 
         valueOrigin?: 'AI_EXTRACTED' | 'manual';
         unitOrigin?: 'AI_EXTRACTED' | 'manual';
         calculationMethodOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -307,7 +307,7 @@ export interface RichMockProduct {
   manufacturer?: string;
   modelNumber?: string;
   description?: string;
-  productDescription?: string; // Ensure this is present
+  productDescription?: string; 
   imageUrl?: string;
   imageHint?: string;
   materials?: string;
@@ -342,7 +342,7 @@ export interface RichMockProduct {
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
-    description?: string; // Ensure description is also in productDetails for consistency
+    description?: string; 
     imageUrl?: string;
     imageHint?: string;
     materials?: Array<{ name: string; percentage?: number; origin?: string; isRecycled?: boolean; recycledContentPercentage?: number }>;
@@ -421,7 +421,7 @@ export interface DisplayableProduct {
   productId?: string;
   productName?: string;
   category?: string;
-  productCategory?: string;
+  productCategory?: string; // Keep this for initialData mapping in forms
   status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string;
   compliance: string;
   lastUpdated: string;
@@ -429,21 +429,21 @@ export interface DisplayableProduct {
   manufacturer?: string;
   modelNumber?: string;
   description?: string;
-  productDescription?: string;
+  productDescription?: string; // Keep this for forms
   imageUrl?: string;
   imageHint?: string;
   imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  materials?: string;
-  sustainabilityClaims?: string;
+  materials?: string; // Keep for forms
+  sustainabilityClaims?: string; // Keep for forms
   keyCompliancePoints?: string; 
-  energyLabel?: string;
+  energyLabel?: string; // Keep for forms
   specifications?: string; 
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
-  batteryChemistry?: string;
-  stateOfHealth?: number | null;
-  carbonFootprintManufacturing?: number | null;
-  recycledContentPercentage?: number | null;
+  batteryChemistry?: string; // Part of batteryRegulation on DigitalProductPassport
+  stateOfHealth?: number | null; // Part of batteryRegulation on DigitalProductPassport
+  carbonFootprintManufacturing?: number | null; // Part of batteryRegulation.carbonFootprint on DigitalProductPassport
+  recycledContentPercentage?: number | null; // Conceptually part of batteryRegulation.recycledContent
   ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A';
   supplyChainLinks?: ProductSupplyChainLink[];
   certifications?: SimpleCertification[];
@@ -467,6 +467,8 @@ export interface DisplayableProduct {
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
   };
+  // Completeness is added dynamically, not part of the core type
+  // completeness?: { score: number; filledFields: number; totalFields: number; missingFields: string[] };
 }
 
 export interface AnchorResult {
@@ -517,3 +519,24 @@ export interface ServiceJob {
   assignedTechnician?: string;
   notes?: string;
 }
+
+// Simplified for ProductForm, actual form types are in productFormTypes.ts
+export type InitialProductFormData = Partial<Omit<DigitalProductPassport, 'id' | 'metadata' | 'compliance' | 'productDetails'> & {
+  // Keep specific origin fields if needed by form initialization logic directly from this type
+  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
+  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
+  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
+  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
+  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
+  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
+  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
+  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
+  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
+  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  batteryRegulationOrigin?: any; 
+  productDetailsOrigin?: any;
+  productDetails?: Partial<DigitalProductPassport['productDetails']>;
+  compliance?: Partial<DigitalProductPassport['compliance']>;
+  metadata?: Partial<DigitalProductPassport['metadata']>;
+}>;
+

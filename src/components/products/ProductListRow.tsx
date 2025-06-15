@@ -119,3 +119,4 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
     </TableRow>
   );
 }
+

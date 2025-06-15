@@ -167,7 +167,7 @@ export async function handleSuggestKeyCompliancePointsAI(
   if (compliance?.battery_regulation?.status && compliance.battery_regulation.status !== 'not_applicable') {
     applicableRegs.push("EU Battery Regulation");
   }
-  if (compliance?.eu_espr?.status && compliance.eu_espr.status !== 'not_applicable') {
+  if (compliance?.esprConformity?.status && compliance.esprConformity.status !== 'not_applicable') { // Check against esprConformity
     applicableRegs.push("EU ESPR");
   }
   if (compliance?.scipNotification?.status && compliance.scipNotification.status !== 'N/A' && compliance.scipNotification.status !== 'Not Required') {

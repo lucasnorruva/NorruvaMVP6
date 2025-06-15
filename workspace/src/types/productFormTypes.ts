@@ -170,12 +170,17 @@ export const formSchema = z.object({
   onChainStatus: z.string().optional(), 
   onChainLifecycleStage: z.string().optional(), 
 
+  // AI Origin tracking fields are directly on ProductFormData, not nested in productDetails for top-level fields
   productNameOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  manufacturerOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  modelNumberOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+  
+  // AI Origin tracking for fields within productDetails
   productDetailsOrigin: z.object({
     descriptionOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     materialsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     sustainabilityClaimsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-    keyCompliancePointsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
+    keyCompliancePointsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(), // Added this line
     specificationsOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     energyLabelOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     imageUrlOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
@@ -197,9 +202,10 @@ export const formSchema = z.object({
         vcIdOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
     }).optional(),
   }).optional(),
-  manufacturerOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  modelNumberOrigin: z.enum(['AI_EXTRACTED', 'manual']).optional(),
-  batteryRegulationOrigin: z.any().optional(), 
+  
+  // AI Origin tracking for fields within batteryRegulation
+  batteryRegulationOrigin: z.any().optional(), // Kept as any for simplicity, can be detailed if needed
 });
 
 export type ProductFormData = z.infer<typeof formSchema>;
+

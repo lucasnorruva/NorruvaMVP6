@@ -122,7 +122,6 @@ export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulat
   lastUpdated: string;
   productCategory?: string;
   keySustainabilityPoints?: string[]; 
-  keyCompliancePointsOrigin?: AiOrigin;
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary; 
@@ -616,7 +615,6 @@ export default function AddNewProductPage() {
           scip: formDataFromForm.compliance?.scipNotification ? {
             status: formDataFromForm.compliance.scipNotification.status || 'N/A',
             notificationId: formDataFromForm.compliance.scipNotification.notificationId,
-            
             lastChecked: new Date().toISOString(),
           } : undefined,
           euCustomsData: formDataFromForm.compliance?.euCustomsData ? {
@@ -628,7 +626,6 @@ export default function AddNewProductPage() {
           battery: formDataFromForm.compliance?.battery_regulation ? { 
             status: formDataFromForm.compliance.battery_regulation.status || 'not_applicable',
             batteryChemistry: formDataFromForm.compliance.battery_regulation.batteryChemistry,
-            
           } : undefined,
         },
       };
@@ -664,29 +661,6 @@ export default function AddNewProductPage() {
       toast({ title: `Product ${action} Failed`, description: `Could not ${action} the product. ${e instanceof Error ? e.message : ''}`, variant: "destructive" });
     } finally {
       setIsSubmittingProduct(false);
-    }
-  };
-
-  const handleFetchCategoryComplianceSummary = async (category: string, focusedRegulations?: string) => {
-    if (!category) {
-      setCategoryComplianceSummary(null);
-      return;
-    }
-    setIsLoadingCategoryCompliance(true);
-    setCategoryComplianceSummary(null);
-    try {
-      const result = await generateComplianceSummaryForCategory({ productCategory: category, focusedRegulations });
-      setCategoryComplianceSummary(result.categoryComplianceSummary);
-      toast({
-        title: "Compliance Insights Loaded",
-        description: `AI insights for '${category}' category displayed.`,
-      });
-    } catch (err) {
-      const msg = err instanceof Error ? err.message : "Failed to fetch compliance insights.";
-      toast({ title: "Error Loading Insights", description: msg, variant: "destructive" });
-      setCategoryComplianceSummary("Could not load compliance insights at this time.");
-    } finally {
-      setIsLoadingCategoryCompliance(false);
     }
   };
 

@@ -5,7 +5,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import Link from "next/link";
-import { Cpu, Info, FileText, Layers3, Settings2, Activity } from "lucide-react";
+import { Cpu, Info, FileText, Layers3, Settings2, Activity, Link as LinkIcon, RefreshCcw, ShieldCheck } from "lucide-react";
 import DocsPageLayout from '@/components/developer/DocsPageLayout';
 
 export default function DigitalTwinGuidePage() {
@@ -36,27 +36,33 @@ export default function DigitalTwinGuidePage() {
         <CardHeader>
           <CardTitle className="flex items-center"><Layers3 className="mr-2 h-5 w-5 text-primary"/>Conceptual Integration with Norruva DPPs</CardTitle>
           <CardDescription>
-            The Norruva platform allows you to conceptually link a Digital Twin to a product's DPP.
+            The Norruva platform allows you to conceptually link a Digital Twin to a product's DPP. Key aspects include:
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <section>
-            <h4 className="font-semibold text-md mb-1">DPP Data Points:</h4>
-            <p className="text-sm text-muted-foreground">
-              The product form includes a "Digital Twin (Conceptual)" section where you can store:
-            </p>
-            <ul className="list-disc list-inside space-y-1 text-sm pl-4 mt-1">
-              <li><strong>Digital Twin URI:</strong> A link to the primary interface or data source of the Digital Twin.</li>
-              <li><strong>Sensor Data Endpoint:</strong> A conceptual API endpoint for fetching sensor data.</li>
-              <li><strong>Real-Time Status Description:</strong> A textual summary of the twin's current state.</li>
-              <li><strong>Predictive Maintenance Alerts:</strong> A list of current maintenance advisories from the twin.</li>
+            <h4 className="font-semibold text-md mb-1 flex items-center"><LinkIcon className="mr-1.5 h-4 w-4 text-accent"/>DPP as a Pointer & Data Hub:</h4>
+            <ul className="list-disc list-inside space-y-1 text-sm pl-4">
+              <li><strong>Digital Twin URI:</strong> The DPP stores a URI (`productDetails.digitalTwin.uri`) pointing to the Digital Twin instance.</li>
+              <li><strong>Sensor Data Endpoint:</strong> A conceptual API endpoint (`productDetails.digitalTwin.sensorDataEndpoint`) for authorized parties to fetch live/recent sensor data.</li>
+              <li><strong>Real-Time Status Summary:</strong> A descriptive field (`productDetails.digitalTwin.realTimeStatus`) in the DPP provides a summarized status from the twin.</li>
             </ul>
           </section>
            <section className="mt-3">
-            <h4 className="font-semibold text-md mb-1">API & Display:</h4>
-            <p className="text-sm text-muted-foreground">
-              This information is part of the <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productDetails.digitalTwin</code> object in the DPP data model retrieved via API. It's also displayed in a dedicated "Digital Twin" tab on the product detail page.
-            </p>
+            <h4 className="font-semibold text-md mb-1 flex items-center"><RefreshCcw className="mr-1.5 h-4 w-4 text-accent"/>Informing Lifecycle Management:</h4>
+            <ul className="list-disc list-inside space-y-1 text-sm pl-4">
+                <li>Digital Twin data (e.g., usage hours, stress cycles) can trigger or inform DPP lifecycle events like "Maintenance Required" or "EOL Recommended."</li>
+                <li>This enhances the accuracy of EOL predictions and supports circular economy processes.</li>
+                <li>The DPP can display predictive maintenance alerts (`productDetails.digitalTwin.predictiveMaintenanceAlerts`) derived from the twin.</li>
+            </ul>
+          </section>
+           <section className="mt-3">
+            <h4 className="font-semibold text-md mb-1 flex items-center"><ShieldCheck className="mr-1.5 h-4 w-4 text-accent"/>Digital Twins and Blockchain Integration (Conceptual):</h4>
+            <ul className="list-disc list-inside space-y-1 text-sm pl-4">
+                <li>Critical data points or state changes from the Digital Twin (e.g., major faults, completion of significant operational cycles) could be periodically hashed and anchored on a blockchain via the DPP system.</li>
+                <li>This creates a tamper-proof, verifiable audit trail of the product's operational history, enhancing trust.</li>
+                <li>This involves anchoring significant, verified snapshots or proofs, not all real-time twin data.</li>
+            </ul>
           </section>
           <p className="text-xs text-muted-foreground pt-2 border-t">
             Note: Currently, these fields are for informational and conceptual purposes. The platform does not yet perform live data ingestion or interaction with external Digital Twin systems.
@@ -70,12 +76,12 @@ export default function DigitalTwinGuidePage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            For a more in-depth discussion on the potential benefits, use cases (like predictive maintenance, lifecycle simulation), and architectural considerations for Digital Twins in DPPs, please refer to the:
+            For a more in-depth discussion on the potential benefits, use cases (like predictive maintenance, lifecycle simulation, enhanced circularity), and architectural considerations for Digital Twins in DPPs, including blockchain integration, please refer to the:
           </p>
           <p className="mt-2 font-medium">
             <code className="bg-muted px-1 py-0.5 rounded-sm">docs/digital-twin-concepts.md</code>
           </p>
-          <p className="text-xs text-muted-foreground">(This markdown file is located in the project's root <code className="bg-muted px-1 py-0.5 rounded-sm">/docs</code> directory.)</p>
+          <p className="text-xs text-muted-foreground">(This markdown file is located in the project's root <code className="bg-muted px-1 py-0.5 rounded-sm">/docs</code> directory and provides a fuller conceptual treatment.)</p>
         </CardContent>
       </Card>
       
@@ -85,10 +91,13 @@ export default function DigitalTwinGuidePage() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground">
-            Future development may include direct integrations with IoT platforms, standardized Digital Twin data exchange protocols, and AI-driven analytics based on live twin data to further enrich DPPs and enable advanced circular economy and product-as-a-service models.
+            Future development may include direct integrations with IoT platforms, standardized Digital Twin data exchange protocols (e.g., based on Asset Administration Shell - AAS), and AI-driven analytics based on live twin data to further enrich DPPs and enable advanced circular economy and product-as-a-service models.
           </p>
         </CardContent>
       </Card>
     </DocsPageLayout>
   );
 }
+
+
+    

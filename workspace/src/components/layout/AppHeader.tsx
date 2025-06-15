@@ -1,15 +1,15 @@
 
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react'; 
 import { useRouter } 
 from 'next/navigation';
 import { SidebarTrigger } from "@/components/ui/sidebar/Sidebar";
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input"; // Import Input
+import { Input } from "@/components/ui/input"; 
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
-import { Menu, UserCircle, LogOut, User, Settings as SettingsIcon, Bell, Briefcase, Search } from "lucide-react"; // Added Briefcase and Search
+import { Menu, UserCircle, LogOut, User, Settings as SettingsIcon, Bell, Briefcase, Search } from "lucide-react"; 
 import AppSidebarContent from "./AppSidebarContent";
 import { Logo } from "@/components/icons/Logo";
 import { useRole, type UserRole } from '@/contexts/RoleContext'; 
@@ -33,7 +33,7 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast"; 
-import { Label } from "@/components/ui/label"; // Added Label for mobile role switcher
+import { Label } from "@/components/ui/label"; 
 
 interface AppNotification {
   id: string;
@@ -73,6 +73,10 @@ const generateMockNotifications = (role: UserRole): AppNotification[] => {
     service_provider: [
         { id: `serv_job_${now}`, title: "New Service Job Assigned", description: "Repair required for product PROD-XYZ in Berlin.", time: "5m ago" },
     ],
+    business_analyst: [
+        { id: `ba_report_${now}`, title: "Monthly Insights Report Ready", description: "Your DPP analytics report for July is available.", time: "1h ago"},
+        { id: `ba_trend_${now+1}`, title: "Trend Alert: Compliance Rate Up", description: "Platform-wide compliance rate increased by 2% this week.", time: "6h ago"},
+    ]
   };
 
   return [...(roleSpecificMessages[role] || []), ...baseNotifications.slice(0, 2)];
@@ -138,7 +142,6 @@ export default function AppHeader() {
         )}
       </div>
       
-      {/* Global Search Bar */}
       <div className="flex-1 flex justify-center px-2 sm:px-4">
         <form onSubmit={handleGlobalSearchSubmit} className="w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg relative">
           <Input
@@ -220,10 +223,10 @@ export default function AppHeader() {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>My Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <div className="px-2 py-1.5 lg:hidden"> {/* Role switcher for smaller screens */}
+            <div className="px-2 py-1.5 lg:hidden"> 
               <Label htmlFor="role-switcher-mobile" className="text-xs text-muted-foreground mb-1 block">Current Role</Label>
               <Select value={currentRole} onValueChange={(value) => setCurrentRole(value as UserRole)}>
-                <SelectTrigger id="role-switcher-mobile" className="w-full h-9 text-xs focus:ring-primary">
+                <SelectTrigger id="role-switcher-mobile" className="w-full h-9 text-xs focus:ring-primary" data-testid="app-header-role-select-trigger-mobile">
                   <SelectValue placeholder="Select Role" />
                 </SelectTrigger>
                 <SelectContent>
@@ -235,7 +238,7 @@ export default function AppHeader() {
                 </SelectContent>
               </Select>
             </div>
-            <DropdownMenuSeparator className="lg:hidden"/> {/* Separator only for mobile dropdown */}
+            <DropdownMenuSeparator className="lg:hidden"/> 
             <DropdownMenuItem onClick={() => alert("Mock: View Profile clicked")}>
               <User className="mr-2 h-4 w-4" />
               <span>Profile</span>

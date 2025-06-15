@@ -6,6 +6,7 @@ Welcome to the Norruva Digital Product Passport (DPP) concept application! This 
 ## Table of Contents
 
 - [Project Overview](#project-overview)
+- [Core System Framework & Compliance](#core-system-framework--compliance)
 - [Tech Stack](#tech-stack)
 - [Core Features (Conceptual)](#core-features-conceptual)
 - [Current Implemented Features](#current-implemented-features)
@@ -17,6 +18,7 @@ Welcome to the Norruva Digital Product Passport (DPP) concept application! This 
   - [Prerequisites](#prerequisites)
   - [Installation](#installation)
   - [Running the Development Server](#running-the-development-server)
+  - [Installing as a PWA](#installing-as-a-pwa)
 - [Running Tests](#running-tests)
   - [Authentication](#authentication)
   - [Troubleshooting](#troubleshooting)
@@ -34,6 +36,10 @@ The Norruva DPP platform aims to provide a comprehensive solution for:
 
 This application serves as a prototype to demonstrate these capabilities.
 
+## Core System Framework & Compliance
+
+The overall design, features, and compliance approach for the Norruva DPP system are detailed in the [Comprehensive Digital Product Passport (DPP) Compliance Framework](docs/comprehensive-dpp-compliance-framework.md). This document covers a wide array of requirements including regulatory compliance, sustainability goals, lifecycle tracking, data integration strategies, and the incorporation of emerging technologies like AI, Blockchain, and IoT.
+
 ## Tech Stack
 
 - **Framework:** Next.js (App Router)
@@ -45,14 +51,18 @@ This application serves as a prototype to demonstrate these capabilities.
 
 ## Core Features (Conceptual)
 
-The platform is designed around the following core feature pillars:
+The platform is designed around the following core feature pillars (refer to the comprehensive framework for full details):
 
-- **Secure Product Data Storage:** Scalable and compliant data management.
-- **EBSI Blockchain Integration:** For transparent lifecycle tracking (conceptual).
-- **AI-Powered Data Extraction:** Automating data entry from supplier documents.
-- **GDPR Compliance Management:** Granular consent and data subject rights.
-- **EPREL Database Connectivity:** Automating energy label generation (conceptual).
-- **CSRD Reporting:** Supporting sustainability reporting.
+- **Regulatory Compliance**: Adherence to ESPR, REACH, RoHS, Battery Regulation, GDPR, etc.
+- **Sustainability & Circular Economy**: Carbon footprint tracking, circularity metrics, end-of-life management.
+- **Product Lifecycle Tracking & Data Integration**: Real-time IoT data, AI-powered analytics, smart contracts.
+- **Blockchain & Digital Twin Integration**: Immutable records, provenance, real-time monitoring.
+- **AI & Machine Learning Integration**: Design optimization, performance insights.
+- **Consumer & Business Interaction**: User-friendly interfaces, engagement platforms.
+- **Emerging Technologies**: Quantum-readiness, smart packaging, smart city integration.
+- **Ethical Sourcing & Fair Trade**: Supply chain transparency.
+- **Decentralized Governance**: Conceptual DAO integration.
+- **Global Trade Compliance**: Cross-border taxation and regulations.
 
 ## Current Implemented Features
 
@@ -61,9 +71,9 @@ As of the current version, the following key areas and features have been protot
 - **Role-Based Dashboard:** Different views and actions based on user roles (Admin, Manufacturer, Supplier, Retailer, Recycler, Verifier, Service Provider).
 - **DPP Live Dashboard:** A view for public-facing DPPs, with filtering and AI summary generation.
 - **Product Management:**
-    - Listing existing products.
-    - Adding new products via manual entry or AI-assisted document extraction.
-    - Viewing detailed product information on the individual product detail page.
+    - Listing existing products with advanced filtering and sorting.
+    - Adding new products via manual entry or AI-assisted document extraction, including category-specific fields (Textiles, Construction) and on-chain state management.
+    - Viewing detailed product information on the individual product detail page, including a new "History" tab.
     - Debounced search filtering for smoother performance on large datasets.
 - **AI Compliance Co-Pilot:** An AI assistant to answer questions about EU DPP regulations.
 - **Compliance Pathways:** Step-by-step guidance for specific regulations (e.g., EU Battery Regulation, ESPR, CSRD, SCIP).
@@ -73,7 +83,7 @@ As of the current version, the following key areas and features have been protot
 - **Service Provider Dashboard:** A conceptual dashboard for service technicians to manage service jobs and access product technical data.
 - **Supply Chain Management:**
     - Managing a list of suppliers.
-    - Linking suppliers to products (viewable on the product detail page's "Supply Chain" tab).
+    - Linking suppliers to products (viewable on the product detail page's "Supply Chain" tab), with conceptual private attestation viewing.
 - **Developer Portal:** Mock portal with API key management, interactive playground, and conceptual documentation. The canonical OpenAPI specification lives in `openapi.yaml` and is served at `/openapi.yaml` after being copied to `public/openapi.yaml` during the build process.
 - **Settings Page:** Basic user profile, notifications, and organization settings.
 
@@ -85,7 +95,7 @@ profiling should be done with realistic datasets.
 
 ## Product Detail Page
 
-The individual **Product Detail Page** (accessed via `/products/[productId]`) has been refactored and is now fully functional. It provides a comprehensive tabbed view of product information, including overview, sustainability, compliance, lifecycle, and supply chain details.
+The individual **Product Detail Page** (accessed via `/products/[productId]`) has been refactored and is now significantly more comprehensive. It provides an enhanced tabbed view of product information, including a detailed overview with consolidated identifiers and blockchain state, sustainability metrics, full compliance status, product history, certifications, lifecycle events, and supply chain details. It also supports category-specific information for textiles and construction products.
 
 Links from other parts of the application, such as the "Products" listing page (`/products`) and the "DPP Live Dashboard" (`/dpp-live-dashboard`), that lead to this internal detail view are active and direct users to the relevant product's detailed information. The "Products" listing page (`/products`) and the "Add New Product" page (`/products/new`) are also fully functional for managing the product list and creating/editing entries.
 
@@ -232,18 +242,20 @@ If the job ID is unknown a 404 error is returned:
     ```bash
     npm run dev
     ```
-This will start the Next.js application, usually on `http://localhost:9002` (as configured in `package.json`).
+This will start the Next.js application, usually on `http://localhost:3000` (Next.js default).
 
-Open `http://localhost:9002` in your browser to view the application.
+Open `http://localhost:3000` in your browser to view the application.
 
 ### Installing as a PWA
 
-The application includes a service worker and web app manifest. When running in
-development (`npm run dev`) or production, you can install it like a native app:
+The application includes a service worker and web app manifest, enabling it to be installed like a native app.
 
-1. Open the site in Chrome or another PWA-compatible browser.
-2. Click the browser's **Install** icon or choose **Add to Home Screen**.
-3. Launch the app from your home screen to use it in standalone mode.
+1.  Open the site in a PWA-compatible browser (e.g., Chrome, Edge).
+2.  Look for an "Install" icon in the address bar or find the "Add to Home Screen" option in the browser menu.
+3.  Follow the prompts to install.
+4.  Launch the app from your home screen/app drawer to use it in standalone mode.
+
+**PWA Cache Note:** If you encounter issues after an update, try clearing your browser's cache and unregistering/re-registering the service worker. This can often be done through browser developer tools (Application -> Service Workers -> Unregister, then refresh).
 
 ### Running Tests
 
@@ -265,7 +277,7 @@ Use `npm run test:watch` during development to re-run tests on file changes.
 All `/api/v1/*` endpoints expect an API key using the `Authorization` header with the `Bearer` scheme. Example:
 
 ```bash
-curl -H 'Authorization: Bearer SANDBOX_KEY_123' http://localhost:9002/api/v1/dpp
+curl -H 'Authorization: Bearer SANDBOX_KEY_123' http://localhost:3000/api/v1/dpp
 ```
 
 Valid keys are configured via the `VALID_API_KEYS` environment variable. This should be a comma-separated list of keys. The values are loaded at runtime by `src/config/auth.ts` as the `API_KEYS` array. The `.env.example` file defines two sample keys:
@@ -276,14 +288,16 @@ VALID_API_KEYS=SANDBOX_KEY_123,PROD_KEY_456
 
 ### Troubleshooting
 
+**EADDRINUSE Error (e.g., port 3000 or 9002 already in use):**
+This means another application (or a previous instance of this app) is already using the port Next.js is trying to start on.
+- Identify and stop the process using the port. On Linux/macOS, you can use `lsof -i :<port_number>` to find the process ID (PID) and then `kill <PID>`.
+- If the error log shows duplicated `--port` arguments in the executed `npm run dev` command (e.g., `... --port 9002 --port 9002 ...`), this might be an issue with how your cloud IDE environment is invoking the script. Ensure your `package.json` `dev` script is simple (`npx next dev --turbopack`).
+
 **401: The Workstation does not exist or your currently signed in account does not have access to it**
-
 This error may appear when using the "View Public Passport" link in a Cloud Workstations environment. Verify that:
-
-1. The workstation `firebase-studio-1749131649534` (cluster `workstation-cluster-9`) exists and is running in project `510861787045`.
+1. The specified workstation exists and is running in your Google Cloud project.
 2. Your Google account has the `workstations.workstations.use` IAM permission (e.g., via the *Workstations User* role) on that workstation.
-
-Without this permission Google Cloud cannot generate the access token required to open the application.
+Without this permission, Google Cloud cannot generate the access token required to open the application.
 
 ## Key Directory Structure
 
@@ -298,10 +312,11 @@ Without this permission Google Cloud cannot generate the access token required t
 - `src/contexts/`: React context providers.
 - `src/types/`: TypeScript type definitions.
 - `openapi.yaml`: Canonical API specification. The build process copies this file to `public/openapi.yaml` so it is served at `/openapi.yaml`.
+- `docs/`: Contains high-level design and architecture documents, including the [Comprehensive DPP Compliance Framework](docs/comprehensive-dpp-compliance-framework.md).
 
 ## Advanced Blockchain Architecture
 
-Detailed smart contract design and DAO governance specifications are documented in `workspace/docs/blockchain-architecture.md`.
+While the [Comprehensive DPP Compliance Framework](docs/comprehensive-dpp-compliance-framework.md) covers broader system design, specific smart contract design and DAO governance specifications are documented in `workspace/docs/blockchain-architecture.md`.
 The smart contract code itself resides in `workspace/contracts/`.
 
 ## Smart Contract Development
@@ -398,3 +413,5 @@ This application is being developed within the Firebase Studio environment, an A
 ---
 
 This README will be updated as the project evolves.
+    
+

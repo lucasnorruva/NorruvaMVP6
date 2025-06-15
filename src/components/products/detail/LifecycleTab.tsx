@@ -4,15 +4,16 @@
 "use client";
 
 import type { SimpleProductDetail, SimpleLifecycleEvent } from "@/types/dpp";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from '@/components/ui/badge';
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import * as LucideIcons from "lucide-react"; // Import all icons
-import React, { useState, useRef } from "react"; // Import useState
+import * as LucideIcons from "lucide-react"; 
+import React, { useState, useRef } from "react"; 
 import { useToast } from "@/hooks/use-toast";
 import { checkProductCompliance } from "@/ai/flows/check-product-compliance-flow";
-import { Loader2 } from "lucide-react";
+import { suggestMaintenanceSchedule, type MaintenanceSuggestion } from "@/ai/flows/suggest-maintenance-schedule"; // Import AI flow
+import { Loader2, AlertTriangle as AlertTriangleIcon, Bot, Wrench } from "lucide-react"; // Renamed AlertTriangle to AlertTriangleIcon
 import {
   DppLifecycleStateMachine,
   DppLifecycleState,
@@ -55,7 +56,7 @@ const getIconComponent = (iconName?: keyof typeof LucideIcons): React.ElementTyp
   if (iconName && LucideIcons[iconName]) {
     return LucideIcons[iconName];
   }
-  return LucideIcons.Circle; // Default icon
+  return LucideIcons.Circle; 
 };
 
 export default function LifecycleTab({ product }: LifecycleTabProps) {
@@ -65,6 +66,11 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
     new DppLifecycleStateMachine(DppLifecycleState.DESIGN)
   );
 
+  const [maintenanceSuggestion, setMaintenanceSuggestion] = useState<MaintenanceSuggestion | null>(null);
+  const [isLoadingMaintenance, setIsLoadingMaintenance] = useState(false);
+  const [maintenanceError, setMaintenanceError] = useState<string | null>(null);
+
+
   const handleAdvanceStage = async (targetEvent: SimpleLifecycleEvent, currentIndex: number) => {
     if (!product.lifecycleEvents) return;
 
@@ -72,7 +78,6 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
     
     let currentLifecycleStageName = "Initial Product Phase"; 
     if (currentIndex > 0) {
-        // Find the most recent completed or in-progress event before the current one
         let foundPreviousStage = false;
         for (let i = currentIndex - 1; i >= 0; i--) {
             if (product.lifecycleEvents[i].status === 'Completed' || product.lifecycleEvents[i].status === 'In Progress') {
@@ -81,12 +86,10 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
                 break;
             }
         }
-        // If no such prior event, use the name of the immediately preceding event, or a default
         if (!foundPreviousStage) {
            currentLifecycleStageName = product.lifecycleEvents[currentIndex - 1]?.eventName || "Pre-Production / Design";
         }
     } else if (currentIndex === 0 && (targetEvent.status === 'Upcoming' || targetEvent.status === 'In Progress')) {
-        // If it's the first event and it's being advanced (e.g., from design to manufacturing)
         currentLifecycleStageName = "Pre-Production / Design";
     }
 
@@ -99,18 +102,12 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
         newLifecycleStageName: targetEvent.eventName,
       });
 
-      // Advance the local lifecycle state using the state machine
       const machine = lifecycleMachineRef.current;
       const nextStates = ALLOWED_TRANSITIONS[machine.getCurrentState()];
       if (nextStates.length > 0) {
         try {
           machine.transition(nextStates[0]);
-          // eslint-disable-next-line no-console
-          if (process.env.NODE_ENV !== 'production') {
-            console.log('Lifecycle advanced to', machine.getCurrentState());
-          }
         } catch (err) {
-          // eslint-disable-next-line no-console
           console.error('Lifecycle transition failed:', err);
         }
       }
@@ -142,95 +139,175 @@ export default function LifecycleTab({ product }: LifecycleTabProps) {
     }
   };
 
+  const handleGetMaintenanceSuggestions = async () => {
+    setIsLoadingMaintenance(true);
+    setMaintenanceSuggestion(null);
+    setMaintenanceError(null);
 
-  if (!product.lifecycleEvents || product.lifecycleEvents.length === 0) {
-    return (
+    let ageInfo = "Age unknown";
+    let referenceDateStr = product.lastUpdated; 
+    const creationEvent = product.lifecycleEvents?.find(e => e.eventName.toLowerCase().includes("manufactured") || e.eventName.toLowerCase().includes("created"));
+    const soldEvent = product.lifecycleEvents?.find(e => e.eventName.toLowerCase().includes("sold") || e.eventName.toLowerCase().includes("purchase"));
+
+    if (creationEvent?.date) referenceDateStr = creationEvent.date;
+    else if (soldEvent?.date) referenceDateStr = soldEvent.date;
+
+    if (referenceDateStr) {
+        const refDate = new Date(referenceDateStr);
+        const now = new Date();
+        const diffTime = Math.abs(now.getTime() - refDate.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        if (diffDays < 30) ageInfo = `${diffDays} days old`;
+        else if (diffDays < 365) ageInfo = `${Math.round(diffDays / 30)} months old`;
+        else ageInfo = `${Math.round(diffDays / 365)} years old`;
+    }
+    const usageData = `Product Usage Context: Moderate typical usage. Approximately ${ageInfo}. Last known service: Not specified in DPP events.`;
+
+    try {
+        const suggestion = await suggestMaintenanceSchedule({
+            productId: product.id,
+            productName: product.productName,
+            productCategory: product.category,
+            usageData: usageData,
+        });
+        setMaintenanceSuggestion(suggestion);
+        toast({
+            title: "AI Maintenance Suggestions Received",
+            description: "Review the suggestions below.",
+        });
+    } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "An unknown error occurred.";
+        setMaintenanceError(errorMessage);
+        toast({
+            variant: "destructive",
+            title: "Error Getting Maintenance Suggestions",
+            description: errorMessage,
+        });
+    } finally {
+        setIsLoadingMaintenance(false);
+    }
+  };
+
+
+  return (
+    <div className="space-y-6">
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center">
-            <LucideIcons.History className="mr-2 h-5 w-5 text-primary" /> Product Lifecycle
+            <LucideIcons.History className="mr-2 h-5 w-5 text-primary" /> Product Lifecycle Journey
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-muted-foreground">No lifecycle events recorded for this product.</p>
+          {(!product.lifecycleEvents || product.lifecycleEvents.length === 0) ? (
+            <p className="text-muted-foreground">No lifecycle events recorded for this product.</p>
+          ) : (
+            <div className="relative pl-6 space-y-6">
+              <div className="absolute left-[calc(0.75rem-1px)] top-2 bottom-2 w-0.5 bg-border rounded-full -translate-x-1/2"></div>
+              {product.lifecycleEvents.map((event, index) => {
+                const IconComponent = getIconComponent(event.iconName);
+                const canAdvance = (event.status === 'Upcoming' || event.status === 'In Progress');
+                
+                return (
+                  <div key={event.id} className="relative flex items-start">
+                    <div className="absolute left-0 top-1 flex items-center justify-center w-6 h-6 bg-card border-2 border-primary rounded-full -translate-x-1/2 z-10">
+                      <IconComponent className="h-3 w-3 text-primary" />
+                    </div>
+                    <div className={cn(
+                      "ml-8 w-full p-4 border rounded-lg shadow-sm bg-background hover:shadow-md transition-shadow"
+                    )}>
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1.5">
+                        <h4 className="font-semibold text-md text-foreground">{event.eventName}</h4>
+                        <Badge 
+                          variant={getStatusBadgeVariant(event.status)} 
+                          className={cn("text-xs capitalize mt-1 sm:mt-0", getStatusBadgeClasses(event.status))}
+                        >
+                          {event.status}
+                        </Badge>
+                      </div>
+                      <div className="text-xs text-muted-foreground mb-2 flex flex-wrap gap-x-3 gap-y-1">
+                        <span className="flex items-center">
+                          <LucideIcons.CalendarDays className="h-3.5 w-3.5 mr-1 text-muted-foreground/80" />
+                          {new Date(event.date).toLocaleDateString()}
+                        </span>
+                        {event.location && (
+                          <span className="flex items-center">
+                            <LucideIcons.MapPin className="h-3.5 w-3.5 mr-1 text-muted-foreground/80" />
+                            {event.location}
+                          </span>
+                        )}
+                      </div>
+                      {event.notes && <p className="text-sm text-foreground/80 mb-3">{event.notes}</p>}
+                      {canAdvance && (
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="mt-2 text-xs"
+                          onClick={() => handleAdvanceStage(event, index)}
+                          disabled={isLoadingComplianceCheck === event.id}
+                        >
+                          {isLoadingComplianceCheck === event.id ? (
+                            <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
+                          ) : (
+                            <LucideIcons.ChevronsRight className="mr-1.5 h-3.5 w-3.5 text-primary" />
+                          )}
+                          {isLoadingComplianceCheck === event.id ? "Simulating..." : "Simulate Advance & Compliance"}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </CardContent>
       </Card>
-    );
-  }
 
-  return (
-    <Card className="shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold flex items-center">
-          <LucideIcons.History className="mr-2 h-5 w-5 text-primary" /> Product Lifecycle Journey
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="relative pl-6 space-y-6">
-          {/* Vertical line */}
-          <div className="absolute left-[calc(0.75rem-1px)] top-2 bottom-2 w-0.5 bg-border rounded-full -translate-x-1/2"></div>
-
-          {product.lifecycleEvents.map((event, index) => {
-            const IconComponent = getIconComponent(event.iconName);
-            const canAdvance = (event.status === 'Upcoming' || event.status === 'In Progress');
-            
-            return (
-              <div key={event.id} className="relative flex items-start">
-                {/* Icon badge on the line */}
-                <div className="absolute left-0 top-1 flex items-center justify-center w-6 h-6 bg-card border-2 border-primary rounded-full -translate-x-1/2 z-10">
-                  <IconComponent className="h-3 w-3 text-primary" />
-                </div>
-                
-                {/* Event Card */}
-                <div className={cn(
-                  "ml-8 w-full p-4 border rounded-lg shadow-sm bg-background hover:shadow-md transition-shadow"
-                )}>
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-1.5">
-                    <h4 className="font-semibold text-md text-foreground">{event.eventName}</h4>
-                    <Badge 
-                      variant={getStatusBadgeVariant(event.status)} 
-                      className={cn("text-xs capitalize mt-1 sm:mt-0", getStatusBadgeClasses(event.status))}
-                    >
-                      {event.status}
-                    </Badge>
-                  </div>
-                  <div className="text-xs text-muted-foreground mb-2 flex flex-wrap gap-x-3 gap-y-1">
-                    <span className="flex items-center">
-                      <LucideIcons.CalendarDays className="h-3.5 w-3.5 mr-1 text-muted-foreground/80" />
-                      {new Date(event.date).toLocaleDateString()}
-                    </span>
-                    {event.location && (
-                      <span className="flex items-center">
-                        <LucideIcons.MapPin className="h-3.5 w-3.5 mr-1 text-muted-foreground/80" />
-                        {event.location}
-                      </span>
-                    )}
-                  </div>
-                  {event.notes && <p className="text-sm text-foreground/80 mb-3">{event.notes}</p>}
-
-                  {canAdvance && (
-                    <Button 
-                      size="sm" 
-                      variant="outline" 
-                      className="mt-2 text-xs"
-                      onClick={() => handleAdvanceStage(event, index)}
-                      disabled={isLoadingComplianceCheck === event.id}
-                    >
-                      {isLoadingComplianceCheck === event.id ? (
-                        <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />
-                      ) : (
-                        <LucideIcons.ChevronsRight className="mr-1.5 h-3.5 w-3.5 text-primary" />
-                      )}
-                      {isLoadingComplianceCheck === event.id ? "Simulating..." : "Simulate Advance & Compliance"}
-                    </Button>
-                  )}
-                </div>
+      <Card className="shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold flex items-center">
+            <Bot className="mr-2 h-5 w-5 text-primary" /> AI Predictive Maintenance Advisor
+          </CardTitle>
+          <CardDescription>Get AI-powered suggestions for product maintenance.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <Button onClick={handleGetMaintenanceSuggestions} disabled={isLoadingMaintenance}>
+            {isLoadingMaintenance ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wrench className="mr-2 h-4 w-4" />}
+            {isLoadingMaintenance ? "Getting Suggestions..." : "Get AI Maintenance Suggestions"}
+          </Button>
+          {isLoadingMaintenance && (
+            <div className="flex items-center text-sm text-muted-foreground">
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Fetching maintenance advice...
+            </div>
+          )}
+          {maintenanceError && (
+             <div className="text-sm text-destructive p-3 bg-destructive/10 border border-destructive/30 rounded-md flex items-center">
+                <AlertTriangleIcon className="h-5 w-5 mr-2"/> {maintenanceError}
+            </div>
+          )}
+          {maintenanceSuggestion && !isLoadingMaintenance && (
+            <div className="p-4 border rounded-lg bg-muted/30 space-y-3">
+              <div>
+                <h5 className="font-semibold text-primary">Next Recommended Checkup:</h5>
+                <p className="text-sm text-foreground">{maintenanceSuggestion.nextCheckupDate}</p>
               </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+              <div>
+                <h5 className="font-semibold text-primary">Suggested Actions:</h5>
+                <ul className="list-disc list-inside text-sm text-foreground space-y-1 pl-4">
+                  {maintenanceSuggestion.suggestedActions.map((action, idx) => (
+                    <li key={idx}>{action}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <h5 className="font-semibold text-primary">Reasoning:</h5>
+                <p className="text-sm text-foreground italic">{maintenanceSuggestion.reasoning}</p>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 

@@ -1,0 +1,4 @@
+// This file is intentionally blank.
+// The functionality of this route is more conceptually covered by the /api/v1/dpp/transfer-ownership/[productId] endpoint.
+// This file can be deleted if it's no longer referenced, or kept blank to avoid 404s if some old client might still hit it.
+// For now, we'll keep it blank to fulfill the "delete or make blank" instruction.

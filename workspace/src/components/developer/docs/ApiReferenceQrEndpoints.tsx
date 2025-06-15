@@ -1,7 +1,7 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { FileJson } from "lucide-react";
+import { FileJson, Server } from "lucide-react";
 
 interface ApiReferenceQrEndpointsProps {
   exampleQrValidationResponse: string;
@@ -20,7 +20,10 @@ export default function ApiReferenceQrEndpoints({
 }: ApiReferenceQrEndpointsProps) {
 
   return (
-    <>
+    <section id="qr-endpoints">
+      <h2 className="text-2xl font-semibold font-headline mt-8 mb-4 flex items-center">
+        <Server className="mr-3 h-6 w-6 text-primary" /> QR Code & Validation Endpoints
+      </h2>
       <Card className="shadow-lg mt-6">
         <CardHeader>
           <CardTitle className="text-lg">Validate QR Code & Retrieve DPP Summary</CardTitle>
@@ -48,10 +51,10 @@ export default function ApiReferenceQrEndpoints({
           </section>
           <section>
             <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
-            <p className="text-sm mb-1">Returns a JSON object containing a summary of the product passport, including verification statuses and relevant URLs.</p>
+            <p className="text-sm mb-1">Returns a product summary, its public DPP URL, verification status, and key compliance details.</p>
             <details className="border rounded-md">
               <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
-                <FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Response
+                <FileJson className="inline h-4 w-4 mr-1 align-middle" />Click to view example JSON response
               </summary>
               <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
                 <code>{exampleQrValidationResponse}</code>
@@ -62,7 +65,7 @@ export default function ApiReferenceQrEndpoints({
             <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
             <ul className="list-disc list-inside text-sm space-y-2">
               <li>
-                <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Invalid request body. 'qrIdentifier' is required.
+                <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Invalid request body or missing <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">qrIdentifier</code>.
                 <details className="border rounded-md mt-1">
                   <summary className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
                   <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error400_qr}</code></pre>
@@ -93,8 +96,6 @@ export default function ApiReferenceQrEndpoints({
           </section>
         </CardContent>
       </Card>
-    </>
+    </section>
   );
 }
-
-    

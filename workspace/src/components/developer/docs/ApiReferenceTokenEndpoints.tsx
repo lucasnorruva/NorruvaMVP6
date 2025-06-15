@@ -26,17 +26,21 @@ export default function ApiReferenceTokenEndpoints({
 }: ApiReferenceTokenEndpointsProps) {
 
   return (
-    <>
+    <section id="token-endpoints">
+      <h2 className="text-2xl font-semibold font-headline mt-8 mb-4 flex items-center">
+        <Server className="mr-3 h-6 w-6 text-primary" /> DPP Token Endpoints
+      </h2>
+
       <Card className="shadow-lg mt-6">
         <CardHeader>
           <CardTitle className="text-lg">Mint DPP Token</CardTitle>
           <CardDescription>
             <span className="inline-flex items-center font-mono text-sm">
               <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
-              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/token/mint/&#123;productId&#125;</code>
+              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/token/mint/{{productId}}</code>
             </span>
             <br />
-            Mints a blockchain token representing the specified Digital Product Passport.
+            Mints a blockchain token representing the specified product passport.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -44,7 +48,7 @@ export default function ApiReferenceTokenEndpoints({
             <h4 className="font-semibold mb-1">Parameters</h4>
             <ul className="list-disc list-inside text-sm space-y-1">
               <li>
-                <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">&#123;productId&#125;</code> (path, required): The unique identifier of the product.
+                <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">{{productId}}</code> (path, required): The unique identifier of the product.
               </li>
             </ul>
           </section>
@@ -107,10 +111,10 @@ export default function ApiReferenceTokenEndpoints({
           <CardDescription>
             <span className="inline-flex items-center font-mono text-sm">
               <Badge variant="outline" className="bg-yellow-100 text-yellow-700 border-yellow-300 mr-2 font-semibold">PATCH</Badge>
-              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/token/metadata/&#123;tokenId&#125;</code>
+              <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/token/metadata/{{tokenId}}</code>
             </span>
             <br />
-            Updates on-chain metadata URI for a minted DPP token.
+            Updates the metadata URI stored on chain for a token.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -118,7 +122,7 @@ export default function ApiReferenceTokenEndpoints({
             <h4 className="font-semibold mb-1">Parameters</h4>
             <ul className="list-disc list-inside text-sm space-y-1">
               <li>
-                <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">&#123;tokenId&#125;</code> (path, required): The blockchain token ID.
+                <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">{{tokenId}}</code> (path, required): The blockchain token ID.
               </li>
             </ul>
           </section>
@@ -177,7 +181,7 @@ export default function ApiReferenceTokenEndpoints({
 
       <Card className="shadow-lg mt-6">
         <CardHeader>
-          <CardTitle className="text-lg">Retrieve Token On-Chain Status</CardTitle>
+          <CardTitle className="text-lg">Get Token On-Chain Status</CardTitle>
           <CardDescription>
             <span className="inline-flex items-center font-mono text-sm">
               <Badge variant="outline" className="bg-sky-100 text-sky-700 border-sky-300 mr-2 font-semibold">GET</Badge>
@@ -236,8 +240,6 @@ export default function ApiReferenceTokenEndpoints({
           </section>
         </CardContent>
       </Card>
-    </>
+    </section>
   );
 }
-
-    

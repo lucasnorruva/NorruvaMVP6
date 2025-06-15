@@ -10,3 +10,6 @@ export { default as ApiReferencePrivateLayerEndpoints } from './ApiReferencePriv
 export { default as ApiReferenceZkpLayerEndpoints } from './ApiReferenceZkpLayerEndpoints'; 
 export { default as BatchUpdateDpps } from './BatchUpdateDpps'; 
 export { default as ExportDpps } from './ExportDpps'; 
+// Ensure all components used in ApiReferenceDppEndpoints are exported here,
+// including the new on-chain operation components if they are separate files.
+// If they are defined within ApiReferenceDppEndpoints.tsx itself, no separate export is needed.

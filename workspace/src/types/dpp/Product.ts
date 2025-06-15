@@ -4,7 +4,7 @@
 import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle';
 import type {
   Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification,
-  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, EsprSpecifics, CarbonFootprintData
+  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, EsprSpecifics, CarbonFootprintData, DigitalTwinData
 } from './Compliance'; 
 
 export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
@@ -59,13 +59,6 @@ export interface OwnershipNftLink {
   contractAddress: string;
   tokenId: string;
   chainName?: string;
-}
-
-export interface DigitalTwinData { // Conceptual Data for Digital Twin
-  uri?: string; 
-  sensorDataEndpoint?: string; 
-  realTimeStatus?: string; 
-  predictiveMaintenanceAlerts?: string; 
 }
 
 export interface DigitalProductPassport {
@@ -224,6 +217,7 @@ export interface SimpleProductDetail {
     esprSpecifics?: EsprSpecifics;
     carbonFootprint?: CarbonFootprintData; 
     digitalTwin?: DigitalTwinData; 
+    // These were duplicated, keep them in ProductDetails for consistency
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -534,19 +528,14 @@ export interface TokenStatusResponse {
   message?: string;
 }
 
+// Simplified for ProductForm, actual form types are in productFormTypes.ts
+// This InitialProductFormData now directly includes productDetails and its origins
 export type InitialProductFormData = Omit<ProductFormData, 'productDetailsOrigin' | 'batteryRegulationOrigin'> & {
   productNameOrigin?: 'AI_EXTRACTED' | 'manual';
-  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
   manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
   modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
-  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
-  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
-  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
-  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
-  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  batteryRegulationOrigin?: any; 
-  productDetailsOrigin?: {
+  // Origin tracking is nested within productDetailsOrigin
+  productDetailsOrigin?: { 
     descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
     materialsOrigin?: 'AI_EXTRACTED' | 'manual';
     sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
@@ -578,5 +567,8 @@ export type InitialProductFormData = Omit<ProductFormData, 'productDetailsOrigin
         predictiveMaintenanceAlertsOrigin?: 'AI_EXTRACTED' | 'manual';
     };
   };
+  batteryRegulationOrigin?: any; // Simplified for now, can be detailed later
   blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
 };
+
+

@@ -1,4 +1,3 @@
-
 // --- File: aiFormHelpers.tsx ---
 // Description: Utility functions for handling AI-powered suggestions in product forms.
 
@@ -14,7 +13,7 @@ import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
 import { generateProductSpecifications } from "@/ai/flows/generate-product-specifications-flow";
 import { generateCustomAttributes } from "@/ai/flows/generate-custom-attributes-flow"; 
 import { suggestCbamIdentifier, type SuggestCbamIdentifierOutput } from "@/ai/flows/suggest-cbam-identifier-flow"; 
-import { suggestImageHints } from "@/ai/flows/suggest-image-hints-flow"; // New import
+import { suggestImageHints } from "@/ai/flows/suggest-image-hints-flow";
 import type { CustomAttribute } from "@/types/dpp"; 
 import type { ToastInput } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";

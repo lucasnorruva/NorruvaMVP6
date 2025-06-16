@@ -1,7 +1,7 @@
 
 // --- File: Compliance.ts ---
 // Description: Compliance related type definitions.
-import type React from 'react'; // Keep React import if React.ElementType is used (e.g., in InspectionEvent)
+import type React from 'react'; // Keep React import for potential JSX in future types
 
 export interface Certification {
   id: string;
@@ -226,4 +226,17 @@ export interface InspectionEvent {
   status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
   badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
 }
-```
+
+export interface ServiceJob {
+  id: string;
+  productId: string;
+  productName: string;
+  customerName: string;
+  location: string;
+  issue: string;
+  status: 'Scheduled' | 'In Progress' | 'Completed' | 'On Hold' | 'Cancelled';
+  priority: 'High' | 'Medium' | 'Low';
+  scheduledDate: string; // ISO string
+  assignedTechnician?: string;
+  notes?: string;
+}

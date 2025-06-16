@@ -1,6 +1,6 @@
 
 // --- File: src/data/mockCustomsAlerts.ts ---
-import type { CustomsAlert } from '@/types/dpp'; // This path should resolve correctly if types/dpp/index.ts exports CustomsAlert
+import type { CustomsAlert } from '@/types/dpp'; // This path should resolve correctly
 
 export const MOCK_CUSTOMS_ALERTS: CustomsAlert[] = [
   { id: "ALERT001", productId: "PROD101", message: "Flagged at CDG Airport - Potential counterfeit. Physical inspection scheduled.", severity: "High", timestamp: "2 hours ago", regulation: "Anti-Counterfeiting" },
@@ -11,4 +11,3 @@ export const MOCK_CUSTOMS_ALERTS: CustomsAlert[] = [
   { id: "ALERT006", productId: "DPP005", message: "High-value battery shipment. Requires additional safety & transport documentation verification.", severity: "Medium", timestamp: "Pending Arrival", regulation: "ADR / Battery Safety" },
   { id: "ALERT007", productId: "DPP005", message: "Carbon Footprint declaration for EV Battery (DPP005) under review. CBAM ID: CBAM_BATTERY_EV_001.", severity: "Medium", timestamp: "4 hours ago", regulation: "CBAM" }
 ];
-```

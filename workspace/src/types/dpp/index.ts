@@ -26,6 +26,6 @@ export type {
     TextileInformation,
     EssentialCharacteristic,
     ConstructionProductInformation,
-    TransitProduct
+    TransitProduct, // Used by mockTransitProducts
+    ServiceJob // Used by mockServiceJobs
 } from './Compliance';
-```

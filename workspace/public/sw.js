@@ -1,29 +1,27 @@
-const CACHE_NAME = 'norruva-dpp-cache-v1.3'; // Incremented version
-const OFFLINE_URL = '/offline.html';
-const CORE_ASSETS = [
+const CACHE_NAME = 'norruva-dpp-cache-v2'; // Increment version on significant changes
+const urlsToCache = [
   '/',
   '/offline.html',
-  '/manifest.json',
-  '/icons/icon-192x192.png',
-  '/icons/icon-512x512.png',
-  // Add paths to critical JS/CSS bundles if known and stable
-  // e.g., '/_next/static/css/main.css', '/_next/static/chunks/main-app.js'
-  // Be careful with versioned Next.js assets, they might change frequently.
+  // Add other core static assets if they are not dynamically hashed by Next.js
+  // e.g., '/fonts/Inter-Regular.woff2', '/logo.svg'
+  // Next.js build output (/_next/static/...) is typically versioned and handled by its own caching mechanisms.
+  // We focus on the app shell and offline page here.
 ];
 
-// Install - cache core assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('[Service Worker] Caching core assets');
-        return cache.addAll(CORE_ASSETS);
+        console.log('[Service Worker] Opened cache and caching initial assets:', urlsToCache);
+        return cache.addAll(urlsToCache);
       })
-      .then(() => self.skipWaiting()) // Activate worker immediately
+      .catch(error => {
+        console.error('[Service Worker] Failed to cache initial assets:', error);
+      })
   );
+  self.skipWaiting();
 });
 
-// Activate - clean up old caches
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((cacheNames) => {
@@ -35,94 +33,65 @@ self.addEventListener('activate', (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim()) // Take control of all clients
+    }).then(() => self.clients.claim())
   );
 });
 
-// Fetch - serving strategies
 self.addEventListener('fetch', (event) => {
-  const { request } = event;
+  const requestUrl = new URL(event.request.url);
 
-  // Only handle GET requests
-  if (request.method !== 'GET') {
+  // Navigate requests: Try network first, then cache, then offline page
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .catch(() => {
+          return caches.match(urlsToCache.includes(requestUrl.pathname) ? requestUrl.pathname : '/offline.html')
+                 .then(response => response || caches.match('/offline.html'));
+        })
+    );
     return;
   }
 
-  // Strategy 1: Cache First for core assets (defined in CORE_ASSETS)
-  if (CORE_ASSETS.includes(new URL(request.url).pathname)) {
+  // API GET requests: Stale-while-revalidate
+  if (requestUrl.pathname.startsWith('/api/v1/dpp') && event.request.method === 'GET') {
     event.respondWith(
-      caches.match(request).then((cachedResponse) => {
-        if (cachedResponse) {
-          return cachedResponse;
-        }
-        return fetch(request).then((networkResponse) => {
-          // Optional: Cache dynamically if not in CORE_ASSETS but deemed important
+      caches.open(CACHE_NAME).then(async (cache) => {
+        const cachedResponse = await cache.match(event.request);
+        const networkResponsePromise = fetch(event.request).then((networkResponse) => {
+          if (networkResponse.ok) {
+            cache.put(event.request, networkResponse.clone());
+          }
           return networkResponse;
         });
+        return cachedResponse || networkResponsePromise;
+      }).catch(() => {
+        // Optional: could return a generic API error response from cache if really needed
+        // For now, just let network failures propagate if no cache.
+        return fetch(event.request);
       })
     );
     return;
   }
 
-  // Strategy 2: Network First, then Cache for API GET requests
-  if (request.url.includes('/api/v1/dpp')) {
+  // Static assets: Cache first, then network
+  if (urlsToCache.includes(requestUrl.pathname) || requestUrl.pathname.match(/\.(css|js|png|jpg|jpeg|svg|woff2)$/)) {
     event.respondWith(
-      fetch(request)
-        .then((networkResponse) => {
-          // Check if we received a valid response
-          if (!networkResponse || networkResponse.status !== 200 || networkResponse.type !== 'basic') {
-            // If network fails or response is not okay, try cache
-            return caches.match(request).then(cachedResponse => cachedResponse || networkResponse);
+      caches.match(event.request)
+        .then((response) => {
+          if (response) {
+            return response;
           }
-          // Clone the response because it's a stream and can only be consumed once.
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseToCache);
-          });
-          return networkResponse;
-        })
-        .catch(() => {
-          // Network request failed, try to serve from cache
-          return caches.match(request).then((cachedResponse) => {
-            return cachedResponse || caches.match(OFFLINE_URL); // Fallback to offline page if not cached
+          return fetch(event.request).then((networkResponse) => {
+            if (networkResponse.ok) {
+              caches.open(CACHE_NAME).then(cache => cache.put(event.request, networkResponse.clone()));
+            }
+            return networkResponse;
           });
         })
     );
     return;
   }
 
-  // Strategy 3: Cache Falling Back to Network (for other assets like images from placehold.co)
-  // Or, if you want to be more aggressive: Stale-While-Revalidate for general assets
-  event.respondWith(
-    caches.match(request).then((cachedResponse) => {
-      // Cache hit - return response
-      if (cachedResponse) {
-        return cachedResponse;
-      }
-
-      // Not in cache - fetch from network, then cache it
-      return fetch(request).then((networkResponse) => {
-          if (!networkResponse || networkResponse.status !== 200) {
-            // If fetch fails or returns an error, serve offline page for navigation requests
-            if (request.mode === 'navigate') {
-              return caches.match(OFFLINE_URL);
-            }
-            return networkResponse; // For non-navigation requests, just return the error
-          }
-          // Clone and cache successful responses
-          const responseToCache = networkResponse.clone();
-          caches.open(CACHE_NAME).then((cache) => {
-            cache.put(request, responseToCache);
-          });
-          return networkResponse;
-        }
-      ).catch(() => {
-        // General fetch error (network down, etc.)
-        if (request.mode === 'navigate') {
-          return caches.match(OFFLINE_URL);
-        }
-        // For non-navigation, it's fine to let the browser handle the fetch error
-      });
-    })
-  );
+  // Default: Network first for everything else
+  event.respondWith(fetch(event.request));
 });

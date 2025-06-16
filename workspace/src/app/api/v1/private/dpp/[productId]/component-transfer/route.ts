@@ -14,12 +14,12 @@ interface B2BComponentTransferRecordRequestBody {
   quantity: number;
   unit?: string;
   transferDate: string; // ISO date-time
-  fromParty: {
+  fromParty?: { 
     participantId?: string;
     participantDid?: string;
     role?: string;
   };
-  toParty: {
+  toParty?: { 
     participantId?: string;
     participantDid?: string;
     role?: string;
@@ -56,15 +56,16 @@ export async function POST(
     componentId,
     quantity,
     transferDate,
+    // fromParty and toParty are optional in schema for flexibility, but practically important
     fromParty,
-    toParty,
+    toParty
   } = requestBody;
 
-  if (!componentId || typeof quantity !== 'number' || !transferDate || !fromParty || !toParty) {
+  if (!componentId || typeof quantity !== 'number' || !transferDate ) { // Removed check for fromParty/toParty for schema alignment
     return NextResponse.json({
       error: {
         code: 400,
-        message: "Missing required fields: componentId, quantity, transferDate, fromParty, toParty are required.",
+        message: "Missing required fields. At least: componentId, quantity, transferDate are needed.",
       },
     }, { status: 400 });
   }
@@ -85,11 +86,12 @@ export async function POST(
     productId: productId, // Add productId to the response for context
   };
 
-  // Log the conceptual recording to the private layer
   console.log(`[Private Layer Mock] Component transfer recorded for product ${productId}:`, JSON.stringify(recordedTransferData, null, 2));
   
+
   // This mock does not modify MOCK_DPPS as there's no direct field for B2B transfers on the public DPP.
   // It just acknowledges the recording.
 
   return NextResponse.json(recordedTransferData, { status: 201 });
 }
+

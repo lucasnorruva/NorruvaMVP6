@@ -32,7 +32,6 @@ export async function POST(
   if (!status || typeof status !== 'string' || status.trim() === '') {
     return NextResponse.json({ error: { code: 400, message: "Field 'status' is required." } }, { status: 400 });
   }
-  // Optionally add validation for allowed status values
   const allowedStatuses = ["active", "recalled", "flagged_for_review", "archived"];
   if (!allowedStatuses.includes(status)) {
     return NextResponse.json({ error: { code: 400, message: `Invalid 'status' value. Must be one of: ${allowedStatuses.join(', ')}.` } }, { status: 400 });
@@ -56,7 +55,7 @@ export async function POST(
       onChainStatus: status,
       last_updated: now,
     },
-    lifecycleEvents: [ // Add a lifecycle event for this change
+    lifecycleEvents: [ 
         ...(existingProduct.lifecycleEvents || []),
         { 
             id: `status_evt_${Date.now().toString(36).slice(-5)}`, 
@@ -70,7 +69,6 @@ export async function POST(
 
   MOCK_DPPS[productIndex] = updatedProduct;
 
-  // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 200));
 
   return NextResponse.json({

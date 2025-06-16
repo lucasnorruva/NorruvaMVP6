@@ -28,7 +28,7 @@ export async function POST(
     return NextResponse.json({ error: { code: 400, message: "Invalid JSON payload." } }, { status: 400 });
   }
 
-  const { eventDescription, severity = "High" } = requestBody; // Default severity to High
+  const { eventDescription, severity = "High" } = requestBody;
 
   if (!eventDescription || typeof eventDescription !== 'string' || eventDescription.trim() === '') {
     return NextResponse.json({ error: { code: 400, message: "Field 'eventDescription' is required." } }, { status: 400 });
@@ -57,7 +57,7 @@ export async function POST(
       mockTxHash: mockTxHash,
     },
     responsibleParty: "System/BlockchainLog",
-    transactionHash: mockTxHash, // Adding the mock hash to the event itself
+    transactionHash: mockTxHash,
   };
 
   const updatedLifecycleEvents = [...(existingProduct.lifecycleEvents || []), newEvent];
@@ -73,7 +73,6 @@ export async function POST(
 
   MOCK_DPPS[productIndex] = updatedProduct;
 
-  // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 200));
 
   return NextResponse.json({
@@ -81,3 +80,4 @@ export async function POST(
     updatedProduct: updatedProduct,
   }, { status: 200 });
 }
+

@@ -32,7 +32,6 @@ export async function POST(
   if (!lifecycleStage || typeof lifecycleStage !== 'string' || lifecycleStage.trim() === '') {
     return NextResponse.json({ error: { code: 400, message: "Field 'lifecycleStage' is required." } }, { status: 400 });
   }
-  // Optionally add validation for allowed lifecycle stages
   const allowedStages = ["Design", "Manufacturing", "QualityAssurance", "Distribution", "InUse", "Maintenance", "EndOfLife"];
   if (!allowedStages.includes(lifecycleStage)) {
     return NextResponse.json({ error: { code: 400, message: `Invalid 'lifecycleStage' value. Must be one of: ${allowedStages.join(', ')}.` } }, { status: 400 });
@@ -55,7 +54,7 @@ export async function POST(
       onChainLifecycleStage: lifecycleStage,
       last_updated: now,
     },
-    lifecycleEvents: [ // Add a lifecycle event for this change
+    lifecycleEvents: [ 
         ...(existingProduct.lifecycleEvents || []),
         { 
             id: `lc_stage_evt_${Date.now().toString(36).slice(-5)}`, 
@@ -69,7 +68,6 @@ export async function POST(
 
   MOCK_DPPS[productIndex] = updatedProduct;
 
-  // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 200));
 
   return NextResponse.json({

@@ -1,3 +1,4 @@
+
 // --- File: src/utils/registerServiceWorker.ts ---
 // Description: Utility function to register the service worker.
 
@@ -23,3 +24,7 @@ export function registerServiceWorker() {
     });
   }
 }
+
+```
+  </change>
+</changes>

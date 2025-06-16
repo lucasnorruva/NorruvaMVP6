@@ -5,7 +5,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport } from '@/types/dpp'; // Import the full type
+import type { DigitalProductPassport } from '@/types/dpp';
 import { validateApiKey } from '@/middleware/apiKeyAuth';
 
 interface LinkNftRequestBody {
@@ -60,14 +60,13 @@ export async function POST(
 
   MOCK_DPPS[productIndex] = updatedProduct;
 
-  // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 200));
 
   return NextResponse.json({
     message: `Ownership NFT conceptually linked for product ${productId}.`,
     productId: productId,
     ownershipNftLink: updatedProduct.ownershipNftLink,
-    updatedProduct: updatedProduct, // Returning the full updated product
+    updatedProduct: updatedProduct,
   }, { status: 200 });
 }
 

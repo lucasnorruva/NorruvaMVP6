@@ -45,7 +45,6 @@ export async function GET(
     );
   }
 
-  // Simulate fetching data. In a real system, you'd query a database.
   await new Promise(resolve => setTimeout(resolve, 250));
 
   const mockConfidentialMaterial: ConfidentialMaterialComposition = {
@@ -73,8 +72,6 @@ export async function GET(
     version: 3
   };
 
-  // In a real scenario, if product ID is not found or no confidential data exists, return 404.
-  // For this mock, we always return data if productId is provided.
-
   return NextResponse.json(mockConfidentialMaterial, { status: 200 });
 }
+

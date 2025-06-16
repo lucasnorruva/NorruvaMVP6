@@ -27,7 +27,6 @@ export async function GET(
     return NextResponse.json({ error: { code: 404, message: `DPP with ID ${dppId} not found.` } }, { status: 404 });
   }
 
-  // Simulate API delay & ZKP verification
   await new Promise(resolve => setTimeout(resolve, 200));
 
   const now = new Date().toISOString();
@@ -45,9 +44,6 @@ export async function GET(
       : `Mock ZKP for claim '${claimType}' on DPP '${dppId}' could not be verified or was found invalid.`,
   };
 
-  // In a real system, this would involve looking up the submitted proofId (if provided or linked)
-  // and running a ZKP verification algorithm.
-  // For this mock, we simply return a random-ish result.
-
   return NextResponse.json(responsePayload, { status: 200 });
 }
+

@@ -1,3 +1,4 @@
+
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { MOCK_DPPS } from '@/data';
@@ -58,3 +59,4 @@ export async function POST(
 
   return NextResponse.json(updatedProduct);
 }
+

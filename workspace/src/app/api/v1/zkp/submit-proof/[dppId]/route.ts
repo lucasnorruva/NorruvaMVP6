@@ -42,7 +42,6 @@ export async function POST(
     return NextResponse.json({ error: { code: 404, message: `DPP with ID ${dppId} not found.` } }, { status: 404 });
   }
 
-  // Simulate API delay & ZKP submission processing
   await new Promise(resolve => setTimeout(resolve, 300));
 
   const mockProofId = `zkp_proof_mock_${Date.now().toString(36).slice(-8)}`;
@@ -56,8 +55,6 @@ export async function POST(
     timestamp: now,
   };
 
-  // In a real system, you might store this ZKP submission record linked to the DPP.
-  // For this mock, we just return the acknowledgement.
-
-  return NextResponse.json(responsePayload, { status: 202 }); // 202 Accepted
+  return NextResponse.json(responsePayload, { status: 202 }); 
 }
+

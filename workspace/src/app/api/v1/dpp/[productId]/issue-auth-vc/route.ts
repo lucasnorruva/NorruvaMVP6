@@ -36,14 +36,13 @@ export async function POST(
 
   MOCK_DPPS[productIndex] = updatedProduct;
 
-  // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 200));
 
   return NextResponse.json({
     message: `Authentication VC conceptually issued for product ${productId}.`,
     productId: productId,
     authenticationVcId: newVcId,
-    updatedProduct: updatedProduct, // Returning the full updated product for easier UI update
+    updatedProduct: updatedProduct,
   }, { status: 200 });
 }
 

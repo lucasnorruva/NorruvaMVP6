@@ -17,7 +17,7 @@ h6 {
 
 @layer base {
   :root {
-    --background: 210 20% 98%; /* #FAFBFC - Off-white / Light Desaturated Blue-like */
+    --background: 197 88% 95%; /* #E5F6FD - Light Desaturated Blue (PRD) */
     --foreground: 224 23% 15%; /* #1A202C - Grey 900 */
 
     --card: 0 0% 100%; /* #FFFFFF - Pure White */
@@ -116,6 +116,7 @@ h6 {
     --input: 222 23% 25%; 
     --ring: 197 71% 63%; 
     
+    /* Chart Colors */
     --chart-1: 197 71% 63%;
     --chart-2: 180 100% 35%;
     --chart-3: 263 70% 60%;
@@ -123,6 +124,7 @@ h6 {
     --chart-5: 142 60% 50%;
     --chart-6: 327 75% 65%;
 
+    /* Sidebar Theme */
     --sidebar-background: 224 23% 10%; 
     --sidebar-foreground: 210 20% 85%; 
     --sidebar-primary: 197 71% 63%; 
@@ -144,7 +146,7 @@ h6 {
 }
 @layer utilities {
   .text-success {
-    color: hsl(var(--success));
+    color: hsl(var(--success)); /* Updated to use --success from theme */
   }
   .text-warning {
     color: hsl(var(--warning));

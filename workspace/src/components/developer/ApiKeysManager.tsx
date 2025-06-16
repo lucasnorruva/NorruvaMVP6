@@ -18,7 +18,7 @@ export interface ApiKey {
   created: string;
   lastUsed: string;
   status: "Active" | "Pending Approval" | "Revoked";
-  scopes?: string[]; // Added scopes
+  scopes?: string[]; 
 }
 
 interface ApiKeysManagerProps {
@@ -29,6 +29,20 @@ interface ApiKeysManagerProps {
   onDeleteApiKey: (keyId: string) => void;
 }
 
+const scopeDescriptions: Record<string, string> = {
+    "dpp:read": "Read access to Digital Product Passports.",
+    "dpp:write:sandbox": "Write access to DPPs in the Sandbox environment.",
+    "dpp:write:production": "Write access to DPPs in the Production environment.",
+    "qr:validate": "Access to QR code validation endpoints.",
+    "compliance:read": "Read access to compliance data and summaries.",
+    "ebsi:verify": "Permission to initiate EBSI verification processes (conceptual).",
+    "token:mint": "Permission to mint DPP tokens (conceptual).",
+    "ai:extract": "Access to AI data extraction services.",
+    "ai:summarize": "Access to AI summarization services.",
+    "pending_activation": "Key is awaiting activation and has no active scopes yet.",
+    "revoked_access": "Access for this key has been revoked."
+};
+
 export default function ApiKeysManager({
   apiKeys,
   onCopyKey,
@@ -37,7 +51,7 @@ export default function ApiKeysManager({
   onDeleteApiKey,
 }: ApiKeysManagerProps) {
   return (
-    <Card className="shadow-lg" id="api_keys"> {/* Changed id to match link */}
+    <Card className="shadow-lg" id="api_keys"> 
       <CardHeader>
         <CardTitle className="font-headline flex items-center"><KeyRound className="mr-3 h-6 w-6 text-primary" /> API Keys</CardTitle>
         <CardDescription>Manage your API keys for accessing Norruva platform services. Scopes shown are conceptual.</CardDescription>
@@ -51,7 +65,7 @@ export default function ApiKeysManager({
               <TableHead>Created</TableHead>
               <TableHead>Last Used</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Scopes (Conceptual)</TableHead> {/* New Column */}
+              <TableHead>Scopes (Conceptual)</TableHead> 
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -84,18 +98,20 @@ export default function ApiKeysManager({
                     {apiKey.status}
                   </Badge>
                 </TableCell>
-                <TableCell className="text-xs"> {/* Scopes Cell */}
+                <TableCell className="text-xs"> 
                   {apiKey.scopes && apiKey.scopes.length > 0 ? (
-                    <div className="flex flex-wrap gap-1 max-w-[200px]">
+                    <div className="flex flex-wrap gap-1 max-w-[250px]"> {/* Increased max-width */}
                       {apiKey.scopes.map(scope => (
                         <TooltipProvider key={scope} delayDuration={100}>
                           <Tooltip>
                             <TooltipTrigger asChild>
-                              <Badge variant="outline" className="px-1.5 py-0.5 text-[0.65rem] bg-blue-500/10 text-blue-700 border-blue-500/30">
-                                {scope}
+                              <Badge variant="outline" className="px-1.5 py-0.5 text-[0.65rem] bg-blue-500/10 text-blue-700 border-blue-500/30 cursor-default">
+                                <Shield className="h-2.5 w-2.5 mr-1 opacity-70"/> {scope}
                               </Badge>
                             </TooltipTrigger>
-                            <TooltipContent><p>{scope} permission</p></TooltipContent>
+                            <TooltipContent className="max-w-xs">
+                              <p className="text-xs">{scopeDescriptions[scope] || "General access scope."}</p>
+                            </TooltipContent>
                           </Tooltip>
                         </TooltipProvider>
                       ))}
@@ -133,7 +149,7 @@ export default function ApiKeysManager({
             ))}
              {apiKeys.length === 0 && (
                 <TableRow>
-                    <TableCell colSpan={7} className="text-center text-muted-foreground py-4"> {/* Adjusted colSpan */}
+                    <TableCell colSpan={7} className="text-center text-muted-foreground py-4"> 
                         No API keys found. Generate or request one below.
                     </TableCell>
                 </TableRow>
@@ -151,6 +167,3 @@ export default function ApiKeysManager({
     </Card>
   );
 }
-
-
-    

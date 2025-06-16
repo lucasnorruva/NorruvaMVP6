@@ -1,7 +1,8 @@
+
 // --- File: src/components/dashboard/RetailerDashboard.tsx ---
 "use client";
 
-import React, { useState } from 'react'; // Added useState
+import React, { useState } from 'react'; 
 import Link from 'next/link';
 import Image from 'next/image';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -12,7 +13,7 @@ import { ShoppingBag, MessageSquare, BarChart3, Percent, Users, FileSpreadsheet,
 import { RetailerQuickActionsCard } from "./RetailerQuickActionsCard";
 import { RegulationUpdatesCard } from "./RegulationUpdatesCard";
 import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
-import { MOCK_DPPS } from '@/data'; // Using full MOCK_DPPS for richer data
+import { MOCK_DPPS } from '@/data'; 
 import type { DigitalProductPassport } from '@/types/dpp';
 import { useToast } from '@/hooks/use-toast';
 import { getAiHintForImage } from '@/utils/imageUtils';
@@ -22,7 +23,7 @@ export const RetailerDashboard = () => {
   const { toast } = useToast();
   const [posProductId, setPosProductId] = useState('');
 
-  const featuredProducts = MOCK_DPPS.filter(p => p.metadata.status === 'published').slice(0, 3); // Show 3 published products
+  const featuredProducts = MOCK_DPPS.filter(p => p.metadata.status === 'published').slice(0, 3); 
 
   const quickStats = [
     { title: "DPPs Viewed Recently", value: "78", icon: Eye, description: "(Last 7 days - Mock)" },
@@ -93,15 +94,18 @@ export const RetailerDashboard = () => {
             });
             return (
             <Card key={product.id} className="overflow-hidden flex flex-col">
-              <div className="aspect-[4/3] w-full bg-muted overflow-hidden">
+              <div className="aspect-[4/3] w-full bg-muted overflow-hidden relative group">
                 <Image
                   src={product.productDetails?.imageUrl || "https://placehold.co/300x225.png?text=No+Image"}
                   alt={product.productName}
                   width={300}
                   height={225}
-                  className="object-cover w-full h-full"
+                  className="object-cover w-full h-full group-hover:opacity-90 transition-opacity"
                   data-ai-hint={aiHint}
                 />
+                <div className="absolute inset-0 bg-black/20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <Eye className="h-8 w-8 text-white" />
+                </div>
               </div>
               <CardHeader className="pb-2 pt-3">
                 <CardTitle className="text-md font-semibold leading-tight h-10">

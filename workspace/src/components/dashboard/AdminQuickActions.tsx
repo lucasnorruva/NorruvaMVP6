@@ -29,19 +29,19 @@ export const AdminQuickActions = () => {
         {quickActions.map((action, index) => (
           <Link key={action.label} href={action.href} asChild>
             <Button 
-              variant="secondary" 
+              variant="default" 
               className={cn(
                 "w-full justify-start text-left h-auto py-3 group",
-                "hover:bg-primary/10 hover:text-primary focus-visible:ring-primary/50" // Enhanced hover/focus
+                // Example of applying primary background to first, secondary to others
+                index === 0 ? "bg-primary text-primary-foreground hover:bg-primary/90" : "bg-secondary text-secondary-foreground hover:bg-secondary/80"
               )}
             >
               <action.icon className={cn(
                 "mr-3 h-5 w-5 flex-shrink-0",
-                index === 0 ? 'text-info' : 'text-primary', // Example of conditional icon color
-                "group-hover:text-primary transition-colors"
+                index === 0 ? 'text-primary-foreground' : 'text-secondary-foreground', 
               )} />
               <div className="flex-1 min-w-0">
-                <p className="font-medium group-hover:text-primary transition-colors">{action.label}</p>
+                <p className="font-medium">{action.label}</p>
               </div>
             </Button>
           </Link>
@@ -50,4 +50,3 @@ export const AdminQuickActions = () => {
     </Card>
   );
 };
-

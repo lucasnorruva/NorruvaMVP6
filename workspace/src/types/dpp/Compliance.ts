@@ -1,7 +1,7 @@
 
 // --- File: Compliance.ts ---
 // Description: Compliance related type definitions.
-import type React from 'react'; // Keep React import for potential JSX in future types
+import type React from 'react';
 
 export interface Certification {
   id: string;

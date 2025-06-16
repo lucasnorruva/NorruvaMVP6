@@ -1,3 +1,4 @@
+
 // --- File: src/app/api/v1/dpp/[productId]/route.ts ---
 // Description: Conceptual API endpoint to retrieve and update a Digital Product Passport by ID.
 
@@ -92,6 +93,7 @@ export async function PUT(
       ...(requestBody.ebsiVerification || {}),
       lastChecked: requestBody.ebsiVerification?.status ? new Date().toISOString() : existingProduct.ebsiVerification?.lastChecked || new Date().toISOString(),
     },
+    // Add other top-level updatable fields similarly
   };
 
   MOCK_DPPS[productIndex] = updatedProduct;

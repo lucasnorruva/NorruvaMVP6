@@ -2,17 +2,17 @@
 // --- File: src/components/dashboard/RecyclerDashboard.tsx ---
 "use client";
 
-import React, { useState } from 'react'; // Added useState
+import React, { useState } from 'react'; 
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Recycle as RecycleIcon, AlertTriangle, BarChart3, Search, FileText as FileTextIcon } from "lucide-react";
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { RecyclerQuickActionsCard } from "./RecyclerQuickActionsCard";
 import { RegulationUpdatesCard } from "./RegulationUpdatesCard";
-import { useToast } from '@/hooks/use-toast'; // Import useToast
-import { MOCK_DPPS } from '@/data'; // To check if product ID exists for disassembly guide
+import { useToast } from '@/hooks/use-toast'; 
+import { MOCK_DPPS } from '@/data'; 
 
 const mockMaterialRecoveryData = [
   { name: 'Plastics (PET, PP)', volume: 450, fill: 'hsl(var(--chart-1))' },
@@ -88,7 +88,7 @@ export const RecyclerDashboard = () => {
           <CardTitle className="font-headline flex items-center"><BarChart3 className="mr-2 text-primary"/>Common Recoverable Materials (Mock Volume)</CardTitle>
           <CardDescription>Estimated volume of materials recovered in the last reporting period.</CardDescription>
         </CardHeader>
-        <CardContent className="h-[300px]">
+        <CardContent className="h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={mockMaterialRecoveryData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
               <XAxis type="number" stroke="hsl(var(--muted-foreground))" fontSize={12} tickLine={false} axisLine={false} />

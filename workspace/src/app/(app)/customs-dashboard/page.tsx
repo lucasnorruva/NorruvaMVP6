@@ -13,9 +13,10 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from 'next/navigation';
 import { MOCK_TRANSIT_PRODUCTS, MOCK_CUSTOMS_ALERTS, MOCK_DPPS } from '@/data'; 
-import type { TransitProduct, CustomsAlert, InspectionEvent, DigitalProductPassport } from '@/types/dpp'; 
+import type { TransitProduct, CustomsAlert, InspectionEvent, DigitalProductPassport } from '@/data'; // Import from @/data
 import SelectedProductCustomsInfoCard from '@/components/dpp-tracker/SelectedProductCustomsInfoCard';
 import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; 
+import { useToast } from '@/hooks/use-toast';
 
 const MetricCardWidget: React.FC<{title: string, value: string | number, icon: React.ElementType, description?: string, trend?: string, trendDirection?: 'up' | 'down' | 'neutral'}> = ({ title, value, icon: Icon, description, trend, trendDirection }) => {
   let TrendIconComponent = MinusCircle;
@@ -92,6 +93,7 @@ const generateMockInspectionTimelineForProduct = (product: TransitProduct, dpp?:
 
 export default function CustomsDashboardPage() {
   const searchParams = useSearchParams();
+  const { toast } = useToast();
   const countryParam = searchParams.get('country');
   const country = countryParam ? decodeURIComponent(countryParam) : null;
   const [selectedProductForTimeline, setSelectedProductForTimeline] = useState<TransitProduct | null>(null);
@@ -130,6 +132,21 @@ export default function CustomsDashboardPage() {
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filteredProducts]);
+
+  const handleAlertClick = (alert: CustomsAlert) => {
+    toast({
+      title: `Alert: ${alert.productId}`,
+      description: `${alert.message} (Severity: ${alert.severity}, Regulation: ${alert.regulation || 'N/A'})`,
+      variant: alert.severity === 'High' ? 'destructive' : 'default',
+      duration: 7000,
+    });
+    // Potentially, select the product in the table if an alert is clicked
+    const productInTable = filteredProducts.find(p => p.id === alert.productId);
+    if (productInTable) {
+        handleViewTimeline(productInTable);
+    }
+  };
+
 
   return (
     <div className="space-y-8">
@@ -187,7 +204,14 @@ export default function CustomsDashboardPage() {
                 const cbamStatusText = dppEntry?.compliance?.euCustomsData?.status;
 
                 return (
-                  <TableRow key={product.id} className="hover:bg-muted/30 transition-colors">
+                  <TableRow 
+                    key={product.id} 
+                    className={cn(
+                        "hover:bg-muted/30 transition-colors",
+                        selectedProductForTimeline?.id === product.id && "bg-primary/10 ring-2 ring-primary"
+                    )}
+                    onClick={() => handleViewTimeline(product)} // Allow row click to select
+                  >
                     <TableCell className="font-medium">{product.id}</TableCell>
                     <TableCell>{product.name}</TableCell>
                     <TableCell className="text-xs">
@@ -222,7 +246,7 @@ export default function CustomsDashboardPage() {
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" onClick={() => handleViewTimeline(product)}><Eye className="mr-1 h-4 w-4" /> Timeline</Button>
+                      <Button variant="ghost" size="sm" onClick={(e) => { e.stopPropagation(); handleViewTimeline(product); }}><Eye className="mr-1 h-4 w-4" /> Timeline</Button>
                     </TableCell>
                   </TableRow>
                 );
@@ -284,7 +308,7 @@ export default function CustomsDashboardPage() {
                 {filteredAlerts.length > 0 ? (
                 <ul className="space-y-3 max-h-[200px] overflow-y-auto">
                     {filteredAlerts.map((alert) => (
-                      <li key={alert.id} className="p-3 border rounded-md bg-background hover:bg-muted/30">
+                      <li key={alert.id} className="p-3 border rounded-md bg-background hover:bg-muted/30 cursor-pointer" onClick={() => handleAlertClick(alert)}>
                         <div className="flex justify-between items-start mb-1">
                           <p className="font-medium text-sm text-foreground">Product ID: {alert.productId}</p>
                           <Badge variant={alert.severity === "High" ? "destructive" : alert.severity === "Medium" ? "outline" : "secondary"} className={cn("text-xs", alert.severity === "High" ? "bg-red-100 text-red-700 border-red-300" : "", alert.severity === "Medium" ? "bg-yellow-100 text-yellow-700 border-yellow-300" : "", alert.severity === "Low" ? "bg-blue-100 text-blue-700 border-blue-300" : "")}>

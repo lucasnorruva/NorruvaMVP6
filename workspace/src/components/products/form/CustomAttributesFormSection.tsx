@@ -3,16 +3,16 @@
 // Description: Form section component for managing custom product attributes.
 "use client";
 
-import React, { useState } from "react"; // Added useState
+import React, { useState } from "react"; 
 import type { UseFormReturn } from "react-hook-form";
 import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, XCircle, Sparkles, Loader2, Info, ListChecks } from "lucide-react";
 import type { CustomAttribute } from "@/types/dpp";
-import type { ProductFormData } from "@/types/productFormTypes"; // Corrected import
+import type { ProductFormData } from "@/types/productFormTypes"; 
 import type { ToastInput } from "@/hooks/use-toast";
-import { handleSuggestCustomAttributesAI } from "@/utils/aiFormHelpers"; // Import helper
+import { handleSuggestCustomAttributesAI } from "@/utils/aiFormHelpers"; 
 
 type ToastFn = (input: ToastInput) => void;
 
@@ -50,7 +50,7 @@ export default function CustomAttributesFormSection({
   const [isSuggestingCustomAttrsInternal, setIsSuggestingCustomAttrsInternal] = useState(false);
 
   React.useEffect(() => {
-    form.setValue("customAttributesJsonString", JSON.stringify(customAttributes), { shouldValidate: true });
+    form.setValue("productDetails.customAttributesJsonString", JSON.stringify(customAttributes), { shouldValidate: true });
   }, [customAttributes, form]);
 
   const callSuggestCustomAttributesAIInternal = async () => {
@@ -61,8 +61,7 @@ export default function CustomAttributesFormSection({
       setSuggestedCustomAttributes([]); 
     }
   };
-
-  // Internal handler for adding suggested attributes
+  
   const internalHandleAddSuggestedAttribute = (suggestedAttr: CustomAttribute) => {
     if (customAttributes.some(attr => attr.key.toLowerCase() === suggestedAttr.key.toLowerCase())) {
       toast({
@@ -188,7 +187,7 @@ export default function CustomAttributesFormSection({
 
       <FormField
         control={form.control}
-        name="customAttributesJsonString"
+        name="productDetails.customAttributesJsonString" // Updated name to match ProductFormData
         render={({ field }) => (
           <FormItem className="hidden">
             <FormControl><Input type="hidden" {...field} /></FormControl>

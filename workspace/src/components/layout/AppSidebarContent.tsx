@@ -23,7 +23,7 @@ export default function AppSidebarContent() {
   const mainNavItems = accessibleNavItems.filter(item => item.group !== 'secondary');
   const secondaryNavItems = accessibleNavItems.filter(item => item.group === 'secondary');
 
-  const currentRoleDashboardPath = roleDashboardPaths[currentRole] || '/dashboard'; // Fallback
+  const currentRoleDashboardPath = roleDashboardPaths[currentRole] || '/dashboard'; 
 
   const commonButtonClass = (href: string, isDashboardLink: boolean = false) => {
     let isActive: boolean;
@@ -40,18 +40,15 @@ export default function AppSidebarContent() {
       isActive = pathname.startsWith(href);
     }
 
-    // Base classes for all buttons
-    const baseStyling = "w-full text-sm transition-colors duration-150 ease-in-out group";
+    const baseStyling = "w-full text-sm transition-colors duration-150 ease-in-out group h-10"; // Standardized height
     
-    // Layout classes based on sidebar state
     const layoutStyling = (sidebarState === 'collapsed' && !isMobile) 
-      ? "justify-center px-2" // Padding for collapsed state (icon only)
-      : "justify-start px-3"; // Padding for expanded state (icon + text)
+      ? "justify-center px-2" 
+      : "justify-start px-3"; 
 
-    // Active/inactive state styling
     const stateStyling = isActive
-      ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold" // Active: primary bg, white text, semibold
-      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-normal"; // Inactive: muted text, accent hover
+      ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold" 
+      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-normal"; 
 
     const className = cn(baseStyling, layoutStyling, stateStyling);
     
@@ -85,7 +82,7 @@ export default function AppSidebarContent() {
               <SidebarMenuItem key={item.label}> 
                 <Link href={itemHref} asChild>
                   <SidebarMenuButton
-                    className={cn(className, (sidebarState === 'expanded' || isMobile) && "h-10")} // Set height for expanded/mobile
+                    className={className}
                     tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
                   >
@@ -107,7 +104,7 @@ export default function AppSidebarContent() {
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} asChild>
                   <SidebarMenuButton
-                    className={cn(className, (sidebarState === 'expanded' || isMobile) && "h-10")} // Set height for expanded/mobile
+                    className={className}
                     tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}
                     aria-current={isActive ? 'page' : undefined}
                   >

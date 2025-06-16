@@ -1,6 +1,7 @@
+
 // --- File: Compliance.ts ---
 // Description: Compliance related type definitions.
-import type React from 'react'; 
+import type React from 'react'; // Keep React import if React.ElementType is used (e.g., in InspectionEvent)
 
 export interface Certification {
   id: string;
@@ -108,11 +109,11 @@ export interface EsprSpecifics {
   substanceOfConcernSummary?: string;
 }
 
-export interface DigitalTwinData { 
-  uri?: string; 
-  sensorDataEndpoint?: string; 
-  realTimeStatus?: string; 
-  predictiveMaintenanceAlerts?: string; 
+export interface DigitalTwinData {
+  uri?: string;
+  sensorDataEndpoint?: string;
+  realTimeStatus?: string;
+  predictiveMaintenanceAlerts?: string;
 }
 
 
@@ -198,7 +199,7 @@ export interface ConstructionProductInformation {
 export interface TransitProduct {
   id: string;
   name: string;
-  category?: string; 
+  category?: string;
   stage: string;
   eta: string;
   dppStatus: ProductComplianceSummary['overallStatus'];
@@ -225,3 +226,4 @@ export interface InspectionEvent {
   status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
   badgeVariant?: "outline" | "default" | "destructive" | "secondary" | null | undefined;
 }
+```

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Users, Package, Settings, FileText, ShieldCheck, ListChecks, SlidersHorizontal } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export const AdminQuickActions = () => {
   const quickActions = [
@@ -27,8 +28,18 @@ export const AdminQuickActions = () => {
       <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {quickActions.map((action, index) => (
           <Link key={action.label} href={action.href} asChild>
-            <Button variant="secondary" className="w-full justify-start text-left h-auto py-3 group hover:bg-primary/10 hover:text-primary">
-              <action.icon className={`mr-3 h-5 w-5 ${index === 0 ? 'text-info' : 'text-primary'} group-hover:text-primary transition-colors flex-shrink-0`} />
+            <Button 
+              variant="secondary" 
+              className={cn(
+                "w-full justify-start text-left h-auto py-3 group",
+                "hover:bg-primary/10 hover:text-primary focus-visible:ring-primary/50" // Enhanced hover/focus
+              )}
+            >
+              <action.icon className={cn(
+                "mr-3 h-5 w-5 flex-shrink-0",
+                index === 0 ? 'text-info' : 'text-primary', // Example of conditional icon color
+                "group-hover:text-primary transition-colors"
+              )} />
               <div className="flex-1 min-w-0">
                 <p className="font-medium group-hover:text-primary transition-colors">{action.label}</p>
               </div>
@@ -39,3 +50,4 @@ export const AdminQuickActions = () => {
     </Card>
   );
 };
+

@@ -19,10 +19,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast'; // Import useToast
+import { useToast } from '@/hooks/use-toast'; 
 import { useRouter } from 'next/navigation';
-import { MOCK_SERVICE_JOBS, MOCK_DPPS } from '@/data'; // Import mock data
-import type { ServiceJob } from '@/types/dpp'; // Import type
+import { MOCK_SERVICE_JOBS, MOCK_DPPS } from '@/data'; 
+import type { ServiceJob } from '@/types/dpp'; 
 import { suggestMaintenanceSchedule, type MaintenanceSuggestion } from "@/ai/flows/suggest-maintenance-schedule";
 
 
@@ -90,7 +90,7 @@ export const ServiceProviderDashboard = () => {
   const getPriorityBadgeStyle = (priority: ServiceJob['priority']) => {
     switch (priority) {
       case 'High': return "bg-destructive/20 text-destructive border-destructive/30";
-      case 'Medium': return "bg-warning/20 text-orange-600 border-orange-500/30";
+      case 'Medium': return "bg-warning/20 text-orange-600 border-orange-500/30"; // Use a defined warning color
       case 'Low': return "bg-accent/20 text-accent-foreground border-accent/30";
       default: return "bg-muted text-muted-foreground";
     }
@@ -194,6 +194,26 @@ export const ServiceProviderDashboard = () => {
     }
   };
 
+  const handleApplyAiTipsToNotes = (jobId?: string) => { // Make jobId optional
+    if (!aiMaintenanceSuggestion) return;
+    
+    let notesContent = `AI Maintenance Suggestions for Product ID ${aiProductId}:\n`;
+    notesContent += `Next Checkup: ${aiMaintenanceSuggestion.nextCheckupDate}\n`;
+    notesContent += `Suggested Actions:\n${aiMaintenanceSuggestion.suggestedActions.map(a => `- ${a}`).join('\n')}\n`;
+    notesContent += `Reasoning: ${aiMaintenanceSuggestion.reasoning}`;
+
+    // Here you would typically update the notes for a specific job.
+    // For this mock, we'll just show a toast.
+    if (jobId) {
+      console.log(`Conceptual: Applying AI tips to notes for Job ID ${jobId}:\n${notesContent}`);
+      toast({ title: "AI Tips Applied (Mock)", description: `Suggestions conceptually added to notes for Job ID ${jobId}.`});
+    } else {
+      console.log(`Conceptual: AI tips generated (no specific job targeted):\n${notesContent}`);
+      toast({ title: "AI Tips Copied (Mock)", description: "Suggestions ready to be pasted into service notes."});
+      navigator.clipboard.writeText(notesContent).catch(err => console.error("Failed to copy: ", err));
+    }
+  };
+
 
   return (
     <div className="space-y-6">
@@ -248,6 +268,9 @@ export const ServiceProviderDashboard = () => {
                 <h5 className="font-semibold text-primary">Reasoning:</h5>
                 <p className="text-sm text-foreground italic">{aiMaintenanceSuggestion.reasoning}</p>
               </div>
+              <Button variant="outline" size="sm" onClick={() => handleApplyAiTipsToNotes()} className="mt-2">
+                Apply to Service Notes (Mock)
+              </Button>
             </div>
           )}
         </CardContent>
@@ -373,3 +396,4 @@ export const ServiceProviderDashboard = () => {
     </div>
   );
 };
+

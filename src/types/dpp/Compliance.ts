@@ -215,4 +215,4 @@ export interface InspectionEvent {
   timestamp: string;
   description: string;
   status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
-  
+}

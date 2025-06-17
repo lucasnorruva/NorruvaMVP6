@@ -32,18 +32,22 @@ export default function QuickActionsCard({ actions, onTabChange }: QuickActionsC
         </CardTitle>
         <CardDescription>Access common developer tasks and resources directly.</CardDescription>
       </CardHeader>
-      <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4"> {/* Adjusted for more items */}
-        {actions.map(action => {
+      <CardContent className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4"> {/* Adjusted grid cols for more items */}
+        {actions.map((action, index) => {
           const ActionIcon = action.icon;
+          let buttonVariant: "default" | "secondary" | "outline" = "outline";
+          if (index === 0) buttonVariant = "default"; // First action as primary
+          else if (index === 1) buttonVariant = "secondary"; // Second action as secondary
+
           const actionButton = (
             <Button
-              variant="outline"
-              className="w-full justify-start text-left h-auto py-3 group hover:bg-accent/10"
+              variant={buttonVariant}
+              className="w-full justify-start text-left h-auto py-3 group"
               onClick={action.targetTab ? () => onTabChange(action.targetTab!) : undefined}
             >
-              <ActionIcon className="mr-3 h-5 w-5 text-primary group-hover:text-accent transition-colors" />
+              <ActionIcon className="mr-3 h-5 w-5 text-current flex-shrink-0" /> {/* Use text-current for icon color from button */}
               <div>
-                <p className="font-medium group-hover:text-accent transition-colors">{action.label}</p>
+                <p className="font-medium">{action.label}</p>
               </div>
             </Button>
           );
@@ -73,6 +77,3 @@ export default function QuickActionsCard({ actions, onTabChange }: QuickActionsC
     </Card>
   );
 }
-
-
-    

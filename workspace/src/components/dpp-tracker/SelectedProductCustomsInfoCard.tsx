@@ -1,4 +1,3 @@
-
 // --- File: src/components/dpp-tracker/SelectedProductCustomsInfoCard.tsx ---
 "use client";
 
@@ -7,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { X, Package, Truck, Ship, Plane, AlertTriangle, CalendarDays, ExternalLink } from 'lucide-react';
+import { X, Package, Truck, Ship, Plane, AlertTriangle, CalendarDays, ExternalLink, Info as InfoIcon } from 'lucide-react';
 import type { TransitProduct, CustomsAlert } from '@/types/dpp';
 import { cn } from '@/lib/utils';
 import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils";
@@ -90,7 +89,7 @@ export default function SelectedProductCustomsInfoCard({ productTransitInfo, ale
               {alerts.map(alert => (
                 <li key={alert.id} className="p-1.5 bg-destructive/10 rounded-sm border border-destructive/30">
                   <p className="font-semibold text-destructive text-[0.7rem] leading-tight">{alert.message}</p>
-                  <p className="text-muted-foreground text-[0.65rem]">Severity: {alert.severity} - {alert.timestamp}</p>
+                  <p className="text-muted-foreground text-[0.65rem]">Severity: {alert.severity} - {alert.timestamp} {alert.regulation && `(Reg: ${alert.regulation})`}</p>
                 </li>
               ))}
             </ul>

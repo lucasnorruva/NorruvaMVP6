@@ -1,4 +1,3 @@
-
 // --- File: page.tsx (Customs & Compliance Dashboard) ---
 // Description: Dashboard for customs officers and compliance managers to track products and alerts.
 "use client";
@@ -13,7 +12,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from 'next/navigation';
 import { MOCK_TRANSIT_PRODUCTS, MOCK_CUSTOMS_ALERTS, MOCK_DPPS } from '@/data'; 
-import type { TransitProduct, CustomsAlert, InspectionEvent, DigitalProductPassport } from '@/types/dpp'; // Corrected import path
+import type { TransitProduct, CustomsAlert, InspectionEvent, DigitalProductPassport } from '@/types/dpp';
 import SelectedProductCustomsInfoCard from '@/components/dpp-tracker/SelectedProductCustomsInfoCard';
 import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; 
 import { useToast } from '@/hooks/use-toast';
@@ -168,7 +167,7 @@ export default function CustomsDashboardPage() {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="font-headline flex items-center"><Package className="mr-2 h-5 w-5 text-primary"/>Products in Transit / At Customs</CardTitle>
-          <CardDescription>Overview of products. Click "View Timeline" for details. CBAM relevant products are indicated.</CardDescription>
+          <CardDescription>Overview of products. Click a row or "Timeline" button for details. CBAM relevant products are indicated.</CardDescription>
         </CardHeader>
         <CardContent>
           <Table>
@@ -207,7 +206,7 @@ export default function CustomsDashboardPage() {
                   <TableRow 
                     key={product.id} 
                     className={cn(
-                        "hover:bg-muted/30 transition-colors",
+                        "hover:bg-muted/30 transition-colors cursor-pointer",
                         selectedProductForTimeline?.id === product.id && "bg-primary/10 ring-2 ring-primary"
                     )}
                     onClick={() => handleViewTimeline(product)} // Allow row click to select

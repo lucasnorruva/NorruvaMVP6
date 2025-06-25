@@ -1,5 +1,5 @@
 // --- File: src/data/mockTransitProducts.ts ---
-import type { TransitProduct } from '@/types/dpp'; // Import type from new location
+import type { TransitProduct } from '@/types/dpp';
 
 export const MOCK_TRANSIT_PRODUCTS: TransitProduct[] = [
   { id: "DPP001", name: "EcoSmart Refrigerator X500", category: "Appliances", stage: "Cleared - Inland Transit (DE)", eta: "2024-08-02", dppStatus: "Compliant", transport: "Truck", origin: "Gdansk, Poland", destination: "Berlin, Germany" },

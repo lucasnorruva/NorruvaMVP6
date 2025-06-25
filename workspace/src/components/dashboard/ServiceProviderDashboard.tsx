@@ -20,7 +20,7 @@ import Link from "next/link";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast'; 
 import { useRouter } from 'next/navigation';
-import { MOCK_DPPS } from '@/data'; 
+import { MOCK_DPPS } from '@/data';
 import { MOCK_SERVICE_JOBS } from '@/data/mockServiceJobs'; // Direct import to fix module resolution error
 import type { ServiceJob } from '@/types/dpp'; // Import type
 import { suggestMaintenanceSchedule, type MaintenanceSuggestion } from "@/ai/flows/suggest-maintenance-schedule";

@@ -14,16 +14,17 @@ import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
 import { ServiceProviderQuickActionsCard } from "./ServiceProviderQuickActionsCard";
 import { 
     Wrench, CheckCircle, AlertTriangle, Clock, Search, MoreHorizontal, Eye, MessageSquare, ListChecks, BarChart3,
-    UserCircle, Tool, ArrowUp, ArrowDown, ChevronsUpDown, Filter as FilterIcon, Settings, PackageSearch, FileText as FileTextIcon, Loader2, Bot
+    UserCircle, Tool, ArrowUp, ArrowDown, ChevronsUpDown, Filter as FilterIcon, Settings, PackageSearch, FileText as FileTextIcon, Loader2, Bot, CalendarDays
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast'; 
 import { useRouter } from 'next/navigation';
-import { MOCK_DPPS } from '@/data';
-import { MOCK_SERVICE_JOBS } from '@/data/mockServiceJobs';
+import { MOCK_DPPS } from '@/data'; 
+import { MOCK_SERVICE_JOBS } from '@/data/mockServiceJobs'; // Direct import to fix module resolution error
 import type { ServiceJob } from '@/types/dpp'; // Import type
 import { suggestMaintenanceSchedule, type MaintenanceSuggestion } from "@/ai/flows/suggest-maintenance-schedule";
+import { Label } from '@/components/ui/label';
 
 
 interface JobFilters {
@@ -202,8 +203,6 @@ export const ServiceProviderDashboard = () => {
     notesContent += `Suggested Actions:\n${aiMaintenanceSuggestion.suggestedActions.map(a => `- ${a}`).join('\n')}\n`;
     notesContent += `Reasoning: ${aiMaintenanceSuggestion.reasoning}`;
 
-    // Here you would typically update the notes for a specific job.
-    // For this mock, we'll just show a toast.
     if (jobId) {
       console.log(`Conceptual: Applying AI tips to notes for Job ID ${jobId}:\n${notesContent}`);
       toast({ title: "AI Tips Applied (Mock)", description: `Suggestions conceptually added to notes for Job ID ${jobId}.`});
@@ -375,7 +374,7 @@ export const ServiceProviderDashboard = () => {
                 <Card key={kpi.title} className="bg-muted/30">
                     <CardHeader className="pb-2">
                         <CardTitle className="text-md font-medium flex items-center">
-                            <kpi.icon className={`mr-2 h-4 w-4 ${kpi.color || 'text-primary'}`} />
+                            <kpi.icon className={cn("mr-2 h-4 w-4", kpi.color || 'text-primary')} />
                             {kpi.title}
                         </CardTitle>
                     </CardHeader>

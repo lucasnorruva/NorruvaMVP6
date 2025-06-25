@@ -11,9 +11,11 @@ import { BarChart3, AlertTriangle, ShieldCheck, Package, CheckCircle, Clock, Tru
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from 'next/navigation';
-import { MOCK_TRANSIT_PRODUCTS, MOCK_CUSTOMS_ALERTS, MOCK_DPPS } from '@/data'; 
-import type { TransitProduct, CustomsAlert, InspectionEvent, DigitalProductPassport } from '@/types/dpp';
-import SelectedProductCustomsInfoCard from '@/components/dpp-tracker/SelectedProductCustomsInfoCard';
+import { MOCK_TRANSIT_PRODUCTS } from '@/data/mockTransitProducts';
+import { MOCK_CUSTOMS_ALERTS } from '@/data/mockCustomsAlerts';
+import { MOCK_DPPS } from '@/data/mockDpps';
+import type { TransitProduct, CustomsAlert, InspectionEvent, DigitalProductPassport } from '@/types/dpp'; 
+import SelectedProductCustomsInfoCard from '@/components/dpp-tracker/SelectedProductCustomsInfoCard'; 
 import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; 
 import { useToast } from '@/hooks/use-toast';
 

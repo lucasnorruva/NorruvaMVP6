@@ -1,4 +1,3 @@
-
 // --- File: src/components/dashboard/ServiceProviderDashboard.tsx ---
 "use client";
 
@@ -7,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Input } from '@/components/ui/input';
 import { DatePicker } from "@/components/ui/date-picker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
@@ -21,8 +20,9 @@ import Link from "next/link";
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast'; 
 import { useRouter } from 'next/navigation';
-import { MOCK_SERVICE_JOBS, MOCK_DPPS } from '@/data'; 
-import type { ServiceJob } from '@/types/dpp'; 
+import { MOCK_DPPS } from '@/data';
+import { MOCK_SERVICE_JOBS } from '@/data/mockServiceJobs';
+import type { ServiceJob } from '@/types/dpp'; // Import type
 import { suggestMaintenanceSchedule, type MaintenanceSuggestion } from "@/ai/flows/suggest-maintenance-schedule";
 
 
@@ -90,7 +90,7 @@ export const ServiceProviderDashboard = () => {
   const getPriorityBadgeStyle = (priority: ServiceJob['priority']) => {
     switch (priority) {
       case 'High': return "bg-destructive/20 text-destructive border-destructive/30";
-      case 'Medium': return "bg-warning/20 text-orange-600 border-orange-500/30"; // Use a defined warning color
+      case 'Medium': return "bg-warning/20 text-orange-600 border-orange-500/30";
       case 'Low': return "bg-accent/20 text-accent-foreground border-accent/30";
       default: return "bg-muted text-muted-foreground";
     }
@@ -396,4 +396,3 @@ export const ServiceProviderDashboard = () => {
     </div>
   );
 };
-

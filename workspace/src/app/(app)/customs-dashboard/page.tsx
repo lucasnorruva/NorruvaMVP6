@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import { useSearchParams } from 'next/navigation';
 import { MOCK_TRANSIT_PRODUCTS, MOCK_CUSTOMS_ALERTS, MOCK_DPPS } from '@/data'; 
-import type { TransitProduct, CustomsAlert, InspectionEvent, DigitalProductPassport } from '@/data'; // Import from @/data
+import type { TransitProduct, CustomsAlert, InspectionEvent, DigitalProductPassport } from '@/types/dpp'; // Corrected import path
 import SelectedProductCustomsInfoCard from '@/components/dpp-tracker/SelectedProductCustomsInfoCard';
 import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils"; 
 import { useToast } from '@/hooks/use-toast';

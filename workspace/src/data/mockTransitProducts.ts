@@ -1,4 +1,3 @@
-
 // --- File: src/data/mockTransitProducts.ts ---
 import type { TransitProduct } from '@/types/dpp'; // Import type from new location
 
@@ -16,4 +15,3 @@ export const MOCK_TRANSIT_PRODUCTS: TransitProduct[] = [
   { id: "PROD800", name: "Vintage Electronics Lot", category: "Electronics", stage: "Delayed at Customs (Antwerp)", eta: "2024-07-25", dppStatus: "Non-Compliant", transport: "Ship", origin: "Hong Kong", destination: "Brussels, Belgium" },
   { id: "PROD801", name: "Fresh Flowers Batch", category: "Agriculture", stage: "Arrived at Airport (AMS)", eta: new Date().toISOString().split('T')[0], dppStatus: "Pending Review", transport: "Plane", origin: "Nairobi, Kenya", destination: "Amsterdam, Netherlands" },
 ];
-

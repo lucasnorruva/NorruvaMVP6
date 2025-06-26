@@ -43,7 +43,7 @@ export default function ProductDetailPage() {
     if (product.id.startsWith("USER_PROD")) {
       try {
         const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
-        let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+        const userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
         const productIndex = userProducts.findIndex(p => p.id === product.id);
         if (productIndex > -1) {
           userProducts[productIndex] = {
@@ -114,7 +114,7 @@ export default function ProductDetailPage() {
 
       if (product.id.startsWith("USER_PROD")) {
         const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
-        let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+        const userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
         const productIndex = userProducts.findIndex(p => p.id === product.id);
         if (productIndex > -1) {
           if (!userProducts[productIndex].complianceSummary) { 

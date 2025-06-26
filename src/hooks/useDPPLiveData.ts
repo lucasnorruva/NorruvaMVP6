@@ -53,7 +53,7 @@ export function useDPPLiveData() {
   }, [dpps]);
 
   const sortedAndFilteredDPPs = useMemo(() => {
-    let filtered = dpps.filter((dpp) => {
+    const filtered = dpps.filter((dpp) => {
       if (filters.searchQuery && !dpp.productName.toLowerCase().includes(filters.searchQuery.toLowerCase())) return false;
       if (filters.status !== "all" && dpp.metadata.status !== filters.status) return false;
       

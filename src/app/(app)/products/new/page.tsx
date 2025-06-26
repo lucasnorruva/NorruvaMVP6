@@ -526,7 +526,7 @@ export default function AddNewProductPage() {
 
     try {
       const storedProductsString = localStorage.getItem(USER_PRODUCTS_LOCAL_STORAGE_KEY);
-      let userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
+      const userProducts: StoredUserProduct[] = storedProductsString ? JSON.parse(storedProductsString) : [];
 
       const productCoreData: StoredUserProduct = {
         id: isEditMode && editProductId ? editProductId : `USER_PROD_${Date.now().toString().slice(-6)}`,

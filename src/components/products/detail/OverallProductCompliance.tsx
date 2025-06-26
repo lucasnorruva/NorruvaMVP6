@@ -52,7 +52,7 @@ const ComplianceItem: React.FC<{ title: string; data: ComplianceStatus, actionBu
   const IconComponent = getStatusIcon(data.status);
   const badgeVariant = getStatusBadgeVariant(data.status);
   const badgeClasses = getStatusBadgeClasses(data.status);
-  let titleText = title;
+  const titleText = title;
   let detailsText = `Last checked: ${new Date(data.lastChecked).toLocaleDateString()}`;
 
   const formattedStatus = data.status

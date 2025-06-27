@@ -47,6 +47,7 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
 
   return (
     <div className="grid md:grid-cols-2 gap-6">
+
       <Card className="shadow-sm">
         <CardHeader>
           <CardTitle className="text-lg font-semibold flex items-center">
@@ -115,6 +116,8 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
           </CardContent>
         </Card>
       )}
+    </div>
+}
 
       <Card className="shadow-sm">
         <CardHeader>
@@ -209,3 +212,6 @@ export default function SustainabilityTab({ product }: SustainabilityTabProps) {
             {product.batteryRegulation.carbonFootprint.vcId && <DetailItem label="Carbon Footprint VC ID" value={product.batteryRegulation.carbonFootprint.vcId} />}
           </CardContent>
         </Card>
+
+ </>
+ );

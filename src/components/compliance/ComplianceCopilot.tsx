@@ -151,7 +151,7 @@ export default function ComplianceCopilot() {
             {messages.length === 0 && !isLoading && (
               <div className="text-center text-muted-foreground py-8">
                 <Bot className="h-12 w-12 mx-auto mb-2" />
-                <p>Ask me anything about EU DPP regulations!</p>
+                <p>Ask me anything about EU DPP regulations! </p>
                 <p className="text-xs mt-1">E.g., "What is ESPR?" or "Tell me about battery passports."</p>
               </div>
             )}

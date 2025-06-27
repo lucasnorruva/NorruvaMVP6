@@ -24,7 +24,7 @@ export interface WizardStep {
 
 export interface BatteryRegulationStepProps {
   step: WizardStep;
-  formData: Record<string, any>;
+  formData: Record<string, string | number | boolean | null | undefined>;
   onInputChange: (step: string, field: string, value: string | number) => void;
   onRadioChange: (step: string, field: string, value: string) => void;
   onSelectChange: (step: string, field: string, value: string) => void;

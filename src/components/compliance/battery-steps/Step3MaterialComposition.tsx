@@ -63,7 +63,7 @@ export default function Step3MaterialComposition({ step, formData, onInputChange
             </div>
           </div>
           <p className="text-xs text-muted-foreground mt-1">
-            Declare the percentage by weight of these CRMs if present in the battery. Omit or use '0' if not present.
+            Declare the percentage by weight of these CRMs if present in the battery. Omit or use &apos;0&apos; if not present.
           </p>
         </div>
         <div className="space-y-4 p-4 border rounded-md bg-muted/30">

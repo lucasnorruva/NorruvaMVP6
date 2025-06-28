@@ -1,5 +1,2 @@
-export * from './mockDpps';
-export * from './simpleMockProducts';
-export * from './mockSuppliers';
-export * from './mockPublicPassports';
-export * from './mockImportJobs';
+// This file is deprecated and will be removed.
+// All data imports should be updated to point to specific mock data files.

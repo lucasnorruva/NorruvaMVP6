@@ -1,3 +1,2 @@
 // This file is obsolete and is being deleted.
 // The new architecture will not use this page, editing is handled by /products/new?id=...
-

@@ -1,0 +1,14 @@
+// This file is being deprecated and its functionality is handled by specific mock data files.
+// It will be removed in a future refactoring step.
+
+// Export all from base types
+export * from './base';
+
+// Export all from form types
+export * from './forms';
+
+// Export all from API types
+export * from './api';
+
+// Export all from component types
+export * from './components';

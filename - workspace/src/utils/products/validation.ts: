@@ -1,0 +1,50 @@
+// src/utils/products/validation.ts
+import { z } from 'zod';
+import type { MaterialInfo, CustomAttribute, CarbonFootprintData, DigitalTwinData, EthicalSourcingData, EsprSpecifics } from '@/types/products';
+
+const materialInfoSchema: z.ZodType<MaterialInfo> = z.object({
+  name: z.string().min(1, 'Material name is required'),
+  percentage: z.number().min(0).max(100).optional(),
+  source: z.string().optional(),
+  isRecycled: z.boolean().optional(),
+  sustainabilityCertification: z.string().optional(),
+  origin: z.string().optional(),
+  suppliers: z.array(z.string()).optional(),
+});
+
+const customAttributeSchema: z.ZodType<CustomAttribute> = z.object({
+  key: z.string().min(1),
+  value: z.string().min(1),
+  type: z.enum(['string', 'number', 'boolean', 'date', 'url']).optional(),
+  isRequired: z.boolean().optional(),
+  category: z.string().optional(),
+});
+
+export const productFormSchema = z.object({
+  productName: z.string().min(3, { message: "Product name must be at least 3 characters long." }),
+  manufacturer: z.string().min(2, { message: "Manufacturer name is required." }),
+  category: z.string().min(2, { message: "Category is required." }),
+  modelNumber: z.string().optional(),
+  gtin: z.string().optional(),
+  sku: z.string().optional(),
+  nfcTagId: z.string().optional(),
+  rfidTagId: z.string().optional(),
+  description: z.string().min(10, { message: "Description must be at least 10 characters long." }).optional(),
+  materials: z.string().optional(),
+  sustainabilityClaims: z.string().optional(),
+  keyCompliancePoints: z.string().optional(),
+  specifications: z.string().optional().refine(val => {
+    if (!val) return true;
+    try {
+      JSON.parse(val);
+      return true;
+    } catch {
+      return false;
+    }
+  }, { message: "Specifications must be valid JSON" }),
+  energyLabel: z.string().optional(),
+  imageUrl: z.string().url({ message: "Please enter a valid URL." }).optional().or(z.literal("")),
+  imageHint: z.string().optional(),
+  customAttributes: z.array(customAttributeSchema).optional(),
+  // Add more complex validations for other fields if needed
+});

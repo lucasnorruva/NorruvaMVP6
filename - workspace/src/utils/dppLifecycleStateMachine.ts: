@@ -8,6 +8,7 @@ export enum DppLifecycleState {
   QUALITY_ASSURANCE = 'QUALITY_ASSURANCE',
   DISTRIBUTION = 'DISTRIBUTION',
   IN_USE = 'IN_USE',
+  MAINTENANCE = 'MAINTENANCE', 
   END_OF_LIFE = 'END_OF_LIFE',
 }
 
@@ -16,8 +17,9 @@ export const ALLOWED_TRANSITIONS: Record<DppLifecycleState, DppLifecycleState[]>
   [DppLifecycleState.MANUFACTURING]: [DppLifecycleState.QUALITY_ASSURANCE],
   [DppLifecycleState.QUALITY_ASSURANCE]: [DppLifecycleState.DISTRIBUTION],
   [DppLifecycleState.DISTRIBUTION]: [DppLifecycleState.IN_USE],
-  [DppLifecycleState.IN_USE]: [DppLifecycleState.END_OF_LIFE],
-  [DppLifecycleState.END_OF_LIFE]: [],
+  [DppLifecycleState.IN_USE]: [DppLifecycleState.MAINTENANCE, DppLifecycleState.END_OF_LIFE],
+  [DppLifecycleState.MAINTENANCE]: [DppLifecycleState.IN_USE], // After maintenance, it goes back to 'In Use'
+  [DppLifecycleState.END_OF_LIFE]: [], // Terminal state
 };
 
 export class DppLifecycleStateMachine {
@@ -32,7 +34,8 @@ export class DppLifecycleStateMachine {
   }
 
   canTransition(next: DppLifecycleState): boolean {
-    return ALLOWED_TRANSITIONS[this.currentState]?.includes(next) ?? false;
+    const allowed = ALLOWED_TRANSITIONS[this.currentState];
+    return allowed ? allowed.includes(next) : false;
   }
 
   transition(next: DppLifecycleState): void {

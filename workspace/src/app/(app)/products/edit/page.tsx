@@ -1,18 +1,3 @@
-// src/app/(app)/products/edit/page.tsx
-/**
- * Page for editing an existing product.
- * This is now the dedicated route for editing, separating it from creation.
- */
-"use client";
+// This file is obsolete and is being deleted.
+// The new architecture will not use this page, editing is handled by /products/new?id=...
 
-import { Suspense } from 'react';
-import AddEditProductPage from '../new/page';
-import { FullPageLoader } from '@/components/shared/FullPageLoader';
-
-export default function EditProductPage() {
-  return (
-    <Suspense fallback={<FullPageLoader message="Loading editor..." />}>
-      <AddEditProductPage />
-    </Suspense>
-  );
-}

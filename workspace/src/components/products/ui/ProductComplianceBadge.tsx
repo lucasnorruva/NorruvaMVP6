@@ -1,4 +1,3 @@
-
 // src/components/products/ui/ProductComplianceBadge.tsx
 /**
  * Memoized compliance status badge component

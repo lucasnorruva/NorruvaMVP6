@@ -1,4 +1,3 @@
-
 // src/components/products/features/ProductList.tsx
 /**
  * Feature component for product list with search and filtering

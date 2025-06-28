@@ -1,35 +1,40 @@
-
+// src/app/(app)/products/new/page.tsx
 "use client";
 
-import React from "react";
-import { useRouter } from "next/navigation";
-import { ProductForm } from "@/components/products/forms"; // Updated import
-import { useCreateProduct } from "@/hooks/products/useProduct";
-import type { ProductFormData } from "@/types/products"; // Updated import
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ScanLine } from "lucide-react";
+import React from 'react';
+import { useRouter } from 'next/navigation';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { ScanLine } from 'lucide-react';
+import { ProductForm } from '@/components/products/forms/ProductForm';
+import { useCreateProduct } from '@/hooks/products/useProduct';
+import type { ProductFormData } from '@/types/products';
+import { useErrorHandler } from '@/hooks/shared/useErrorHandler';
 
 export default function AddNewProductPage() {
   const router = useRouter();
-  const createProductMutation = useCreateProduct({
+  const { handleError } = useErrorHandler();
+  
+  const { mutateAsync: createProduct, isPending } = useCreateProduct({
     onSuccess: (data) => {
-      // On success, redirect to the product list page
-      router.push("/products");
+      // On success, redirect to the new product's detail page
+      router.push(`/products/${data.id}`);
     },
-    // onError is handled globally by the useErrorHandler hook, but can be overridden here if needed
+    onError: (error) => {
+      handleError(error, 'Failed to create product');
+    },
   });
 
   const handleSubmit = async (data: ProductFormData) => {
-    // The useCreateProduct hook handles the submission logic
-    await createProductMutation.mutateAsync(data);
+    await createProduct(data);
   };
-
+  
   return (
     <div className="space-y-8">
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="text-2xl font-headline flex items-center">
-            <ScanLine className="mr-3 h-6 w-6 text-primary" /> Create New Digital Product Passport
+            <ScanLine className="mr-3 h-6 w-6 text-primary" />
+            Create New Digital Product Passport
           </CardTitle>
           <CardDescription>
             Fill in the details below to create a new DPP. Start with basic information, and complete other sections as data becomes available.
@@ -38,7 +43,7 @@ export default function AddNewProductPage() {
         <CardContent>
           <ProductForm
             onSubmit={handleSubmit}
-            isSubmitting={createProductMutation.isPending}
+            isSubmitting={isPending}
           />
         </CardContent>
       </Card>

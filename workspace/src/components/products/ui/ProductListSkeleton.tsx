@@ -1,4 +1,3 @@
-
 // src/components/products/ui/ProductListSkeleton.tsx
 /**
  * Skeleton loading state for product lists

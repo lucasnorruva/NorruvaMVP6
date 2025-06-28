@@ -1,4 +1,3 @@
-
 // src/components/products/ui/ProductCard.tsx
 /**
  * Pure UI component for displaying product card with memoization
@@ -7,6 +6,7 @@
 
 import React, { memo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, Eye, Edit, Trash2 } from 'lucide-react';
 import {

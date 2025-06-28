@@ -23,10 +23,10 @@ const MetricCardWidget: React.FC<{title: string, value: string | number, icon: R
 
   if (trendDirection === "up") {
     TrendIconComponent = ArrowUp;
-    trendColor = "text-success"; // Use Tailwind success color from theme
+    trendColor = "text-success";
   } else if (trendDirection === "down") {
     TrendIconComponent = ArrowDown;
-    trendColor = "text-destructive"; // Use Tailwind danger color from theme
+    trendColor = "text-destructive";
   }
 
   return (

@@ -1,5 +1,7 @@
+
 // --- File: src/utils/productDetailUtils.ts ---
 // Description: Utilities for fetching and preparing product details for display.
+
 
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from '@/types/dpp';
 import { MOCK_DPPS } from '@/data';
@@ -211,8 +213,8 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
           fairTradeCertificationId: userProductData.productDetails?.fairTradeCertificationId, 
           ethicalSourcingPolicyUrl: userProductData.productDetails?.ethicalSourcingPolicyUrl, 
           esprSpecifics: userProductData.productDetails?.esprSpecifics,
-          carbonFootprint: userProductData.productDetails?.carbonFootprint, // Added for Task 3
-          digitalTwin: userProductData.productDetails?.digitalTwin, // Added for Task 25
+          carbonFootprint: userProductData.productDetails?.carbonFootprint,
+          digitalTwin: userProductData.productDetails?.digitalTwin, 
         },
         compliance: { 
           eprel: userProductData.complianceData?.eprel || complianceSummaryFromStorage.eprel,
@@ -264,5 +266,3 @@ export async function fetchProductDetails(productId: string): Promise<SimpleProd
 
   return null;
 }
-
-

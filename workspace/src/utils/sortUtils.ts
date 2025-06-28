@@ -16,10 +16,9 @@ export function getSortValue(dpp: DigitalProductPassport, key: SortableKeys): an
       return new Date(dpp.metadata.last_updated).getTime();
     case 'ebsiVerification.status':
       return dpp.ebsiVerification?.status;
-    case 'metadata.onChainStatus': // Added case for onChainStatus
+    case 'metadata.onChainStatus': 
       return dpp.metadata?.onChainStatus;
     default:
       return (dpp as any)[key];
   }
 }
-

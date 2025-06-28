@@ -31,7 +31,7 @@ export interface ProductFormProps extends ComponentProps {
   onSubmit: (data: ProductFormData) => Promise<void>;
   onCancel?: () => void;
   isSubmitting?: boolean;
-  validationSchema?: any; // Replace with Zod schema if using Zod
+  validationSchema?: any;
 }
 
 export interface ProductListProps extends ComponentProps {
@@ -60,6 +60,6 @@ export type UseProductQuery = {
 };
 
 export type UseProductMutation = {
-  onSuccess?: (data: Product) => void;
+  onSuccess?: (data: Product | string) => void;
   onError?: (error: ApiError) => void;
 };

@@ -34,10 +34,10 @@ export interface ProductFormData {
   
   // Product details
   description: string;
-  materials: string; // Simplified for form input
-  sustainabilityClaims: string; // Simplified for form input
-  keyCompliancePoints: string; // Simplified for form input
-  specifications: string; // JSON string
+  materials: string;
+  sustainabilityClaims: string;
+  keyCompliancePoints: string;
+  specifications: string;
   energyLabel?: string;
   imageUrl?: string;
   imageHint?: string;

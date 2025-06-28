@@ -1,11 +1,15 @@
+
 // --- File: src/app/api/v1/dpp/route.ts ---
-// Description: Conceptual API endpoint to create a new Digital Product Passport and list DPPs with filters.
+// This file is being deprecated and its functionality is conceptually replaced by the new architecture.
+// The new system will use client-side hooks (`useProductList`, `useCreateProduct`) that call a mock service layer (`productService`).
+// This mock service layer simulates API calls without needing actual HTTP fetch requests in the prototype.
+// This route is kept for reference but will no longer be actively used by the refactored product pages.
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { validateApiKey } from '@/middleware/apiKeyAuth';
-import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport, CustomAttribute, DashboardFiltersState } from '@/types/dpp';
+import { MOCK_DPPS } from '@/data/mockDpps'; // Corrected import
+import type { DigitalProductPassport, DashboardFiltersState } from '@/types/dpp'; // Corrected import
 
 interface CreateDppRequestBody {
   productName: string;
@@ -17,7 +21,7 @@ interface CreateDppRequestBody {
     description?: string;
     materials?: Array<{ name: string; percentage?: number; isRecycled?: boolean }>;
     energyLabel?: string;
-    customAttributes?: CustomAttribute[];
+    customAttributes?: any[]; // Keep as any[] for simplicity with old types
     imageUrl?: string;
     imageHint?: string;
   };
@@ -44,10 +48,10 @@ export async function POST(request: NextRequest) {
   } = requestBody;
 
   if (!productName || typeof productName !== 'string' || productName.trim() === '') {
-    return NextResponse.json({ error: { code: 400, message: "Field 'productName' is required and must be a non-empty string." } }, { status: 400 });
+    return NextResponse.json({ error: { code: 400, message: "Field 'productName' is required." } }, { status: 400 });
   }
   if (!category || typeof category !== 'string' || category.trim() === '') {
-    return NextResponse.json({ error: { code: 400, message: "Field 'category' is required and must be a non-empty string." } }, { status: 400 });
+    return NextResponse.json({ error: { code: 400, message: "Field 'category' is required." } }, { status: 400 });
   }
 
   const newProductId = `DPP_API_${Date.now().toString().slice(-5)}`;
@@ -90,12 +94,12 @@ export async function POST(request: NextRequest) {
   };
 
   MOCK_DPPS.push(newDpp);
-  await new Promise(resolve => setTimeout(resolve, Math.random() * 150 + 100));
+  await new Promise(resolve => setTimeout(resolve, 250));
   return NextResponse.json(newDpp, { status: 201 });
 }
 
 export async function GET(request: NextRequest) {
-  const authError = validateApiKey(request); // Re-added API key validation
+  const authError = validateApiKey(request);
   if (authError) return authError;
 
   const { searchParams } = new URL(request.url);
@@ -145,4 +149,3 @@ export async function GET(request: NextRequest) {
     totalCount: filteredDPPs.length,
   });
 }
-

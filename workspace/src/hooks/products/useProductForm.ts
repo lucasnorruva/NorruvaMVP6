@@ -34,8 +34,8 @@ export function useProductForm({
     mode: 'onChange',
   });
   
-  const { handleSubmit, reset, getValues } = form;
-  const { errors, isDirty, isValid, isSubmitting, touchedFields } = form.formState;
+  const { formState, handleSubmit, reset, getValues } = form;
+  const { errors, isDirty, isValid, isSubmitting, touchedFields } = formState;
   
   // Watch form data for auto-save
   const watchedData = useWatch({ control: form.control });
@@ -44,6 +44,7 @@ export function useProductForm({
   // Auto-save functionality
   useEffect(() => {
     if (autoSave && isDirty && isValid && !isSubmitting) {
+      // Implement auto-save logic here
       console.log('Auto-saving form data:', debouncedData);
     }
   }, [debouncedData, autoSave, isDirty, isValid, isSubmitting]);
@@ -77,8 +78,7 @@ export function useProductForm({
     [onSubmit]
   );
   
-  // Form state summary
-  const formState = useMemo(() => ({
+  const formStateSummary = useMemo(() => ({
     data: getValues(),
     errors: validationErrors,
     isSubmitting,
@@ -114,12 +114,13 @@ export function useProductForm({
   
   return {
     form,
-    formState,
+    formState: formStateSummary,
     validationErrors,
     submitHandler: handleSubmit(submitHandler),
     resetForm,
     validateField,
     setFieldValue,
+    // Expose form methods
     watch: form.watch,
     getValues: form.getValues,
     setValue: form.setValue,

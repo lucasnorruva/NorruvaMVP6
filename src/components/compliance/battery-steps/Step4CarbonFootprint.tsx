@@ -43,7 +43,7 @@ export default function Step4CarbonFootprint({ step, formData, onInputChange, on
             </Select>
           </div>
         </div>
-        <p className="text-xs text-muted-foreground -mt-4">Provide the total cradle-to-gate carbon footprint for the battery's manufacturing phase.</p>
+        <p className="text-xs text-muted-foreground -mt-4">Provide the total cradle-to-gate carbon footprint for the battery&apos;s manufacturing phase.</p>
         <div>
           <Label htmlFor="step4_mfgCFDataSource">Data Source & Methodology</Label>
           <Textarea
@@ -74,7 +74,7 @@ export default function Step4CarbonFootprint({ step, formData, onInputChange, on
               value={formData.step4_transportCF || ""}
               onChange={(e) => onInputChange("step4", "transportCF", e.target.valueAsNumber)}
               placeholder="e.g., 25.5 (kg CO₂e/kWh)"
-            />
+/>
             <p className="text-xs text-muted-foreground mt-1">CF of transporting battery to first point of sale/use in EU.</p>
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function Step4CarbonFootprint({ step, formData, onInputChange, on
             value={formData.step4_eolCF || ""}
             onChange={(e) => onInputChange("step4", "eolCF", e.target.valueAsNumber)}
             placeholder="e.g., -10 (kg CO₂e/kWh for credit)"
-          />
+/>
           <p className="text-xs text-muted-foreground mt-1">Estimated CF or credit associated with the battery's end-of-life phase.</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => onAskCopilot(step.title)}>

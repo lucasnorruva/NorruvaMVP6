@@ -40,7 +40,7 @@ export default function RoleSpecificCard({ product }: RoleSpecificCardProps) {
       IconComponent = Building;
       content = (
         <>
-          <p className="text-sm text-muted-foreground">Ensure all product data is accurate and up-to-date. You can manage this product's DPP via your dashboard. Consider initiating a new compliance check if recent changes were made.</p>
+          <p className="text-sm text-muted-foreground">Ensure all product data is accurate and up-to-date. You can manage this product&apos;s DPP via your dashboard. Consider initiating a new compliance check if recent changes were made.</p>
           {product.ebsiStatus === 'pending' && (
             <p className="text-sm text-orange-600 mt-2">
               <strong>Action Required:</strong> EBSI verification for this product is pending. Please review and complete necessary steps via your dashboard to ensure full traceability and compliance.

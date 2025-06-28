@@ -132,7 +132,7 @@ const ProductLifecycleFlowchart: React.FC<ProductLifecycleFlowchartProps> = ({ p
     <Card>
       <CardHeader>
         <CardTitle className="text-xl font-headline">Product Journey</CardTitle>
-        <CardDescription>Track the product's progress through its lifecycle stages.</CardDescription>
+ <CardDescription>Track the product&apos;s progress through its lifecycle stages.</CardDescription>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto pb-4">

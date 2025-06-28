@@ -1,3 +1,4 @@
+
 // src/components/products/features/ProductList.tsx
 /**
  * Feature component for product list with search and filtering
@@ -18,7 +19,9 @@ import { ProductCard } from '../ui/ProductCard';
 import { ProductListSkeleton } from '../ui/ProductListSkeleton';
 import { EmptyState } from '../../shared/EmptyState';
 import { ErrorBoundary } from '../../shared/ErrorBoundary';
-import { useProductList } from '@/hooks/products';
+import { useProductList } from '@/hooks/products/useProduct';
+import { useProductSearch } from '@/hooks/products/useProductSearch';
+import { useDebounce } from '@/hooks/shared/useDebounce';
 import { productExportService } from '@/services/products/exportService';
 
 interface ProductListProps extends ComponentProps {
@@ -81,7 +84,7 @@ const ProductList = memo<ProductListProps>(({
 
   const handleExport = useCallback(async () => {
     try {
-      const blob = await productExportService.exportToCSV(products as any);
+      const blob = await productExportService.exportToCSV(products);
       productExportService.downloadBlob(blob, `products-${new Date().toISOString().split('T')[0]}.csv`);
     } catch (error) {
       console.error('Export failed:', error);

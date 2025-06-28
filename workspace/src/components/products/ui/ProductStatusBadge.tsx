@@ -1,3 +1,4 @@
+
 // src/components/products/ui/ProductStatusBadge.tsx
 /**
  * Memoized status badge component

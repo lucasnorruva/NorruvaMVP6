@@ -1,4 +1,3 @@
-
 // --- File: src/config/navConfig.ts ---
 // Description: Centralized configuration for navigation items and their role-based access.
 "use client";
@@ -7,7 +6,7 @@ import type { UserRole } from '@/contexts/RoleContext';
 import {
   LayoutDashboard, Package, ScanLine, Users, FileText, BarChartHorizontal,
   ListChecks, Bot, ShieldCheck, Fingerprint, ClipboardList, Globe2, Code2, Settings, LineChart, Wrench,
-  Bookmark, BarChartBig // Added BarChartBig
+  Bookmark, BarChartBig, Scale as ScaleIcon
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -28,7 +27,7 @@ export const roleDashboardPaths: Record<UserRole, string> = {
   recycler: "/recycler-dashboard",
   verifier: "/verifier-dashboard",
   service_provider: "/service-provider-dashboard",
-  business_analyst: "/data-insights-dashboard", // Added path for business_analyst
+  business_analyst: "/data-insights-dashboard", 
 };
 
 export const ALL_NAV_ITEMS: NavItemConfig[] = [
@@ -59,6 +58,7 @@ export const ALL_NAV_ITEMS: NavItemConfig[] = [
 
   // Secondary (Footer) Group
   { href: "/developer", label: "Developer Portal", icon: Code2, group: 'secondary', requiredRoles: ['admin', 'manufacturer'] },
+  { href: "/admin/regulations", label: "Regulation Management", icon: ScaleIcon, group: 'secondary', requiredRoles: ['admin'] },
   { href: "/audit-log", label: "Audit Log", icon: ListChecks, group: 'secondary', requiredRoles: ['admin'] },
   { href: "/settings", label: "Settings", icon: Settings, group: 'secondary', requiredRoles: ['admin', 'manufacturer', 'supplier', 'retailer', 'recycler', 'verifier', 'service_provider', 'business_analyst'] },
 ];

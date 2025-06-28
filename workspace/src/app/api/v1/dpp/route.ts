@@ -1,4 +1,3 @@
-
 // --- File: src/app/api/v1/dpp/route.ts ---
 // This file is being deprecated and its functionality is conceptually replaced by the new architecture.
 // The new system will use client-side hooks (`useProductList`, `useCreateProduct`) that call a mock service layer (`productService`).
@@ -8,7 +7,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { validateApiKey } from '@/middleware/apiKeyAuth';
-import { MOCK_DPPS } from '@/data/mockDpps'; // Corrected import
+import { MOCK_DPPS as mockDppData } from '@/data/mockDpps'; // Corrected import
 import type { DigitalProductPassport, DashboardFiltersState } from '@/types/dpp'; // Corrected import
 
 interface CreateDppRequestBody {
@@ -93,7 +92,7 @@ export async function POST(request: NextRequest) {
     consumerScans: 0,
   };
 
-  MOCK_DPPS.push(newDpp);
+  mockDppData.push(newDpp);
   await new Promise(resolve => setTimeout(resolve, 250));
   return NextResponse.json(newDpp, { status: 201 });
 }
@@ -108,7 +107,7 @@ export async function GET(request: NextRequest) {
   const searchQuery = searchParams.get('searchQuery') as DashboardFiltersState['searchQuery'] | null;
   const blockchainAnchored = searchParams.get('blockchainAnchored') as DashboardFiltersState['blockchainAnchored'] | null;
 
-  let filteredDPPs: DigitalProductPassport[] = [...MOCK_DPPS];
+  let filteredDPPs: DigitalProductPassport[] = [...mockDppData];
 
   if (searchQuery) {
     const lowerSearchQuery = searchQuery.toLowerCase();

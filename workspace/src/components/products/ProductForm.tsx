@@ -1,3 +1,6 @@
-// This file is obsolete and has been deleted to resolve build errors.
-// The new implementation is modular and follows a clean architecture.
-// See src/components/products/forms for the new form structure.
+// This file is being deleted as per the refactoring plan.
+// The new component is located at src/components/products/forms/ProductForm.tsx.
+// This placeholder prevents build errors during transition.
+"use client";
+import React from 'react';
+export default function ProductForm() { return <div>Obsolete Component</div>; }

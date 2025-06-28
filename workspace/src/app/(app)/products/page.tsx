@@ -1,6 +1,4 @@
-
-// --- File: page.tsx (Product Management List) ---
-// Description: Main page for listing and managing all products.
+// src/app/(app)/products/page.tsx
 "use client";
 
 import { useRouter } from 'next/navigation';
@@ -36,15 +34,15 @@ export default function ProductsPage() {
   });
 
   const handleEdit = (productId: string) => {
-    router.push(`/products/${productId}/edit`);
+    router.push(`/products/edit?id=${productId}`);
   };
 
   const handleView = (productId: string) => {
     router.push(`/products/${productId}`);
   };
 
-  const handleDeleteRequest = (productId: string, productName: string) => {
-    setProductToDelete({ id: productId, name: productName });
+  const handleDeleteRequest = (productId: string, productName?: string) => {
+    setProductToDelete({ id: productId, name: productName || productId });
   };
   
   const confirmDelete = () => {
@@ -62,7 +60,7 @@ export default function ProductsPage() {
       <ProductList
         onProductSelect={handleView}
         onProductEdit={handleEdit}
-        onProductDelete={(id, name) => handleDeleteRequest(id, name || id)}
+        onProductDelete={(id, name) => handleDeleteRequest(id, name)}
         onCreateNew={handleCreateNew}
       />
       

@@ -1,52 +1,71 @@
 // src/app/(app)/products/new/page.tsx
 "use client";
 
-import React from 'react';
-import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { ScanLine } from 'lucide-react';
+import { useMemo } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ProductForm } from '@/components/products/forms/ProductForm';
-import { useCreateProduct } from '@/hooks/products/useProduct';
+import { useProduct, useCreateProduct, useUpdateProduct } from '@/hooks/products/useProduct';
+import { FullPageLoader } from '@/components/shared/FullPageLoader';
+import { EmptyState } from '@/components/shared/EmptyState';
+import { productFormUtils } from '@/utils/products/formUtils';
 import type { ProductFormData } from '@/types/products';
-import { useErrorHandler } from '@/hooks/shared/useErrorHandler';
+import { ProductHeader } from '@/components/products/ui/ProductHeader';
 
-export default function AddNewProductPage() {
-  const router = useRouter();
-  const { handleError } = useErrorHandler();
-  
-  const { mutateAsync: createProduct, isPending } = useCreateProduct({
-    onSuccess: (data) => {
-      // On success, redirect to the new product's detail page
-      router.push(`/products/${data.id}`);
-    },
-    onError: (error) => {
-      handleError(error, 'Failed to create product');
-    },
+export default function AddEditProductPage() {
+  const searchParams = useSearchParams();
+  const productId = searchParams.get('id');
+
+  const { data: product, isLoading: isProductLoading, error: productError } = useProduct({
+    productId: productId!,
+    options: { enabled: !!productId },
   });
 
+  const { mutateAsync: createProduct, isPending: isCreating } = useCreateProduct();
+  const { mutateAsync: updateProduct, isPending: isUpdating } = useUpdateProduct();
+
+  const isSubmitting = isCreating || isUpdating;
+
   const handleSubmit = async (data: ProductFormData) => {
-    await createProduct(data);
+    if (productId) {
+      await updateProduct({ id: productId, data });
+    } else {
+      await createProduct(data);
+    }
   };
+
+  const initialData = useMemo(() => {
+    if (productId && product) {
+      return productFormUtils.productToFormData(product);
+    }
+    return productFormUtils.getDefaultFormData();
+  }, [productId, product]);
+
+  if (isProductLoading) {
+    return <FullPageLoader message="Loading product data..." />;
+  }
   
+  if (productId && productError) {
+    return (
+      <EmptyState
+        title="Failed to load product"
+        description="The product you are trying to edit could not be found or loaded."
+      />
+    );
+  }
+
   return (
-    <div className="space-y-8">
-      <Card className="shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-2xl font-headline flex items-center">
-            <ScanLine className="mr-3 h-6 w-6 text-primary" />
-            Create New Digital Product Passport
-          </CardTitle>
-          <CardDescription>
-            Fill in the details below to create a new DPP. Start with basic information, and complete other sections as data becomes available.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ProductForm
-            onSubmit={handleSubmit}
-            isSubmitting={isPending}
-          />
-        </CardContent>
-      </Card>
+    <div className="space-y-6">
+      <ProductHeader
+        title={productId ? 'Edit Product' : 'Create New Product'}
+        description={productId ? `Editing ${product?.productName.value || productId}` : 'Fill out the form below to create a new Digital Product Passport.'}
+        showCreateButton={false}
+      />
+      <ProductForm
+        initialData={initialData}
+        onSubmit={handleSubmit}
+        isSubmitting={isSubmitting}
+        key={productId || 'new-product'}
+      />
     </div>
   );
 }

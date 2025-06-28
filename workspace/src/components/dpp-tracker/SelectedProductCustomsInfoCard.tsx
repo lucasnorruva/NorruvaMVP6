@@ -1,3 +1,4 @@
+
 // --- File: src/components/dpp-tracker/SelectedProductCustomsInfoCard.tsx ---
 "use client";
 
@@ -8,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { X, Package, Truck, Ship, Plane, AlertTriangle, CalendarDays, ExternalLink, Info as InfoIcon } from 'lucide-react';
 import type { TransitProduct, CustomsAlert } from '@/types/dpp';
-import { cn } from '@/lib/utils';
+import { cn } from "@/lib/utils";
 import { getStatusIcon, getStatusBadgeVariant, getStatusBadgeClasses } from "@/utils/dppDisplayUtils";
 
 interface SelectedProductCustomsInfoCardProps {

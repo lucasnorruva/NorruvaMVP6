@@ -217,6 +217,7 @@ export default function DeveloperPortalPage() {
   const [postComponentTransferProductId, setPostComponentTransferProductId] = useState<string>("DPP001");
   const [postComponentTransferBody, setPostComponentTransferBody] = useState<string>(
     JSON.stringify({
+      productId: "DPP001",
       componentId: "COMP_XYZ_123",
       quantity: 100,
       transferDate: new Date().toISOString(),
@@ -324,7 +325,7 @@ export default function DeveloperPortalPage() {
   useEffect(() => updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet), [zkpSubmitDppId, zkpSubmitBody, zkpSubmitSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("zkpVerifyClaim", "GET", zkpVerifySnippetLang, { dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType }, null, setZkpVerifyCodeSnippet), [zkpVerifyDppId, zkpVerifyClaimType, zkpVerifySnippetLang, updateSnippet]);
 
-  useEffect(() => updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenResponsePlayground), [mintTokenProductId, mintTokenBody, mintTokenSnippetLang, updateSnippet]);
+  useEffect(() => updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet), [mintTokenProductId, mintTokenBody, mintTokenSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("updateTokenMetadata", "PATCH", updateTokenMetaSnippetLang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet), [updateTokenMetaTokenId, updateTokenMetaBody, updateTokenMetaSnippetLang, updateSnippet]);
   useEffect(() => updateSnippet("getTokenStatus", "GET", getTokenStatusSnippetLang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet), [getTokenStatusTokenId, getTokenStatusSnippetLang, updateSnippet]);
 
@@ -470,7 +471,7 @@ export default function DeveloperPortalPage() {
   const handleMockPostVerify = () => { updateSnippet("verifyDpp", "POST", verifyDppSnippetLang, { productIdPath: postVerifyProductIdPath }, null, setVerifyDppCodeSnippet); makeApiCall(`/api/v1/dpp/verify/${postVerifyProductIdPath}`, 'POST', null, setIsPostVerifyLoading, setPostVerifyResponse); } 
   const handleMockGetHistory = () => { updateSnippet("getDppHistory", "GET", getDppHistorySnippetLang, { productId: getHistoryProductId }, null, setGetDppHistoryCodeSnippet); makeApiCall(`/api/v1/dpp/history/${getHistoryProductId}`, 'GET', null, setIsGetHistoryLoading, setGetHistoryResponse); }
   const handleMockPostImport = () => { const body = { fileType: postImportFileType, data: "mock_file_content_base64_encoded", sourceDescription: postImportSourceDescription }; updateSnippet("importDpps", "POST", importDppsSnippetLang, body, JSON.stringify(body), setImportDppsCodeSnippet); makeApiCall('/api/v1/dpp/import', 'POST', body, setIsPostImportLoading, setPostImportResponse); }
-  const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetDppGraphResponse); }
+  const handleMockGetGraph = () => { updateSnippet("getDppGraph", "GET", getDppGraphSnippetLang, { productId: getGraphProductId }, null, setGetDppGraphCodeSnippet); makeApiCall(`/api/v1/dpp/graph/${getGraphProductId}`, 'GET', null, setIsGetGraphLoading, setGetGraphResponse); }
   const handleMockGetStatus = () => { updateSnippet("getDppStatus", "GET", getStatusSnippetLang, { productId: getStatusProductId }, null, setGetStatusCodeSnippet); makeApiCall(`/api/v1/dpp/status/${getStatusProductId}`, 'GET', null, setIsGetStatusLoading, setGetStatusResponse); }
 
   const handleMockUpdateOnChainStatus = () => { updateSnippet("onchainStatus", "POST", postOnchainStatusSnippetLang, { productId: postOnchainStatusProductId }, postOnchainStatusBody, setPostOnchainStatusCodeSnippet); makeApiCall(`/api/v1/dpp/${postOnchainStatusProductId}/onchain-status`, 'POST', postOnchainStatusBody, setIsPostOnchainStatusLoading, setPostOnchainStatusResponse); }
@@ -483,7 +484,7 @@ export default function DeveloperPortalPage() {
   const handleMockZkpSubmitProof = () => { updateSnippet("zkpSubmitProof", "POST", zkpSubmitSnippetLang, { dppId: zkpSubmitDppId }, zkpSubmitBody, setZkpSubmitCodeSnippet); makeApiCall(`/api/v1/zkp/submit-proof/${zkpSubmitDppId}`, 'POST', zkpSubmitBody, setIsZkpSubmitLoading, setZkpSubmitResponse); }
   const handleMockZkpVerifyClaim = () => { updateSnippet("zkpVerifyClaim", "GET", zkpVerifySnippetLang, { dppId: zkpVerifyDppId, claimType: zkpVerifyClaimType }, null, setZkpVerifyCodeSnippet); makeApiCall(`/api/v1/zkp/verify-claim/${zkpVerifyDppId}?claimType=${encodeURIComponent(zkpVerifyClaimType)}`, 'GET', null, setIsZkpVerifyLoading, setZkpVerifyResponse); }
 
-  const handleMockMintToken = () => { updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenResponsePlayground); makeApiCall(`/api/v1/token/mint/${mintTokenProductId}`, 'POST', mintTokenBody, setIsMintTokenLoading, setMintTokenResponsePlayground); }
+  const handleMockMintToken = () => { updateSnippet("mintToken", "POST", mintTokenSnippetLang, { productId: mintTokenProductId }, mintTokenBody, setMintTokenCodeSnippet); makeApiCall(`/api/v1/token/mint/${mintTokenProductId}`, 'POST', mintTokenBody, setIsMintTokenLoading, setMintTokenResponsePlayground); }
   const handleMockUpdateTokenMetadata = () => { updateSnippet("updateTokenMetadata", "PATCH", updateTokenMetaSnippetLang, { tokenId: updateTokenMetaTokenId }, updateTokenMetaBody, setUpdateTokenMetaCodeSnippet); makeApiCall(`/api/v1/token/metadata/${updateTokenMetaTokenId}`, 'PATCH', updateTokenMetaBody, setIsUpdateTokenMetaLoading, setUpdateTokenMetaResponse); }
   const handleMockGetTokenStatus = () => { updateSnippet("getTokenStatus", "GET", getTokenStatusSnippetLang, { tokenId: getTokenStatusTokenId }, null, setGetTokenStatusCodeSnippet); makeApiCall(`/api/v1/token/status/${getTokenStatusTokenId}`, 'GET', null, setIsGetTokenStatusLoading, setGetTokenStatusResponse); }
 
@@ -829,7 +830,7 @@ export default function DeveloperPortalPage() {
                 </Card>
                  <Card className="shadow-lg">
                     <CardHeader>
-                        <CardTitle className="font-headline flex items-center"><HelpCircle className="mr-3 h-6 w-6 text-primary" /> Support &amp; Feedback</CardTitle>
+                        <CardTitle className="font-headline flex items-center"><HelpCircle className="mr-3 h-6 w-6 text-primary" /> Support & Feedback</CardTitle>
                         <CardDescription>Get help and share your thoughts.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-3">
@@ -844,6 +845,3 @@ export default function DeveloperPortalPage() {
     </div>
   );
 }
-
-
-    

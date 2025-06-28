@@ -141,7 +141,6 @@ export default function ApiUsageDashboardPage() {
                     <td className="px-4 py-2.5 whitespace-nowrap text-xs text-muted-foreground font-mono">{log.user}</td>
                   </tr>
                 ))}
-              </tbody>
             </table>
           </div>
         </CardContent>

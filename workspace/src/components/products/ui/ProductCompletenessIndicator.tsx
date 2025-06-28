@@ -1,4 +1,3 @@
-
 // src/components/products/ui/ProductCompletenessIndicator.tsx
 /**
  * Progress indicator for product data completeness

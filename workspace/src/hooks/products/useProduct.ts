@@ -174,12 +174,6 @@ export function useDeleteProduct({ onSuccess, onError }: UseProductMutation = {}
       // Invalidate product list
       queryClient.invalidateQueries({ queryKey: productQueryKeys.lists() });
       
-      toast({
-        title: 'Product Deleted',
-        description: 'Product has been successfully deleted.',
-        variant: 'default',
-      });
-      
       onSuccess?.(productId as any);
     },
     onError: (error: ApiError) => {

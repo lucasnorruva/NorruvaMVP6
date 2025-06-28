@@ -27,9 +27,9 @@ const STATUS_CONFIG = {
     className: 'bg-yellow-100 text-yellow-700 border-yellow-300',
   },
   [ProductStatus.DRAFT]: {
-    icon: FileEdit,
+    icon: FileEdit, // Changed from AlertTriangle to FileEdit
     variant: 'secondary' as const,
-    className: 'bg-blue-100 text-blue-700 border-blue-300',
+    className: 'bg-blue-100 text-blue-700 border-blue-300', // Changed for visibility
   },
   [ProductStatus.ARCHIVED]: {
     icon: Archive,

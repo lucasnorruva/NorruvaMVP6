@@ -45,7 +45,7 @@ const ProductCard = memo<ProductCardProps>(({
   const handleEdit = () => onEdit?.(product.id);
   const handleDelete = () => onDelete?.(product.id, product.productName);
 
-  const imageUrl = product.imageUrl || '/images/product-placeholder.png';
+  const imageUrl = product.imageUrl || 'https://placehold.co/400x300.png?text=No+Image';
 
   return (
     <Card 

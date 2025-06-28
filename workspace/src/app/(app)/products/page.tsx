@@ -26,7 +26,7 @@ import type { StoredUserProduct, DigitalProductPassport, DisplayableProduct } fr
 import { USER_PRODUCTS_LOCAL_STORAGE_KEY } from "@/types/dpp";
 import ProductManagementFiltersComponent, { type ProductManagementFilterState } from "@/components/products/ProductManagementFiltersComponent";
 import { MetricCard } from "@/components/dpp-dashboard/MetricCard";
-import { ProductListRow } from "@/components/products/list/ProductListRow";
+import { ProductListRow } from "@/components/products/ProductListRow";
 import { calculateDppCompletenessForList } from "@/utils/dppDisplayUtils";
 import { cn } from "@/lib/utils";
 import { MOCK_DPPS as InitialMockDppsData } from '@/data';
@@ -64,13 +64,13 @@ const SortableTableHead: React.FC<{
 
 interface ProductWithCompleteness extends DisplayableProduct {
   completeness: { score: number; filledFields: number; totalFields: number; missingFields: string[] };
-  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers']; // Ensure this is available
+  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
 }
 
 
 export default function ProductsPage() {
   const { currentRole } = useRole();
-  const [allProducts, setAllProducts] = useState<ProductWithCompleteness[]>([]); // Ensure type includes blockchainIdentifiers
+  const [allProducts, setAllProducts] = useState<ProductWithCompleteness[]>([]);
   const [productToDelete, setProductToDelete] = useState<ProductWithCompleteness | null>(null);
   const [isAlertOpen, setIsAlertOpen] = useState(false);
   const { toast } = useToast();
@@ -80,7 +80,7 @@ export default function ProductsPage() {
     status: "All",
     compliance: "All",
     category: "All",
-    blockchainAnchored: "all", // Initialize new filter
+    blockchainAnchored: "all",
   });
 
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'id', direction: 'ascending' });
@@ -314,4 +314,3 @@ export default function ProductsPage() {
     </div>
   );
 }
-

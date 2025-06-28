@@ -44,7 +44,6 @@ export function useProductForm({
   // Auto-save functionality
   useEffect(() => {
     if (autoSave && isDirty && isValid && !isSubmitting) {
-      // Implement auto-save logic here
       console.log('Auto-saving form data:', debouncedData);
     }
   }, [debouncedData, autoSave, isDirty, isValid, isSubmitting]);
@@ -94,7 +93,7 @@ export function useProductForm({
   }, [reset, initialData]);
   
   // Validate specific field
-  const validateField = useCallback(<K extends keyof ProductFormData>(fieldName: K) => {
+  const validateField = useCallback((fieldName: keyof ProductFormData) => {
     return form.trigger(fieldName);
   }, [form]);
   
@@ -121,7 +120,6 @@ export function useProductForm({
     resetForm,
     validateField,
     setFieldValue,
-    // Expose form methods
     watch: form.watch,
     getValues: form.getValues,
     setValue: form.setValue,

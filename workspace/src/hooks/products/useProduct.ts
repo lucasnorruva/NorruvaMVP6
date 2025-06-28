@@ -51,7 +51,7 @@ export function useProduct({ productId, options = {} }: UseProductQuery) {
     enabled: !!productId && options.enabled !== false,
     refetchOnWindowFocus: options.refetchOnWindowFocus ?? false,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes, gcTime is the new name for cacheTime
+    gcTime: 10 * 60 * 1000, // 10 minutes
     retry: (failureCount, error) => {
       // Don't retry on 404 or 403 errors
       const apiError = error as ApiError;
@@ -80,7 +80,7 @@ export function useProductList(params: ProductSearchParams) {
         throw error;
       }
     },
-    placeholderData: (previousData, previousQuery) => previousData, // keepPreviousData is now placeholderData
+    placeholderData: (previousData) => previousData,
     staleTime: 2 * 60 * 1000, // 2 minutes
     gcTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -100,10 +100,7 @@ export function useCreateProduct({ onSuccess, onError }: UseProductMutation = {}
       return response.data;
     },
     onSuccess: (data) => {
-      // Invalidate and refetch product list
       queryClient.invalidateQueries({ queryKey: productQueryKeys.lists() });
-      
-      // Add new product to cache
       queryClient.setQueryData(productQueryKeys.detail(data.id), data);
       
       toast({
@@ -135,10 +132,7 @@ export function useUpdateProduct({ onSuccess, onError }: UseProductMutation = {}
       return response.data;
     },
     onSuccess: (data) => {
-      // Update product in cache
       queryClient.setQueryData(productQueryKeys.detail(data.id), data);
-      
-      // Invalidate product list to ensure consistency
       queryClient.invalidateQueries({ queryKey: productQueryKeys.lists() });
       
       toast({
@@ -170,10 +164,7 @@ export function useDeleteProduct({ onSuccess, onError }: UseProductMutation = {}
       return productId;
     },
     onSuccess: (productId) => {
-      // Remove product from cache
       queryClient.removeQueries({ queryKey: productQueryKeys.detail(productId) });
-      
-      // Invalidate product list
       queryClient.invalidateQueries({ queryKey: productQueryKeys.lists() });
       
       toast({

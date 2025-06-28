@@ -2,7 +2,7 @@
 /**
  * API-specific types
  */
-import { Product, ProductStatus, ComplianceStatus } from './base';
+import type { Product, ProductStatus, ComplianceStatus } from './base';
 
 export interface ApiResponse<T> {
   data: T;

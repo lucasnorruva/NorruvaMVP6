@@ -2,8 +2,9 @@
 /**
  * Component-specific types
  */
-import { Product, ProductListItem, ProductSearchFilters, ProductFormData } from './';
-import { ApiError } from './api';
+import type { Product, ProductListItem, ProductSearchFilters, ProductFormData } from './';
+import type { ApiError } from './api';
+import type { ReactNode } from 'react';
 
 export interface ComponentProps {
   className?: string;
@@ -60,6 +61,6 @@ export type UseProductQuery = {
 };
 
 export type UseProductMutation = {
-  onSuccess?: (data: Product | string) => void;
+  onSuccess?: (data: Product | string) => void; // string for delete
   onError?: (error: ApiError) => void;
 };

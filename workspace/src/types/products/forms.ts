@@ -2,7 +2,7 @@
 /**
  * Form-specific types with validation
  */
-import { DataOrigin, CustomAttribute, CarbonFootprintData, DigitalTwinData, EthicalSourcingData, EsprSpecifics } from './base';
+import type { DataOrigin, CustomAttribute, CarbonFootprintData, DigitalTwinData, EthicalSourcingData, EsprSpecifics } from './base';
 
 export interface ValidationError {
   field: string;

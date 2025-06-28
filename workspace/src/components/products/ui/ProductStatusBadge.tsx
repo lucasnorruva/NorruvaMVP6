@@ -6,8 +6,9 @@
 
 import React, { memo } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, AlertTriangle, Clock, Archive } from 'lucide-react';
+import { CheckCircle, AlertTriangle, Clock, Archive, FileEdit } from 'lucide-react';
 import type { ProductStatus } from '@/types/products';
+import { cn } from '@/lib/utils';
 
 interface ProductStatusBadgeProps {
   status: ProductStatus;
@@ -26,9 +27,9 @@ const STATUS_CONFIG = {
     className: 'bg-yellow-100 text-yellow-700 border-yellow-300',
   },
   [ProductStatus.DRAFT]: {
-    icon: AlertTriangle,
+    icon: FileEdit,
     variant: 'secondary' as const,
-    className: 'bg-gray-100 text-gray-700 border-gray-300',
+    className: 'bg-blue-100 text-blue-700 border-blue-300',
   },
   [ProductStatus.ARCHIVED]: {
     icon: Archive,
@@ -42,12 +43,12 @@ const STATUS_CONFIG = {
   },
 } as const;
 
-const ProductStatusBadge = memo<ProductStatusBadgeProps>(({ status, size = 'default' }) => {
-  const config = STATUS_CONFIG[status];
+const ProductStatusBadge = memo<ProductStatusBadgeProps>(({ status, size = 'sm' }) => {
+  const config = STATUS_CONFIG[status] || { icon: AlertTriangle, variant: 'secondary', className: 'bg-muted' };
   const IconComponent = config.icon;
   
   const sizeClasses = {
-    sm: 'text-xs px-2 py-1',
+    sm: 'text-xs px-1.5 py-0.5',
     default: 'text-sm px-3 py-1',
     lg: 'text-base px-4 py-2',
   };
@@ -55,10 +56,10 @@ const ProductStatusBadge = memo<ProductStatusBadgeProps>(({ status, size = 'defa
   return (
     <Badge 
       variant={config.variant}
-      className={`${config.className} ${sizeClasses[size]} flex items-center gap-1`}
+      className={cn(config.className, sizeClasses[size], 'flex items-center gap-1 capitalize')}
     >
       <IconComponent className="h-3 w-3" />
-      {status.charAt(0).toUpperCase() + status.slice(1)}
+      {status}
     </Badge>
   );
 });

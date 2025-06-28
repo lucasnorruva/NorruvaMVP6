@@ -5,6 +5,7 @@
 import type { Product, ProductListItem, ProductSearchFilters, ProductFormData } from './';
 import type { ApiError } from './api';
 import type { ReactNode } from 'react';
+import type { UseFormReturn } from 'react-hook-form'; // Added
 
 export interface ComponentProps {
   className?: string;
@@ -35,14 +36,22 @@ export interface ProductFormProps extends ComponentProps {
   validationSchema?: any;
 }
 
-export interface ProductListProps extends ComponentProps {
-  products: ProductListItem[];
-  filters?: ProductSearchFilters;
-  onFilterChange?: (filters: ProductSearchFilters) => void;
-  onProductSelect?: (productId: string) => void;
-  isLoading?: boolean;
-  error?: ApiError;
+export interface ProductFormSectionProps { // Added new generic form section props
+  form: UseFormReturn<ProductFormData>;
+  isSubmitting: boolean;
 }
+
+export interface ProductListProps extends ComponentProps {
+  onProductSelect?: (productId: string) => void;
+  onProductEdit?: (productId: string) => void;
+  onProductDelete?: (productId: string, productName?: string) => void;
+  onCreateNew?: () => void;
+  showCreateButton?: boolean;
+  showExportButton?: boolean;
+  viewMode?: 'grid' | 'list';
+  pageSize?: number;
+}
+
 
 export interface ProductDetailProps extends ComponentProps {
   productId: string;

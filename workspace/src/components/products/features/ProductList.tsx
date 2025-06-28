@@ -5,7 +5,7 @@
 "use client";
 
 import React, { memo, useCallback, useMemo, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Plus, Search, Filter, Download, Upload } from 'lucide-react';
@@ -26,7 +26,7 @@ import { productExportService } from '@/services/products/exportService';
 interface ProductListProps extends ComponentProps {
   onProductSelect?: (productId: string) => void;
   onProductEdit?: (productId: string) => void;
-  onProductDelete?: (productId: string) => void;
+  onProductDelete?: (productId: string, productName?: string) => void;
   onCreateNew?: () => void;
   showCreateButton?: boolean;
   showExportButton?: boolean;
@@ -122,7 +122,7 @@ const ProductList = memo<ProductListProps>(({
               <CardTitle>Products</CardTitle>
               <div className="flex items-center gap-2">
                 {showExportButton && (
-                  <Button variant="outline" size="sm" onClick={handleExport}>
+                  <Button variant="outline" size="sm" onClick={handleExport} disabled={products.length === 0}>
                     <Download className="mr-2 h-4 w-4" />
                     Export
                   </Button>
@@ -145,7 +145,7 @@ const ProductList = memo<ProductListProps>(({
                   onChange={e => handleSearch(e.target.value)}
                 />
               </div>
-              <Button variant="outline" size="sm">
+              <Button variant="outline" size="sm" disabled>
                 <Filter className="mr-2 h-4 w-4" />
                 Filters
               </Button>
@@ -159,7 +159,8 @@ const ProductList = memo<ProductListProps>(({
         ) : products.length === 0 ? (
           <EmptyState
             title="No products found"
-            description="Try adjusting your search or filters."
+            description="Try adjusting your search or filters, or create a new product."
+            action={onCreateNew ? <Button onClick={onCreateNew}>Create New Product</Button> : undefined}
           />
         ) : (
           <div className={gridClasses}>

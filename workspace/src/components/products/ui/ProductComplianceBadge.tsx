@@ -8,6 +8,7 @@ import React, { memo } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { ShieldCheck, ShieldAlert, ShieldQuestion } from 'lucide-react';
 import type { ComplianceStatus } from '@/types/products';
+import { cn } from '@/lib/utils';
 
 interface ProductComplianceBadgeProps {
   status: ComplianceStatus;
@@ -37,12 +38,12 @@ const COMPLIANCE_CONFIG = {
   },
 } as const;
 
-const ProductComplianceBadge = memo<ProductComplianceBadgeProps>(({ status, size = 'default' }) => {
-  const config = COMPLIANCE_CONFIG[status];
+const ProductComplianceBadge = memo<ProductComplianceBadgeProps>(({ status, size = 'sm' }) => {
+  const config = COMPLIANCE_CONFIG[status] || COMPLIANCE_CONFIG[ComplianceStatus.NOT_APPLICABLE];
   const IconComponent = config.icon;
 
   const sizeClasses = {
-    sm: 'text-xs px-2 py-1',
+    sm: 'text-xs px-1.5 py-0.5',
     default: 'text-sm px-3 py-1',
     lg: 'text-base px-4 py-2',
   };
@@ -50,10 +51,10 @@ const ProductComplianceBadge = memo<ProductComplianceBadgeProps>(({ status, size
   return (
     <Badge 
       variant={config.variant}
-      className={`${config.className} ${sizeClasses[size]} flex items-center gap-1`}
+      className={cn(config.className, sizeClasses[size], 'flex items-center gap-1 capitalize')}
     >
       <IconComponent className="h-3 w-3" />
-      {status.charAt(0).toUpperCase() + status.slice(1).replace('_', ' ')}
+      {status.replace('_', ' ')}
     </Badge>
   );
 });

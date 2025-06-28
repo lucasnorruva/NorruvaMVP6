@@ -1,3 +1,4 @@
+
 // --- File: page.tsx (Product Management List) ---
 // Description: Main page for listing and managing all products.
 "use client";
@@ -23,7 +24,7 @@ export default function ProductsPage() {
   const { toast } = useToast();
   const [productToDelete, setProductToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  const deleteMutation = useDeleteProduct({
+  const { mutate: deleteProduct, isPending: isDeleting } = useDeleteProduct({
     onSuccess: (deletedProductId) => {
       toast({
         title: 'Product Deleted',
@@ -48,7 +49,7 @@ export default function ProductsPage() {
   
   const confirmDelete = () => {
     if (productToDelete) {
-      deleteMutation.mutate(productToDelete.id);
+      deleteProduct(productToDelete.id);
     }
   };
 
@@ -61,7 +62,7 @@ export default function ProductsPage() {
       <ProductList
         onProductSelect={handleView}
         onProductEdit={handleEdit}
-        onProductDelete={(id) => handleDeleteRequest(id, 'this product')}
+        onProductDelete={(id, name) => handleDeleteRequest(id, name || id)}
         onCreateNew={handleCreateNew}
       />
       
@@ -77,8 +78,8 @@ export default function ProductsPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={confirmDelete} className="bg-destructive hover:bg-destructive/90">
-              Delete
+            <AlertDialogAction onClick={confirmDelete} disabled={isDeleting} className="bg-destructive hover:bg-destructive/90">
+              {isDeleting ? 'Deleting...' : 'Delete'}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

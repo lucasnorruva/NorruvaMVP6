@@ -50,9 +50,8 @@ export function useProduct({ productId, options = {} }: UseProductQuery) {
     enabled: !!productId && options.enabled !== false,
     refetchOnWindowFocus: options.refetchOnWindowFocus ?? false,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    gcTime: 10 * 60 * 1000, // 10 minutes (cacheTime deprecated)
+    gcTime: 10 * 60 * 1000, // 10 minutes (gcTime is the v5 replacement for cacheTime)
     retry: (failureCount, error) => {
-      // Don't retry on 404 or 403 errors
       const apiError = error as ApiError;
       if (apiError.code === '404' || apiError.code === '403') {
         return false;
@@ -79,9 +78,9 @@ export function useProductList(params: ProductSearchParams) {
         throw error;
       }
     },
-    placeholderData: (previousData) => previousData, // keepPreviousData deprecated
+    placeholderData: (previousData) => previousData, // keepPreviousData deprecated in v5
     staleTime: 2 * 60 * 1000, // 2 minutes
-    gcTime: 5 * 60 * 1000, // 5 minutes (cacheTime deprecated)
+    gcTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 

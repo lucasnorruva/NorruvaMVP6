@@ -1,3 +1,5 @@
+
+
 // --- File: src/app/(app)/developer/reports/api-usage/page.tsx ---
 "use client";
 
@@ -10,8 +12,8 @@ import {ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Toolt
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { DatePicker } from "@/components/ui/date-picker";
 import { useState } from "react";
-import { Label } from "@/components/ui/label"; // Import Label
-import { Table, TableBody, TableCell, TableHeader, TableRow } from "@/components/ui/table"; // Import Table components
+import { Label } from "@/components/ui/label";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
 const mockApiCallData = [
   { date: "2024-07-01", calls: 1200, errors: 5 }, { date: "2024-07-02", calls: 1500, errors: 8 },
@@ -170,27 +172,27 @@ export default function ApiUsageDashboardPage() {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground tracking-wider">Timestamp</TableHead>
-                  <TableHead className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground tracking-wider">Method</TableHead>
-                  <TableHead className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground tracking-wider">Endpoint</TableHead>
-                  <TableHead className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground tracking-wider">Status</TableHead>
-                  <TableHead className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground tracking-wider">Latency</TableHead>
-                  <TableHead className="px-4 py-2.5 text-left text-xs font-medium text-muted-foreground tracking-wider">API Key (Partial)</TableHead>
+                  <TableHead>Timestamp</TableHead>
+                  <TableHead>Method</TableHead>
+                  <TableHead>Endpoint</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Latency</TableHead>
+                  <TableHead>API Key (Partial)</TableHead>
                 </TableRow>
               </TableHeader>
-              <TableBody className="bg-background divide-y divide-border">
+              <TableBody>
                 {mockEndpointUsageData.slice(0,10).map((log, idx) => (
                   <TableRow key={idx} className="hover:bg-muted/50">
-                    <TableCell className="px-4 py-2.5 whitespace-nowrap text-xs text-muted-foreground">{new Date(Date.now() - idx * 60000 * 5).toLocaleString()}</TableCell>
-                    <TableCell className="px-4 py-2.5 whitespace-nowrap text-xs"><span className={`font-semibold ${log.endpoint.startsWith('GET') ? 'text-blue-600' : log.endpoint.startsWith('POST') ? 'text-green-600' : 'text-orange-600'}`}>{log.endpoint.split(' ')[0]}</span></TableCell>
-                    <TableCell className="px-4 py-2.5 whitespace-nowrap text-xs font-mono text-foreground/90">{log.endpoint.split(' ')[1]}</TableCell>
-                    <TableCell className="px-4 py-2.5 whitespace-nowrap text-xs">
+                    <TableCell className="whitespace-nowrap text-xs text-muted-foreground">{new Date(Date.now() - idx * 60000 * 5).toLocaleString()}</TableCell>
+                    <TableCell className="whitespace-nowrap text-xs"><span className={`font-semibold ${log.endpoint.startsWith('GET') ? 'text-blue-600' : log.endpoint.startsWith('POST') ? 'text-green-600' : 'text-orange-600'}`}>{log.endpoint.split(' ')[0]}</span></TableCell>
+                    <TableCell className="whitespace-nowrap text-xs font-mono text-foreground/90">{log.endpoint.split(' ')[1]}</TableCell>
+                    <TableCell className="whitespace-nowrap text-xs">
                       <span className={`px-2 py-0.5 inline-flex text-xs leading-5 font-semibold rounded-full ${log.errors > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
                         {log.errors > 0 ? (log.errors > 5 ? '500' : '400') : '200'}
                       </span>
                     </TableCell>
-                    <TableCell className="px-4 py-2.5 whitespace-nowrap text-xs text-muted-foreground">{log.avgLatency}ms</TableCell>
-                    <TableCell className="px-4 py-2.5 whitespace-nowrap text-xs text-muted-foreground font-mono">{mockApiKeys[idx % mockApiKeys.length].substring(0,15)}...</TableCell>
+                    <TableCell className="whitespace-nowrap text-xs text-muted-foreground">{log.avgLatency}ms</TableCell>
+                    <TableCell className="whitespace-nowrap text-xs text-muted-foreground font-mono">{mockApiKeys[idx % mockApiKeys.length].substring(0,15)}...</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

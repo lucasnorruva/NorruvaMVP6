@@ -18,6 +18,11 @@ const createMockFile = (name = 'test.png', type = 'image/png', content = ['conte
 };
 
 describe('fileToDataUri', () => {
+  beforeEach(() => {
+    // Reset the mock before each test
+    jest.clearAllMocks();
+  });
+
   it('should resolve with a data URI on successful file read', async () => {
     const mockFile = createMockFile();
     const mockDataUri = 'data:image/png;base64,Y29udGVudA=='; // "content" base64 encoded
@@ -31,7 +36,7 @@ describe('fileToDataUri', () => {
         (mockFileReader.onload as EventListener)({} as Event);
       }
     });
-
+    mockFileReader.readAsDataURL.mockImplementationOnce(mockFileReader.readAsDataURL);
     const promise = fileToDataUri(mockFile);
 
     // Since onload is called synchronously in the mock, we can await directly
@@ -52,7 +57,7 @@ describe('fileToDataUri', () => {
          (mockFileReader.onerror as any)(mockError); // Pass the error object
       }
     });
-    
+    mockFileReader.readAsDataURL.mockImplementationOnce(mockFileReader.readAsDataURL);
     const promise = fileToDataUri(mockFile);
 
     await expect(promise).rejects.toBe(mockError);

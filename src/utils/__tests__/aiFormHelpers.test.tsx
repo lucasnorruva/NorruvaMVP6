@@ -47,8 +47,6 @@ describe('aiFormHelpers', () => {
   });
 
   describe('handleSuggestNameAI', () => {
-    const { generateProductName } = await import('@/ai/flows/generate-product-name-flow');
-
     it('should call generateProductName and update form on success', async () => {
       const suggestedName = 'AI Suggested Name';
       (generateProductName as jest.Mock).mockResolvedValue({ productName: suggestedName });
@@ -94,6 +92,7 @@ describe('aiFormHelpers', () => {
 
     it('should show error toast if AI flow fails', async () => {
       const errorMessage = 'AI service unavailable';
+      const { generateProductName } = await import('@/ai/flows/generate-product-name-flow'); // Import here
       (generateProductName as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
       const result = await handleSuggestNameAI(
@@ -113,8 +112,6 @@ describe('aiFormHelpers', () => {
   });
 
   describe('handleGenerateImageAI', () => {
-    const { generateProductImage } = await import('@/ai/flows/generate-product-image-flow');
-
     it('should call generateProductImage and return image URL on success', async () => {
       const imageUrl = 'data:image/png;base64,mockimage';
       (generateProductImage as jest.Mock).mockResolvedValue({ imageUrl });
@@ -142,6 +139,7 @@ describe('aiFormHelpers', () => {
 
     it('should show error toast if product name is missing', async () => {
       (mockForm.getValues as jest.Mock).mockReturnValue({ productCategory: 'Testing' }); // No productName
+      const { generateProductImage } = await import('@/ai/flows/generate-product-image-flow'); // Import here
 
       const result = await handleGenerateImageAI(
         mockForm as UseFormReturn<ProductFormData>,
@@ -161,6 +159,7 @@ describe('aiFormHelpers', () => {
 
     it('should show error toast if AI image generation fails', async () => {
       const errorMessage = 'Image generation service error';
+      const { generateProductImage } = await import('@/ai/flows/generate-product-image-flow'); // Import here
       (generateProductImage as jest.Mock).mockRejectedValue(new Error(errorMessage));
 
       const result = await handleGenerateImageAI(

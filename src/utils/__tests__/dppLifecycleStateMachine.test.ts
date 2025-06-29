@@ -1,18 +1,21 @@
-import { DppLifecycleStateMachine, DppLifecycleState } from '../dppLifecycleStateMachine';
+import {
+  DppLifecycleStateMachine,
+  DppLifecycleState,
+} from "../dppLifecycleStateMachine";
 
-describe('DppLifecycleStateMachine', () => {
-  it('allows valid transitions', () => {
+describe("DppLifecycleStateMachine", () => {
+  it("allows valid transitions", () => {
     const sm = new DppLifecycleStateMachine(DppLifecycleState.DESIGN);
     sm.transition(DppLifecycleState.MANUFACTURING);
     expect(sm.getCurrentState()).toBe(DppLifecycleState.MANUFACTURING);
   });
 
-  it('throws on invalid transitions', () => {
+  it("throws on invalid transitions", () => {
     const sm = new DppLifecycleStateMachine(DppLifecycleState.DESIGN);
     expect(() => sm.transition(DppLifecycleState.DISTRIBUTION)).toThrow();
   });
 
-  it('handles full lifecycle', () => {
+  it("handles full lifecycle", () => {
     const sm = new DppLifecycleStateMachine(DppLifecycleState.DESIGN);
     sm.transition(DppLifecycleState.MANUFACTURING);
     sm.transition(DppLifecycleState.QUALITY_ASSURANCE);

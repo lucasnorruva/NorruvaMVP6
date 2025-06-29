@@ -1,4 +1,3 @@
-
 # Digital Product Passport (DPP) Framework Overview
 
 This document provides a high-level overview of the core pathways and considerations for the Norruva Digital Product Passport system, designed to align with EU regulations, global standards, and emerging innovations.
@@ -22,16 +21,16 @@ This document provides a high-level overview of the core pathways and considerat
 ## Advanced Considerations
 
 The framework also covers:
--   Industry-Specific Pathways (Textiles, ICT, Construction, etc.)
--   Data Security (NIS2, Cybersecurity Act)
--   Global Standards Harmonization (ISO, GSI)
--   Deeper EBSI Integration
--   EU Data Governance Act alignment
--   AI-Powered Predictive Maintenance
--   IP Protection & Innovation Tracking
--   Product Subscription Models
--   Blockchain for Impact Investing
--   Advanced Data Analytics for businesses.
+
+- Industry-Specific Pathways (Textiles, ICT, Construction, etc.)
+- Data Security (NIS2, Cybersecurity Act)
+- Global Standards Harmonization (ISO, GSI)
+- Deeper EBSI Integration
+- EU Data Governance Act alignment
+- AI-Powered Predictive Maintenance
+- IP Protection & Innovation Tracking
+- Product Subscription Models
+- Blockchain for Impact Investing
+- Advanced Data Analytics for businesses.
 
 This comprehensive approach aims to create a dynamic, transparent, and ethical DPP system that is adaptable and future-proof, fostering stronger connections between consumers, companies, and the planet. For full details, please refer to the [Comprehensive DPP Compliance Framework](comprehensive-dpp-compliance-framework.md).
-    

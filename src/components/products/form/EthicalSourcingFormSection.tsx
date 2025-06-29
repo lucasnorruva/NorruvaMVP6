@@ -1,4 +1,3 @@
-
 // --- File: EthicalSourcingFormSection.tsx ---
 // Description: Form section component for ethical sourcing details.
 "use client";
@@ -26,7 +25,8 @@ export default function EthicalSourcingFormSection({
   return (
     <div className="space-y-6 pt-4">
       <FormDescription>
-        Provide links or identifiers related to ethical sourcing practices for this product.
+        Provide links or identifiers related to ethical sourcing practices for
+        this product.
       </FormDescription>
 
       <FormField
@@ -35,8 +35,17 @@ export default function EthicalSourcingFormSection({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Conflict Minerals Report URL (Optional)</FormLabel>
-            <FormControl><Input type="url" placeholder="https://example.com/reports/conflict-minerals.pdf" {...field} value={field.value || ""} /></FormControl>
-            <FormDescription>Link to your company's conflict minerals disclosure or report.</FormDescription>
+            <FormControl>
+              <Input
+                type="url"
+                placeholder="https://example.com/reports/conflict-minerals.pdf"
+                {...field}
+                value={field.value || ""}
+              />
+            </FormControl>
+            <FormDescription>
+              Link to your company's conflict minerals disclosure or report.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -48,8 +57,17 @@ export default function EthicalSourcingFormSection({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Fair Trade Certification ID/Link (Optional)</FormLabel>
-            <FormControl><Input placeholder="e.g., FLOID 12345 or link to certificate" {...field} value={field.value || ""} /></FormControl>
-            <FormDescription>Identifier or URL for any Fair Trade certifications relevant to the product or its components.</FormDescription>
+            <FormControl>
+              <Input
+                placeholder="e.g., FLOID 12345 or link to certificate"
+                {...field}
+                value={field.value || ""}
+              />
+            </FormControl>
+            <FormDescription>
+              Identifier or URL for any Fair Trade certifications relevant to
+              the product or its components.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -61,8 +79,18 @@ export default function EthicalSourcingFormSection({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Ethical Sourcing Policy URL (Optional)</FormLabel>
-            <FormControl><Input type="url" placeholder="https://example.com/ethics/sourcing-policy.pdf" {...field} value={field.value || ""} /></FormControl>
-            <FormDescription>Link to your company's broader ethical sourcing or supplier code of conduct policy.</FormDescription>
+            <FormControl>
+              <Input
+                type="url"
+                placeholder="https://example.com/ethics/sourcing-policy.pdf"
+                {...field}
+                value={field.value || ""}
+              />
+            </FormControl>
+            <FormDescription>
+              Link to your company's broader ethical sourcing or supplier code
+              of conduct policy.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}

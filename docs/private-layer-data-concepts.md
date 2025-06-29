@@ -1,4 +1,3 @@
-
 # Conceptual Data Models for Private Layer
 
 This document outlines conceptual data models for information that might reside on a private layer within the Norruva Digital Product Passport (DPP) platform. This private layer is envisioned for sensitive supply chain data and detailed B2B transaction records not suitable for the public DPP, but which may be summarized or proven on the public layer via Verifiable Credentials (VCs) or Zero-Knowledge Proofs (ZKPs).
@@ -36,7 +35,8 @@ This model represents specific, verifiable claims made by a supplier regarding a
   ],
   "issuanceDate": "2024-08-15T10:00:00Z",
   "expiryDate": "2025-08-14T23:59:59Z",
-  "specificMetrics": [ // Optional detailed metrics related to the attestation
+  "specificMetrics": [
+    // Optional detailed metrics related to the attestation
     {
       "metricName": "CobaltSourceVerified",
       "value": "DRC_Artisanal_ConflictFree",
@@ -54,9 +54,10 @@ This model represents specific, verifiable claims made by a supplier regarding a
 ```
 
 **Key Considerations:**
-*   **Granularity:** Attestations can be for specific batches, production runs, or time periods.
-*   **Verifiability:** Linking to VCs or hashed documents allows for independent verification.
-*   **Confidentiality:** Some details might be highly sensitive and only accessible to permissioned parties.
+
+- **Granularity:** Attestations can be for specific batches, production runs, or time periods.
+- **Verifiability:** Linking to VCs or hashed documents allows for independent verification.
+- **Confidentiality:** Some details might be highly sensitive and only accessible to permissioned parties.
 
 ## 2. Internal B2B Component Transfer Records
 
@@ -84,7 +85,8 @@ This model captures the transfer of a component or sub-assembly between two veri
     "participantDid": "did:example:manufacturer:acmeassembly",
     "role": "Pack Assembler"
   },
-  "transactionDetails": { // Could be linked to an ERP or blockchain transaction
+  "transactionDetails": {
+    // Could be linked to an ERP or blockchain transaction
     "type": "InternalStockTransfer",
     "referenceId": "ERP_PO_67890",
     "privateLedgerTxHash": "0xprivatetxhashabc..." // Optional hash on a private/consortium chain
@@ -101,8 +103,9 @@ This model captures the transfer of a component or sub-assembly between two veri
 ```
 
 **Key Considerations:**
-*   **Permissioned Access:** This data would typically only be visible to the involved parties and potentially the OEM or auditors under specific conditions.
-*   **Link to Public DPP:** The component itself might eventually be part of a product with a public DPP. A ZKP or a summarized VC could attest to the valid, compliant transfer of this component without revealing all private details.
+
+- **Permissioned Access:** This data would typically only be visible to the involved parties and potentially the OEM or auditors under specific conditions.
+- **Link to Public DPP:** The component itself might eventually be part of a product with a public DPP. A ZKP or a summarized VC could attest to the valid, compliant transfer of this component without revealing all private details.
 
 ## 3. Confidential Material Composition Details
 
@@ -119,7 +122,8 @@ This model allows for storing highly detailed or proprietary material compositio
   "componentName": "ProtectiveCoating_LayerA",
   "materialName": "Proprietary Alloy X1-Alpha",
   "materialDescription": "High-performance, corrosion-resistant alloy for sensitive electronics.",
-  "composition": [ // Detailed breakdown
+  "composition": [
+    // Detailed breakdown
     {
       "substanceName": "Titanium",
       "casNumber": "7440-32-6",
@@ -141,11 +145,13 @@ This model allows for storing highly detailed or proprietary material compositio
     }
     // ... more substances
   ],
-  "supplierInformation": { // Optional, if specific to a supplied material
+  "supplierInformation": {
+    // Optional, if specific to a supplied material
     "supplierId": "SUP_ADV_CHEM_007",
     "materialBatchId": "AC_XYZ_BATCH_001"
   },
-  "accessControlList": [ // Who can access this confidential data
+  "accessControlList": [
+    // Who can access this confidential data
     "did:example:manufacturer:greentech#internal_rd",
     "did:example:regulator:echa#secure_submission_portal",
     "did:example:recycler:specialized_metals_recovery#authorized_eol_processor"
@@ -156,11 +162,11 @@ This model allows for storing highly detailed or proprietary material compositio
 ```
 
 **Key Considerations:**
-*   **Access Control:** Crucial for protecting intellectual property. Access should be strictly controlled via DIDs, VCs, or other robust authentication/authorization mechanisms.
-*   **Selective Disclosure:** ZKPs could be used to prove certain properties (e.g., "Does not contain substance Y above 0.01%") without revealing the full composition.
-*   **Linkage to Public DPP:** The public DPP might state "Contains proprietary alloy" with a reference that only authorized parties can resolve to this detailed private data.
+
+- **Access Control:** Crucial for protecting intellectual property. Access should be strictly controlled via DIDs, VCs, or other robust authentication/authorization mechanisms.
+- **Selective Disclosure:** ZKPs could be used to prove certain properties (e.g., "Does not contain substance Y above 0.01%") without revealing the full composition.
+- **Linkage to Public DPP:** The public DPP might state "Contains proprietary alloy" with a reference that only authorized parties can resolve to this detailed private data.
 
 ---
 
 These models are conceptual starting points. The actual implementation of a private layer would require careful consideration of security, access control, data governance, and interoperability with public layer systems like EBSI.
-      

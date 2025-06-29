@@ -1,10 +1,9 @@
-
 // --- File: src/app/api/v1/private/dpp/[productId]/supplier/[supplierId]/attestations/route.ts ---
 // Description: Mock API endpoint to retrieve private supplier attestations for a product.
 
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { validateApiKey } from '@/middleware/apiKeyAuth';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { validateApiKey } from "@/middleware/apiKeyAuth";
 
 // Conceptual schema based on openapi.yaml and private-layer-data-concepts.md
 interface DetailedSupplierAttestation {
@@ -35,7 +34,7 @@ interface DetailedSupplierAttestation {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { productId: string; supplierId: string } }
+  { params }: { params: { productId: string; supplierId: string } },
 ) {
   const authError = validateApiKey(request);
   if (authError) return authError;
@@ -44,8 +43,13 @@ export async function GET(
 
   if (!productId || !supplierId) {
     return NextResponse.json(
-      { error: { code: 400, message: 'productId and supplierId path parameters are required.' } },
-      { status: 400 }
+      {
+        error: {
+          code: 400,
+          message: "productId and supplierId path parameters are required.",
+        },
+      },
+      { status: 400 },
     );
   }
 
@@ -53,7 +57,7 @@ export async function GET(
   // For this mock, we'll return some generic data based on the IDs.
   // We can add more specific mock data later if needed by referencing MOCK_DPPS or MOCK_SUPPLIERS.
 
-  await new Promise(resolve => setTimeout(resolve, 250)); // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 250)); // Simulate API delay
 
   const mockAttestations: DetailedSupplierAttestation[] = [
     {
@@ -61,7 +65,7 @@ export async function GET(
       productId: productId,
       componentId: "COMP_A_BATTERY_CELL",
       supplierId: supplierId,
-      supplierDid: `did:example:supplier:${supplierId.toLowerCase().replace(/\s+/g, '')}`,
+      supplierDid: `did:example:supplier:${supplierId.toLowerCase().replace(/\s+/g, "")}`,
       attestationType: "EthicalSourcingCompliance",
       attestationStatement: `Component COMP_A_BATTERY_CELL (Batch XYZ-789) for product ${productId} from supplier ${supplierId} sourced and processed in compliance with OECD Due Diligence Guidance.`,
       evidence: [
@@ -69,29 +73,34 @@ export async function GET(
           type: "AuditReport",
           documentId: `audit_report_${supplierId}_123.pdf`,
           documentHash: `sha256-mockhash${Date.now().toString(16).slice(-8)}`,
-          vcId: `vc:ebsi:audit:${supplierId}:${Date.now().toString(36).slice(-5)}`
+          vcId: `vc:ebsi:audit:${supplierId}:${Date.now().toString(36).slice(-5)}`,
         },
         {
           type: "ChainOfCustodyRecord",
-          description: `Internal CoC record for batch XYZ-789 related to ${productId}.`
-        }
+          description: `Internal CoC record for batch XYZ-789 related to ${productId}.`,
+        },
       ],
-      issuanceDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 30).toISOString(), // 30 days ago
-      expiryDate: new Date(Date.now() + 1000 * 60 * 60 * 24 * 335).toISOString(), // 335 days from now
+      issuanceDate: new Date(
+        Date.now() - 1000 * 60 * 60 * 24 * 30,
+      ).toISOString(), // 30 days ago
+      expiryDate: new Date(
+        Date.now() + 1000 * 60 * 60 * 24 * 335,
+      ).toISOString(), // 335 days from now
       specificMetrics: [
         {
           metricName: "CobaltSourceVerified",
           value: "DRC_Artisanal_ConflictFree_MockCert",
-          verificationMethod: "ThirdPartyAudit_CertChain_Mock"
+          verificationMethod: "ThirdPartyAudit_CertChain_Mock",
         },
         {
           metricName: "CO2ePerUnit_ComponentA",
           value: 0.45,
           unit: "kg CO2e",
-          calculationMethodology: "ISO 14064-1, Supplier Specific LCA (Mocked)"
-        }
+          calculationMethodology: "ISO 14064-1, Supplier Specific LCA (Mocked)",
+        },
       ],
-      confidentialNotes: "This is a mock attestation for demonstration purposes only. Access restricted."
+      confidentialNotes:
+        "This is a mock attestation for demonstration purposes only. Access restricted.",
     },
     {
       attestationId: `attest_${supplierId}_${productId}_compB_batch777_${Date.now().toString(36).slice(-4)}`,
@@ -104,18 +113,20 @@ export async function GET(
         {
           type: "MassBalanceCertificate",
           documentId: `mb_cert_${supplierId}_002.pdf`,
-          vcId: `vc:iscc:${supplierId}:${Date.now().toString(36).slice(-5)}`
-        }
+          vcId: `vc:iscc:${supplierId}:${Date.now().toString(36).slice(-5)}`,
+        },
       ],
-      issuanceDate: new Date(Date.now() - 1000 * 60 * 60 * 24 * 15).toISOString(), // 15 days ago
+      issuanceDate: new Date(
+        Date.now() - 1000 * 60 * 60 * 24 * 15,
+      ).toISOString(), // 15 days ago
       specificMetrics: [
         {
           metricName: "RecycledPolymerPercentage",
           value: "60%",
-          verificationMethod: "ISCC Plus Certification (Mocked)"
-        }
-      ]
-    }
+          verificationMethod: "ISCC Plus Certification (Mocked)",
+        },
+      ],
+    },
   ];
 
   // Conceptually, if either productId or supplierId didn't match something known,
@@ -127,7 +138,5 @@ export async function GET(
   //   return NextResponse.json({ attestations: [] }); // Or a 404 if appropriate
   // }
 
-
   return NextResponse.json(mockAttestations, { status: 200 });
 }
-    

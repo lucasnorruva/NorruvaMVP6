@@ -1,8 +1,7 @@
-
-"use client"; 
-import type { ReactNode } from 'react';
-import React from 'react'; 
-import { usePathname } from 'next/navigation'; 
+"use client";
+import type { ReactNode } from "react";
+import React from "react";
+import { usePathname } from "next/navigation";
 import { SidebarProvider } from "@/components/ui/sidebar/SidebarProvider";
 import { Sidebar, SidebarInset } from "@/components/ui/sidebar/Sidebar";
 import AppHeader from "@/components/layout/AppHeader";
@@ -36,11 +35,14 @@ if (typeof window !== 'undefined' && React.createElement) {
 */
 
 export default function AppLayout({ children }: { children: ReactNode }) {
-  const pathname = usePathname(); 
+  const pathname = usePathname();
 
-  if (pathname.startsWith('/developer')) {
+  if (pathname.startsWith("/developer")) {
     return (
-      <main id="main-content" className="flex-1 p-4 md:p-6 lg:p-8 bg-background text-foreground min-h-screen">
+      <main
+        id="main-content"
+        className="flex-1 p-4 md:p-6 lg:p-8 bg-background text-foreground min-h-screen"
+      >
         {children}
       </main>
     );

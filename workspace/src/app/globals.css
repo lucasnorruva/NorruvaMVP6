@@ -27,9 +27,9 @@ h6 {
     --popover-foreground: 224 23% 15%; /* #1A202C - Grey 900 */
 
     /* Norruva PRD Colors */
-    --primary: 197 71% 53%;   /* #29ABE2 - Saturated Blue (PRD) */
+    --primary: 197 71% 53%; /* #29ABE2 - Saturated Blue (PRD) */
     --primary-foreground: 0 0% 100%; /* #FFFFFF - White */
-    
+
     --secondary: 180 100% 25%; /* #008080 - Vibrant Teal (PRD, used as secondary/accent by default) */
     --secondary-foreground: 0 0% 100%; /* #FFFFFF - White */
 
@@ -38,14 +38,14 @@ h6 {
 
     /* Standard Semantic Colors */
     --destructive: 0 72% 51%; /* #DC2626 - Error Red */
-    --destructive-foreground: 0 0% 100%; 
+    --destructive-foreground: 0 0% 100%;
 
     --success: 142 71% 45%; /* #22C55E - Green 500 */
     --success-foreground: 0 0% 100%;
 
     --warning: 38 92% 50%; /* #F59E0B - Amber 500 */
     --warning-foreground: 224 23% 15%; /* Dark text for amber */
-    
+
     --info: 210 79% 53%; /* #3B82F6 - Blue 500 */
     --info-foreground: 0 0% 100%;
 
@@ -56,21 +56,21 @@ h6 {
     --border: 220 13% 84%; /* #CBD5E0 - Grey 300 */
     --input: 0 0% 100%; /* #FFFFFF for input background */
     --ring: 197 71% 53%; /* Primary color for focus rings */
-    
+
     /* Chart Colors */
     --chart-1: 197 71% 53%; /* Primary Blue */
     --chart-2: 180 100% 25%; /* Accent Teal */
     --chart-3: 263 79% 53%; /* A distinct Purple */
-    --chart-4: 38 92% 50%;  /* Warning Amber */
+    --chart-4: 38 92% 50%; /* Warning Amber */
     --chart-5: 142 71% 45%; /* Success Green */
     --chart-6: 327 82% 61%; /* Pink */
 
-    --radius: 0.5rem; 
+    --radius: 0.5rem;
 
     /* Sidebar Theme */
     --sidebar-background: 220 14% 96%; /* #F7FAFC - Light Grey */
     --sidebar-foreground: 224 23% 15%; /* #1A202C - Dark Grey Text */
-    --sidebar-primary: 197 71% 53%;   /* Primary Blue for active items */
+    --sidebar-primary: 197 71% 53%; /* Primary Blue for active items */
     --sidebar-primary-foreground: 0 0% 100%; /* White text on primary */
     --sidebar-accent: 197 71% 90%; /* Lighter Primary Blue for hover */
     --sidebar-accent-foreground: 197 71% 43%; /* Darker Primary Blue text on hover */
@@ -79,43 +79,43 @@ h6 {
   }
 
   .dark {
-    --background: 224 23% 15%; 
-    --foreground: 210 20% 98%; 
+    --background: 224 23% 15%;
+    --foreground: 210 20% 98%;
 
-    --card: 222 23% 20%; 
+    --card: 222 23% 20%;
     --card-foreground: 210 20% 98%;
 
     --popover: 222 23% 20%;
     --popover-foreground: 210 20% 98%;
 
-    --primary: 197 71% 63%; 
+    --primary: 197 71% 63%;
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 180 100% 35%; 
-    --secondary-foreground: 0 0% 100%; 
+    --secondary: 180 100% 35%;
+    --secondary-foreground: 0 0% 100%;
 
-    --accent: 180 100% 35%; 
+    --accent: 180 100% 35%;
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 0 70% 60%; 
+    --destructive: 0 70% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --success: 142 60% 50%; 
+    --success: 142 60% 50%;
     --success-foreground: 0 0% 100%;
 
-    --warning: 38 90% 55%; 
-    --warning-foreground: 224 23% 15%; 
-    
-    --info: 210 70% 60%; 
+    --warning: 38 90% 55%;
+    --warning-foreground: 224 23% 15%;
+
+    --info: 210 70% 60%;
     --info-foreground: 0 0% 100%;
 
     --muted: 220 14% 25%;
-    --muted-foreground: 220 9% 65%; 
+    --muted-foreground: 220 9% 65%;
 
-    --border: 220 13% 40%; 
-    --input: 222 23% 25%; 
-    --ring: 197 71% 63%; 
-    
+    --border: 220 13% 40%;
+    --input: 222 23% 25%;
+    --ring: 197 71% 63%;
+
     /* Chart Colors */
     --chart-1: 197 71% 63%;
     --chart-2: 180 100% 35%;
@@ -125,12 +125,12 @@ h6 {
     --chart-6: 327 75% 65%;
 
     /* Sidebar Theme */
-    --sidebar-background: 224 23% 10%; 
-    --sidebar-foreground: 210 20% 85%; 
-    --sidebar-primary: 197 71% 63%; 
+    --sidebar-background: 224 23% 10%;
+    --sidebar-foreground: 210 20% 85%;
+    --sidebar-primary: 197 71% 63%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 222 23% 25%; 
-    --sidebar-accent-foreground: 197 71% 73%; 
+    --sidebar-accent: 222 23% 25%;
+    --sidebar-accent-foreground: 197 71% 73%;
     --sidebar-border: 224 23% 20%;
     --sidebar-ring: 197 71% 63%;
   }

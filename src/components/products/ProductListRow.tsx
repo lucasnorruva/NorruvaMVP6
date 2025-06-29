@@ -1,63 +1,90 @@
-
 // --- File: ProductListRow.tsx ---
 // Description: Component to render a single row in the Product Management table.
 
 "use client";
 
-import React from 'react';
+import React from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { TableRow, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Eye, Edit, Trash2, FileText as FileTextIcon } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  MoreHorizontal,
+  Eye,
+  Edit,
+  Trash2,
+  FileText as FileTextIcon,
+} from "lucide-react";
 import type { DisplayableProduct } from "@/types/dpp";
 import type { UserRole } from "@/contexts/RoleContext";
-import ProductStatusBadge from './list/ProductStatusBadge';
-import ProductComplianceBadge from './list/ProductComplianceBadge';
-import ProductCompletenessIndicator from './list/ProductCompletenessIndicator';
-import { getAiHintForImage } from '@/utils/imageUtils';
-
+import ProductStatusBadge from "./list/ProductStatusBadge";
+import ProductComplianceBadge from "./list/ProductComplianceBadge";
+import ProductCompletenessIndicator from "./list/ProductCompletenessIndicator";
+import { getAiHintForImage } from "@/utils/imageUtils";
 
 interface ProductListRowProps {
   product: DisplayableProduct;
-  completenessData: { score: number; filledFields: number; totalFields: number; missingFields: string[] };
+  completenessData: {
+    score: number;
+    filledFields: number;
+    totalFields: number;
+    missingFields: string[];
+  };
   currentRole: UserRole;
   onDeleteProduct: (product: DisplayableProduct) => void;
 }
 
-export function ProductListRow({ product, completenessData, currentRole, onDeleteProduct }: ProductListRowProps) {
-  const canEdit = (currentRole === 'admin' || currentRole === 'manufacturer') && product.id.startsWith("USER_PROD");
-  const canDelete = (currentRole === 'admin' || currentRole === 'manufacturer') && product.id.startsWith("USER_PROD");
+export function ProductListRow({
+  product,
+  completenessData,
+  currentRole,
+  onDeleteProduct,
+}: ProductListRowProps) {
+  const canEdit =
+    (currentRole === "admin" || currentRole === "manufacturer") &&
+    product.id.startsWith("USER_PROD");
+  const canDelete =
+    (currentRole === "admin" || currentRole === "manufacturer") &&
+    product.id.startsWith("USER_PROD");
 
   const currentProductName = product.productName || "Unnamed Product";
   const currentCategory = product.category || product.productCategory || "N/A";
   const currentManufacturer = product.manufacturer || "N/A";
-  const imageUrl = product.imageUrl || "https://placehold.co/50x50.png?text=N/A";
-  
+  const imageUrl =
+    product.imageUrl || "https://placehold.co/50x50.png?text=N/A";
+
   const aiHint = getAiHintForImage({
     productName: currentProductName,
     category: currentCategory,
     imageHint: product.imageHint,
   });
 
-
   return (
     <TableRow key={product.id}>
       <TableCell>
         <div className="w-12 h-12 rounded-md overflow-hidden bg-muted flex items-center justify-center">
-          <Image 
-            src={imageUrl} 
-            alt={currentProductName} 
-            width={48} 
-            height={48} 
+          <Image
+            src={imageUrl}
+            alt={currentProductName}
+            width={48}
+            height={48}
             className="object-contain"
             data-ai-hint={aiHint}
           />
         </div>
       </TableCell>
       <TableCell className="font-medium">
-        <Link href={`/products/${product.id}`} className="hover:underline text-primary">
+        <Link
+          href={`/products/${product.id}`}
+          className="hover:underline text-primary"
+        >
           {product.id}
         </Link>
       </TableCell>
@@ -77,13 +104,17 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
       <TableCell>
         <ProductCompletenessIndicator completenessData={completenessData} />
       </TableCell>
-      <TableCell>{new Date(product.lastUpdated).toLocaleDateString()}</TableCell>
+      <TableCell>
+        {new Date(product.lastUpdated).toLocaleDateString()}
+      </TableCell>
       <TableCell className="text-right">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="icon">
               <MoreHorizontal className="h-5 w-5" />
-              <span className="sr-only">Product Actions for {currentProductName}</span>
+              <span className="sr-only">
+                Product Actions for {currentProductName}
+              </span>
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
@@ -99,7 +130,9 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
                 </Link>
               </DropdownMenuItem>
             )}
-            <DropdownMenuItem onClick={() => alert(`Mock: Settings for ${product.id}`)}>
+            <DropdownMenuItem
+              onClick={() => alert(`Mock: Settings for ${product.id}`)}
+            >
               <FileTextIcon className="mr-2 h-4 w-4" /> Settings
             </DropdownMenuItem>
             {canDelete && (
@@ -119,4 +152,3 @@ export function ProductListRow({ product, completenessData, currentRole, onDelet
     </TableRow>
   );
 }
-

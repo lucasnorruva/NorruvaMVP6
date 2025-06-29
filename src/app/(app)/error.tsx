@@ -1,12 +1,17 @@
-
 // Mark as a Client Component
 "use client";
 
-import { useEffect } from 'react';
-import Link from 'next/link'; // Import Link
-import { Button } from '@/components/ui/button';
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // Import Card components
+import { useEffect } from "react";
+import Link from "next/link"; // Import Link
+import { Button } from "@/components/ui/button";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"; // Import Card components
 
 export default function ErrorPage({
   error,
@@ -27,27 +32,53 @@ export default function ErrorPage({
           <div className="flex justify-center mb-4">
             <AlertTriangle className="w-16 h-16 text-destructive" />
           </div>
-          <CardTitle className="text-3xl font-headline text-destructive">Oops! Something Went Wrong</CardTitle>
+          <CardTitle className="text-3xl font-headline text-destructive">
+            Oops! Something Went Wrong
+          </CardTitle>
           <CardDescription className="text-md text-muted-foreground mt-2">
-            We're sorry for the inconvenience. An unexpected error has occurred while trying to process your request. Our team has been notified of this issue (conceptually).
+            We're sorry for the inconvenience. An unexpected error has occurred
+            while trying to process your request. Our team has been notified of
+            this issue (conceptually).
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-6">
           {error?.message && (
             <div className="bg-muted p-3 rounded-md">
-              <p className="text-sm font-medium text-foreground">Error Details:</p>
-              <p className="text-xs text-muted-foreground break-words">{error.message}</p>
-              {error.digest && <p className="text-xs text-muted-foreground mt-1">Digest: {error.digest}</p>}
+              <p className="text-sm font-medium text-foreground">
+                Error Details:
+              </p>
+              <p className="text-xs text-muted-foreground break-words">
+                {error.message}
+              </p>
+              {error.digest && (
+                <p className="text-xs text-muted-foreground mt-1">
+                  Digest: {error.digest}
+                </p>
+              )}
             </div>
           )}
-          
+
           <div>
-            <p className="text-sm text-foreground mb-2 font-medium">What you can try:</p>
+            <p className="text-sm text-foreground mb-2 font-medium">
+              What you can try:
+            </p>
             <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
               <li>Click the "Try Again" button below to refresh the page.</li>
               <li>Ensure your internet connection is stable.</li>
-              <li>Return to the <Link href="/dashboard" className="text-primary hover:underline">Dashboard</Link> and try navigating again.</li>
-              <li>If the problem persists, please note the error details and contact support (if available).</li>
+              <li>
+                Return to the{" "}
+                <Link
+                  href="/dashboard"
+                  className="text-primary hover:underline"
+                >
+                  Dashboard
+                </Link>{" "}
+                and try navigating again.
+              </li>
+              <li>
+                If the problem persists, please note the error details and
+                contact support (if available).
+              </li>
             </ul>
           </div>
 
@@ -60,7 +91,12 @@ export default function ErrorPage({
               <RefreshCw className="mr-2 h-4 w-4" />
               Try Again
             </Button>
-            <Button variant="outline" asChild size="lg" className="w-full sm:w-auto">
+            <Button
+              variant="outline"
+              asChild
+              size="lg"
+              className="w-full sm:w-auto"
+            >
               <Link href="/dashboard">
                 <Home className="mr-2 h-4 w-4" />
                 Go to Dashboard

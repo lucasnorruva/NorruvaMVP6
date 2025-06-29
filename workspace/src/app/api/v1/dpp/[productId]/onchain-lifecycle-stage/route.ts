@@ -1,12 +1,11 @@
-
 // --- File: src/app/api/v1/dpp/[productId]/onchain-lifecycle-stage/route.ts ---
 // Description: Mock API endpoint to simulate updating a DPP's on-chain lifecycle stage.
 
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport } from '@/types/dpp';
-import { validateApiKey } from '@/middleware/apiKeyAuth';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { MOCK_DPPS } from "@/data";
+import type { DigitalProductPassport } from "@/types/dpp";
+import { validateApiKey } from "@/middleware/apiKeyAuth";
 
 interface UpdateOnChainLifecycleStageRequestBody {
   lifecycleStage: string;
@@ -14,7 +13,7 @@ interface UpdateOnChainLifecycleStageRequestBody {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: { productId: string } },
 ) {
   const productId = params.productId;
   const authError = validateApiKey(request);
@@ -24,23 +23,57 @@ export async function POST(
   try {
     requestBody = await request.json();
   } catch (error) {
-    return NextResponse.json({ error: { code: 400, message: "Invalid JSON payload." } }, { status: 400 });
+    return NextResponse.json(
+      { error: { code: 400, message: "Invalid JSON payload." } },
+      { status: 400 },
+    );
   }
 
   const { lifecycleStage } = requestBody;
 
-  if (!lifecycleStage || typeof lifecycleStage !== 'string' || lifecycleStage.trim() === '') {
-    return NextResponse.json({ error: { code: 400, message: "Field 'lifecycleStage' is required." } }, { status: 400 });
+  if (
+    !lifecycleStage ||
+    typeof lifecycleStage !== "string" ||
+    lifecycleStage.trim() === ""
+  ) {
+    return NextResponse.json(
+      { error: { code: 400, message: "Field 'lifecycleStage' is required." } },
+      { status: 400 },
+    );
   }
-  const allowedStages = ["Design", "Manufacturing", "QualityAssurance", "Distribution", "InUse", "Maintenance", "EndOfLife"];
+  const allowedStages = [
+    "Design",
+    "Manufacturing",
+    "QualityAssurance",
+    "Distribution",
+    "InUse",
+    "Maintenance",
+    "EndOfLife",
+  ];
   if (!allowedStages.includes(lifecycleStage)) {
-    return NextResponse.json({ error: { code: 400, message: `Invalid 'lifecycleStage' value. Must be one of: ${allowedStages.join(', ')}.` } }, { status: 400 });
+    return NextResponse.json(
+      {
+        error: {
+          code: 400,
+          message: `Invalid 'lifecycleStage' value. Must be one of: ${allowedStages.join(", ")}.`,
+        },
+      },
+      { status: 400 },
+    );
   }
 
-  const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
+  const productIndex = MOCK_DPPS.findIndex((dpp) => dpp.id === productId);
 
   if (productIndex === -1) {
-    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found.` } }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: {
+          code: 404,
+          message: `Product with ID ${productId} not found.`,
+        },
+      },
+      { status: 404 },
+    );
   }
 
   const existingProduct = MOCK_DPPS[productIndex];
@@ -54,25 +87,31 @@ export async function POST(
       onChainLifecycleStage: lifecycleStage,
       last_updated: now,
     },
-    lifecycleEvents: [ 
-        ...(existingProduct.lifecycleEvents || []),
-        { 
-            id: `lc_stage_evt_${Date.now().toString(36).slice(-5)}`, 
-            type: "OnChainLifecycleUpdate", 
-            timestamp: now, 
-            data: { previousStage: existingProduct.metadata.onChainLifecycleStage, newStage: lifecycleStage, mockTxHash: mockTxHash },
-            responsibleParty: "System/Blockchain"
-        }
-    ]
+    lifecycleEvents: [
+      ...(existingProduct.lifecycleEvents || []),
+      {
+        id: `lc_stage_evt_${Date.now().toString(36).slice(-5)}`,
+        type: "OnChainLifecycleUpdate",
+        timestamp: now,
+        data: {
+          previousStage: existingProduct.metadata.onChainLifecycleStage,
+          newStage: lifecycleStage,
+          mockTxHash: mockTxHash,
+        },
+        responsibleParty: "System/Blockchain",
+      },
+    ],
   };
 
   MOCK_DPPS[productIndex] = updatedProduct;
 
-  await new Promise(resolve => setTimeout(resolve, 200));
+  await new Promise((resolve) => setTimeout(resolve, 200));
 
-  return NextResponse.json({
-    message: `Conceptual on-chain lifecycle stage for product ${productId} updated to '${lifecycleStage}'. Mock Tx: ${mockTxHash}`,
-    updatedProduct: updatedProduct,
-  }, { status: 200 });
+  return NextResponse.json(
+    {
+      message: `Conceptual on-chain lifecycle stage for product ${productId} updated to '${lifecycleStage}'. Mock Tx: ${mockTxHash}`,
+      updatedProduct: updatedProduct,
+    },
+    { status: 200 },
+  );
 }
-

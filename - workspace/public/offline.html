@@ -1,78 +1,86 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Offline - Norruva DPP</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
-            background-color: #f0f2f5; /* Light grey background */
-            color: #1a202c; /* Dark text */
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            text-align: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .container {
-            background-color: #fff;
-            padding: 30px 40px;
-            border-radius: 12px; /* Slightly more rounded */
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1); /* Softer shadow */
-            max-width: 500px;
-            width: 100%;
-        }
-        h1 {
-            font-size: 28px; /* Larger title */
-            color: #29ABE2; /* Primary color */
-            margin-bottom: 15px;
-        }
-        p {
-            font-size: 16px;
-            line-height: 1.7; /* Increased line height */
-            margin-bottom: 25px;
-            color: #4a5568; /* Muted text */
-        }
-        .icon {
-            font-size: 64px; /* Larger Emoji */
-            margin-bottom: 25px;
-        }
-        a.button {
-            display: inline-block;
-            padding: 12px 24px;
-            background-color: #29ABE2; /* Primary color */
-            color: #fff;
-            text-decoration: none;
-            border-radius: 8px; /* Rounded button */
-            font-weight: 500;
-            transition: background-color 0.2s ease-in-out;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        a.button:hover {
-            background-color: #1f8ac0; /* Darker shade of primary */
-        }
-        .footer {
-            margin-top: 30px;
-            font-size: 12px;
-            color: #718096;
-        }
+      body {
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
+          "Segoe UI Symbol";
+        background-color: #f0f2f5; /* Light grey background */
+        color: #1a202c; /* Dark text */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        min-height: 100vh;
+        margin: 0;
+        text-align: center;
+        padding: 20px;
+        box-sizing: border-box;
+      }
+      .container {
+        background-color: #fff;
+        padding: 30px 40px;
+        border-radius: 12px; /* Slightly more rounded */
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1); /* Softer shadow */
+        max-width: 500px;
+        width: 100%;
+      }
+      h1 {
+        font-size: 28px; /* Larger title */
+        color: #29abe2; /* Primary color */
+        margin-bottom: 15px;
+      }
+      p {
+        font-size: 16px;
+        line-height: 1.7; /* Increased line height */
+        margin-bottom: 25px;
+        color: #4a5568; /* Muted text */
+      }
+      .icon {
+        font-size: 64px; /* Larger Emoji */
+        margin-bottom: 25px;
+      }
+      a.button {
+        display: inline-block;
+        padding: 12px 24px;
+        background-color: #29abe2; /* Primary color */
+        color: #fff;
+        text-decoration: none;
+        border-radius: 8px; /* Rounded button */
+        font-weight: 500;
+        transition: background-color 0.2s ease-in-out;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+      }
+      a.button:hover {
+        background-color: #1f8ac0; /* Darker shade of primary */
+      }
+      .footer {
+        margin-top: 30px;
+        font-size: 12px;
+        color: #718096;
+      }
     </style>
-</head>
-<body>
+  </head>
+  <body>
     <div class="container">
-        <div class="icon" role="img" aria-label="Cloud with rain">🌧️</div>
-        <h1>You're Currently Offline</h1>
-        <p>It seems your internet connection is unavailable. Some previously visited pages might still be accessible if they were cached by the service worker.</p>
-        <p>Please check your connection and try again. You can also try reloading the page once you're back online.</p>
-        <a href="/" class="button">Retry / Go Home</a>
+      <div class="icon" role="img" aria-label="Cloud with rain">🌧️</div>
+      <h1>You're Currently Offline</h1>
+      <p>
+        It seems your internet connection is unavailable. Some previously
+        visited pages might still be accessible if they were cached by the
+        service worker.
+      </p>
+      <p>
+        Please check your connection and try again. You can also try reloading
+        the page once you're back online.
+      </p>
+      <a href="/" class="button">Retry / Go Home</a>
     </div>
-    <div class="footer">
-        Norruva Digital Product Passport &copy; 2024
-    </div>
-</body>
+    <div class="footer">Norruva Digital Product Passport &copy; 2024</div>
+  </body>
 </html>

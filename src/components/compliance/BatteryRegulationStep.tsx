@@ -1,9 +1,15 @@
 "use client";
 
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb } from "lucide-react";
 
 import Step1GeneralInfo from "./battery-steps/Step1GeneralInfo";
 import Step2ManufacturerDetails from "./battery-steps/Step2ManufacturerDetails";
@@ -31,7 +37,10 @@ export interface BatteryRegulationStepProps {
   onAskCopilot: (context: string) => void;
 }
 
-const stepMap: Record<string, React.ComponentType<BatteryRegulationStepProps>> = {
+const stepMap: Record<
+  string,
+  React.ComponentType<BatteryRegulationStepProps>
+> = {
   step1: Step1GeneralInfo,
   step2: Step2ManufacturerDetails,
   step3: Step3MaterialComposition,
@@ -56,8 +65,15 @@ function renderStep(id: string, props: BatteryRegulationStepProps) {
         <CardDescription>{step.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground">Content for {step.title} will be available soon.</p>
-        <Button className="mt-4" variant="outline" size="sm" onClick={() => onAskCopilot(step.title)}>
+        <p className="text-muted-foreground">
+          Content for {step.title} will be available soon.
+        </p>
+        <Button
+          className="mt-4"
+          variant="outline"
+          size="sm"
+          onClick={() => onAskCopilot(step.title)}
+        >
           <Lightbulb className="mr-2 h-4 w-4 text-yellow-400" />
           Ask Co-Pilot about this step
         </Button>
@@ -66,7 +82,8 @@ function renderStep(id: string, props: BatteryRegulationStepProps) {
   );
 }
 
-export default function BatteryRegulationStep(props: BatteryRegulationStepProps) {
+export default function BatteryRegulationStep(
+  props: BatteryRegulationStepProps,
+) {
   return renderStep(props.step.id, props);
 }
-

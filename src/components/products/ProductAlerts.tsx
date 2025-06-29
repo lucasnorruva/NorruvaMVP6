@@ -1,15 +1,14 @@
-
 "use client";
 
-import React from 'react';
+import React from "react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BellRing, AlertTriangle, Info } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { BellRing, AlertTriangle, Info } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export interface ProductNotification {
   id: string;
-  type: 'info' | 'warning' | 'error';
+  type: "info" | "warning" | "error";
   message: string;
   date: string; // ISO String
 }
@@ -23,15 +22,29 @@ const ProductAlerts: React.FC<ProductAlertsProps> = ({ notifications }) => {
     return null; // Don't render anything if there are no notifications
   }
 
-  const getIconAndClass = (type: ProductNotification['type']) => {
+  const getIconAndClass = (type: ProductNotification["type"]) => {
     switch (type) {
-      case 'error':
-        return { Icon: AlertTriangle, className: 'text-destructive', alertVariant: 'destructive' as const };
-      case 'warning':
-        return { Icon: BellRing, className: 'text-orange-500', alertVariant: 'default' as const, alertClass: 'bg-orange-500/10 border-orange-500/50' };
-      case 'info':
+      case "error":
+        return {
+          Icon: AlertTriangle,
+          className: "text-destructive",
+          alertVariant: "destructive" as const,
+        };
+      case "warning":
+        return {
+          Icon: BellRing,
+          className: "text-orange-500",
+          alertVariant: "default" as const,
+          alertClass: "bg-orange-500/10 border-orange-500/50",
+        };
+      case "info":
       default:
-        return { Icon: Info, className: 'text-blue-500', alertVariant: 'default' as const, alertClass: 'bg-blue-500/10 border-blue-500/50' };
+        return {
+          Icon: Info,
+          className: "text-blue-500",
+          alertVariant: "default" as const,
+          alertClass: "bg-blue-500/10 border-blue-500/50",
+        };
     }
   };
 
@@ -44,12 +57,23 @@ const ProductAlerts: React.FC<ProductAlertsProps> = ({ notifications }) => {
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-3 max-h-60 overflow-y-auto">
-        {notifications.map(notification => {
-          const { Icon, className, alertVariant, alertClass } = getIconAndClass(notification.type);
+        {notifications.map((notification) => {
+          const { Icon, className, alertVariant, alertClass } = getIconAndClass(
+            notification.type,
+          );
           return (
-            <Alert key={notification.id} variant={alertVariant} className={cn(alertClass, alertVariant === 'destructive' && 'border-2')}>
+            <Alert
+              key={notification.id}
+              variant={alertVariant}
+              className={cn(
+                alertClass,
+                alertVariant === "destructive" && "border-2",
+              )}
+            >
               <Icon className={cn("h-5 w-5", className)} />
-              <AlertTitle className={cn("font-semibold capitalize", className)}>{notification.type}</AlertTitle>
+              <AlertTitle className={cn("font-semibold capitalize", className)}>
+                {notification.type}
+              </AlertTitle>
               <AlertDescription>
                 {notification.message}
                 <span className="block text-xs text-muted-foreground mt-1">

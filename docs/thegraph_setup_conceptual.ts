@@ -2,7 +2,7 @@
 
 /**
  * Conceptual Guide for Setting up a TheGraph Subgraph for the DPPToken Contract
- * 
+ *
  * This file outlines the conceptual steps and configuration required to set up a
  * TheGraph subgraph to index events from the DPPToken smart contract.
  *

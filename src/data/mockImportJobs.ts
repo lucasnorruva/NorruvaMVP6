@@ -1,4 +1,4 @@
-export type ImportJobStatus = 'PendingProcessing' | 'Completed' | 'Failed';
+export type ImportJobStatus = "PendingProcessing" | "Completed" | "Failed";
 
 export interface ImportJob {
   jobId: string;

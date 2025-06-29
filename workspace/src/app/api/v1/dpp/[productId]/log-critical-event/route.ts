@@ -1,21 +1,20 @@
-
 // --- File: src/app/api/v1/dpp/[productId]/log-critical-event/route.ts ---
 // Description: Mock API endpoint to simulate logging a critical event on-chain for a DPP.
 
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport, LifecycleEvent } from '@/types/dpp';
-import { validateApiKey } from '@/middleware/apiKeyAuth';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { MOCK_DPPS } from "@/data";
+import type { DigitalProductPassport, LifecycleEvent } from "@/types/dpp";
+import { validateApiKey } from "@/middleware/apiKeyAuth";
 
 interface LogCriticalEventRequestBody {
   eventDescription: string;
-  severity?: 'High' | 'Medium' | 'Low';
+  severity?: "High" | "Medium" | "Low";
 }
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: { productId: string } },
 ) {
   const productId = params.productId;
   const authError = validateApiKey(request);
@@ -25,22 +24,51 @@ export async function POST(
   try {
     requestBody = await request.json();
   } catch (error) {
-    return NextResponse.json({ error: { code: 400, message: "Invalid JSON payload." } }, { status: 400 });
+    return NextResponse.json(
+      { error: { code: 400, message: "Invalid JSON payload." } },
+      { status: 400 },
+    );
   }
 
   const { eventDescription, severity = "High" } = requestBody;
 
-  if (!eventDescription || typeof eventDescription !== 'string' || eventDescription.trim() === '') {
-    return NextResponse.json({ error: { code: 400, message: "Field 'eventDescription' is required." } }, { status: 400 });
+  if (
+    !eventDescription ||
+    typeof eventDescription !== "string" ||
+    eventDescription.trim() === ""
+  ) {
+    return NextResponse.json(
+      {
+        error: { code: 400, message: "Field 'eventDescription' is required." },
+      },
+      { status: 400 },
+    );
   }
-  if (severity && !['High', 'Medium', 'Low'].includes(severity)) {
-    return NextResponse.json({ error: { code: 400, message: "Invalid 'severity' value. Must be one of: High, Medium, Low." } }, { status: 400 });
+  if (severity && !["High", "Medium", "Low"].includes(severity)) {
+    return NextResponse.json(
+      {
+        error: {
+          code: 400,
+          message:
+            "Invalid 'severity' value. Must be one of: High, Medium, Low.",
+        },
+      },
+      { status: 400 },
+    );
   }
 
-  const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
+  const productIndex = MOCK_DPPS.findIndex((dpp) => dpp.id === productId);
 
   if (productIndex === -1) {
-    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found.` } }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: {
+          code: 404,
+          message: `Product with ID ${productId} not found.`,
+        },
+      },
+      { status: 404 },
+    );
   }
 
   const existingProduct = MOCK_DPPS[productIndex];
@@ -60,7 +88,10 @@ export async function POST(
     transactionHash: mockTxHash,
   };
 
-  const updatedLifecycleEvents = [...(existingProduct.lifecycleEvents || []), newEvent];
+  const updatedLifecycleEvents = [
+    ...(existingProduct.lifecycleEvents || []),
+    newEvent,
+  ];
 
   const updatedProduct: DigitalProductPassport = {
     ...existingProduct,
@@ -73,11 +104,13 @@ export async function POST(
 
   MOCK_DPPS[productIndex] = updatedProduct;
 
-  await new Promise(resolve => setTimeout(resolve, 200));
+  await new Promise((resolve) => setTimeout(resolve, 200));
 
-  return NextResponse.json({
-    message: `Critical event '${eventDescription.substring(0,30)}...' conceptually logged for product ${productId}. Mock Tx: ${mockTxHash}`,
-    updatedProduct: updatedProduct,
-  }, { status: 200 });
+  return NextResponse.json(
+    {
+      message: `Critical event '${eventDescription.substring(0, 30)}...' conceptually logged for product ${productId}. Mock Tx: ${mockTxHash}`,
+      updatedProduct: updatedProduct,
+    },
+    { status: 200 },
+  );
 }
-

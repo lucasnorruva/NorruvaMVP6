@@ -5,10 +5,30 @@ import { Package, Building, FileWarning, ScanLine } from "lucide-react";
 
 export const AdminDashboardOverview = () => {
   const overviewStats = [
-    { title: "Total Products Managed", value: "1,234", icon: Package, color: "text-primary" },
-    { title: "Registered Companies", value: "78", icon: Building, color: "text-accent" },
-    { title: "DPPs Awaiting Verification", value: "42", icon: FileWarning, color: "text-orange-500" },
-    { title: "Active Data Extractions", value: "12", icon: ScanLine, color: "text-info" },
+    {
+      title: "Total Products Managed",
+      value: "1,234",
+      icon: Package,
+      color: "text-primary",
+    },
+    {
+      title: "Registered Companies",
+      value: "78",
+      icon: Building,
+      color: "text-accent",
+    },
+    {
+      title: "DPPs Awaiting Verification",
+      value: "42",
+      icon: FileWarning,
+      color: "text-orange-500",
+    },
+    {
+      title: "Active Data Extractions",
+      value: "12",
+      icon: ScanLine,
+      color: "text-info",
+    },
   ];
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -27,4 +47,3 @@ export const AdminDashboardOverview = () => {
     </div>
   );
 };
-

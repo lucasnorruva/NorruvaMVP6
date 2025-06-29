@@ -1,4 +1,3 @@
-
 "use client";
 
 import React, { useRef } from "react";
@@ -10,9 +9,15 @@ interface QrCodeGeneratorProps {
   size?: number; // Allow size customization
 }
 
-export default function QrCodeGenerator({ productId, size = 128 }: QrCodeGeneratorProps) {
+export default function QrCodeGenerator({
+  productId,
+  size = 128,
+}: QrCodeGeneratorProps) {
   const svgRef = useRef<SVGSVGElement>(null);
-  const dataUrl = typeof window !== 'undefined' ? `${window.location.origin}/passport/${productId}` : `/passport/${productId}`;
+  const dataUrl =
+    typeof window !== "undefined"
+      ? `${window.location.origin}/passport/${productId}`
+      : `/passport/${productId}`;
 
   const handleDownload = () => {
     if (!svgRef.current) return;
@@ -33,7 +38,9 @@ export default function QrCodeGenerator({ productId, size = 128 }: QrCodeGenerat
 
   return (
     <div className="flex flex-col items-center gap-2 mt-4">
-      <div className="p-2 bg-white rounded-md shadow-sm inline-block"> {/* Add padding for better quiet zone */}
+      <div className="p-2 bg-white rounded-md shadow-sm inline-block">
+        {" "}
+        {/* Add padding for better quiet zone */}
         <QRCode value={dataUrl} size={size} ref={svgRef} level="H" />
       </div>
       <Button variant="outline" size="sm" onClick={handleDownload}>
@@ -42,4 +49,3 @@ export default function QrCodeGenerator({ productId, size = 128 }: QrCodeGenerat
     </div>
   );
 }
-

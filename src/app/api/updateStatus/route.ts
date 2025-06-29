@@ -1,7 +1,7 @@
-import { NextResponse } from 'next/server';
-import { ethers } from 'ethers'; // Assuming ethers.js is used
-import { DPP_TOKEN_ADDRESS } from '/workspace/digital-product-passport/src/config/contractAddresses'; // Use absolute path
-import DPPToken from '/workspace/digital-product-passport/artifacts/contracts/DPPToken.sol/DPPToken.json'; // Assuming Hardhat compilation output
+import { NextResponse } from "next/server";
+import { ethers } from "ethers"; // Assuming ethers.js is used
+import { DPP_TOKEN_ADDRESS } from "/workspace/digital-product-passport/src/config/contractAddresses"; // Use absolute path
+import DPPToken from "/workspace/digital-product-passport/artifacts/contracts/DPPToken.sol/DPPToken.json"; // Assuming Hardhat compilation output
 
 export async function POST(request: Request) {
   // This is a placeholder for the updateStatus API route.
@@ -21,14 +21,26 @@ export async function POST(request: Request) {
     // - Wait for the transaction to be mined.
     // - Return a success response with transaction details.
 
-    console.log(`Attempting to update status for token ${tokenId} to ${newStatus}`);
+    console.log(
+      `Attempting to update status for token ${tokenId} to ${newStatus}`,
+    );
 
     // Placeholder for successful interaction response
-    const transactionHash = '0x123...'; // Replace with actual transaction hash
-    return NextResponse.json({ success: true, message: 'Status update initiated', transactionHash });
-
+    const transactionHash = "0x123..."; // Replace with actual transaction hash
+    return NextResponse.json({
+      success: true,
+      message: "Status update initiated",
+      transactionHash,
+    });
   } catch (error: any) {
-    console.error('Error updating token status:', error);
-    return NextResponse.json({ success: false, message: 'Failed to update token status', error: error.message }, { status: 500 });
+    console.error("Error updating token status:", error);
+    return NextResponse.json(
+      {
+        success: false,
+        message: "Failed to update token status",
+        error: error.message,
+      },
+      { status: 500 },
+    );
   }
 }

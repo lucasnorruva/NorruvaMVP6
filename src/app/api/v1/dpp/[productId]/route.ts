@@ -1,12 +1,11 @@
-
 // --- File: src/app/api/v1/dpp/[productId]/route.ts ---
 // Description: Conceptual API endpoint to retrieve and update a Digital Product Passport by ID.
 
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport, CustomAttribute } from '@/types/dpp';
-import { validateApiKey } from '@/middleware/apiKeyAuth';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { MOCK_DPPS } from "@/data";
+import type { DigitalProductPassport, CustomAttribute } from "@/types/dpp";
+import { validateApiKey } from "@/middleware/apiKeyAuth";
 
 interface UpdateDppRequestBody {
   productName?: string;
@@ -14,17 +13,16 @@ interface UpdateDppRequestBody {
   gtin?: string;
   manufacturerName?: string;
   modelNumber?: string;
-  metadata?: Partial<DigitalProductPassport['metadata']>;
-  productDetails?: Partial<DigitalProductPassport['productDetails']>;
-  compliance?: Partial<DigitalProductPassport['compliance']>;
-  ebsiVerification?: Partial<DigitalProductPassport['ebsiVerification']>;
+  metadata?: Partial<DigitalProductPassport["metadata"]>;
+  productDetails?: Partial<DigitalProductPassport["productDetails"]>;
+  compliance?: Partial<DigitalProductPassport["compliance"]>;
+  ebsiVerification?: Partial<DigitalProductPassport["ebsiVerification"]>;
   // Add other fields as needed for updates
 }
 
-
 export async function GET(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: { productId: string } },
 ) {
   const productId = params.productId;
   const auth = validateApiKey(request);
@@ -37,21 +35,29 @@ export async function GET(
   //   return NextResponse.json({ error: { code: 401, message: 'API key missing or invalid.' } }, { status: 401 });
   // }
 
-  const product = MOCK_DPPS.find(dpp => dpp.id === productId);
+  const product = MOCK_DPPS.find((dpp) => dpp.id === productId);
 
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 200));
+  await new Promise((resolve) => setTimeout(resolve, 200));
 
   if (product) {
     return NextResponse.json(product);
   } else {
-    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found.` } }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: {
+          code: 404,
+          message: `Product with ID ${productId} not found.`,
+        },
+      },
+      { status: 404 },
+    );
   }
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: { productId: string } },
 ) {
   const productId = params.productId;
   const auth = validateApiKey(request);
@@ -61,7 +67,10 @@ export async function PUT(
   try {
     requestBody = await request.json();
   } catch (error) {
-    return NextResponse.json({ error: { code: 400, message: "Invalid JSON payload." } }, { status: 400 });
+    return NextResponse.json(
+      { error: { code: 400, message: "Invalid JSON payload." } },
+      { status: 400 },
+    );
   }
 
   // Conceptual API key authentication
@@ -70,24 +79,37 @@ export async function PUT(
   //   return NextResponse.json({ error: { code: 401, message: 'API key missing or invalid.' } }, { status: 401 });
   // }
 
-  const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
+  const productIndex = MOCK_DPPS.findIndex((dpp) => dpp.id === productId);
 
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 200));
+  await new Promise((resolve) => setTimeout(resolve, 200));
 
   if (productIndex === -1) {
-    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found.` } }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: {
+          code: 404,
+          message: `Product with ID ${productId} not found.`,
+        },
+      },
+      { status: 404 },
+    );
   }
 
   const existingProduct = MOCK_DPPS[productIndex];
-  
+
   // Create an updated product object by merging fields
   const updatedProduct: DigitalProductPassport = {
     ...existingProduct,
     ...(requestBody.productName && { productName: requestBody.productName }),
     ...(requestBody.category && { category: requestBody.category }),
     ...(requestBody.gtin && { gtin: requestBody.gtin }),
-    ...(requestBody.manufacturerName && { manufacturer: { ...existingProduct.manufacturer, name: requestBody.manufacturerName } }),
+    ...(requestBody.manufacturerName && {
+      manufacturer: {
+        ...existingProduct.manufacturer,
+        name: requestBody.manufacturerName,
+      },
+    }),
     ...(requestBody.modelNumber && { modelNumber: requestBody.modelNumber }),
     metadata: {
       ...existingProduct.metadata,
@@ -98,7 +120,10 @@ export async function PUT(
       ...existingProduct.productDetails,
       ...(requestBody.productDetails || {}), // Merge productDetails fields
       // Ensure customAttributes are handled correctly if present
-      customAttributes: requestBody.productDetails?.customAttributes || existingProduct.productDetails?.customAttributes || [],
+      customAttributes:
+        requestBody.productDetails?.customAttributes ||
+        existingProduct.productDetails?.customAttributes ||
+        [],
     },
     compliance: {
       ...existingProduct.compliance,
@@ -108,7 +133,10 @@ export async function PUT(
       ...existingProduct.ebsiVerification,
       ...(requestBody.ebsiVerification || {}), // Merge EBSI verification fields
       // Ensure lastChecked is updated if status is touched, or provide a way for client to set it
-      lastChecked: requestBody.ebsiVerification?.status ? new Date().toISOString() : existingProduct.ebsiVerification?.lastChecked || new Date().toISOString(),
+      lastChecked: requestBody.ebsiVerification?.status
+        ? new Date().toISOString()
+        : existingProduct.ebsiVerification?.lastChecked ||
+          new Date().toISOString(),
     },
     // Add other top-level updatable fields similarly
   };
@@ -121,7 +149,7 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: { productId: string } },
 ) {
   const productId = params.productId;
   const auth = validateApiKey(request);
@@ -133,19 +161,29 @@ export async function DELETE(
   //   return NextResponse.json({ error: { code: 401, message: 'API key missing or invalid.' } }, { status: 401 });
   // }
 
-  const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
+  const productIndex = MOCK_DPPS.findIndex((dpp) => dpp.id === productId);
 
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 150));
+  await new Promise((resolve) => setTimeout(resolve, 150));
 
   if (productIndex === -1) {
-    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found for deletion.` } }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: {
+          code: 404,
+          message: `Product with ID ${productId} not found for deletion.`,
+        },
+      },
+      { status: 404 },
+    );
   }
 
   // Mark the product as 'archived' in the in-memory array
-  MOCK_DPPS[productIndex].metadata.status = 'archived';
+  MOCK_DPPS[productIndex].metadata.status = "archived";
   MOCK_DPPS[productIndex].metadata.last_updated = new Date().toISOString();
 
-  return NextResponse.json({ message: `Product with ID ${productId} has been archived successfully.`, status: "Archived" });
+  return NextResponse.json({
+    message: `Product with ID ${productId} has been archived successfully.`,
+    status: "Archived",
+  });
 }
-

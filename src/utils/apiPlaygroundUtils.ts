@@ -1,7 +1,5 @@
-
 // --- File: src/utils/apiPlaygroundUtils.ts ---
 // Description: Utility functions for the API Playground in the Developer Portal.
-
 
 interface ApiPlaygroundParams {
   productId?: string;
@@ -20,41 +18,72 @@ export const generateMockCodeSnippet = (
   language: string,
   params: ApiPlaygroundParams,
   body: string | null,
-  currentEnv: string
+  currentEnv: string,
 ): string => {
   const apiKeyPlaceholder = `YOUR_${currentEnv.toUpperCase()}_API_KEY`;
   // In a real app, baseUrl would come from an environment variable or configuration.
   // For the mock setup, we assume the API routes are served from the same origin.
-  const baseUrl = '/api/v1'; 
+  const baseUrl = "/api/v1";
 
   let urlPath = "";
   switch (endpointKey) {
-    case "getProduct": urlPath = `/dpp/${params.productId || '{productId}'}`; break;
+    case "getProduct":
+      urlPath = `/dpp/${params.productId || "{productId}"}`;
+      break;
     case "listDpps":
-        const queryParams = new URLSearchParams();
-        if (params.status && params.status !== 'all') queryParams.append('status', params.status);
-        if (params.category && params.category !== 'all') queryParams.append('category', params.category);
-        if (params.searchQuery) queryParams.append('searchQuery', params.searchQuery);
-        if (params.blockchainAnchored && params.blockchainAnchored !== 'all') queryParams.append('blockchainAnchored', params.blockchainAnchored);
-        urlPath = `/dpp${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
-        break;
-    case "createDpp": urlPath = "/dpp"; break;
-    case "updateDpp": urlPath = `/dpp/${params.productId || '{productId}'}`; break;
-    case "patchDppExtend": urlPath = `/dpp/extend/${params.productId || '{productId}'}`; break;
-    case "deleteDpp": urlPath = `/dpp/${params.productId || '{productId}'}`; break;
-    case "qrValidate": urlPath = "/qr/validate"; break;
-    case "addLifecycleEvent": urlPath = `/dpp/${params.productId || '{productId}'}/lifecycle-events`; break;
-    case "getComplianceSummary": urlPath = `/dpp/${params.productId || '{productId}'}/compliance-summary`; break;
-    case "verifyDpp": urlPath = `/dpp/verify/${params.productIdPath || '{productId}'}`; break;
-    case "getDppHistory": urlPath = `/dpp/history/${params.productId || '{productId}'}`; break;
-    case "importDpps": urlPath = "/dpp/import"; break;
-    case "getDppGraph": urlPath = `/dpp/graph/${params.productId || '{productId}'}`; break;
-    case "getDppStatus": urlPath = `/dpp/status/${params.productId || '{productId}'}`; break;
-    default: urlPath = "/unknown-endpoint";
+      const queryParams = new URLSearchParams();
+      if (params.status && params.status !== "all")
+        queryParams.append("status", params.status);
+      if (params.category && params.category !== "all")
+        queryParams.append("category", params.category);
+      if (params.searchQuery)
+        queryParams.append("searchQuery", params.searchQuery);
+      if (params.blockchainAnchored && params.blockchainAnchored !== "all")
+        queryParams.append("blockchainAnchored", params.blockchainAnchored);
+      urlPath = `/dpp${queryParams.toString() ? `?${queryParams.toString()}` : ""}`;
+      break;
+    case "createDpp":
+      urlPath = "/dpp";
+      break;
+    case "updateDpp":
+      urlPath = `/dpp/${params.productId || "{productId}"}`;
+      break;
+    case "patchDppExtend":
+      urlPath = `/dpp/extend/${params.productId || "{productId}"}`;
+      break;
+    case "deleteDpp":
+      urlPath = `/dpp/${params.productId || "{productId}"}`;
+      break;
+    case "qrValidate":
+      urlPath = "/qr/validate";
+      break;
+    case "addLifecycleEvent":
+      urlPath = `/dpp/${params.productId || "{productId}"}/lifecycle-events`;
+      break;
+    case "getComplianceSummary":
+      urlPath = `/dpp/${params.productId || "{productId}"}/compliance-summary`;
+      break;
+    case "verifyDpp":
+      urlPath = `/dpp/verify/${params.productIdPath || "{productId}"}`;
+      break;
+    case "getDppHistory":
+      urlPath = `/dpp/history/${params.productId || "{productId}"}`;
+      break;
+    case "importDpps":
+      urlPath = "/dpp/import";
+      break;
+    case "getDppGraph":
+      urlPath = `/dpp/graph/${params.productId || "{productId}"}`;
+      break;
+    case "getDppStatus":
+      urlPath = `/dpp/status/${params.productId || "{productId}"}`;
+      break;
+    default:
+      urlPath = "/unknown-endpoint";
   }
 
   const fullUrl = `${baseUrl}${urlPath}`;
-  const safeBody = body || '{}';
+  const safeBody = body || "{}";
 
   if (language === "cURL") {
     let curlCmd = `curl -X ${method} \\\n  '${fullUrl}' \\\n  -H 'Authorization: Bearer ${apiKeyPlaceholder}'`;

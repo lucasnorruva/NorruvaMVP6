@@ -7,11 +7,11 @@ schema:
 dataSources:
   - kind: ethereum/contract
     name: DPPToken
-    network: {{network}} # e.g., sepolia, mainnet
+    network: { { network } } # e.g., sepolia, mainnet
     source:
       address: "{{DPP_TOKEN_ADDRESS}}" # Replace with the actual deployed DPPToken proxy address or load from config
       abi: DPPToken # Your DPPToken contract ABI name
-      startBlock: {{startBlock}} # Optional: Start indexing from a specific block
+      startBlock: { { startBlock } } # Optional: Start indexing from a specific block
     mapping:
       kind: ethereum/events
       apiVersion: 0.0.6

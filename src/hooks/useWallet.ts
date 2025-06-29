@@ -1,6 +1,6 @@
 // src/hooks/useWallet.ts
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect } from "react";
 // Import ethers.js or viem as needed
 // import { ethers } from 'ethers';
 // import { createWalletClient, custom } from 'viem';

@@ -1,4 +1,3 @@
-
 // --- File: ProductContainer.tsx ---
 // Description: Main layout component for the product detail view, managing tabs.
 "use client";
@@ -8,39 +7,47 @@ import type { SimpleProductDetail, ProductSupplyChainLink } from "@/types/dpp";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ProductHeader from "./ProductHeader";
 import OverviewTab from "./OverviewTab";
-import SustainabilityTab from './SustainabilityTab';
-import ComplianceTab from './ComplianceTab';
-import LifecycleTab from './LifecycleTab';
-import SupplyChainTab from './SupplyChainTab';
-import CertificationsTab from './CertificationsTab';
-import QrCodeTab from './QrCodeTab';
-import HistoryTab from './HistoryTab';
-import DigitalTwinTab from './DigitalTwinTab'; // Added DigitalTwinTab
+import SustainabilityTab from "./SustainabilityTab";
+import ComplianceTab from "./ComplianceTab";
+import LifecycleTab from "./LifecycleTab";
+import SupplyChainTab from "./SupplyChainTab";
+import CertificationsTab from "./CertificationsTab";
+import QrCodeTab from "./QrCodeTab";
+import HistoryTab from "./HistoryTab";
+import DigitalTwinTab from "./DigitalTwinTab"; // Added DigitalTwinTab
 
-import { Package, Leaf, ShieldCheck, History as HistoryIcon, Layers, Award, QrCode, Cpu } from 'lucide-react'; // Added Cpu icon
-
+import {
+  Package,
+  Leaf,
+  ShieldCheck,
+  History as HistoryIcon,
+  Layers,
+  Award,
+  QrCode,
+  Cpu,
+} from "lucide-react"; // Added Cpu icon
 
 interface ProductContainerProps {
   product: SimpleProductDetail;
   onSupplyChainUpdate: (updatedLinks: ProductSupplyChainLink[]) => void;
   onSyncEprel: () => Promise<void>;
   isSyncingEprel: boolean;
-  canSyncEprel: boolean; 
+  canSyncEprel: boolean;
 }
 
-export default function ProductContainer({ 
-  product, 
+export default function ProductContainer({
+  product,
   onSupplyChainUpdate,
   onSyncEprel,
   isSyncingEprel,
-  canSyncEprel 
+  canSyncEprel,
 }: ProductContainerProps) {
   const [activeTab, setActiveTab] = useState("overview");
 
   if (!product) {
     return <p>Product not found.</p>;
   }
-  
+
   const tabItems = [
     { value: "overview", label: "Overview", icon: Package },
     { value: "sustainability", label: "Sustainability", icon: Leaf },
@@ -58,11 +65,13 @@ export default function ProductContainer({
       <ProductHeader product={product} />
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-1 h-auto p-1.5"> {/* Adjusted grid cols for more tabs */}
-          {tabItems.map(tab => (
-            <TabsTrigger 
-              key={tab.value} 
-              value={tab.value} 
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-9 gap-1 h-auto p-1.5">
+          {" "}
+          {/* Adjusted grid cols for more tabs */}
+          {tabItems.map((tab) => (
+            <TabsTrigger
+              key={tab.value}
+              value={tab.value}
               className="flex items-center gap-2 py-2 data-[state=active]:bg-primary/10 data-[state=active]:text-primary data-[state=active]:shadow-sm text-xs sm:text-sm"
             >
               <tab.icon className="h-4 w-4" /> {tab.label}
@@ -79,14 +88,14 @@ export default function ProductContainer({
         </TabsContent>
 
         <TabsContent value="compliance" className="mt-6">
-          <ComplianceTab 
-            product={product} 
+          <ComplianceTab
+            product={product}
             onSyncEprel={onSyncEprel}
             isSyncingEprel={isSyncingEprel}
             canSyncEprel={canSyncEprel}
           />
         </TabsContent>
-        
+
         <TabsContent value="certifications" className="mt-6">
           <CertificationsTab product={product} />
         </TabsContent>
@@ -95,11 +104,16 @@ export default function ProductContainer({
           <LifecycleTab product={product} />
         </TabsContent>
 
-         <TabsContent value="supplyChain" className="mt-6">
-          <SupplyChainTab product={product} onSupplyChainLinksChange={onSupplyChainUpdate} />
+        <TabsContent value="supplyChain" className="mt-6">
+          <SupplyChainTab
+            product={product}
+            onSupplyChainLinksChange={onSupplyChainUpdate}
+          />
         </TabsContent>
-        
-        <TabsContent value="digitalTwin" className="mt-6"> {/* Added TabsContent for Digital Twin */}
+
+        <TabsContent value="digitalTwin" className="mt-6">
+          {" "}
+          {/* Added TabsContent for Digital Twin */}
           <DigitalTwinTab product={product} />
         </TabsContent>
 
@@ -107,11 +121,10 @@ export default function ProductContainer({
           <HistoryTab productId={product.id} />
         </TabsContent>
 
-        <TabsContent value="qrCode" className="mt-6"> 
+        <TabsContent value="qrCode" className="mt-6">
           <QrCodeTab productId={product.id} productName={product.productName} />
         </TabsContent>
       </Tabs>
     </div>
   );
 }
-    

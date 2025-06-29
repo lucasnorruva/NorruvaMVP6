@@ -1,4 +1,3 @@
-
 // --- File: src/app/(app)/manufacturer-dashboard/page.tsx ---
 "use client";
 
@@ -11,7 +10,9 @@ export default function ManufacturerDashboardPage() {
   return (
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <h1 className="text-3xl font-headline font-semibold">Manufacturer Dashboard</h1>
+        <h1 className="text-3xl font-headline font-semibold">
+          Manufacturer Dashboard
+        </h1>
         <Button asChild variant="secondary">
           <Link href="/products/new">
             <PlusCircle className="mr-2 h-5 w-5" />

@@ -1,22 +1,33 @@
-
 "use client"; // Add this because we'll use client-side hooks and state
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // Import useRouter for navigation
-import React, { useState } from 'react'; // Import useState for managing selected role
-import { Button } from '@/components/ui/button';
-import { ArrowRight, LogIn } from 'lucide-react';
-import { Logo } from '@/components/icons/Logo';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'; // For styling the login section
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useRole, type UserRole } from '@/contexts/RoleContext'; // Import useRole context
+import Link from "next/link";
+import { useRouter } from "next/navigation"; // Import useRouter for navigation
+import React, { useState } from "react"; // Import useState for managing selected role
+import { Button } from "@/components/ui/button";
+import { ArrowRight, LogIn } from "lucide-react";
+import { Logo } from "@/components/icons/Logo";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card"; // For styling the login section
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useRole, type UserRole } from "@/contexts/RoleContext"; // Import useRole context
 
 const formatRoleNameForDisplay = (role: UserRole): string => {
   return role
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };
 
 export default function HomePage() {
@@ -27,7 +38,7 @@ export default function HomePage() {
   const handleLogin = () => {
     if (selectedRole) {
       setCurrentRole(selectedRole);
-      router.push('/dashboard'); // Navigate to generic dashboard, which will redirect
+      router.push("/dashboard"); // Navigate to generic dashboard, which will redirect
     }
   };
 
@@ -40,12 +51,15 @@ export default function HomePage() {
         Norruva Digital Product Passport
       </h1>
       <p className="text-xl md:text-2xl text-foreground/80 max-w-3xl mx-auto mb-10">
-        Securely manage your product data, ensure EU compliance, and harness the power of AI for streamlined operations.
+        Securely manage your product data, ensure EU compliance, and harness the
+        power of AI for streamlined operations.
       </p>
       {/* Removed the "Learn More" button and its container div */}
 
       {/* Mock Login Section */}
-      <Card className="w-full max-w-md shadow-xl bg-card mt-8"> {/* Added mt-8 for spacing */}
+      <Card className="w-full max-w-md shadow-xl bg-card mt-8">
+        {" "}
+        {/* Added mt-8 for spacing */}
         <CardHeader>
           <CardTitle className="font-headline text-2xl flex items-center justify-center text-primary">
             <LogIn className="mr-2 h-6 w-6" /> Access Your Dashboard
@@ -56,13 +70,18 @@ export default function HomePage() {
         </CardHeader>
         <CardContent className="space-y-6">
           <div className="space-y-2">
-            <Label htmlFor="role-select" className="text-left">Select Your Role</Label>
-            <Select value={selectedRole} onValueChange={(value) => setSelectedRole(value as UserRole)}>
+            <Label htmlFor="role-select" className="text-left">
+              Select Your Role
+            </Label>
+            <Select
+              value={selectedRole}
+              onValueChange={(value) => setSelectedRole(value as UserRole)}
+            >
               <SelectTrigger id="role-select" className="w-full">
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>
               <SelectContent>
-                {availableRoles.map(role => (
+                {availableRoles.map((role) => (
                   <SelectItem key={role} value={role}>
                     {formatRoleNameForDisplay(role)}
                   </SelectItem>
@@ -70,7 +89,11 @@ export default function HomePage() {
               </SelectContent>
             </Select>
           </div>
-          <Button onClick={handleLogin} size="lg" className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
+          <Button
+            onClick={handleLogin}
+            size="lg"
+            className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+          >
             Login as {formatRoleNameForDisplay(selectedRole)}
           </Button>
         </CardContent>

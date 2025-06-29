@@ -1,16 +1,30 @@
-
 // --- File: Product.ts ---
 // Description: Product related type definitions and mock data.
 
-import type { LifecycleEvent, SimpleLifecycleEvent, LifecycleHighlight, IconName as LucideIconName } from './Lifecycle';
 import type {
-  Certification, EbsiVerificationDetails, SimpleCertification, ProductComplianceSummary, PublicCertification,
-  BatteryRegulationDetails, ScipNotificationDetails, EuCustomsDataDetails, TextileInformation, ConstructionProductInformation, EsprSpecifics, CarbonFootprintData
-} from './Compliance'; 
+  LifecycleEvent,
+  SimpleLifecycleEvent,
+  LifecycleHighlight,
+  IconName as LucideIconName,
+} from "./Lifecycle";
+import type {
+  Certification,
+  EbsiVerificationDetails,
+  SimpleCertification,
+  ProductComplianceSummary,
+  PublicCertification,
+  BatteryRegulationDetails,
+  ScipNotificationDetails,
+  EuCustomsDataDetails,
+  TextileInformation,
+  ConstructionProductInformation,
+  EsprSpecifics,
+  CarbonFootprintData,
+} from "./Compliance";
 
-export const USER_PRODUCTS_LOCAL_STORAGE_KEY = 'norruvaUserProducts';
-export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = 'norruvaUserSuppliers';
-export const TRACKED_PRODUCTS_STORAGE_KEY = 'norruvaTrackedProductIds';
+export const USER_PRODUCTS_LOCAL_STORAGE_KEY = "norruvaUserProducts";
+export const USER_SUPPLIERS_LOCAL_STORAGE_KEY = "norruvaUserSuppliers";
+export const TRACKED_PRODUCTS_STORAGE_KEY = "norruvaTrackedProductIds";
 
 export interface SupplyChainStep {
   stepName: string;
@@ -82,11 +96,17 @@ export interface DigitalProductPassport {
   metadata: {
     created_at?: string;
     last_updated: string;
-    status: 'draft' | 'published' | 'archived' | 'pending_review' | 'revoked' | 'flagged';
+    status:
+      | "draft"
+      | "published"
+      | "archived"
+      | "pending_review"
+      | "revoked"
+      | "flagged";
     dppStandardVersion?: string;
     dataSchemaVersion?: string;
-    onChainStatus?: string; 
-    onChainLifecycleStage?: string; 
+    onChainStatus?: string;
+    onChainLifecycleStage?: string;
   };
 
   blockchainIdentifiers?: {
@@ -103,19 +123,39 @@ export interface DigitalProductPassport {
     description?: string;
     imageUrl?: string;
     imageHint?: string;
-    materials?: Array<{ name: string; percentage?: number; origin?: string; isRecycled?: boolean; recycledContentPercentage?: number }>;
-    sustainabilityClaims?: Array<{ claim: string; evidenceVcId?: string; verificationDetails?: string }>;
+    materials?: Array<{
+      name: string;
+      percentage?: number;
+      origin?: string;
+      isRecycled?: boolean;
+      recycledContentPercentage?: number;
+    }>;
+    sustainabilityClaims?: Array<{
+      claim: string;
+      evidenceVcId?: string;
+      verificationDetails?: string;
+    }>;
     energyLabel?: string;
-    repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
-    recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
-    specifications?: string; 
+    repairabilityScore?: {
+      value: number;
+      scale: number;
+      reportUrl?: string;
+      vcId?: string;
+    };
+    recyclabilityInformation?: {
+      instructionsUrl?: string;
+      recycledContentPercentage?: number;
+      designForRecycling?: boolean;
+      vcId?: string;
+    };
+    specifications?: string;
     customAttributes?: CustomAttribute[];
-    conflictMineralsReportUrl?: string; 
-    fairTradeCertificationId?: string; 
-    ethicalSourcingPolicyUrl?: string; 
-    keyCompliancePoints?: string; 
-    esprSpecifics?: EsprSpecifics; 
-    carbonFootprint?: CarbonFootprintData; 
+    conflictMineralsReportUrl?: string;
+    fairTradeCertificationId?: string;
+    ethicalSourcingPolicyUrl?: string;
+    keyCompliancePoints?: string;
+    esprSpecifics?: EsprSpecifics;
+    carbonFootprint?: CarbonFootprintData;
   };
 
   textileInformation?: TextileInformation;
@@ -134,13 +174,21 @@ export interface DigitalProductPassport {
     };
     esprConformity?: {
       assessmentId?: string;
-      status: 'conformant' | 'non_conformant' | 'pending_assessment';
+      status: "conformant" | "non_conformant" | "pending_assessment";
       assessmentDate?: string;
       vcId?: string;
     };
-    eu_espr?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
-    us_scope3?: { status: 'compliant' | 'non_compliant' | 'pending'; reportUrl?: string; vcId?: string };
-    battery_regulation?: BatteryRegulationDetails; 
+    eu_espr?: {
+      status: "compliant" | "non_compliant" | "pending";
+      reportUrl?: string;
+      vcId?: string;
+    };
+    us_scope3?: {
+      status: "compliant" | "non_compliant" | "pending";
+      reportUrl?: string;
+      vcId?: string;
+    };
+    battery_regulation?: BatteryRegulationDetails;
     scipNotification?: ScipNotificationDetails;
     euCustomsData?: EuCustomsDataDetails;
   };
@@ -155,25 +203,38 @@ export interface DigitalProductPassport {
 }
 
 export interface DashboardFiltersState {
-  status: 'all' | 'draft' | 'published' | 'archived' | 'pending_review' | 'revoked' | 'flagged';
-  regulation: 'all' | 'eu_espr' | 'us_scope3' | 'battery_regulation';
-  category: 'all' | string;
+  status:
+    | "all"
+    | "draft"
+    | "published"
+    | "archived"
+    | "pending_review"
+    | "revoked"
+    | "flagged";
+  regulation: "all" | "eu_espr" | "us_scope3" | "battery_regulation";
+  category: "all" | string;
   searchQuery?: string;
-  blockchainAnchored?: 'all' | 'anchored' | 'not_anchored';
+  blockchainAnchored?: "all" | "anchored" | "not_anchored";
 }
 
-export type SortableKeys = keyof DigitalProductPassport | 'metadata.status' | 'metadata.last_updated' | 'overallCompliance' | 'ebsiVerification.status' | 'metadata.onChainStatus';
+export type SortableKeys =
+  | keyof DigitalProductPassport
+  | "metadata.status"
+  | "metadata.last_updated"
+  | "overallCompliance"
+  | "ebsiVerification.status"
+  | "metadata.onChainStatus";
 
 export interface SortConfig {
   key: SortableKeys | null;
-  direction: 'ascending' | 'descending' | null;
+  direction: "ascending" | "descending" | null;
 }
 
 export interface SimpleProductDetail {
   id: string;
   productName: string;
   category: string;
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged';
+  status: "Active" | "Draft" | "Archived" | "Pending" | "Flagged";
   manufacturer?: string;
   gtin?: string;
   modelNumber?: string;
@@ -184,10 +245,15 @@ export interface SimpleProductDetail {
   imageUrl?: string;
   imageHint?: string;
   keySustainabilityPoints?: string[];
-  keyCompliancePoints?: string; 
-  specifications?: string; 
+  keyCompliancePoints?: string;
+  specifications?: string;
   customAttributes?: CustomAttribute[];
-  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
+  materialsUsed?: {
+    name: string;
+    percentage?: number;
+    source?: string;
+    isRecycled?: boolean;
+  }[];
   energyLabelRating?: string;
   repairability?: { score: number; scale: number; detailsUrl?: string };
   recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
@@ -196,24 +262,24 @@ export interface SimpleProductDetail {
   lifecycleEvents?: SimpleLifecycleEvent[];
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
-  authenticationVcId?: string; 
-  ownershipNftLink?: OwnershipNftLink; 
+  authenticationVcId?: string;
+  ownershipNftLink?: OwnershipNftLink;
   blockchainPlatform?: string;
   contractAddress?: string;
   tokenId?: string;
   anchorTransactionHash?: string;
-  ebsiStatus?: EbsiVerificationDetails['status']; 
-  ebsiVerificationId?: string; 
-  onChainStatus?: string; 
-  onChainLifecycleStage?: string; 
+  ebsiStatus?: EbsiVerificationDetails["status"];
+  ebsiVerificationId?: string;
+  onChainStatus?: string;
+  onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; 
-  lastUpdated?: string; 
-  conflictMineralsReportUrl?: string; 
-  fairTradeCertificationId?: string; 
-  ethicalSourcingPolicyUrl?: string; 
-  productDetails?: { 
+  batteryRegulation?: BatteryRegulationDetails;
+  lastUpdated?: string;
+  conflictMineralsReportUrl?: string;
+  fairTradeCertificationId?: string;
+  ethicalSourcingPolicyUrl?: string;
+  productDetails?: {
     esprSpecifics?: EsprSpecifics;
     carbonFootprint?: CarbonFootprintData;
     conflictMineralsReportUrl?: string;
@@ -222,77 +288,95 @@ export interface SimpleProductDetail {
   };
 }
 
-export interface StoredUserProduct extends Omit<ProductFormData, 'batteryRegulation' | 'compliance' | 'productDetails'> {
+export interface StoredUserProduct
+  extends Omit<
+    ProductFormData,
+    "batteryRegulation" | "compliance" | "productDetails"
+  > {
   id: string;
-  status: string; 
-  compliance: string; 
+  status: string;
+  compliance: string;
   lastUpdated: string;
   productCategory?: string;
-  keySustainabilityPoints?: string[]; 
+  keySustainabilityPoints?: string[];
   keyCompliancePoints?: string;
-  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
-  materialsUsed?: { name: string; percentage?: number; source?: string; isRecycled?: boolean }[];
+  keyCompliancePointsOrigin?: "AI_EXTRACTED" | "manual";
+  materialsUsed?: {
+    name: string;
+    percentage?: number;
+    source?: string;
+    isRecycled?: boolean;
+  }[];
   energyLabelRating?: string;
   repairability?: { score: number; scale: number; detailsUrl?: string };
   recyclabilityInfo?: { percentage?: number; instructionsUrl?: string };
   supplyChainLinks?: ProductSupplyChainLink[];
   lifecycleEvents?: SimpleLifecycleEvent[];
-  complianceSummary?: ProductComplianceSummary; 
-  
-  productDetails?: Partial<ProductFormData['productDetails']>; 
-  complianceData?: { 
-    eprel?: Partial<ProductFormData['compliance']['eprel']>;
-    esprConformity?: Partial<ProductFormData['compliance']['esprConformity']>;
+  complianceSummary?: ProductComplianceSummary;
+
+  productDetails?: Partial<ProductFormData["productDetails"]>;
+  complianceData?: {
+    eprel?: Partial<ProductFormData["compliance"]["eprel"]>;
+    esprConformity?: Partial<ProductFormData["compliance"]["esprConformity"]>;
     scipNotification?: Partial<ScipNotificationDetails>;
-    euCustomsData?: Partial<EuCustomsDataDetails & { cbamGoodsIdentifier?: string }>;
-    battery_regulation?: Partial<ProductFormData['compliance']['battery_regulation']>;
+    euCustomsData?: Partial<
+      EuCustomsDataDetails & { cbamGoodsIdentifier?: string }
+    >;
+    battery_regulation?: Partial<
+      ProductFormData["compliance"]["battery_regulation"]
+    >;
   };
-  batteryRegulation?: Partial<BatteryRegulationDetails>; 
-  textileInformation?: Partial<TextileInformation>; 
-  constructionProductInformation?: Partial<ConstructionProductInformation>; 
-  metadata?: Partial<InitialProductFormData>; 
-  authenticationVcId?: string; 
-  ownershipNftLink?: { registryUrl?: string; contractAddress: string; tokenId: string; chainName?: string; }; 
-  blockchainIdentifiers?: InitialProductFormData['blockchainIdentifiers']; 
-  conflictMineralsReportUrl?: string; 
-  fairTradeCertificationId?: string; 
-  ethicalSourcingPolicyUrl?: string; 
-  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
-  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
-  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
-  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
-  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
-  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
-  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
-  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  productDetailsOrigin?: { 
-    descriptionOrigin?: 'AI_EXTRACTED' | 'manual';
-    materialsOrigin?: 'AI_EXTRACTED' | 'manual';
-    sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
-    keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
-    specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
-    energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
-    imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  batteryRegulation?: Partial<BatteryRegulationDetails>;
+  textileInformation?: Partial<TextileInformation>;
+  constructionProductInformation?: Partial<ConstructionProductInformation>;
+  metadata?: Partial<InitialProductFormData>;
+  authenticationVcId?: string;
+  ownershipNftLink?: {
+    registryUrl?: string;
+    contractAddress: string;
+    tokenId: string;
+    chainName?: string;
+  };
+  blockchainIdentifiers?: InitialProductFormData["blockchainIdentifiers"];
+  conflictMineralsReportUrl?: string;
+  fairTradeCertificationId?: string;
+  ethicalSourcingPolicyUrl?: string;
+  productNameOrigin?: "AI_EXTRACTED" | "manual";
+  productDescriptionOrigin?: "AI_EXTRACTED" | "manual";
+  manufacturerOrigin?: "AI_EXTRACTED" | "manual";
+  modelNumberOrigin?: "AI_EXTRACTED" | "manual";
+  materialsOrigin?: "AI_EXTRACTED" | "manual";
+  sustainabilityClaimsOrigin?: "AI_EXTRACTED" | "manual";
+  energyLabelOrigin?: "AI_EXTRACTED" | "manual";
+  specificationsOrigin?: "AI_EXTRACTED" | "manual";
+  imageUrlOrigin?: "AI_EXTRACTED" | "manual";
+  productDetailsOrigin?: {
+    descriptionOrigin?: "AI_EXTRACTED" | "manual";
+    materialsOrigin?: "AI_EXTRACTED" | "manual";
+    sustainabilityClaimsOrigin?: "AI_EXTRACTED" | "manual";
+    keyCompliancePointsOrigin?: "AI_EXTRACTED" | "manual";
+    specificationsOrigin?: "AI_EXTRACTED" | "manual";
+    energyLabelOrigin?: "AI_EXTRACTED" | "manual";
+    imageUrlOrigin?: "AI_EXTRACTED" | "manual";
     esprSpecificsOrigin?: {
-      durabilityInformationOrigin?: 'AI_EXTRACTED' | 'manual';
-      repairabilityInformationOrigin?: 'AI_EXTRACTED' | 'manual';
-      recycledContentSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
-      energyEfficiencySummaryOrigin?: 'AI_EXTRACTED' | 'manual';
-      substanceOfConcernSummaryOrigin?: 'AI_EXTRACTED' | 'manual';
+      durabilityInformationOrigin?: "AI_EXTRACTED" | "manual";
+      repairabilityInformationOrigin?: "AI_EXTRACTED" | "manual";
+      recycledContentSummaryOrigin?: "AI_EXTRACTED" | "manual";
+      energyEfficiencySummaryOrigin?: "AI_EXTRACTED" | "manual";
+      substanceOfConcernSummaryOrigin?: "AI_EXTRACTED" | "manual";
     };
-    carbonFootprintOrigin?: { 
-        valueOrigin?: 'AI_EXTRACTED' | 'manual';
-        unitOrigin?: 'AI_EXTRACTED' | 'manual';
-        calculationMethodOrigin?: 'AI_EXTRACTED' | 'manual';
-        scope1EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
-        scope2EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
-        scope3EmissionsOrigin?: 'AI_EXTRACTED' | 'manual';
-        dataSourceOrigin?: 'AI_EXTRACTED' | 'manual';
-        vcIdOrigin?: 'AI_EXTRACTED' | 'manual';
+    carbonFootprintOrigin?: {
+      valueOrigin?: "AI_EXTRACTED" | "manual";
+      unitOrigin?: "AI_EXTRACTED" | "manual";
+      calculationMethodOrigin?: "AI_EXTRACTED" | "manual";
+      scope1EmissionsOrigin?: "AI_EXTRACTED" | "manual";
+      scope2EmissionsOrigin?: "AI_EXTRACTED" | "manual";
+      scope3EmissionsOrigin?: "AI_EXTRACTED" | "manual";
+      dataSourceOrigin?: "AI_EXTRACTED" | "manual";
+      vcIdOrigin?: "AI_EXTRACTED" | "manual";
     };
   };
-  batteryRegulationOrigin?: any; 
+  batteryRegulationOrigin?: any;
 }
 
 export interface RichMockProduct {
@@ -300,59 +384,87 @@ export interface RichMockProduct {
   productId: string;
   productName: string;
   category?: string;
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | 'published' | 'pending_review' | 'revoked';
+  status:
+    | "Active"
+    | "Draft"
+    | "Archived"
+    | "Pending"
+    | "Flagged"
+    | "published"
+    | "pending_review"
+    | "revoked";
   compliance: string;
   lastUpdated: string;
   gtin?: string;
   manufacturer?: string;
   modelNumber?: string;
   description?: string;
-  productDescription?: string; 
+  productDescription?: string;
   imageUrl?: string;
   imageHint?: string;
   materials?: string;
-  sustainabilityClaims?: string; 
-  keyCompliancePoints?: string; 
+  sustainabilityClaims?: string;
+  keyCompliancePoints?: string;
   energyLabel?: string;
-  specifications?: string; 
+  specifications?: string;
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
-  batteryChemistry?: string; 
-  stateOfHealth?: number | null; 
-  carbonFootprintManufacturing?: number | null; 
-  recycledContentPercentage?: number | null; 
+  batteryChemistry?: string;
+  stateOfHealth?: number | null;
+  carbonFootprintManufacturing?: number | null;
+  recycledContentPercentage?: number | null;
   ebsiVerification?: EbsiVerificationDetails;
   certifications?: Certification[];
   documents?: DocumentReference[];
   supplyChainLinks?: ProductSupplyChainLink[];
   customAttributes?: CustomAttribute[];
-  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string; 
-  ownershipNftLink?: OwnershipNftLink; 
-  metadata?: Partial<DigitalProductPassport['metadata']>; 
+  blockchainIdentifiers?: DigitalProductPassport["blockchainIdentifiers"];
+  authenticationVcId?: string;
+  ownershipNftLink?: OwnershipNftLink;
+  metadata?: Partial<DigitalProductPassport["metadata"]>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; 
-  conflictMineralsReportUrl?: string; 
-  fairTradeCertificationId?: string; 
-  ethicalSourcingPolicyUrl?: string; 
-  productDetails?: { 
+  batteryRegulation?: BatteryRegulationDetails;
+  conflictMineralsReportUrl?: string;
+  fairTradeCertificationId?: string;
+  ethicalSourcingPolicyUrl?: string;
+  productDetails?: {
     esprSpecifics?: EsprSpecifics;
-    carbonFootprint?: CarbonFootprintData; 
+    carbonFootprint?: CarbonFootprintData;
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
-    description?: string; 
+    description?: string;
     imageUrl?: string;
     imageHint?: string;
-    materials?: Array<{ name: string; percentage?: number; origin?: string; isRecycled?: boolean; recycledContentPercentage?: number }>;
-    sustainabilityClaims?: Array<{ claim: string; evidenceVcId?: string; verificationDetails?: string }>;
+    materials?: Array<{
+      name: string;
+      percentage?: number;
+      origin?: string;
+      isRecycled?: boolean;
+      recycledContentPercentage?: number;
+    }>;
+    sustainabilityClaims?: Array<{
+      claim: string;
+      evidenceVcId?: string;
+      verificationDetails?: string;
+    }>;
     energyLabel?: string;
-    repairabilityScore?: { value: number; scale: number; reportUrl?: string; vcId?: string };
-    recyclabilityInformation?: { instructionsUrl?: string; recycledContentPercentage?: number; designForRecycling?: boolean; vcId?: string };
-    specifications?: string; 
+    repairabilityScore?: {
+      value: number;
+      scale: number;
+      reportUrl?: string;
+      vcId?: string;
+    };
+    recyclabilityInformation?: {
+      instructionsUrl?: string;
+      recycledContentPercentage?: number;
+      designForRecycling?: boolean;
+      vcId?: string;
+    };
+    specifications?: string;
     customAttributes?: CustomAttribute[];
-    keyCompliancePoints?: string; 
+    keyCompliancePoints?: string;
   };
 }
 
@@ -364,7 +476,7 @@ export interface PublicProductInfo {
   imageHint?: string;
   productStory: string;
   sustainabilityHighlights: Array<{ iconName?: LucideIconName; text: string }>;
-  keyCompliancePoints?: string; 
+  keyCompliancePoints?: string;
   manufacturerName: string;
   manufacturerWebsite?: string;
   brandLogoUrl?: string;
@@ -373,32 +485,32 @@ export interface PublicProductInfo {
   category: string;
   modelNumber: string;
   sku?: string;
-  gtin?: string; 
+  gtin?: string;
   nfcTagId?: string;
   rfidTagId?: string;
   anchorTransactionHash?: string;
   blockchainPlatform?: string;
-  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error';
+  ebsiStatus?: "verified" | "pending" | "not_verified" | "error";
   ebsiVerificationId?: string;
   lifecycleHighlights?: LifecycleHighlight[];
   certifications?: PublicCertification[];
   customAttributes?: CustomAttribute[];
   documents?: DocumentReference[];
-  authenticationVcId?: string; 
-  ownershipNftLink?: OwnershipNftLink; 
+  authenticationVcId?: string;
+  ownershipNftLink?: OwnershipNftLink;
   contractAddress?: string;
   tokenId?: string;
-  onChainStatus?: string; 
-  onChainLifecycleStage?: string; 
+  onChainStatus?: string;
+  onChainLifecycleStage?: string;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; 
-  conflictMineralsReportUrl?: string; 
-  fairTradeCertificationId?: string; 
-  ethicalSourcingPolicyUrl?: string; 
-  productDetails?: { 
+  batteryRegulation?: BatteryRegulationDetails;
+  conflictMineralsReportUrl?: string;
+  fairTradeCertificationId?: string;
+  ethicalSourcingPolicyUrl?: string;
+  productDetails?: {
     esprSpecifics?: EsprSpecifics;
-    carbonFootprint?: CarbonFootprintData; 
+    carbonFootprint?: CarbonFootprintData;
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -412,7 +524,7 @@ export interface Supplier {
   email?: string;
   location?: string;
   materialsSupplied: string;
-  status: 'Active' | 'Inactive' | 'Pending Review';
+  status: "Active" | "Inactive" | "Pending Review";
   lastUpdated: string;
 }
 
@@ -422,7 +534,7 @@ export interface DisplayableProduct {
   productName?: string;
   category?: string;
   productCategory?: string; // Keep this for initialData mapping in forms
-  status: 'Active' | 'Draft' | 'Archived' | 'Pending' | 'Flagged' | string;
+  status: "Active" | "Draft" | "Archived" | "Pending" | "Flagged" | string;
   compliance: string;
   lastUpdated: string;
   gtin?: string;
@@ -432,37 +544,37 @@ export interface DisplayableProduct {
   productDescription?: string; // Keep this for forms
   imageUrl?: string;
   imageHint?: string;
-  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
+  imageUrlOrigin?: "AI_EXTRACTED" | "manual";
   materials?: string; // Keep for forms
   sustainabilityClaims?: string; // Keep for forms
-  keyCompliancePoints?: string; 
+  keyCompliancePoints?: string;
   energyLabel?: string; // Keep for forms
-  specifications?: string; 
+  specifications?: string;
   lifecycleEvents?: SimpleLifecycleEvent[];
   complianceSummary?: ProductComplianceSummary;
   batteryChemistry?: string; // Part of batteryRegulation on DigitalProductPassport
   stateOfHealth?: number | null; // Part of batteryRegulation on DigitalProductPassport
   carbonFootprintManufacturing?: number | null; // Part of batteryRegulation.carbonFootprint on DigitalProductPassport
   recycledContentPercentage?: number | null; // Conceptually part of batteryRegulation.recycledContent
-  ebsiStatus?: 'verified' | 'pending' | 'not_verified' | 'error' | 'N/A';
+  ebsiStatus?: "verified" | "pending" | "not_verified" | "error" | "N/A";
   supplyChainLinks?: ProductSupplyChainLink[];
   certifications?: SimpleCertification[];
   documents?: DocumentReference[];
   customAttributes?: CustomAttribute[];
   customAttributesJsonString?: string;
-  blockchainIdentifiers?: DigitalProductPassport['blockchainIdentifiers'];
-  authenticationVcId?: string; 
-  ownershipNftLink?: OwnershipNftLink; 
-  metadata?: Partial<DigitalProductPassport['metadata']>; 
+  blockchainIdentifiers?: DigitalProductPassport["blockchainIdentifiers"];
+  authenticationVcId?: string;
+  ownershipNftLink?: OwnershipNftLink;
+  metadata?: Partial<DigitalProductPassport["metadata"]>;
   textileInformation?: TextileInformation;
   constructionProductInformation?: ConstructionProductInformation;
-  batteryRegulation?: BatteryRegulationDetails; 
-  conflictMineralsReportUrl?: string; 
-  fairTradeCertificationId?: string; 
-  ethicalSourcingPolicyUrl?: string; 
-  productDetails?: { 
+  batteryRegulation?: BatteryRegulationDetails;
+  conflictMineralsReportUrl?: string;
+  fairTradeCertificationId?: string;
+  ethicalSourcingPolicyUrl?: string;
+  productDetails?: {
     esprSpecifics?: EsprSpecifics;
-    carbonFootprint?: CarbonFootprintData; 
+    carbonFootprint?: CarbonFootprintData;
     conflictMineralsReportUrl?: string;
     fairTradeCertificationId?: string;
     ethicalSourcingPolicyUrl?: string;
@@ -483,7 +595,7 @@ export interface MintTokenResponse {
   contractAddress: string;
   transactionHash: string;
   message?: string;
-  error?: string; 
+  error?: string;
 }
 
 export interface UpdateTokenMetadataResponse {
@@ -491,17 +603,17 @@ export interface UpdateTokenMetadataResponse {
   contractAddress: string;
   transactionHash: string;
   message?: string;
-  error?: string; 
+  error?: string;
 }
 
 export interface TokenStatusResponse {
   tokenId: string;
   contractAddress: string;
   ownerAddress: string;
-  mintedAt: string; 
+  mintedAt: string;
   metadataUri?: string | null;
   lastTransactionHash?: string | null;
-  status: string; 
+  status: string;
   message?: string;
 }
 
@@ -513,30 +625,34 @@ export interface ServiceJob {
   customerName: string;
   location: string;
   issue: string;
-  status: 'Scheduled' | 'In Progress' | 'Completed' | 'On Hold' | 'Cancelled';
-  priority: 'High' | 'Medium' | 'Low';
+  status: "Scheduled" | "In Progress" | "Completed" | "On Hold" | "Cancelled";
+  priority: "High" | "Medium" | "Low";
   scheduledDate: string; // ISO string
   assignedTechnician?: string;
   notes?: string;
 }
 
 // Simplified for ProductForm, actual form types are in productFormTypes.ts
-export type InitialProductFormData = Partial<Omit<DigitalProductPassport, 'id' | 'metadata' | 'compliance' | 'productDetails'> & {
-  // Keep specific origin fields if needed by form initialization logic directly from this type
-  productNameOrigin?: 'AI_EXTRACTED' | 'manual';
-  productDescriptionOrigin?: 'AI_EXTRACTED' | 'manual';
-  manufacturerOrigin?: 'AI_EXTRACTED' | 'manual';
-  modelNumberOrigin?: 'AI_EXTRACTED' | 'manual';
-  materialsOrigin?: 'AI_EXTRACTED' | 'manual';
-  sustainabilityClaimsOrigin?: 'AI_EXTRACTED' | 'manual';
-  keyCompliancePointsOrigin?: 'AI_EXTRACTED' | 'manual';
-  specificationsOrigin?: 'AI_EXTRACTED' | 'manual';
-  energyLabelOrigin?: 'AI_EXTRACTED' | 'manual';
-  imageUrlOrigin?: 'AI_EXTRACTED' | 'manual';
-  batteryRegulationOrigin?: any; 
-  productDetailsOrigin?: any;
-  productDetails?: Partial<DigitalProductPassport['productDetails']>;
-  compliance?: Partial<DigitalProductPassport['compliance']>;
-  metadata?: Partial<DigitalProductPassport['metadata']>;
-}>;
-
+export type InitialProductFormData = Partial<
+  Omit<
+    DigitalProductPassport,
+    "id" | "metadata" | "compliance" | "productDetails"
+  > & {
+    // Keep specific origin fields if needed by form initialization logic directly from this type
+    productNameOrigin?: "AI_EXTRACTED" | "manual";
+    productDescriptionOrigin?: "AI_EXTRACTED" | "manual";
+    manufacturerOrigin?: "AI_EXTRACTED" | "manual";
+    modelNumberOrigin?: "AI_EXTRACTED" | "manual";
+    materialsOrigin?: "AI_EXTRACTED" | "manual";
+    sustainabilityClaimsOrigin?: "AI_EXTRACTED" | "manual";
+    keyCompliancePointsOrigin?: "AI_EXTRACTED" | "manual";
+    specificationsOrigin?: "AI_EXTRACTED" | "manual";
+    energyLabelOrigin?: "AI_EXTRACTED" | "manual";
+    imageUrlOrigin?: "AI_EXTRACTED" | "manual";
+    batteryRegulationOrigin?: any;
+    productDetailsOrigin?: any;
+    productDetails?: Partial<DigitalProductPassport["productDetails"]>;
+    compliance?: Partial<DigitalProductPassport["compliance"]>;
+    metadata?: Partial<DigitalProductPassport["metadata"]>;
+  }
+>;

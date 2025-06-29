@@ -1,7 +1,5 @@
-
 // --- File: src/utils/fileUtils.ts ---
 // Description: Utility functions for file handling.
-
 
 export const fileToDataUri = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {

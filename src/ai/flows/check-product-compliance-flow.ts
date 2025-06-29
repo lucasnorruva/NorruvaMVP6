@@ -1,5 +1,4 @@
-
-'use server';
+"use server";
 /**
  * @fileOverview Simulates a product compliance check when a product moves to a new lifecycle stage.
  *
@@ -8,16 +7,24 @@
  * - CheckProductComplianceOutput - The return type for the checkProductCompliance function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
 
 const CheckProductComplianceInputSchema = z.object({
-  productId: z.string().describe('The ID of the product being checked.'),
-  currentLifecycleStageName: z.string().describe('The current lifecycle stage name of the product.'),
-  newLifecycleStageName: z.string().describe('The new lifecycle stage the product is moving to.'),
-  productCategory: z.string().describe('The category of the product, e.g., Electronics, Appliances.')
+  productId: z.string().describe("The ID of the product being checked."),
+  currentLifecycleStageName: z
+    .string()
+    .describe("The current lifecycle stage name of the product."),
+  newLifecycleStageName: z
+    .string()
+    .describe("The new lifecycle stage the product is moving to."),
+  productCategory: z
+    .string()
+    .describe("The category of the product, e.g., Electronics, Appliances."),
 });
-export type CheckProductComplianceInput = z.infer<typeof CheckProductComplianceInputSchema>;
+export type CheckProductComplianceInput = z.infer<
+  typeof CheckProductComplianceInputSchema
+>;
 
 const CheckProductComplianceOutputSchema = z.object({
   productId: z.string(),
@@ -25,26 +32,28 @@ const CheckProductComplianceOutputSchema = z.object({
   simulatedOverallStatus: z
     .string()
     .describe(
-      'The plausible new overall compliance status after moving to the new stage, e.g., Compliant, Non-Compliant, Pending Review.'
+      "The plausible new overall compliance status after moving to the new stage, e.g., Compliant, Non-Compliant, Pending Review.",
     ),
   simulatedReport: z
     .string()
     .describe(
-      "A short textual report of what was checked and what might have changed. E.g., 'Upon moving to Distribution, EU ESPR packaging requirements were verified as Compliant. Material declarations for REACH remain up-to-date.'"
+      "A short textual report of what was checked and what might have changed. E.g., 'Upon moving to Distribution, EU ESPR packaging requirements were verified as Compliant. Material declarations for REACH remain up-to-date.'",
     ),
 });
-export type CheckProductComplianceOutput = z.infer<typeof CheckProductComplianceOutputSchema>;
+export type CheckProductComplianceOutput = z.infer<
+  typeof CheckProductComplianceOutputSchema
+>;
 
 export async function checkProductCompliance(
-  input: CheckProductComplianceInput
+  input: CheckProductComplianceInput,
 ): Promise<CheckProductComplianceOutput> {
   return checkProductComplianceFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'checkProductCompliancePrompt',
-  input: {schema: CheckProductComplianceInputSchema},
-  output: {schema: CheckProductComplianceOutputSchema},
+  name: "checkProductCompliancePrompt",
+  input: { schema: CheckProductComplianceInputSchema },
+  output: { schema: CheckProductComplianceOutputSchema },
   prompt: `You are an AI assistant simulating a product compliance re-assessment due to a lifecycle stage change.
 
 Product ID: {{{productId}}}
@@ -67,20 +76,22 @@ Return ONLY the productId, newLifecycleStageName, simulatedOverallStatus, and si
 
 const checkProductComplianceFlow = ai.defineFlow(
   {
-    name: 'checkProductComplianceFlow',
+    name: "checkProductComplianceFlow",
     inputSchema: CheckProductComplianceInputSchema,
     outputSchema: CheckProductComplianceOutputSchema,
   },
   async (input) => {
-    const {output} = await prompt(input);
+    const { output } = await prompt(input);
     // Ensure the output contains all required fields, even if the LLM omits some.
     // The schema definition in the prompt should guide the LLM, but this is a fallback.
     return {
       productId: input.productId,
       newLifecycleStageName: input.newLifecycleStageName,
-      simulatedOverallStatus: output?.simulatedOverallStatus || "Pending Review",
-      simulatedReport: output?.simulatedReport || "Compliance re-check simulation complete. Detailed changes would be listed here.",
+      simulatedOverallStatus:
+        output?.simulatedOverallStatus || "Pending Review",
+      simulatedReport:
+        output?.simulatedReport ||
+        "Compliance re-check simulation complete. Detailed changes would be listed here.",
     };
-  }
+  },
 );
-

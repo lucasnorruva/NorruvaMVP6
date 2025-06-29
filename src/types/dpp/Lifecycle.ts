@@ -26,12 +26,12 @@ export interface SimpleLifecycleEvent {
   date: string; // ISO Date string
   location?: string;
   notes?: string;
-  status: 'Completed' | 'In Progress' | 'Upcoming' | 'Delayed' | 'Cancelled';
-  iconName?: keyof typeof import('lucide-react');
-  keyDocuments?: { name: string; type: 'PDF' | 'Link'; url: string }[];
+  status: "Completed" | "In Progress" | "Upcoming" | "Delayed" | "Cancelled";
+  iconName?: keyof typeof import("lucide-react");
+  keyDocuments?: { name: string; type: "PDF" | "Link"; url: string }[];
 }
 
-export type IconName = keyof typeof import('lucide-react');
+export type IconName = keyof typeof import("lucide-react");
 
 export interface LifecycleHighlight {
   stage: string;

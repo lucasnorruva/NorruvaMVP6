@@ -1,5 +1,4 @@
-
-'use server';
+"use server";
 /**
  * @fileOverview An AI agent to suggest key compliance points for a product.
  *
@@ -8,31 +7,48 @@
  * - SuggestKeyCompliancePointsOutput - The return type for the function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
 
 export const SuggestKeyCompliancePointsInputSchema = z.object({
-  productName: z.string().optional().describe('The name of the product.'),
-  productCategory: z.string().describe('The category of the product (e.g., Electronics, Apparel, Battery).'),
-  regulationsApplicable: z.string().optional().describe('A brief comma-separated list of key regulations applicable or focused on (e.g., "ESPR, RoHS", "EU Battery Regulation").'),
+  productName: z.string().optional().describe("The name of the product."),
+  productCategory: z
+    .string()
+    .describe(
+      "The category of the product (e.g., Electronics, Apparel, Battery).",
+    ),
+  regulationsApplicable: z
+    .string()
+    .optional()
+    .describe(
+      'A brief comma-separated list of key regulations applicable or focused on (e.g., "ESPR, RoHS", "EU Battery Regulation").',
+    ),
 });
-export type SuggestKeyCompliancePointsInput = z.infer<typeof SuggestKeyCompliancePointsInputSchema>;
+export type SuggestKeyCompliancePointsInput = z.infer<
+  typeof SuggestKeyCompliancePointsInputSchema
+>;
 
 export const SuggestKeyCompliancePointsOutputSchema = z.object({
-  compliancePoints: z.array(z.string()).describe('An array of 3-5 concise key compliance points relevant to the product and its regulations.'),
+  compliancePoints: z
+    .array(z.string())
+    .describe(
+      "An array of 3-5 concise key compliance points relevant to the product and its regulations.",
+    ),
 });
-export type SuggestKeyCompliancePointsOutput = z.infer<typeof SuggestKeyCompliancePointsOutputSchema>;
+export type SuggestKeyCompliancePointsOutput = z.infer<
+  typeof SuggestKeyCompliancePointsOutputSchema
+>;
 
 export async function suggestKeyCompliancePoints(
-  input: SuggestKeyCompliancePointsInput
+  input: SuggestKeyCompliancePointsInput,
 ): Promise<SuggestKeyCompliancePointsOutput> {
   return suggestKeyCompliancePointsFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'suggestKeyCompliancePointsPrompt',
-  input: {schema: SuggestKeyCompliancePointsInputSchema},
-  output: {schema: SuggestKeyCompliancePointsOutputSchema},
+  name: "suggestKeyCompliancePointsPrompt",
+  input: { schema: SuggestKeyCompliancePointsInputSchema },
+  output: { schema: SuggestKeyCompliancePointsOutputSchema },
   prompt: `You are a product compliance expert. Based on the product's name (if available), category, and a list of applicable regulations, suggest 3-5 concise key compliance points.
 These points should highlight important aspects of compliance for the given product type and regulations.
 Each point should be a short phrase.
@@ -50,13 +66,12 @@ Example for Electronics with "RoHS, WEEE, ESPR": { "compliancePoints": ["RoHS Co
 
 const suggestKeyCompliancePointsFlow = ai.defineFlow(
   {
-    name: 'suggestKeyCompliancePointsFlow',
+    name: "suggestKeyCompliancePointsFlow",
     inputSchema: SuggestKeyCompliancePointsInputSchema,
     outputSchema: SuggestKeyCompliancePointsOutputSchema,
   },
   async (input) => {
-    const {output} = await prompt(input);
+    const { output } = await prompt(input);
     return output || { compliancePoints: [] };
-  }
+  },
 );
-

@@ -1,14 +1,27 @@
-
 // --- File: CustomAttributesFormSection.tsx ---
 // Description: Form section component for managing custom product attributes.
 "use client";
 
 import React, { useState } from "react"; // Added useState
 import type { UseFormReturn } from "react-hook-form";
-import { FormField, FormItem, FormLabel, FormControl, FormMessage, FormDescription } from "@/components/ui/form";
+import {
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+  FormDescription,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, XCircle, Sparkles, Loader2, Info, ListChecks } from "lucide-react";
+import {
+  PlusCircle,
+  XCircle,
+  Sparkles,
+  Loader2,
+  Info,
+  ListChecks,
+} from "lucide-react";
 import type { CustomAttribute } from "@/types/dpp";
 import type { ProductFormData } from "@/components/products/ProductForm";
 import type { ToastInput } from "@/hooks/use-toast";
@@ -26,10 +39,12 @@ interface CustomAttributesFormSectionProps {
   handleAddCustomAttribute: () => void;
   handleRemoveCustomAttribute: (keyToRemove: string) => void;
   form: UseFormReturn<ProductFormData>;
-  suggestedCustomAttributes: CustomAttribute[]; 
-  setSuggestedCustomAttributes: React.Dispatch<React.SetStateAction<CustomAttribute[]>>; 
+  suggestedCustomAttributes: CustomAttribute[];
+  setSuggestedCustomAttributes: React.Dispatch<
+    React.SetStateAction<CustomAttribute[]>
+  >;
   isSubmittingForm?: boolean;
-  toast: ToastFn; 
+  toast: ToastFn;
 }
 
 export default function CustomAttributesFormSection({
@@ -43,28 +58,43 @@ export default function CustomAttributesFormSection({
   handleRemoveCustomAttribute,
   form,
   suggestedCustomAttributes,
-  setSuggestedCustomAttributes, 
+  setSuggestedCustomAttributes,
   isSubmittingForm,
-  toast, 
+  toast,
 }: CustomAttributesFormSectionProps) {
-  const [isSuggestingCustomAttrsInternal, setIsSuggestingCustomAttrsInternal] = useState(false);
+  const [isSuggestingCustomAttrsInternal, setIsSuggestingCustomAttrsInternal] =
+    useState(false);
 
   React.useEffect(() => {
-    form.setValue("customAttributesJsonString", JSON.stringify(customAttributes), { shouldValidate: true });
+    form.setValue(
+      "customAttributesJsonString",
+      JSON.stringify(customAttributes),
+      { shouldValidate: true },
+    );
   }, [customAttributes, form]);
 
   const callSuggestCustomAttributesAIInternal = async () => {
-    const attributes = await handleSuggestCustomAttributesAI(form, toast, setIsSuggestingCustomAttrsInternal);
+    const attributes = await handleSuggestCustomAttributesAI(
+      form,
+      toast,
+      setIsSuggestingCustomAttrsInternal,
+    );
     if (attributes) {
-      setSuggestedCustomAttributes(attributes); 
+      setSuggestedCustomAttributes(attributes);
     } else {
-      setSuggestedCustomAttributes([]); 
+      setSuggestedCustomAttributes([]);
     }
   };
 
   // Internal handler for adding suggested attributes
-  const internalHandleAddSuggestedAttribute = (suggestedAttr: CustomAttribute) => {
-    if (customAttributes.some(attr => attr.key.toLowerCase() === suggestedAttr.key.toLowerCase())) {
+  const internalHandleAddSuggestedAttribute = (
+    suggestedAttr: CustomAttribute,
+  ) => {
+    if (
+      customAttributes.some(
+        (attr) => attr.key.toLowerCase() === suggestedAttr.key.toLowerCase(),
+      )
+    ) {
       toast({
         title: "Attribute Exists",
         description: `An attribute with key "${suggestedAttr.key}" already exists. You can edit it or use a different key.`,
@@ -72,40 +102,69 @@ export default function CustomAttributesFormSection({
       });
       return;
     }
-    setCustomAttributes(prev => [...prev, suggestedAttr]);
-    setSuggestedCustomAttributes(prev => prev.filter(attr => attr.key.toLowerCase() !== suggestedAttr.key.toLowerCase()));
-    toast({ title: "Attribute Added", description: `"${suggestedAttr.key}" has been added from suggestions.`, variant: "default" });
+    setCustomAttributes((prev) => [...prev, suggestedAttr]);
+    setSuggestedCustomAttributes((prev) =>
+      prev.filter(
+        (attr) => attr.key.toLowerCase() !== suggestedAttr.key.toLowerCase(),
+      ),
+    );
+    toast({
+      title: "Attribute Added",
+      description: `"${suggestedAttr.key}" has been added from suggestions.`,
+      variant: "default",
+    });
   };
-
 
   return (
     <div className="space-y-6 pt-4">
       <FormDescription>
-        Define any additional key-value pairs that are specific to this product and not covered by standard fields. For example, 'Compatible Devices: Smartphone X, Tablet Y' or 'Special Edition: Yes'.
+        Define any additional key-value pairs that are specific to this product
+        and not covered by standard fields. For example, 'Compatible Devices:
+        Smartphone X, Tablet Y' or 'Special Edition: Yes'.
       </FormDescription>
-      
+
       <div className="flex justify-end">
-        <Button type="button" variant="ghost" size="sm" onClick={callSuggestCustomAttributesAIInternal} disabled={isSuggestingCustomAttrsInternal || !!isSubmittingForm}>
-            {isSuggestingCustomAttrsInternal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4 text-info" />}
-            <span className="ml-2">{isSuggestingCustomAttrsInternal ? "Suggesting Attributes..." : "Suggest Custom Attributes"}</span>
+        <Button
+          type="button"
+          variant="ghost"
+          size="sm"
+          onClick={callSuggestCustomAttributesAIInternal}
+          disabled={isSuggestingCustomAttrsInternal || !!isSubmittingForm}
+        >
+          {isSuggestingCustomAttrsInternal ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <Sparkles className="h-4 w-4 text-info" />
+          )}
+          <span className="ml-2">
+            {isSuggestingCustomAttrsInternal
+              ? "Suggesting Attributes..."
+              : "Suggest Custom Attributes"}
+          </span>
         </Button>
       </div>
 
       {suggestedCustomAttributes.length > 0 && (
         <div className="space-y-3 rounded-md border border-dashed p-4 bg-muted/30">
           <FormLabel className="text-sm font-medium text-muted-foreground flex items-center">
-             <Info className="h-4 w-4 mr-2 text-info"/> AI Suggested Attributes:
+            <Info className="h-4 w-4 mr-2 text-info" /> AI Suggested Attributes:
           </FormLabel>
-          <p className="text-xs text-muted-foreground mb-2">Click the '+' icon next to a suggestion to add it to the list below.</p>
+          <p className="text-xs text-muted-foreground mb-2">
+            Click the '+' icon next to a suggestion to add it to the list below.
+          </p>
           <ul className="space-y-2">
             {suggestedCustomAttributes.map((attr, index) => (
-              <li 
-                key={`suggested-${index}-${attr.key}`} 
+              <li
+                key={`suggested-${index}-${attr.key}`}
                 className="flex items-center justify-between p-2 bg-background rounded-md border shadow-sm"
               >
                 <div>
-                  <span className="font-medium text-sm text-primary">{attr.key}:</span>
-                  <span className="text-sm text-foreground/90 ml-1.5">{attr.value}</span>
+                  <span className="font-medium text-sm text-primary">
+                    {attr.key}:
+                  </span>
+                  <span className="text-sm text-foreground/90 ml-1.5">
+                    {attr.value}
+                  </span>
                 </div>
                 <Button
                   type="button"
@@ -127,14 +186,22 @@ export default function CustomAttributesFormSection({
       {customAttributes.length > 0 && (
         <div className="space-y-3 rounded-md border p-4 bg-muted/10">
           <FormLabel className="text-md font-medium text-foreground flex items-center">
-            <ListChecks className="h-5 w-5 mr-2 text-primary"/> Current Custom Attributes:
+            <ListChecks className="h-5 w-5 mr-2 text-primary" /> Current Custom
+            Attributes:
           </FormLabel>
           <ul className="space-y-2">
             {customAttributes.map((attr, index) => (
-              <li key={`${attr.key}-${index}`} className="flex items-center justify-between text-sm p-2.5 bg-background rounded-md shadow-sm border">
+              <li
+                key={`${attr.key}-${index}`}
+                className="flex items-center justify-between text-sm p-2.5 bg-background rounded-md shadow-sm border"
+              >
                 <div>
-                  <span className="font-semibold text-primary">{attr.key}:</span>
-                  <span className="text-foreground/90 ml-1.5">{attr.value}</span>
+                  <span className="font-semibold text-primary">
+                    {attr.key}:
+                  </span>
+                  <span className="text-foreground/90 ml-1.5">
+                    {attr.value}
+                  </span>
                 </div>
                 <Button
                   type="button"
@@ -152,12 +219,16 @@ export default function CustomAttributesFormSection({
           </ul>
         </div>
       )}
-      
+
       <div className="pt-2 space-y-3">
-        <FormLabel className="text-md font-medium">Add New Custom Attribute:</FormLabel>
+        <FormLabel className="text-md font-medium">
+          Add New Custom Attribute:
+        </FormLabel>
         <div className="grid grid-cols-1 sm:grid-cols-[1fr_1fr_auto] gap-3 items-end">
           <FormItem>
-            <FormLabel htmlFor="customAttrKey" className="text-xs">Attribute Key</FormLabel>
+            <FormLabel htmlFor="customAttrKey" className="text-xs">
+              Attribute Key
+            </FormLabel>
             <FormControl>
               <Input
                 id="customAttrKey"
@@ -169,7 +240,9 @@ export default function CustomAttributesFormSection({
             </FormControl>
           </FormItem>
           <FormItem>
-            <FormLabel htmlFor="customAttrValue" className="text-xs">Attribute Value</FormLabel>
+            <FormLabel htmlFor="customAttrValue" className="text-xs">
+              Attribute Value
+            </FormLabel>
             <FormControl>
               <Input
                 id="customAttrValue"
@@ -180,7 +253,12 @@ export default function CustomAttributesFormSection({
               />
             </FormControl>
           </FormItem>
-          <Button type="button" variant="secondary" onClick={handleAddCustomAttribute} className="h-9 mt-auto sm:mt-0">
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={handleAddCustomAttribute}
+            className="h-9 mt-auto sm:mt-0"
+          >
             <PlusCircle className="mr-2 h-4 w-4" /> Add
           </Button>
         </div>
@@ -191,7 +269,9 @@ export default function CustomAttributesFormSection({
         name="customAttributesJsonString"
         render={({ field }) => (
           <FormItem className="hidden">
-            <FormControl><Input type="hidden" {...field} /></FormControl>
+            <FormControl>
+              <Input type="hidden" {...field} />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}

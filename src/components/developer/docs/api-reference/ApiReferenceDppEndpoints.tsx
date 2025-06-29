@@ -1,4 +1,3 @@
-
 import { Server } from "lucide-react";
 import {
   ListDigitalProductPassports,
@@ -20,49 +19,112 @@ import { Badge } from "@/components/ui/badge";
 import { FileJson } from "lucide-react";
 
 // Component for UpdateOnChainStatus
-function UpdateDppOnChainStatus({ exampleRequestBody, exampleDppResponse, error400, error401, error404, error500 }: { exampleRequestBody: string; exampleDppResponse: string; error400: string; error401: string; error404: string; error500: string; }) {
+function UpdateDppOnChainStatus({
+  exampleRequestBody,
+  exampleDppResponse,
+  error400,
+  error401,
+  error404,
+  error500,
+}: {
+  exampleRequestBody: string;
+  exampleDppResponse: string;
+  error400: string;
+  error401: string;
+  error404: string;
+  error500: string;
+}) {
   return (
     <Card className="shadow-lg mt-6">
       <CardHeader>
         <CardTitle className="text-lg">Update DPP On-Chain Status</CardTitle>
         <CardDescription>
           <span className="inline-flex items-center font-mono text-sm">
-            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
-            <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/dpp/{"{productId}"}/onchain-status</code>
+            <Badge
+              variant="outline"
+              className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold"
+            >
+              POST
+            </Badge>
+            <code className="bg-muted px-1 py-0.5 rounded-sm">
+              /api/v1/dpp/{"{productId}"}/onchain-status
+            </code>
           </span>
           <br />
-          Conceptually updates the on-chain status of a Digital Product Passport.
+          Conceptually updates the on-chain status of a Digital Product
+          Passport.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <section>
           <h4 className="font-semibold mb-1">Path Parameters</h4>
           <ul className="list-disc list-inside text-sm space-y-1">
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> (string, required): The unique identifier of the product.</li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                productId
+              </code>{" "}
+              (string, required): The unique identifier of the product.
+            </li>
           </ul>
         </section>
         <section>
-          <h4 className="font-semibold mb-1">Request Body (JSON) - UpdateOnChainStatusRequest</h4>
+          <h4 className="font-semibold mb-1">
+            Request Body (JSON) - UpdateOnChainStatusRequest
+          </h4>
           <details className="border rounded-md">
-            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm"><FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Request</summary>
-            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96"><code>{exampleRequestBody}</code></pre>
+            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+              <FileJson className="inline h-4 w-4 mr-1 align-middle" />
+              Example JSON Request
+            </summary>
+            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+              <code>{exampleRequestBody}</code>
+            </pre>
           </details>
         </section>
         <section>
-          <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
-          <p className="text-sm mb-1">Returns the updated DPP object with a confirmation message.</p>
+          <h4 className="font-semibold mb-1">
+            Example Response (Success 200 OK)
+          </h4>
+          <p className="text-sm mb-1">
+            Returns the updated DPP object with a confirmation message.
+          </p>
           <details className="border rounded-md">
-            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm"><FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Response</summary>
-            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96"><code>{exampleDppResponse}</code></pre>
+            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+              <FileJson className="inline h-4 w-4 mr-1 align-middle" />
+              Example JSON Response
+            </summary>
+            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+              <code>{exampleDppResponse}</code>
+            </pre>
           </details>
         </section>
         <section>
           <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
           <ul className="list-disc list-inside text-sm space-y-2">
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Invalid status value or missing field.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.</li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                400 Bad Request
+              </code>
+              : Invalid status value or missing field.
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                401 Unauthorized
+              </code>
+              .
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                404 Not Found
+              </code>
+              .
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                500 Internal Server Error
+              </code>
+              .
+            </li>
           </ul>
         </section>
       </CardContent>
@@ -71,49 +133,114 @@ function UpdateDppOnChainStatus({ exampleRequestBody, exampleDppResponse, error4
 }
 
 // Component for UpdateOnChainLifecycleStage
-function UpdateDppOnChainLifecycleStage({ exampleRequestBody, exampleDppResponse, error400, error401, error404, error500 }: { exampleRequestBody: string; exampleDppResponse: string; error400: string; error401: string; error404: string; error500: string; }) {
+function UpdateDppOnChainLifecycleStage({
+  exampleRequestBody,
+  exampleDppResponse,
+  error400,
+  error401,
+  error404,
+  error500,
+}: {
+  exampleRequestBody: string;
+  exampleDppResponse: string;
+  error400: string;
+  error401: string;
+  error404: string;
+  error500: string;
+}) {
   return (
     <Card className="shadow-lg mt-6">
       <CardHeader>
-        <CardTitle className="text-lg">Update DPP On-Chain Lifecycle Stage</CardTitle>
+        <CardTitle className="text-lg">
+          Update DPP On-Chain Lifecycle Stage
+        </CardTitle>
         <CardDescription>
           <span className="inline-flex items-center font-mono text-sm">
-            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
-            <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/dpp/{"{productId}"}/onchain-lifecycle-stage</code>
+            <Badge
+              variant="outline"
+              className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold"
+            >
+              POST
+            </Badge>
+            <code className="bg-muted px-1 py-0.5 rounded-sm">
+              /api/v1/dpp/{"{productId}"}/onchain-lifecycle-stage
+            </code>
           </span>
           <br />
-          Conceptually updates the on-chain lifecycle stage of a Digital Product Passport.
+          Conceptually updates the on-chain lifecycle stage of a Digital Product
+          Passport.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-         <section>
+        <section>
           <h4 className="font-semibold mb-1">Path Parameters</h4>
           <ul className="list-disc list-inside text-sm space-y-1">
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> (string, required): The unique identifier of the product.</li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                productId
+              </code>{" "}
+              (string, required): The unique identifier of the product.
+            </li>
           </ul>
         </section>
         <section>
-          <h4 className="font-semibold mb-1">Request Body (JSON) - UpdateOnChainLifecycleStageRequest</h4>
+          <h4 className="font-semibold mb-1">
+            Request Body (JSON) - UpdateOnChainLifecycleStageRequest
+          </h4>
           <details className="border rounded-md">
-            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm"><FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Request</summary>
-            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96"><code>{exampleRequestBody}</code></pre>
+            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+              <FileJson className="inline h-4 w-4 mr-1 align-middle" />
+              Example JSON Request
+            </summary>
+            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+              <code>{exampleRequestBody}</code>
+            </pre>
           </details>
         </section>
         <section>
-          <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
-           <p className="text-sm mb-1">Returns the updated DPP object with a confirmation message.</p>
+          <h4 className="font-semibold mb-1">
+            Example Response (Success 200 OK)
+          </h4>
+          <p className="text-sm mb-1">
+            Returns the updated DPP object with a confirmation message.
+          </p>
           <details className="border rounded-md">
-            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm"><FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Response</summary>
-            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96"><code>{exampleDppResponse}</code></pre>
+            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+              <FileJson className="inline h-4 w-4 mr-1 align-middle" />
+              Example JSON Response
+            </summary>
+            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+              <code>{exampleDppResponse}</code>
+            </pre>
           </details>
         </section>
-         <section>
+        <section>
           <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
-            <ul className="list-disc list-inside text-sm space-y-2">
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Invalid lifecycleStage value or missing field.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.</li>
+          <ul className="list-disc list-inside text-sm space-y-2">
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                400 Bad Request
+              </code>
+              : Invalid lifecycleStage value or missing field.
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                401 Unauthorized
+              </code>
+              .
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                404 Not Found
+              </code>
+              .
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                500 Internal Server Error
+              </code>
+              .
+            </li>
           </ul>
         </section>
       </CardContent>
@@ -122,15 +249,36 @@ function UpdateDppOnChainLifecycleStage({ exampleRequestBody, exampleDppResponse
 }
 
 // Component for LogCriticalEvent
-function LogDppCriticalEvent({ exampleRequestBody, exampleDppResponse, error400, error401, error404, error500 }: { exampleRequestBody: string; exampleDppResponse: string; error400: string; error401: string; error404: string; error500: string; }) {
+function LogDppCriticalEvent({
+  exampleRequestBody,
+  exampleDppResponse,
+  error400,
+  error401,
+  error404,
+  error500,
+}: {
+  exampleRequestBody: string;
+  exampleDppResponse: string;
+  error400: string;
+  error401: string;
+  error404: string;
+  error500: string;
+}) {
   return (
     <Card className="shadow-lg mt-6">
       <CardHeader>
         <CardTitle className="text-lg">Log Critical Event for a DPP</CardTitle>
         <CardDescription>
           <span className="inline-flex items-center font-mono text-sm">
-            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
-            <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/dpp/{"{productId}"}/log-critical-event</code>
+            <Badge
+              variant="outline"
+              className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold"
+            >
+              POST
+            </Badge>
+            <code className="bg-muted px-1 py-0.5 rounded-sm">
+              /api/v1/dpp/{"{productId}"}/log-critical-event
+            </code>
           </span>
           <br />
           Conceptually logs a critical event on-chain for a specified DPP.
@@ -140,31 +288,72 @@ function LogDppCriticalEvent({ exampleRequestBody, exampleDppResponse, error400,
         <section>
           <h4 className="font-semibold mb-1">Path Parameters</h4>
           <ul className="list-disc list-inside text-sm space-y-1">
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> (string, required): The unique identifier of the product.</li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                productId
+              </code>{" "}
+              (string, required): The unique identifier of the product.
+            </li>
           </ul>
         </section>
         <section>
-          <h4 className="font-semibold mb-1">Request Body (JSON) - LogCriticalEventRequest</h4>
+          <h4 className="font-semibold mb-1">
+            Request Body (JSON) - LogCriticalEventRequest
+          </h4>
           <details className="border rounded-md">
-            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm"><FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Request</summary>
-            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96"><code>{exampleRequestBody}</code></pre>
+            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+              <FileJson className="inline h-4 w-4 mr-1 align-middle" />
+              Example JSON Request
+            </summary>
+            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+              <code>{exampleRequestBody}</code>
+            </pre>
           </details>
         </section>
         <section>
-          <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
-           <p className="text-sm mb-1">Returns the updated DPP object with a confirmation message.</p>
+          <h4 className="font-semibold mb-1">
+            Example Response (Success 200 OK)
+          </h4>
+          <p className="text-sm mb-1">
+            Returns the updated DPP object with a confirmation message.
+          </p>
           <details className="border rounded-md">
-            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm"><FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Response</summary>
-            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96"><code>{exampleDppResponse}</code></pre>
+            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+              <FileJson className="inline h-4 w-4 mr-1 align-middle" />
+              Example JSON Response
+            </summary>
+            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+              <code>{exampleDppResponse}</code>
+            </pre>
           </details>
         </section>
-         <section>
+        <section>
           <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
-            <ul className="list-disc list-inside text-sm space-y-2">
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Missing eventDescription or invalid severity.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.</li>
+          <ul className="list-disc list-inside text-sm space-y-2">
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                400 Bad Request
+              </code>
+              : Missing eventDescription or invalid severity.
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                401 Unauthorized
+              </code>
+              .
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                404 Not Found
+              </code>
+              .
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                500 Internal Server Error
+              </code>
+              .
+            </li>
           </ul>
         </section>
       </CardContent>
@@ -173,56 +362,120 @@ function LogDppCriticalEvent({ exampleRequestBody, exampleDppResponse, error400,
 }
 
 // Component for RegisterVcHash
-function RegisterDppVcHash({ exampleRequestBody, exampleDppResponse, error400, error401, error404, error500 }: { exampleRequestBody: string; exampleDppResponse: string; error400: string; error401: string; error404: string; error500: string; }) {
+function RegisterDppVcHash({
+  exampleRequestBody,
+  exampleDppResponse,
+  error400,
+  error401,
+  error404,
+  error500,
+}: {
+  exampleRequestBody: string;
+  exampleDppResponse: string;
+  error400: string;
+  error401: string;
+  error404: string;
+  error500: string;
+}) {
   return (
     <Card className="shadow-lg mt-6">
       <CardHeader>
-        <CardTitle className="text-lg">Register Verifiable Credential Hash</CardTitle>
+        <CardTitle className="text-lg">
+          Register Verifiable Credential Hash
+        </CardTitle>
         <CardDescription>
           <span className="inline-flex items-center font-mono text-sm">
-            <Badge variant="outline" className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold">POST</Badge>
-            <code className="bg-muted px-1 py-0.5 rounded-sm">/api/v1/dpp/{"{productId}"}/register-vc-hash</code>
+            <Badge
+              variant="outline"
+              className="bg-green-100 text-green-700 border-green-300 mr-2 font-semibold"
+            >
+              POST
+            </Badge>
+            <code className="bg-muted px-1 py-0.5 rounded-sm">
+              /api/v1/dpp/{"{productId}"}/register-vc-hash
+            </code>
           </span>
           <br />
-          Conceptually registers a Verifiable Credential's hash on-chain for a DPP.
+          Conceptually registers a Verifiable Credential's hash on-chain for a
+          DPP.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <section>
           <h4 className="font-semibold mb-1">Path Parameters</h4>
           <ul className="list-disc list-inside text-sm space-y-1">
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">productId</code> (string, required): The unique identifier of the product.</li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                productId
+              </code>{" "}
+              (string, required): The unique identifier of the product.
+            </li>
           </ul>
         </section>
         <section>
-          <h4 className="font-semibold mb-1">Request Body (JSON) - RegisterVcHashRequest</h4>
+          <h4 className="font-semibold mb-1">
+            Request Body (JSON) - RegisterVcHashRequest
+          </h4>
           <details className="border rounded-md">
-            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm"><FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Request</summary>
-            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96"><code>{exampleRequestBody}</code></pre>
+            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+              <FileJson className="inline h-4 w-4 mr-1 align-middle" />
+              Example JSON Request
+            </summary>
+            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+              <code>{exampleRequestBody}</code>
+            </pre>
           </details>
         </section>
         <section>
-          <h4 className="font-semibold mb-1">Example Response (Success 200 OK)</h4>
-           <p className="text-sm mb-1">Returns the updated DPP object with a confirmation message.</p>
+          <h4 className="font-semibold mb-1">
+            Example Response (Success 200 OK)
+          </h4>
+          <p className="text-sm mb-1">
+            Returns the updated DPP object with a confirmation message.
+          </p>
           <details className="border rounded-md">
-            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm"><FileJson className="inline h-4 w-4 mr-1 align-middle" />Example JSON Response</summary>
-            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96"><code>{exampleDppResponse}</code></pre>
+            <summary className="cursor-pointer p-2 bg-muted hover:bg-muted/80 text-sm">
+              <FileJson className="inline h-4 w-4 mr-1 align-middle" />
+              Example JSON Response
+            </summary>
+            <pre className="bg-muted/50 p-3 rounded-b-md text-xs overflow-x-auto max-h-96">
+              <code>{exampleDppResponse}</code>
+            </pre>
           </details>
         </section>
-         <section>
+        <section>
           <h4 className="font-semibold mb-1 mt-3">Common Error Responses</h4>
-            <ul className="list-disc list-inside text-sm space-y-2">
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">400 Bad Request</code>: Missing vcId or vcHash.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">401 Unauthorized</code>.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">404 Not Found</code>.</li>
-            <li><code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.</li>
+          <ul className="list-disc list-inside text-sm space-y-2">
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                400 Bad Request
+              </code>
+              : Missing vcId or vcHash.
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                401 Unauthorized
+              </code>
+              .
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                404 Not Found
+              </code>
+              .
+            </li>
+            <li>
+              <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+                500 Internal Server Error
+              </code>
+              .
+            </li>
           </ul>
         </section>
       </CardContent>
     </Card>
   );
 }
-
 
 interface DppEndpointsProps {
   exampleListDppsResponse: string;
@@ -349,6 +602,9 @@ export default function ApiReferenceDppEndpoints(props: DppEndpointsProps) {
 
 // Placeholder for error400_general if not passed
 ApiReferenceDppEndpoints.defaultProps = {
-  error400_general: JSON.stringify({ error: { code: 400, message: "Invalid request body or parameters." } }, null, 2)
+  error400_general: JSON.stringify(
+    { error: { code: 400, message: "Invalid request body or parameters." } },
+    null,
+    2,
+  ),
 };
-

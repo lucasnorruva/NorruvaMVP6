@@ -2,9 +2,13 @@ import { ethers, upgrades } from "hardhat";
 
 async function main() {
   const DPPToken = await ethers.getContractFactory("DPPToken");
-  const dppToken = await upgrades.deployProxy(DPPToken, ["Digital Product Passport Token", "DPP"], {
-    initializer: "initialize",
-  });
+  const dppToken = await upgrades.deployProxy(
+    DPPToken,
+    ["Digital Product Passport Token", "DPP"],
+    {
+      initializer: "initialize",
+    },
+  );
 
   await dppToken.waitForDeployment();
 

@@ -1,6 +1,6 @@
 "use client";
-import React from 'react';
-import ApiPlaygroundEndpointCard from './ApiPlaygroundEndpointCard';
+import React from "react";
+import ApiPlaygroundEndpointCard from "./ApiPlaygroundEndpointCard";
 
 export interface DeveloperEndpointCardProps {
   title: string;
@@ -15,6 +15,8 @@ export interface DeveloperEndpointCardProps {
   codeSampleLanguages: string[];
 }
 
-export default function DeveloperEndpointCard(props: DeveloperEndpointCardProps) {
+export default function DeveloperEndpointCard(
+  props: DeveloperEndpointCardProps,
+) {
   return <ApiPlaygroundEndpointCard {...props} />;
 }

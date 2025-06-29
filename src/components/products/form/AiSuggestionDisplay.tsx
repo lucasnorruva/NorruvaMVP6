@@ -1,4 +1,3 @@
-
 // --- File: AiSuggestionDisplay.tsx ---
 // Description: Component for displaying a list of AI-generated string suggestions.
 "use client";
@@ -30,7 +29,9 @@ export default function AiSuggestionDisplay({
       <FormLabel className="text-sm font-medium text-muted-foreground flex items-center">
         <Info className="h-4 w-4 mr-2 text-info" /> {title}
       </FormLabel>
-      <p className="text-xs text-muted-foreground mb-2">Click a suggestion to add it.</p>
+      <p className="text-xs text-muted-foreground mb-2">
+        Click a suggestion to add it.
+      </p>
       <div className="flex flex-wrap gap-2">
         {suggestions.map((suggestion, index) => (
           <Button

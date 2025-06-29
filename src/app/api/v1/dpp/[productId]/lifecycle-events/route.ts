@@ -1,12 +1,11 @@
-
 // --- File: src/app/api/v1/dpp/[productId]/lifecycle-events/route.ts ---
 // Description: Conceptual API endpoint to add a lifecycle event to a DPP.
 
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { MOCK_DPPS } from '@/data';
-import type { LifecycleEvent } from '@/types/dpp';
-import { validateApiKey } from '@/middleware/apiKeyAuth';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { MOCK_DPPS } from "@/data";
+import type { LifecycleEvent } from "@/types/dpp";
+import { validateApiKey } from "@/middleware/apiKeyAuth";
 
 interface AddLifecycleEventRequestBody {
   eventType?: string; // Matches 'type' in LifecycleEvent but using a clearer name for request
@@ -18,7 +17,7 @@ interface AddLifecycleEventRequestBody {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: { productId: string } },
 ) {
   const productId = params.productId;
   const auth = validateApiKey(request);
@@ -28,13 +27,25 @@ export async function POST(
   try {
     requestBody = await request.json();
   } catch (error) {
-    return NextResponse.json({ error: { code: 400, message: "Invalid JSON payload." } }, { status: 400 });
+    return NextResponse.json(
+      { error: { code: 400, message: "Invalid JSON payload." } },
+      { status: 400 },
+    );
   }
 
   const { eventType, location, details, responsibleParty } = requestBody;
 
-  if (!eventType || typeof eventType !== 'string' || eventType.trim() === '') {
-    return NextResponse.json({ error: { code: 400, message: "Field 'eventType' is required and must be a non-empty string." } }, { status: 400 });
+  if (!eventType || typeof eventType !== "string" || eventType.trim() === "") {
+    return NextResponse.json(
+      {
+        error: {
+          code: 400,
+          message:
+            "Field 'eventType' is required and must be a non-empty string.",
+        },
+      },
+      { status: 400 },
+    );
   }
 
   // Conceptual API key authentication - skipped for mock
@@ -43,13 +54,21 @@ export async function POST(
   //   return NextResponse.json({ error: { code: 401, message: 'API key missing or invalid.' } }, { status: 401 });
   // }
 
-  const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
+  const productIndex = MOCK_DPPS.findIndex((dpp) => dpp.id === productId);
 
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 150));
+  await new Promise((resolve) => setTimeout(resolve, 150));
 
   if (productIndex === -1) {
-    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found.` } }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: {
+          code: 404,
+          message: `Product with ID ${productId} not found.`,
+        },
+      },
+      { status: 404 },
+    );
   }
 
   const newEventId = `evt_mock_${Date.now().toString().slice(-6)}`;
@@ -73,7 +92,5 @@ export async function POST(
   product.lifecycleEvents.push(newLifecycleEvent);
   product.metadata.last_updated = now; // Update the product's last_updated timestamp
 
-
   return NextResponse.json(newLifecycleEvent, { status: 201 });
 }
-

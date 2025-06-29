@@ -1,6 +1,6 @@
-import { NextResponse } from 'next/server';
-import { DPP_TOKEN_ADDRESS } from '/workspace/nextjs-dpp/src/config/contractAddresses'; // Use absolute path
-import { ethers } from 'ethers'; // Assuming ethers.js is used
+import { NextResponse } from "next/server";
+import { DPP_TOKEN_ADDRESS } from "/workspace/nextjs-dpp/src/config/contractAddresses"; // Use absolute path
+import { ethers } from "ethers"; // Assuming ethers.js is used
 
 export async function POST(request: Request) {
   // This is a placeholder for the /api/transferOwnership API route.
@@ -16,7 +16,13 @@ export async function POST(request: Request) {
     const dppTokenAddress = DPP_TOKEN_ADDRESS;
 
     if (dppTokenAddress === "YOUR_DEPLOYED_DPP_TOKEN_PROXY_ADDRESS") {
-         return NextResponse.json({ error: 'DPP Token contract address not configured in src/config/contractAddresses.ts placeholder' }, { status: 500 });
+      return NextResponse.json(
+        {
+          error:
+            "DPP Token contract address not configured in src/config/contractAddresses.ts placeholder",
+        },
+        { status: 500 },
+      );
     }
 
     // TODO: Get the private key or signer for the account authorized to call daoTransfer
@@ -32,14 +38,21 @@ export async function POST(request: Request) {
     // Note: The actual call mechanism depends on how your DAO override is implemented
     // This call would typically be triggered by a successful DAO proposal execution.
     // await dppTokenContract.daoTransfer(tokenId, newOwnerAddress); // Conceptual call
-    console.log(`Conceptual daoTransfer call for token ${tokenId} to ${newOwnerAddress}`); // Mocking the call
+    console.log(
+      `Conceptual daoTransfer call for token ${tokenId} to ${newOwnerAddress}`,
+    ); // Mocking the call
 
     // TODO: Handle transaction confirmation and potential errors
 
-    return NextResponse.json({ success: true, message: `Transfer initiated for token ${tokenId} to ${newOwnerAddress}` });
-
+    return NextResponse.json({
+      success: true,
+      message: `Transfer initiated for token ${tokenId} to ${newOwnerAddress}`,
+    });
   } catch (error: any) {
-    console.error('Error in /api/transferOwnership:', error);
-    return NextResponse.json({ error: 'Failed to initiate transfer', details: error.message }, { status: 500 });
+    console.error("Error in /api/transferOwnership:", error);
+    return NextResponse.json(
+      { error: "Failed to initiate transfer", details: error.message },
+      { status: 500 },
+    );
   }
 }

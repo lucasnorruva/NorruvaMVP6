@@ -1,9 +1,8 @@
-
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport } from '@/types/dpp';
-import { validateApiKey } from '@/middleware/apiKeyAuth';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { MOCK_DPPS } from "@/data";
+import type { DigitalProductPassport } from "@/types/dpp";
+import { validateApiKey } from "@/middleware/apiKeyAuth";
 
 interface AnchorDppRequestBody {
   platform: string;
@@ -11,7 +10,7 @@ interface AnchorDppRequestBody {
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: { productId: string } },
 ) {
   const productId = params.productId;
   const authError = validateApiKey(request);
@@ -21,19 +20,45 @@ export async function POST(
   try {
     requestBody = await request.json();
   } catch (error) {
-    return NextResponse.json({ error: { code: 400, message: 'Invalid JSON payload.' } }, { status: 400 });
+    return NextResponse.json(
+      { error: { code: 400, message: "Invalid JSON payload." } },
+      { status: 400 },
+    );
   }
 
-  if (!requestBody.platform || typeof requestBody.platform !== 'string' || requestBody.platform.trim() === '') {
-    return NextResponse.json({ error: { code: 400, message: "Field 'platform' is required and must be a non-empty string." } }, { status: 400 });
+  if (
+    !requestBody.platform ||
+    typeof requestBody.platform !== "string" ||
+    requestBody.platform.trim() === ""
+  ) {
+    return NextResponse.json(
+      {
+        error: {
+          code: 400,
+          message:
+            "Field 'platform' is required and must be a non-empty string.",
+        },
+      },
+      { status: 400 },
+    );
   }
 
-  const index = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
+  const index = MOCK_DPPS.findIndex((dpp) => dpp.id === productId);
 
-  await new Promise(resolve => setTimeout(resolve, Math.random() * 100 + 100));
+  await new Promise((resolve) =>
+    setTimeout(resolve, Math.random() * 100 + 100),
+  );
 
   if (index === -1) {
-    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found.` } }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: {
+          code: 404,
+          message: `Product with ID ${productId} not found.`,
+        },
+      },
+      { status: 404 },
+    );
   }
 
   const anchorHash = `0xmockAnchor${Date.now().toString(16)}`;
@@ -59,4 +84,3 @@ export async function POST(
 
   return NextResponse.json(updatedProduct);
 }
-

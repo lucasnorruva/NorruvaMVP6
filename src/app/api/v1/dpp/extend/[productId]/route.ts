@@ -1,12 +1,15 @@
-
 // --- File: src/app/api/v1/dpp/extend/[productId]/route.ts ---
 // Description: Conceptual API endpoint to extend a DPP by adding document references.
 
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { validateApiKey } from '@/middleware/apiKeyAuth';
-import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport, DocumentReference, SupplyChainStep } from '@/types/dpp';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { validateApiKey } from "@/middleware/apiKeyAuth";
+import { MOCK_DPPS } from "@/data";
+import type {
+  DigitalProductPassport,
+  DocumentReference,
+  SupplyChainStep,
+} from "@/types/dpp";
 
 interface ExtendDppRequestBody {
   documentReference?: {
@@ -22,7 +25,7 @@ interface ExtendDppRequestBody {
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: { productId: string } },
 ) {
   const productId = params.productId;
   const auth = validateApiKey(request);
@@ -32,7 +35,10 @@ export async function PATCH(
   try {
     requestBody = await request.json();
   } catch (error) {
-    return NextResponse.json({ error: { code: 400, message: "Invalid JSON payload." } }, { status: 400 });
+    return NextResponse.json(
+      { error: { code: 400, message: "Invalid JSON payload." } },
+      { status: 400 },
+    );
   }
 
   // Conceptual API key authentication - skipped for mock
@@ -41,21 +47,39 @@ export async function PATCH(
   //   return NextResponse.json({ error: { code: 401, message: 'API key missing or invalid.' } }, { status: 401 });
   // }
 
-  const productIndex = MOCK_DPPS.findIndex(dpp => dpp.id === productId);
+  const productIndex = MOCK_DPPS.findIndex((dpp) => dpp.id === productId);
 
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 150));
+  await new Promise((resolve) => setTimeout(resolve, 150));
 
   if (productIndex === -1) {
-    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found.` } }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: {
+          code: 404,
+          message: `Product with ID ${productId} not found.`,
+        },
+      },
+      { status: 404 },
+    );
   }
 
   const productToUpdate = MOCK_DPPS[productIndex];
 
   if (requestBody.documentReference) {
-    const { documentName, documentUrl, documentType } = requestBody.documentReference;
+    const { documentName, documentUrl, documentType } =
+      requestBody.documentReference;
     if (!documentName || !documentUrl || !documentType) {
-      return NextResponse.json({ error: { code: 400, message: "Fields 'documentName', 'documentUrl', and 'documentType' are required for documentReference." } }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: {
+            code: 400,
+            message:
+              "Fields 'documentName', 'documentUrl', and 'documentType' are required for documentReference.",
+          },
+        },
+        { status: 400 },
+      );
     }
 
     const newDocument: DocumentReference = {
@@ -70,10 +94,10 @@ export async function PATCH(
     }
     productToUpdate.documents.push(newDocument);
     productToUpdate.metadata.last_updated = new Date().toISOString();
-    
+
     // Update the product in the mock array
     MOCK_DPPS[productIndex] = productToUpdate;
-    
+
     return NextResponse.json(productToUpdate);
   }
 
@@ -82,7 +106,13 @@ export async function PATCH(
     const { newOwnerDid, transferTimestamp } = requestBody.chainOfCustodyUpdate;
     if (!newOwnerDid || !transferTimestamp) {
       return NextResponse.json(
-        { error: { code: 400, message: "Fields 'newOwnerDid' and 'transferTimestamp' are required." } },
+        {
+          error: {
+            code: 400,
+            message:
+              "Fields 'newOwnerDid' and 'transferTimestamp' are required.",
+          },
+        },
         { status: 400 },
       );
     }
@@ -95,7 +125,7 @@ export async function PATCH(
     }
 
     const newStep: SupplyChainStep = {
-      stepName: 'Ownership Transfer',
+      stepName: "Ownership Transfer",
       actorDid: newOwnerDid,
       timestamp: transferTimestamp,
     };
@@ -108,5 +138,13 @@ export async function PATCH(
     return NextResponse.json(productToUpdate);
   }
 
-  return NextResponse.json({ error: { code: 400, message: "No valid extension data provided (e.g., documentReference)." } }, { status: 400 });
+  return NextResponse.json(
+    {
+      error: {
+        code: 400,
+        message: "No valid extension data provided (e.g., documentReference).",
+      },
+    },
+    { status: 400 },
+  );
 }

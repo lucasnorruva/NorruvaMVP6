@@ -1,5 +1,4 @@
-
-import ComplianceCopilot from '@/components/compliance/ComplianceCopilot';
+import ComplianceCopilot from "@/components/compliance/ComplianceCopilot";
 
 export default function CopilotPage() {
   return (

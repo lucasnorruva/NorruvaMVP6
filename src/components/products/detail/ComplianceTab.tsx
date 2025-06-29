@@ -2,16 +2,42 @@
 // Description: Displays compliance-related information for a product.
 "use client";
 
-import type { SimpleProductDetail, ComplianceDetailItem as SpecificComplianceDetailItemFromDPP } from "@/types/dpp";
+import type {
+  SimpleProductDetail,
+  ComplianceDetailItem as SpecificComplianceDetailItemFromDPP,
+} from "@/types/dpp";
 import ProductComplianceHeader from "./ProductComplianceHeader";
-import ComplianceDetailItemDisplay, { type ComplianceDetailItemProps } from "./ComplianceDetailItemDisplay"; // Import the new component and its props type
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import ComplianceDetailItemDisplay, {
+  type ComplianceDetailItemProps,
+} from "./ComplianceDetailItemDisplay"; // Import the new component and its props type
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ListChecks, RefreshCw, Loader2, Info as InfoIconFromLucide, FileText, Fingerprint, Database, Anchor, BatteryCharging, ShieldCheck } from "lucide-react";
+import {
+  ListChecks,
+  RefreshCw,
+  Loader2,
+  Info as InfoIconFromLucide,
+  FileText,
+  Fingerprint,
+  Database,
+  Anchor,
+  BatteryCharging,
+  ShieldCheck,
+} from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface ComplianceTabProps {
   product: SimpleProductDetail;
@@ -20,11 +46,20 @@ interface ComplianceTabProps {
   canSyncEprel: boolean;
 }
 
-export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, canSyncEprel }: ComplianceTabProps) {
+export default function ComplianceTab({
+  product,
+  onSyncEprel,
+  isSyncingEprel,
+  canSyncEprel,
+}: ComplianceTabProps) {
   const summary = product.complianceSummary;
 
   if (!summary) {
-    return <p className="text-muted-foreground p-4">Compliance summary not available for this product.</p>;
+    return (
+      <p className="text-muted-foreground p-4">
+        Compliance summary not available for this product.
+      </p>
+    );
   }
 
   const allComplianceItems: ComplianceDetailItemProps[] = [];
@@ -42,7 +77,11 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
               disabled={isSyncingEprel || !canSyncEprel}
               className="h-7 w-7"
             >
-              {isSyncingEprel ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+              {isSyncingEprel ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <RefreshCw className="h-4 w-4" />
+              )}
               <span className="sr-only">Sync with EPREL</span>
             </Button>
           </TooltipTrigger>
@@ -81,21 +120,27 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
       url: summary.ebsi.transactionUrl,
     });
   }
-  
+
   // Handle SCIP explicitly
   if (summary.scip) {
     const scipNotesParts = [];
-    if (summary.scip.articleName) scipNotesParts.push(`Article: ${summary.scip.articleName}`);
-    if (summary.scip.svhcListVersion) scipNotesParts.push(`SVHC List Ver: ${summary.scip.svhcListVersion}`);
-    if (summary.scip.submittingLegalEntity) scipNotesParts.push(`Submitter: ${summary.scip.submittingLegalEntity}`);
+    if (summary.scip.articleName)
+      scipNotesParts.push(`Article: ${summary.scip.articleName}`);
+    if (summary.scip.svhcListVersion)
+      scipNotesParts.push(`SVHC List Ver: ${summary.scip.svhcListVersion}`);
+    if (summary.scip.submittingLegalEntity)
+      scipNotesParts.push(`Submitter: ${summary.scip.submittingLegalEntity}`);
 
     allComplianceItems.push({
       title: "ECHA SCIP Notification",
       icon: Database,
       status: summary.scip.status || "N/A",
-      lastChecked: summary.scip.lastChecked || product.lastUpdated || new Date().toISOString(),
+      lastChecked:
+        summary.scip.lastChecked ||
+        product.lastUpdated ||
+        new Date().toISOString(),
       id: summary.scip.notificationId,
-      notes: scipNotesParts.join(' | ') || undefined,
+      notes: scipNotesParts.join(" | ") || undefined,
       url: summary.scip.safeUseInstructionsLink,
     });
   }
@@ -103,47 +148,94 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
   // Handle EU Customs Data explicitly
   if (summary.euCustomsData) {
     const customsNotesParts = [];
-    if (summary.euCustomsData.hsCode) customsNotesParts.push(`HS Code: ${summary.euCustomsData.hsCode}`);
-    if (summary.euCustomsData.countryOfOrigin) customsNotesParts.push(`Origin: ${summary.euCustomsData.countryOfOrigin}`);
-    if (summary.euCustomsData.netWeightKg !== undefined && summary.euCustomsData.netWeightKg !== null) customsNotesParts.push(`Net Wt: ${summary.euCustomsData.netWeightKg}kg`);
-    if (summary.euCustomsData.grossWeightKg !== undefined && summary.euCustomsData.grossWeightKg !== null) customsNotesParts.push(`Gross Wt: ${summary.euCustomsData.grossWeightKg}kg`);
-    if (summary.euCustomsData.customsValuation?.value !== undefined && summary.euCustomsData.customsValuation.value !== null) {
-        customsNotesParts.push(`Value: ${summary.euCustomsData.customsValuation.value} ${summary.euCustomsData.customsValuation.currency || ''}`);
+    if (summary.euCustomsData.hsCode)
+      customsNotesParts.push(`HS Code: ${summary.euCustomsData.hsCode}`);
+    if (summary.euCustomsData.countryOfOrigin)
+      customsNotesParts.push(
+        `Origin: ${summary.euCustomsData.countryOfOrigin}`,
+      );
+    if (
+      summary.euCustomsData.netWeightKg !== undefined &&
+      summary.euCustomsData.netWeightKg !== null
+    )
+      customsNotesParts.push(`Net Wt: ${summary.euCustomsData.netWeightKg}kg`);
+    if (
+      summary.euCustomsData.grossWeightKg !== undefined &&
+      summary.euCustomsData.grossWeightKg !== null
+    )
+      customsNotesParts.push(
+        `Gross Wt: ${summary.euCustomsData.grossWeightKg}kg`,
+      );
+    if (
+      summary.euCustomsData.customsValuation?.value !== undefined &&
+      summary.euCustomsData.customsValuation.value !== null
+    ) {
+      customsNotesParts.push(
+        `Value: ${summary.euCustomsData.customsValuation.value} ${summary.euCustomsData.customsValuation.currency || ""}`,
+      );
     }
     if (summary.euCustomsData.cbamGoodsIdentifier) {
-        customsNotesParts.push(`CBAM ID: ${summary.euCustomsData.cbamGoodsIdentifier}`);
+      customsNotesParts.push(
+        `CBAM ID: ${summary.euCustomsData.cbamGoodsIdentifier}`,
+      );
     }
-    
+
     allComplianceItems.push({
       title: "EU Customs Data",
       icon: Anchor,
       status: summary.euCustomsData.status || "N/A",
-      lastChecked: summary.euCustomsData.lastChecked || product.lastUpdated || new Date().toISOString(),
+      lastChecked:
+        summary.euCustomsData.lastChecked ||
+        product.lastUpdated ||
+        new Date().toISOString(),
       id: summary.euCustomsData.declarationId,
-      notes: customsNotesParts.join(' | ') || undefined,
+      notes: customsNotesParts.join(" | ") || undefined,
     });
   }
 
   // Handle Battery Regulation explicitly
   if (summary.battery) {
     const batteryNotesParts: string[] = [];
-    if (summary.battery.batteryChemistry) batteryNotesParts.push(`Chemistry: ${summary.battery.batteryChemistry}`);
-    if (summary.battery.carbonFootprint?.value !== undefined && summary.battery.carbonFootprint.value !== null) {
-      batteryNotesParts.push(`CF: ${summary.battery.carbonFootprint.value} ${summary.battery.carbonFootprint.unit || ''}`);
+    if (summary.battery.batteryChemistry)
+      batteryNotesParts.push(`Chemistry: ${summary.battery.batteryChemistry}`);
+    if (
+      summary.battery.carbonFootprint?.value !== undefined &&
+      summary.battery.carbonFootprint.value !== null
+    ) {
+      batteryNotesParts.push(
+        `CF: ${summary.battery.carbonFootprint.value} ${summary.battery.carbonFootprint.unit || ""}`,
+      );
     }
-    if (summary.battery.stateOfHealth?.value !== undefined && summary.battery.stateOfHealth.value !== null) {
-      batteryNotesParts.push(`SoH: ${summary.battery.stateOfHealth.value}${summary.battery.stateOfHealth.unit || '%'}`);
+    if (
+      summary.battery.stateOfHealth?.value !== undefined &&
+      summary.battery.stateOfHealth.value !== null
+    ) {
+      batteryNotesParts.push(
+        `SoH: ${summary.battery.stateOfHealth.value}${summary.battery.stateOfHealth.unit || "%"}`,
+      );
     }
-    if (summary.battery.recycledContent && summary.battery.recycledContent.length > 0) {
-      const mainRecycled = summary.battery.recycledContent.find(rc => rc.material && rc.percentage !== undefined && rc.percentage !== null);
+    if (
+      summary.battery.recycledContent &&
+      summary.battery.recycledContent.length > 0
+    ) {
+      const mainRecycled = summary.battery.recycledContent.find(
+        (rc) =>
+          rc.material && rc.percentage !== undefined && rc.percentage !== null,
+      );
       if (mainRecycled) {
-        batteryNotesParts.push(`Recycled ${mainRecycled.material}: ${mainRecycled.percentage}%`);
+        batteryNotesParts.push(
+          `Recycled ${mainRecycled.material}: ${mainRecycled.percentage}%`,
+        );
       } else if (summary.battery.recycledContent.length > 0) {
-        batteryNotesParts.push(`${summary.battery.recycledContent.length} recycled material(s) declared.`);
+        batteryNotesParts.push(
+          `${summary.battery.recycledContent.length} recycled material(s) declared.`,
+        );
       }
     }
-    if (summary.battery.vcId) batteryNotesParts.push(`Main VC: ${summary.battery.vcId.substring(0,15)}...`);
-
+    if (summary.battery.vcId)
+      batteryNotesParts.push(
+        `Main VC: ${summary.battery.vcId.substring(0, 15)}...`,
+      );
 
     allComplianceItems.push({
       title: "EU Battery Regulation",
@@ -152,13 +244,15 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
       lastChecked: product.lastUpdated || new Date().toISOString(),
       id: summary.battery.batteryPassportId,
       url: summary.battery.vcId ? `#vc-${summary.battery.vcId}` : undefined,
-      notes: batteryNotesParts.join(' | ') || "Detailed battery passport information available.",
+      notes:
+        batteryNotesParts.join(" | ") ||
+        "Detailed battery passport information available.",
     });
   }
 
   // Handle other specific regulations
   if (summary.specificRegulations) {
-    summary.specificRegulations.forEach(reg => {
+    summary.specificRegulations.forEach((reg) => {
       allComplianceItems.push({
         title: reg.regulationName,
         icon: ShieldCheck, // Using ShieldCheck for general compliance
@@ -170,7 +264,7 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
       });
     });
   }
-  
+
   return (
     <div className="space-y-6">
       <ProductComplianceHeader
@@ -185,11 +279,16 @@ export default function ComplianceTab({ product, onSyncEprel, isSyncingEprel, ca
               <ListChecks className="mr-2 h-5 w-5 text-primary" />
               Detailed Compliance Checkpoints
             </CardTitle>
-            <CardDescription>Status for specific regulations and verifications.</CardDescription>
+            <CardDescription>
+              Status for specific regulations and verifications.
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {allComplianceItems.map((item, index) => (
-              <ComplianceDetailItemDisplay key={`${item.title}-${index}`} {...item} />
+              <ComplianceDetailItemDisplay
+                key={`${item.title}-${index}`}
+                {...item}
+              />
             ))}
           </CardContent>
         </Card>

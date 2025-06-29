@@ -1,4 +1,3 @@
-
 # Advanced Blockchain Architecture for Digital Product Passport (DPP)
 
 This document outlines the proposed smart contract and governance architecture for the Norruva Digital Product Passport system. The design leverages an ERC-721 token to represent each passport and an ERC-20 governance token for the DAO.
@@ -6,6 +5,7 @@ This document outlines the proposed smart contract and governance architecture f
 ## Smart Contracts
 
 ### DPP Token (ERC-721)
+
 - Implemented in Solidity using OpenZeppelin contracts (`ERC721Upgradeable`, `ERC721URIStorageUpgradeable`, `AccessControlEnumerableUpgradeable`, `UUPSUpgradeable`).
 - Upgradeable via the UUPS proxy pattern, with upgrades authorized by the `DEFAULT_ADMIN_ROLE`.
 - Each token ID (`tokenId`) represents a unique Digital Product Passport.
@@ -62,7 +62,7 @@ contract DPPToken is Initializable, ERC721Upgradeable, ERC721URIStorageUpgradeab
     function updateMetadataHash(uint256 tokenId, string memory newMetadataHash) public virtual {
         require(_exists(tokenId), "DPPToken: URI update for nonexistent token");
         require(hasRole(UPDATER_ROLE, _msgSender()) || _isApprovedOrOwner(_msgSender(), tokenId), "DPPToken: caller is not owner nor approved updater");
-        
+
         string memory oldMetadataHash = _metadataHashes[tokenId];
         _setTokenMetadataHash(tokenId, newMetadataHash);
         // Similar to mint, if using ERC721URIStorage's tokenURI:
@@ -82,7 +82,7 @@ contract DPPToken is Initializable, ERC721Upgradeable, ERC721URIStorageUpgradeab
         // Example: "ipfs://<metadataHash>" or "https://api.norruva.com/metadata/<tokenid>"
         return string(abi.encodePacked("mock-uri-prefix:", metadataHash));
     }
-    
+
     // --- Soulbound & DAO Transfer Logic ---
     // This hook restricts standard transfers. Only accounts with TRANSFER_ROLE can bypass this via daoTransfer.
     function _beforeTokenTransfer(address from, address to, uint256 tokenId, uint256 batchSize)
@@ -123,7 +123,7 @@ contract DPPToken is Initializable, ERC721Upgradeable, ERC721URIStorageUpgradeab
     }
 
     function _authorizeUpgrade(address newImplementation) internal virtual override onlyRole(DEFAULT_ADMIN_ROLE) {}
-    
+
     // Required by ERC721URIStorageUpgradeable if overriding tokenURI
     function _update(address to, uint256 tokenId, address auth)
         internal
@@ -141,19 +141,23 @@ contract DPPToken is Initializable, ERC721Upgradeable, ERC721URIStorageUpgradeab
 
 **Events Emitted by `DPPToken.sol`:**
 Standard ERC721 events:
+
 - `Transfer(address indexed from, address indexed to, uint256 indexed tokenId)`
 - `Approval(address indexed owner, address indexed approved, uint256 indexed tokenId)` (Note: `approve` is reverted, so this event will not be emitted for direct approvals)
 - `ApprovalForAll(address indexed owner, address indexed operator, bool approved)` (Note: `setApprovalForAll` is reverted, so this event will not be emitted)
 
 AccessControl events:
+
 - `RoleAdminChanged(bytes32 indexed role, bytes32 indexed previousAdminRole, bytes32 indexed newAdminRole)`
 - `RoleGranted(bytes32 indexed role, address indexed account, address indexed sender)`
 - `RoleRevoked(bytes32 indexed role, address indexed account, address indexed sender)`
 
 Custom events:
+
 - `MetadataUpdate(uint256 indexed _tokenId, string _oldMetadataHash, string _newMetadataHash)`
 
 **Roles:**
+
 - `DEFAULT_ADMIN_ROLE`: Can grant/revoke roles and authorize contract upgrades. Typically the deployer or a governance contract.
 - `MINTER_ROLE`: Can mint new DPP tokens by calling the `mint` function.
 - `UPDATER_ROLE`: Can update the metadata hash of any token by calling `updateMetadataHash`. Token owners can also update their own token's metadata.
@@ -162,6 +166,7 @@ Custom events:
 Conceptual lifecycle states for a DPP (e.g., `Draft`, `Issued`, `Verified`, `Expired`) are managed off-chain within the Norruva platform and reflected in the DPP data, rather than being direct states within this `DPPToken` contract.
 
 ### NORU Token (ERC-20)
+
 - Implemented in Solidity using OpenZeppelin contracts (`ERC20Upgradeable`, `ERC20BurnableUpgradeable`, `ERC20CappedUpgradeable`, `AccessControlEnumerableUpgradeable`, `UUPSUpgradeable`).
 - Used for governance (voting on DAO proposals), potentially for staking by verifiers/auditors, and for platform-related fees (e.g., premium features, high-volume API access).
 - Capped total supply, with an initial supply minted to a treasury or deployer address.
@@ -174,10 +179,10 @@ Conceptual lifecycle states for a DPP (e.g., `Draft`, `Issued`, `Verified`, `Exp
 - Based on OpenZeppelin's `GovernorUpgradeable` and `TimelockControllerUpgradeable` contracts.
 - The `DPPGovernor.sol` contract uses `NORUToken` for voting power (via `ERC20VotesUpgradeable` standard, which `NORUToken` would need to implement or be compatible with).
 - Proposals can target any contract, enabling governance over:
-    - `DPPToken.sol`: e.g., granting/revoking roles, or initiating DAO-controlled transfers via the `daoTransfer` function (the proposal's action would be a call to `timelock.schedule(...)` which in turn calls `dppToken.daoTransfer(...)`).
-    - `NORUToken.sol`: e.g., minting new tokens (if below cap and authorized), adjusting token parameters (if any are made configurable).
-    - `DPPGovernor.sol` itself: e.g., adjusting voting parameters like quorum, voting period, or proposal threshold.
-    - `TimelockControllerUpgradeable.sol`: e.g., adjusting the minimum delay.
+  - `DPPToken.sol`: e.g., granting/revoking roles, or initiating DAO-controlled transfers via the `daoTransfer` function (the proposal's action would be a call to `timelock.schedule(...)` which in turn calls `dppToken.daoTransfer(...)`).
+  - `NORUToken.sol`: e.g., minting new tokens (if below cap and authorized), adjusting token parameters (if any are made configurable).
+  - `DPPGovernor.sol` itself: e.g., adjusting voting parameters like quorum, voting period, or proposal threshold.
+  - `TimelockControllerUpgradeable.sol`: e.g., adjusting the minimum delay.
 - On-chain voting process typically involves: proposal creation, voting period, succeeded/defeated state, queuing in Timelock, delay period, execution.
 - A multisig wallet (e.g., Gnosis Safe) could initially hold the `DEFAULT_ADMIN_ROLE` for critical contracts and the Timelock, potentially transitioning full control to the DAO over time.
 
@@ -198,27 +203,27 @@ Conceptual lifecycle states for a DPP (e.g., `Draft`, `Issued`, `Verified`, `Exp
 
 Next.js API routes act as middleware between the frontend/clients and the blockchain. These APIs abstract the complexities of smart contract interactions.
 
--   **`POST /api/v1/token/mint/{productId}`**:
-    -   **Conceptual Backend Action**: Validates product and user, prepares metadata (calculating its hash), generates a unique `tokenId` for the DPP, and then instructs a backend wallet (holding `MINTER_ROLE` on `DPPToken.sol`) to call `DPPToken.mint(recipientAddress, tokenId, metadataHash)`.
-    -   The `recipientAddress` and `contractAddress` are provided in the API request body.
-    -   Returns the `tokenId` and `transactionHash`.
+- **`POST /api/v1/token/mint/{productId}`**:
+  - **Conceptual Backend Action**: Validates product and user, prepares metadata (calculating its hash), generates a unique `tokenId` for the DPP, and then instructs a backend wallet (holding `MINTER_ROLE` on `DPPToken.sol`) to call `DPPToken.mint(recipientAddress, tokenId, metadataHash)`.
+  - The `recipientAddress` and `contractAddress` are provided in the API request body.
+  - Returns the `tokenId` and `transactionHash`.
 
--   **`PATCH /api/v1/token/metadata/{tokenId}`**:
-    -   **Conceptual Backend Action**: Validates the `tokenId` and new `metadataUri`. The backend calculates the `newMetadataHash` from the URI. It then instructs a backend wallet (holding `UPDATER_ROLE` or if the wallet is the token owner) to call `DPPToken.updateMetadataHash(tokenId, newMetadataHash)`.
-    -   Returns the `transactionHash`.
+- **`PATCH /api/v1/token/metadata/{tokenId}`**:
+  - **Conceptual Backend Action**: Validates the `tokenId` and new `metadataUri`. The backend calculates the `newMetadataHash` from the URI. It then instructs a backend wallet (holding `UPDATER_ROLE` or if the wallet is the token owner) to call `DPPToken.updateMetadataHash(tokenId, newMetadataHash)`.
+  - Returns the `transactionHash`.
 
--   **`GET /api/v1/token/status/{tokenId}`**:
-    -   **Conceptual Backend Action**: Connects to a blockchain node, instantiates `DPPToken.sol`, and calls view functions like `ownerOf(tokenId)` and `tokenURI(tokenId)` (which returns the URI containing the metadata hash).
-    -   May also query past `Transfer` events to determine a conceptual "on-chain status" (e.g., 'minted', 'transferred').
+- **`GET /api/v1/token/status/{tokenId}`**:
+  - **Conceptual Backend Action**: Connects to a blockchain node, instantiates `DPPToken.sol`, and calls view functions like `ownerOf(tokenId)` and `tokenURI(tokenId)` (which returns the URI containing the metadata hash).
+  - May also query past `Transfer` events to determine a conceptual "on-chain status" (e.g., 'minted', 'transferred').
 
--   **DAO-Controlled Transfers (e.g., `DPPToken.daoTransfer`)**:
-    -   These are not typically triggered directly by a simple user-facing API like the above.
-    -   **Conceptual Workflow**:
-        1.  A governance proposal is created on `DPPGovernor.sol` to call `DPPToken.daoTransfer(from, to, tokenId)`.
-        2.  The proposal passes the voting phase.
-        3.  The proposal is queued in `TimelockControllerUpgradeable.sol`.
-        4.  After the `minDelay`, the proposal is executed from the Timelock. The Timelock contract, which must hold the `TRANSFER_ROLE` on `DPPToken.sol`, calls `DPPToken.daoTransfer(...)`.
-    -   The application's UI might display the status of such proposals or allow users with appropriate voting power (NORU tokens) to vote on them.
+- **DAO-Controlled Transfers (e.g., `DPPToken.daoTransfer`)**:
+  - These are not typically triggered directly by a simple user-facing API like the above.
+  - **Conceptual Workflow**:
+    1.  A governance proposal is created on `DPPGovernor.sol` to call `DPPToken.daoTransfer(from, to, tokenId)`.
+    2.  The proposal passes the voting phase.
+    3.  The proposal is queued in `TimelockControllerUpgradeable.sol`.
+    4.  After the `minDelay`, the proposal is executed from the Timelock. The Timelock contract, which must hold the `TRANSFER_ROLE` on `DPPToken.sol`, calls `DPPToken.daoTransfer(...)`.
+  - The application's UI might display the status of such proposals or allow users with appropriate voting power (NORU tokens) to vote on them.
 
 Each API route that initiates a state-changing transaction (mint, update metadata) must securely manage private keys for the backend wallet and handle transaction signing, broadcasting, and confirmation. Nonce management and gas fee estimation are also critical.
 
@@ -231,5 +236,3 @@ Every significant action (minting, metadata update, DAO-controlled transfer) emi
 - Verifiable Credentials that conform to EBSI standards for richer on-chain/off-chain claims.
 - Zero-knowledge proofs for origin verification and confidential supplier data.
 - NFC or QR codes that resolve to the `tokenURI` for physical product tags.
-
-    

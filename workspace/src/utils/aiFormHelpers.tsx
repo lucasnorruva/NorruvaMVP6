@@ -1,20 +1,22 @@
 // --- File: aiFormHelpers.tsx ---
 // Description: Utility functions for handling AI-powered suggestions in product forms.
 
-
-import React from "react"; 
+import React from "react";
 import type { UseFormReturn } from "react-hook-form";
-import type { ProductFormData } from "@/types/productFormTypes"; 
+import type { ProductFormData } from "@/types/productFormTypes";
 import { generateProductName } from "@/ai/flows/generate-product-name-flow";
 import { generateProductDescription } from "@/ai/flows/generate-product-description-flow";
 import { suggestSustainabilityClaims } from "@/ai/flows/suggest-sustainability-claims-flow";
-import { suggestKeyCompliancePoints } from "@/ai/flows/suggest-key-compliance-points"; 
+import { suggestKeyCompliancePoints } from "@/ai/flows/suggest-key-compliance-points";
 import { generateProductImage } from "@/ai/flows/generate-product-image-flow";
 import { generateProductSpecifications } from "@/ai/flows/generate-product-specifications-flow";
-import { generateCustomAttributes } from "@/ai/flows/generate-custom-attributes-flow"; 
-import { suggestCbamIdentifier, type SuggestCbamIdentifierOutput } from "@/ai/flows/suggest-cbam-identifier-flow"; 
+import { generateCustomAttributes } from "@/ai/flows/generate-custom-attributes-flow";
+import {
+  suggestCbamIdentifier,
+  type SuggestCbamIdentifierOutput,
+} from "@/ai/flows/suggest-cbam-identifier-flow";
 import { suggestImageHints } from "@/ai/flows/suggest-image-hints-flow";
-import type { CustomAttribute } from "@/types/dpp"; 
+import type { CustomAttribute } from "@/types/dpp";
 import type { ToastInput } from "@/hooks/use-toast";
 import { AlertTriangle } from "lucide-react";
 
@@ -28,14 +30,18 @@ interface AiHandlerOptions<T> {
   errorTitle: string;
 }
 
-async function withAiHandling<T>(options: AiHandlerOptions<T>): Promise<T | null> {
+async function withAiHandling<T>(
+  options: AiHandlerOptions<T>,
+): Promise<T | null> {
   const { aiCall, toast, setLoadingState, successToast, errorTitle } = options;
   setLoadingState(true);
   try {
     const result = await aiCall();
     if (successToast) {
       const toastInput =
-        typeof successToast === "function" ? successToast(result) : successToast;
+        typeof successToast === "function"
+          ? successToast(result)
+          : successToast;
       toast(toastInput);
     }
     return result;
@@ -44,9 +50,8 @@ async function withAiHandling<T>(options: AiHandlerOptions<T>): Promise<T | null
     const iconElement = <AlertTriangle className="text-white" />;
     toast({
       title: errorTitle,
-      description: error instanceof Error
-        ? error.message
-        : "An unknown error occurred.",
+      description:
+        error instanceof Error ? error.message : "An unknown error occurred.",
       variant: "destructive",
       action: iconElement,
     });
@@ -59,19 +64,25 @@ async function withAiHandling<T>(options: AiHandlerOptions<T>): Promise<T | null
 export async function handleSuggestNameAI(
   form: UseFormReturn<ProductFormData>,
   toast: ToastFn,
-  setLoadingState: (loading: boolean) => void
+  setLoadingState: (loading: boolean) => void,
 ): Promise<string | null> {
   const { productDetails, productCategory } = form.getValues();
   if (!productDetails?.description && !productCategory) {
-    toast({ title: "Input Required", description: "Please provide a product description or category to suggest a name.", variant: "destructive" });
-    setLoadingState(false); 
+    toast({
+      title: "Input Required",
+      description:
+        "Please provide a product description or category to suggest a name.",
+      variant: "destructive",
+    });
+    setLoadingState(false);
     return null;
   }
   const result = await withAiHandling({
-    aiCall: () => generateProductName({
-      productDescription: productDetails?.description || "",
-      productCategory: productCategory || undefined,
-    }),
+    aiCall: () =>
+      generateProductName({
+        productDescription: productDetails?.description || "",
+        productCategory: productCategory || undefined,
+      }),
     toast,
     setLoadingState,
     successToast: (res) => ({
@@ -87,11 +98,15 @@ export async function handleSuggestNameAI(
 export async function handleSuggestDescriptionAI(
   form: UseFormReturn<ProductFormData>,
   toast: ToastFn,
-  setLoadingState: (loading: boolean) => void
+  setLoadingState: (loading: boolean) => void,
 ): Promise<string | null> {
   const { productName, productCategory, productDetails } = form.getValues();
   if (!productName) {
-    toast({ title: "Product Name Required", description: "Please provide a product name to suggest a description.", variant: "destructive" });
+    toast({
+      title: "Product Name Required",
+      description: "Please provide a product name to suggest a description.",
+      variant: "destructive",
+    });
     setLoadingState(false);
     return null;
   }
@@ -117,11 +132,20 @@ export async function handleSuggestDescriptionAI(
 export async function handleSuggestClaimsAI(
   form: UseFormReturn<ProductFormData>,
   toast: ToastFn,
-  setLoadingState: (loading: boolean) => void
+  setLoadingState: (loading: boolean) => void,
 ): Promise<string[] | null> {
   const formData = form.getValues();
-  if (!formData.productCategory && !formData.productName && !formData.productDetails?.materials) {
-    toast({ title: "Input Required", description: "Please provide product category, name, or materials to suggest claims.", variant: "destructive" });
+  if (
+    !formData.productCategory &&
+    !formData.productName &&
+    !formData.productDetails?.materials
+  ) {
+    toast({
+      title: "Input Required",
+      description:
+        "Please provide product category, name, or materials to suggest claims.",
+      variant: "destructive",
+    });
     setLoadingState(false);
     return null;
   }
@@ -155,32 +179,47 @@ export async function handleSuggestClaimsAI(
 export async function handleSuggestKeyCompliancePointsAI(
   form: UseFormReturn<ProductFormData>,
   toast: ToastFn,
-  setLoadingState: (loading: boolean) => void
+  setLoadingState: (loading: boolean) => void,
 ): Promise<string[] | null> {
   const { productName, productCategory, compliance } = form.getValues();
   if (!productCategory) {
-    toast({ title: "Category Required", description: "Please provide a product category to suggest compliance points.", variant: "destructive" });
+    toast({
+      title: "Category Required",
+      description:
+        "Please provide a product category to suggest compliance points.",
+      variant: "destructive",
+    });
     setLoadingState(false);
     return null;
   }
-  
+
   const applicableRegs: string[] = [];
-  if (compliance?.battery_regulation?.status && compliance.battery_regulation.status !== 'not_applicable') {
+  if (
+    compliance?.battery_regulation?.status &&
+    compliance.battery_regulation.status !== "not_applicable"
+  ) {
     applicableRegs.push("EU Battery Regulation");
   }
-  if (compliance?.esprConformity?.status && compliance.esprConformity.status !== 'not_applicable') { 
+  if (
+    compliance?.esprConformity?.status &&
+    compliance.esprConformity.status !== "not_applicable"
+  ) {
     applicableRegs.push("EU ESPR");
   }
-  if (compliance?.scipNotification?.status && compliance.scipNotification.status !== 'N/A' && compliance.scipNotification.status !== 'Not Required') {
+  if (
+    compliance?.scipNotification?.status &&
+    compliance.scipNotification.status !== "N/A" &&
+    compliance.scipNotification.status !== "Not Required"
+  ) {
     applicableRegs.push("SCIP Database");
   }
-  
+
   const result = await withAiHandling({
     aiCall: () =>
       suggestKeyCompliancePoints({
         productName: productName || undefined,
         productCategory: productCategory,
-        regulationsApplicable: applicableRegs.join(', ') || undefined,
+        regulationsApplicable: applicableRegs.join(", ") || undefined,
       }),
     toast,
     setLoadingState,
@@ -201,15 +240,18 @@ export async function handleSuggestKeyCompliancePointsAI(
   return result ? result.compliancePoints : null;
 }
 
-
 export async function handleGenerateImageAI(
   form: UseFormReturn<ProductFormData>,
   toast: ToastFn,
-  setLoadingState: (loading: boolean) => void
+  setLoadingState: (loading: boolean) => void,
 ): Promise<string | null> {
   const formData = form.getValues();
   if (!formData.productName) {
-    toast({ title: "Product Name Required", description: "Please enter a product name before generating an image.", variant: "destructive" });
+    toast({
+      title: "Product Name Required",
+      description: "Please enter a product name before generating an image.",
+      variant: "destructive",
+    });
     setLoadingState(false);
     return null;
   }
@@ -234,11 +276,16 @@ export async function handleGenerateImageAI(
 export async function handleSuggestSpecificationsAI(
   form: UseFormReturn<ProductFormData>,
   toast: ToastFn,
-  setLoadingState: (loading: boolean) => void
+  setLoadingState: (loading: boolean) => void,
 ): Promise<string | null> {
   const { productName, productDetails, productCategory } = form.getValues();
   if (!productName && !productDetails?.description && !productCategory) {
-    toast({ title: "Input Required", description: "Please provide product name, description, or category to suggest specifications.", variant: "destructive" });
+    toast({
+      title: "Input Required",
+      description:
+        "Please provide product name, description, or category to suggest specifications.",
+      variant: "destructive",
+    });
     setLoadingState(false);
     return null;
   }
@@ -253,7 +300,7 @@ export async function handleSuggestSpecificationsAI(
     setLoadingState,
     successToast: {
       title: "Specifications Suggested!",
-      description: `AI suggested specifications for "${productName || 'the product'}".`,
+      description: `AI suggested specifications for "${productName || "the product"}".`,
       variant: "default",
     },
     errorTitle: "Error Suggesting Specifications",
@@ -264,7 +311,7 @@ export async function handleSuggestSpecificationsAI(
 export async function handleSuggestCustomAttributesAI(
   form: UseFormReturn<ProductFormData>,
   toast: ToastFn,
-  setLoadingState: (loading: boolean) => void
+  setLoadingState: (loading: boolean) => void,
 ): Promise<CustomAttribute[] | null> {
   const { productName, productCategory, productDetails } = form.getValues();
 
@@ -308,11 +355,16 @@ export async function handleSuggestCustomAttributesAI(
 export async function handleSuggestCbamIdentifierAI(
   form: UseFormReturn<ProductFormData>,
   toast: ToastFn,
-  setLoadingState: (loading: boolean) => void
+  setLoadingState: (loading: boolean) => void,
 ): Promise<SuggestCbamIdentifierOutput | null> {
   const { productCategory, productDetails } = form.getValues();
   if (!productCategory) {
-    toast({ title: "Category Required", description: "Please provide a product category to suggest a CBAM identifier.", variant: "destructive" });
+    toast({
+      title: "Category Required",
+      description:
+        "Please provide a product category to suggest a CBAM identifier.",
+      variant: "destructive",
+    });
     setLoadingState(false);
     return null;
   }
@@ -338,13 +390,14 @@ export async function handleSuggestCbamIdentifierAI(
 export async function handleSuggestImageHintsAI(
   form: UseFormReturn<ProductFormData>,
   toast: ToastFn,
-  setLoadingState: (loading: boolean) => void
+  setLoadingState: (loading: boolean) => void,
 ): Promise<string[] | null> {
   const { productName, productCategory } = form.getValues();
   if (!productName && !productCategory) {
     toast({
       title: "Input Required",
-      description: "Please provide product name or category to suggest image hints.",
+      description:
+        "Please provide product name or category to suggest image hints.",
       variant: "destructive",
     });
     setLoadingState(false);

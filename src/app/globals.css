@@ -40,7 +40,7 @@ h6 {
 
     --destructive: 0 72% 51%; /* #DC2626 - Error Red */
     --destructive-foreground: 0 0% 100%; /* #FFFFFF - Pure White */
-    
+
     --warning: 18 100% 60%; /* #FF6B35 - Alert Orange */
     --warning-foreground: 0 0% 100%; /* #FFFFFF - Pure White */
 
@@ -50,7 +50,7 @@ h6 {
     --border: 220 13% 84%; /* #CBD5E0 - Grey 300 */
     --input: 0 0% 100%; /* #FFFFFF for input background, border will be --border */
     --ring: 197 71% 53%; /* #29ABE2 - Saturated Blue for focus rings */
-    
+
     --chart-1: 197 71% 53%; /* Saturated Blue */
     --chart-2: 180 100% 25%; /* Vibrant Teal */
     --chart-3: 263 79% 53%; /* Information Purple */
@@ -92,11 +92,11 @@ h6 {
     --muted-foreground: 220 9% 65%; /* Lighter Grey 500 */
 
     --accent: 180 100% 35%; /* Lighter Vibrant Teal #008080 for dark mode */
-    --accent-foreground: 0 0% 100%; 
+    --accent-foreground: 0 0% 100%;
 
     --destructive: 0 70% 60%; /* #EF4444 - Error Red (slightly lighter) */
     --destructive-foreground: 0 0% 100%;
-    
+
     --warning: 18 100% 65%; /* #FF8659 - Alert Orange (slightly lighter) */
     --warning-foreground: 0 0% 0%; /* Black text for contrast */
 
@@ -106,7 +106,7 @@ h6 {
     --border: 220 13% 40%; /* Darker Grey 300 */
     --input: 222 23% 25%; /* Darker input background */
     --ring: 197 71% 63%; /* Lighter Saturated Blue for focus rings */
-    
+
     /* Chart colors remain visually distinct, might need slight adjustments for dark bg */
     --chart-1: 197 71% 63%;
     --chart-2: 180 100% 35%;
@@ -118,7 +118,7 @@ h6 {
     /* Sidebar specific theme for dark mode */
     --sidebar-background: 224 23% 10%; /* Even darker than main dark bg */
     --sidebar-foreground: 210 20% 85%; /* Lighter text */
-    --sidebar-primary: 197 71% 63%; 
+    --sidebar-primary: 197 71% 63%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 222 23% 25%; /* Hover color */
     --sidebar-accent-foreground: 197 71% 73%; /* Text on hover */

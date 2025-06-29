@@ -1,4 +1,4 @@
-'use server';
+"use server";
 /**
  * @fileOverview An AI agent to suggest custom attributes for a product.
  *
@@ -7,36 +7,56 @@
  * - GenerateCustomAttributesOutput - The return type for the function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
 
 const GenerateCustomAttributesInputSchema = z.object({
-  productName: z.string().describe('The name of the product.'),
-  productCategory: z.string().optional().describe('The category of the product (e.g., Electronics, Apparel).'),
-  productDescription: z.string().optional().describe('A detailed description of the product.'),
+  productName: z.string().describe("The name of the product."),
+  productCategory: z
+    .string()
+    .optional()
+    .describe("The category of the product (e.g., Electronics, Apparel)."),
+  productDescription: z
+    .string()
+    .optional()
+    .describe("A detailed description of the product."),
 });
-export type GenerateCustomAttributesInput = z.infer<typeof GenerateCustomAttributesInputSchema>;
+export type GenerateCustomAttributesInput = z.infer<
+  typeof GenerateCustomAttributesInputSchema
+>;
 
 const CustomAttributeSchema = z.object({
-    key: z.string().describe("The key of the custom attribute (e.g., 'Capacity (ml)', 'Compatible Laptop Size')."),
-    value: z.string().describe("The value of the custom attribute (e.g., '350', '13-inch')."),
+  key: z
+    .string()
+    .describe(
+      "The key of the custom attribute (e.g., 'Capacity (ml)', 'Compatible Laptop Size').",
+    ),
+  value: z
+    .string()
+    .describe("The value of the custom attribute (e.g., '350', '13-inch')."),
 });
 
 const GenerateCustomAttributesOutputSchema = z.object({
-  customAttributes: z.array(CustomAttributeSchema).describe('An array of 2-3 suggested custom attributes, each with a key and value.'),
+  customAttributes: z
+    .array(CustomAttributeSchema)
+    .describe(
+      "An array of 2-3 suggested custom attributes, each with a key and value.",
+    ),
 });
-export type GenerateCustomAttributesOutput = z.infer<typeof GenerateCustomAttributesOutputSchema>;
+export type GenerateCustomAttributesOutput = z.infer<
+  typeof GenerateCustomAttributesOutputSchema
+>;
 
 export async function generateCustomAttributes(
-  input: GenerateCustomAttributesInput
+  input: GenerateCustomAttributesInput,
 ): Promise<GenerateCustomAttributesOutput> {
   return generateCustomAttributesFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'generateCustomAttributesPrompt',
-  input: {schema: GenerateCustomAttributesInputSchema},
-  output: {schema: GenerateCustomAttributesOutputSchema},
+  name: "generateCustomAttributesPrompt",
+  input: { schema: GenerateCustomAttributesInputSchema },
+  output: { schema: GenerateCustomAttributesOutputSchema },
   prompt: `You are a product data specialist. Based on the product's name, category, and description, suggest 2-3 relevant custom attributes (key-value pairs) that would be useful for further describing this product.
 These attributes should be specific and not typically covered by standard fields like GTIN, manufacturer, or primary materials (which are handled elsewhere).
 Focus on unique characteristics or common secondary specifications.
@@ -59,12 +79,12 @@ Example for a "Recycled PET Water Bottle":
 
 const generateCustomAttributesFlow = ai.defineFlow(
   {
-    name: 'generateCustomAttributesFlow',
+    name: "generateCustomAttributesFlow",
     inputSchema: GenerateCustomAttributesInputSchema,
     outputSchema: GenerateCustomAttributesOutputSchema,
   },
   async (input) => {
-    const {output} = await prompt(input);
+    const { output } = await prompt(input);
     return output || { customAttributes: [] }; // Ensure an empty array if output is null/undefined
-  }
+  },
 );

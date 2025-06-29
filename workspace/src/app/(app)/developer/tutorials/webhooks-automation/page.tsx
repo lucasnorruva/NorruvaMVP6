@@ -1,11 +1,22 @@
-
 // --- File: page.tsx (Conceptual Webhooks Automation Tutorial) ---
 "use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import Link from "next/link";
-import { Webhook, Terminal, Settings, Workflow, ShieldCheck } from "lucide-react";
-import DocsPageLayout from '@/components/developer/DocsPageLayout';
+import {
+  Webhook,
+  Terminal,
+  Settings,
+  Workflow,
+  ShieldCheck,
+} from "lucide-react";
+import DocsPageLayout from "@/components/developer/DocsPageLayout";
 
 export default function WebhooksAutomationTutorialPage() {
   const conceptualWebhookHandlerCode = `
@@ -71,53 +82,110 @@ async function processEvent(event) {
     {
       title: "Introduction: Why Automate with Webhooks?",
       icon: Workflow,
-      content: "Webhooks allow your application to receive real-time notifications when specific events occur in the Norruva DPP platform (e.g., a DPP's status changes, a compliance check completes). This is more efficient than constantly polling the API for updates and enables you to build reactive, automated workflows."
+      content:
+        "Webhooks allow your application to receive real-time notifications when specific events occur in the Norruva DPP platform (e.g., a DPP's status changes, a compliance check completes). This is more efficient than constantly polling the API for updates and enables you to build reactive, automated workflows.",
     },
     {
       title: "Prerequisites",
       icon: Settings,
       content: (
         <ul className="list-disc list-inside space-y-1 text-sm">
-          <li>A publicly accessible HTTPS endpoint on your server to receive webhook POST requests.</li>
           <li>
-            A webhook configured in the Norruva Developer Portal pointing to your endpoint, subscribed to the desired event types. Refer to the{' '}
-            <Link href="/developer/docs/webhooks-guide" className="text-primary hover:underline">Webhooks Guide</Link> for setup details.
+            A publicly accessible HTTPS endpoint on your server to receive
+            webhook POST requests.
           </li>
-          <li>Your webhook signing secret (obtained from the Developer Portal when configuring the webhook) for verifying request authenticity.</li>
+          <li>
+            A webhook configured in the Norruva Developer Portal pointing to
+            your endpoint, subscribed to the desired event types. Refer to the{" "}
+            <Link
+              href="/developer/docs/webhooks-guide"
+              className="text-primary hover:underline"
+            >
+              Webhooks Guide
+            </Link>{" "}
+            for setup details.
+          </li>
+          <li>
+            Your webhook signing secret (obtained from the Developer Portal when
+            configuring the webhook) for verifying request authenticity.
+          </li>
         </ul>
-      )
+      ),
     },
     {
       title: "Step 1: Setting Up Your Webhook Receiver Endpoint",
       icon: Terminal,
       content: (
         <>
-          <p className="text-sm mb-2">Your application needs an HTTP endpoint that accepts POST requests with a JSON payload. Below is a conceptual Node.js/Express example:</p>
-          <pre className="bg-muted p-3 rounded-md text-xs overflow-x-auto max-h-96"><code className="language-javascript">{conceptualWebhookHandlerCode.trim()}</code></pre>
+          <p className="text-sm mb-2">
+            Your application needs an HTTP endpoint that accepts POST requests
+            with a JSON payload. Below is a conceptual Node.js/Express example:
+          </p>
+          <pre className="bg-muted p-3 rounded-md text-xs overflow-x-auto max-h-96">
+            <code className="language-javascript">
+              {conceptualWebhookHandlerCode.trim()}
+            </code>
+          </pre>
         </>
-      )
+      ),
     },
     {
       title: "Step 2: Verifying Webhook Signatures",
       icon: ShieldCheck,
       content: (
         <p className="text-sm">
-          It's crucial to verify that incoming webhook requests originate from Norruva to prevent malicious attacks. Each request will include a signature in the <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">X-Norruva-Signature</code> header. Use your webhook's signing secret to compute an HMAC SHA256 hash of the timestamp and raw request body, then compare it to the provided signature. 
-          Detailed instructions are in the <Link href="/developer/docs/webhooks-guide#securing-your-webhooks" className="text-primary hover:underline">Webhooks Guide - Securing Your Webhooks</Link> section.
-          The code snippet above includes a commented-out conceptual verification.
+          It's crucial to verify that incoming webhook requests originate from
+          Norruva to prevent malicious attacks. Each request will include a
+          signature in the{" "}
+          <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+            X-Norruva-Signature
+          </code>{" "}
+          header. Use your webhook's signing secret to compute an HMAC SHA256
+          hash of the timestamp and raw request body, then compare it to the
+          provided signature. Detailed instructions are in the{" "}
+          <Link
+            href="/developer/docs/webhooks-guide#securing-your-webhooks"
+            className="text-primary hover:underline"
+          >
+            Webhooks Guide - Securing Your Webhooks
+          </Link>{" "}
+          section. The code snippet above includes a commented-out conceptual
+          verification.
         </p>
-      )
+      ),
     },
     {
       title: "Step 3: Parsing the Event Payload & Responding",
       icon: Workflow,
       content: (
         <p className="text-sm">
-          Once verified, parse the JSON payload from the request body. The payload structure typically includes <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">eventId</code>, <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">eventType</code>, <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">timestamp</code>, and a <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">data</code> object specific to the event.
-          <br/><br/>
-          Your endpoint should <strong>respond quickly with a 2xx HTTP status code</strong> (e.g., 200 OK) to acknowledge receipt. Process the event data asynchronously (e.g., using a message queue or background job) to avoid timeouts if processing takes time.
+          Once verified, parse the JSON payload from the request body. The
+          payload structure typically includes{" "}
+          <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+            eventId
+          </code>
+          ,{" "}
+          <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+            eventType
+          </code>
+          ,{" "}
+          <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+            timestamp
+          </code>
+          , and a{" "}
+          <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+            data
+          </code>{" "}
+          object specific to the event.
+          <br />
+          <br />
+          Your endpoint should{" "}
+          <strong>respond quickly with a 2xx HTTP status code</strong> (e.g.,
+          200 OK) to acknowledge receipt. Process the event data asynchronously
+          (e.g., using a message queue or background job) to avoid timeouts if
+          processing takes time.
         </p>
-      )
+      ),
     },
     {
       title: "Step 4: Implementing Business Logic",
@@ -125,29 +193,69 @@ async function processEvent(event) {
       content: (
         <>
           <p className="text-sm">
-            Based on the <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">eventType</code>, implement the desired automation in your system.
-            <br/><strong>Examples:</strong>
+            Based on the{" "}
+            <code className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">
+              eventType
+            </code>
+            , implement the desired automation in your system.
+            <br />
+            <strong>Examples:</strong>
           </p>
           <ul className="list-disc list-inside space-y-1 text-sm text-muted-foreground ml-4 mt-2">
-              <li><code className="bg-muted px-1 rounded-sm">dpp.status.updated</code>: Update the product status in your internal database, trigger inventory checks, or update marketing materials.</li>
-              <li><code className="bg-muted px-1 rounded-sm">compliance.status.updated</code>: Notify your compliance team, log the change for auditing, or automatically flag products for review.</li>
-              <li><code className="bg-muted px-1 rounded-sm">ebsi.verification.completed</code>: Update internal records with the verification outcome, potentially trigger workflows for verified products.</li>
+            <li>
+              <code className="bg-muted px-1 rounded-sm">
+                dpp.status.updated
+              </code>
+              : Update the product status in your internal database, trigger
+              inventory checks, or update marketing materials.
+            </li>
+            <li>
+              <code className="bg-muted px-1 rounded-sm">
+                compliance.status.updated
+              </code>
+              : Notify your compliance team, log the change for auditing, or
+              automatically flag products for review.
+            </li>
+            <li>
+              <code className="bg-muted px-1 rounded-sm">
+                ebsi.verification.completed
+              </code>
+              : Update internal records with the verification outcome,
+              potentially trigger workflows for verified products.
+            </li>
           </ul>
         </>
-      )
+      ),
     },
     {
       title: "Step 5: Best Practices & Error Handling",
       icon: Settings,
       content: (
         <ul className="list-disc list-inside space-y-1 text-sm">
-          <li><strong>Idempotency:</strong> Design your event processing to be idempotent. This means processing the same event multiple times should not have unintended side effects, as network issues might cause retries from Norruva.</li>
-          <li><strong>Asynchronous Processing:</strong> Acknowledge webhook receipt immediately (200 OK) and process the payload in a background job or queue.</li>
-          <li><strong>Error Handling & Logging:</strong> Log all incoming webhooks and any errors during processing. Implement retry mechanisms in your system if downstream processing fails.</li>
-          <li><strong>Monitor Endpoint Health:</strong> Ensure your webhook receiver endpoint is robust and monitored for availability and performance.</li>
+          <li>
+            <strong>Idempotency:</strong> Design your event processing to be
+            idempotent. This means processing the same event multiple times
+            should not have unintended side effects, as network issues might
+            cause retries from Norruva.
+          </li>
+          <li>
+            <strong>Asynchronous Processing:</strong> Acknowledge webhook
+            receipt immediately (200 OK) and process the payload in a background
+            job or queue.
+          </li>
+          <li>
+            <strong>Error Handling & Logging:</strong> Log all incoming webhooks
+            and any errors during processing. Implement retry mechanisms in your
+            system if downstream processing fails.
+          </li>
+          <li>
+            <strong>Monitor Endpoint Health:</strong> Ensure your webhook
+            receiver endpoint is robust and monitored for availability and
+            performance.
+          </li>
         </ul>
-      )
-    }
+      ),
+    },
   ];
 
   return (
@@ -169,24 +277,40 @@ async function processEvent(event) {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {typeof step.content === 'string' ? <p className="text-sm text-muted-foreground">{step.content}</p> : step.content}
+              {typeof step.content === "string" ? (
+                <p className="text-sm text-muted-foreground">{step.content}</p>
+              ) : (
+                step.content
+              )}
             </CardContent>
           </Card>
         ))}
       </div>
-       <Card className="mt-8 shadow-lg">
+      <Card className="mt-8 shadow-lg">
         <CardHeader>
           <CardTitle>Next Steps</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-sm">
-            After understanding these concepts, refer to the specific event types and payload structures in the{' '}
-            <Link href="/developer/docs/api-reference" className="text-primary hover:underline">API Reference</Link> and the detailed security measures in the{' '}
-            <Link href="/developer/docs/webhooks-guide" className="text-primary hover:underline">Webhooks Guide</Link> to build a robust webhook integration.
+            After understanding these concepts, refer to the specific event
+            types and payload structures in the{" "}
+            <Link
+              href="/developer/docs/api-reference"
+              className="text-primary hover:underline"
+            >
+              API Reference
+            </Link>{" "}
+            and the detailed security measures in the{" "}
+            <Link
+              href="/developer/docs/webhooks-guide"
+              className="text-primary hover:underline"
+            >
+              Webhooks Guide
+            </Link>{" "}
+            to build a robust webhook integration.
           </p>
         </CardContent>
       </Card>
     </DocsPageLayout>
   );
 }
-

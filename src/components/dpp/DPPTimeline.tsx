@@ -1,6 +1,6 @@
 // src/components/dpp/DPPTimeline.tsx
 
-import React from 'react';
+import React from "react";
 
 // Define a type for the events (adjust based on your actual event structure)
 interface DppEvent {
@@ -63,7 +63,7 @@ const DPPTimeline: React.FC<DPPTimelineProps> = ({ events }) => {
           margin-bottom: 0;
         }
         .timeline-item::before {
-          content: '';
+          content: "";
           position: absolute;
           left: -31px;
           top: 5px;

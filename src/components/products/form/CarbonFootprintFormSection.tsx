@@ -1,4 +1,3 @@
-
 // --- File: CarbonFootprintFormSection.tsx ---
 // Description: Form section component for general product carbon footprint details.
 "use client";
@@ -35,7 +34,8 @@ export default function CarbonFootprintFormSection({
   return (
     <div className="space-y-6 pt-4">
       <FormDescription>
-        Provide details about the product's overall carbon footprint. This is separate from battery-specific carbon footprint.
+        Provide details about the product's overall carbon footprint. This is
+        separate from battery-specific carbon footprint.
       </FormDescription>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -46,15 +46,23 @@ export default function CarbonFootprintFormSection({
             <FormItem>
               <FormLabel className="flex items-center">
                 Total Value
-                <AiIndicator fieldOrigin={initialData?.productDetailsOrigin?.carbonFootprintOrigin?.valueOrigin} fieldName="CF Value" />
+                <AiIndicator
+                  fieldOrigin={
+                    initialData?.productDetailsOrigin?.carbonFootprintOrigin
+                      ?.valueOrigin
+                  }
+                  fieldName="CF Value"
+                />
               </FormLabel>
               <FormControl>
                 <Input
                   type="number"
                   placeholder="e.g., 150.5"
                   {...field}
-                  onChange={e => {
-                    field.onChange(e.target.value === '' ? null : parseFloat(e.target.value));
+                  onChange={(e) => {
+                    field.onChange(
+                      e.target.value === "" ? null : parseFloat(e.target.value),
+                    );
                     form.setValue(`${originPath}.valueOrigin` as any, "manual");
                   }}
                   value={field.value ?? ""}
@@ -70,7 +78,13 @@ export default function CarbonFootprintFormSection({
           render={({ field }) => (
             <FormItem>
               <FormLabel>Unit</FormLabel>
-              <FormControl><Input placeholder="e.g., kg CO2e/unit, kg CO2e/functional_unit" {...field} value={field.value || ""} /></FormControl>
+              <FormControl>
+                <Input
+                  placeholder="e.g., kg CO2e/unit, kg CO2e/functional_unit"
+                  {...field}
+                  value={field.value || ""}
+                />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
@@ -83,15 +97,25 @@ export default function CarbonFootprintFormSection({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Calculation Method</FormLabel>
-            <FormControl><Input placeholder="e.g., ISO 14067, GHG Protocol Product Standard, PEFCR" {...field} value={field.value || ""} /></FormControl>
-            <FormDescription>Specify the standard or methodology used for calculation.</FormDescription>
+            <FormControl>
+              <Input
+                placeholder="e.g., ISO 14067, GHG Protocol Product Standard, PEFCR"
+                {...field}
+                value={field.value || ""}
+              />
+            </FormControl>
+            <FormDescription>
+              Specify the standard or methodology used for calculation.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
       />
 
       <div className="p-4 border rounded-md space-y-3 bg-muted/30">
-        <h4 className="font-medium text-md text-primary">GHG Emissions by Scope (Optional)</h4>
+        <h4 className="font-medium text-md text-primary">
+          GHG Emissions by Scope (Optional)
+        </h4>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <FormField
             control={form.control}
@@ -99,8 +123,24 @@ export default function CarbonFootprintFormSection({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Scope 1 Emissions</FormLabel>
-                <FormControl><Input type="number" placeholder="tCO2e" {...field} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} value={field.value ?? ""} /></FormControl>
-                <FormDescription className="text-xs">Direct emissions</FormDescription>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="tCO2e"
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === ""
+                          ? null
+                          : parseFloat(e.target.value),
+                      )
+                    }
+                    value={field.value ?? ""}
+                  />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  Direct emissions
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -111,8 +151,24 @@ export default function CarbonFootprintFormSection({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Scope 2 Emissions</FormLabel>
-                <FormControl><Input type="number" placeholder="tCO2e" {...field} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} value={field.value ?? ""} /></FormControl>
-                <FormDescription className="text-xs">Indirect from purchased energy</FormDescription>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="tCO2e"
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === ""
+                          ? null
+                          : parseFloat(e.target.value),
+                      )
+                    }
+                    value={field.value ?? ""}
+                  />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  Indirect from purchased energy
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -123,8 +179,24 @@ export default function CarbonFootprintFormSection({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Scope 3 Emissions</FormLabel>
-                <FormControl><Input type="number" placeholder="tCO2e" {...field} onChange={e => field.onChange(e.target.value === '' ? null : parseFloat(e.target.value))} value={field.value ?? ""} /></FormControl>
-                <FormDescription className="text-xs">Other indirect value chain emissions</FormDescription>
+                <FormControl>
+                  <Input
+                    type="number"
+                    placeholder="tCO2e"
+                    {...field}
+                    onChange={(e) =>
+                      field.onChange(
+                        e.target.value === ""
+                          ? null
+                          : parseFloat(e.target.value),
+                      )
+                    }
+                    value={field.value ?? ""}
+                  />
+                </FormControl>
+                <FormDescription className="text-xs">
+                  Other indirect value chain emissions
+                </FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -138,7 +210,14 @@ export default function CarbonFootprintFormSection({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Primary Data Source(s)</FormLabel>
-            <FormControl><Textarea placeholder="Describe the primary sources of data used for the calculation (e.g., supplier data, Ecoinvent, internal measurements)." {...field} value={field.value || ""} rows={2} /></FormControl>
+            <FormControl>
+              <Textarea
+                placeholder="Describe the primary sources of data used for the calculation (e.g., supplier data, Ecoinvent, internal measurements)."
+                {...field}
+                value={field.value || ""}
+                rows={2}
+              />
+            </FormControl>
             <FormMessage />
           </FormItem>
         )}
@@ -150,8 +229,16 @@ export default function CarbonFootprintFormSection({
         render={({ field }) => (
           <FormItem>
             <FormLabel>Carbon Footprint VC ID (Optional)</FormLabel>
-            <FormControl><Input placeholder="Verifiable Credential ID for this carbon footprint data" {...field} value={field.value || ""} /></FormControl>
-            <FormDescription>If this data is backed by a Verifiable Credential, provide its ID.</FormDescription>
+            <FormControl>
+              <Input
+                placeholder="Verifiable Credential ID for this carbon footprint data"
+                {...field}
+                value={field.value || ""}
+              />
+            </FormControl>
+            <FormDescription>
+              If this data is backed by a Verifiable Credential, provide its ID.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}

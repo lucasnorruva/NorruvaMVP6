@@ -1,4 +1,3 @@
-
 # Norruva Digital Product Passport (DPP) - Concept Application
 
 Welcome to the Norruva Digital Product Passport (DPP) concept application! This project is a Next.js-based platform designed to explore and prototype features for managing Digital Product Passports, aligning with EU regulations and leveraging AI for enhanced functionality.
@@ -70,10 +69,10 @@ As of the current version, the following key areas and features have been protot
 - **Role-Based Dashboard:** Different views and actions based on user roles (Admin, Manufacturer, Supplier, Retailer, Recycler, Verifier, Service Provider).
 - **DPP Live Dashboard:** A view for public-facing DPPs, with filtering and AI summary generation.
 - **Product Management:**
-    - Listing existing products with advanced filtering and sorting.
-    - Adding new products via manual entry or AI-assisted document extraction, including category-specific fields (Textiles, Construction) and on-chain state management.
-    - Viewing detailed product information on the individual product detail page, including a new "History" tab.
-    - Debounced search filtering for smoother performance on large datasets.
+  - Listing existing products with advanced filtering and sorting.
+  - Adding new products via manual entry or AI-assisted document extraction, including category-specific fields (Textiles, Construction) and on-chain state management.
+  - Viewing detailed product information on the individual product detail page, including a new "History" tab.
+  - Debounced search filtering for smoother performance on large datasets.
 - **AI Compliance Co-Pilot:** An AI assistant to answer questions about EU DPP regulations.
 - **Compliance Pathways:** Step-by-step guidance for specific regulations (e.g., EU Battery Regulation, ESPR, CSRD, SCIP).
 - **GDPR Management Page:** Mock interface for consent and data subject rights.
@@ -81,8 +80,8 @@ As of the current version, the following key areas and features have been protot
 - **Customs & Compliance Dashboard:** A specialized view for customs-related product tracking and compliance alerts.
 - **Service Provider Dashboard:** A conceptual dashboard for service technicians to manage service jobs and access product technical data.
 - **Supply Chain Management:**
-    - Managing a list of suppliers.
-    - Linking suppliers to products (viewable on the product detail page's "Supply Chain" tab), with conceptual private attestation viewing.
+  - Managing a list of suppliers.
+  - Linking suppliers to products (viewable on the product detail page's "Supply Chain" tab), with conceptual private attestation viewing.
 - **Developer Portal:** Mock portal with API key management, interactive playground, and conceptual documentation. The canonical OpenAPI specification lives in `openapi.yaml` and is served at `/openapi.yaml` after being copied to `public/openapi.yaml` during the build process.
 - **Settings Page:** Basic user profile, notifications, and organization settings.
 
@@ -231,17 +230,19 @@ If the job ID is unknown a 404 error is returned:
 
 1.  **Start the Genkit development server (for AI features):**
     Open a terminal and run:
+
     ```bash
     npm run genkit:dev
     ```
+
     This typically starts on `http://localhost:4000`.
 
 2.  **Start the Next.js development server:**
     Open another terminal and run:
-    ```bash
-    npm run dev
-    ```
-This will start the Next.js application, usually on `http://localhost:9002` (as configured in `package.json`).
+    `bash
+npm run dev
+`
+    This will start the Next.js application, usually on `http://localhost:9002` (as configured in `package.json`).
 
 Open `http://localhost:9002` in your browser to view the application.
 
@@ -266,7 +267,6 @@ The suite now includes API route tests located in `src/app/api/__tests__`. These
 cover common success and failure cases for several endpoints including DPP
 creation, QR validation, anchoring, and ownership transfer.
 
-
 Use `npm run test:watch` during development to re-run tests on file changes.
 
 ### Authentication
@@ -290,7 +290,7 @@ VALID_API_KEYS=SANDBOX_KEY_123,PROD_KEY_456
 This error may appear when using the "View Public Passport" link in a Cloud Workstations environment. Verify that:
 
 1. The workstation `firebase-studio-1749131649534` (cluster `workstation-cluster-9`) exists and is running in project `510861787045`.
-2. Your Google account has the `workstations.workstations.use` IAM permission (e.g., via the *Workstations User* role) on that workstation.
+2. Your Google account has the `workstations.workstations.use` IAM permission (e.g., via the _Workstations User_ role) on that workstation.
 
 Without this permission Google Cloud cannot generate the access token required to open the application.
 
@@ -348,18 +348,22 @@ npm run deploy:contracts
 The `npm run deploy:contracts` command specifically deploys the `DPPToken`. To deploy the other core contracts for a complete conceptual DAO setup, follow this order. Ensure you are in the `workspace/` directory for all commands.
 
 1.  **Deploy NORUToken:**
+
     ```bash
     # Ensure ALCHEMY_API_KEY and PRIVATE_KEY are set in workspace/.env for your chosen network
     npx hardhat run scripts/deploy_noru_token.ts --network <your_network_name>
     ```
+
     (Replace `<your_network_name>` with, e.g., `sepolia` or `localhost`. This will be read from `workspace/hardhat.config.ts`).
     Note the deployed `NORUToken` address from the console output. You **must** set this in your `workspace/.env` file as `NORU_TOKEN_ADDRESS` for subsequent steps.
 
 2.  **Deploy TimelockController:**
+
     ```bash
     # Ensure ALCHEMY_API_KEY and PRIVATE_KEY are set
     npx hardhat run scripts/deploy_timelock_controller.ts --network <your_network_name>
     ```
+
     Note the deployed `TimelockController` address from the console output. You **must** set this in your `workspace/.env` file as `TIMELOCK_CONTROLLER_ADDRESS` for the next step.
 
 3.  **Deploy DPPGovernor:**
@@ -381,6 +385,7 @@ The `npm run deploy:contracts` command specifically deploys the `DPPToken`. To d
 ### Upgrading Contracts
 
 To upgrade an existing UUPS proxy (e.g., `DPPToken`, `NORUToken`, `DPPGovernor`):
+
 1.  Create a new version of the contract (e.g., `DPPTokenV2.sol`).
 2.  Set the `PROXY_ADDRESS` environment variable in your `workspace/.env` file to the address of the deployed proxy you want to upgrade.
 3.  Set the `UPGRADE_CONTRACT_NAME` environment variable to the base name of the contract being upgraded (e.g., `DPPToken`). The script will look for `<UPGRADE_CONTRACT_NAME>V2`.
@@ -389,13 +394,14 @@ To upgrade an existing UUPS proxy (e.g., `DPPToken`, `NORUToken`, `DPPGovernor`)
     # Ensure you are in the workspace/ directory
     # Ensure .env contains PROXY_ADDRESS and UPGRADE_CONTRACT_NAME
     # Ensure ALCHEMY_API_KEY and PRIVATE_KEY are set for the target network
-    npm run upgrade:contracts 
+    npm run upgrade:contracts
     ```
     (This command runs `workspace/scripts/upgrade.ts` by default, configured for the specified network).
 
 ### Foundry (Alternative)
 
 If Foundry is installed, you can also use its tools for building and testing (from the `workspace/` directory):
+
 ```bash
 forge build
 forge test
@@ -408,4 +414,3 @@ This application is being developed within the Firebase Studio environment, an A
 ---
 
 This README will be updated as the project evolves.
-    

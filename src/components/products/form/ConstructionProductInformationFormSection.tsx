@@ -21,25 +21,36 @@ interface ConstructionProductInformationFormSectionProps {
   form: UseFormReturn<ProductFormData>;
 }
 
-export default function ConstructionProductInformationFormSection({ 
-  form 
+export default function ConstructionProductInformationFormSection({
+  form,
 }: ConstructionProductInformationFormSectionProps) {
-  const essentialCharacteristics = form.watch("constructionProductInformation.essentialCharacteristics") || [];
+  const essentialCharacteristics =
+    form.watch("constructionProductInformation.essentialCharacteristics") || [];
 
   const addEssentialCharacteristic = () => {
-    const currentCharacteristics = form.getValues("constructionProductInformation.essentialCharacteristics") || [];
-    form.setValue("constructionProductInformation.essentialCharacteristics", [
-      ...currentCharacteristics,
-      { characteristicName: "", value: "", unit: "", testMethod: "" }
-    ], { shouldValidate: true });
+    const currentCharacteristics =
+      form.getValues(
+        "constructionProductInformation.essentialCharacteristics",
+      ) || [];
+    form.setValue(
+      "constructionProductInformation.essentialCharacteristics",
+      [
+        ...currentCharacteristics,
+        { characteristicName: "", value: "", unit: "", testMethod: "" },
+      ],
+      { shouldValidate: true },
+    );
   };
 
   const removeEssentialCharacteristic = (index: number) => {
-    const currentCharacteristics = form.getValues("constructionProductInformation.essentialCharacteristics") || [];
+    const currentCharacteristics =
+      form.getValues(
+        "constructionProductInformation.essentialCharacteristics",
+      ) || [];
     form.setValue(
       "constructionProductInformation.essentialCharacteristics",
       currentCharacteristics.filter((_, i) => i !== index),
-      { shouldValidate: true }
+      { shouldValidate: true },
     );
   };
 
@@ -69,14 +80,15 @@ export default function ConstructionProductInformationFormSection({
           <FormItem>
             <FormLabel>CE Marking Details URL</FormLabel>
             <FormControl>
-              <Input 
-                type="url" 
-                placeholder="https://example.com/ce-marking-details" 
-                {...field} 
+              <Input
+                type="url"
+                placeholder="https://example.com/ce-marking-details"
+                {...field}
               />
             </FormControl>
             <FormDescription>
-              Link to detailed CE marking information and conformity documentation
+              Link to detailed CE marking information and conformity
+              documentation
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -90,14 +102,15 @@ export default function ConstructionProductInformationFormSection({
           <FormItem>
             <FormLabel>Intended Use Description</FormLabel>
             <FormControl>
-              <Textarea 
+              <Textarea
                 placeholder="Describe the intended use of this construction product..."
                 className="min-h-[100px]"
-                {...field} 
+                {...field}
               />
             </FormControl>
             <FormDescription>
-              Detailed description of how this product is intended to be used in construction
+              Detailed description of how this product is intended to be used in
+              construction
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -109,7 +122,8 @@ export default function ConstructionProductInformationFormSection({
           <div>
             <h4 className="text-sm font-medium">Essential Characteristics</h4>
             <p className="text-sm text-muted-foreground">
-              Define the essential characteristics and their declared performance values
+              Define the essential characteristics and their declared
+              performance values
             </p>
           </div>
           <Button
@@ -138,9 +152,9 @@ export default function ConstructionProductInformationFormSection({
                             <FormItem>
                               <FormLabel>Characteristic Name</FormLabel>
                               <FormControl>
-                                <Input 
-                                  placeholder="e.g., Compressive strength, Fire resistance" 
-                                  {...field} 
+                                <Input
+                                  placeholder="e.g., Compressive strength, Fire resistance"
+                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -156,9 +170,9 @@ export default function ConstructionProductInformationFormSection({
                               <FormItem>
                                 <FormLabel>Value</FormLabel>
                                 <FormControl>
-                                  <Input 
-                                    placeholder="e.g., 25, Class A1" 
-                                    {...field} 
+                                  <Input
+                                    placeholder="e.g., 25, Class A1"
+                                    {...field}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -173,9 +187,9 @@ export default function ConstructionProductInformationFormSection({
                               <FormItem>
                                 <FormLabel>Unit (Optional)</FormLabel>
                                 <FormControl>
-                                  <Input 
-                                    placeholder="e.g., N/mm², min" 
-                                    {...field} 
+                                  <Input
+                                    placeholder="e.g., N/mm², min"
+                                    {...field}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -190,9 +204,9 @@ export default function ConstructionProductInformationFormSection({
                               <FormItem>
                                 <FormLabel>Test Method (Optional)</FormLabel>
                                 <FormControl>
-                                  <Input 
-                                    placeholder="e.g., EN 12390-3" 
-                                    {...field} 
+                                  <Input
+                                    placeholder="e.g., EN 12390-3"
+                                    {...field}
                                   />
                                 </FormControl>
                                 <FormMessage />
@@ -226,7 +240,8 @@ export default function ConstructionProductInformationFormSection({
               <p className="text-sm text-muted-foreground">
                 No essential characteristics defined yet.
                 <br />
-                Click "Add Characteristic" to define performance characteristics.
+                Click "Add Characteristic" to define performance
+                characteristics.
               </p>
             </CardContent>
           </Card>

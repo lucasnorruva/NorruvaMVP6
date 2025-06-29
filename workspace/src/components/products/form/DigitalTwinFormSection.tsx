@@ -1,4 +1,3 @@
-
 // --- File: DigitalTwinFormSection.tsx ---
 // Description: Form section component for conceptual Digital Twin information.
 "use client";
@@ -31,8 +30,9 @@ export default function DigitalTwinFormSection({
   return (
     <div className="space-y-6 pt-4">
       <FormDescription>
-        Provide conceptual information about any associated Digital Twin for this product.
-        This section is for illustrative purposes as actual Digital Twin integration is not yet implemented.
+        Provide conceptual information about any associated Digital Twin for
+        this product. This section is for illustrative purposes as actual
+        Digital Twin integration is not yet implemented.
       </FormDescription>
 
       <FormField
@@ -42,18 +42,32 @@ export default function DigitalTwinFormSection({
           <FormItem>
             <FormLabel className="flex items-center">
               Digital Twin URI (Conceptual)
-              <AiIndicator fieldOrigin={initialData?.productDetailsOrigin?.digitalTwinOrigin?.uriOrigin} fieldName="Digital Twin URI" />
+              <AiIndicator
+                fieldOrigin={
+                  initialData?.productDetailsOrigin?.digitalTwinOrigin
+                    ?.uriOrigin
+                }
+                fieldName="Digital Twin URI"
+              />
             </FormLabel>
             <FormControl>
-              <Input 
-                type="url" 
-                placeholder="https://example.com/digital-twin/product-xyz" 
-                {...field} 
+              <Input
+                type="url"
+                placeholder="https://example.com/digital-twin/product-xyz"
+                {...field}
                 value={field.value || ""}
-                onChange={(e) => { field.onChange(e); form.setValue("productDetailsOrigin.digitalTwinOrigin.uriOrigin" as any, "manual"); }}
+                onChange={(e) => {
+                  field.onChange(e);
+                  form.setValue(
+                    "productDetailsOrigin.digitalTwinOrigin.uriOrigin" as any,
+                    "manual",
+                  );
+                }}
               />
             </FormControl>
-            <FormDescription>A URL pointing to the Digital Twin platform or specific instance.</FormDescription>
+            <FormDescription>
+              A URL pointing to the Digital Twin platform or specific instance.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -66,23 +80,37 @@ export default function DigitalTwinFormSection({
           <FormItem>
             <FormLabel className="flex items-center">
               Sensor Data Endpoint (Conceptual)
-              <AiIndicator fieldOrigin={initialData?.productDetailsOrigin?.digitalTwinOrigin?.sensorDataEndpointOrigin} fieldName="Sensor Data Endpoint" />
+              <AiIndicator
+                fieldOrigin={
+                  initialData?.productDetailsOrigin?.digitalTwinOrigin
+                    ?.sensorDataEndpointOrigin
+                }
+                fieldName="Sensor Data Endpoint"
+              />
             </FormLabel>
             <FormControl>
-              <Input 
-                type="url" 
-                placeholder="https://api.example.com/digital-twin/product-xyz/sensors" 
-                {...field} 
+              <Input
+                type="url"
+                placeholder="https://api.example.com/digital-twin/product-xyz/sensors"
+                {...field}
                 value={field.value || ""}
-                onChange={(e) => { field.onChange(e); form.setValue("productDetailsOrigin.digitalTwinOrigin.sensorDataEndpointOrigin" as any, "manual"); }}
+                onChange={(e) => {
+                  field.onChange(e);
+                  form.setValue(
+                    "productDetailsOrigin.digitalTwinOrigin.sensorDataEndpointOrigin" as any,
+                    "manual",
+                  );
+                }}
               />
             </FormControl>
-            <FormDescription>An API endpoint to fetch live or recent sensor data from the twin.</FormDescription>
+            <FormDescription>
+              An API endpoint to fetch live or recent sensor data from the twin.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
       />
-      
+
       <FormField
         control={form.control}
         name="productDetails.digitalTwin.realTimeStatus"
@@ -90,18 +118,32 @@ export default function DigitalTwinFormSection({
           <FormItem>
             <FormLabel className="flex items-center">
               Real-Time Status Description (Conceptual)
-              <AiIndicator fieldOrigin={initialData?.productDetailsOrigin?.digitalTwinOrigin?.realTimeStatusOrigin} fieldName="Real-Time Status" />
+              <AiIndicator
+                fieldOrigin={
+                  initialData?.productDetailsOrigin?.digitalTwinOrigin
+                    ?.realTimeStatusOrigin
+                }
+                fieldName="Real-Time Status"
+              />
             </FormLabel>
             <FormControl>
-              <Textarea 
+              <Textarea
                 placeholder="Describe the current operational status as reported by the twin, e.g., 'Operational - Optimal performance', 'Warning - Filter Clogged', 'Offline - Scheduled Maintenance'."
                 className="min-h-[80px]"
-                {...field} 
+                {...field}
                 value={field.value || ""}
-                onChange={(e) => { field.onChange(e); form.setValue("productDetailsOrigin.digitalTwinOrigin.realTimeStatusOrigin" as any, "manual"); }}
+                onChange={(e) => {
+                  field.onChange(e);
+                  form.setValue(
+                    "productDetailsOrigin.digitalTwinOrigin.realTimeStatusOrigin" as any,
+                    "manual",
+                  );
+                }}
               />
             </FormControl>
-            <FormDescription>A textual summary of the twin's current status.</FormDescription>
+            <FormDescription>
+              A textual summary of the twin's current status.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
@@ -114,18 +156,33 @@ export default function DigitalTwinFormSection({
           <FormItem>
             <FormLabel className="flex items-center">
               Predictive Maintenance Alerts (Conceptual)
-              <AiIndicator fieldOrigin={initialData?.productDetailsOrigin?.digitalTwinOrigin?.predictiveMaintenanceAlertsOrigin} fieldName="Maintenance Alerts" />
+              <AiIndicator
+                fieldOrigin={
+                  initialData?.productDetailsOrigin?.digitalTwinOrigin
+                    ?.predictiveMaintenanceAlertsOrigin
+                }
+                fieldName="Maintenance Alerts"
+              />
             </FormLabel>
             <FormControl>
-              <Textarea 
+              <Textarea
                 placeholder="List current predictive maintenance alerts, one per line. E.g., '- Bearing A wear approaching limit (Est. failure in 500hrs)\n- Coolant level low (20%)'"
                 className="min-h-[100px]"
-                {...field} 
+                {...field}
                 value={field.value || ""}
-                onChange={(e) => { field.onChange(e); form.setValue("productDetailsOrigin.digitalTwinOrigin.predictiveMaintenanceAlertsOrigin" as any, "manual"); }}
+                onChange={(e) => {
+                  field.onChange(e);
+                  form.setValue(
+                    "productDetailsOrigin.digitalTwinOrigin.predictiveMaintenanceAlertsOrigin" as any,
+                    "manual",
+                  );
+                }}
               />
             </FormControl>
-            <FormDescription>Current alerts or warnings from the Digital Twin regarding upcoming maintenance.</FormDescription>
+            <FormDescription>
+              Current alerts or warnings from the Digital Twin regarding
+              upcoming maintenance.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}

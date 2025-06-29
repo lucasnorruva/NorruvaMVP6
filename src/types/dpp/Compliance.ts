@@ -1,4 +1,3 @@
-
 // --- File: Compliance.ts ---
 // Description: Compliance related type definitions.
 
@@ -15,7 +14,12 @@ export interface Certification {
 }
 
 export interface EbsiVerificationDetails {
-  status: 'verified' | 'pending_verification' | 'not_verified' | 'error' | 'N/A';
+  status:
+    | "verified"
+    | "pending_verification"
+    | "not_verified"
+    | "error"
+    | "N/A";
   verificationId?: string;
   issuerDid?: string;
   schema?: string;
@@ -25,7 +29,13 @@ export interface EbsiVerificationDetails {
 }
 
 export interface ScipNotificationDetails {
-  status?: 'Notified' | 'Pending Notification' | 'Not Required' | 'Error' | 'N/A' | string;
+  status?:
+    | "Notified"
+    | "Pending Notification"
+    | "Not Required"
+    | "Error"
+    | "N/A"
+    | string;
   notificationId?: string;
   svhcListVersion?: string;
   submittingLegalEntity?: string;
@@ -36,7 +46,13 @@ export interface ScipNotificationDetails {
 }
 
 export interface EuCustomsDataDetails {
-  status?: 'Verified' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'N/A' | string;
+  status?:
+    | "Verified"
+    | "Pending Documents"
+    | "Mismatch"
+    | "Cleared"
+    | "N/A"
+    | string;
   declarationId?: string;
   hsCode?: string;
   countryOfOrigin?: string; // ISO 3166-1 Alpha-2
@@ -64,7 +80,7 @@ export interface CarbonFootprintData {
 export interface RecycledContentData {
   material?: string;
   percentage?: number | null;
-  source?: 'Pre-consumer' | 'Post-consumer' | 'Mixed' | 'Unknown' | string;
+  source?: "Pre-consumer" | "Post-consumer" | "Mixed" | "Unknown" | string;
   vcId?: string;
 }
 
@@ -77,7 +93,12 @@ export interface StateOfHealthData {
 }
 
 export interface BatteryRegulationDetails {
-  status?: 'compliant' | 'non_compliant' | 'pending' | 'not_applicable' | string;
+  status?:
+    | "compliant"
+    | "non_compliant"
+    | "pending"
+    | "not_applicable"
+    | string;
   batteryChemistry?: string;
   batteryPassportId?: string;
   ratedCapacityAh?: number | null;
@@ -108,10 +129,31 @@ export interface EsprSpecifics {
   substanceOfConcernSummary?: string;
 }
 
-
 export interface ComplianceDetailItem {
   regulationName: string;
-  status: 'Compliant' | 'Non-Compliant' | 'Pending' | 'Not Applicable' | 'In Progress' | 'Data Incomplete' | 'Registered' | 'Verified' | 'Notified' | 'Pending Notification' | 'Not Required' | 'Pending Documents' | 'Mismatch' | 'Cleared' | 'Conformant' | 'Non-Conformant' | 'Pending Assessment' | 'Error' | 'Data Mismatch' | 'Product Not Found in EPREL' | 'Synced Successfully' | string;
+  status:
+    | "Compliant"
+    | "Non-Compliant"
+    | "Pending"
+    | "Not Applicable"
+    | "In Progress"
+    | "Data Incomplete"
+    | "Registered"
+    | "Verified"
+    | "Notified"
+    | "Pending Notification"
+    | "Not Required"
+    | "Pending Documents"
+    | "Mismatch"
+    | "Cleared"
+    | "Conformant"
+    | "Non-Conformant"
+    | "Pending Assessment"
+    | "Error"
+    | "Data Mismatch"
+    | "Product Not Found in EPREL"
+    | "Synced Successfully"
+    | string;
   detailsUrl?: string;
   verificationId?: string;
   lastChecked: string; // ISO Date string
@@ -119,7 +161,14 @@ export interface ComplianceDetailItem {
 }
 
 export interface ProductComplianceSummary {
-  overallStatus: 'Compliant' | 'Non-Compliant' | 'Pending Review' | 'N/A' | 'Data Incomplete' | 'Flagged' | string;
+  overallStatus:
+    | "Compliant"
+    | "Non-Compliant"
+    | "Pending Review"
+    | "N/A"
+    | "Data Incomplete"
+    | "Flagged"
+    | string;
   eprel?: {
     id?: string;
     status: string;
@@ -127,7 +176,7 @@ export interface ProductComplianceSummary {
     lastChecked: string;
   };
   ebsi?: {
-    status: 'Verified' | 'Pending' | 'Not Verified' | 'Error' | 'N/A' | string;
+    status: "Verified" | "Pending" | "Not Verified" | "Error" | "N/A" | string;
     verificationId?: string;
     transactionUrl?: string;
     lastChecked: string;
@@ -193,7 +242,7 @@ export interface TransitProduct {
   name: string;
   stage: string;
   eta: string;
-  dppStatus: ProductComplianceSummary['overallStatus'];
+  dppStatus: ProductComplianceSummary["overallStatus"];
   transport: "Ship" | "Truck" | "Plane";
   origin: string;
   destination: string;
@@ -214,5 +263,11 @@ export interface InspectionEvent {
   title: string;
   timestamp: string;
   description: string;
-  status: "Completed" | "Action Required" | "Upcoming" | "In Progress" | "Delayed" | "Cancelled";
+  status:
+    | "Completed"
+    | "Action Required"
+    | "Upcoming"
+    | "In Progress"
+    | "Delayed"
+    | "Cancelled";
 }

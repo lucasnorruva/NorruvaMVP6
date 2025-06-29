@@ -1,5 +1,4 @@
-
-'use server';
+"use server";
 /**
  * @fileOverview An AI agent to suggest a CBAM Goods Identifier (conceptual CN code) for a product.
  *
@@ -8,31 +7,50 @@
  * - SuggestCbamIdentifierOutputSchema - The return type for the function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
 
 export const SuggestCbamIdentifierInputSchema = z.object({
-  productCategory: z.string().describe('The category of the product (e.g., Construction Materials, Electronics, Automotive Parts).'),
-  productDescription: z.string().optional().describe('A brief description of the product.'),
+  productCategory: z
+    .string()
+    .describe(
+      "The category of the product (e.g., Construction Materials, Electronics, Automotive Parts).",
+    ),
+  productDescription: z
+    .string()
+    .optional()
+    .describe("A brief description of the product."),
 });
-export type SuggestCbamIdentifierInput = z.infer<typeof SuggestCbamIdentifierInputSchema>;
+export type SuggestCbamIdentifierInput = z.infer<
+  typeof SuggestCbamIdentifierInputSchema
+>;
 
 export const SuggestCbamIdentifierOutputSchema = z.object({
-  suggestedIdentifier: z.string().describe('A suggested Combined Nomenclature (CN) code (e.g., "72081000" for certain iron/steel) or a textual indication like "Potentially CBAM relevant" or "Likely not CBAM relevant".'),
-  reasoning: z.string().describe('A brief explanation for the suggestion, including which CBAM sector might be relevant.'),
+  suggestedIdentifier: z
+    .string()
+    .describe(
+      'A suggested Combined Nomenclature (CN) code (e.g., "72081000" for certain iron/steel) or a textual indication like "Potentially CBAM relevant" or "Likely not CBAM relevant".',
+    ),
+  reasoning: z
+    .string()
+    .describe(
+      "A brief explanation for the suggestion, including which CBAM sector might be relevant.",
+    ),
 });
-export type SuggestCbamIdentifierOutput = z.infer<typeof SuggestCbamIdentifierOutputSchema>;
+export type SuggestCbamIdentifierOutput = z.infer<
+  typeof SuggestCbamIdentifierOutputSchema
+>;
 
 export async function suggestCbamIdentifier(
-  input: SuggestCbamIdentifierInput
+  input: SuggestCbamIdentifierInput,
 ): Promise<SuggestCbamIdentifierOutput> {
   return suggestCbamIdentifierFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'suggestCbamIdentifierPrompt',
-  input: {schema: SuggestCbamIdentifierInputSchema},
-  output: {schema: SuggestCbamIdentifierOutputSchema},
+  name: "suggestCbamIdentifierPrompt",
+  input: { schema: SuggestCbamIdentifierInputSchema },
+  output: { schema: SuggestCbamIdentifierOutputSchema },
   prompt: `You are a customs classification assistant specializing in the EU Carbon Border Adjustment Mechanism (CBAM).
 The initial CBAM scope covers: Cement, Iron and Steel, Aluminium, Fertilisers, Electricity, and Hydrogen.
 
@@ -53,20 +71,18 @@ Example output for "Electric Bicycle": { "suggestedIdentifier": "Potentially CBA
 
 const suggestCbamIdentifierFlow = ai.defineFlow(
   {
-    name: 'suggestCbamIdentifierFlow',
+    name: "suggestCbamIdentifierFlow",
     inputSchema: SuggestCbamIdentifierInputSchema,
     outputSchema: SuggestCbamIdentifierOutputSchema,
   },
   async (input) => {
-    const {output} = await prompt(input);
+    const { output } = await prompt(input);
     if (!output) {
       return {
         suggestedIdentifier: "Could not determine CBAM relevance",
-        reasoning: "AI flow did not return a valid response."
+        reasoning: "AI flow did not return a valid response.",
       };
     }
     return output;
-  }
+  },
 );
-
-    

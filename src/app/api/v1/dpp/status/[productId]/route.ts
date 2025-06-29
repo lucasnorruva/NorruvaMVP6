@@ -1,16 +1,15 @@
-
 // --- File: src/app/api/v1/dpp/status/[productId]/route.ts ---
 // Description: Conceptual API endpoint to retrieve the status of a DPP.
 
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
-import { MOCK_DPPS } from '@/data';
-import type { DigitalProductPassport } from '@/types/dpp';
-import { validateApiKey } from '@/middleware/apiKeyAuth';
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
+import { MOCK_DPPS } from "@/data";
+import type { DigitalProductPassport } from "@/types/dpp";
+import { validateApiKey } from "@/middleware/apiKeyAuth";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { productId: string } }
+  { params }: { params: { productId: string } },
 ) {
   const productId = params.productId;
   const auth = validateApiKey(request);
@@ -22,10 +21,10 @@ export async function GET(
   //   return NextResponse.json({ error: { code: 401, message: 'API key missing or invalid.' } }, { status: 401 });
   // }
 
-  const product = MOCK_DPPS.find(dpp => dpp.id === productId);
+  const product = MOCK_DPPS.find((dpp) => dpp.id === productId);
 
   // Simulate API delay
-  await new Promise(resolve => setTimeout(resolve, 100));
+  await new Promise((resolve) => setTimeout(resolve, 100));
 
   if (product) {
     return NextResponse.json({
@@ -33,8 +32,14 @@ export async function GET(
       status: product.metadata.status,
     });
   } else {
-    return NextResponse.json({ error: { code: 404, message: `Product with ID ${productId} not found.` } }, { status: 404 });
+    return NextResponse.json(
+      {
+        error: {
+          code: 404,
+          message: `Product with ID ${productId} not found.`,
+        },
+      },
+      { status: 404 },
+    );
   }
 }
-
-    

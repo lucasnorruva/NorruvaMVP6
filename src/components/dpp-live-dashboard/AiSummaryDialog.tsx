@@ -1,13 +1,19 @@
-
 // --- File: AiSummaryDialog.tsx ---
 // Description: Dialog component to display an AI-generated product summary.
 "use client";
 
-import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogClose } from "@/components/ui/dialog";
+import React from "react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Loader2, Bot } from "lucide-react";
-import type { DigitalProductPassport } from '@/types/dpp';
+import type { DigitalProductPassport } from "@/types/dpp";
 
 interface AiSummaryDialogProps {
   isOpen: boolean;
@@ -17,7 +23,13 @@ interface AiSummaryDialogProps {
   product: DigitalProductPassport | null;
 }
 
-export function AiSummaryDialog({ isOpen, onOpenChange, summary, isLoading, product }: AiSummaryDialogProps) {
+export function AiSummaryDialog({
+  isOpen,
+  onOpenChange,
+  summary,
+  isLoading,
+  product,
+}: AiSummaryDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
@@ -34,12 +46,16 @@ export function AiSummaryDialog({ isOpen, onOpenChange, summary, isLoading, prod
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="ml-2 text-muted-foreground">Generating summary...</p>
+              <p className="ml-2 text-muted-foreground">
+                Generating summary...
+              </p>
             </div>
           ) : summary ? (
             <p className="text-sm whitespace-pre-line">{summary}</p>
           ) : (
-            <p className="text-sm text-muted-foreground">Could not generate summary at this time.</p>
+            <p className="text-sm text-muted-foreground">
+              Could not generate summary at this time.
+            </p>
           )}
         </div>
         <DialogClose asChild>

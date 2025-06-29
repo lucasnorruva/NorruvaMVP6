@@ -1,68 +1,98 @@
-
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/icons/Logo";
-import { SidebarHeader, SidebarContent, SidebarFooter } from "@/components/ui/sidebar/Sidebar";
+import {
+  SidebarHeader,
+  SidebarContent,
+  SidebarFooter,
+} from "@/components/ui/sidebar/Sidebar";
 import { SidebarMenu } from "@/components/ui/sidebar/SidebarMenu";
-import { SidebarMenuItem, SidebarMenuButton } from "@/components/ui/sidebar/SidebarItem";
+import {
+  SidebarMenuItem,
+  SidebarMenuButton,
+} from "@/components/ui/sidebar/SidebarItem";
 import { useSidebar } from "@/components/ui/sidebar/SidebarProvider";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { useRole } from "@/contexts/RoleContext";
-import { ALL_NAV_ITEMS, roleDashboardPaths, type NavItemConfig } from "@/config/navConfig"; 
+import {
+  ALL_NAV_ITEMS,
+  roleDashboardPaths,
+  type NavItemConfig,
+} from "@/config/navConfig";
 
 export default function AppSidebarContent() {
   const pathname = usePathname();
   const { state: sidebarState, isMobile } = useSidebar();
   const { currentRole } = useRole();
 
-  const accessibleNavItems = ALL_NAV_ITEMS.filter(item => item.requiredRoles.includes(currentRole));
+  const accessibleNavItems = ALL_NAV_ITEMS.filter((item) =>
+    item.requiredRoles.includes(currentRole),
+  );
 
-  const mainNavItems = accessibleNavItems.filter(item => item.group !== 'secondary');
-  const secondaryNavItems = accessibleNavItems.filter(item => item.group === 'secondary');
+  const mainNavItems = accessibleNavItems.filter(
+    (item) => item.group !== "secondary",
+  );
+  const secondaryNavItems = accessibleNavItems.filter(
+    (item) => item.group === "secondary",
+  );
 
-  const currentRoleDashboardPath = roleDashboardPaths[currentRole] || '/dashboard'; 
+  const currentRoleDashboardPath =
+    roleDashboardPaths[currentRole] || "/dashboard";
 
-  const commonButtonClass = (href: string, isDashboardLink: boolean = false) => {
+  const commonButtonClass = (
+    href: string,
+    isDashboardLink: boolean = false,
+  ) => {
     let isActive: boolean;
 
     if (isDashboardLink) {
       isActive = pathname === currentRoleDashboardPath;
     } else if (href === "/products") {
-      isActive = (pathname === href || (pathname.startsWith(href + "/") && !pathname.endsWith("/new")));
+      isActive =
+        pathname === href ||
+        (pathname.startsWith(href + "/") && !pathname.endsWith("/new"));
     } else if (href === "/compliance/pathways") {
       isActive = pathname.startsWith(href);
     } else if (href === "/sustainability") {
-      isActive = (pathname === href || pathname.startsWith("/sustainability/"));
+      isActive = pathname === href || pathname.startsWith("/sustainability/");
     } else {
       isActive = pathname.startsWith(href);
     }
 
-    const baseStyling = "w-full text-sm transition-colors duration-150 ease-in-out group h-10"; // Standardized height
-    
-    const layoutStyling = (sidebarState === 'collapsed' && !isMobile) 
-      ? "justify-center px-2" 
-      : "justify-start px-3"; 
+    const baseStyling =
+      "w-full text-sm transition-colors duration-150 ease-in-out group h-10"; // Standardized height
+
+    const layoutStyling =
+      sidebarState === "collapsed" && !isMobile
+        ? "justify-center px-2"
+        : "justify-start px-3";
 
     const stateStyling = isActive
-      ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold" 
-      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-normal"; 
+      ? "bg-sidebar-primary text-sidebar-primary-foreground font-semibold"
+      : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground font-normal";
 
     const className = cn(baseStyling, layoutStyling, stateStyling);
-    
+
     return { className, isActive };
   };
 
-  const commonIconClass = cn("h-5 w-5", (sidebarState === 'expanded' || isMobile) ? "mr-3" : "mr-0");
+  const commonIconClass = cn(
+    "h-5 w-5",
+    sidebarState === "expanded" || isMobile ? "mr-3" : "mr-0",
+  );
 
   return (
     <>
       <SidebarHeader className="border-b border-sidebar-border h-auto py-4 flex flex-col items-start px-4">
-        {(sidebarState === 'expanded' || isMobile) && (
+        {(sidebarState === "expanded" || isMobile) && (
           <>
-            <Link href={currentRoleDashboardPath} className="flex items-center gap-2 text-primary hover:opacity-80">
+            <Link
+              href={currentRoleDashboardPath}
+              className="flex items-center gap-2 text-primary hover:opacity-80"
+            >
               <Logo className="h-8 w-auto" />
             </Link>
             <p className="text-xs text-sidebar-foreground/70 mt-1.5 ml-0.5">
@@ -75,19 +105,28 @@ export default function AppSidebarContent() {
         <SidebarMenu className="px-2 space-y-1">
           {mainNavItems.map((item) => {
             const isDashboardItem = item.label === "Dashboard";
-            const itemHref = isDashboardItem ? currentRoleDashboardPath : item.href;
-            const { className, isActive } = commonButtonClass(itemHref, isDashboardItem);
-            
+            const itemHref = isDashboardItem
+              ? currentRoleDashboardPath
+              : item.href;
+            const { className, isActive } = commonButtonClass(
+              itemHref,
+              isDashboardItem,
+            );
+
             return (
-              <SidebarMenuItem key={item.label}> 
+              <SidebarMenuItem key={item.label}>
                 <Link href={itemHref} asChild>
                   <SidebarMenuButton
                     className={className}
-                    tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}
-                    aria-current={isActive ? 'page' : undefined}
+                    tooltip={
+                      sidebarState === "collapsed" && !isMobile
+                        ? item.label
+                        : undefined
+                    }
+                    aria-current={isActive ? "page" : undefined}
                   >
                     <item.icon className={commonIconClass} />
-                    {(sidebarState === 'expanded' || isMobile) && item.label}
+                    {(sidebarState === "expanded" || isMobile) && item.label}
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
@@ -97,19 +136,23 @@ export default function AppSidebarContent() {
       </SidebarContent>
       <Separator className="bg-sidebar-border my-2" />
       <SidebarFooter className="p-2 border-t-0">
-         <SidebarMenu className="px-2 space-y-1">
-           {secondaryNavItems.map((item) => {
+        <SidebarMenu className="px-2 space-y-1">
+          {secondaryNavItems.map((item) => {
             const { className, isActive } = commonButtonClass(item.href);
             return (
               <SidebarMenuItem key={item.href}>
                 <Link href={item.href} asChild>
                   <SidebarMenuButton
                     className={className}
-                    tooltip={sidebarState === 'collapsed' && !isMobile ? item.label : undefined}
-                    aria-current={isActive ? 'page' : undefined}
+                    tooltip={
+                      sidebarState === "collapsed" && !isMobile
+                        ? item.label
+                        : undefined
+                    }
+                    aria-current={isActive ? "page" : undefined}
                   >
                     <item.icon className={commonIconClass} />
-                    {(sidebarState === 'expanded' || isMobile) && item.label}
+                    {(sidebarState === "expanded" || isMobile) && item.label}
                   </SidebarMenuButton>
                 </Link>
               </SidebarMenuItem>
@@ -120,4 +163,3 @@ export default function AppSidebarContent() {
     </>
   );
 }
-

@@ -1,5 +1,4 @@
-
-'use server';
+"use server";
 /**
  * @fileOverview An AI agent to suggest a predictive maintenance schedule for a product.
  *
@@ -8,34 +7,56 @@
  * - MaintenanceSuggestion - The return type for the function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
 
 const SuggestMaintenanceInputSchema = z.object({
   productId: z.string().describe("The ID of the product."),
   productName: z.string().optional().describe("The name of the product."),
-  productCategory: z.string().describe("The category of the product (e.g., Appliances, Electronics, Apparel)."),
-  usageData: z.string().describe("A description of the product's usage, age, or last service date. E.g., 'Moderate usage, approx. 2 years old. Last service: Not specified.'"),
+  productCategory: z
+    .string()
+    .describe(
+      "The category of the product (e.g., Appliances, Electronics, Apparel).",
+    ),
+  usageData: z
+    .string()
+    .describe(
+      "A description of the product's usage, age, or last service date. E.g., 'Moderate usage, approx. 2 years old. Last service: Not specified.'",
+    ),
 });
-export type SuggestMaintenanceInput = z.infer<typeof SuggestMaintenanceInputSchema>;
+export type SuggestMaintenanceInput = z.infer<
+  typeof SuggestMaintenanceInputSchema
+>;
 
 const MaintenanceSuggestionSchema = z.object({
-  nextCheckupDate: z.string().describe('The suggested date or timeframe for the next checkup (e.g., "2025-01-15", "in 6 months", "after 500 hours of use").'),
-  suggestedActions: z.array(z.string()).describe('A list of 2-3 specific, actionable maintenance tasks relevant to the product category.'),
-  reasoning: z.string().describe('A brief rationale for the suggestions, linking them to the product type and usage context.'),
+  nextCheckupDate: z
+    .string()
+    .describe(
+      'The suggested date or timeframe for the next checkup (e.g., "2025-01-15", "in 6 months", "after 500 hours of use").',
+    ),
+  suggestedActions: z
+    .array(z.string())
+    .describe(
+      "A list of 2-3 specific, actionable maintenance tasks relevant to the product category.",
+    ),
+  reasoning: z
+    .string()
+    .describe(
+      "A brief rationale for the suggestions, linking them to the product type and usage context.",
+    ),
 });
 export type MaintenanceSuggestion = z.infer<typeof MaintenanceSuggestionSchema>;
 
 export async function suggestMaintenanceSchedule(
-  input: SuggestMaintenanceInput
+  input: SuggestMaintenanceInput,
 ): Promise<MaintenanceSuggestion> {
   return suggestMaintenanceScheduleFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'suggestMaintenanceSchedulePrompt',
-  input: {schema: SuggestMaintenanceInputSchema},
-  output: {schema: MaintenanceSuggestionSchema},
+  name: "suggestMaintenanceSchedulePrompt",
+  input: { schema: SuggestMaintenanceInputSchema },
+  output: { schema: MaintenanceSuggestionSchema },
   prompt: `You are an AI Maintenance Expert specializing in product upkeep across various categories.
 Given the product's name (if available), category, and current usage/age data, suggest a plausible next preventive maintenance checkup date and 2-3 specific, actionable maintenance tasks.
 Also, provide a brief reasoning for your suggestions.
@@ -59,16 +80,15 @@ Reasoning should be concise and explain why these actions and timeframe are sugg
 
 const suggestMaintenanceScheduleFlow = ai.defineFlow(
   {
-    name: 'suggestMaintenanceScheduleFlow',
+    name: "suggestMaintenanceScheduleFlow",
     inputSchema: SuggestMaintenanceInputSchema,
     outputSchema: MaintenanceSuggestionSchema,
   },
   async (input) => {
-    const {output} = await prompt(input);
+    const { output } = await prompt(input);
     if (!output) {
       throw new Error("AI failed to provide a maintenance suggestion.");
     }
     return output;
-  }
+  },
 );
-

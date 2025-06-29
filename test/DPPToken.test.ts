@@ -12,15 +12,19 @@ describe("DPPToken", function () {
 
   const DEFAULT_ADMIN_ROLE = ethers.ZeroHash;
   const MINTER_ROLE = ethers.keccak256(ethers.toUtf8Bytes("MINTER_ROLE"));
-  const MANUFACTURER_ROLE = ethers.keccak256(ethers.toUtf8Bytes("MANUFACTURER_ROLE"));
+  const MANUFACTURER_ROLE = ethers.keccak256(
+    ethers.toUtf8Bytes("MANUFACTURER_ROLE"),
+  );
 
   beforeEach(async function () {
     [owner, manufacturer, addr1, addr2] = await ethers.getSigners();
 
-    const DPPTokenFactory = await ethers.getContractFactory("DPPToken") as DPPToken__factory;
-    dppToken = await upgrades.deployProxy(DPPTokenFactory, [owner.address], {
+    const DPPTokenFactory = (await ethers.getContractFactory(
+      "DPPToken",
+    )) as DPPToken__factory;
+    dppToken = (await upgrades.deployProxy(DPPTokenFactory, [owner.address], {
       initializer: "initialize",
-    }) as DPPToken;
+    })) as DPPToken;
 
     // Grant roles for testing
     await dppToken.grantRole(MANUFACTURER_ROLE, manufacturer.address);
@@ -33,7 +37,7 @@ describe("DPPToken", function () {
   });
 
   it("Should grant the default admin role to the deployer", async function () {
-    expect(await dppToken.hasRole(DEFAULT_ADMIN_ROLE, owner.address)).to.be.true;
+    expect(await dppToken.hasRole(DEFAULT_ADMIN_ROLE, owner.address)).to.be
+      .true;
   });
 });
-

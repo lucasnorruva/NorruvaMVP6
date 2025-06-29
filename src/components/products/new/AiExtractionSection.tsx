@@ -1,8 +1,13 @@
-
 "use client";
 
 import React from "react";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -37,10 +42,12 @@ export default function AiExtractionSection({
     <Card className="shadow-lg">
       <CardHeader>
         <CardTitle className="font-headline flex items-center">
-          <ScanLine className="mr-2 h-6 w-6 text-primary" />Upload Document for AI Extraction
+          <ScanLine className="mr-2 h-6 w-6 text-primary" />
+          Upload Document for AI Extraction
         </CardTitle>
         <CardDescription>
-          Select a document file (PDF, DOCX, TXT, PNG, JPG). Max 10MB. AI will attempt to pre-fill the product form.
+          Select a document file (PDF, DOCX, TXT, PNG, JPG). Max 10MB. AI will
+          attempt to pre-fill the product form.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -62,11 +69,21 @@ export default function AiExtractionSection({
             placeholder="e.g., invoice, specification sheet"
           />
           <p className="text-xs text-muted-foreground mt-1">
-            Examples: invoice, specification, battery_spec_sheet, commercial_invoice, packing_list, material_safety_data_sheet, bill_of_materials, technical_drawing.
+            Examples: invoice, specification, battery_spec_sheet,
+            commercial_invoice, packing_list, material_safety_data_sheet,
+            bill_of_materials, technical_drawing.
           </p>
         </div>
-        <Button onClick={onExtractData} disabled={isLoading || !file} variant="secondary">
-          {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Cpu className="mr-2 h-4 w-4" />}
+        <Button
+          onClick={onExtractData}
+          disabled={isLoading || !file}
+          variant="secondary"
+        >
+          {isLoading ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <Cpu className="mr-2 h-4 w-4" />
+          )}
           {isLoading ? "Extracting Data..." : "Extract Data with AI"}
         </Button>
         {error && (
@@ -76,20 +93,25 @@ export default function AiExtractionSection({
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        {!currentProductData.productName && !isLoading && file && !aiExtractionAppliedSuccessfully && (
-          <Card className="border-dashed border-2 border-muted bg-muted/30">
-            <CardContent className="p-6 text-center text-muted-foreground">
-              <ScanLine className="mx-auto h-10 w-10 mb-3" />
-              <p>
-                Click "Extract Data with AI" above to populate product information from the selected file and document
-                type.
-              </p>
-              <p className="text-xs mt-1">You will then be taken to the "Manual Entry / Review" tab to review it.</p>
-            </CardContent>
-          </Card>
-        )}
+        {!currentProductData.productName &&
+          !isLoading &&
+          file &&
+          !aiExtractionAppliedSuccessfully && (
+            <Card className="border-dashed border-2 border-muted bg-muted/30">
+              <CardContent className="p-6 text-center text-muted-foreground">
+                <ScanLine className="mx-auto h-10 w-10 mb-3" />
+                <p>
+                  Click "Extract Data with AI" above to populate product
+                  information from the selected file and document type.
+                </p>
+                <p className="text-xs mt-1">
+                  You will then be taken to the "Manual Entry / Review" tab to
+                  review it.
+                </p>
+              </CardContent>
+            </Card>
+          )}
       </CardContent>
     </Card>
   );
 }
-

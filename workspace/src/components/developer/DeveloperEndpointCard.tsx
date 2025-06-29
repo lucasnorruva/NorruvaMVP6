@@ -1,7 +1,6 @@
-
 "use client";
-import React from 'react';
-import ApiPlaygroundEndpointCard from './ApiPlaygroundEndpointCard'; // This import should be correct if file structure is components/developer/ApiPlaygroundEndpointCard.tsx
+import React from "react";
+import ApiPlaygroundEndpointCard from "./ApiPlaygroundEndpointCard"; // This import should be correct if file structure is components/developer/ApiPlaygroundEndpointCard.tsx
 
 export interface DeveloperEndpointCardProps {
   id: string; // Add id prop
@@ -18,6 +17,8 @@ export interface DeveloperEndpointCardProps {
   codeSampleLanguages: string[];
 }
 
-export default function DeveloperEndpointCard(props: DeveloperEndpointCardProps) {
+export default function DeveloperEndpointCard(
+  props: DeveloperEndpointCardProps,
+) {
   return <ApiPlaygroundEndpointCard {...props} />;
 }

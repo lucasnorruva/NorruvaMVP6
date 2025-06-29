@@ -1,14 +1,13 @@
-
 // --- File: src/components/developer/DocsPageLayout.tsx ---
 // Description: Reusable layout component for developer documentation pages.
 "use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ArrowLeft } from 'lucide-react'; // Keep specific import for this icon
-import * as LucideIcons from 'lucide-react'; // Import all Lucide icons
+import React from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ArrowLeft } from "lucide-react"; // Keep specific import for this icon
+import * as LucideIcons from "lucide-react"; // Import all Lucide icons
 
 interface DocsPageLayoutProps {
   pageTitle: string;
@@ -27,7 +26,7 @@ export default function DocsPageLayout({
   alertDescription,
   children,
   backLink = "/developer",
-  backLinkText = "Back to Developer Portal"
+  backLinkText = "Back to Developer Portal",
 }: DocsPageLayoutProps) {
   const IconToShow = LucideIcons[pageIcon] || LucideIcons.FileText; // Fallback to FileText if icon name is invalid
   const InfoIconForAlert = LucideIcons.Info; // Explicitly get Info icon for Alert
@@ -51,7 +50,9 @@ export default function DocsPageLayout({
         <Alert>
           <InfoIconForAlert className="h-4 w-4" />
           {alertTitle && <AlertTitle>{alertTitle}</AlertTitle>}
-          {alertDescription && <AlertDescription>{alertDescription}</AlertDescription>}
+          {alertDescription && (
+            <AlertDescription>{alertDescription}</AlertDescription>
+          )}
         </Alert>
       )}
       {children}

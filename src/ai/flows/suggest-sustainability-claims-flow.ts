@@ -1,5 +1,4 @@
-
-'use server';
+"use server";
 /**
  * @fileOverview An AI agent to suggest sustainability claims for products.
  *
@@ -8,32 +7,52 @@
  * - SuggestSustainabilityClaimsOutput - The return type for the function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import { ai } from "@/ai/genkit";
+import { z } from "genkit";
 
 const SuggestSustainabilityClaimsInputSchema = z.object({
-  productCategory: z.string().describe('The category of the product (e.g., Electronics, Apparel, Appliances).'),
-  productName: z.string().describe('The name of the product.').optional(),
-  productDescription: z.string().describe('A brief description of the product.').optional(),
-  materials: z.string().describe('Key materials used in the product (comma-separated if multiple, e.g., "Organic Cotton, Recycled Polyester").').optional(),
+  productCategory: z
+    .string()
+    .describe(
+      "The category of the product (e.g., Electronics, Apparel, Appliances).",
+    ),
+  productName: z.string().describe("The name of the product.").optional(),
+  productDescription: z
+    .string()
+    .describe("A brief description of the product.")
+    .optional(),
+  materials: z
+    .string()
+    .describe(
+      'Key materials used in the product (comma-separated if multiple, e.g., "Organic Cotton, Recycled Polyester").',
+    )
+    .optional(),
 });
-export type SuggestSustainabilityClaimsInput = z.infer<typeof SuggestSustainabilityClaimsInputSchema>;
+export type SuggestSustainabilityClaimsInput = z.infer<
+  typeof SuggestSustainabilityClaimsInputSchema
+>;
 
 const SuggestSustainabilityClaimsOutputSchema = z.object({
-  claims: z.array(z.string()).describe('An array of 3-5 suggested sustainability claims, each as a short phrase.'),
+  claims: z
+    .array(z.string())
+    .describe(
+      "An array of 3-5 suggested sustainability claims, each as a short phrase.",
+    ),
 });
-export type SuggestSustainabilityClaimsOutput = z.infer<typeof SuggestSustainabilityClaimsOutputSchema>;
+export type SuggestSustainabilityClaimsOutput = z.infer<
+  typeof SuggestSustainabilityClaimsOutputSchema
+>;
 
 export async function suggestSustainabilityClaims(
-  input: SuggestSustainabilityClaimsInput
+  input: SuggestSustainabilityClaimsInput,
 ): Promise<SuggestSustainabilityClaimsOutput> {
   return suggestSustainabilityClaimsFlow(input);
 }
 
 const prompt = ai.definePrompt({
-  name: 'suggestSustainabilityClaimsPrompt',
-  input: {schema: SuggestSustainabilityClaimsInputSchema},
-  output: {schema: SuggestSustainabilityClaimsOutputSchema},
+  name: "suggestSustainabilityClaimsPrompt",
+  input: { schema: SuggestSustainabilityClaimsInputSchema },
+  output: { schema: SuggestSustainabilityClaimsOutputSchema },
   prompt: `You are a product sustainability expert. Based on the provided product information, suggest 3-5 concise and relevant sustainability claims.
 Focus on common and impactful claims related to materials, energy efficiency, recyclability, ethical sourcing, etc.
 Each claim should be a short, marketable phrase.
@@ -53,12 +72,12 @@ Example claim: "Ethically sourced cotton"
 
 const suggestSustainabilityClaimsFlow = ai.defineFlow(
   {
-    name: 'suggestSustainabilityClaimsFlow',
+    name: "suggestSustainabilityClaimsFlow",
     inputSchema: SuggestSustainabilityClaimsInputSchema,
     outputSchema: SuggestSustainabilityClaimsOutputSchema,
   },
   async (input) => {
-    const {output} = await prompt(input);
+    const { output } = await prompt(input);
     return output || { claims: [] }; // Ensure an empty array if output is null/undefined
-  }
+  },
 );

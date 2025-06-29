@@ -1,18 +1,17 @@
-
 // --- File: src/components/developer/DocsPageLayout.tsx ---
 // Description: Reusable layout component for developer documentation pages.
 "use client";
 
-import React from 'react';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { ArrowLeft } from 'lucide-react'; 
-import * as LucideIcons from 'lucide-react'; 
+import React from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { ArrowLeft } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 
 interface DocsPageLayoutProps {
   pageTitle: string;
-  pageIcon: keyof typeof LucideIcons | React.ElementType; 
+  pageIcon: keyof typeof LucideIcons | React.ElementType;
   alertTitle?: string;
   alertDescription?: string;
   children: React.ReactNode;
@@ -22,22 +21,24 @@ interface DocsPageLayoutProps {
 
 export default function DocsPageLayout({
   pageTitle,
-  pageIcon, 
+  pageIcon,
   alertTitle,
   alertDescription,
   children,
-  backLink = "/developer/docs", 
-  backLinkText = "Back to Docs Hub"
+  backLink = "/developer/docs",
+  backLinkText = "Back to Docs Hub",
 }: DocsPageLayoutProps) {
-  
   let IconComponent: React.ElementType = LucideIcons.FileText; // Default fallback
 
-  if (typeof pageIcon === 'string' && LucideIcons[pageIcon as keyof typeof LucideIcons]) {
+  if (
+    typeof pageIcon === "string" &&
+    LucideIcons[pageIcon as keyof typeof LucideIcons]
+  ) {
     IconComponent = LucideIcons[pageIcon as keyof typeof LucideIcons];
-  } else if (typeof pageIcon !== 'string') {
-    IconComponent = pageIcon; 
+  } else if (typeof pageIcon !== "string") {
+    IconComponent = pageIcon;
   }
-  
+
   const InfoIconForAlert = LucideIcons.Info;
 
   return (
@@ -59,7 +60,9 @@ export default function DocsPageLayout({
         <Alert>
           <InfoIconForAlert className="h-4 w-4" />
           {alertTitle && <AlertTitle>{alertTitle}</AlertTitle>}
-          {alertDescription && <AlertDescription>{alertDescription}</AlertDescription>}
+          {alertDescription && (
+            <AlertDescription>{alertDescription}</AlertDescription>
+          )}
         </Alert>
       )}
       {children}

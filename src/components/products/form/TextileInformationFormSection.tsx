@@ -21,25 +21,29 @@ interface TextileInformationFormSectionProps {
   form: UseFormReturn<ProductFormData>;
 }
 
-export default function TextileInformationFormSection({ 
-  form 
+export default function TextileInformationFormSection({
+  form,
 }: TextileInformationFormSectionProps) {
-  const fiberComposition = form.watch("textileInformation.fiberComposition") || [];
+  const fiberComposition =
+    form.watch("textileInformation.fiberComposition") || [];
 
   const addFiberComposition = () => {
-    const currentComposition = form.getValues("textileInformation.fiberComposition") || [];
-    form.setValue("textileInformation.fiberComposition", [
-      ...currentComposition,
-      { fiberName: "", percentage: null }
-    ], { shouldValidate: true });
+    const currentComposition =
+      form.getValues("textileInformation.fiberComposition") || [];
+    form.setValue(
+      "textileInformation.fiberComposition",
+      [...currentComposition, { fiberName: "", percentage: null }],
+      { shouldValidate: true },
+    );
   };
 
   const removeFiberComposition = (index: number) => {
-    const currentComposition = form.getValues("textileInformation.fiberComposition") || [];
+    const currentComposition =
+      form.getValues("textileInformation.fiberComposition") || [];
     form.setValue(
       "textileInformation.fiberComposition",
       currentComposition.filter((_, i) => i !== index),
-      { shouldValidate: true }
+      { shouldValidate: true },
     );
   };
 
@@ -58,7 +62,9 @@ export default function TextileInformationFormSection({
             <p className="text-sm text-muted-foreground">
               Specify the fiber composition of the textile product
               {totalPercentage > 0 && (
-                <span className={`ml-2 font-medium ${totalPercentage !== 100 ? 'text-amber-600' : 'text-green-600'}`}>
+                <span
+                  className={`ml-2 font-medium ${totalPercentage !== 100 ? "text-amber-600" : "text-green-600"}`}
+                >
                   (Total: {totalPercentage}%)
                 </span>
               )}
@@ -88,9 +94,9 @@ export default function TextileInformationFormSection({
                         <FormItem className="flex-1">
                           <FormLabel>Fiber Name</FormLabel>
                           <FormControl>
-                            <Input 
-                              placeholder="e.g., Cotton, Polyester, Wool" 
-                              {...field} 
+                            <Input
+                              placeholder="e.g., Cotton, Polyester, Wool"
+                              {...field}
                             />
                           </FormControl>
                           <FormMessage />
@@ -105,17 +111,19 @@ export default function TextileInformationFormSection({
                         <FormItem className="w-32">
                           <FormLabel>Percentage</FormLabel>
                           <FormControl>
-                            <Input 
+                            <Input
                               type="number"
                               min="0"
                               max="100"
                               step="0.1"
-                              placeholder="0-100" 
+                              placeholder="0-100"
                               {...field}
                               value={field.value || ""}
                               onChange={(e) => {
                                 const value = e.target.value;
-                                field.onChange(value === "" ? null : parseFloat(value));
+                                field.onChange(
+                                  value === "" ? null : parseFloat(value),
+                                );
                               }}
                             />
                           </FormControl>
@@ -154,7 +162,8 @@ export default function TextileInformationFormSection({
 
         {totalPercentage > 0 && totalPercentage !== 100 && (
           <p className="text-sm text-amber-600">
-            Note: Total percentage should equal 100%. Current total: {totalPercentage}%
+            Note: Total percentage should equal 100%. Current total:{" "}
+            {totalPercentage}%
           </p>
         )}
       </div>
@@ -166,9 +175,9 @@ export default function TextileInformationFormSection({
           <FormItem>
             <FormLabel>Country of Origin Labeling</FormLabel>
             <FormControl>
-              <Input 
-                placeholder="e.g., Made in Portugal, Assembled in Spain" 
-                {...field} 
+              <Input
+                placeholder="e.g., Made in Portugal, Assembled in Spain"
+                {...field}
               />
             </FormControl>
             <FormDescription>
@@ -186,14 +195,15 @@ export default function TextileInformationFormSection({
           <FormItem>
             <FormLabel>Care Instructions URL</FormLabel>
             <FormControl>
-              <Input 
+              <Input
                 type="url"
-                placeholder="https://example.com/care-instructions" 
-                {...field} 
+                placeholder="https://example.com/care-instructions"
+                {...field}
               />
             </FormControl>
             <FormDescription>
-              Link to detailed care and washing instructions for the textile product
+              Link to detailed care and washing instructions for the textile
+              product
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -212,9 +222,7 @@ export default function TextileInformationFormSection({
               />
             </FormControl>
             <div className="space-y-1 leading-none">
-              <FormLabel>
-                Second-hand Product
-              </FormLabel>
+              <FormLabel>Second-hand Product</FormLabel>
               <FormDescription>
                 Check this if the textile product is second-hand or pre-owned
               </FormDescription>

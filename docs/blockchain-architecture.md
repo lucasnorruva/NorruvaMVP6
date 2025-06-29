@@ -5,6 +5,7 @@ This document outlines the proposed smart contract and governance architecture f
 ## Smart Contracts
 
 ### DPP Token (ERC-721)
+
 - Implemented in Solidity using the OpenZeppelin library.
 - Upgradeable via the UUPS proxy pattern with rollback safety checks.
 - Each token is bound to a `productId` and is non‑transferable by default (soulbound).
@@ -23,6 +24,7 @@ struct Passport {
 Lifecycle states: `Draft → Issued → InTransit → Verified → Flagged → Expired`.
 
 Events:
+
 - `PassportMinted`
 - `StatusUpdated`
 - `CustodyTransferred`
@@ -33,6 +35,7 @@ Role management uses `AccessControl` with roles for `MANUFACTURER`, `AUDITOR`, `
 Authorized delegate management is handled via a `delegateFor(address tokenId)` function.
 
 ### NORU Token (ERC-20)
+
 - Used for governance, validator staking, and compliance fees.
 - Fixed initial supply with capped emissions controlled by the DAO.
 - Optional staking module for auditors and verifiers.
@@ -63,6 +66,7 @@ Authorized delegate management is handled via a `delegateFor(address tokenId)` f
 
 Next.js API routes act as middleware between the frontend and the blockchain.
 Important routes include:
+
 - `/api/mint`
 - `/api/updateStatus`
 - `/api/transferOwnership`
@@ -78,4 +82,3 @@ Every status or custody change emits an event, which can be indexed by TheGraph 
 - Verifiable Credentials that conform to EBSI standards.
 - Zero-knowledge proofs for origin verification and confidential supplier data.
 - NFC or QR codes that resolve to the `tokenURI` for physical product tags.
-

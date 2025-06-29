@@ -606,3 +606,5 @@ export default function ProductForm({ id, initialData, onSubmit, isSubmitting, i
             render={({ field }) => (
                 <FormItem>
                 <FormLabel>On-Chain Status:</FormLabel>
+
+                </FormItem>

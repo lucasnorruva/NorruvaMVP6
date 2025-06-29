@@ -866,7 +866,7 @@ export default function ApiReferenceDppEndpoints({
                             </li>
                             <li>
                                 <code  className="bg-muted px-1 py-0.5 rounded-sm font-mono text-xs">500 Internal Server Error</code>.
-                                <details  className="border rounded-md mt-1">
+ <details className="border rounded-md mt-1">
                                     <summary  className="cursor-pointer p-1 bg-muted hover:bg-muted/80 text-xs ml-4">Example JSON</summary>
                                     <pre className="bg-muted/50 p-2 rounded-b-md text-xs overflow-x-auto ml-4"><code>{error500}</code></pre>
                                 </details>

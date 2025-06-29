@@ -158,7 +158,7 @@ export const SupplierDashboard = () => {
       <Card className="shadow-lg">
         <CardHeader>
           <CardTitle className="font-headline flex items-center"><FileText className="mr-2 h-5 w-5 text-primary" />Recently Submitted Documents</CardTitle>
-          <CardDescription>A log of your recent data submissions.</CardHeader>
+ <CardDescription>A log of your recent data submissions.</CardDescription>
         </CardContent>
         <CardContent>
           {mockSubmittedDocs.length > 0 ? (

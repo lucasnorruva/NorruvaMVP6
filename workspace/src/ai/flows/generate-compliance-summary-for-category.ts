@@ -76,4 +76,6 @@ const generateComplianceSummaryForCategoryFlow = ai.defineFlow(
     const {output} = await prompt(input);
     if (!output?.categoryComplianceSummary) {
         // Fallback or error if AI doesn't return expected format
-        return { categoryComplianceSummary: "Could not generate compliance summary for this category. Please check inputs or try again."
+        return { categoryComplianceSummary: "Could not generate compliance summary for this category. Please check inputs or try again." };
+    }
+    return output;
